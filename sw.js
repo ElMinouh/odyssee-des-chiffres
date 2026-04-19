@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v6.1.1';
+const CACHE_VERSION = 'v6.1.2';
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources à mettre en cache au premier chargement (squelette de l'app).
