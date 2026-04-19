@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v6.2.1';
+const CACHE_VERSION = 'v6.3.0';
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources à mettre en cache au premier chargement (squelette de l'app).
@@ -34,9 +34,15 @@ const PRECACHE_URLS = [
   './js/11-init.js',
   './assets/portraits.svg',
   './assets/icon.svg',
-  './assets/icon-192.png',
+'./assets/icon-192.png',
   './assets/icon-512.png',
   './assets/apple-touch-icon.png',
+  './assets/fonts/google-fonts.css',
+  './assets/fonts/nunito-400.woff2',
+  './assets/fonts/nunito-600.woff2',
+  './assets/fonts/nunito-700.woff2',
+  './assets/fonts/nunito-900.woff2',
+  './assets/fonts/cinzeldecorative-700.woff2',
 ];
 
 // ── Installation : pré-cache des fichiers de base ──────────────────
