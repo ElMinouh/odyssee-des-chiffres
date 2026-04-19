@@ -1,0 +1,6 @@
+node_modules/
+assets/
+*.min.js
+sw.js
+js/03-figurines-data.js
+js/10-figurines.js

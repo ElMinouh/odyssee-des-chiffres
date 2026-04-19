@@ -1,0 +1,38 @@
+# Dépendances Node.js (réinstallables via npm install)
+node_modules/
+package-lock.json
+
+# Fichiers système macOS / Windows
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Éditeurs et IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs et fichiers temporaires
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Tests et couverture
+coverage/
+.nyc_output/
+
+# Builds locaux (si tu ajoutes un outil de build plus tard)
+dist/
+build/
+.cache/
+
+# Fichiers d'environnement (secrets à ne jamais commiter)
+.env
+.env.local
+.env.*.local
+
+# Fichiers Netlify générés localement
+.netlify/

@@ -1,0 +1,23 @@
+{
+  "name": "odyssee-des-chiffres",
+  "version": "6.2.0",
+  "description": "Jeu de calcul mental pour enfants du CP au CM2 — édition modulaire, PWA, validée.",
+  "scripts": {
+    "start": "npx serve -l 8000 .",
+    "start:python": "python3 -m http.server 8000",
+    "start:node": "npx http-server -p 8000 -c-1",
+    "lint": "eslint js/",
+    "lint:fix": "eslint js/ --fix",
+    "format": "prettier --write \"**/*.{js,css,html,json,md}\"",
+    "format:check": "prettier --check \"**/*.{js,css,html,json,md}\"",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "private": true,
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.0",
+    "vitest": "^1.6.0"
+  }
+}

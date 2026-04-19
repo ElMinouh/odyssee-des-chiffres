@@ -1,0 +1,39 @@
+{
+  "name": "L'Odyssée des Chiffres",
+  "short_name": "Odyssée",
+  "description": "Jeu de calcul mental pour enfants du CP au CM2 : monstres, boss, figurines, mode combat.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#34495e",
+  "lang": "fr",
+  "categories": ["education", "games", "kids"],
+  "icons": [
+    {
+      "src": "assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

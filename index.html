@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#34495e">
+<meta name="description" content="Jeu de calcul mental pour enfants du CP au CM2 : monstres, boss, figurines à collectionner.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Odyssée">
+<title>L'Odyssée des Chiffres V6</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Nunito:wght@400;600;700;900&display=swap"
+      media="print" onload="this.media='all'">
+<noscript>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Nunito:wght@400;600;700;900&display=swap">
+</noscript>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body id="BODY">
+<canvas id="confetti-canvas" style="position:fixed;top:0;left:0;pointer-events:none;z-index:150;"></canvas>
+<canvas id="particle-canvas" style="position:fixed;top:0;left:0;pointer-events:none;z-index:155;"></canvas>
+<div id="toast" class="hidden"></div>
+<div id="event-banner" class="hidden"></div>
+<div id="transition-screen" class="hidden"><div id="transition-inner"><div id="trans-monster" style="font-size:5em;"></div><div id="trans-msg" style="margin-top:16px;font-weight:700;"></div></div></div>
+
+<!-- ══════ CINÉMATIQUE LEVEL-UP ══════ -->
+<div id="level-up-screen" class="hidden">
+ <div id="lu-inner">
+  <div id="lu-title">NIVEAU DÉBLOQUÉ !</div>
+  <div id="lu-icon">🎓</div>
+  <div id="lu-lvl" style="font-family:'Cinzel Decorative',cursive;font-size:1.6em;color:var(--accent);margin:6px 0;"></div>
+  <div id="lu-sub"></div>
+  <div id="lu-xp"></div>
+  <div style="margin-top:16px;font-size:.8em;color:rgba(255,255,255,.4);">Touche ou clique pour continuer…</div>
+ </div>
+</div>
+
+<!-- ══════ BLOCAGE HORAIRE ══════ -->
+<div id="time-block-screen" class="hidden">
+ <div style="font-size:4em;margin-bottom:12px;">⏰</div>
+ <h2>Pas encore l'heure de jouer !</h2>
+ <div id="block-msg" style="font-size:1.1em;color:#bdc3c7;margin-bottom:20px;"></div>
+ <div id="block-clock" style="font-size:2.5em;font-weight:900;color:#f1c40f;margin-bottom:20px;"></div>
+</div>
+
+<!-- ══════ VIEWER FIGURINE 3D ══════ -->
+<div id="fig-viewer" class="hidden">
+ <div id="fig-vbg"></div>
+ <div id="fig-vstars"></div>
+ <button class="fv-close" onclick="closeFigViewer()">✕</button>
+ <div id="fig-vhdr">
+  <div><span id="fig-vuni"></span></div>
+  <div id="fig-vtitle"></div>
+ </div>
+ <div id="fig-vstage">
+  <div id="fig-perspective">
+   <div id="fig-card3d">
+    <div class="fvface" id="fvfront">
+     <div class="fvem2" id="fv-em2"></div>
+     <div class="fvchr" id="fv-chr"></div>
+     <div class="fvnm" id="fv-nm"></div>
+     <div class="fvrar" id="fv-rar"></div>
+    </div>
+    <div class="fvface" id="fvback">
+     <div class="fvbuni" id="fv-buni"></div>
+     <div class="fvbdesc" id="fv-bdesc"></div>
+     <div class="fvbsub">◆ Collection Odyssée ◆</div>
+    </div>
+   </div>
+  </div>
+  <div id="fig-pbase"></div>
+  <div id="fig-pglow"></div>
+ </div>
+ <div id="fig-vftr">
+  <div id="fig-vhint">↔ Glisse pour faire tourner</div>
+  <div>
+   <button class="fv-ctrl-btn" id="fig-spin-btn" onclick="figToggleSpin()">⏸ Pause</button>
+   <button class="fv-ctrl-btn" onclick="figReverseDir()">🔄 Inverser</button>
+   <button class="fv-ctrl-btn" id="fig-replay-btn" style="display:none;background:rgba(255,215,0,.18);border-color:rgba(255,215,0,.45);" onclick="if(_fvCurrentId)playFullFigAnim(_fvCurrentId,_fvCurrentGc)">✨ Rejouer</button>
+  </div>
+ </div>
+</div>
+
+<div id="gc">
+ <button class="settings-icon" onclick="toggleSettings()">📊 Tableau de bord du joueur</button>
+
+ <!-- ═══ MENU ═══ -->
+ <div id="v-menu">
+  <h1>&#127984; L'Odyssée des Chiffres</h1>
+  <p style="color:#f1c40f;font-weight:bold;margin:3px 0;font-size:.9em;">
+   <span id="menu-avatar">&#129497;</span>
+   <span id="lvl-badge">Niv.1</span>
+   <span id="menu-htitle" style="font-style:italic;font-size:.82em;"></span>
+   &nbsp;&#11088;<span id="menu-stars">0</span>
+  </p>
+  <div id="xp-bar-wrap"><div id="xp-bar" style="width:0%"></div><div id="xp-label">0 XP</div></div>
+  <div id="music-viz"><div class="viz-bar"></div><div class="viz-bar" style="height:12px;"></div><div class="viz-bar" style="height:8px;"></div><div class="viz-bar" style="height:15px;"></div><div class="viz-bar"></div></div>
+  <div id="wc-box" class="challenge-box hidden">
+   <div id="wc-title" style="font-weight:700;font-size:.9em;color:#f1c40f;"></div>
+   <div id="wc-desc" style="font-size:.8em;margin-top:3px;"></div>
+   <div class="chal-prog"><div id="wc-fill" class="chal-fill" style="width:0%"></div></div>
+   <div id="wc-text" style="font-size:.75em;color:#bdc3c7;margin-top:3px;"></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 6px;width:100%;">
+   <div style="display:flex;flex-direction:column;gap:5px;">
+    <label style="font-size:.72em;color:#bdc3c7;font-weight:700;text-align:left;padding-left:2px;">👤 Joueur</label>
+    <select id="playerSelect" onchange="onPlayerChange()" style="width:100%;margin:0;">
+     <option>Soren</option><option>Peyo</option><option>Tomi</option><option>Maman</option><option>Papa</option>
+     <option value="Autre">✏️ Autre joueur…</option>
+    </select>
+    <div id="custom-zone" class="hidden">
+     <input type="text" id="customInput" placeholder="Entre ton prénom…" style="width:100%;text-align:center;margin:0;" oninput="applyCustom()" maxlength="20">
+    </div>
+   </div>
+   <div style="display:flex;flex-direction:column;gap:5px;">
+    <label style="font-size:.72em;color:#bdc3c7;font-weight:700;text-align:left;padding-left:2px;">🎨 Thème</label>
+    <select id="themeSelect" onchange="applyTheme(this.value)" style="width:100%;margin:0;">
+     <option value="standard">🌟 Classique</option>
+     <option value="espace">🚀 Espace</option>
+     <option value="foret">🌿 Forêt</option>
+     <option value="volcan">🌋 Volcan</option>
+    </select>
+   </div>
+   <div style="display:flex;flex-direction:column;gap:5px;">
+    <label style="font-size:.72em;color:#bdc3c7;font-weight:700;text-align:left;padding-left:2px;">📚 Niveau</label>
+    <select id="levelSelect" onchange="savePrefs()" style="width:100%;margin:0;"></select>
+   </div>
+   <div style="display:flex;flex-direction:column;gap:5px;">
+    <label style="font-size:.72em;color:#bdc3c7;font-weight:700;text-align:left;padding-left:2px;">⌨️ Mode saisie</label>
+    <select id="modeSelect" style="width:100%;margin:0;"><option value="keyboard">⌨️ Clavier</option><option value="qcm">🔘 Boutons QCM</option></select>
+   </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:5px;width:100%;margin-bottom:6px;">
+   <label style="font-size:.72em;color:#bdc3c7;font-weight:700;text-align:left;padding-left:2px;">⚔️ Mode de jeu</label>
+   <select id="gameModeSelect" onchange="onGameModeChange()" style="width:100%;margin:0;">
+    <option value="normal">⚔️ Normal (6 monstres)</option>
+    <option value="survie">💀 Survie (infini)</option>
+    <option value="chrono">⏱️ Chrono (60s)</option>
+    <option value="combat">🏆 Combat (2-5 joueurs)</option>
+   </select>
+  </div>
+  <div id="combat-config" class="hidden">
+   <div style="font-weight:700;font-size:.9em;color:#f1c40f;margin-bottom:8px;">&#9876;&#65039; Joueurs du Combat</div>
+   <div id="combat-cfg-rows"></div>
+   <button onclick="addCombatSlot()" id="btn-add-combat" style="margin-top:6px;width:100%;background:#27ae60;">&#10133; Ajouter un joueur</button>
+  </div>
+  <div style="display:flex;justify-content:center;gap:16px;margin:6px 0;flex-wrap:wrap;">
+   <label style="font-size:.88em;display:inline-flex;align-items:center;gap:5px;"><input type="checkbox" id="voiceToggle"> &#128266; Voix</label>
+   <label style="font-size:.88em;display:inline-flex;align-items:center;gap:5px;"><input type="checkbox" id="musicToggle" onchange="toggleMusic()"> &#127925; Musique</label>
+  </div>
+  <button onclick="startGame()" style="margin-top:10px;width:90%;font-size:1.1em;" class="pulse">&#9876;&#65039; COMMENCER</button>
+  <button onclick="openMap()" title="Carte des zones à débloquer" style="background:#16a085;font-size:.88em;padding:8px 16px;margin-top:4px;">&#128506;&#65039; Carte d'Exploration</button>
+  <button onclick="openMultTable()" title="Tables de multiplication à réviser" style="background:#2980b9;font-size:.82em;padding:7px 14px;margin-top:4px;">&#10006;&#65039; Tables de multiplication</button>
+  <button onclick="openParent()" title="Statistiques et contrôle parental" style="background:#555;font-size:.78em;padding:6px 12px;margin-top:4px;">&#128106; Vue Parent</button>
+ </div>
+
+ <!-- ═══ CARTE D'EXPLORATION ═══ -->
+ <div id="v-map" class="hidden">
+  <div class="back-top-bar"><button class="back-top-btn" onclick="showView('v-menu')">&#8592; Retour</button></div>
+  
+  <h2>&#128506;&#65039; Carte d'Exploration</h2>
+  <p style="font-size:.8em;color:#bdc3c7;margin:3px 0 10px;">Bats les boss pour débloquer de nouvelles zones !</p>
+  <div class="map-scroll" id="map-zones"></div>
+  <button onclick="showView('v-menu')" style="margin-top:10px;background:#95a5a6;width:100%;">&#8592; RETOUR</button>
+ </div>
+
+ <!-- ═══ SETTINGS ═══ -->
+ <div id="v-settings" class="hidden">
+  <div class="back-top-bar"><button class="back-top-btn" onclick="toggleSettings()">&#8592; Retour</button></div>
+  
+  <h3>&#128202; Tableau de Bord &mdash; <span id="dash-player-name" style="color:#f1c40f;"></span></h3>
+  <div class="tabs" id="stabs">
+   <button class="tab active" onclick="stab('hero')"><span class="tab-wrap"><span>&#129464;</span><span class="tab-lbl">Héros</span></span></button>
+   <button class="tab" onclick="stab('scores')"><span class="tab-wrap"><span>&#127942;</span><span class="tab-lbl">Classement</span></span></button>
+   <button class="tab" onclick="stab('stats')"><span class="tab-wrap"><span>&#128200;</span><span class="tab-lbl">Stats</span></span></button>
+   <button class="tab" onclick="stab('levels')"><span class="tab-wrap"><span>&#128274;</span><span class="tab-lbl">Niveaux</span></span></button>
+   <button class="tab" onclick="stab('revision')"><span class="tab-wrap"><span>&#128214;</span><span class="tab-lbl">Révision</span></span></button>
+   <button class="tab" onclick="stab('avatar')"><span class="tab-wrap"><span>&#127912;</span><span class="tab-lbl">Style</span></span></button>
+   <button class="tab" onclick="stab('figurines')"><span class="tab-wrap"><span>&#128167;</span><span class="tab-lbl">Figurines</span></span></button>
+   <button class="tab" onclick="stab('history')"><span class="tab-wrap"><span>&#128220;</span><span class="tab-lbl">Historique</span></span></button>
+  </div>
+  <div id="tab-hero">
+   <div id="tab-hero-header">
+    <div class="hero-stat"><div class="hero-stat-val" id="th-stars">0</div><div class="hero-stat-lbl">⭐ Étoiles</div></div>
+    <div class="hero-stat"><div class="hero-stat-val" id="th-lvl">1</div><div class="hero-stat-lbl">🎖 Niveau</div></div>
+    <div class="hero-stat"><div class="hero-stat-val" id="th-figs">0</div><div class="hero-stat-lbl">🎴 Figurines</div></div>
+    <div class="hero-stat"><div class="hero-stat-val" id="th-badges">0</div><div class="hero-stat-lbl">🏅 Badges</div></div>
+   </div>
+   <button class="accordion">&#10024; Améliorations de Héros</button>
+   <div class="panel" id="p-skills"></div>
+   <button class="accordion">&#127922; Boutique</button>
+   <div class="panel">
+    <div class="skill-item" style="flex-direction:column;align-items:flex-start;gap:2px;">
+      <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
+        <span>&#129514; Potion de Vie</span><button onclick="buyItem('potion',10)">10 &#11088;</button>
+      </div>
+      <div style="font-size:.68em;color:rgba(255,255,255,.55);line-height:1.3;">Restaure <b>+1 ❤️ de vie</b> immédiatement pendant une partie. Utilise le bouton 🧪 en jeu.</div>
+    </div>
+    <div class="skill-item" style="flex-direction:column;align-items:flex-start;gap:2px;">
+      <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
+        <span>&#128163; Bombe Réponse</span><button onclick="buyItem('bomb',20)">20 &#11088;</button>
+      </div>
+      <div style="font-size:.68em;color:rgba(255,255,255,.55);line-height:1.3;">Répond <b>automatiquement et correctement</b> à la question en cours. Utilise le bouton 💣 en jeu.</div>
+    </div>
+   </div>
+   <button class="accordion" onclick="renderFigurinesShop('all')">&#128167; Figurines à collectionner</button>
+   <div class="panel"><div id="p-figurines"><div style="color:rgba(255,255,255,.4);font-size:.8em;text-align:center;padding:10px;">Clique sur l'accordéon pour voir les figurines</div></div></div>
+   <button class="accordion">&#127941; Badges</button>
+   <div class="panel" id="p-badges"></div>
+   <button class="accordion">&#128197; Quêtes du Jour</button>
+   <div class="panel" id="p-quests"></div>
+  </div>
+  <div id="tab-scores" class="hidden">
+   <h3 style="margin:6px 0;">&#127942; Classement</h3><div id="p-lb"></div>
+   <h3 style="margin:10px 0 6px;">&#129351; Mes Records</h3><div id="p-records"></div>
+  </div>
+  <div id="tab-stats" class="hidden">
+   <h3 style="margin:6px 0;">&#128200; 7 dernières parties</h3>
+   <div id="p-chart" class="chart-container"></div>
+   <div id="p-opstats" style="margin-top:8px;font-size:.83em;"></div>
+  </div>
+  <div id="tab-levels" class="hidden">
+   <h3 style="margin:6px 0;">&#128274; Progression des Niveaux</h3>
+   <div id="p-levels"></div>
+  </div>
+  <div id="tab-revision" class="hidden">
+   <h3 style="margin:6px 0;">&#128214; Erreurs récentes</h3>
+   <div id="p-errors"></div>
+   <button onclick="startRevision()" id="btn-revision" class="hidden" style="margin-top:8px;width:100%;background:#c0392b;">&#128257; Rejouer mes erreurs</button>
+  </div>
+  <div id="tab-avatar" class="hidden">
+   <h3 style="margin:6px 0;">&#127912; Personnalisation</h3>
+   <div id="p-ava-disp" style="margin:8px 0;font-size:2.5em;"></div>
+   <div id="p-title-disp" style="font-size:.85em;color:#f1c40f;margin-bottom:8px;"></div>
+   <button class="accordion">&#128512; Avatar</button>
+   <div class="panel" id="p-avatars"></div>
+   <button class="accordion">&#128266; Son de Victoire</button>
+   <div class="panel" id="p-vsounds"></div>
+   <button class="accordion">&#128126; Skins de Monstres</button>
+   <div class="panel" id="p-skins"></div>
+   <button class="accordion">&#127941; Titres de Héros</button>
+   <div class="panel" id="p-titles"></div>
+  </div>
+  <div id="tab-history" class="hidden">
+   <h3 style="margin:6px 0;">&#128220; Historique détaillé</h3>
+   <div id="p-history"></div>
+  </div>
+  <div id="tab-figurines" class="hidden">
+   <h3 style="margin:6px 0;">&#128167; Ma Collection de Figurines</h3>
+   <div id="fig-count-hdr" class="fig-count"></div>
+   <div id="p-col-figurines"></div>
+  </div>
+ </div>
+
+ <!-- ═══ JEU ═══ -->
+ <div id="v-game" class="hidden">
+  <div id="combat-bar" class="hidden"><div id="combat-players-row"></div></div>
+  <div id="inventory">
+   <button class="item-btn" onclick="useItem('potion')">&#129514; <span id="cnt-potion">0</span></button>
+   <button class="item-btn" onclick="useItem('bomb')">&#128163; <span id="cnt-bomb">0</span></button>
+  </div>
+  <div id="stats">
+   <span id="hud-name">&#128100;</span>
+   <span>&#10084;&#65039;<span id="hud-pv">3</span></span>
+   <span>&#11088;<span id="hud-score">0</span></span>
+   <span id="hud-combo" class="hidden">&#128293;x<span id="hud-combov">0</span></span>
+   <span id="hud-chrono" class="hidden">&#9201;&#65039;<span id="hud-chronov">60</span>s</span>
+  </div>
+  <h2 id="quest-title" style="margin:4px 0;font-size:1em;">MONSTRE !</h2>
+  <div id="monster-wrap"><div id="monster-area" class="monster-intro">&#128126;</div></div>
+  <div id="monster-hp-wrap" class="hidden">
+   <div id="monster-hp-label">&#10084;&#65039; <span id="mhp-val">3</span>/<span id="mhp-max">3</span></div>
+   <div id="monster-hp-bar-bg"><div id="monster-hp-bar" style="width:100%"></div></div>
+  </div>
+  <div id="power-bar" class="hidden"></div>
+  <div id="question" style="font-size:2.6em;margin:6px 0;font-weight:900;"></div>
+  <div id="problem-image"></div>
+  <div id="input-zone"><input type="number" id="answer-input" onkeyup="if(event.key==='Enter')submitAns()" placeholder="Réponse…" style="width:60%;text-align:center;font-size:1.4em;"></div>
+  <div id="qcm-options" class="hidden"></div>
+  <div id="timer-bar-container"><div id="timer-bar"></div><span id="timer-heart">❤️</span></div>
+  <p id="feedback" style="font-weight:bold;min-height:22px;margin-top:8px;font-size:1.05em;"></p>
+  <div id="correction" class="hidden" style="background:rgba(0,0,0,.3);border-radius:8px;padding:7px;margin-top:5px;font-size:.83em;color:#f1c40f;"></div>
+ </div>
+
+ <!-- ═══ FIN ═══ -->
+ <div id="v-end" class="hidden">
+  <h2 id="end-title" aria-live="polite">&#8203;</h2>
+  <p id="end-mode" style="color:#bdc3c7;font-size:.85em;margin:3px 0;"></p>
+  <div class="star-rating" id="end-stars-visual"></div>
+  <p id="end-score" style="font-size:1.1em;margin:6px 0;"></p>
+  <p id="end-stars" style="color:gold;font-weight:bold;font-size:1.8em;"></p>
+  <div id="end-xp" style="color:#9b59b6;font-size:.9em;margin:4px 0;"></div>
+  <div id="end-badges" style="margin:8px 0;font-size:.88em;"></div>
+  <div id="end-correction" style="text-align:left;font-size:.83em;background:rgba(0,0,0,.2);border-radius:8px;padding:9px;margin:6px 0;max-height:140px;overflow-y:auto;"></div>
+  <div id="end-enc" style="font-size:1em;font-weight:700;color:#f1c40f;margin:8px 0;"></div>
+  <button onclick="returnMenu()" style="width:100%;">&#128260; REJOUER</button>
+ </div>
+
+ <!-- ═══ TABLES MULT ═══ -->
+ <div id="v-mult" class="hidden">
+  <div class="back-top-bar"><button class="back-top-btn" onclick="showView('v-menu')">&#8592; Retour</button></div>
+  
+  <h2>&#10006;&#65039; Tables de Multiplication</h2>
+  <div style="display:flex;align-items:center;gap:8px;justify-content:center;margin:8px 0;">
+   <span style="font-size:.9em;">Table de :</span>
+   <select id="mult-select" onchange="renderMult(+this.value)" style="width:130px;"></select>
+  </div>
+  <div id="mult-table-grid"></div>
+  <button onclick="showView('v-menu')" style="margin-top:10px;background:#95a5a6;width:100%;">&#8592; RETOUR</button>
+ </div>
+
+ <!-- ═══ PARENT ═══ -->
+ <div id="v-parent" class="hidden">
+  <div class="back-top-bar"><button class="back-top-btn" onclick="showView('v-menu')">&#8592; Retour</button></div>
+  
+  <h2>&#128106; Vue Parent</h2>
+  <div id="parent-lock">
+   <p style="font-size:.9em;margin:4px 0;">Code parent :</p>
+   <input type="password" id="pin-input" placeholder="****" style="width:50%;text-align:center;letter-spacing:6px;font-size:1.2em;" maxlength="4"><br>
+   <button onclick="checkPin()">&#128275; Accéder</button>
+   <p style="font-size:.72em;color:#bdc3c7;margin-top:6px;">Code par défaut : 1234</p>
+  </div>
+  <div id="parent-content" class="hidden">
+   <div class="tabs">
+    <button class="tab active" onclick="ptab('rapport')">&#128203; Rapport</button>
+    <button class="tab" onclick="ptab('objectifs')">&#127919; Objectifs</button>
+    <button class="tab" onclick="ptab('controles')">&#128274; Contrôles</button>
+    <button class="tab" onclick="ptab('options')">&#9881;&#65039; Options</button>
+    <button class="tab" onclick="ptab('figurines')">&#128167; Figurines</button>
+   </div>
+   <div id="ptab-rapport">
+    <select id="parent-player" onchange="renderReport()" style="width:90%;margin-bottom:8px;"></select>
+    <div id="report-content"></div>
+    <button onclick="exportPDF()" style="margin-top:6px;width:100%;background:#2c3e50;border:1px solid #f1c40f;">&#128196; Exporter PDF</button>
+    <hr style="border-color:rgba(255,255,255,.1);margin:10px 0;">
+    <p style="font-size:.88em;font-weight:700;color:#f1c40f;">&#128679; Résumé Hebdomadaire</p>
+    <div id="weekly-summary-zone"></div>
+    <button id="weekly-copy-btn" onclick="copyWeeklySummary()">&#128203; Copier pour email / SMS</button>
+   </div>
+   <div id="ptab-objectifs" class="hidden">
+    <p style="font-size:.82em;margin:6px 0;">Objectif journalier :</p>
+    <select id="obj-player" style="width:80%;margin:4px 0;"></select><br>
+    <select id="obj-count" style="width:60%;">
+     <option value="0">Aucun</option><option value="1">1 partie/jour</option><option value="2">2 parties/jour</option><option value="3">3 parties/jour</option><option value="5">5 parties/jour</option>
+    </select><br>
+    <button onclick="saveObj()">&#128190; Enregistrer</button>
+    <div id="obj-status" style="font-size:.8em;margin-top:8px;color:#f1c40f;"></div>
+   </div>
+   <!-- CONTROLES PARENT : blocage horaire + filtres opérations -->
+   <div id="ptab-controles" class="hidden">
+    <p style="font-size:.88em;font-weight:700;color:#f1c40f;margin:8px 0 4px;">&#128336; Blocage Horaire</p>
+    <p style="font-size:.78em;color:#bdc3c7;margin:3px 0 8px;">Choisir le joueur, puis les créneaux autorisés.</p>
+    <select id="block-player" style="width:85%;margin-bottom:8px;" onchange="loadBlockSettings()"></select>
+    <div style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:6px;">
+     <label style="font-size:.82em;">De</label>
+     <input type="time" id="block-start" style="width:110px;padding:6px;" value="17:00">
+     <label style="font-size:.82em;">à</label>
+     <input type="time" id="block-end" style="width:110px;padding:6px;" value="18:00">
+    </div>
+    <label style="font-size:.82em;display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:8px;">
+     <input type="checkbox" id="block-enabled"> Activer le blocage horaire
+    </label>
+    <button onclick="saveBlockSettings()" style="width:90%;">&#128190; Enregistrer horaires</button>
+    <div id="block-status" style="font-size:.78em;margin-top:6px;color:#f1c40f;"></div>
+    <hr style="border-color:rgba(255,255,255,.1);margin:14px 0;">
+    <p style="font-size:.88em;font-weight:700;color:#f1c40f;margin:6px 0 4px;">&#9881;&#65039; Filtres d'Opérations</p>
+    <p style="font-size:.78em;color:#bdc3c7;margin:3px 0 8px;">Désactiver certains types de questions par joueur.</p>
+    <select id="filter-player" style="width:85%;margin-bottom:8px;" onchange="loadFilterSettings()"></select>
+    <div id="op-filters"></div>
+    <button onclick="saveFilterSettings()" style="width:90%;margin-top:6px;">&#128190; Enregistrer filtres</button>
+    <div id="filter-status" style="font-size:.78em;margin-top:6px;color:#f1c40f;"></div>
+   </div>
+   <div id="ptab-options" class="hidden">
+    <p style="font-size:.82em;margin:6px 0;">Changer le code :</p>
+    <input type="password" id="new-pin" placeholder="Nouveau code (4 chiffres)" style="width:65%;" maxlength="4"><br>
+    <button onclick="savePin()">&#128190; Sauvegarder</button>
+    <p id="pin-msg" style="font-size:.78em;color:#2ecc71;margin-top:6px;"></p>
+    <hr style="border-color:rgba(255,255,255,.1);margin:12px 0;">
+    <p style="font-size:.88em;font-weight:700;color:#f1c40f;">&#9729;&#65039; Sauvegarde Cloud</p>
+    <select id="cloud-player" style="width:80%;margin:4px 0;"></select><br>
+    <button onclick="exportCloud()" style="background:#2980b9;">&#128228; Exporter</button>
+    <button onclick="showImportZone()" style="background:#27ae60;">&#128229; Importer</button>
+    <div id="cloud-export-zone" class="hidden">
+     <p style="font-size:.75em;color:#bdc3c7;margin-top:6px;">Code de sauvegarde :</p>
+     <div id="cloud-code"></div>
+     <button onclick="copyCloud()" style="font-size:.8em;padding:6px 12px;">&#128203; Copier</button>
+    </div>
+    <div id="cloud-import-zone" class="hidden" style="margin-top:8px;">
+     <textarea id="cloud-import" placeholder="Colle ton code ici…" style="width:90%;height:60px;resize:none;"></textarea><br>
+     <button onclick="doImport()" style="background:#27ae60;font-size:.85em;">&#9989; Valider</button>
+     <p id="import-msg" style="font-size:.75em;margin-top:4px;"></p>
+    </div>
+   <hr style="border-color:rgba(255,255,255,.1);margin:14px 0;">
+    <p style="font-size:.88em;font-weight:700;color:#e74c3c;">🗑 Réinitialiser un profil</p>
+    <p style="font-size:.76em;color:#bdc3c7;margin:3px 0 8px;">Remet un joueur à zéro : étoiles, figurines, XP, badges. Action irréversible.</p>
+    <div id="reset-zone" style="margin-top:8px;"></div>
+   </div>
+   </div>
+  </div>
+   <div id="ptab-figurines" class="hidden">
+    <div style="margin-bottom:8px;">
+     <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">
+      <span style="font-size:.8em;font-weight:700;color:#f1c40f;">👤 Joueur :</span>
+      <select id="pfig-player" onchange="renderParentFigurines()" style="width:auto;padding:4px 8px;font-size:.78em;"></select>
+      <select id="pfig-license" onchange="renderParentFigurines()" style="width:auto;padding:4px 8px;font-size:.78em;margin-left:4px;"><option value="all">🌐 Toutes les licences</option></select>
+      <span id="pfig-stats" style="font-size:.72em;color:rgba(255,255,255,.5);margin-left:4px;"></span>
+     </div>
+     <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px;">
+      <button onclick="pfigFilter('all')" id="pfig-btn-all" class="active" style="font-size:.62em;padding:4px 9px;border-radius:8px;margin:0;border-bottom:2px solid rgba(0,0,0,.3);">🌐 Tout</button>
+      <button onclick="pfigFilter('owned')" id="pfig-btn-owned" style="font-size:.62em;padding:4px 9px;border-radius:8px;margin:0;background:rgba(255,255,255,.1);border-bottom:2px solid rgba(0,0,0,.3);">✅ Possédées</button>
+      <button onclick="pfigFilter('missing')" id="pfig-btn-missing" style="font-size:.62em;padding:4px 9px;border-radius:8px;margin:0;background:rgba(255,255,255,.1);border-bottom:2px solid rgba(0,0,0,.3);">🔒 Manquantes</button>
+     </div>
+    </div>
+    <div id="pfig-content"></div>
+   </div>
+  <button onclick="showView('v-menu')" style="margin-top:12px;background:#95a5a6;width:100%;">&#8592; RETOUR</button>
+ </div>
+</div>
+
+<div id="gif-overlay" class="hidden">
+ <img id="congrats-gif" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="">
+ <h2 id="congrats-name" aria-live="polite" style="color:gold;text-shadow:3px 3px 6px black;margin-top:10px;">&#8203;</h2>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SCRIPTS — l'ordre de chargement compte (dépendances en cascade)
+     ════════════════════════════════════════════════════════════════ -->
+<script src="js/01-core.js"></script>
+<script src="js/02-data.js"></script>
+<script src="js/03-figurines-data.js"></script>
+<script src="js/04-questions.js"></script>
+<script src="js/05-profile.js"></script>
+<script src="js/06-time-block.js"></script>
+<script src="js/07-game.js"></script>
+<script src="js/08-ui.js"></script>
+<script src="js/09-parent.js"></script>
+<script src="js/10-figurines.js"></script>
+<script src="js/11-init.js"></script>
+
+<!-- Enregistrement du Service Worker (mode hors-ligne + installation PWA) -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => console.info('[PWA] Service Worker actif (scope: ' + reg.scope + ')'))
+      .catch(err => console.warn('[PWA] Échec d\'enregistrement du Service Worker :', err));
+  });
+}
+</script>
+</body>
+</html>
