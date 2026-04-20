@@ -459,7 +459,7 @@ function renderQ(){
   const qcmEl=$('qcm-options');
   qcmEl.innerHTML=shuffle(dedup).map(o=>`<button class="qcm-btn" data-val="${o}">${o}</button>`).join('');
   qcmEl.onclick=e=>{const b=e.target.closest('.qcm-btn');if(b&&!b.disabled)validate(+b.dataset.val);};
- }else{const ai=$('answer-input');ai.value='';setTimeout(()=>ai.focus(),100);}
+ }else{const ai=$('answer-input');ai.value='';if(!_numpadIsTouch())setTimeout(()=>ai.focus(),100);}
  renderPowerBar();
  if(GM.mode2!=='chrono')startTimer();
 }
