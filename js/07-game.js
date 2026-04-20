@@ -491,7 +491,11 @@ function validate(ans){
   beep(523,'square',.2);vibrate(VIBE.good);$('BODY').classList.add('flash');setTimeout(()=>$('BODY').classList.remove('flash'),50);
   $('feedback').style.color='#2ecc71';$('correction').classList.add('hidden');
   const ma=$('monster-area');ma.classList.add('monster-hit');setTimeout(()=>ma.classList.remove('monster-hit'),350);
-  spawnP(_monsterCenter.x||0,_monsterCenter.y||0,12);
+  // Chantier 3.1 : amplification graduelle selon combo + popups
+  const _partN = GS.combo>=10?25:GS.combo>=5?18:12;
+  spawnP(_monsterCenter.x||0,_monsterCenter.y||0,_partN);
+  floatScore(`+${pts} ⭐`, _monsterCenter.x||window.innerWidth/2, _monsterCenter.y||window.innerHeight/2, GS.combo>=5);
+  if(COMBO_MILESTONES.has(GS.combo))comboBanner(GS.combo);
   // Monster reacts to being hit
   if(Math.random()<.55)monsterSpeak(CORRECT_TAUNTS[ri(0,CORRECT_TAUNTS.length-1)],1800);
   if(GM.mode==='qcm')markQCM(ans,true);updateHUD();

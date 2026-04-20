@@ -502,3 +502,40 @@ button.pulse{font-size:1.15em!important;padding:13px 24px!important;width:100%!i
 .pfig-name{font-size:.44em;font-weight:700;color:#fff;margin-top:2px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .pfig-price{font-size:.42em;color:#f1c40f;font-weight:700;}
 .pfig-locked{opacity:.45;filter:grayscale(.6);}
+/* ═══ Chantier 3.1 — Animations de réponse juste enrichies ═══ */
+
+/* Score popup floatant (+N ⭐) */
+.score-pop{
+ position:fixed;pointer-events:none;
+ transform:translate(-50%,-50%);
+ font-family:'Cinzel Decorative',cursive;font-weight:700;
+ font-size:1.6em;color:#f1c40f;
+ text-shadow:0 0 8px rgba(241,196,15,.85),0 2px 4px rgba(0,0,0,.7);
+ animation:scorePop .9s ease-out forwards;
+ z-index:50;white-space:nowrap;
+}
+.score-pop.score-pop-big{font-size:2.1em;color:#fff;text-shadow:0 0 12px gold,0 0 25px gold,0 2px 4px rgba(0,0,0,.7);}
+@keyframes scorePop{
+ 0%  {transform:translate(-50%,-50%) scale(.5);opacity:0;}
+ 15% {transform:translate(-50%,-90%) scale(1.2);opacity:1;}
+ 30% {transform:translate(-50%,-110%) scale(1);opacity:1;}
+ 100%{transform:translate(-50%,-280%) scale(.85);opacity:0;}
+}
+
+/* Annonce de palier de combo */
+.combo-banner{
+ position:fixed;top:30%;left:50%;
+ font-family:'Cinzel Decorative',cursive;font-weight:700;
+ font-size:2.2em;color:#fff;
+ text-shadow:0 0 20px gold,0 0 40px gold,0 4px 8px rgba(0,0,0,.7);
+ letter-spacing:.05em;
+ pointer-events:none;z-index:200;
+ animation:comboBanner 1.2s ease-out forwards;
+}
+@keyframes comboBanner{
+ 0%  {transform:translateX(-50%) scale(.3) rotate(-12deg);opacity:0;}
+ 18% {transform:translateX(-50%) scale(1.35) rotate(4deg);opacity:1;}
+ 32% {transform:translateX(-50%) scale(1) rotate(0deg);opacity:1;}
+ 78% {transform:translateX(-50%) scale(1) rotate(0deg);opacity:1;}
+ 100%{transform:translateX(-50%) translateY(-30px) scale(.85);opacity:0;}
+}

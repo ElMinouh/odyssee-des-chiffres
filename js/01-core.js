@@ -295,3 +295,27 @@ function loadVibrate(){
  // Activé par défaut, désactivé seulement si '0' explicitement stocké
  t.checked=localStorage.getItem(VIBRATE_KEY)!=='0';
 }
+// ═══════════════════════════════════════════════════════
+// FEEDBACK VISUEL — POPUPS (chantier 3.1)
+// ═══════════════════════════════════════════════════════
+// Affiche un texte flottant (ex: "+5 ⭐") qui jaillit en (x,y) viewport
+// et monte en s'estompant. `big`=true pour un combo bonus (combo>=5).
+function floatScore(text, x, y, big){
+ const el=document.createElement('div');
+ el.className='score-pop'+(big?' score-pop-big':'');
+ el.textContent=text;
+ el.style.left=x+'px';el.style.top=y+'px';
+ document.body.appendChild(el);
+ setTimeout(()=>el.remove(),950);
+}
+// Affiche "COMBO xN !" en grand au centre, 1.2s
+function comboBanner(combo){
+ const el=document.createElement('div');
+ el.className='combo-banner';
+ el.textContent=`COMBO x${combo} !`;
+ document.body.appendChild(el);
+ setTimeout(()=>el.remove(),1250);
+ vibrate(VIBE.good); // mini retour haptique synchro
+}
+// Paliers de combo qui déclenchent la bannière
+const COMBO_MILESTONES = new Set([5, 10, 15, 20, 25, 30, 50]);
