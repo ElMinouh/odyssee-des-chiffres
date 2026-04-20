@@ -325,7 +325,9 @@ const COMBO_MILESTONES = new Set([5, 10, 15, 20, 25, 30, 50]);
 // Le pavé numérique custom se branche automatiquement sur le mode clavier
 // pour les appareils tactiles. On n'ouvre jamais le clavier système.
 function _numpadIsTouch(){
- return matchMedia('(hover: none) and (pointer: coarse)').matches;
+ // Détection fiable : écran étroit = mobile/tablette.
+ // On n'utilise plus hover:none car certains Samsung (S Pen) se déclarent hover:hover.
+ return window.innerWidth <= 820;
 }
 function setupNumpad(){
  const pad=$('numpad'); if(!pad) return;
