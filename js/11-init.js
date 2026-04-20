@@ -16,6 +16,7 @@ window.onload=()=>{
  $('parent-player').addEventListener('change',()=>{renderReport();renderWeeklySummary();});
  loadProfile();
  loadVibrate();
+ setupNumpad();
  // OPT-16 : préchargement discret des GIFs de victoire après 4 secondes
  setTimeout(()=>GIFS.forEach(g=>{const img=new Image();img.src=g.url;}),4000);
  // ── Drag events pour le viewer 3D ──

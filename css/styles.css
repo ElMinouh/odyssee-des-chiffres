@@ -539,3 +539,71 @@ button.pulse{font-size:1.15em!important;padding:13px 24px!important;width:100%!i
  78% {transform:translateX(-50%) scale(1) rotate(0deg);opacity:1;}
  100%{transform:translateX(-50%) translateY(-30px) scale(.85);opacity:0;}
 }
+/* ═══ Chantier 3.6 — Interface tactile optimisée ═══ */
+
+/* Pavé numérique custom */
+.numpad{
+ display:none;
+ grid-template-columns:repeat(3,1fr);
+ gap:8px;
+ max-width:320px;
+ margin:10px auto 0;
+}
+.numpad.active{display:grid;}
+.np-btn{
+ background:rgba(255,255,255,.12);
+ border:none;
+ color:#fff;
+ font-size:1.5em;
+ font-weight:700;
+ font-family:'Nunito',sans-serif;
+ padding:0;
+ height:58px;
+ border-radius:10px;
+ cursor:pointer;
+ box-shadow:0 3px 0 rgba(0,0,0,.35);
+ transition:transform .08s, background .15s;
+ -webkit-tap-highlight-color:transparent;
+ touch-action:manipulation;
+}
+.np-btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.35);background:rgba(255,255,255,.22);}
+.np-del{background:rgba(231,76,60,.3);}
+.np-minus{background:rgba(155,89,182,.3);}
+.np-ok{
+ grid-column:span 3;
+ background:var(--accent);
+ font-size:1.15em;
+ height:54px;
+ box-shadow:0 4px 0 rgba(0,0,0,.4);
+}
+
+/* Cibles tactiles agrandies sur mobile/tablette */
+@media (max-width: 820px){
+ .qcm-btn{
+  min-height:64px;
+  font-size:1.5em;
+  padding:14px 10px;
+ }
+ #answer-input{
+  font-size:1.6em !important;
+  height:52px;
+  padding:8px;
+ }
+ /* bouton COMMENCER et autres CTA principaux du menu */
+ #gc > button, #gc button[onclick*="startGame"], #menu button{
+  min-height:48px;
+ }
+}
+
+/* Désactivation du double-tap zoom accidentel (enfants) sur toute la zone de jeu */
+#v-game, .numpad, .qcm-btn, .np-btn, button{
+ touch-action:manipulation;
+}
+
+/* Affiche le numpad uniquement sur appareils tactiles primaires
+   (hover:none = pas de souris principale) */
+@media (hover: none) and (pointer: coarse){
+ .numpad.enabled{display:grid;}
+ /* Sur tactile, input un peu plus compact car numpad prend le relais */
+ #answer-input{width:90% !important;}
+}

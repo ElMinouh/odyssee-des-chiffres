@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v6.3.2'; // chantier 3.1 animations réponse juste enrichies
+const CACHE_VERSION = 'v6.3.4'; // fix chantier 3.6 : saisie clavier bloquée
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources à mettre en cache au premier chargement (squelette de l'app).

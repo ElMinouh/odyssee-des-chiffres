@@ -319,3 +319,42 @@ function comboBanner(combo){
 }
 // Paliers de combo qui déclenchent la bannière
 const COMBO_MILESTONES = new Set([5, 10, 15, 20, 25, 30, 50]);
+// ═══════════════════════════════════════════════════════
+// NUMPAD TACTILE (chantier 3.6)
+// ═══════════════════════════════════════════════════════
+// Le pavé numérique custom se branche automatiquement sur le mode clavier
+// pour les appareils tactiles. On n'ouvre jamais le clavier système.
+function _numpadIsTouch(){
+ return matchMedia('(hover: none) and (pointer: coarse)').matches;
+}
+function setupNumpad(){
+ const pad=$('numpad'); if(!pad) return;
+ // Active visuellement sur tactile
+ if(_numpadIsTouch()) pad.classList.add('enabled');
+ // Sur tactile, empêche l'input de recevoir le focus (donc pas de clavier virtuel)
+ const input=$('answer-input');
+ if(input && _numpadIsTouch()){
+  input.addEventListener('focus', e=>{ e.target.blur(); });
+ }
+ // Un seul handler délégué (perf + robustesse)
+ pad.addEventListener('click', e=>{
+  const b=e.target.closest('.np-btn'); if(!b) return;
+  const k=b.dataset.k;
+  const input=$('answer-input'); if(!input) return;
+  if(k==='ok'){ submitAns(); return; }
+  if(k==='del'){ input.value=input.value.slice(0,-1); return; }
+  if(k==='-'){
+   // Signe moins : toggle au début de la valeur
+   input.value = input.value.startsWith('-') ? input.value.slice(1) : '-'+input.value;
+   return;
+  }
+  // Chiffre : on append (limite 6 caractères pour éviter les abus)
+  if(input.value.length < 6) input.value += k;
+ });
+}
+// Affiche / masque le numpad selon le mode en cours (clavier vs QCM)
+function toggleNumpadForMode(mode){
+ const pad=$('numpad'); if(!pad) return;
+ if(mode==='keyboard' && _numpadIsTouch()) pad.classList.add('enabled');
+ else pad.classList.remove('enabled');
+}

@@ -276,7 +276,24 @@
   <div id="power-bar" class="hidden"></div>
   <div id="question" style="font-size:2.6em;margin:6px 0;font-weight:900;"></div>
   <div id="problem-image"></div>
-  <div id="input-zone"><input type="number" id="answer-input" onkeyup="if(event.key==='Enter')submitAns()" placeholder="Réponse…" style="width:60%;text-align:center;font-size:1.4em;"></div>
+  <div id="input-zone">
+   <input type="number" id="answer-input" inputmode="none" onkeyup="if(event.key==='Enter')submitAns()" placeholder="Réponse…" style="width:60%;text-align:center;font-size:1.4em;">
+   <div id="numpad" class="numpad">
+    <button type="button" class="np-btn" data-k="1">1</button>
+    <button type="button" class="np-btn" data-k="2">2</button>
+    <button type="button" class="np-btn" data-k="3">3</button>
+    <button type="button" class="np-btn" data-k="4">4</button>
+    <button type="button" class="np-btn" data-k="5">5</button>
+    <button type="button" class="np-btn" data-k="6">6</button>
+    <button type="button" class="np-btn" data-k="7">7</button>
+    <button type="button" class="np-btn" data-k="8">8</button>
+    <button type="button" class="np-btn" data-k="9">9</button>
+    <button type="button" class="np-btn np-minus" data-k="-">−</button>
+    <button type="button" class="np-btn" data-k="0">0</button>
+    <button type="button" class="np-btn np-del" data-k="del">⌫</button>
+    <button type="button" class="np-btn np-ok" data-k="ok">✓ Valider</button>
+   </div>
+  </div>
   <div id="qcm-options" class="hidden"></div>
   <div id="timer-bar-container"><div id="timer-bar"></div><span id="timer-heart">❤️</span></div>
   <p id="feedback" style="font-weight:bold;min-height:22px;margin-top:8px;font-size:1.05em;"></p>

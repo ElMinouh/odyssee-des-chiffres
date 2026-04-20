@@ -51,6 +51,7 @@ function startMapBoss(zoneId){
   $('hud-chrono').classList.add('hidden');$('hud-combo').classList.add('hidden');
   $('qcm-options').classList.toggle('hidden',GM.mode!=='qcm');
   $('input-zone').classList.toggle('hidden',GM.mode==='qcm');
+  toggleNumpadForMode(GM.mode);
   $('BODY').classList.remove('body-alert','urgency-bg');
   showView('v-game');nextTurn();
  });
@@ -357,6 +358,7 @@ function startGame(){
  $('hud-combo').classList.add('hidden');
  $('qcm-options').classList.toggle('hidden',GM.mode!=='qcm');
  $('input-zone').classList.toggle('hidden',GM.mode==='qcm');
+  toggleNumpadForMode(GM.mode);
  $('BODY').classList.remove('body-alert');
  if(GM.mode2==='chrono')startChrono();else stopChrono();
  nextTurn();
@@ -371,6 +373,7 @@ function startRevision(){
  $('combat-bar').classList.add('hidden');
  $('qcm-options').classList.toggle('hidden',GM.mode!=='qcm');
  $('input-zone').classList.toggle('hidden',GM.mode==='qcm');
+ toggleNumpadForMode(GM.mode);
  $('hud-chrono').classList.add('hidden');
  showView('v-game');$('hud-name').innerText='📖 Révision – '+P.name;
  nextTurn();
