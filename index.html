@@ -274,7 +274,10 @@
    <div id="monster-hp-bar-bg"><div id="monster-hp-bar" style="width:100%"></div></div>
   </div>
   <div id="power-bar" class="hidden"></div>
-  <div id="question" style="font-size:2.6em;margin:6px 0;font-weight:900;"></div>
+  <div id="question-wrap" style="display:flex;align-items:center;justify-content:center;gap:10px;margin:6px 0;">
+   <div id="question" style="font-size:2.6em;font-weight:900;"></div>
+   <button id="repeatQuestionBtn" onclick="repeatQuestion()" title="Réécouter la question" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:44px;height:44px;border-radius:50%;font-size:1.3em;cursor:pointer;flex-shrink:0;box-shadow:0 2px 0 rgba(0,0,0,.3);">🔊</button>
+  </div>
   <div id="problem-image"></div>
   <div id="input-zone">
    <input type="number" id="answer-input" inputmode="none" onkeyup="if(event.key==='Enter')submitAns()" placeholder="Réponse…" style="width:60%;text-align:center;font-size:1.4em;">

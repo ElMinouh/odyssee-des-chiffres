@@ -100,7 +100,67 @@ const $=id=>document.getElementById(id);
 function getAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx;}
 function pNote(ctx,f,type,dur,vol=0.1){try{const o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.setValueAtTime(f,ctx.currentTime);g.gain.setValueAtTime(vol,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur);o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+dur);}catch(e){}}
 function beep(f,type='square',dur=.2,vol=.1){try{pNote(getAudio(),f,type,dur,vol);}catch(e){}}
-function speak(t){if(!$('voiceToggle').checked)return;window.speechSynthesis?.cancel();const m=new SpeechSynthesisUtterance(t);m.lang='fr-FR';window.speechSynthesis?.speak(m);}
+// ═══════════════════════════════════════════════════════
+// SYNTHÈSE VOCALE (TTS) — chantier 6.1
+// ═══════════════════════════════════════════════════════
+const VOICE_KEY='odyssee_voice';
+let _frVoice=null;
+// Remplace les symboles math par leur prononciation française
+function _humanizeForSpeech(t){
+ return String(t)
+  .replace(/×|x/g,' fois ')
+  .replace(/÷|\//g,' divisé par ')
+  .replace(/−|-/g,' moins ')
+  .replace(/\+/g,' plus ')
+  .replace(/=/g,' égale ')
+  .replace(/\?/g,' quoi ')
+  .replace(/\s+/g,' ').trim();
+}
+// Choisit la meilleure voix française dispo (appelé 1 fois au boot)
+function _pickFrenchVoice(){
+ const voices=window.speechSynthesis?.getVoices?.()||[];
+ if(!voices.length)return null;
+ // Ordre de préférence : Google FR > Microsoft FR > première fr-FR > fallback fr
+ const prefs=[
+  v=>v.lang==='fr-FR' && /google/i.test(v.name),
+  v=>v.lang==='fr-FR' && /microsoft/i.test(v.name),
+  v=>v.lang==='fr-FR',
+  v=>v.lang?.startsWith('fr'),
+ ];
+ for(const match of prefs){const f=voices.find(match);if(f)return f;}
+ return null;
+}
+function speak(t){
+ if(!$('voiceToggle')?.checked)return;
+ if(!window.speechSynthesis)return;
+ window.speechSynthesis.cancel();
+ const m=new SpeechSynthesisUtterance(_humanizeForSpeech(t));
+ m.lang='fr-FR';
+ m.rate=0.95; // légèrement ralenti pour les petits
+ m.pitch=1;
+ if(_frVoice)m.voice=_frVoice;
+ try{window.speechSynthesis.speak(m);}catch(e){}
+}
+function saveVoice(){
+ const t=$('voiceToggle');if(!t)return;
+ localStorage.setItem(VOICE_KEY,t.checked?'1':'0');
+}
+function loadVoice(){
+ const t=$('voiceToggle');if(!t)return;
+ // Activé par défaut ? Non : laissé désactivé sauf si l'utilisateur l'a activé explicitement.
+ t.checked=localStorage.getItem(VOICE_KEY)==='1';
+}
+// Répéter la dernière question à la demande de l'utilisateur
+function repeatQuestion(){
+ const q=typeof GS!=='undefined'?GS.q:null;if(!q)return;
+ const txt=q.display||(q.a!==undefined&&q.b!==undefined?`${q.a} ${q.op||'='} ${q.b}`:String(q.res));
+ // Forcer la lecture même si voix non activée : user a explicitement demandé
+ if(!window.speechSynthesis)return;
+ window.speechSynthesis.cancel();
+ const m=new SpeechSynthesisUtterance(_humanizeForSpeech(txt));
+ m.lang='fr-FR';m.rate=0.95;if(_frVoice)m.voice=_frVoice;
+ try{window.speechSynthesis.speak(m);}catch(e){}
+}
 let toastT=null;
 function toast(msg,dur=2200){const el=$('toast');el.innerText=msg;el.classList.remove('hidden');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.add('hidden'),dur);}
 

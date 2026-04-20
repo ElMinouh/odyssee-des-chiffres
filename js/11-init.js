@@ -16,7 +16,16 @@ window.onload=()=>{
  $('parent-player').addEventListener('change',()=>{renderReport();renderWeeklySummary();});
  loadProfile();
  loadVibrate();
+ loadVoice();
  setupNumpad();
+ // Init voix française dès que la liste des voix est disponible
+ if(window.speechSynthesis){
+  _frVoice=_pickFrenchVoice();
+  // Sur certains navigateurs, getVoices() est vide au premier appel
+  window.speechSynthesis.addEventListener?.('voiceschanged',()=>{_frVoice=_pickFrenchVoice();});
+ }
+ // Sauvegarde auto quand on coche/décoche la case 🔊 Voix
+ $('voiceToggle')?.addEventListener('change',saveVoice);
  // OPT-16 : préchargement discret des GIFs de victoire après 4 secondes
  setTimeout(()=>GIFS.forEach(g=>{const img=new Image();img.src=g.url;}),4000);
  // ── Drag events pour le viewer 3D ──
