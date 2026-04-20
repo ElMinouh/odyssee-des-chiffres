@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v6.3.5'; // fix affichage numpad mobile
+const CACHE_VERSION = 'v6.3.6'; // fix focus auto sur tactile
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources à mettre en cache au premier chargement (squelette de l'app).
