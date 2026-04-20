@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#34495e">
 <meta name="description" content="Jeu de calcul mental pour enfants du CP au CM2 : monstres, boss, figurines à collectionner.">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Odyssée">
@@ -146,7 +147,7 @@
   </div>
   <div style="display:flex;justify-content:center;gap:16px;margin:6px 0;flex-wrap:wrap;">
    <label style="font-size:.88em;display:inline-flex;align-items:center;gap:5px;"><input type="checkbox" id="voiceToggle"> &#128266; Voix</label>
-   <label style="font-size:.88em;display:inline-flex;align-items:center;gap:5px;"><input type="checkbox" id="musicToggle" onchange="toggleMusic()"> &#127925; Musique</label>
+   <label style="font-size:.88em;display:inline-flex;align-items:center;gap:5px;"><input type="checkbox" id="musicToggle" onchange="toggleMusic()"> &#127925; Musique</label><label style="font-size:.88em;display:inline-flex;align-items:center;gap:5px;"><input type="checkbox" id="vibrateToggle" onchange="saveVibrate()"> 📳 Vibration</label>
   </div>
   <button onclick="startGame()" style="margin-top:10px;width:90%;font-size:1.1em;" class="pulse">&#9876;&#65039; COMMENCER</button>
   <button onclick="openMap()" title="Carte des zones à débloquer" style="background:#16a085;font-size:.88em;padding:8px 16px;margin-top:4px;">&#128506;&#65039; Carte d'Exploration</button>

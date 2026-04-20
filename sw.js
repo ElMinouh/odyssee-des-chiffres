@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v6.3.0';
+const CACHE_VERSION = 'v6.3.1'; // chantier 3.7 vibrations haptiques
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources à mettre en cache au premier chargement (squelette de l'app).

@@ -260,7 +260,7 @@ function showLevelUpAnim(lvl,xpGain){
  $('lu-sub').innerText=descs[lvl]||'Nouveau défi !';
  $('lu-xp').innerText=`+${xpGain} XP gagnés`;
  $('level-up-screen').classList.remove('hidden');
- startConfetti();
+ startConfetti();vibrate(VIBE.levelup);
  [523,659,784,1047,1319].forEach((f,i)=>setTimeout(()=>beep(f,'sine',.4,.15),i*120));
  $('level-up-screen').onclick=()=>{$('level-up-screen').classList.add('hidden');$('level-up-screen').onclick=null;};
 }

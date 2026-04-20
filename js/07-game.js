@@ -488,7 +488,7 @@ function validate(ans){
   updateQuests('questions');if(GS.combo>=5)updateQuests('combo5');
   if(q.type==='fraction')updateQuests('fractions');if(q.type==='missing')updateQuests('missing');
   updateWC(q);
-  beep(523,'square',.2);$('BODY').classList.add('flash');setTimeout(()=>$('BODY').classList.remove('flash'),50);
+  beep(523,'square',.2);vibrate(VIBE.good);$('BODY').classList.add('flash');setTimeout(()=>$('BODY').classList.remove('flash'),50);
   $('feedback').style.color='#2ecc71';$('correction').classList.add('hidden');
   const ma=$('monster-area');ma.classList.add('monster-hit');setTimeout(()=>ma.classList.remove('monster-hit'),350);
   spawnP(_monsterCenter.x||0,_monsterCenter.y||0,12);
@@ -498,7 +498,7 @@ function validate(ans){
   GS.monsterHP--;updateMonsterHP();
   if(GS.activeEvent){GS.eventLeft--;if(GS.eventLeft<=0)GS.activeEvent=null;}
   if(GS.monsterHP>0){$('feedback').innerText=`✅ TOUCHÉ ! ❤️${GS.monsterHP}/${GS.monsterMaxHP}`;GS.q=generateQ();safeTimeout(()=>{clearMonsterSpeech();renderQ();},800);}
-  else{$('feedback').innerText='✅ BRAVO !';ma.classList.add('monster-die');clearMonsterSpeech();if(GS.isBoss)safeTimeout(playCongrats,600);else safeTimeout(nextTurn,750);}
+  else{$('feedback').innerText='✅ BRAVO !';ma.classList.add('monster-die');clearMonsterSpeech();if(GS.isBoss){vibrate(VIBE.boss);safeTimeout(playCongrats,600);}else safeTimeout(nextTurn,750);}
  }else{
   GS.errInGame++;GS.combo=0;$('gc').classList.remove('combo-breaker');
   const opK=q.opKey||'+';P.opStats[opK]=P.opStats[opK]||{ok:0,fail:0};P.opStats[opK].fail++;
@@ -529,7 +529,7 @@ function showCorr(q){
 function hitPlayer(msg){
  const pw=powers[P.name];
  if(pw?.shielded){pw.shielded=false;$('feedback').style.color='#3498db';$('feedback').innerText='🛡️ Bouclier ! Erreur annulée !';setTimeout(nextTurn,1200);return;}
- GS.pv--;updateHUD();beep(150,'sawtooth',.5);
+ GS.pv--;updateHUD();beep(150,'sawtooth',.5);vibrate(VIBE.bad);
  $('gc').classList.add('shake');setTimeout(()=>$('gc').classList.remove('shake'),400);
  $('feedback').style.color='#e74c3c';$('feedback').innerText=msg;$('BODY').classList.add('body-alert');
  if(GS.pv<=0)safeTimeout(()=>endGame(false),1200);else safeTimeout(nextTurn,1600);
@@ -632,8 +632,9 @@ function endGame(won){
      <div style="font-family:'Cinzel Decorative',cursive;font-size:1.3em;color:#2ecc71;margin:8px 0;">${zLabel}</div>
      <div style="font-size:.85em;color:#bdc3c7;">Une nouvelle zone s'ouvre à toi…</div>`;
     trans.classList.remove('hidden');
-    startConfetti();
-    try{const ctx=getAudio();[523,659,784,1047,1319,1568].forEach((f,i)=>setTimeout(()=>pNote(ctx,f,'sine',.5,.14),i*110));}catch(e){}
+    try{startConfetti();
+    [523,659,784,1047,1319].forEach((f,i)=>setTimeout(()=>beep(f,'sine',.4,.15),i*120));
+    }catch(e){}
     setTimeout(()=>trans.classList.add('hidden'),3000);
    },800);
   }

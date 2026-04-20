@@ -268,3 +268,30 @@ function clearMonsterSpeech(){
  clearTimeout(_speechTimer);
  if(_speechBubble){_speechBubble.remove();_speechBubble=null;}
 }
+// ═══════════════════════════════════════════════════════
+// VIBRATIONS HAPTIQUES (chantier 3.7)
+// ═══════════════════════════════════════════════════════
+const VIBRATE_KEY='odyssee_vibrate';
+const VIBE = {
+  good:    40,                          // tap court (bonne réponse)
+  bad:     [80, 50, 80],                // double buzz (mauvaise réponse)
+  boss:    [100, 60, 100, 60, 200],     // crescendo (boss vaincu)
+  levelup: [60, 40, 60, 40, 60]         // roulement festif (niveau débloqué)
+};
+function vibrate(pattern){
+ const t=$('vibrateToggle');
+ const enabled=t?t.checked:(localStorage.getItem(VIBRATE_KEY)!=='0');
+ if(!enabled)return;
+ if(!('vibrate' in navigator))return;
+ try{navigator.vibrate(pattern);}catch(e){}
+}
+function saveVibrate(){
+ const t=$('vibrateToggle');if(!t)return;
+ localStorage.setItem(VIBRATE_KEY,t.checked?'1':'0');
+ if(t.checked)vibrate(40); // feedback immédiat à l'activation
+}
+function loadVibrate(){
+ const t=$('vibrateToggle');if(!t)return;
+ // Activé par défaut, désactivé seulement si '0' explicitement stocké
+ t.checked=localStorage.getItem(VIBRATE_KEY)!=='0';
+}
