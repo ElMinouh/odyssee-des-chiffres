@@ -7,6 +7,8 @@
 window.onload=()=>{
  // OPT-1+2 : init des références DOM cachées et du canvas particules
  _initCachedDOM();
+ // Force l'affichage correct : seul v-menu visible au démarrage
+ showView('v-menu');
  document.querySelectorAll('.accordion').forEach(btn=>{
   btn.addEventListener('click',function(){const p=this.nextElementSibling;p.style.display=p.style.display==='block'?'none':'block';});
  });
