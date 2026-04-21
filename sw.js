@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v6.3.8'; // chantier 6.1 TTS ameliore
+const CACHE_VERSION = 'v6.3.9'; // fix rejouer + superposition titre mobile
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources à mettre en cache au premier chargement (squelette de l'app).

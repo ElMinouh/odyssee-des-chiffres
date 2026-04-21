@@ -607,3 +607,23 @@ button.pulse{font-size:1.15em!important;padding:13px 24px!important;width:100%!i
  .numpad.enabled{display:grid;}
  #answer-input{width:90% !important;}
 }
+/* ═══ Fix superposition titre / bouton tableau de bord (mobile) ═══ */
+@media (max-width: 620px){
+ /* Réserve l'espace du bouton tableau de bord au-dessus du titre */
+ #gc{padding-top:50px;}
+ /* Rend le bouton plus compact pour qu'il n'empiète pas */
+ .settings-icon{
+  font-size:.72em;
+  padding:5px 10px;
+  top:8px;right:8px;
+  max-width:55%;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+ }
+ /* Titre prend toute la largeur et ne se glisse plus sous le bouton */
+ #v-menu h1{
+  font-size:1.25em;
+  margin-top:0;
+ }
+}
