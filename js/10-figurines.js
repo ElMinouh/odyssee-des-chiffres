@@ -47,6 +47,7 @@ function _renderFigurinesShop(filter){
   {k:'ax',label:'🏺 Astérix'},
   {k:'co',label:'🔫 Cobra'},
   {k:'al',label:'☠️ Albator'},
+  {k:'sx',label:'🎂 Saisonnier'},
  ];
 
  const searchId='shop-search-'+Math.random().toString(36).slice(2,6);
@@ -84,7 +85,7 @@ function _renderFigurinesShop(filter){
  html+='<div class="fig-grid">';
  list.forEach(fig=>{
   const isOwned=owned.includes(fig.id);
-  html+=`<div class="fig-card${isOwned?' owned':''}"${isOwned?` onclick="openFigViewer('${fig.id}')" title="Voir en 3D 🎬"`:''}>`;
+  html+=`<div class="fig-card${isOwned?' owned':''}${fig.r==='exclusif'?' rarity-exclusif':''}"${isOwned?` onclick="openFigViewer('${fig.id}')" title="Voir en 3D 🎬"`:''}>`;
   if(isOwned) html+='<div class="fig-mark">✓</div>';
   html+=`<span class="fig-em">${CHAR_PORTRAITS[fig.id]||'<div style="font-size:2em;line-height:75px;text-align:center;">'+(fig.em||'❓')+'</div>'}</span>`;
   html+=`<div class="fig-rv" style="color:${RARITY_COL[fig.r]}">${RARITY_STARS[fig.r]}</div>`;
@@ -93,7 +94,11 @@ function _renderFigurinesShop(filter){
   if(isOwned){
    html+=`<span style="font-size:.65em;color:#2ecc71;font-weight:700;">🔍 Voir →</span>`;
   } else {
-   html+=`<button class="fig-buy-btn" data-figid="${fig.id}" style="margin:3px 0 0;padding:4px 10px;font-size:.63em;background:${fig.color};border-bottom:2px solid rgba(0,0,0,.3);border-radius:8px;">${fig.p} ⭐</button>`;
+   if(fig.r==='exclusif'){
+    html+=`<span style="font-size:.62em;color:#bdc3c7;font-style:italic;">🔒 À gagner en boss</span>`;
+   } else {
+    html+=`<button class="fig-buy-btn" data-figid="${fig.id}" style="margin:3px 0 0;padding:4px 10px;font-size:.63em;background:${fig.color};border-bottom:2px solid rgba(0,0,0,.3);border-radius:8px;">${fig.p} ⭐</button>`;
+   }
   }
   html+='</div>';
  });
@@ -143,7 +148,7 @@ function setColView(v){
 
 function _sortedFigs(list){
  const sort=$('col-sort')?.value||'default';
- const rarOrd={commun:0,rare:1,épique:2,légendaire:3,mythique:4};
+ const rarOrd={commun:0,rare:1,épique:2,légendaire:3,mythique:4,exclusif:5};
  const copy=[...list];
  if(sort==='rarity') copy.sort((a,b)=>(rarOrd[b.r]||0)-(rarOrd[a.r]||0));
  else if(sort==='name') copy.sort((a,b)=>a.name.localeCompare(b.name,'fr'));

@@ -658,3 +658,26 @@ button.pulse{font-size:1.15em!important;padding:13px 24px!important;width:100%!i
  transition:width .8s ease-out;
  box-shadow:0 0 6px rgba(241,196,15,.4);
 }
+/* ═══ Chantier 2.2 — Figurines exclusives saisonnières ═══ */
+/* Effet arc-en-ciel doré pour les figurines uniques */
+.fig-card.rarity-exclusif{
+ border-color:transparent;
+ background:linear-gradient(135deg, rgba(241,196,15,.18), rgba(231,76,60,.12), rgba(155,89,182,.18), rgba(52,152,219,.12));
+ background-size:300% 300%;
+ animation:exclusifShimmer 4s ease-in-out infinite;
+ box-shadow:0 0 12px rgba(241,196,15,.4), inset 0 0 12px rgba(255,255,255,.1);
+}
+.fig-card.rarity-exclusif::after{
+ content:'✨ EXCLUSIF';
+ position:absolute;top:6px;right:6px;
+ font-size:.6em;font-weight:700;
+ color:#f1c40f;
+ background:rgba(0,0,0,.5);
+ padding:2px 6px;border-radius:4px;
+ letter-spacing:.05em;
+ text-shadow:0 0 4px rgba(241,196,15,.8);
+}
+@keyframes exclusifShimmer{
+ 0%,100%{background-position:0% 50%;}
+ 50%{background-position:100% 50%;}
+}

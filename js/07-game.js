@@ -43,7 +43,7 @@ function startMapBoss(zoneId){
   intro:`Tu oses entrer dans mon territoire ? ${zone.label} n'a pas de pitié pour les ignorants.`,
   anim:'glow',col:'#e74c3c'};
  showMonsterIntro(bossMonster,()=>{
-  loadProfile();gameActive=true;clearPendingTimers();resetGS();GS.isBoss=false;
+loadProfile();gameActive=true;clearPendingTimers();resetGS();GS.isBoss=false;GS.isSeasonalBoss=false;GS.isBirthdayBoss=false;GS.seasonalMult=1;GS.seasonalFigId=null;
   powers={};const pwI=Math.abs((P.name.charCodeAt(0)||0))%POWERS.length;const pw=POWERS[pwI];
   powers[P.name]={id:pw.id,eff:pw.effect,charge:0,recharge:pw.recharge,shielded:false,dbl:false};
   $('combat-bar').classList.add('hidden');
@@ -398,11 +398,27 @@ function nextTurn(){
  clearMonsterSpeech();
  const heart=$('timer-heart');if(heart)heart.style.display='none';
  // Pick monster personality
- _currentMonster=pickMonster(GM.level,GS.isBoss);
+_currentMonster=pickMonster(GM.level,GS.isBoss);
  if(GS.isBoss){
   // Boss: full cinematic intro
   const mapBoss=GM.mapZone;
-  const bossM=mapBoss?{emoji:mapBoss.boss,name:mapBoss.bossName,title:'Boss de la Carte',intro:`Bienvenue dans ${mapBoss.label}. Tu ne repartiras pas vivant.`,anim:'glow',col:'#e74c3c'}:_currentMonster;
+  // Chantier 2.2 : si un boss saisonnier ou anniversaire est actif aujourd'hui,
+  // il prend la priorité sur le boss générique (sauf en mode carte)
+  let seasonalBoss=null;
+  if(!mapBoss && typeof getActiveSeasonalBoss==='function'){
+   seasonalBoss=getActiveSeasonalBoss(P.name);
+   if(seasonalBoss){
+    GS.isSeasonalBoss=true;
+    GS.seasonalMult=seasonalBoss.mult||2;
+    GS.isBirthdayBoss=!!seasonalBoss.isBirthday;
+    GS.seasonalFigId=seasonalBoss.figId||null;
+   }
+  }
+  const bossM = seasonalBoss
+   ? {emoji:seasonalBoss.emoji, name:seasonalBoss.name, title:seasonalBoss.title, intro:seasonalBoss.intro, anim:seasonalBoss.anim||'glow', col:seasonalBoss.col}
+   : (mapBoss
+    ? {emoji:mapBoss.boss,name:mapBoss.bossName,title:'Boss de la Carte',intro:`Bienvenue dans ${mapBoss.label}. Tu ne repartiras pas vivant.`,anim:'glow',col:'#e74c3c'}
+    : _currentMonster);
   showMonsterIntro(bossM,renderQ);
  }else if(GS.qCount===1||(GM.mode2==='survie'&&GS.qCount%4===1)){
   // Show intro for first monster and every 4 in survie
@@ -486,6 +502,8 @@ function validate(ans){
   const _swordBonus=Math.floor(((P.skills.sword||0)*2)*0.5);
   let pts=_lvlBase[0]+Math.floor(Math.random()*(_lvlBase[1]-_lvlBase[0]+1))+_swordBonus;
   if(GS.isBoss)pts=Math.max(pts,_lvlBase[1]);
+  // Chantier 2.2 : multiplicateur de récompense pour boss saisonniers/anniversaires
+  if(GS.isBoss && GS.isSeasonalBoss && GS.seasonalMult) pts*=GS.seasonalMult;
   if(GS.isGolden)pts*=3;
   if(GS.activeEvent?.effect==='double_score')pts*=2;
   if(GS.combo>=10){pts*=2;$('gc').classList.add('combo-breaker');}
@@ -514,7 +532,26 @@ function validate(ans){
   GS.monsterHP--;updateMonsterHP();
   if(GS.activeEvent){GS.eventLeft--;if(GS.eventLeft<=0)GS.activeEvent=null;}
   if(GS.monsterHP>0){$('feedback').innerText=`✅ TOUCHÉ ! ❤️${GS.monsterHP}/${GS.monsterMaxHP}`;GS.q=generateQ();safeTimeout(()=>{clearMonsterSpeech();renderQ();},800);}
-  else{$('feedback').innerText='✅ BRAVO !';ma.classList.add('monster-die');clearMonsterSpeech();if(GS.isBoss){vibrate(VIBE.boss);safeTimeout(playCongrats,600);}else safeTimeout(nextTurn,750);}
+  else{$('feedback').innerText='✅ BRAVO !';ma.classList.add('monster-die');clearMonsterSpeech();if(GS.isBoss){vibrate(VIBE.boss);
+   // Chantier 2.2 : débloquer la figurine exclusive du boss saisonnier
+   if(GS.isSeasonalBoss && GS.seasonalFigId && typeof unlockSeasonalFigurine==='function'){
+    const newlyUnlocked = unlockSeasonalFigurine(GS.seasonalFigId);
+    if(newlyUnlocked){
+     const fig = (typeof FIGURINES!=='undefined') ? FIGURINES.find(f=>f.id===GS.seasonalFigId) : null;
+     const figName = fig ? fig.name : 'figurine exclusive';
+     safeTimeout(()=>{
+      toast(`✨ FIGURINE EXCLUSIVE DÉBLOQUÉE ! ${fig?fig.em:'🎁'} ${figName}`,5500);
+      if(typeof startConfetti==='function') startConfetti();
+     },800);
+    }
+   }
+   // Chantier 2.2 : bannière festive anniversaire
+   if(GS.isBirthdayBoss){
+    safeTimeout(()=>{toast(`🎉 JOYEUX ANNIVERSAIRE ${P.name.toUpperCase()} ! 🎂`,5500);if(typeof startConfetti==='function')startConfetti();},300);
+    P.stars=(P.stars||0)+20; // bonus cadeau
+   }
+   safeTimeout(playCongrats,600);
+  }else safeTimeout(nextTurn,750);}
  }else{
   GS.errInGame++;GS.combo=0;$('gc').classList.remove('combo-breaker');
   const opK=q.opKey||'+';P.opStats[opK]=P.opStats[opK]||{ok:0,fail:0};P.opStats[opK].fail++;
