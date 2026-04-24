@@ -122,4 +122,46 @@ function renderMult(n){
   }
  }
 }
-
+// ═══════════════════════════════════════════════════════
+// RENDU DES PALIERS (chantier 2.1)
+// ═══════════════════════════════════════════════════════
+function renderMilestones(){
+ if(typeof MILESTONES==='undefined') return;
+ const el=$('milestones-list'); if(!el) return;
+ const html = MILESTONES.map(m => {
+  const prog = getMilestoneProgress(m, P);
+  const pctRaw = prog.isMaxed ? 100 : (prog.current / prog.nextGoal) * 100;
+  const pct = Math.min(100, Math.round(pctRaw));
+  const rewardTxt = prog.isMaxed
+   ? '<span style="color:#f1c40f;font-weight:700;">✨ COMPLÉTÉ ✨</span>'
+   : (()=>{
+      const r = prog.nextReward;
+      const parts = [
+       r.xp?`<span style="color:#9b59b6;">+${r.xp}XP</span>`:null,
+       r.stars?`<span style="color:#f1c40f;">+${r.stars}⭐</span>`:null,
+       r.badge?`<span style="color:#e67e22;">🎖️</span>`:null,
+      ].filter(Boolean).join(' ');
+      return `<span style="font-size:.8em;">Prochain : ${parts}</span>`;
+    })();
+  // Barre de progression avec segments pour chaque palier
+  const segments = m.tiers.map((t,i)=>{
+   const done = i <= prog.currentTier;
+   return `<span title="${t.goal}" style="display:inline-block;min-width:28px;text-align:center;font-size:.68em;padding:1px 4px;border-radius:6px;margin:0 2px;${done?'background:#2ecc71;color:#000;font-weight:700;':'background:rgba(255,255,255,.12);color:#bdc3c7;'}">${t.goal}</span>`;
+  }).join('');
+  return `<div class="milestone-row">
+   <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+    <span style="font-size:1.6em;">${m.icon}</span>
+    <div style="flex:1;">
+     <div style="font-weight:700;font-size:.95em;">${m.label}</div>
+     <div style="font-size:.72em;color:#bdc3c7;">${m.desc} : <strong style="color:#fff;">${prog.current}</strong>${prog.isMaxed?'':` / ${prog.nextGoal}`}</div>
+    </div>
+   </div>
+   <div class="milestone-bar"><div class="milestone-bar-fill" style="width:${pct}%;"></div></div>
+   <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+    <div>${segments}</div>
+    <div>${rewardTxt}</div>
+   </div>
+  </div>`;
+ }).join('');
+ el.innerHTML = html;
+}

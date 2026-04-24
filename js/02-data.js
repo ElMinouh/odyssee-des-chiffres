@@ -138,3 +138,94 @@ const OP_FILTERS=[
 ];
 
 // ── Générateurs de questions ──
+// ═══════════════════════════════════════════════════════
+// PALIERS LONGUE DURÉE (chantier 2.1)
+// ═══════════════════════════════════════════════════════
+// Chaque entrée : id unique, label, icon, fonction qui retourne le "compte" actuel
+// depuis le profil, et un tableau de paliers avec récompenses.
+const MILESTONES = [
+ {
+  id:'veteran', icon:'🏆', label:'Vétéran',
+  desc:'Partes gagnées',
+  count:p=>Object.values(p.levelWins||{}).reduce((s,n)=>s+n,0),
+  tiers:[
+   {goal:10,  xp:20, stars:1},
+   {goal:50,  xp:30, stars:3},
+   {goal:100, xp:40, stars:5},
+   {goal:500, xp:50, stars:10, badge:'veteran_gold'},
+  ],
+ },
+ {
+  id:'collector', icon:'🎴', label:'Collectionneur',
+  desc:'Figurines possédées',
+  count:p=>(p.ownedFigurines||[]).length,
+  tiers:[
+   {goal:10,  xp:20, stars:2},
+   {goal:25,  xp:30, stars:4},
+   {goal:50,  xp:40, stars:6},
+   {goal:100, xp:50, stars:10, badge:'collector_gold'},
+  ],
+ },
+ {
+  id:'combo', icon:'🔥', label:'Combo Master',
+  desc:'Meilleur combo',
+  count:p=>p._bestCombo||0,
+  tiers:[
+   {goal:10, xp:20, stars:1},
+   {goal:20, xp:30, stars:3},
+   {goal:30, xp:40, stars:5},
+   {goal:50, xp:50, stars:10, badge:'combo_gold'},
+  ],
+ },
+ {
+  id:'mastermath', icon:'🧮', label:'Maître Calcul',
+  desc:'Questions réussies au total',
+  count:p=>Object.values(p.opStats||{}).reduce((s,o)=>s+(o.ok||0),0),
+  tiers:[
+   {goal:100,  xp:20, stars:2},
+   {goal:500,  xp:30, stars:4},
+   {goal:1000, xp:40, stars:6},
+   {goal:5000, xp:50, stars:10, badge:'math_gold'},
+  ],
+ },
+ {
+  id:'fortune', icon:'⭐', label:'Fortune',
+  desc:'Étoiles cumulées',
+  count:p=>p._totalStarsEarned||p.stars||0,
+  tiers:[
+   {goal:100,  xp:20, stars:0},
+   {goal:500,  xp:30, stars:0},
+   {goal:1000, xp:40, stars:0},
+   {goal:5000, xp:50, stars:0, badge:'fortune_gold'},
+  ],
+ },
+ {
+  id:'explorer', icon:'🗺️', label:'Explorateur',
+  desc:'Zones de la carte conquises',
+  count:p=>(p.mapBossBeaten||[]).length,
+  tiers:[
+   {goal:1,  xp:20, stars:2},
+   {goal:3,  xp:30, stars:4},
+   {goal:5,  xp:40, stars:6},
+   {goal:10, xp:50, stars:10, badge:'explorer_gold'},
+  ],
+ },
+];
+
+// Retourne pour une quête donnée : {current, nextGoal, nextReward, currentTier, isMaxed}
+function getMilestoneProgress(m, p){
+ const current = m.count(p);
+ let currentTier = -1;
+ for(let i=0;i<m.tiers.length;i++){
+  if(current >= m.tiers[i].goal) currentTier = i; else break;
+ }
+ const nextTier = currentTier + 1;
+ const isMaxed = nextTier >= m.tiers.length;
+ return {
+  current,
+  currentTier,
+  nextGoal: isMaxed ? m.tiers[m.tiers.length-1].goal : m.tiers[nextTier].goal,
+  nextReward: isMaxed ? null : m.tiers[nextTier],
+  isMaxed,
+ };
+}

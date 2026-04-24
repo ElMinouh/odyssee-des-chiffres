@@ -143,3 +143,49 @@ function getRevisionErrorToAsk(){
  }
  return null;
 }
+// ═══════════════════════════════════════════════════════
+// PALIERS (chantier 2.1)
+// ═══════════════════════════════════════════════════════
+/**
+ * Parcourt tous les paliers et attribue les récompenses pour ceux qui
+ * viennent d'être franchis (pas encore dans milestonesClaimed).
+ * Affiche une toast festive pour chaque palier franchi.
+ */
+function checkMilestones(){
+ if(!P||typeof MILESTONES==='undefined')return;
+ P.milestonesClaimed = Array.isArray(P.milestonesClaimed) ? P.milestonesClaimed : [];
+ const justUnlocked = [];
+ for(const m of MILESTONES){
+  const current = m.count(P);
+  for(let i=0;i<m.tiers.length;i++){
+   const tier = m.tiers[i];
+   const key = `${m.id}_${i}`;
+   if(current >= tier.goal && !P.milestonesClaimed.includes(key)){
+    // Palier franchi pour la première fois !
+    P.milestonesClaimed.push(key);
+    if(tier.xp)   P.xp=(P.xp||0)+tier.xp;
+    if(tier.stars)P.stars=(P.stars||0)+tier.stars;
+    if(tier.badge&&!(P.badgesEarned||[]).includes(tier.badge)){
+     P.badgesEarned=(P.badgesEarned||[]).concat(tier.badge);
+    }
+    justUnlocked.push({m, tier, isFinal: i===m.tiers.length-1});
+   }
+  }
+ }
+ // Affichage différé pour ne pas tout superposer à la fin de partie
+ justUnlocked.forEach(({m, tier, isFinal}, idx) => {
+  setTimeout(()=>{
+   const pref = isFinal ? '💎 PALIER ULTIME !' : '🏆 Palier !';
+   const reward = [
+    tier.xp?`+${tier.xp}XP`:null,
+    tier.stars?`+${tier.stars}⭐`:null,
+    tier.badge?'🎖️':null,
+   ].filter(Boolean).join(' ');
+   if(typeof toast==='function') toast(`${pref} ${m.icon} ${m.label} : ${tier.goal} · ${reward}`, 3500);
+   // petit bip + vibration festifs
+   if(typeof beep==='function') beep(880,'sine',.3);
+   if(typeof vibrate==='function' && typeof VIBE!=='undefined') vibrate(VIBE.levelup);
+  }, 2500 + idx*1500);
+ });
+ if(justUnlocked.length && typeof saveProfile==='function') saveProfile();
+}

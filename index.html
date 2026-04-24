@@ -173,6 +173,7 @@
    <button class="tab active" onclick="stab('hero')"><span class="tab-wrap"><span>&#129464;</span><span class="tab-lbl">Héros</span></span></button>
    <button class="tab" onclick="stab('scores')"><span class="tab-wrap"><span>&#127942;</span><span class="tab-lbl">Classement</span></span></button>
    <button class="tab" onclick="stab('stats')"><span class="tab-wrap"><span>&#128200;</span><span class="tab-lbl">Stats</span></span></button>
+   <button class="tab" onclick="stab('milestones')"><span class="tab-wrap"><span>&#127942;</span><span class="tab-lbl">Paliers</span></span></button>
    <button class="tab" onclick="stab('levels')"><span class="tab-wrap"><span>&#128274;</span><span class="tab-lbl">Niveaux</span></span></button>
    <button class="tab" onclick="stab('revision')"><span class="tab-wrap"><span>&#128214;</span><span class="tab-lbl">Révision</span></span></button>
    <button class="tab" onclick="stab('avatar')"><span class="tab-wrap"><span>&#127912;</span><span class="tab-lbl">Style</span></span></button>
@@ -218,6 +219,11 @@
    <h3 style="margin:6px 0;">&#128200; 7 dernières parties</h3>
    <div id="p-chart" class="chart-container"></div>
    <div id="p-opstats" style="margin-top:8px;font-size:.83em;"></div>
+  </div>
+  <div id="tab-milestones" class="hidden">
+   <h3 style="margin:6px 0;">&#127942; Paliers à conquérir</h3>
+   <p style="font-size:.8em;color:#bdc3c7;margin:3px 0 10px;">Objectifs long terme pour progresser au fil des parties !</p>
+   <div id="milestones-list"></div>
   </div>
   <div id="tab-levels" class="hidden">
    <h3 style="margin:6px 0;">&#128274; Progression des Niveaux</h3>

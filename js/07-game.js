@@ -634,6 +634,10 @@ function endGame(won){
  P.history=([...(P.history||[]),{date:fmtDate(),score:GS.score,mode:GM.mode2,level:fl,won}]).slice(-50);
  P.historyDetailed=([...(P.historyDetailed||[]),{date:fmtDate(),score:GS.score,mode:GM.mode2,level:fl,won,maxCombo:GS.maxCombo,errorsCount:GS.errInGame}]).slice(-30);
  P.stars=(P.stars||0)+GS.score;
+ // Chantier 2.1 : stats cumulatives pour les paliers
+ P._totalStarsEarned=(P._totalStarsEarned||0)+GS.score;
+ P._bestCombo=Math.max(P._bestCombo||0, GS.maxCombo||0);
+ if(typeof checkMilestones==='function') checkMilestones();
  // XP
  const xpGained=gainXP(GS.score,won);
  // boss carte

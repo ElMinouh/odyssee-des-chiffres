@@ -189,7 +189,7 @@ function toggleSettings(){
 }
 function closeSettings(){showView('v-menu');loadProfile();}
 function stab(name){
- const ts=['hero','scores','stats','levels','revision','avatar','figurines','history'];
+ const ts=['hero','scores','stats','milestones','levels','revision','avatar','figurines','history'];
  ts.forEach(t=>$('tab-'+t).classList.toggle('hidden',t!==name));
  $('stabs').querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',ts[i]===name));
  if(name==='hero'){
@@ -205,6 +205,7 @@ function stab(name){
  if(name==='scores'){renderLB();renderRecords();}
  if(name==='stats'){renderChart();renderOpStats();}
  if(name==='levels')renderLevelUnlocks();
+ if(name==='milestones')renderMilestones();
  if(name==='figurines')renderFigCollection();
 }
 function returnMenu(){gameActive=false;clearPendingTimers();clearMonsterSpeech();$('BODY').classList.remove('urgency-bg','body-alert');const heart=$('timer-heart');if(heart)heart.style.display='none';showView('v-menu');loadProfile();}

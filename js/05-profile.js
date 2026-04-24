@@ -78,6 +78,9 @@ function validateProfile(raw, defaultName){
   historyDetailed: _safeArr(raw.historyDetailed).slice(-30),
   errors: _safeArr(raw.errors).slice(-60).filter(e => typeof e === 'string'),
   errorLog: _safeArr(raw.errorLog).slice(-30).filter(e => e && typeof e==='object' && typeof e.q==='string' && typeof e.t==='number'),
+  milestonesClaimed: _safeArr(raw.milestonesClaimed).filter(s => typeof s === 'string'),
+  _bestCombo: _clampNum(raw._bestCombo, 0, 99999, 0),
+  _totalStarsEarned: _clampNum(raw._totalStarsEarned, 0, 9999999, 0),
   badgesEarned: _safeArr(raw.badgesEarned).filter(b => typeof b === 'string'),
   quests: raw.quests ?? null,
   questsDate: _safeStr(raw.questsDate, 12, null),
@@ -126,7 +129,7 @@ function validateProfile(raw, defaultName){
 // ═══════════════════════════════════════════════════════
 function defProfile(name){
  return{_v:SAVE_VERSION,name,stars:0,xp:0,skills:{shield:0,sword:0,clock:0},inventory:{potion:0,bomb:0},
-  history:[],historyDetailed:[],errors:[],errorLog:[],badgesEarned:[],
+  history:[],historyDetailed:[],errors:[],errorLog:[],badgesEarned:[],milestonesClaimed:[],_bestCombo:0,_totalStarsEarned:0,
   quests:null,questsDate:null,opStats:{'+':{ ok:0,fail:0},'-':{ok:0,fail:0},'x':{ok:0,fail:0},'/':{ ok:0,fail:0},'geo':{ok:0,fail:0}},
   levelWins:{CP:0,CE1:0,CE2:0,CM1:0,CM2:0},mapBossBeaten:[],
   prefs:{level:'CP',mode2:'normal',mode:'keyboard',theme:'standard'},
