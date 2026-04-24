@@ -414,6 +414,11 @@ function generateQ(){
   const e=revQueue.shift();const m=e.match(/^(\d+)([+\-x×\/÷])(\d+)=(\d+)$/);
   if(m)return{a:+m[1],b:+m[3],op:m[2],res:+m[4],type:'normal',opKey:m[2],display:`${m[1]} ${m[2]} ${m[3]}`,img:''};
  }
+ // Chantier 1.2 : révision espacée en mode normal (pas en boss ni en combat/révision)
+ if(GM.mode2==='normal' && !GS.isBoss && typeof getRevisionErrorToAsk==='function'){
+  const rev = getRevisionErrorToAsk();
+  if(rev) return rev;
+ }
  const fn=GEN[GM.level]||GEN.CP;let q=fn(GS.isBoss);
  if(GS.activeEvent?.effect==='next_golden'){GS.isGolden=true;GS.activeEvent=null;}
  return q;
@@ -423,7 +428,9 @@ function renderQ(){
  GS.answering=false;
  const q=GS.q;
  const txt=q.display||(q.a!==undefined&&q.b!==undefined?`${q.a} ${q.op||'='} ${q.b}`:String(q.res));
- $('question').innerText=txt;$('question').className=GS.isGolden?'gold-q':'';
+ $('question').innerText=txt;$('question').className=GS.isGolden?'gold-q':q.isRevision?'revision-q-inline':'';
+ // Chantier 1.2 : petit toast discret quand une question de révision espacée apparaît
+ if(q.isRevision && typeof toast==='function') toast('🔁 Révision', 1200);
  $('problem-image').innerText=q.img||'';
  const sk=getSkin();const ml=GS.isGolden?sk.g:GS.isBoss?sk.b:sk.n;
  const ma=$('monster-area');
@@ -485,6 +492,8 @@ function validate(ans){
   const pw=powers[P.name];if(pw?.dbl){pts*=2;pw.dbl=false;toast('⚡ Double !');}
   GS.score+=pts;
   const opK=q.opKey||'+';P.opStats[opK]=P.opStats[opK]||{ok:0,fail:0};P.opStats[opK].ok++;
+  // Chantier 1.2 : si c'était une question de révision et que l'enfant a réussi → on réduit sa présence
+  if(q.isRevision && typeof clearErrorFromLog==='function' && q.display && q.res!==undefined) clearErrorFromLog(q.display, q.res);
   if(q.type==='fraction')GS.fracOk++;
   if(q.type==='missing')GS.missingOk++;
   chargePower(P.name);
@@ -510,6 +519,8 @@ function validate(ans){
   GS.errInGame++;GS.combo=0;$('gc').classList.remove('combo-breaker');
   const opK=q.opKey||'+';P.opStats[opK]=P.opStats[opK]||{ok:0,fail:0};P.opStats[opK].fail++;
   if(q.display&&q.res!==undefined)P.errors=([...(P.errors||[])]).concat(`${q.a||'?'}${q.op||'?'}${q.b||'?'}=${q.res}`).slice(-60);
+  // Chantier 1.2 : log dans le registre de révision espacée
+  if(typeof logError==='function' && q.display && q.res!==undefined) logError(q.display, q.res);
   // Monster taunts on wrong answer
   monsterSpeak(WRONG_TAUNTS[ri(0,WRONG_TAUNTS.length-1)],2200);
   showCorr(q);if(GM.mode==='qcm')markQCM(ans,false,q.res);hitPlayer('💥 FAUX !');

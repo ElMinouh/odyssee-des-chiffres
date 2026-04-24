@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v6.4.0'; // fix structure HTML v-parent + deduplication boutons retour
+const CACHE_VERSION = 'v6.5.0'; // chantier 1.1+1.2 : difficulte adaptative + revision espacee
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources à mettre en cache au premier chargement (squelette de l'app).
@@ -26,7 +26,8 @@ const PRECACHE_URLS = [
   './js/03-figurines-data.js',
   './js/04-questions.js',
   './js/05-profile.js',
-  './js/06-time-block.js',
+  './js/06a-adaptive.js',
+  './js/06b-time-block.js',
   './js/07-game.js',
   './js/08-ui.js',
   './js/09-parent.js',

@@ -627,3 +627,12 @@ button.pulse{font-size:1.15em!important;padding:13px 24px!important;width:100%!i
   margin-top:0;
  }
 }
+/* ═══ Chantier 1.2 — marqueur discret des questions de révision espacée ═══ */
+.revision-q-inline{
+ position:relative;
+}
+.revision-q-inline::before{
+ content:'🔁';
+ position:absolute;left:-1.2em;top:.1em;
+ font-size:.55em;opacity:.6;
+}
