@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v6.3.9'; // fix rejouer + superposition titre mobile
+const CACHE_VERSION = 'v6.4.0'; // fix structure HTML v-parent + deduplication boutons retour
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources à mettre en cache au premier chargement (squelette de l'app).
