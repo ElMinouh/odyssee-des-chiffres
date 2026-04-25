@@ -402,10 +402,18 @@
     <button onclick="savePin()">&#128190; Sauvegarder</button>
     <p id="pin-msg" style="font-size:.78em;color:#2ecc71;margin-top:6px;"></p>
     <hr style="border-color:rgba(255,255,255,.1);margin:12px 0;">
-    <p style="font-size:.88em;font-weight:700;color:#f1c40f;">&#9729;&#65039; Sauvegarde Cloud</p>
+    <p style="font-size:.88em;font-weight:700;color:#f1c40f;">&#128190; Sauvegarde du profil</p>
+    <p style="font-size:.74em;color:#bdc3c7;margin:3px 0 6px;">Sauvegarde au format fichier — pratique pour transférer entre appareils ou en cas de perte.</p>
     <select id="cloud-player" style="width:80%;margin:4px 0;"></select><br>
-    <button onclick="exportCloud()" style="background:#2980b9;">&#128228; Exporter</button>
-    <button onclick="showImportZone()" style="background:#27ae60;">&#128229; Importer</button>
+    <button onclick="exportProfileFile()" style="background:#2980b9;">&#128190; Télécharger le fichier</button>
+    <button onclick="triggerImportFile()" style="background:#27ae60;">&#128194; Importer un fichier</button>
+    <input type="file" id="import-file-input" accept=".json" style="display:none;" onchange="importProfileFile(event)">
+    <p id="file-import-msg" style="font-size:.78em;margin-top:6px;"></p>
+    <details style="margin-top:8px;">
+     <summary style="font-size:.74em;color:#bdc3c7;cursor:pointer;">&#9881;&#65039; Méthode alternative (code texte)</summary>
+     <button onclick="exportCloud()" style="background:#2980b9;font-size:.78em;padding:5px 10px;margin-top:6px;">&#128228; Exporter en code</button>
+     <button onclick="showImportZone()" style="background:#27ae60;font-size:.78em;padding:5px 10px;">&#128229; Importer un code</button>
+    </details>
     <div id="cloud-export-zone" class="hidden">
      <p style="font-size:.75em;color:#bdc3c7;margin-top:6px;">Code de sauvegarde :</p>
      <div id="cloud-code"></div>

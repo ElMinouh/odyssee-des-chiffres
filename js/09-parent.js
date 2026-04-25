@@ -236,6 +236,118 @@ function copyCloud(){
 }
 function isValidPlayerData(d){return d&&typeof d==='object'&&!Array.isArray(d)&&typeof d.name==='string'&&d.name.length<=30;}
 function sanitizePlayerKey(k){return/^[a-zA-ZÀ-ÿ0-9_\- ]{1,30}$/.test(k);}
+// ═══════════════════════════════════════════════════════
+// Chantier D1 : Export/Import de profil par fichier
+// ═══════════════════════════════════════════════════════
+function exportProfileFile(){
+ const sel=$('cloud-player')?.value||'ALL';
+ const players=sel==='ALL'?[...KNOWN]:([sel]);
+ const cu=localStorage.getItem('customPlayerName');
+ if(cu&&sel==='ALL'&&!players.includes(cu))players.push(cu);
+ const data={};
+ let cnt=0;
+ players.forEach(p=>{
+  try{
+   const d=localStorage.getItem('user_'+p);
+   if(d){data[p]=JSON.parse(d);cnt++;}
+  }catch(e){}
+ });
+ if(cnt===0){toast('⚠️ Aucun profil à exporter');return;}
+ // Wrap dans une enveloppe avec metadata
+ const payload={
+  app:'odyssee-des-chiffres',
+  version:'1',
+  exportedAt:new Date().toISOString(),
+  players:data,
+ };
+ const json=JSON.stringify(payload, null, 2);
+ const blob=new Blob([json],{type:'application/json'});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement('a');
+ a.href=url;
+ const today=new Date().toISOString().slice(0,10); // YYYY-MM-DD
+ const playerName=sel==='ALL'?'tous':sel.replace(/[^a-zA-Z0-9]/g,'_');
+ a.download=`odyssee_${playerName}_${today}.json`;
+ document.body.appendChild(a);a.click();document.body.removeChild(a);
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
+ const msg=$('file-import-msg');
+ if(msg){msg.innerText=`✅ ${cnt} profil(s) exporté(s) — ${a.download}`;msg.style.color='#2ecc71';}
+ toast(`💾 ${cnt} profil(s) téléchargé(s) !`);
+ try{beep(700,'sine',.3);}catch(e){}
+}
+
+function triggerImportFile(){
+ const input=$('import-file-input');
+ if(input)input.click();
+}
+
+function importProfileFile(event){
+ const file=event.target.files?.[0];
+ const msg=$('file-import-msg');
+ if(!file){if(msg){msg.innerText='⚠️ Aucun fichier sélectionné.';msg.style.color='#e74c3c';}return;}
+ if(!file.name.endsWith('.json')){if(msg){msg.innerText='❌ Le fichier doit être un .json';msg.style.color='#e74c3c';}return;}
+ const reader=new FileReader();
+ reader.onload=(e)=>{
+  try{
+   const text=String(e.target.result||'');
+   const payload=JSON.parse(text);
+   // Compat : soit format v1 (avec wrapper), soit ancien (juste un dict de joueurs)
+   let players;
+   if(payload.app==='odyssee-des-chiffres' && payload.players){
+    players=payload.players;
+   } else if(typeof payload==='object'&&!Array.isArray(payload)){
+    // Format ancien (compat code base64) : c'est directement le dict des joueurs
+    players=payload;
+   } else {
+    throw new Error('format inconnu');
+   }
+   // Construire un résumé pour confirmation
+   const lines=[];
+   let totalCnt=0;
+   Object.entries(players).forEach(([name, d])=>{
+    if(!sanitizePlayerKey(name)||!isValidPlayerData(d))return;
+    const stars=d.stars||0;
+    const figs=(d.ownedFigurines||[]).length;
+    const wins=Object.values(d.levelWins||{}).reduce((s,n)=>s+n,0);
+    lines.push(`• ${name} : ${stars}⭐, ${figs} figurines, ${wins} parties gagnées`);
+    totalCnt++;
+   });
+   if(totalCnt===0){
+    if(msg){msg.innerText='❌ Aucun profil valide trouvé dans le fichier.';msg.style.color='#e74c3c';}
+    event.target.value='';
+    return;
+   }
+   const recap=lines.join('\n');
+   if(!confirm(`Importer ${totalCnt} profil(s) ? Cela écrasera les profils existants portant les mêmes noms.\n\n${recap}`)){
+    event.target.value='';
+    if(msg){msg.innerText='⚠️ Import annulé.';msg.style.color='#e67e22';}
+    return;
+   }
+   // Effectuer l'import
+   let cnt=0,skip=0;
+   Object.entries(players).forEach(([name,d])=>{
+    if(!sanitizePlayerKey(name)||!isValidPlayerData(d)){skip++;return;}
+    localStorage.setItem('user_'+name,JSON.stringify(d));cnt++;
+   });
+   if(msg){msg.innerText=`✅ ${cnt} profil(s) importé(s)${skip?` (${skip} ignoré(s))`:''}.`;msg.style.color='#2ecc71';}
+   toast(`📥 ${cnt} profil(s) importé(s) ! Rechargement…`,3000);
+   try{beep(700,'sine',.4);}catch(e){}
+   // Si l'utilisateur a importé son propre profil, recharger
+   setTimeout(()=>{
+    if(typeof loadProfile==='function')loadProfile();
+   },800);
+  }catch(err){
+   console.error('[import] erreur :',err);
+   if(msg){msg.innerText='❌ Fichier invalide ou corrompu.';msg.style.color='#e74c3c';}
+  }finally{
+   event.target.value=''; // reset pour pouvoir réimporter le même fichier
+  }
+ };
+ reader.onerror=()=>{
+  if(msg){msg.innerText='❌ Erreur de lecture du fichier.';msg.style.color='#e74c3c';}
+ };
+ reader.readAsText(file);
+}
 function doImport(){
  const enc=$('cloud-import')?.value.trim();if(!enc){$('import-msg').innerText='❌ Code vide.';return;}
  try{

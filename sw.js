@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v7.0.0'; // chantier C1 difficulte adaptative branchee
+const CACHE_VERSION = 'v7.1.0'; // chantier D1 export/import profil par fichier
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources à mettre en cache au premier chargement (squelette de l'app).
