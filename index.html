@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Odyssée">
-<title>L'Odyssée des Chiffres V6</title>
+<title>L'Odyssée des Chiffres</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
@@ -508,6 +508,8 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.addEventListener('message', (event) => {
     if(event.data?.type === 'SW_UPDATED'){
       const newVersion = event.data.version;
+      // Met à jour le titre de l'onglet avec la version
+      document.title = `L'Odyssée des Chiffres ${newVersion}`;
       // Si le SW vient d'être activé MAIS qu'on était déjà sur une version, c'est une vraie maj
       if(_swInitialVersion && newVersion !== _swInitialVersion){
         _showUpdateBanner(newVersion);

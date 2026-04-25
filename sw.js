@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v7.2.0'; // chantier A3 quetes intelligentes selon profil
+const CACHE_VERSION = 'v7.3.0'; // chantier C4 detection plateaux + encouragements
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources à mettre en cache au premier chargement (squelette de l'app).

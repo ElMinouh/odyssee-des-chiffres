@@ -280,3 +280,133 @@ function genSmartQuests(){
  }
  return result.slice(0,3).map(q=>({...q, progress:0, done:false}));
 }
+// ═══════════════════════════════════════════════════════
+// DÉTECTION DES PLATEAUX (chantier C4)
+// ═══════════════════════════════════════════════════════
+// Analyse l'historique récent pour détecter stagnation, régression,
+// pause longue ou mode unique, et propose un encouragement ciblé.
+
+const _PLATEAU_TYPES = {
+ plateau: {
+  emoji: '💪',
+  title: 'Tu es constant !',
+  message: "Tu joues bien, tes scores sont stables. Pour <strong>vraiment</strong> progresser, essaie un mode plus difficile !",
+  cta: 'Essayer le mode Survie',
+  ctaAction: ()=>{ if($('gameModeSelect')) $('gameModeSelect').value='survie'; savePrefs(); },
+ },
+ regression: {
+  emoji: '🌱',
+  title: 'Pas de panique !',
+  message: "Tout le monde a des jours moins bons. Refais quelques <strong>tables de multiplication</strong> tranquille pour te détendre.",
+  cta: 'Voir les tables',
+  ctaAction: ()=>{ if(typeof openMultTable==='function') openMultTable(); },
+ },
+ longPause: {
+  emoji: '😄',
+  title: 'De retour !',
+  message: "Ça fait un moment ! Reprends doucement avec une partie en <strong>mode normal</strong>. Tes figurines t'attendent !",
+  cta: 'Lancer une partie',
+  ctaAction: ()=>{ if(typeof startGame==='function') startGame(); },
+ },
+ modeStuck: {
+  emoji: '🎲',
+  title: 'Et si on changeait ?',
+  message: "Tu maîtrises ce mode ! Essaie le <strong>mode Combat</strong> ou <strong>Chrono</strong> pour un nouveau défi.",
+  cta: 'Essayer le mode Combat',
+  ctaAction: ()=>{ if($('gameModeSelect')) $('gameModeSelect').value='combat'; savePrefs(); },
+ },
+ frustration: {
+  emoji: '🌟',
+  title: "T'es plus fort que tu crois !",
+  message: "Quelques défaites, c'est rien. Va voir tes erreurs dans <strong>Révision</strong>, tu vas vite rebondir !",
+  cta: 'Mode Révision',
+  ctaAction: ()=>{ if($('gameModeSelect')) $('gameModeSelect').value='revision'; savePrefs(); },
+ },
+};
+
+/**
+ * Analyse l'historique pour détecter un type de plateau.
+ * Retourne {type, ...} ou null si rien à signaler.
+ */
+function detectPlateau(){
+ if(!P)return null;
+ const h = (P.historyDetailed||[]);
+ const now = Date.now();
+ // Détection 1 : pause longue (>7 jours) - prioritaire
+ if(h.length > 0){
+  const last = h[h.length-1];
+  if(last.timestamp){
+   const days = (now - last.timestamp) / (1000*60*60*24);
+   if(days >= 7) return {type:'longPause', days: Math.round(days)};
+  }
+ }
+ // Pour les autres détections, il faut au moins 3-5 parties récentes
+ if(h.length < 3) return null;
+ const recent = h.slice(-5);
+ // Détection 2 : frustration (3+ défaites consécutives en mode normal)
+ const last3 = h.slice(-3);
+ const allLost = last3.every(g=>g.won===false && g.mode==='normal');
+ if(last3.length===3 && allLost) return {type:'frustration', losses:3};
+ // Détection 3 : régression (3 dernières parties en baisse continue)
+ if(recent.length >= 3){
+  const scores = recent.slice(-3).map(g=>g.score||0);
+  if(scores[0] > scores[1] && scores[1] > scores[2]) return {type:'regression', scores};
+ }
+ // Détection 4 : mode unique (10+ parties dans le même mode)
+ const modes = h.slice(-10).map(g=>g.mode);
+ if(modes.length >= 10){
+  const uniqueModes = new Set(modes);
+  if(uniqueModes.size === 1) return {type:'modeStuck', mode: modes[0], count: modes.length};
+ }
+ // Détection 5 : plateau (5 parties stables, écart < 20%)
+ if(recent.length >= 5){
+  const scores = recent.map(g=>g.score||0);
+  const avg = scores.reduce((s,n)=>s+n,0) / scores.length;
+  if(avg > 0){
+   const maxDev = Math.max(...scores.map(s=>Math.abs(s-avg)/avg));
+   if(maxDev < 0.20) return {type:'plateau', avg: Math.round(avg)};
+  }
+ }
+ return null;
+}
+
+/**
+ * Affiche une modale douce avec l'encouragement détecté.
+ * Une seule fois par session (variable globale _plateauShown).
+ */
+let _plateauShown = false;
+function showPlateauHint(){
+ if(_plateauShown) return false;
+ const detected = detectPlateau();
+ if(!detected) return false;
+ const config = _PLATEAU_TYPES[detected.type];
+ if(!config) return false;
+ _plateauShown = true;
+ // Construction de la modale
+ const overlay = document.createElement('div');
+ overlay.id = 'plateau-hint-overlay';
+ overlay.innerHTML = `
+  <div class="plateau-hint-box">
+   <div class="plateau-hint-emoji">${config.emoji}</div>
+   <h3 class="plateau-hint-title">${config.title}</h3>
+   <p class="plateau-hint-msg">${config.message}</p>
+   <div class="plateau-hint-btns">
+    <button class="plateau-hint-cta">${config.cta}</button>
+    <button class="plateau-hint-skip">Plus tard</button>
+   </div>
+  </div>
+ `;
+ document.body.appendChild(overlay);
+ const close = () => {
+  overlay.classList.add('plateau-fadeout');
+  setTimeout(()=>overlay.remove(), 300);
+ };
+ overlay.querySelector('.plateau-hint-cta').onclick = () => {
+  close();
+  setTimeout(()=>{ try{config.ctaAction();}catch(e){console.warn('plateau cta',e);} }, 350);
+ };
+ overlay.querySelector('.plateau-hint-skip').onclick = close;
+ // Petit son discret
+ if(typeof beep === 'function') beep(440,'sine',.3,.08);
+ return true;
+}

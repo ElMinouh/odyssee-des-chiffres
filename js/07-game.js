@@ -708,7 +708,7 @@ function endGame(won){
  P.sessionMinutes=(P.sessionMinutes||0)+Math.round((Date.now()-GS.sessionStart)/60000);
  const fl=GM.mode2==='combat'?combatPlayers.map(p=>p.level).join('+'):GM.level;
  P.history=([...(P.history||[]),{date:fmtDate(),score:GS.score,mode:GM.mode2,level:fl,won}]).slice(-50);
- P.historyDetailed=([...(P.historyDetailed||[]),{date:fmtDate(),score:GS.score,mode:GM.mode2,level:fl,won,maxCombo:GS.maxCombo,errorsCount:GS.errInGame}]).slice(-30);
+ P.historyDetailed=([...(P.historyDetailed||[]),{date:fmtDate(),timestamp:Date.now(),score:GS.score,mode:GM.mode2,level:fl,won,maxCombo:GS.maxCombo,errorsCount:GS.errInGame}]).slice(-30);
  P.stars=(P.stars||0)+GS.score;
  // Chantier 2.1 : stats cumulatives pour les paliers
  P._totalStarsEarned=(P._totalStarsEarned||0)+GS.score;
@@ -738,7 +738,7 @@ function endGame(won){
      try{startConfetti();
      [523,659,784,1047,1319].forEach((f,i)=>setTimeout(()=>beep(f,'sine',.4,.15),i*120));
      }catch(e){}
-     setTimeout(()=>trans.classList.add('hidden'),3000);
+     setTimeout(()=>trans.classList.add('hidden'),6000);
     }
    },800);
   }

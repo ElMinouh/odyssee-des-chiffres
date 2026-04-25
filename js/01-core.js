@@ -208,7 +208,10 @@ function stab(name){
  if(name==='milestones')renderMilestones();
  if(name==='figurines')renderFigCollection();
 }
-function returnMenu(){gameActive=false;clearPendingTimers();clearMonsterSpeech();$('BODY').classList.remove('urgency-bg','body-alert');const heart=$('timer-heart');if(heart)heart.style.display='none';showView('v-menu');loadProfile();}
+function returnMenu(){gameActive=false;clearPendingTimers();clearMonsterSpeech();$('BODY').classList.remove('urgency-bg','body-alert');const heart=$('timer-heart');if(heart)heart.style.display='none';showView('v-menu');loadProfile();
+ // Chantier C4 : à la sortie d'une partie, vérifier s'il y a un plateau à signaler
+ if(typeof showPlateauHint==='function') setTimeout(showPlateauHint, 1500);
+}
 
 // ═══════════════════════════════════════════════════════
 // MONSTRES — Personnalités & Narration
@@ -301,7 +304,7 @@ function showMonsterIntro(monster,cb){
   const ff=freqMap[monster.anim]||[440,550];
   ff.forEach((f,i)=>setTimeout(()=>pNote(ctx,f,'sine',.38,.1),i*130));
  }catch(e){}
- setTimeout(()=>{trans.classList.add('hidden');monEl.className='';cb();},2700);
+setTimeout(()=>{trans.classList.add('hidden');monEl.className='';cb();},5700);
 }
 
 function applyMonsterAnim(el,monster){
@@ -310,7 +313,7 @@ function applyMonsterAnim(el,monster){
  if(monster&&monster.anim&&monster.anim!=='none')el.className='anim-'+monster.anim;
 }
 
-function monsterSpeak(text,duration=2300){
+function monsterSpeak(text,duration=5300){
  const wrap=$('monster-wrap');if(!wrap)return;
  clearMonsterSpeech();
  const b=document.createElement('div');

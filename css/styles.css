@@ -782,3 +782,67 @@ button.pulse{font-size:1.15em!important;padding:13px 24px!important;width:100%!i
  .zc-subtitle-small{font-size:1.15em;}
  .zc-particle{font-size:1.5em;}
 }
+/* ═══ Chantier C4 — Modale d'encouragement (plateau) ═══ */
+#plateau-hint-overlay{
+ position:fixed;inset:0;z-index:9990;
+ display:flex;align-items:center;justify-content:center;
+ background:rgba(0,0,0,.65);
+ animation:plateauIn .35s ease-out;
+ padding:20px;
+}
+@keyframes plateauIn{from{opacity:0;}to{opacity:1;}}
+#plateau-hint-overlay.plateau-fadeout{animation:plateauOut .3s ease-in forwards;}
+@keyframes plateauOut{from{opacity:1;}to{opacity:0;}}
+.plateau-hint-box{
+ background:linear-gradient(160deg, #2c3e50 0%, #34495e 100%);
+ border:2px solid rgba(255,215,0,.3);
+ border-radius:18px;
+ padding:24px 26px;
+ max-width:380px;width:100%;
+ text-align:center;
+ box-shadow:0 12px 40px rgba(0,0,0,.5), 0 0 30px rgba(255,215,0,.15);
+ animation:plateauPop .5s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes plateauPop{from{transform:scale(.7);opacity:0;}to{transform:scale(1);opacity:1;}}
+.plateau-hint-emoji{
+ font-size:3.6em;
+ margin-bottom:6px;
+ filter:drop-shadow(0 0 12px rgba(255,255,255,.4));
+ animation:plateauEmoji 2s ease-in-out infinite;
+}
+@keyframes plateauEmoji{
+ 0%,100%{transform:scale(1) rotate(0);}
+ 50%{transform:scale(1.08) rotate(-3deg);}
+}
+.plateau-hint-title{
+ font-family:'Cinzel Decorative',cursive;
+ font-size:1.4em;color:#f1c40f;
+ margin:6px 0 12px;
+ text-shadow:0 2px 6px rgba(0,0,0,.6);
+}
+.plateau-hint-msg{
+ font-family:'Nunito',sans-serif;
+ font-size:.95em;color:#fff;
+ line-height:1.45;
+ margin:0 0 18px;
+}
+.plateau-hint-msg strong{color:#2ecc71;}
+.plateau-hint-btns{
+ display:flex;flex-direction:column;gap:8px;
+}
+.plateau-hint-cta{
+ background:linear-gradient(135deg, #2ecc71, #27ae60);
+ color:#fff;border:none;
+ padding:10px 18px;border-radius:10px;
+ font-weight:700;font-size:.95em;
+ cursor:pointer;transition:.2s;
+ box-shadow:0 4px 12px rgba(46,204,113,.3);
+}
+.plateau-hint-cta:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(46,204,113,.5);}
+.plateau-hint-skip{
+ background:transparent;
+ color:#bdc3c7;border:1px solid rgba(255,255,255,.15);
+ padding:8px 14px;border-radius:8px;
+ font-size:.85em;cursor:pointer;
+}
+.plateau-hint-skip:hover{color:#fff;border-color:rgba(255,255,255,.3);}
