@@ -93,7 +93,7 @@ function renderParentFigurines(){
    const isOwned=owned.includes(fig.id);
    const col=RARITY_COL[fig.r]||'#888';
    const portrait=CHAR_PORTRAITS[fig.id]||`<div style="font-size:1.4em;line-height:56px;text-align:center;">${fig.em||'❓'}</div>`;
-   html+=`<div class="pfig-card${isOwned?' owned':' pfig-locked'}" onclick="pfigCardClick('${fig.id}',${isOwned})" title="${fig.name} — ${isOwned?'Voir animation & son':'Aperçu disponible'}">`;
+html+=`<div class="pfig-card${isOwned?' owned':' pfig-locked'}${fig.r==='exclusif'?' rarity-exclusif':''}" onclick="pfigCardClick('${fig.id}',${isOwned})" title="${fig.name} — ${isOwned?'Voir animation & son':'Aperçu disponible'}">`;
    if(!isOwned) html+=`<div style="position:absolute;top:2px;left:2px;font-size:.55em;background:rgba(0,0,0,.5);border-radius:4px;padding:1px 4px;color:#aaa;">🔒</div>`;
    html+=`<div class="pfig-mini" style="border-bottom:2px solid ${col}${isOwned?'88':'22'};${!isOwned?'filter:grayscale(.5) brightness(.8)':''}">${portrait}</div>
     <div class="pfig-name">${fig.name}</div>

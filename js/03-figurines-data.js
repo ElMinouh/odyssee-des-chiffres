@@ -46,7 +46,7 @@ if (typeof window !== 'undefined') {
 
 const RARITY_COL={commun:'#95a5a6',rare:'#3498db',épique:'#9b59b6',légendaire:'#f39c12',mythique:'#e91e8c',exclusif:'#f1c40f'};
 const RARITY_STARS={commun:'◆',rare:'◆◆',épique:'◆◆◆',légendaire:'◆◆◆◆',mythique:'◆◆◆◆◆',exclusif:'✨◆✨'};
-const UNI_ICON={db:'🐉',hp:'⚡',sw:'🚀',nj:'🥷',fr:'❄️',mk:'🐭',mv:'⚡',pk:'⚡',mr:'🍄',br:'💗',gd:'🤖',mc:'🌟',cz:'🏆',tm:'⚔️',bm:'🦇',tn:'🔍',ax:'🏺',mi:'🐞',pj:'🦸',ot:'⚽',co:'🔫',al:'☠️',tu:'🐢',sm:'🌙',sp:'🕵️',bl:'🐕',dr:'🐉'};
+const UNI_ICON={db:'🐉',hp:'⚡',sw:'🚀',nj:'🥷',fr:'❄️',mk:'🐭',mv:'⚡',pk:'⚡',mr:'🍄',br:'💗',gd:'🤖',mc:'🌟',cz:'🏆',tm:'⚔️',bm:'🦇',tn:'🔍',ax:'🏺',mi:'🐞',pj:'🦸',ot:'⚽',co:'🔫',al:'☠️',tu:'🐢',sm:'🌙',sp:'🕵️',bl:'🐕',dr:'🐉',sx:'🎂'};
 const FIGURINES=[
 {id:'db01',name:'Goku Super Saiyen',uni:'Dragon Ball',uk:'db',em:'🌀',em2:'⚡',color:'#f39c12',gc:'#ffb300',desc:'Fils de Bardock, élevé sur Terre par les humains, Son Goku est le plus grand guerrier de l\'univers. Il maîtrise le Kaméhaméha, une attaque d\'énergie bleue chargée entre les paumes. En Super Saiyen, ses cheveux dorés et ses yeux verts révèlent une puissance colossale. Toujours prêt à dépasser ses limites, il cherche non la victoire, mais le dépassement de soi.',r:'légendaire',p:350},
 {id:'db02',name:'Végéta',uni:'Dragon Ball',uk:'db',em:'👑',em2:'⚡',color:'#3498db',gc:'#5dade2',desc:'Prince des Saiyens, Végéta est le rival éternel de Goku. Arrogant et fier de son sang royal, il a progressivement choisi la voie du bien. Son Gallic Gun libère une explosion violette dévastatrice. Rival devenu allié, père aimant et guerrier d\'élite, Végéta reste l\'un des personnages les plus complexes et aimés de Dragon Ball Z.',r:'épique',p:230},

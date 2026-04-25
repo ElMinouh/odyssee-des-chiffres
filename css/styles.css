@@ -486,22 +486,24 @@ button.pulse{font-size:1.15em!important;padding:13px 24px!important;width:100%!i
 .back-top-btn:hover{background:rgba(127,140,141,.95);transform:translateX(-2px);}
 .back-top-bar{display:flex;align-items:center;gap:0;margin-bottom:6px;}
 
-.pfig-section{margin-bottom:8px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.06);}
-.pfig-header{display:flex;align-items:center;gap:8px;padding:9px 12px;background:rgba(0,0,0,.3);cursor:pointer;user-select:none;}
+/* Vue parent — figurines : alignée sur la présentation du tableau de bord joueur */
+.pfig-section{margin-bottom:10px;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.08);}
+.pfig-header{display:flex;align-items:center;gap:10px;padding:11px 14px;background:rgba(0,0,0,.3);cursor:pointer;user-select:none;}
 .pfig-header:hover{background:rgba(0,0,0,.45);}
-.pfig-label{font-weight:700;font-size:.8em;flex:1;text-align:left;}
-.pfig-stats{font-size:.65em;color:rgba(255,255,255,.5);}
-.pfig-panel{display:none;padding:8px;background:rgba(0,0,0,.15);}
+.pfig-label{font-weight:700;font-size:.95em;flex:1;text-align:left;}
+.pfig-stats{font-size:.78em;color:rgba(255,255,255,.6);font-weight:600;}
+.pfig-panel{display:none;padding:10px;background:rgba(0,0,0,.15);}
 .pfig-panel.open{display:block;}
-.pfig-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;}
-.pfig-card{border-radius:8px;padding:5px 3px;text-align:center;border:1.5px solid rgba(255,255,255,.08);cursor:pointer;transition:.18s;position:relative;background:rgba(255,255,255,.04);}
-.pfig-card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.pfig-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;}
+.pfig-card{background:rgba(255,255,255,.05);border-radius:12px;padding:8px 4px 7px;text-align:center;border:2px solid rgba(255,255,255,.1);cursor:pointer;transition:.2s;position:relative;overflow:hidden;}
+.pfig-card::before{content:'';position:absolute;inset:0;background:linear-gradient(160deg,rgba(255,255,255,.04),transparent);pointer-events:none;}
+.pfig-card:hover{transform:translateY(-3px);border-color:var(--accent);}
 .pfig-card.owned{border-color:gold;background:rgba(255,215,0,.07);}
-.pfig-card.owned:hover{box-shadow:0 4px 16px rgba(255,215,0,.3);}
-.pfig-mini{width:100%;height:56px;display:block;border-radius:4px;overflow:hidden;}
-.pfig-name{font-size:.44em;font-weight:700;color:#fff;margin-top:2px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.pfig-price{font-size:.42em;color:#f1c40f;font-weight:700;}
-.pfig-locked{opacity:.45;filter:grayscale(.6);}
+.pfig-card.owned:hover{box-shadow:0 6px 20px rgba(255,215,0,.3);}
+.pfig-mini{width:100%;height:75px;display:flex;align-items:center;justify-content:center;border-radius:8px;overflow:hidden;margin-bottom:4px;}
+.pfig-name{font-size:.78em;font-weight:700;color:#fff;margin-top:2px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 4px;}
+.pfig-price{font-size:.72em;color:#f1c40f;font-weight:700;margin-top:2px;}
+.pfig-locked{opacity:.5;filter:grayscale(.6);}
 /* ═══ Chantier 3.1 — Animations de réponse juste enrichies ═══ */
 
 /* Score popup floatant (+N ⭐) */
@@ -666,6 +668,20 @@ button.pulse{font-size:1.15em!important;padding:13px 24px!important;width:100%!i
  background-size:300% 300%;
  animation:exclusifShimmer 4s ease-in-out infinite;
  box-shadow:0 0 12px rgba(241,196,15,.4), inset 0 0 12px rgba(255,255,255,.1);
+}
+/* Effet exclusif aussi pour les figurines de la vue parent */
+.pfig-card.rarity-exclusif{
+ border-color:transparent;
+ background:linear-gradient(135deg, rgba(241,196,15,.18), rgba(231,76,60,.12), rgba(155,89,182,.18), rgba(52,152,219,.12));
+ background-size:300% 300%;
+ animation:exclusifShimmer 4s ease-in-out infinite;
+ box-shadow:0 0 12px rgba(241,196,15,.4), inset 0 0 12px rgba(255,255,255,.1);
+}
+.pfig-card.rarity-exclusif::after{
+ content:'✨';
+ position:absolute;top:4px;right:4px;
+ font-size:.85em;
+ text-shadow:0 0 4px rgba(241,196,15,.8);
 }
 .fig-card.rarity-exclusif::after{
  content:'✨ EXCLUSIF';

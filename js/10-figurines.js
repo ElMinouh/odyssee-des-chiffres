@@ -176,7 +176,8 @@ const UNIVERS_LIST=[
  {k:'tm',label:'3 Mousquetaires'},{k:'bm',label:'Batman'},{k:'tn',label:'Tintin'},{k:'ax',label:'Astérix'},
  {k:'mi',label:'Miraculous'},{k:'pj',label:'Pyjamasques'},{k:'ot',label:'Olive & Tom'},
  {k:'co',label:'Cobra'},{k:'al',label:'Albator'},{k:'tu',label:'Tortues Ninja'},
- {k:'sm',label:'Sailor Moon'},{k:'sp',label:'Totally Spies'},{k:'bl',label:'Bluey'},{k:'dr',label:'Dragons'}
+ {k:'sm',label:'Sailor Moon'},{k:'sp',label:'Totally Spies'},{k:'bl',label:'Bluey'},{k:'dr',label:'Dragons'},
+ {k:'sx',label:'✨ Saisonnier (exclusif)'}
 ];
 
 function renderFigCollection(){

@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v6.7.0'; // chantier 2.2 boss saisonniers + figurines exclusives
+const CACHE_VERSION = 'v6.7.1'; // fix lisibilité figurines vue parent + UNI_ICON sx
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources à mettre en cache au premier chargement (squelette de l'app).
