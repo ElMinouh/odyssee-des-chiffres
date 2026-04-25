@@ -933,3 +933,81 @@ html[data-appearance="light"] .appearance-toggle:hover{background:rgba(0,0,0,.15
 @media (max-width:620px){
  .appearance-toggle{top:10px;right:10px;width:36px;height:36px;font-size:1em;}
 }
+/* ═══ B1 Fix — Lisibilité des selects en mode clair ═══ */
+/* Les <option> natifs ne héritent pas toujours du color, on force */
+html[data-appearance="light"] select{
+ background:#fff;
+ color:#2c3e50;
+ border:1px solid rgba(0,0,0,.18);
+}
+html[data-appearance="light"] select option{
+ background:#fff;
+ color:#2c3e50;
+}
+html[data-appearance="light"] textarea,
+html[data-appearance="light"] input[type="text"],
+html[data-appearance="light"] input[type="password"],
+html[data-appearance="light"] input[type="number"]{
+ background:#fff;
+ color:#2c3e50;
+ border:1px solid rgba(0,0,0,.18);
+}
+/* Détails / accordéons (vue parent) */
+html[data-appearance="light"] details{
+ color:#2c3e50;
+}
+html[data-appearance="light"] details summary{
+ color:#2c3e50;
+}
+/* Légendes des sections vue parent */
+html[data-appearance="light"] hr{
+ border-color:rgba(0,0,0,.12);
+}
+/* Labels de la page d'accueil (Joueur, Thème, etc.) */
+html[data-appearance="light"] label{
+ color:#2c3e50;
+}
+/* Tableau des multiplications */
+html[data-appearance="light"] .mt-cell{
+ color:#2c3e50;
+ background:rgba(0,0,0,.03);
+}
+html[data-appearance="light"] .mt-cell.mt-hd{
+ background:rgba(230,126,34,.15);
+ color:#2c3e50;
+ font-weight:700;
+}
+html[data-appearance="light"] .mt-cell.mt-hl{
+ background:rgba(241,196,15,.25);
+}
+/* Onglets vue parent */
+html[data-appearance="light"] #v-parent .tab,
+html[data-appearance="light"] #parent-content .tab{
+ color:#2c3e50;
+}
+/* Toggles (filtres opérations vue parent) */
+html[data-appearance="light"] .toggle-sw .toggle-slider{
+ background:rgba(0,0,0,.2);
+}
+html[data-appearance="light"] .op-toggle{
+ color:#2c3e50;
+}
+/* Contenu du tableau de bord (toutes les box) */
+html[data-appearance="light"] #parent-content,
+html[data-appearance="light"] #parent-lock{
+ color:#2c3e50;
+}
+html[data-appearance="light"] .quest-row,
+html[data-appearance="light"] .lb-row{
+ color:#2c3e50;
+}
+html[data-appearance="light"] .lb-name,
+html[data-appearance="light"] .lb-score{
+ color:#2c3e50;
+}
+/* Texte des paragraphes en gris dans les sections */
+html[data-appearance="light"] .quest-row > div,
+html[data-appearance="light"] .pfig-stats,
+html[data-appearance="light"] .pfig-header > .pfig-stats{
+ color:#5d6d7e;
+}

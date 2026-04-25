@@ -204,7 +204,15 @@ const LEVEL_IDX={CP:0,CE1:1,CE2:2,CM1:3,CM2:4};
 const VALID_LEVELS=['CP','CE1','CE2','CM1','CM2'];
 function savePrefs(){
  const lvl=$('levelSelect').value;
- P.prefs={level:VALID_LEVELS.includes(lvl)?lvl:'CP',mode:$('modeSelect').value,mode2:$('gameModeSelect').value,theme:$('themeSelect').value};
+ // Chantier B1 fix : préserver appearance et tout autre champ existant
+ const oldPrefs = P.prefs || {};
+ P.prefs = {
+  ...oldPrefs,
+  level: VALID_LEVELS.includes(lvl) ? lvl : 'CP',
+  mode: $('modeSelect').value,
+  mode2: $('gameModeSelect').value,
+  theme: $('themeSelect').value,
+ };
  saveProfile();
 }
 function updateMenuUI(){
