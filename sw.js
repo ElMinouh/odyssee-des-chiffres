@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v6.9.0'; // chantier A1 notification de mise a jour
+const CACHE_VERSION = 'v7.0.0'; // chantier C1 difficulte adaptative branchee
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources à mettre en cache au premier chargement (squelette de l'app).
