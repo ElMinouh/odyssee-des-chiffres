@@ -142,18 +142,43 @@ function useItem(it){
 // QUÊTES, BADGES, HEBDO
 // ═══════════════════════════════════════════════════════
 function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=ri(0,i);[a[i],a[j]]=[a[j],a[i]];}return a;}
-function genQuests(){return shuffle(QUESTS).slice(0,3).map(q=>({...q,progress:0,done:false}));}
+function genQuests(){
+ // Chantier A3 : si données suffisantes, génère des quêtes adaptées au profil
+ if(typeof genSmartQuests === 'function'){
+  return genSmartQuests();
+ }
+ return shuffle(QUESTS).slice(0,3).map(q=>({...q,progress:0,done:false}));
+}
 function renderQuests(){
  if(!P.quests)return;
- $('p-quests').innerHTML=P.quests.map(q=>`<div class="quest-row">
-  <div style="font-size:1.2em;">📜</div>
+ $('p-quests').innerHTML=P.quests.map(q=>{
+  // Chantier A3 : icône différente selon le type de quête
+  const icon = q.smart==='weak' ? '🎯' : q.smart==='strong' ? '🌟' : '📜';
+  const tooltip = q.smart==='weak' ? 'Renforcement (zone à travailler)'
+                : q.smart==='strong' ? 'Défi (zone maîtrisée)'
+                : 'Quête classique';
+  return `<div class="quest-row">
+  <div style="font-size:1.2em;" title="${tooltip}">${icon}</div>
   <div style="flex:1;text-align:left;">
    <div style="font-weight:700;font-size:.82em;">${q.label} ${q.done?'✅':''}</div>
    <div style="color:#f1c40f;font-size:.72em;">+${q.reward} ⭐</div>
    <div class="quest-prog"><div class="quest-prog-fill" style="width:${Math.min(100,Math.round(q.progress/q.goal*100))}%"></div></div>
   </div>
   <div style="font-size:.75em;color:#bdc3c7;">${Math.min(q.progress,q.goal)}/${q.goal}</div>
- </div>`).join('');
+ </div>`;
+ }).join('');
+}
+// Chantier A3 : helper pour les quêtes "combo dans une opération"
+function _checkOpComboQuest(opKey, currentCombo){
+ if(!P.quests)return;
+ const q=P.quests.find(qq=>!qq.done && qq.key===`combo_${opKey}`);
+ if(!q)return;
+ if(currentCombo>=q.goal && q.progress<q.goal){
+  q.progress=q.goal;
+  q.done=true;
+  P.stars+=q.reward;
+  if(typeof toast==='function')toast(`🎉 Quête ! +${q.reward}⭐`);
+ }
 }
 function updateQuests(key,amt=1){
  if(!P.quests)return;
@@ -521,6 +546,16 @@ function validate(ans){
   chargePower(P.name);
   updateQuests('questions');if(GS.combo>=5)updateQuests('combo5');
   if(q.type==='fraction')updateQuests('fractions');if(q.type==='missing')updateQuests('missing');
+  // Chantier A3 : tracker quêtes intelligentes par opération
+  if(q.opKey){
+   updateQuests('op_'+q.opKey);
+   // Suivi combo par opération (réinit si on change d'op ou si on échoue)
+   if(GS.lastOpKey===q.opKey) GS.opCombo=(GS.opCombo||0)+1;
+   else GS.opCombo=1;
+   GS.lastOpKey=q.opKey;
+   // À chaque palier de combo dans la même op, incrémenter la quête
+   _checkOpComboQuest(q.opKey, GS.opCombo);
+  }
   updateWC(q);
   beep(523,'square',.2);vibrate(VIBE.good);$('BODY').classList.add('flash');setTimeout(()=>$('BODY').classList.remove('flash'),50);
   $('feedback').style.color='#2ecc71';$('correction').classList.add('hidden');
@@ -557,7 +592,7 @@ function validate(ans){
    safeTimeout(playCongrats,600);
   }else safeTimeout(nextTurn,750);}
  }else{
-  GS.errInGame++;GS.combo=0;$('gc').classList.remove('combo-breaker');
+GS.errInGame++;GS.combo=0;GS.opCombo=0;GS.lastOpKey=null;$('gc').classList.remove('combo-breaker');
   const opK=q.opKey||'+';P.opStats[opK]=P.opStats[opK]||{ok:0,fail:0};P.opStats[opK].fail++;
   if(q.display&&q.res!==undefined)P.errors=([...(P.errors||[])]).concat(`${q.a||'?'}${q.op||'?'}${q.b||'?'}=${q.res}`).slice(-60);
   // Chantier 1.2 : log dans le registre de révision espacée

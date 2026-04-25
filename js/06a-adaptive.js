@@ -189,3 +189,94 @@ function checkMilestones(){
  });
  if(justUnlocked.length && typeof saveProfile==='function') saveProfile();
 }
+// ═══════════════════════════════════════════════════════
+// QUÊTES INTELLIGENTES (chantier A3)
+// ═══════════════════════════════════════════════════════
+// Pioche dans P.opStats pour identifier les forces/faiblesses du joueur
+// et génère des quêtes ciblées.
+
+const _OP_NAMES = {'+':'additions','-':'soustractions','x':'multiplications','/':'divisions'};
+const _OP_KEYS_TO_QFILTER = {'+':'plus','-':'moins','x':'fois','/':'div'};
+
+/**
+ * Identifie les forces et faiblesses dans les opérations.
+ * Renvoie {weakest:'+', strongest:'x', confidence:0.x}
+ * Confidence : 0 = pas assez de données, 1 = données très fiables
+ */
+function analyzeOpProfile(){
+ if(!P?.opStats)return {weakest:null, strongest:null, confidence:0};
+ const ops = ['+','-','x','/'];
+ const ratios = {};
+ let totalAttempts = 0;
+ ops.forEach(op=>{
+  const s = P.opStats[op];
+  if(!s) return;
+  const t = (s.ok||0)+(s.fail||0);
+  if(t < 5) return; // pas assez de données pour cette op
+  ratios[op] = {ratio: s.ok/t, total: t};
+  totalAttempts += t;
+ });
+ const opsWithData = Object.keys(ratios);
+ if(opsWithData.length < 2) return {weakest:null, strongest:null, confidence:0};
+ // Tri par ratio
+ opsWithData.sort((a,b)=>ratios[a].ratio - ratios[b].ratio);
+ const confidence = Math.min(1, totalAttempts / 50);
+ return {
+  weakest: opsWithData[0],
+  strongest: opsWithData[opsWithData.length-1],
+  weakRatio: ratios[opsWithData[0]].ratio,
+  strongRatio: ratios[opsWithData[opsWithData.length-1]].ratio,
+  confidence,
+ };
+}
+
+/**
+ * Génère 3 quêtes personnalisées pour le joueur.
+ * Si pas assez de données : fallback sur les quêtes génériques (shuffle de QUESTS).
+ */
+function genSmartQuests(){
+ const profile = analyzeOpProfile();
+ // Si on n'a pas assez de données, fallback classique
+ if(profile.confidence < 0.2){
+  return shuffle(QUESTS).slice(0,3).map(q=>({...q, progress:0, done:false}));
+ }
+ const result = [];
+ // Quête de renforcement sur l'op la plus faible
+ if(profile.weakest){
+  const opLabel = _OP_NAMES[profile.weakest] || 'questions';
+  const goal = profile.weakRatio < 0.4 ? 3 : 5;
+  result.push({
+   id:`q_smart_weak_${profile.weakest}`,
+   label:`🎯 Réussis ${goal} ${opLabel}`,
+   goal, key:`op_${profile.weakest}`,
+   reward: 20,
+   smart: 'weak',
+  });
+ }
+ // Quête de défi sur l'op la plus forte
+ if(profile.strongest && profile.strongRatio >= 0.7){
+  const opLabel = _OP_NAMES[profile.strongest] || 'questions';
+  const goal = profile.strongRatio >= 0.9 ? 8 : 6;
+  result.push({
+   id:`q_smart_strong_${profile.strongest}`,
+   label:`🌟 Fais un combo de ${goal} en ${opLabel}`,
+   goal, key:`combo_${profile.strongest}`,
+   reward: 30,
+   smart: 'strong',
+  });
+ }
+ // Compléter avec une quête random parmi les classiques
+ const usedIds = new Set(result.map(r=>r.id));
+ const remaining = QUESTS.filter(q=>!usedIds.has(q.id));
+ if(remaining.length){
+  const random = remaining[ri(0, remaining.length-1)];
+  result.push({...random, smart:'classic'});
+ }
+ // Si on n'a pas réussi à faire 3 quêtes, on complète au hasard
+ while(result.length < 3 && remaining.length){
+  const r = remaining[ri(0, remaining.length-1)];
+  if(!result.find(q=>q.id===r.id)) result.push({...r, smart:'classic'});
+  if(result.length >= 3) break;
+ }
+ return result.slice(0,3).map(q=>({...q, progress:0, done:false}));
+}

@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v7.1.0'; // chantier D1 export/import profil par fichier
+const CACHE_VERSION = 'v7.2.0'; // chantier A3 quetes intelligentes selon profil
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources à mettre en cache au premier chargement (squelette de l'app).
