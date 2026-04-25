@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v6.7.1'; // fix lisibilité figurines vue parent + UNI_ICON sx
+const CACHE_VERSION = 'v6.8.0'; // chantier 3.10 cinematiques de zone
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources à mettre en cache au premier chargement (squelette de l'app).
@@ -29,6 +29,7 @@ const PRECACHE_URLS = [
   './js/06a-adaptive.js',
   './js/06b-time-block.js',
   './js/06c-seasonal.js',
+  './js/06d-cinematics.js',
   './js/07-game.js',
   './js/08-ui.js',
   './js/09-parent.js',

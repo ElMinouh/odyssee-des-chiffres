@@ -42,8 +42,9 @@ function startMapBoss(zoneId){
  const bossMonster={emoji:zone.boss,name:zone.bossName,title:`Gardien de : ${zone.label}`,
   intro:`Tu oses entrer dans mon territoire ? ${zone.label} n'a pas de pitié pour les ignorants.`,
   anim:'glow',col:'#e74c3c'};
- showMonsterIntro(bossMonster,()=>{
-loadProfile();gameActive=true;clearPendingTimers();resetGS();GS.isBoss=false;GS.isSeasonalBoss=false;GS.isBirthdayBoss=false;GS.seasonalMult=1;GS.seasonalFigId=null;
+ // Chantier 3.10 : cinématique d'entrée de zone, puis intro boss, puis combat
+ const _startCombat = ()=>{
+  loadProfile();gameActive=true;clearPendingTimers();resetGS();GS.isBoss=false;GS.isSeasonalBoss=false;GS.isBirthdayBoss=false;GS.seasonalMult=1;GS.seasonalFigId=null;
   powers={};const pwI=Math.abs((P.name.charCodeAt(0)||0))%POWERS.length;const pw=POWERS[pwI];
   powers[P.name]={id:pw.id,eff:pw.effect,charge:0,recharge:pw.recharge,shielded:false,dbl:false};
   $('combat-bar').classList.add('hidden');
@@ -54,7 +55,10 @@ loadProfile();gameActive=true;clearPendingTimers();resetGS();GS.isBoss=false;GS.
   toggleNumpadForMode(GM.mode);
   $('BODY').classList.remove('body-alert','urgency-bg');
   showView('v-game');nextTurn();
- });
+ };
+ const _afterZoneIntro = ()=>showMonsterIntro(bossMonster, _startCombat);
+ if(typeof playZoneIntro==='function') playZoneIntro(zone, _afterZoneIntro);
+ else _afterZoneIntro();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -677,24 +681,30 @@ function endGame(won){
  if(typeof checkMilestones==='function') checkMilestones();
  // XP
  const xpGained=gainXP(GS.score,won);
- // boss carte
+// boss carte
  if(won&&GM.mapZone&&GS.isBoss){
   GS.mapBossWon=true;
   if(!(P.mapBossBeaten||[]).includes(GM.mapZone.id)){
    P.mapBossBeaten=[...(P.mapBossBeaten||[]),GM.mapZone.id];
-   // Zone unlock cinematic
-   const zLabel=GM.mapZone.label;
+   // Chantier 3.10 : cinématique de zone conquise (remplace l'ancien transition-screen)
+   const _zone = GM.mapZone;
    setTimeout(()=>{
-    const trans=$('transition-screen');
-    $('trans-monster').textContent='🗺️';
-    $('trans-msg').innerHTML=`<div style="color:#f1c40f;font-size:.9em;font-weight:700;letter-spacing:.05em;">ZONE CONQUISE !</div>
-     <div style="font-family:'Cinzel Decorative',cursive;font-size:1.3em;color:#2ecc71;margin:8px 0;">${zLabel}</div>
-     <div style="font-size:.85em;color:#bdc3c7;">Une nouvelle zone s'ouvre à toi…</div>`;
-    trans.classList.remove('hidden');
-    try{startConfetti();
-    [523,659,784,1047,1319].forEach((f,i)=>setTimeout(()=>beep(f,'sine',.4,.15),i*120));
-    }catch(e){}
-    setTimeout(()=>trans.classList.add('hidden'),3000);
+    if(typeof playZoneVictory==='function'){
+     try{startConfetti();}catch(e){}
+     playZoneVictory(_zone);
+    } else {
+     // Fallback ancien comportement si le module cinematics n'est pas chargé
+     const trans=$('transition-screen');
+     $('trans-monster').textContent='🗺️';
+     $('trans-msg').innerHTML=`<div style="color:#f1c40f;font-size:.9em;font-weight:700;letter-spacing:.05em;">ZONE CONQUISE !</div>
+      <div style="font-family:'Cinzel Decorative',cursive;font-size:1.3em;color:#2ecc71;margin:8px 0;">${_zone.label}</div>
+      <div style="font-size:.85em;color:#bdc3c7;">Une nouvelle zone s'ouvre à toi…</div>`;
+     trans.classList.remove('hidden');
+     try{startConfetti();
+     [523,659,784,1047,1319].forEach((f,i)=>setTimeout(()=>beep(f,'sine',.4,.15),i*120));
+     }catch(e){}
+     setTimeout(()=>trans.classList.add('hidden'),3000);
+    }
    },800);
   }
  }
