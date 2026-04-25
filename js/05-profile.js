@@ -40,6 +40,7 @@ const _ALLOWED_LEVELS = ['CP','CE1','CE2','CM1','CM2'];
 const _ALLOWED_MODES = ['keyboard','qcm'];
 const _ALLOWED_MODES2 = ['normal','survie','chrono','combat','revision'];
 const _ALLOWED_THEMES = ['standard','espace','foret','volcan'];
+const _ALLOWED_APPEARANCE = ['dark','light','auto'];
 
 function _clampNum(v, min, max, defaultV){
  const n = Number(v);
@@ -98,6 +99,7 @@ function validateProfile(raw, defaultName){
    mode:   _ALLOWED_MODES.includes(raw.prefs?.mode)    ? raw.prefs.mode   : 'keyboard',
    mode2:  _ALLOWED_MODES2.includes(raw.prefs?.mode2)  ? raw.prefs.mode2  : 'normal',
    theme:  _ALLOWED_THEMES.includes(raw.prefs?.theme)  ? raw.prefs.theme  : 'standard',
+   appearance: ['dark','light','auto'].includes(raw.prefs?.appearance) ? raw.prefs.appearance : 'dark',
   },
   sessionMinutes: _clampNum(raw.sessionMinutes, 0, 999999, 0),
   weeklyChallenge: raw.weeklyChallenge ?? null,
@@ -194,6 +196,8 @@ function applyPrefs(){
  $('gameModeSelect').value=p.mode2||'normal';
  applyTheme(p.theme||'standard');
  $('themeSelect').value=p.theme||'standard';
+ // Chantier B1 : appliquer le mode clair/sombre sauvegardé
+ if(typeof initAppearance === 'function') initAppearance();
 }
 // Table de correspondance niveau→index (évite indexOf à chaque appel)
 const LEVEL_IDX={CP:0,CE1:1,CE2:2,CM1:3,CM2:4};

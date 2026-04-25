@@ -424,3 +424,47 @@ function toggleNumpadForMode(mode){
  if(mode==='keyboard' && _numpadIsTouch()) pad.classList.add('enabled');
  else pad.classList.remove('enabled');
 }
+// ═══════════════════════════════════════════════════════
+// Chantier B1 : Mode clair / sombre
+// ═══════════════════════════════════════════════════════
+// Bascule entre 3 états : 'dark' (défaut), 'light', 'auto' (suit le système)
+function applyAppearance(mode){
+ const m = mode || 'dark';
+ if(m === 'auto'){
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.setAttribute('data-appearance', prefersDark ? 'dark' : 'light');
+ } else {
+  document.documentElement.setAttribute('data-appearance', m);
+ }
+ // Mise à jour de l'icône du bouton
+ const btn = document.getElementById('appearance-toggle');
+ if(btn){
+  const current = document.documentElement.getAttribute('data-appearance');
+  btn.textContent = current === 'light' ? '☀️' : '🌙';
+  btn.title = current === 'light' ? 'Mode clair actif (cliquer pour sombre)' : 'Mode sombre actif (cliquer pour clair)';
+ }
+}
+
+function toggleAppearance(){
+ if(!P) return;
+ P.prefs = P.prefs || {};
+ const current = P.prefs.appearance || 'dark';
+ const next = current === 'dark' ? 'light' : 'dark';
+ P.prefs.appearance = next;
+ if(typeof saveProfile === 'function') saveProfile();
+ applyAppearance(next);
+ if(typeof toast === 'function') toast(next === 'light' ? '☀️ Mode clair' : '🌙 Mode sombre', 1500);
+}
+
+// Initialisation : au chargement, applique la préférence sauvegardée
+function initAppearance(){
+ const mode = (P?.prefs?.appearance) || 'dark';
+ applyAppearance(mode);
+}
+
+// Si le système change de mode et qu'on est en 'auto', on suit
+if(window.matchMedia){
+ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  if(P?.prefs?.appearance === 'auto') applyAppearance('auto');
+ });
+}

@@ -846,3 +846,90 @@ button.pulse{font-size:1.15em!important;padding:13px 24px!important;width:100%!i
  font-size:.85em;cursor:pointer;
 }
 .plateau-hint-skip:hover{color:#fff;border-color:rgba(255,255,255,.3);}
+/* ═══ Chantier B1 — Mode clair (light theme) ═══ */
+/* Le mode sombre est par défaut. Le mode clair s'active via [data-appearance="light"] sur le <html>. */
+html[data-appearance="light"]{
+ --primary:#fff;
+ --accent:#e67e22;
+ --bg:linear-gradient(135deg,#fef6e4 0%,#f8d7a3 100%);
+ --glow:#e67e22;
+}
+html[data-appearance="light"] body{color:#2c3e50;}
+html[data-appearance="light"] #gc{
+ background:rgba(255,255,255,.95);
+ box-shadow:0 0 50px rgba(0,0,0,.15);
+ border:1px solid rgba(0,0,0,.08);
+}
+html[data-appearance="light"] h1,
+html[data-appearance="light"] h2,
+html[data-appearance="light"] h3{color:#2c3e50;}
+html[data-appearance="light"] .lb-row,
+html[data-appearance="light"] .skill-item,
+html[data-appearance="light"] .hist-row,
+html[data-appearance="light"] .quest-row,
+html[data-appearance="light"] .level-lock,
+html[data-appearance="light"] .milestone-row,
+html[data-appearance="light"] .pfig-section{
+ background:rgba(0,0,0,.04);
+ color:#2c3e50;
+ border-color:rgba(0,0,0,.1);
+}
+html[data-appearance="light"] .pfig-card,
+html[data-appearance="light"] .fig-card{
+ background:rgba(0,0,0,.04);
+ border-color:rgba(0,0,0,.12);
+}
+html[data-appearance="light"] .pfig-card.owned,
+html[data-appearance="light"] .fig-card.owned{
+ background:rgba(241,196,15,.18);
+ border-color:#f1c40f;
+}
+html[data-appearance="light"] .pfig-name,
+html[data-appearance="light"] .fig-nm{color:#2c3e50;}
+html[data-appearance="light"] .tab{color:#2c3e50;background:rgba(0,0,0,.06);}
+html[data-appearance="light"] .tab.active{background:var(--accent);color:#fff;}
+html[data-appearance="light"] input,
+html[data-appearance="light"] select,
+html[data-appearance="light"] textarea{
+ background:rgba(255,255,255,.85);
+ color:#2c3e50;
+ border:1px solid rgba(0,0,0,.15);
+}
+html[data-appearance="light"] .toast{background:rgba(44,62,80,.95);color:#fff;}
+html[data-appearance="light"] #monster-area{filter:drop-shadow(0 4px 12px rgba(0,0,0,.2));}
+html[data-appearance="light"] .quest-prog,
+html[data-appearance="light"] .milestone-bar{background:rgba(0,0,0,.1);}
+html[data-appearance="light"] .chart-bar{background:linear-gradient(180deg,#e67e22,#d35400);}
+html[data-appearance="light"] #toast{background:rgba(44,62,80,.95);color:#fff;}
+html[data-appearance="light"] p,
+html[data-appearance="light"] label,
+html[data-appearance="light"] span{color:inherit;}
+/* Boutons : on garde leur style coloré, juste assombrir leur texte si fond clair */
+html[data-appearance="light"] button:not(.tab):not(.fig-buy-btn):not(.shop-quick-btn){
+ box-shadow:0 4px 12px rgba(0,0,0,.15);
+}
+/* Le sw-update-banner reste sombre (lisibilité importante) */
+html[data-appearance="light"] #sw-update-banner{background:rgba(40,40,60,.97);color:#fff;}
+
+/* Bouton bascule */
+.appearance-toggle{
+ position:fixed;top:14px;right:14px;
+ background:rgba(255,255,255,.1);
+ border:1px solid rgba(255,255,255,.2);
+ width:42px;height:42px;border-radius:50%;
+ font-size:1.2em;cursor:pointer;
+ display:flex;align-items:center;justify-content:center;
+ backdrop-filter:blur(8px);
+ z-index:100;
+ transition:transform .2s, background .2s;
+ padding:0;
+}
+.appearance-toggle:hover{transform:scale(1.1);background:rgba(255,255,255,.2);}
+html[data-appearance="light"] .appearance-toggle{
+ background:rgba(0,0,0,.08);
+ border-color:rgba(0,0,0,.15);
+}
+html[data-appearance="light"] .appearance-toggle:hover{background:rgba(0,0,0,.15);}
+@media (max-width:620px){
+ .appearance-toggle{top:10px;right:10px;width:36px;height:36px;font-size:1em;}
+}
