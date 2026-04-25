@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v6.8.0'; // chantier 3.10 cinematiques de zone
+const CACHE_VERSION = 'v6.9.0'; // chantier A1 notification de mise a jour
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources à mettre en cache au premier chargement (squelette de l'app).
@@ -66,6 +66,12 @@ self.addEventListener('activate', (event) => {
             .map((k) => caches.delete(k))
       ))
       .then(() => self.clients.claim())
+      .then(() => {
+        // Chantier A1 : prévenir tous les clients qu'une nouvelle version est active
+        self.clients.matchAll({type:'window'}).then(clients => {
+          clients.forEach(c => c.postMessage({type:'SW_UPDATED', version: CACHE_VERSION}));
+        });
+      })
   );
 });
 
@@ -98,7 +104,10 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// ── Message : permettre au client de forcer un skipWaiting ─────────
+// ── Message : permettre au client de forcer un skipWaiting ou obtenir la version
 self.addEventListener('message', (event) => {
   if (event.data === 'skipWaiting') self.skipWaiting();
+  if (event.data?.type === 'GET_VERSION') {
+    event.source?.postMessage({type:'SW_UPDATED', version: CACHE_VERSION});
+  }
 });
