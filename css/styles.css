@@ -1172,3 +1172,23 @@ html[data-appearance="light"] .zone-skin{opacity:.18;}
  .combat-particle-bomb{font-size:3.5em;}
  .combat-particle-powerShield{font-size:3em;}
 }
+/* ═══ Chantier A2 v1 — Améliorations mode duel ═══ */
+.cp-card .cp-avatar{
+ font-size:1.4em;
+ line-height:1;
+ margin-bottom:2px;
+ filter:drop-shadow(0 2px 3px rgba(0,0,0,.4));
+}
+.cp-card.active .cp-avatar{
+ animation:cpAvatarPulse 1s ease-in-out infinite;
+}
+@keyframes cpAvatarPulse{
+ 0%,100%{transform:scale(1);}
+ 50%{transform:scale(1.15);}
+}
+.cp-card.dead .cp-avatar{
+ filter:grayscale(1);
+}
+@media (max-width:620px){
+ .cp-card .cp-avatar{font-size:1.2em;}
+}

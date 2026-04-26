@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v7.7.0'; // chantier C3 mode devoirs parents
+const CACHE_VERSION = 'v7.8.0'; // chantier A2 v1 ameliorations duel (annonces, stats, avatars, commentaires)
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources à mettre en cache au premier chargement (squelette de l'app).

@@ -386,7 +386,20 @@ function startGame(){
  if(GM.mode2==='combat'){
   const valid=combatCfg.filter(p=>p.name&&p.name.trim());
   if(valid.length<2){alert('Il faut au moins 2 joueurs nommés !');return;}
-  combatPlayers=valid.map(p=>({name:p.name.trim(),level:p.level||'CP',pv:3+(P.skills.shield||0),score:0,alive:true}));
+  // Chantier A2 v1 : avatars + stats enrichies pour chaque joueur
+  const avatars = ['🧙','🧝','🥷','🧛','🦸','🧚','🤖','👻'];
+  combatPlayers=valid.map((p,i)=>({
+   name:p.name.trim(), level:p.level||'CP',
+   pv:3+(P.skills.shield||0), score:0, alive:true,
+   avatar: avatars[i % avatars.length],
+   hits: 0,           // touches portées (a fait perdre un PV à un autre)
+   bestCombo: 0,       // meilleur combo personnel
+   currentCombo: 0,    // combo en cours
+   totalAnswerTime: 0, // somme des temps de réponse
+   correctAnswers: 0,  // pour calculer la moyenne
+   eliminated: null,   // qui m'a éliminé (null si vivant)
+   killCount: 0,       // nombre d'éliminations
+  }));
   combatIdx=0;initPowers(combatPlayers);
   $('combat-bar').classList.remove('hidden');updateCombatHUD();
  }else{
@@ -670,12 +683,13 @@ function updateMonsterHP(){
 function updateCombatHUD(){
  $('combat-players-row').innerHTML=combatPlayers.map((p,i)=>`
   <div class="cp-card${i===combatIdx?' active':''}${p.alive?'':' dead'}">
-   <div class="cp-name">${i===combatIdx?'▶ ':''}${p.alive?esc(p.name):'💀 '+esc(p.name)}</div>
+   <div class="cp-avatar">${p.alive?(p.avatar||'🧙'):'💀'}</div>
+   <div class="cp-name">${i===combatIdx?'▶ ':''}${esc(p.name)}</div>
    <div class="cp-stats">❤️${p.pv} ⭐${p.score}</div>
-   <div class="cp-level">${esc(p.level)}</div>
+   <div class="cp-level">${esc(p.level)}${p.hits>0?` · ⚔️${p.hits}`:''}</div>
   </div>`).join('');
  const cp=combatPlayers[combatIdx];
- if(cp){$('hud-name').innerText='⚔️ '+cp.name;$('hud-pv').innerText=cp.pv;$('hud-score').innerText=cp.score;}
+ if(cp){$('hud-name').innerText=(cp.avatar||'⚔️')+' '+cp.name;$('hud-pv').innerText=cp.pv;$('hud-score').innerText=cp.score;}
 }
 function nextAlive(){
  const alive=combatPlayers.filter(p=>p.alive);if(!alive.length)return;
@@ -689,20 +703,51 @@ function nextCombat(){
  GM.level=combatPlayers[combatIdx].level;
  GS.monsterMaxHP=HP_LVL[GM.level]||1;GS.monsterHP=GS.monsterMaxHP;
  GS.q=GEN[GM.level](false);$('correction').classList.add('hidden');renderQ();
- $('quest-title').innerHTML=`⚔️ Tour de <strong>${esc(combatPlayers[combatIdx].name)}</strong> <span class="mode-badge m-combat">combat</span>`;
+ const cp = combatPlayers[combatIdx];
+ $('quest-title').innerHTML=`⚔️ Tour de <strong>${cp.avatar||'🧙'} ${esc(cp.name)}</strong> <span class="mode-badge m-combat">combat</span>`;
+ // Chantier A2 v1 : annonce du tour avec toast + son distinctif
+ if(typeof toast==='function') toast(`${cp.avatar||'🧙'} À toi, ${cp.name} !`, 1500);
+ if(typeof beep==='function') beep(660,'sine',.25,.18);
+ // Chantier A2 v1 : enregistre le timestamp pour mesurer le temps de réponse
+ GS._turnStartTime = Date.now();
+ // Chantier A2 v1 : commentaire arbitral occasionnel
+ if(typeof maybeRefereeComment==='function') maybeRefereeComment();
  renderPowerBar();
 }
 function validateCombat(ans){
  stopTimer();const q=GS.q,cp=combatPlayers[combatIdx];
+ // Chantier A2 v1 : enregistre le temps de réponse
+ if(GS._turnStartTime){
+  const elapsed = (Date.now() - GS._turnStartTime) / 1000;
+  cp.totalAnswerTime = (cp.totalAnswerTime||0) + elapsed;
+ }
  if(ans===q.res){
   cp.score+=GS.isGolden?3:1;chargePower(cp.name);
+  // Chantier A2 v1 : combo personnel
+  cp.currentCombo = (cp.currentCombo||0) + 1;
+  cp.bestCombo = Math.max(cp.bestCombo||0, cp.currentCombo);
+  cp.correctAnswers = (cp.correctAnswers||0) + 1;
   $('monster-area').classList.add('monster-hit');setTimeout(()=>$('monster-area').classList.remove('monster-hit'),350);
   beep(523,'square',.2);$('feedback').style.color='#2ecc71';$('feedback').innerText=`✅ ${cp.name} touche !`;
   spawnP(_monsterCenter.x||0,_monsterCenter.y||0,10); // OPT-5
  }else{
+  // Chantier A2 v1 : reset combo personnel
+  cp.currentCombo = 0;
   const pw=powers[cp.name];
   if(pw?.shielded){pw.shielded=false;$('feedback').innerText=`🛡️ ${cp.name} bloqué !`;}
-  else{cp.pv--;if(cp.pv<=0){cp.pv=0;cp.alive=false;}}
+  else{
+   cp.pv--;
+   // Chantier A2 v1 : crédit du "hit" au joueur précédent (qui avait bien répondu et passé le tour)
+   _attributeCombatHit(cp);
+   if(cp.pv<=0){
+    cp.pv=0;cp.alive=false;
+    // Chantier A2 v1 : son distinctif d'élimination + qui a éliminé
+    if(typeof beep==='function'){
+     [220,196,165,131].forEach((f,i)=>setTimeout(()=>beep(f,'sawtooth',.3,.15),i*80));
+    }
+    if(typeof vibrate==='function' && typeof VIBE!=='undefined') vibrate(VIBE.boss);
+   }
+  }
   beep(150,'sawtooth',.4);$('feedback').style.color='#e74c3c';
   $('feedback').innerText=`💥 ${cp.name} ${cp.alive?'prend un coup !':'est éliminé ! ❌'}`;showCorr(q);
  }
@@ -710,6 +755,30 @@ function validateCombat(ans){
  const alive=combatPlayers.filter(p=>p.alive);
  if(alive.length<=1){GS.combatWon=true;if(alive.length===1)$('feedback').innerText=`🏆 ${alive[0].name} GAGNE !`;safeTimeout(()=>endGame(true),2000);}
  else{nextAlive();updateCombatHUD();safeTimeout(nextCombat,1300);}
+}
+
+// Chantier A2 v1 : crédite la "touche portée" au précédent joueur ayant bien répondu
+function _attributeCombatHit(victim){
+ // On crédite le joueur "précédent" dans l'ordre de tour qui a répondu juste à sa dernière question
+ // Approche simple : on prend le joueur qui était actif AVANT le tour courant
+ const idx = combatPlayers.findIndex(p=>p===victim);
+ if(idx<0) return;
+ // Trouver le joueur précédent (en arrière dans la liste, en sautant les morts)
+ const n = combatPlayers.length;
+ for(let i=1;i<n;i++){
+  const candIdx = (idx - i + n) % n;
+  const cand = combatPlayers[candIdx];
+  if(cand && cand !== victim && cand.alive){
+   cand.hits = (cand.hits||0) + 1;
+   // Si la victime est éliminée, c'est aussi un kill
+   if(victim.pv<=0){
+    cand.killCount = (cand.killCount||0) + 1;
+    victim.eliminated = cand.name;
+    if(typeof toast==='function') toast(`☠️ ${cand.avatar||''} ${cand.name} élimine ${victim.name} !`, 2200);
+   }
+   return;
+  }
+ }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -774,7 +843,41 @@ function endGame(won){
  if(GM.mode2==='combat'){
   const sorted=[...combatPlayers].sort((a,b)=>b.score-a.score);const medals=['🥇','🥈','🥉','4️⃣','5️⃣'];
   $('end-title').innerText='⚔️ COMBAT TERMINÉ !';$('end-mode').innerText='Mode Combat';
-  $('end-score').innerHTML='<strong>Classement :</strong><br>'+sorted.map((p,i)=>`${medals[i]} ${esc(p.name)} — ${p.score}pts ${p.alive?'❤️':'💀'}`).join('<br>');
+  // Chantier A2 v1 : classement enrichi avec stats individuelles
+  $('end-score').innerHTML='<strong>🏁 Classement :</strong><br>'+sorted.map((p,i)=>{
+   const status = p.alive?'❤️':'💀';
+   const elim = p.eliminated?` <span style="font-size:.85em;color:#bdc3c7;">(par ${esc(p.eliminated)})</span>`:'';
+   return `${medals[i]} ${p.avatar||''} ${esc(p.name)} — ${p.score} pts ${status}${elim}`;
+  }).join('<br>');
+  // Calcul des prix spéciaux
+  const trophies = [];
+  // Meilleur combo
+  const bestComboP = sorted.reduce((a,b)=>(b.bestCombo||0)>(a.bestCombo||0)?b:a, sorted[0]);
+  if(bestComboP.bestCombo >= 3){
+   trophies.push(`🌟 <strong>Combo King</strong> : ${bestComboP.avatar||''} ${esc(bestComboP.name)} (×${bestComboP.bestCombo})`);
+  }
+  // Plus rapide
+  const speedP = sorted.filter(p=>p.correctAnswers>=2).reduce((a,b)=>{
+   const ta = a.totalAnswerTime/(a.correctAnswers||1), tb = b.totalAnswerTime/(b.correctAnswers||1);
+   return tb < ta ? b : a;
+  }, sorted.find(p=>p.correctAnswers>=2) || sorted[0]);
+  if(speedP && speedP.correctAnswers>=2){
+   const avgT = (speedP.totalAnswerTime/speedP.correctAnswers).toFixed(1);
+   trophies.push(`⚡ <strong>Éclair</strong> : ${speedP.avatar||''} ${esc(speedP.name)} (${avgT}s/réponse)`);
+  }
+  // Plus de touches portées
+  const fighterP = sorted.reduce((a,b)=>(b.hits||0)>(a.hits||0)?b:a, sorted[0]);
+  if(fighterP.hits >= 2){
+   trophies.push(`⚔️ <strong>Guerrier</strong> : ${fighterP.avatar||''} ${esc(fighterP.name)} (${fighterP.hits} touches)`);
+  }
+  // Tueur en série
+  const killerP = sorted.reduce((a,b)=>(b.killCount||0)>(a.killCount||0)?b:a, sorted[0]);
+  if(killerP.killCount >= 1){
+   trophies.push(`☠️ <strong>Chasseur</strong> : ${killerP.avatar||''} ${esc(killerP.name)} (${killerP.killCount} élim.)`);
+  }
+  if(trophies.length){
+   $('end-score').innerHTML += '<br><br><strong>🏆 Prix spéciaux :</strong><br><div style="font-size:.92em;color:#f1c40f;text-align:left;display:inline-block;">'+trophies.join('<br>')+'</div>';
+  }
   $('end-stars').innerText='';$('end-enc').innerText='🏆 Bravo à tous !';
   $('end-xp').innerText=`+${xpGained} XP`;
   $('end-correction').innerHTML='';$('end-badges').innerHTML='';renderEndStars(3);startConfetti();return;
@@ -887,4 +990,48 @@ function _trackHomework(q){
   }
  }
  if(typeof saveProfile === 'function') saveProfile();
+}
+// ═══════════════════════════════════════════════════════
+// Chantier A2 v1 : commentaires arbitraux pendant le combat
+// ═══════════════════════════════════════════════════════
+let _refereeLastIdx = -1;
+function maybeRefereeComment(){
+ // ne pas spammer : seulement si plus de 2 questions jouées et 25% de chance
+ if(GS.qCount < 3 || Math.random() > 0.25) return;
+ if(!combatPlayers || combatPlayers.length < 2) return;
+ const alive = combatPlayers.filter(p=>p.alive);
+ if(alive.length < 2) return;
+ const sorted = [...alive].sort((a,b)=>b.score-a.score);
+ const leader = sorted[0];
+ const last = sorted[sorted.length-1];
+ const gap = leader.score - last.score;
+ const comments = [];
+ // Égalité parfaite
+ if(alive.length===2 && alive[0].score===alive[1].score && alive[0].score>0){
+  comments.push(`⚖️ Égalité parfaite ! ${alive[0].name} et ${alive[1].name} sont à ${alive[0].score} pts !`);
+ }
+ // Domination
+ if(gap >= 5){
+  comments.push(`🔥 ${leader.avatar||''} ${leader.name} domine la partie !`);
+ }
+ // Combo en cours
+ const bigCombo = alive.find(p=>p.currentCombo>=4);
+ if(bigCombo){
+  comments.push(`🌟 ${bigCombo.avatar||''} ${bigCombo.name} est en feu (×${bigCombo.currentCombo}) !`);
+ }
+ // PV bas
+ const lowHP = alive.find(p=>p.pv===1);
+ if(lowHP){
+  comments.push(`💔 ${lowHP.avatar||''} ${lowHP.name} ne tient qu'à un fil...`);
+ }
+ // Outsider remonte
+ if(alive.length>=3 && last.score > 0 && gap <= 2){
+  comments.push(`🐢 ${last.name} reste dans la course !`);
+ }
+ if(!comments.length) return;
+ // Évite de répéter le même type
+ let idx;
+ do { idx = ri(0, comments.length-1); } while(comments.length>1 && idx===_refereeLastIdx);
+ _refereeLastIdx = idx;
+ if(typeof toast === 'function') toast(comments[idx], 2400);
 }
