@@ -137,3 +137,66 @@ function _playCinematic(opts, done){
   }, 400);
  }, opts.duration);
 }
+// ═══════════════════════════════════════════════════════
+// SKIN DE ZONE PENDANT LA PARTIE (chantier B4)
+// ═══════════════════════════════════════════════════════
+// Ajoute un fond animé thématique pendant le combat (10-15 particules
+// qui dérivent lentement). Toggle ON/OFF via #ambianceToggle.
+
+let _zoneSkinEl = null;
+
+/**
+ * Active le skin pour une zone donnée. Si une partie n'est pas dans une zone,
+ * on n'affiche rien (mode normal hors carte).
+ */
+function startZoneSkin(zone){
+ stopZoneSkin();
+ if(!zone || !ZONE_CINEMATICS[zone.id]) return;
+ // Vérif toggle utilisateur
+ const toggle = document.getElementById('ambianceToggle');
+ if(toggle && !toggle.checked) return;
+ const cfg = ZONE_CINEMATICS[zone.id];
+ const skin = document.createElement('div');
+ skin.className = 'zone-skin';
+ skin.style.background = cfg.bgEntry;
+ // 12 particules qui dérivent lentement
+ const particlesHtml = Array.from({length: 12}).map((_,i)=>{
+  const e = cfg.particles[i % cfg.particles.length];
+  const left = Math.random() * 100;
+  const delay = Math.random() * 15;
+  const dur = 15 + Math.random() * 10;
+  return `<span class="zs-particle" style="left:${left}%;animation-delay:-${delay}s;animation-duration:${dur}s;">${e}</span>`;
+ }).join('');
+ skin.innerHTML = `<div class="zs-particles">${particlesHtml}</div>`;
+ document.body.appendChild(skin);
+ _zoneSkinEl = skin;
+}
+
+function stopZoneSkin(){
+ if(_zoneSkinEl){
+  _zoneSkinEl.remove();
+  _zoneSkinEl = null;
+ }
+}
+
+/**
+ * Sauvegarde la préférence d'ambiance dans localStorage (global, pas par profil
+ * car c'est un confort visuel comme la musique).
+ */
+function saveAmbiance(){
+ const toggle = document.getElementById('ambianceToggle');
+ if(!toggle) return;
+ localStorage.setItem('ambiance_enabled', toggle.checked ? '1' : '0');
+ // Si pendant une partie, réagir immédiatement
+ if(typeof GM !== 'undefined' && GM.mapZone){
+  if(toggle.checked) startZoneSkin(GM.mapZone);
+  else stopZoneSkin();
+ }
+}
+
+function loadAmbiancePref(){
+ const toggle = document.getElementById('ambianceToggle');
+ if(!toggle) return;
+ const v = localStorage.getItem('ambiance_enabled');
+ toggle.checked = (v === null) ? true : (v === '1');
+}

@@ -1020,3 +1020,34 @@ html[data-appearance="light"] .settings-icon{
 html[data-appearance="light"] .settings-icon:hover{
  background:rgba(0,0,0,.16);
 }
+/* ═══ Chantier B4 — Skin de zone pendant le combat ═══ */
+.zone-skin{
+ position:fixed;inset:0;z-index:-1;
+ pointer-events:none;
+ overflow:hidden;
+ opacity:.30;
+ transition:opacity .8s;
+}
+.zs-particles{position:absolute;inset:0;}
+.zs-particle{
+ position:absolute;
+ bottom:-10%;
+ font-size:1.6em;
+ opacity:0;
+ animation:zsParticleDrift linear infinite;
+ filter:drop-shadow(0 0 4px rgba(255,255,255,.3));
+ will-change:transform, opacity;
+}
+@keyframes zsParticleDrift{
+ 0%  {transform:translateY(0) translateX(0) rotate(0);opacity:0;}
+ 10% {opacity:.7;}
+ 90% {opacity:.7;}
+ 100%{transform:translateY(-115vh) translateX(40px) rotate(360deg);opacity:0;}
+}
+/* Sur mobile, particules un peu plus petites pour ne pas distraire */
+@media (max-width:620px){
+ .zs-particle{font-size:1.2em;}
+ .zone-skin{opacity:.25;}
+}
+/* En mode clair, les particules sont moins lumineuses (sinon trop écrasantes) */
+html[data-appearance="light"] .zone-skin{opacity:.18;}

@@ -19,6 +19,8 @@ window.onload=()=>{
  loadProfile();
  loadVibrate();
  loadVoice();
+ // Chantier B4 : préférence ambiance
+ if(typeof loadAmbiancePref==='function') loadAmbiancePref();
  setupNumpad();
  // Init voix française dès que la liste des voix est disponible
  if(window.speechSynthesis){

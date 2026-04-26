@@ -55,6 +55,8 @@ function startMapBoss(zoneId){
   toggleNumpadForMode(GM.mode);
   $('BODY').classList.remove('body-alert','urgency-bg');
   showView('v-game');nextTurn();
+  // Chantier B4 : skin d'ambiance pendant le combat
+  if(typeof startZoneSkin === 'function') startZoneSkin(zone);
  };
  const _afterZoneIntro = ()=>showMonsterIntro(bossMonster, _startCombat);
  if(typeof playZoneIntro==='function') playZoneIntro(zone, _afterZoneIntro);

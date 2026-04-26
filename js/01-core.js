@@ -209,6 +209,8 @@ function stab(name){
  if(name==='figurines')renderFigCollection();
 }
 function returnMenu(){gameActive=false;clearPendingTimers();clearMonsterSpeech();$('BODY').classList.remove('urgency-bg','body-alert');const heart=$('timer-heart');if(heart)heart.style.display='none';showView('v-menu');loadProfile();
+ // Chantier B4 : retirer le skin de zone en revenant au menu
+ if(typeof stopZoneSkin==='function') stopZoneSkin();
  // Chantier C4 : à la sortie d'une partie, vérifier s'il y a un plateau à signaler
  if(typeof showPlateauHint==='function') setTimeout(showPlateauHint, 1500);
 }
