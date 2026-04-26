@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v7.4.1'; // fix mode clair : preserver appearance + lisibilite selects
+const CACHE_VERSION = 'v7.4.2'; // fix bouton tableau de bord en mode clair
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources à mettre en cache au premier chargement (squelette de l'app).

@@ -1011,3 +1011,12 @@ html[data-appearance="light"] .pfig-stats,
 html[data-appearance="light"] .pfig-header > .pfig-stats{
  color:#5d6d7e;
 }
+/* B1 Fix — Bouton "Tableau de bord du joueur" en mode clair */
+html[data-appearance="light"] .settings-icon{
+ background:rgba(0,0,0,.08);
+ color:#2c3e50;
+ border:1px solid rgba(0,0,0,.18);
+}
+html[data-appearance="light"] .settings-icon:hover{
+ background:rgba(0,0,0,.16);
+}
