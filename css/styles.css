@@ -1051,3 +1051,124 @@ html[data-appearance="light"] .settings-icon:hover{
 }
 /* En mode clair, les particules sont moins lumineuses (sinon trop écrasantes) */
 html[data-appearance="light"] .zone-skin{opacity:.18;}
+/* ═══ Chantier A4 — Animations de combat enrichies ═══ */
+/* Container temporaire pour les particules d'effet */
+.combat-fx{
+ position:absolute;inset:0;
+ pointer-events:none;
+ z-index:50;
+ overflow:visible;
+}
+.combat-particle{
+ position:absolute;
+ font-size:1.8em;
+ opacity:0;
+ will-change:transform, opacity;
+}
+/* Potion : monte avec un effet pétillant */
+.combat-particle-potion{
+ bottom:20%;
+ animation:fxPotionRise 1.2s cubic-bezier(.34,1.56,.64,1) forwards;
+ filter:drop-shadow(0 0 8px rgba(46,204,113,.7));
+}
+@keyframes fxPotionRise{
+ 0%  {transform:translateY(0) scale(.5);opacity:0;}
+ 25% {opacity:1;transform:translateY(-30px) scale(1.2);}
+ 100%{transform:translateY(-110px) scale(1) rotate(15deg);opacity:0;}
+}
+/* Bombe : explosion centrée */
+.combat-particle-bomb{
+ top:30%;left:50%!important;
+ font-size:5em;
+ transform:translate(-50%,-50%);
+ animation:fxBombExplode .6s ease-out forwards;
+ filter:drop-shadow(0 0 16px rgba(231,76,60,.9));
+}
+@keyframes fxBombExplode{
+ 0%  {transform:translate(-50%,-50%) scale(.3);opacity:0;}
+ 30% {transform:translate(-50%,-50%) scale(1.5);opacity:1;}
+ 100%{transform:translate(-50%,-50%) scale(2.2);opacity:0;}
+}
+/* Pouvoirs */
+.combat-particle-powerSword{
+ top:30%;
+ animation:fxSwordSlash .8s ease-out forwards;
+ filter:drop-shadow(0 0 8px rgba(245,200,80,.9));
+}
+@keyframes fxSwordSlash{
+ 0%  {transform:translateX(-100px) rotate(-45deg) scale(.5);opacity:0;}
+ 30% {opacity:1;transform:translateX(0) rotate(0) scale(1.2);}
+ 100%{transform:translateX(100px) rotate(45deg) scale(.7);opacity:0;}
+}
+.combat-particle-powerShield{
+ top:30%;left:50%!important;
+ transform:translate(-50%,-50%);
+ font-size:4em;
+ animation:fxShieldPulse 1s ease-in-out forwards;
+ filter:drop-shadow(0 0 12px rgba(100,150,255,.9));
+}
+@keyframes fxShieldPulse{
+ 0%  {transform:translate(-50%,-50%) scale(.3);opacity:0;}
+ 50% {transform:translate(-50%,-50%) scale(1.4);opacity:1;}
+ 100%{transform:translate(-50%,-50%) scale(1) rotate(360deg);opacity:0;}
+}
+.combat-particle-powerClock{
+ animation:fxClockTwirl 1s ease-out forwards;
+ filter:drop-shadow(0 0 6px rgba(155,89,182,.8));
+}
+@keyframes fxClockTwirl{
+ 0%  {transform:translateY(0) rotate(0) scale(.5);opacity:0;}
+ 30% {opacity:1;}
+ 100%{transform:translateY(-80px) rotate(720deg) scale(1.3);opacity:0;}
+}
+/* Secousse écran pour la bombe */
+.combat-shake{animation:combatShake .4s linear;}
+@keyframes combatShake{
+ 0%,100%{transform:translateX(0);}
+ 20%{transform:translateX(-8px);}
+ 40%{transform:translateX(8px);}
+ 60%{transform:translateX(-6px);}
+ 80%{transform:translateX(6px);}
+}
+
+/* Combo milestone : flash plein écran */
+.combo-milestone{
+ position:fixed;top:50%;left:50%;
+ transform:translate(-50%,-50%);
+ z-index:9999;
+ pointer-events:none;
+ display:flex;flex-direction:column;align-items:center;
+ animation:cmAppear .35s cubic-bezier(.34,1.56,.64,1);
+ text-shadow:0 0 20px currentColor, 0 4px 12px rgba(0,0,0,.8);
+}
+@keyframes cmAppear{
+ from{transform:translate(-50%,-50%) scale(.3);opacity:0;}
+ to  {transform:translate(-50%,-50%) scale(1);opacity:1;}
+}
+.combo-milestone.cm-fadeout{animation:cmFade .4s ease-in forwards;}
+@keyframes cmFade{to{transform:translate(-50%,-50%) scale(1.3);opacity:0;}}
+.cm-text{
+ font-family:'Cinzel Decorative',cursive;
+ font-size:2.2em;font-weight:700;
+ letter-spacing:.1em;
+ line-height:1;
+}
+.cm-num{
+ font-family:'Nunito',sans-serif;
+ font-size:3em;font-weight:900;
+ line-height:1;margin-top:4px;
+}
+.combo-streak{color:#f1c40f;}   /* doré */
+.combo-epic{color:#9b59b6;}      /* violet */
+.combo-berserk{color:#e74c3c;animation:cmAppear .35s cubic-bezier(.34,1.56,.64,1), cmBerserkPulse .4s ease-in-out infinite alternate;}
+@keyframes cmBerserkPulse{
+ from{filter:drop-shadow(0 0 8px #e74c3c) hue-rotate(0deg);}
+ to  {filter:drop-shadow(0 0 16px #ff7575) hue-rotate(20deg);}
+}
+
+@media (max-width:620px){
+ .cm-text{font-size:1.6em;}
+ .cm-num{font-size:2.4em;}
+ .combat-particle-bomb{font-size:3.5em;}
+ .combat-particle-powerShield{font-size:3em;}
+}

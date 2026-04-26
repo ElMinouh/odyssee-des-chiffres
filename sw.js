@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v7.5.0'; // chantier B4 skin de zone pendant la partie
+const CACHE_VERSION = 'v7.6.0'; // chantier A4 animations de combat enrichies
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources à mettre en cache au premier chargement (squelette de l'app).

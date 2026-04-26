@@ -136,8 +136,19 @@ function buySkill(s){if((P.skills[s]||0)>=3)return;spend(((P.skills[s]||0)+1)*20
 function buyItem(it,price){spend(price,()=>{P.inventory[it]=(P.inventory[it]||0)+1;updateMenuUI();toast('Acheté !');});}
 function useItem(it){
  if(!(P.inventory[it]>0))return;P.inventory[it]--;$('cnt-'+it).innerText=P.inventory[it];saveProfile();
- if(it==='potion'){GS.pv++;updateHUD();beep(600,'sine',.5);}
- if(it==='bomb'&&GS.q)validate(GS.q.res);
+ if(it==='potion'){
+  GS.pv++;updateHUD();beep(600,'sine',.5);
+  // Chantier A4 : animation potion
+  if(typeof playItemAnimation==='function') playItemAnimation('potion');
+  vibrate?.(VIBE.good);
+ }
+ if(it==='bomb'&&GS.q){
+  // Chantier A4 : animation bombe avant validation
+  if(typeof playItemAnimation==='function') playItemAnimation('bomb');
+  vibrate?.(VIBE.boss);
+  setTimeout(()=>validate(GS.q.res), 400);
+  return;
+ }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -526,7 +537,11 @@ function validate(ans){
  if(ans===null){hitPlayer('Réponse invalide !');return;}
  const q=GS.q;
  if(ans===q.res){
-  GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
+GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
+  // Chantier A4 : flash de milestone à 10/20/30/50
+  if([10,20,30,50].includes(GS.combo) && typeof flashComboMilestone==='function'){
+   flashComboMilestone(GS.combo);
+  }
   // Multiplicateur niveau : plus c'est difficile, plus c'est rentable
   // CP~1-2⭐ CE1~1-3⭐ CE2~2-3⭐ CM1~2-4⭐ CM2~3-5⭐
   const _lvlBase={CP:[1,2],CE1:[1,3],CE2:[2,3],CM1:[2,4],CM2:[3,5]}[GM.level]||[1,2];
@@ -571,6 +586,8 @@ function validate(ans){
   if(Math.random()<.55)monsterSpeak(CORRECT_TAUNTS[ri(0,CORRECT_TAUNTS.length-1)],1800);
   if(GM.mode==='qcm')markQCM(ans,true);updateHUD();
   GS.monsterHP--;updateMonsterHP();
+  // Chantier A4 : taunt aléatoire en milieu de combat (HP bas)
+  if(typeof maybeMidCombatTaunt==='function') maybeMidCombatTaunt();
   if(GS.activeEvent){GS.eventLeft--;if(GS.eventLeft<=0)GS.activeEvent=null;}
   if(GS.monsterHP>0){$('feedback').innerText=`✅ TOUCHÉ ! ❤️${GS.monsterHP}/${GS.monsterMaxHP}`;GS.q=generateQ();safeTimeout(()=>{clearMonsterSpeech();renderQ();},800);}
   else{$('feedback').innerText='✅ BRAVO !';ma.classList.add('monster-die');clearMonsterSpeech();if(GS.isBoss){vibrate(VIBE.boss);

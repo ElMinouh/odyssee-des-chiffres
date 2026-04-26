@@ -470,3 +470,91 @@ if(window.matchMedia){
   if(P?.prefs?.appearance === 'auto') applyAppearance('auto');
  });
 }
+// ═══════════════════════════════════════════════════════
+// Chantier A4 : Animations de combat enrichies
+// ═══════════════════════════════════════════════════════
+
+/**
+ * Joue une animation visuelle pour un objet utilisé en combat.
+ * Type : 'potion', 'bomb', 'powerSword', 'powerShield', 'powerClock'
+ */
+function playItemAnimation(type){
+ const monsterArea = document.getElementById('monster-area');
+ if(!monsterArea) return;
+ const overlay = document.createElement('div');
+ overlay.className = `combat-fx combat-fx-${type}`;
+
+ const config = {
+  potion: { emoji:'💚', count:6, sound:[440, 587, 740, 880], duration:1200 },
+  bomb:   { emoji:'💥', count:1, sound:[110, 80, 60], duration:600 },
+  powerSword:  { emoji:'⚔️', count:3, sound:[800, 600, 1000], duration:800 },
+  powerShield: { emoji:'🛡️', count:1, sound:[300, 500, 700], duration:1000 },
+  powerClock:  { emoji:'⏰', count:8, sound:[523, 659, 784], duration:1000 },
+ };
+ const cfg = config[type];
+ if(!cfg) return;
+
+ // Crée plusieurs particules animées
+ for(let i = 0; i < cfg.count; i++){
+  const particle = document.createElement('span');
+  particle.className = `combat-particle combat-particle-${type}`;
+  particle.textContent = cfg.emoji;
+  particle.style.animationDelay = (i * 0.08)+'s';
+  particle.style.left = (40 + Math.random() * 20) + '%';
+  overlay.appendChild(particle);
+ }
+
+ // Pour la bombe, ajoute un flash + secousse
+ if(type === 'bomb'){
+  document.body.classList.add('combat-shake');
+  setTimeout(()=>document.body.classList.remove('combat-shake'), 400);
+ }
+ monsterArea.appendChild(overlay);
+
+ // Joue les sons
+ if(typeof beep === 'function' && Array.isArray(cfg.sound)){
+  cfg.sound.forEach((freq, i) => setTimeout(()=>beep(freq, type==='bomb'?'sawtooth':'sine', .35, .12), i * 80));
+ }
+ // Auto-clean
+ setTimeout(() => overlay.remove(), cfg.duration + 200);
+}
+
+/**
+ * Affiche un flash de combo milestone avec texte.
+ * Appelé pour combo 10, 20, 30...
+ */
+function flashComboMilestone(combo){
+ const tier = combo >= 30 ? 'berserk' : combo >= 20 ? 'epic' : 'streak';
+ const labels = { streak:'STREAK', epic:'ÉPIQUE', berserk:'BERSERK' };
+ const flash = document.createElement('div');
+ flash.className = `combo-milestone combo-${tier}`;
+ flash.innerHTML = `<span class="cm-text">${labels[tier]}</span><span class="cm-num">×${combo}</span>`;
+ document.body.appendChild(flash);
+ if(typeof beep==='function'){
+  if(tier==='berserk') [220,277,330,440,587].forEach((f,i)=>setTimeout(()=>beep(f,'sawtooth',.25,.1),i*80));
+  else if(tier==='epic') [659,784,988,1175].forEach((f,i)=>setTimeout(()=>beep(f,'sine',.3,.1),i*80));
+  else [523,659,784].forEach((f,i)=>setTimeout(()=>beep(f,'sine',.25,.1),i*80));
+ }
+ vibrate?.(tier==='berserk' ? VIBE.boss : VIBE.levelup);
+ setTimeout(()=>{ flash.classList.add('cm-fadeout'); setTimeout(()=>flash.remove(), 400); }, 1400);
+}
+
+/**
+ * Le monstre lâche une réplique de combat aléatoire (différente de l'intro).
+ * Appelée si combat long ou HP bas.
+ */
+const _COMBAT_TAUNTS = [
+ 'Tu commences à m\'agacer…',
+ 'Tu es plus fort que prévu !',
+ 'Continue, je faiblis !',
+ 'Cette fois c\'est la fin pour toi !',
+ 'Mes calculs ne te résistent plus ?',
+];
+function maybeMidCombatTaunt(){
+ if(!GS.isBoss || !GS.monsterHP || !GS.monsterMaxHP) return;
+ // Si HP < 30% : 30% de chance de placer une taunt
+ const hpRatio = GS.monsterHP / GS.monsterMaxHP;
+ if(hpRatio < 0.3 && Math.random() < 0.3 && typeof monsterSpeak === 'function'){
+  monsterSpeak(_COMBAT_TAUNTS[ri(0, _COMBAT_TAUNTS.length-1)], 2200);
+ }
+}
