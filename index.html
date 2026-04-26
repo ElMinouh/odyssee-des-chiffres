@@ -97,6 +97,13 @@
   </p>
   <div id="xp-bar-wrap"><div id="xp-bar" style="width:0%"></div><div id="xp-label">0 XP</div></div>
   <div id="music-viz"><div class="viz-bar"></div><div class="viz-bar" style="height:12px;"></div><div class="viz-bar" style="height:8px;"></div><div class="viz-bar" style="height:15px;"></div><div class="viz-bar"></div></div>
+  <div id="hw-box" class="challenge-box hidden" style="border-color:#27ae60;background:linear-gradient(135deg,rgba(39,174,96,.18),rgba(39,174,96,.05));">
+   <div style="font-weight:700;font-size:.9em;color:#2ecc71;">📚 Devoir du jour</div>
+   <div id="hw-desc" style="font-size:.8em;margin-top:3px;"></div>
+   <div class="chal-prog"><div id="hw-fill" class="chal-fill" style="width:0%;background:linear-gradient(90deg,#27ae60,#2ecc71);"></div></div>
+   <div id="hw-text" style="font-size:.75em;color:#bdc3c7;margin-top:3px;"></div>
+   <button onclick="startHomework()" style="margin-top:8px;width:100%;background:#27ae60;font-size:.88em;padding:8px;">📚 Faire le devoir</button>
+  </div>
   <div id="wc-box" class="challenge-box hidden">
    <div id="wc-title" style="font-weight:700;font-size:.9em;color:#f1c40f;"></div>
    <div id="wc-desc" style="font-size:.8em;margin-top:3px;"></div>
@@ -396,6 +403,47 @@
     <div id="op-filters"></div>
     <button onclick="saveFilterSettings()" style="width:90%;margin-top:6px;">&#128190; Enregistrer filtres</button>
     <div id="filter-status" style="font-size:.78em;margin-top:6px;color:#f1c40f;"></div>
+    <hr style="border:0;border-top:1px solid rgba(255,255,255,.1);margin:12px 0;">
+    <p style="font-size:.88em;font-weight:700;color:#f1c40f;">&#128218; Devoir du jour</p>
+    <p style="font-size:.74em;color:#bdc3c7;margin:3px 0 6px;">Le parent peut fixer un objectif que l'enfant devra accomplir.</p>
+    <select id="hw-player" style="width:85%;margin-bottom:6px;" onchange="loadHomework()"></select><br>
+    <select id="hw-type" style="width:85%;margin-bottom:6px;">
+     <option value="any">Toutes opérations</option>
+     <option value="add">Additions</option>
+     <option value="sub">Soustractions</option>
+     <option value="mult">Multiplications</option>
+     <option value="div">Divisions</option>
+     <option value="table_2">Table de 2</option>
+     <option value="table_3">Table de 3</option>
+     <option value="table_4">Table de 4</option>
+     <option value="table_5">Table de 5</option>
+     <option value="table_6">Table de 6</option>
+     <option value="table_7">Table de 7</option>
+     <option value="table_8">Table de 8</option>
+     <option value="table_9">Table de 9</option>
+     <option value="table_10">Table de 10</option>
+    </select><br>
+    <select id="hw-level" style="width:55%;display:inline-block;margin-right:4px;">
+     <option value="CP">CP</option>
+     <option value="CE1">CE1</option>
+     <option value="CE2" selected>CE2</option>
+     <option value="CM1">CM1</option>
+     <option value="CM2">CM2</option>
+    </select>
+    <select id="hw-count" style="width:25%;display:inline-block;">
+     <option value="5">5</option>
+     <option value="10" selected>10</option>
+     <option value="15">15</option>
+     <option value="20">20</option>
+    </select><br>
+    <select id="hw-reward" style="width:85%;margin-top:6px;">
+     <option value="30">+30 ⭐</option>
+     <option value="50" selected>+50 ⭐</option>
+     <option value="100">+100 ⭐</option>
+    </select><br>
+    <button onclick="saveHomework()" style="width:42%;margin-top:6px;background:#27ae60;">&#128190; Donner</button>
+    <button onclick="clearHomework()" style="width:42%;margin-top:6px;background:#7f8c8d;">&#128683; Annuler</button>
+    <div id="hw-status" style="font-size:.78em;margin-top:6px;color:#f1c40f;"></div>
    </div>
    <div id="ptab-options" class="hidden">
     <p style="font-size:.82em;margin:6px 0;">Changer le code :</p>

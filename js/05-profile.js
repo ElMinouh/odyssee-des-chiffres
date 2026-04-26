@@ -122,6 +122,7 @@ function validateProfile(raw, defaultName){
    frac: _safeBool(raw.opFilters?.frac, true),
    geo:  _safeBool(raw.opFilters?.geo,  true),
   },
+  homework: (raw.homework && typeof raw.homework==='object') ? raw.homework : null,
  };
  return out;
 }
@@ -222,6 +223,8 @@ function updateMenuUI(){
  $('cnt-bomb').innerText=P.inventory.bomb||0;
  const t=getTopTitle();$('menu-htitle').innerText=t?t.label:'';
  updateXPBar();renderWC();
+ // Chantier C3 : afficher la carte devoir si présent
+ if(typeof renderHomework==='function') renderHomework();
 }
 function updateXPBar(){
  const xp=P.xp||0,lvl=levelFromXP(xp);

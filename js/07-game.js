@@ -562,6 +562,8 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
   if(q.type==='missing')GS.missingOk++;
   chargePower(P.name);
   updateQuests('questions');if(GS.combo>=5)updateQuests('combo5');
+  // Chantier C3 : tracker la progression du devoir
+  if(typeof _trackHomework==='function') _trackHomework(q);
   if(q.type==='fraction')updateQuests('fractions');if(q.type==='missing')updateQuests('missing');
   // Chantier A3 : tracker quêtes intelligentes par opération
   if(q.opKey){
@@ -803,4 +805,86 @@ function startConfetti(){
  const cs=Array.from({length:90},()=>({x:ri(0,can.width),y:ri(-can.height,0),r:ri(4,10),c:`hsl(${ri(0,360)},100%,55%)`,v:ri(2,6),rot:ri(0,360),dr:ri(-3,3)}));
  function a(){ctx.clearRect(0,0,can.width,can.height);cs.forEach(p=>{ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.fillStyle=p.c;ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r);ctx.restore();p.y+=p.v;p.rot+=p.dr;});if(cs[0].y<can.height*1.3){confettiRaf=requestAnimationFrame(a);}else{confettiRaf=null;ctx.clearRect(0,0,can.width,can.height);}}
  confettiRaf=requestAnimationFrame(a);
+}
+// ═══════════════════════════════════════════════════════
+// Chantier C3 : Mode "Devoirs" parents — affichage + jeu
+// ═══════════════════════════════════════════════════════
+
+/**
+ * Renderer de la carte "Devoir du jour" sur l'accueil.
+ * Affichée seulement si P.homework existe et !done.
+ */
+function renderHomework(){
+ const box = $('hw-box');
+ if(!box) return;
+ const hw = P?.homework;
+ if(!hw || hw.done){ box.classList.add('hidden'); return; }
+ box.classList.remove('hidden');
+ const labels = {
+  any:'opérations variées', add:'additions', sub:'soustractions',
+  mult:'multiplications', div:'divisions',
+  table_2:'la table de 2', table_3:'la table de 3', table_4:'la table de 4',
+  table_5:'la table de 5', table_6:'la table de 6', table_7:'la table de 7',
+  table_8:'la table de 8', table_9:'la table de 9', table_10:'la table de 10',
+ };
+ const opLabel = labels[hw.type] || 'questions';
+ $('hw-desc').innerHTML = `Réussir <strong>${hw.count}</strong> ${opLabel} (niveau ${hw.level}) · <span style="color:#f1c40f;">+${hw.reward} ⭐</span>`;
+ const pct = Math.min(100, Math.round((hw.progress || 0) / hw.count * 100));
+ $('hw-fill').style.width = pct + '%';
+ $('hw-text').innerText = `${hw.progress || 0}/${hw.count} (${pct}%)`;
+}
+
+/**
+ * Lance une partie en mode "devoir" : toutes les questions sont du type prescrit.
+ */
+function startHomework(){
+ if(!P?.homework || P.homework.done){ toast('⚠️ Aucun devoir actif.'); return; }
+ const hw = P.homework;
+ // Force le niveau et le mode
+ GM.level = hw.level || 'CE2';
+ GM.mode = $('modeSelect').value || 'keyboard';
+ GM.mode2 = 'normal';
+ GM.homework = true;
+ GM.homeworkConfig = hw;
+ // Lance comme une partie normale
+ startGame();
+}
+
+/**
+ * Vérifie si une question correspond au type du devoir.
+ * Renvoie true si elle compte pour la progression.
+ */
+function _matchesHomework(q){
+ if(!GM.homework || !GM.homeworkConfig) return false;
+ const type = GM.homeworkConfig.type;
+ if(type === 'any') return true;
+ if(type === 'add') return q.opKey === '+';
+ if(type === 'sub') return q.opKey === '-';
+ if(type === 'mult') return q.opKey === 'x' || q.opKey === '×';
+ if(type === 'div') return q.opKey === '/' || q.opKey === '÷';
+ if(type.startsWith('table_')){
+  const n = parseInt(type.split('_')[1], 10);
+  return (q.opKey === 'x' || q.opKey === '×') && (q.a === n || q.b === n);
+ }
+ return false;
+}
+
+/**
+ * Incrémente la progression du devoir si la question matche.
+ */
+function _trackHomework(q){
+ if(!GM.homework || !P.homework || P.homework.done) return;
+ if(!_matchesHomework(q)) return;
+ P.homework.progress = (P.homework.progress || 0) + 1;
+ if(P.homework.progress >= P.homework.count){
+  // Devoir complété !
+  P.homework.done = true;
+  P.stars = (P.stars || 0) + (P.homework.reward || 50);
+  if(typeof saveProfileNow === 'function') saveProfileNow();
+  if(typeof toast === 'function') toast(`🎉 Devoir terminé ! +${P.homework.reward}⭐`, 4000);
+  if(typeof beep === 'function'){
+   [523,659,784,1047,1319].forEach((f,i)=>setTimeout(()=>beep(f,'sine',.3,.12),i*120));
+  }
+ }
+ if(typeof saveProfile === 'function') saveProfile();
 }

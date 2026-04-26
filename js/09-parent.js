@@ -8,7 +8,7 @@
 function openParent(){
  $('parent-lock').classList.remove('hidden');$('parent-content').classList.add('hidden');$('pin-input').value='';
  const opts=KNOWN.map(n=>`<option>${n}</option>`).join('');
- ['parent-player','obj-player','block-player','filter-player'].forEach(id=>{const e=$(id);if(e)e.innerHTML=opts;});
+['parent-player','obj-player','block-player','filter-player','hw-player'].forEach(id=>{const e=$(id);if(e)e.innerHTML=opts;});
  $('cloud-player').innerHTML='<option value="ALL">Tous les joueurs</option>'+opts;
  showView('v-parent');
 }
@@ -397,4 +397,95 @@ async function exportPDF(){
  doc.setFillColor(44,62,80);doc.rect(0,pH-12,W,12,'F');doc.setTextColor(189,195,199);doc.setFontSize(8);
  doc.text("L'Odyssée des Chiffres – Rapport automatique",W/2,pH-5,{align:'center'});
  doc.save(`Rapport_${player}.pdf`);
+}
+// ═══════════════════════════════════════════════════════
+// Chantier C3 : Mode "Devoirs" parents
+// ═══════════════════════════════════════════════════════
+
+/**
+ * Charge dans la vue parent le devoir actuel du joueur sélectionné.
+ */
+function loadHomework(){
+ const sel = $('hw-player')?.value;
+ if(!sel) return;
+ const status = $('hw-status');
+ try{
+  const raw = localStorage.getItem('user_'+sel);
+  if(!raw){if(status)status.innerText='⚠️ Aucun profil pour ce joueur.';return;}
+  const data = JSON.parse(raw);
+  const hw = data.homework;
+  if(!hw){
+   if(status)status.innerHTML = '<span style="color:#bdc3c7;">Aucun devoir actif.</span>';
+   return;
+  }
+  // Préremplir le formulaire
+  if($('hw-type'))$('hw-type').value = hw.type || 'any';
+  if($('hw-level'))$('hw-level').value = hw.level || 'CE2';
+  if($('hw-count'))$('hw-count').value = String(hw.count || 10);
+  if($('hw-reward'))$('hw-reward').value = String(hw.reward || 50);
+  if(status){
+   const prog = hw.progress || 0;
+   const total = hw.count || 10;
+   const doneTxt = hw.done ? ' ✅ TERMINÉ' : '';
+   status.innerHTML = `<span style="color:#2ecc71;">📚 Devoir actif : ${prog}/${total}${doneTxt}</span>`;
+  }
+ }catch(e){
+  console.warn('[homework] load error:', e);
+ }
+}
+
+/**
+ * Sauvegarde un devoir pour le joueur sélectionné.
+ */
+function saveHomework(){
+ const sel = $('hw-player')?.value;
+ if(!sel){toast('⚠️ Sélectionnez un joueur'); return;}
+ const type = $('hw-type').value;
+ const level = $('hw-level').value;
+ const count = parseInt($('hw-count').value, 10) || 10;
+ const reward = parseInt($('hw-reward').value, 10) || 50;
+ try{
+  const raw = localStorage.getItem('user_'+sel);
+  if(!raw){toast('⚠️ Profil introuvable.', 3000); return;}
+  const data = JSON.parse(raw);
+  data.homework = { type, level, count, reward, progress: 0, done: false, createdAt: Date.now() };
+  localStorage.setItem('user_'+sel, JSON.stringify(data));
+  const status = $('hw-status');
+  if(status) status.innerHTML = `<span style="color:#2ecc71;">✅ Devoir donné à ${sel} !</span>`;
+  toast(`📚 Devoir donné à ${sel} !`, 2500);
+  try{beep(700,'sine',.3);}catch(e){}
+  // Si l'enfant est le profil actif, recharger
+  if(P && P.name === sel){
+   P.homework = data.homework;
+   if(typeof renderHomework === 'function') renderHomework();
+  }
+ }catch(e){
+  console.error('[homework] save error:', e);
+  toast('❌ Erreur lors de la sauvegarde', 3000);
+ }
+}
+
+/**
+ * Annule le devoir actif d'un joueur.
+ */
+function clearHomework(){
+ const sel = $('hw-player')?.value;
+ if(!sel) return;
+ if(!confirm(`Annuler le devoir de ${sel} ?`)) return;
+ try{
+  const raw = localStorage.getItem('user_'+sel);
+  if(!raw) return;
+  const data = JSON.parse(raw);
+  delete data.homework;
+  localStorage.setItem('user_'+sel, JSON.stringify(data));
+  const status = $('hw-status');
+  if(status) status.innerHTML = `<span style="color:#bdc3c7;">Devoir annulé.</span>`;
+  toast(`🚫 Devoir annulé pour ${sel}`, 2000);
+  if(P && P.name === sel){
+   delete P.homework;
+   if(typeof renderHomework === 'function') renderHomework();
+  }
+ }catch(e){
+  console.error('[homework] clear error:', e);
+ }
 }
