@@ -681,8 +681,10 @@ function updateMonsterHP(){
 // COMBAT
 // ═══════════════════════════════════════════════════════
 function updateCombatHUD(){
+ // Chantier A2 v2 : flag mort subite (passé par GS.suddenDeath)
+ const sd = GS.suddenDeath ? ' cp-sudden-death' : '';
  $('combat-players-row').innerHTML=combatPlayers.map((p,i)=>`
-  <div class="cp-card${i===combatIdx?' active':''}${p.alive?'':' dead'}">
+  <div class="cp-card${i===combatIdx?' active':''}${p.alive?'':' dead'}${p.alive?sd:''}">
    <div class="cp-avatar">${p.alive?(p.avatar||'🧙'):'💀'}</div>
    <div class="cp-name">${i===combatIdx?'▶ ':''}${esc(p.name)}</div>
    <div class="cp-stats">❤️${p.pv} ⭐${p.score}</div>
@@ -690,6 +692,37 @@ function updateCombatHUD(){
   </div>`).join('');
  const cp=combatPlayers[combatIdx];
  if(cp){$('hud-name').innerText=(cp.avatar||'⚔️')+' '+cp.name;$('hud-pv').innerText=cp.pv;$('hud-score').innerText=cp.score;}
+ // Chantier A2 v2 : animation slide entre joueurs
+ const cards = document.querySelectorAll('.cp-card');
+ if(cards[combatIdx]){
+  cards[combatIdx].classList.add('cp-incoming');
+  setTimeout(()=>cards[combatIdx]?.classList.remove('cp-incoming'), 500);
+ }
+}
+
+// Chantier A2 v2 : déclenche la mort subite si conditions remplies
+function checkSuddenDeath(){
+ if(GS.suddenDeath) return; // déjà active
+ if(!combatPlayers || combatPlayers.length < 2) return;
+ const alive = combatPlayers.filter(p=>p.alive);
+ if(alive.length !== 2) return;
+ // Compteur de tours sans perte de PV
+ GS._noPVLossStreak = GS._noPVLossStreak || 0;
+ if(GS._noPVLossStreak < 5) return;
+ GS.suddenDeath = true;
+ // Affichage du banner
+ const banner = document.createElement('div');
+ banner.id = 'sudden-death-banner';
+ banner.innerHTML = '⚡ MORT SUBITE ! ⚡';
+ document.body.appendChild(banner);
+ setTimeout(()=>banner.remove(), 3000);
+ // Effets son + vibration
+ if(typeof beep==='function'){
+  [330,277,220,165].forEach((f,i)=>setTimeout(()=>beep(f,'sawtooth',.4,.18),i*120));
+ }
+ if(typeof vibrate==='function' && typeof VIBE!=='undefined') vibrate(VIBE.boss);
+ if(typeof toast==='function') toast('⚡ Une mauvaise réponse = ÉLIMINATION DIRECTE !', 4000);
+ updateCombatHUD();
 }
 function nextAlive(){
  const alive=combatPlayers.filter(p=>p.alive);if(!alive.length)return;
@@ -727,16 +760,26 @@ function validateCombat(ans){
   cp.currentCombo = (cp.currentCombo||0) + 1;
   cp.bestCombo = Math.max(cp.bestCombo||0, cp.currentCombo);
   cp.correctAnswers = (cp.correctAnswers||0) + 1;
+  // Chantier A2 v2 : incrémente streak sans PV perdus
+  GS._noPVLossStreak = (GS._noPVLossStreak||0) + 1;
   $('monster-area').classList.add('monster-hit');setTimeout(()=>$('monster-area').classList.remove('monster-hit'),350);
   beep(523,'square',.2);$('feedback').style.color='#2ecc71';$('feedback').innerText=`✅ ${cp.name} touche !`;
   spawnP(_monsterCenter.x||0,_monsterCenter.y||0,10); // OPT-5
  }else{
   // Chantier A2 v1 : reset combo personnel
   cp.currentCombo = 0;
+  // Chantier A2 v2 : reset du streak "pas de PV perdus"
+  GS._noPVLossStreak = 0;
   const pw=powers[cp.name];
   if(pw?.shielded){pw.shielded=false;$('feedback').innerText=`🛡️ ${cp.name} bloqué !`;}
   else{
-   cp.pv--;
+   // Chantier A2 v2 : en mort subite, élimination directe au lieu de -1 PV
+   if(GS.suddenDeath){
+    cp.pv = 0; cp.alive = false;
+    if(typeof toast==='function') toast(`⚡ ${cp.name} ÉLIMINÉ EN MORT SUBITE !`, 2500);
+   } else {
+    cp.pv--;
+   }
    // Chantier A2 v1 : crédit du "hit" au joueur précédent (qui avait bien répondu et passé le tour)
    _attributeCombatHit(cp);
    if(cp.pv<=0){
@@ -754,7 +797,12 @@ function validateCombat(ans){
  updateCombatHUD();
  const alive=combatPlayers.filter(p=>p.alive);
  if(alive.length<=1){GS.combatWon=true;if(alive.length===1)$('feedback').innerText=`🏆 ${alive[0].name} GAGNE !`;safeTimeout(()=>endGame(true),2000);}
- else{nextAlive();updateCombatHUD();safeTimeout(nextCombat,1300);}
+ else{
+  nextAlive();updateCombatHUD();
+  // Chantier A2 v2 : check mort subite après chaque tour
+  if(typeof checkSuddenDeath==='function') checkSuddenDeath();
+  safeTimeout(nextCombat,1300);
+ }
 }
 
 // Chantier A2 v1 : crédite la "touche portée" au précédent joueur ayant bien répondu
