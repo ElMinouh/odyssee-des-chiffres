@@ -851,7 +851,9 @@ function endGame(won){
  // Chantier 2.1 : stats cumulatives pour les paliers
  P._totalStarsEarned=(P._totalStarsEarned||0)+GS.score;
  P._bestCombo=Math.max(P._bestCombo||0, GS.maxCombo||0);
- if(typeof checkMilestones==='function') checkMilestones();
+if(typeof checkMilestones==='function') checkMilestones();
+ // Chantier B2 : vérifier l'évolution du stade héros
+ if(typeof checkHeroStageProgress==='function') setTimeout(checkHeroStageProgress, 1500);
  // XP
  const xpGained=gainXP(GS.score,won);
 // boss carte

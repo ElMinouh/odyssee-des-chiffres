@@ -410,3 +410,71 @@ function showPlateauHint(){
  if(typeof beep === 'function') beep(440,'sine',.3,.08);
  return true;
 }
+// ═══════════════════════════════════════════════════════
+// Chantier B2 : Détection du franchissement de stade
+// ═══════════════════════════════════════════════════════
+
+/**
+ * Vérifie si le joueur vient de franchir un nouveau stade et déclenche
+ * la cinématique. Appelé après chaque fin de partie gagnée.
+ */
+function checkHeroStageProgress(){
+ if(typeof getHeroStage !== 'function' || !P) return;
+ const current = getHeroStage();
+ const lastStageId = P.heroStageId || 'oeuf';
+ if(current.id !== lastStageId){
+  // Stade franchi !
+  P.heroStageId = current.id;
+  if(typeof saveProfile==='function') saveProfile();
+  // Cinématique d'évolution
+  if(typeof showHeroEvolution==='function') showHeroEvolution(current);
+ }
+}
+
+/**
+ * Affiche une cinématique festive lors du franchissement d'un stade.
+ */
+function showHeroEvolution(stage){
+ const overlay = document.createElement('div');
+ overlay.id = 'hero-evolution-overlay';
+ const oldAvatar = P.avatar || '🧒';
+ const newAvatar = stage.unlockedAvatars[0] || '🌟';
+ overlay.innerHTML = `
+  <div class="he-content">
+   <div class="he-title">🎉 ÉVOLUTION !</div>
+   <div class="he-stage" style="color:${stage.color};">${stage.icon} ${stage.label}</div>
+   <div class="he-avatars">
+    <div class="he-old">${oldAvatar}</div>
+    <div class="he-arrow">→</div>
+    <div class="he-new">${newAvatar}</div>
+   </div>
+   <div class="he-desc">${stage.desc}</div>
+   <button class="he-cta">Continuer</button>
+  </div>
+ `;
+ document.body.appendChild(overlay);
+ // Bonus de récompense
+ const reward = stage.id === 'apprenti' ? 30
+              : stage.id === 'aventurier' ? 80
+              : stage.id === 'maitre' ? 200
+              : stage.id === 'legende' ? 500 : 0;
+ if(reward){
+  P.stars = (P.stars||0) + reward;
+  if(typeof saveProfile==='function') saveProfile();
+ }
+ // Sons festifs
+ if(typeof beep==='function'){
+  [392, 494, 587, 740, 880, 988, 1175].forEach((f,i)=>setTimeout(()=>beep(f,'sine',.4,.16),i*120));
+ }
+ if(typeof vibrate==='function' && typeof VIBE!=='undefined') vibrate(VIBE.levelup);
+ if(typeof startConfetti==='function') startConfetti();
+ // Fermeture
+ const close = () => {
+  overlay.classList.add('he-fadeout');
+  setTimeout(()=>overlay.remove(), 400);
+  if(reward && typeof toast==='function'){
+   setTimeout(()=>toast(`✨ +${reward} ⭐ bonus d'évolution !`, 3000), 500);
+  }
+ };
+ overlay.querySelector('.he-cta').onclick = close;
+}

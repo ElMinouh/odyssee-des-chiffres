@@ -50,10 +50,47 @@ function getTopTitle(){
  const d={stars:P.stars||0,badgesEarned:P.badgesEarned||[],levelWins:P.levelWins||{},history:P.history||[]};
  const earned=HERO_TITLES.filter(t=>t.ok(d));return earned[earned.length-1]||HERO_TITLES[0];
 }
+// Chantier B2 : barre de progression vers le stade suivant
+function renderStageProgress(stage){
+ const next = getNextHeroStage();
+ if(!next) return ' <span style="color:#f1c40f;">🏆 Stade ultime atteint !</span>';
+ const totalWins = Object.values(P.levelWins||{}).reduce((s,n)=>s+n, 0);
+ const totalStars = P._totalStarsEarned || 0;
+ const figs = (P.ownedFigurines||[]).length;
+ // Calcule pourcentage de progression vers le stade suivant
+ let pct = 0;
+ if(next.id === 'apprenti'){ pct = totalWins / 5 * 100; }
+ else if(next.id === 'aventurier'){ pct = totalWins / 25 * 100; }
+ else if(next.id === 'maitre'){ pct = Math.min(totalWins/50, totalStars/100) * 100; }
+ else if(next.id === 'legende'){ pct = Math.min(totalWins/100, totalStars/500, figs/30) * 100; }
+ pct = Math.min(100, Math.max(0, pct));
+ return `<div style="margin-top:6px;font-size:.74em;color:#bdc3c7;">
+  Prochain stade : <span style="color:${next.color};">${next.icon} ${next.label}</span>
+  <div style="height:6px;background:rgba(255,255,255,.1);border-radius:3px;margin-top:4px;overflow:hidden;">
+   <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,${stage.color},${next.color});transition:width .5s;"></div>
+  </div>
+ </div>`;
+}
+
 function renderAvatars(){
  $('p-ava-disp').innerText=P.avatar||'🧙';
  const t=getTopTitle();$('p-title-disp').innerHTML=`<span style="color:${t.col}">${t.label}</span>`;
- $('p-avatars').innerHTML='<div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0;">'+AVATAR_LIST.map(a=>`<span class="ava${a===P.avatar?' sel':''}" onclick="selectAvatar('${a}')">${a}</span>`).join('')+'</div>';
+// Chantier B2 : afficher uniquement les avatars du stade actuel + précédents
+ const unlocked = (typeof getUnlockedAvatars==='function') ? getUnlockedAvatars() : AVATAR_LIST;
+ const stage = (typeof getHeroStage==='function') ? getHeroStage() : null;
+ const stageHTML = stage ? `<div style="text-align:center;margin:10px 0 4px;font-size:.9em;">
+  <span style="color:${stage.color};font-weight:700;">${stage.icon} ${stage.label}</span>
+  ${(typeof getNextHeroStage==='function' && getNextHeroStage()) ? renderStageProgress(stage) : ''}
+ </div>` : '';
+ // Liste des avatars débloqués (stade actuel et précédents)
+ const unlockedHTML = '<div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0;">'+unlocked.map(a=>`<span class="ava${a===P.avatar?' sel':''}" onclick="selectAvatar('${a}')">${a}</span>`).join('')+'</div>';
+ // Liste des avatars verrouillés (stades suivants)
+ const lockedAvatars = AVATAR_LIST.filter(a => !unlocked.includes(a));
+ const lockedHTML = lockedAvatars.length ? `<details style="margin-top:8px;">
+  <summary style="cursor:pointer;font-size:.84em;color:#bdc3c7;">🔒 ${lockedAvatars.length} avatars à débloquer</summary>
+  <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:6px 0;opacity:.45;">${lockedAvatars.map(a=>`<span class="ava" style="filter:grayscale(.7);cursor:not-allowed;">${a}</span>`).join('')}</div>
+ </details>` : '';
+ $('p-avatars').innerHTML = stageHTML + unlockedHTML + lockedHTML;
 }
 function selectAvatar(a){P.avatar=a;saveProfileNow();renderAvatars();updateMenuUI();toast('Avatar : '+a);}
 function renderVSounds(){

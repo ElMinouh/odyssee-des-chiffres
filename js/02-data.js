@@ -229,3 +229,98 @@ function getMilestoneProgress(m, p){
   isMaxed,
  };
 }
+// ═══════════════════════════════════════════════════════
+// Chantier B2 : Stades évolutifs du héros
+// ═══════════════════════════════════════════════════════
+// Plus le joueur progresse, plus son héros évolue.
+// Chaque stade débloque de nouveaux avatars.
+
+const HERO_STAGES = [
+ {
+  id:'oeuf',
+  label:'Œuf',
+  icon:'🥚',
+  color:'#bdc3c7',
+  desc:'Tu fais tes premiers pas dans le monde des chiffres.',
+  ok: d => true, // toujours dispo (stade de départ)
+  unlockedAvatars: ['🧒','🧑','👦','👧','🐣','🐥'],
+ },
+ {
+  id:'apprenti',
+  label:'Apprenti',
+  icon:'🌱',
+  color:'#2ecc71',
+  desc:'Tu maîtrises tes premières opérations.',
+  ok: d => (d.totalWins||0) >= 5,
+  unlockedAvatars: ['🧙','🧝','🦊','🐺','🐸','🐻','🐭','🦌'],
+ },
+ {
+  id:'aventurier',
+  label:'Aventurier',
+  icon:'⚔️',
+  color:'#3498db',
+  desc:'Tu es devenu un vrai héros !',
+  ok: d => (d.totalWins||0) >= 25,
+  unlockedAvatars: ['🦸','🦹','🥷','🧜','🦄','🐉','🦁','🐯','🛡️','⚔️'],
+ },
+ {
+  id:'maitre',
+  label:'Maître',
+  icon:'🌟',
+  color:'#e67e22',
+  desc:'Ta sagesse mathématique est reconnue.',
+  ok: d => (d.totalWins||0) >= 50 && (d._totalStarsEarned||0) >= 100,
+  unlockedAvatars: ['🧙‍♂️','🧙‍♀️','🦸‍♂️','🦸‍♀️','🧜‍♀️','🧜‍♂️','🧚','💎','🔮','🌟','⚡','🔥'],
+ },
+ {
+  id:'legende',
+  label:'Légende',
+  icon:'👑',
+  color:'#f1c40f',
+  desc:'Tu fais partie des héros légendaires des chiffres !',
+  ok: d => (d.totalWins||0) >= 100 && (d._totalStarsEarned||0) >= 500 && (d.figurinesCount||0) >= 30,
+  unlockedAvatars: ['👑','🏆','🌈','✨','💫','🎆','🎇','☀️','🌙','🪐','🛸'],
+ },
+];
+
+/**
+ * Retourne le stade actuel du joueur basé sur P.
+ */
+function getHeroStage(){
+ if(typeof P === 'undefined' || !P) return HERO_STAGES[0];
+ const totalWins = Object.values(P.levelWins||{}).reduce((s,n)=>s+n, 0);
+ const data = {
+  totalWins,
+  _totalStarsEarned: P._totalStarsEarned || 0,
+  figurinesCount: (P.ownedFigurines||[]).length,
+  stars: P.stars || 0,
+ };
+ // Trouver le stade le plus élevé déverrouillé
+ let current = HERO_STAGES[0];
+ for(const stage of HERO_STAGES){
+  if(stage.ok(data)) current = stage;
+ }
+ return current;
+}
+
+/**
+ * Retourne le prochain stade non encore atteint, ou null si on est au max.
+ */
+function getNextHeroStage(){
+ const current = getHeroStage();
+ const idx = HERO_STAGES.findIndex(s=>s.id===current.id);
+ return idx>=0 && idx < HERO_STAGES.length-1 ? HERO_STAGES[idx+1] : null;
+}
+
+/**
+ * Retourne tous les avatars accessibles au joueur (cumul de tous les stades atteints).
+ */
+function getUnlockedAvatars(){
+ const current = getHeroStage();
+ const idx = HERO_STAGES.findIndex(s=>s.id===current.id);
+ const unlocked = [];
+ for(let i=0; i<=idx; i++){
+  unlocked.push(...HERO_STAGES[i].unlockedAvatars);
+ }
+ return unlocked;
+}

@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v7.9.0'; // chantier A2 v2 transitions + mort subite (en attente equipes/resurrection)
+const CACHE_VERSION = 'v8.0.0'; // chantier B2 avatar evolutif selon paliers
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources à mettre en cache au premier chargement (squelette de l'app).

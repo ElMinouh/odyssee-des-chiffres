@@ -123,6 +123,7 @@ function validateProfile(raw, defaultName){
    geo:  _safeBool(raw.opFilters?.geo,  true),
   },
   homework: (raw.homework && typeof raw.homework==='object') ? raw.homework : null,
+  heroStageId: _safeStr(raw.heroStageId, 20, 'oeuf'),
  };
  return out;
 }
