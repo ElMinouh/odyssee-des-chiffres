@@ -148,7 +148,8 @@ input::placeholder,textarea::placeholder{color:rgba(255,255,255,.5);}
 #xp-label{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:.68em;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9);}
 #lvl-badge{display:inline-block;background:linear-gradient(135deg,#9b59b6,#3498db);border-radius:20px;padding:2px 10px;font-size:.82em;font-weight:700;margin-left:5px;}
 /* ══════════════ MAP ══════════════ */
-#v-map{overflow-x:hidden;}
+#v-map{overflow-x:hidden;position:relative;}
+#v-map > h2,#v-map > p,#v-map > .back-top-bar,#v-map > .map-scroll{position:relative;z-index:2;}
 .map-scroll{display:flex;flex-direction:column;gap:0;align-items:center;padding:10px 0;}
 .map-zone{position:relative;width:280px;cursor:pointer;margin:0 auto;}
 .map-zone-inner{border-radius:18px;padding:14px 18px;margin:6px 4px;border:3px solid transparent;transition:.3s;position:relative;overflow:hidden;}
@@ -156,9 +157,10 @@ input::placeholder,textarea::placeholder{color:rgba(255,255,255,.5);}
 .map-zone-inner.locked{opacity:.45;filter:grayscale(.7);border-color:rgba(255,255,255,.15);cursor:not-allowed;}
 .map-zone-inner.current{border-color:gold;box-shadow:0 0 24px gold;animation:pulse 2s infinite;}
 .map-zone-inner.completed{border-color:#2ecc71;box-shadow:0 0 12px #2ecc71;}
-.map-path{width:4px;height:30px;background:linear-gradient(to bottom,rgba(255,255,255,.3),rgba(255,255,255,.05));margin:0 auto;position:relative;overflow:hidden;}
-.map-path::after{content:'';position:absolute;top:-30px;left:0;width:100%;height:30px;background:linear-gradient(to bottom,transparent,gold,transparent);animation:pathFlow 2s linear infinite;}
-@keyframes pathFlow{0%{top:-30px;}100%{top:30px;}}
+.map-path{width:40px;height:60px;margin:0 auto;position:relative;overflow:visible;display:flex;align-items:center;justify-content:center;}
+.map-path .mp-path-svg{width:40px;height:60px;display:block;}
+.map-path.lit .mp-path-svg path{animation:mpDashFlow 1.6s linear infinite;}
+@keyframes mpDashFlow{from{stroke-dashoffset:0;}to{stroke-dashoffset:-32;}}
 /* ── Monster personality animations ── */
 .anim-bounce{animation:mBounce .7s ease-in-out infinite;}
 .anim-slither{animation:mSlither 1.4s ease-in-out infinite;}
@@ -1357,3 +1359,110 @@ html[data-appearance="light"] .he-content{
  border-color:rgba(230,126,34,.4);
 }
 html[data-appearance="light"] .he-desc{color:#2c3e50;}
+/* ══════════════ Chantier B3 — Parallaxe carte ══════════════ */
+#map-parallax{
+ position:absolute;
+ inset:0;
+ z-index:1;
+ pointer-events:none;
+ overflow:hidden;
+}
+.mp-layer{
+ position:absolute;
+ left:-5%;
+ right:-5%;
+ will-change:transform;
+ transition:background 1.2s ease, color 1.2s ease;
+}
+/* Couche 0 — ciel : couvre tout, fond plein */
+.mp-sky{
+ top:-5%;bottom:-5%;
+ background:linear-gradient(180deg,#87ceeb 0%,#b8e0d2 55%,#a8d8a8 100%);
+}
+/* Couche 1 — étoiles + astre */
+.mp-stars{
+ top:0;
+ height:100%;
+}
+.mp-star{
+ position:absolute;
+ background:#fff;
+ border-radius:50%;
+ box-shadow:0 0 4px rgba(255,255,255,.7);
+ animation:mpStarTwinkle 3.5s ease-in-out infinite;
+}
+@keyframes mpStarTwinkle{
+ 0%,100%{opacity:var(--o,.6);}
+ 50%{opacity:.9;}
+}
+.mp-astro{
+ position:absolute;
+ top:6%;right:10%;
+ font-size:3.2em;
+ filter:drop-shadow(0 0 18px rgba(255,255,255,.5));
+ animation:mpAstroFloat 8s ease-in-out infinite;
+}
+@keyframes mpAstroFloat{
+ 0%,100%{transform:translateY(0);}
+ 50%{transform:translateY(-12px);}
+}
+/* Couches 2 et 3 — montagnes (SVG inline + currentColor) */
+.mp-mountains-far{
+ bottom:0;
+ height:55%;
+ color:#5a8c5a;
+ opacity:.55;
+}
+.mp-mountains-near{
+ bottom:0;
+ height:42%;
+ color:#3a6c3a;
+ opacity:.78;
+}
+.mp-mountains-far svg,.mp-mountains-near svg{
+ width:100%;height:100%;display:block;
+}
+/* Couche 4 — premier plan : nuages + décor */
+.mp-foreground{
+ top:0;bottom:0;
+ height:100%;
+}
+.mp-cloud{
+ position:absolute;
+ left:-15%;
+ font-size:2em;
+ opacity:.7;
+ animation:mpCloudDrift linear infinite;
+ filter:drop-shadow(0 2px 4px rgba(0,0,0,.15));
+}
+@keyframes mpCloudDrift{
+ from{transform:translateX(0);}
+ to  {transform:translateX(120vw);}
+}
+.mp-decor{
+ position:absolute;
+ font-size:1.3em;
+ opacity:.55;
+ animation:mpDecorFloat 6s ease-in-out infinite;
+ filter:drop-shadow(0 0 6px rgba(0,0,0,.2));
+}
+@keyframes mpDecorFloat{
+ 0%,100%{transform:translateY(0) rotate(0);}
+ 50%{transform:translateY(-10px) rotate(3deg);}
+}
+/* Mode clair : on adoucit la parallaxe (sinon écrasante sur fond clair) */
+html[data-appearance="light"] #map-parallax{opacity:.7;}
+html[data-appearance="light"] .mp-mountains-far{opacity:.4;}
+html[data-appearance="light"] .mp-mountains-near{opacity:.55;}
+/* Respect strict de prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce){
+ .mp-star,.mp-astro,.mp-cloud,.mp-decor{animation:none !important;}
+ .map-path.lit .mp-path-svg path{animation:none !important;}
+ .mp-layer{transition:none !important;}
+}
+/* Mobile : on réduit un peu la densité visuelle (sinon trop chargé sur petit écran) */
+@media (max-width:620px){
+ .mp-cloud{font-size:1.5em;}
+ .mp-decor{font-size:1em;}
+ .mp-astro{font-size:2.4em;top:4%;right:6%;}
+}

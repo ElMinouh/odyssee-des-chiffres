@@ -155,7 +155,7 @@
   </div>
   <div style="display:flex;justify-content:center;gap:16px;margin:6px 0;flex-wrap:wrap;">
    <label style="font-size:.88em;display:inline-flex;align-items:center;gap:5px;"><input type="checkbox" id="voiceToggle"> &#128266; Voix</label>
-   <label style="font-size:.88em;display:inline-flex;align-items:center;gap:5px;"><input type="checkbox" id="musicToggle" onchange="toggleMusic()"> &#127925; Musique</label><label style="font-size:.88em;display:inline-flex;align-items:center;gap:5px;"><input type="checkbox" id="vibrateToggle" onchange="saveVibrate()"> 📳 Vibration</label><label style="font-size:.88em;display:inline-flex;align-items:center;gap:5px;"><input type="checkbox" id="ambianceToggle" checked onchange="saveAmbiance()"> &#127757; Ambiance</label>
+   <label style="font-size:.88em;display:inline-flex;align-items:center;gap:5px;"><input type="checkbox" id="musicToggle" onchange="toggleMusic()"> &#127925; Musique</label><label style="font-size:.88em;display:inline-flex;align-items:center;gap:5px;"><input type="checkbox" id="vibrateToggle" onchange="saveVibrate()"> 📳 Vibration</label><label style="font-size:.88em;display:inline-flex;align-items:center;gap:5px;"><input type="checkbox" id="ambianceToggle" checked onchange="saveAmbiance()"> &#127757; Ambiance</label><label style="font-size:.88em;display:inline-flex;align-items:center;gap:5px;"><input type="checkbox" id="parallaxToggle" checked onchange="saveParallax()"> &#127756; Mouvement</label>
   </div>
   <button onclick="startGame()" style="margin-top:10px;width:90%;font-size:1.1em;" class="pulse">&#9876;&#65039; COMMENCER</button>
   <button onclick="openMap()" title="Carte des zones à débloquer" style="background:#16a085;font-size:.88em;padding:8px 16px;margin-top:4px;">&#128506;&#65039; Carte d'Exploration</button>
@@ -165,7 +165,15 @@
 
  <!-- ═══ CARTE D'EXPLORATION ═══ -->
  <div id="v-map" class="hidden">
-  <div class="back-top-bar"><button class="back-top-btn" onclick="showView('v-menu')">&#8592; Retour</button></div>
+  <!-- Chantier B3 : couches parallaxe (générées dynamiquement par renderMap) -->
+  <div id="map-parallax" aria-hidden="true">
+   <div class="mp-layer mp-sky"></div>
+   <div class="mp-layer mp-stars"></div>
+   <div class="mp-layer mp-mountains-far"></div>
+   <div class="mp-layer mp-mountains-near"></div>
+   <div class="mp-layer mp-foreground"></div>
+  </div>
+  <div class="back-top-bar"><button class="back-top-btn" onclick="closeMap()">&#8592; Retour</button></div>
   
   <h2>&#128506;&#65039; Carte d'Exploration</h2>
   <p style="font-size:.8em;color:#bdc3c7;margin:3px 0 10px;">Bats les boss pour débloquer de nouvelles zones !</p>

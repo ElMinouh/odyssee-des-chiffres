@@ -200,3 +200,35 @@ function loadAmbiancePref(){
  const v = localStorage.getItem('ambiance_enabled');
  toggle.checked = (v === null) ? true : (v === '1');
 }
+
+// ═══════════════════════════════════════════════════════
+// Chantier B3 : Préférence "Mouvement" (parallaxe carte)
+// ═══════════════════════════════════════════════════════
+// Stockée globalement (comme l'ambiance), respecte aussi prefers-reduced-motion.
+function saveParallax(){
+ const toggle = document.getElementById('parallaxToggle');
+ if(!toggle) return;
+ localStorage.setItem('parallax_enabled', toggle.checked ? '1' : '0');
+ // Si la carte est ouverte, réagir immédiatement
+ if(typeof refreshParallaxState === 'function') refreshParallaxState();
+}
+
+function loadParallaxPref(){
+ const toggle = document.getElementById('parallaxToggle');
+ if(!toggle) return;
+ const v = localStorage.getItem('parallax_enabled');
+ toggle.checked = (v === null) ? true : (v === '1');
+}
+
+/**
+ * Source de vérité pour savoir si l'effet parallaxe doit être actif.
+ * Combine : la préférence utilisateur + le respect de prefers-reduced-motion.
+ */
+function getParallaxEnabled(){
+ // Respect strict de prefers-reduced-motion : prioritaire sur la pref
+ try{
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+ }catch(e){}
+ const v = localStorage.getItem('parallax_enabled');
+ return v === null ? true : (v === '1');
+}

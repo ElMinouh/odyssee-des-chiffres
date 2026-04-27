@@ -211,6 +211,8 @@ function stab(name){
 function returnMenu(){gameActive=false;clearPendingTimers();clearMonsterSpeech();$('BODY').classList.remove('urgency-bg','body-alert');const heart=$('timer-heart');if(heart)heart.style.display='none';showView('v-menu');loadProfile();
  // Chantier B4 : retirer le skin de zone en revenant au menu
  if(typeof stopZoneSkin==='function') stopZoneSkin();
+ // Chantier B3 : démonter le moteur parallaxe de la carte
+ if(typeof teardownMapParallax==='function') teardownMapParallax();
  // Chantier C3 : reset du flag devoir
  if(typeof GM!=='undefined'){GM.homework=false;GM.homeworkConfig=null;}
  // Chantier C3 : afficher la carte devoir si actif

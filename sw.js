@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v8.0.0'; // chantier B2 avatar evolutif selon paliers
+const CACHE_VERSION = 'v8.1.0'; // chantier B3 carte avec parallaxe
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources à mettre en cache au premier chargement (squelette de l'app).

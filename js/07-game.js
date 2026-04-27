@@ -6,9 +6,26 @@
 // validation, fin de partie, carte d'exploration.
 
 // ═══════════════════════════════════════════════════════
-// CARTE D'EXPLORATION
+// CARTE D'EXPLORATION + PARALLAXE (chantier B3)
 // ═══════════════════════════════════════════════════════
-function openMap(){showView('v-map');renderMap();}
+function openMap(){
+ showView('v-map');
+ renderMap();
+ // Chantier B3 : démarrer la parallaxe une fois le DOM stabilisé
+ setTimeout(()=>{
+  if(typeof initMapParallax==='function') initMapParallax();
+ }, 50);
+}
+
+/**
+ * Chantier B3 : ferme proprement la carte (cleanup parallaxe + retour menu).
+ * Remplace l'ancien onclick="showView('v-menu')" du bouton retour.
+ */
+function closeMap(){
+ if(typeof teardownMapParallax==='function') teardownMapParallax();
+ showView('v-menu');
+}
+
 function renderMap(){
  const beaten=P.mapBossBeaten||[];
  $('map-zones').innerHTML=MAP_ZONES.map((z,i)=>{
@@ -19,9 +36,10 @@ function renderMap(){
   const stars=done?'⭐⭐⭐':cur?'☆☆☆':'🔒';
   const starsTotal=P.stars||0;
   const canPlay=prev&&(starsTotal>=z.starsReq);
+  // Chantier B3 : data-zone-id permet à l'observer de détecter la zone "active" pendant le scroll
   return `
-   ${i>0?'<div class="map-path"></div>':''}
-   <div class="map-zone">
+   ${i>0?`<div class="map-path ${prev?'lit':''}"><svg class="mp-path-svg" viewBox="0 0 40 60" preserveAspectRatio="none"><path d="M20,0 Q5,30 20,60" fill="none" stroke="${prev?'#f1c40f':'rgba(255,255,255,.18)'}" stroke-width="2" stroke-dasharray="4 4"/></svg></div>`:''}
+   <div class="map-zone" data-zone-id="${z.id}" data-zone-idx="${i}">
     <div class="map-zone-inner ${st}" style="background:${z.bg};" onclick="${canPlay?`startMapBoss('${z.id}')`:''}" title="${!canPlay?'Besoin de '+z.starsReq+' ⭐':''}">
      <div style="display:flex;justify-content:space-between;align-items:center;">
       <span style="font-size:1.8em;">${z.emoji}</span>
@@ -35,6 +53,290 @@ function renderMap(){
    </div>`;
  }).join('');
 }
+
+// ──────────────────────────────────────────────────────────────────────
+// MOTEUR PARALLAXE (chantier B3)
+// ──────────────────────────────────────────────────────────────────────
+// Trois sources de mouvement combinées :
+//  1) Scroll vertical → translation Y des couches à vitesses différentes
+//  2) Souris (desktop) → translation X selon la position du curseur
+//  3) Accéléromètre (mobile) → translation X selon l'inclinaison du téléphone
+// La couche du ciel s'anime en couleur selon la zone visible au centre du viewport
+// (Intersection Observer). Tout est désactivé proprement si la pref est OFF.
+
+const _MP = {
+ active: false,
+ layers: null,            // {sky, stars, mountainsFar, mountainsNear, foreground}
+ currentZoneId: null,
+ io: null,                // IntersectionObserver
+ rafId: null,
+ mouseX: 0,               // -1..1
+ mouseY: 0,               // -1..1
+ tiltX: 0,                // -1..1 depuis l'accéléromètre
+ scrollY: 0,
+ scrollEl: null,
+ onScroll: null, onMouse: null, onTilt: null, onResize: null,
+};
+
+/**
+ * Initialise la parallaxe sur la carte. Idempotent : safe à appeler plusieurs fois.
+ */
+function initMapParallax(){
+ // Toujours peindre les couches (même statiques) pour avoir le ciel/montagnes
+ _MP.layers = {
+  sky:           document.querySelector('#map-parallax .mp-sky'),
+  stars:         document.querySelector('#map-parallax .mp-stars'),
+  mountainsFar:  document.querySelector('#map-parallax .mp-mountains-far'),
+  mountainsNear: document.querySelector('#map-parallax .mp-mountains-near'),
+  foreground:    document.querySelector('#map-parallax .mp-foreground'),
+ };
+ if(!_MP.layers.sky) return;
+ _paintParallaxStatic();
+ _setupZoneObserver();
+ // Mouvement actif uniquement si toggle ON et pas reduced-motion
+ const enabled = (typeof getParallaxEnabled==='function') ? getParallaxEnabled() : true;
+ if(enabled){
+  _attachMotionListeners();
+  _MP.active = true;
+ }
+}
+
+/**
+ * Démontage propre. Appelé au returnMenu et au closeMap.
+ */
+function teardownMapParallax(){
+ _detachMotionListeners();
+ if(_MP.io){ try{_MP.io.disconnect();}catch(e){} _MP.io = null; }
+ if(_MP.rafId){ cancelAnimationFrame(_MP.rafId); _MP.rafId = null; }
+ _MP.active = false;
+}
+
+/**
+ * Réagit à un changement de toggle pendant que la carte est ouverte.
+ */
+function refreshParallaxState(){
+ if(document.getElementById('v-map')?.classList.contains('hidden')) return;
+ const enabled = (typeof getParallaxEnabled==='function') ? getParallaxEnabled() : true;
+ if(enabled && !_MP.active){
+  _attachMotionListeners();
+  _MP.active = true;
+ } else if(!enabled && _MP.active){
+  _detachMotionListeners();
+  // Reset des transforms
+  ['stars','mountainsFar','mountainsNear','foreground'].forEach(k=>{
+   if(_MP.layers[k]) _MP.layers[k].style.transform = 'translate3d(0,0,0)';
+  });
+  _MP.active = false;
+ }
+}
+
+/**
+ * Peint le contenu statique des couches (étoiles, silhouettes de montagnes,
+ * éléments de premier plan). N'a pas besoin du mouvement.
+ */
+function _paintParallaxStatic(){
+ // Couche étoiles : 30 points lumineux à positions pseudo-aléatoires stables
+ if(_MP.layers.stars && !_MP.layers.stars.dataset.painted){
+  const stars = [];
+  for(let i=0;i<30;i++){
+   const x = (i*37.13) % 100;
+   const y = (i*23.7) % 100;
+   const size = 1 + (i%3);
+   const opacity = 0.3 + ((i*0.13) % 0.7);
+   stars.push(`<span class="mp-star" style="left:${x.toFixed(1)}%;top:${y.toFixed(1)}%;width:${size}px;height:${size}px;opacity:${opacity.toFixed(2)};animation-delay:${(i*0.17).toFixed(2)}s;"></span>`);
+  }
+  _MP.layers.stars.innerHTML = stars.join('') + '<span class="mp-astro">☀️</span>';
+  _MP.layers.stars.dataset.painted = '1';
+ }
+ // Montagnes : SVG inline (chaînes simples, le style donne la couleur)
+ if(_MP.layers.mountainsFar && !_MP.layers.mountainsFar.dataset.painted){
+  _MP.layers.mountainsFar.innerHTML = `<svg viewBox="0 0 1200 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,200 L0,140 L80,90 L160,120 L240,70 L340,110 L440,60 L560,100 L660,75 L780,115 L880,80 L1000,105 L1100,75 L1200,110 L1200,200 Z" fill="currentColor"/></svg>`;
+  _MP.layers.mountainsFar.dataset.painted = '1';
+ }
+ if(_MP.layers.mountainsNear && !_MP.layers.mountainsNear.dataset.painted){
+  _MP.layers.mountainsNear.innerHTML = `<svg viewBox="0 0 1200 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,200 L0,170 L100,120 L200,150 L320,100 L440,140 L580,95 L700,135 L840,110 L960,145 L1080,115 L1200,140 L1200,200 Z" fill="currentColor"/></svg>`;
+  _MP.layers.mountainsNear.dataset.painted = '1';
+ }
+ // Premier plan : 4 nuages dérivants
+ if(_MP.layers.foreground && !_MP.layers.foreground.dataset.painted){
+  const clouds = [];
+  for(let i=0;i<4;i++){
+   const top = 8 + i*16;
+   const delay = i*4;
+   const dur = 35 + (i*7)%18;
+   clouds.push(`<span class="mp-cloud" style="top:${top}%;animation-duration:${dur}s;animation-delay:-${delay}s;">☁️</span>`);
+  }
+  // 6 emojis de décor par défaut (ceux de la zone seront remplacés dynamiquement)
+  const decor = [];
+  for(let i=0;i<6;i++){
+   decor.push(`<span class="mp-decor" data-decor-slot="${i}" style="left:${(i*17.3)%100}%;top:${60+(i*7)%30}%;animation-delay:-${i*3}s;">·</span>`);
+  }
+  _MP.layers.foreground.innerHTML = clouds.join('') + decor.join('');
+  _MP.layers.foreground.dataset.painted = '1';
+ }
+ // Ciel par défaut : on prend la première zone si on n'a pas encore d'observation
+ const firstZone = MAP_ZONES[0];
+ if(firstZone && firstZone.parallax){
+  _applyZoneParallax(firstZone);
+  _MP.currentZoneId = firstZone.id;
+ }
+}
+
+/**
+ * Applique la palette parallaxe d'une zone donnée (ciel, montagnes, décor, astro).
+ */
+function _applyZoneParallax(zone){
+ if(!zone || !zone.parallax || !_MP.layers.sky) return;
+ const px = zone.parallax;
+ _MP.layers.sky.style.background = `linear-gradient(180deg, ${px.sky[0]} 0%, ${px.sky[1]} 55%, ${px.sky[2]} 100%)`;
+ if(_MP.layers.mountainsFar) _MP.layers.mountainsFar.style.color = px.mountains[0];
+ if(_MP.layers.mountainsNear) _MP.layers.mountainsNear.style.color = px.mountains[1];
+ // Astro
+ const astro = _MP.layers.stars?.querySelector('.mp-astro');
+ if(astro) astro.textContent = px.astro || '☀️';
+ // Décor
+ const decorEls = _MP.layers.foreground?.querySelectorAll('.mp-decor');
+ if(decorEls && px.decor){
+  decorEls.forEach((el,i)=>{ el.textContent = px.decor[i % px.decor.length]; });
+ }
+}
+
+/**
+ * Observe quelle zone est au centre du viewport pour mettre à jour la palette.
+ */
+function _setupZoneObserver(){
+ if(_MP.io){ try{_MP.io.disconnect();}catch(e){} }
+ if(typeof IntersectionObserver==='undefined') return;
+ const zoneEls = document.querySelectorAll('.map-zone[data-zone-id]');
+ if(!zoneEls.length) return;
+ _MP.io = new IntersectionObserver((entries)=>{
+  // On prend la zone avec le ratio d'intersection le plus élevé
+  let best = null;
+  entries.forEach(e=>{
+   if(e.isIntersecting && (!best || e.intersectionRatio > best.intersectionRatio)) best = e;
+  });
+  if(best){
+   const id = best.target.dataset.zoneId;
+   if(id && id !== _MP.currentZoneId){
+    const zone = MAP_ZONES.find(z=>z.id===id);
+    if(zone){
+     _applyZoneParallax(zone);
+     _MP.currentZoneId = id;
+    }
+   }
+  }
+ }, { threshold: [0.2, 0.5, 0.8], rootMargin: '-30% 0px -30% 0px' });
+ zoneEls.forEach(el=>_MP.io.observe(el));
+}
+
+/**
+ * Attache les listeners de mouvement (scroll, mouse, accéléromètre).
+ */
+function _attachMotionListeners(){
+ _MP.scrollEl = document.getElementById('v-map');
+ // Scroll : on lit le scroll de la window (#v-map est dans le flux normal)
+ _MP.onScroll = ()=>{
+  _MP.scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+  _scheduleParallaxUpdate();
+ };
+ window.addEventListener('scroll', _MP.onScroll, { passive: true });
+ // Souris (desktop)
+ _MP.onMouse = (e)=>{
+  const w = window.innerWidth || 1, h = window.innerHeight || 1;
+  _MP.mouseX = (e.clientX / w) * 2 - 1; // -1 .. 1
+  _MP.mouseY = (e.clientY / h) * 2 - 1;
+  _scheduleParallaxUpdate();
+ };
+ window.addEventListener('mousemove', _MP.onMouse, { passive: true });
+ // Accéléromètre (mobile) avec gestion permission iOS 13+
+ _setupTiltListener();
+ // Resize
+ _MP.onResize = ()=>_scheduleParallaxUpdate();
+ window.addEventListener('resize', _MP.onResize, { passive: true });
+ // Premier rendu
+ _MP.scrollY = window.scrollY || 0;
+ _scheduleParallaxUpdate();
+}
+
+function _detachMotionListeners(){
+ if(_MP.onScroll) window.removeEventListener('scroll', _MP.onScroll);
+ if(_MP.onMouse) window.removeEventListener('mousemove', _MP.onMouse);
+ if(_MP.onTilt) window.removeEventListener('deviceorientation', _MP.onTilt);
+ if(_MP.onResize) window.removeEventListener('resize', _MP.onResize);
+ _MP.onScroll = _MP.onMouse = _MP.onTilt = _MP.onResize = null;
+}
+
+/**
+ * Demande la permission d'accès à l'accéléromètre (requis sur iOS 13+) puis
+ * attache le handler. Sur Android et desktop, attache directement.
+ */
+function _setupTiltListener(){
+ const handler = (e)=>{
+  // gamma = inclinaison gauche/droite (-90..90), beta = avant/arrière (-180..180)
+  const gamma = e.gamma;
+  if(gamma == null) return;
+  // Seuil anti-jitter : on ignore les variations < 1°
+  const raw = Math.max(-30, Math.min(30, gamma)) / 30; // -1..1
+  // Lissage exponentiel léger
+  _MP.tiltX = _MP.tiltX * 0.85 + raw * 0.15;
+  _scheduleParallaxUpdate();
+ };
+ const isIOS = typeof DeviceOrientationEvent !== 'undefined'
+            && typeof DeviceOrientationEvent.requestPermission === 'function';
+ if(isIOS){
+  // Sur iOS 13+, requestPermission DOIT être appelé depuis un événement utilisateur.
+  // On greffe un one-shot click-listener qui demande puis attache le handler.
+  const askThenAttach = ()=>{
+   try{
+    DeviceOrientationEvent.requestPermission().then(state=>{
+     if(state === 'granted'){
+      window.addEventListener('deviceorientation', handler, { passive: true });
+      _MP.onTilt = handler;
+     }
+    }).catch(()=>{ /* refusé : pas de tilt, on garde scroll+mouse */ });
+   }catch(e){}
+   document.removeEventListener('click', askThenAttach);
+   document.removeEventListener('touchstart', askThenAttach);
+  };
+  document.addEventListener('click', askThenAttach, { once: true });
+  document.addEventListener('touchstart', askThenAttach, { once: true, passive: true });
+ } else if(typeof DeviceOrientationEvent !== 'undefined'){
+  window.addEventListener('deviceorientation', handler, { passive: true });
+  _MP.onTilt = handler;
+ }
+}
+
+/**
+ * rAF throttle : update au plus une fois par frame.
+ */
+function _scheduleParallaxUpdate(){
+ if(_MP.rafId) return;
+ _MP.rafId = requestAnimationFrame(()=>{
+  _MP.rafId = null;
+  _updateParallaxTransforms();
+ });
+}
+
+function _updateParallaxTransforms(){
+ if(!_MP.active || !_MP.layers.stars) return;
+ // Décalage horizontal combiné souris + tilt (en px max)
+ // Couches lointaines bougent plus que les proches (parallaxe inversée vs scroll)
+ const dxFar  = (_MP.mouseX + _MP.tiltX*2) * 18; // ±18 px
+ const dxMid  = (_MP.mouseX + _MP.tiltX*2) * 10;
+ const dxNear = (_MP.mouseX + _MP.tiltX*2) * 4;
+ // Décalage vertical au scroll (parallaxe : plus on est loin, moins on bouge avec le scroll)
+ const sy = _MP.scrollY;
+ const tyStars     = sy * -0.12;
+ const tyMtnFar    = sy * -0.30;
+ const tyMtnNear   = sy * -0.50;
+ const tyForeground = sy * -0.70;
+ // Application
+ if(_MP.layers.stars)         _MP.layers.stars.style.transform         = `translate3d(${dxFar}px, ${tyStars}px, 0)`;
+ if(_MP.layers.mountainsFar)  _MP.layers.mountainsFar.style.transform  = `translate3d(${dxMid}px, ${tyMtnFar}px, 0)`;
+ if(_MP.layers.mountainsNear) _MP.layers.mountainsNear.style.transform = `translate3d(${dxNear}px, ${tyMtnNear}px, 0)`;
+ if(_MP.layers.foreground)    _MP.layers.foreground.style.transform    = `translate3d(${dxNear*0.6}px, ${tyForeground}px, 0)`;
+}
+
 function startMapBoss(zoneId){
  const zone=MAP_ZONES.find(z=>z.id===zoneId);if(!zone)return;
  GM.mapZone=zone;GM.level=zone.level;GM.mode2='normal';GM.mode=P.prefs.mode||'keyboard';

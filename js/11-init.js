@@ -21,6 +21,8 @@ window.onload=()=>{
  loadVoice();
  // Chantier B4 : préférence ambiance
  if(typeof loadAmbiancePref==='function') loadAmbiancePref();
+ // Chantier B3 : préférence parallaxe (mouvement)
+ if(typeof loadParallaxPref==='function') loadParallaxPref();
  setupNumpad();
  // Init voix française dès que la liste des voix est disponible
  if(window.speechSynthesis){

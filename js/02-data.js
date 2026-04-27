@@ -32,13 +32,22 @@ function levelFromXP(xp){let l=1;for(let i=0;i<XP_TABLE.length;i++){if(xp>=XP_TA
 function xpInLevel(xp){for(let i=0;i<XP_TABLE.length;i++){if(xp>=XP_TABLE[i])xp-=XP_TABLE[i];else return{cur:xp,need:XP_TABLE[i]};}return{cur:0,need:XP_TABLE[49]};}
 
 // ── ZONES DE LA CARTE ──
+// Le champ `parallax` (chantier B3) définit l'ambiance visuelle de la couche de fond
+// affichée derrière la carte d'exploration : couleurs du ciel (3 stops du gradient),
+// teinte des montagnes (2 stops), et emoji décoratifs flottants.
 const MAP_ZONES=[
- {id:'plaine',  label:'Plaine des Débuts',bg:'linear-gradient(135deg,#27ae60,#2ecc71)',emoji:'🌾',boss:'🐺',bossName:'Loup des Plaines',level:'CP', starsReq:0,   theme:'standard'},
- {id:'foret',   label:'Forêt Enchantée',  bg:'linear-gradient(135deg,#1b6b3a,#2ecc71)',emoji:'🌲',boss:'🐲',bossName:'Dragon de Forêt', level:'CE1',starsReq:10,  theme:'foret'},
- {id:'desert',  label:'Désert de Feu',    bg:'linear-gradient(135deg,#e67e22,#c0392b)',emoji:'🏜️',boss:'🦂',bossName:'Scorpion Géant',  level:'CE2',starsReq:30,  theme:'volcan'},
- {id:'glace',   label:'Pics de Glace',    bg:'linear-gradient(135deg,#2980b9,#74b9ff)',emoji:'🏔️',boss:'❄️',bossName:'Géant de Glace',  level:'CM1',starsReq:60,  theme:'standard'},
- {id:'volcan',  label:'Volcan Maudit',    bg:'linear-gradient(135deg,#8b0000,#e74c3c)',emoji:'🌋',boss:'🔥',bossName:'Seigneur des Flammes',level:'CM2',starsReq:100,theme:'volcan'},
- {id:'espace',  label:'Galaxie Infinie',  bg:'linear-gradient(135deg,#1a1c2c,#9b59b6)',emoji:'🌌',boss:'👽',bossName:'Alien Quantique',  level:'CM2',starsReq:200,theme:'espace'},
+ {id:'plaine',  label:'Plaine des Débuts',bg:'linear-gradient(135deg,#27ae60,#2ecc71)',emoji:'🌾',boss:'🐺',bossName:'Loup des Plaines',level:'CP', starsReq:0,   theme:'standard',
+  parallax:{sky:['#87ceeb','#b8e0d2','#a8d8a8'], mountains:['#5a8c5a','#3a6c3a'], decor:['🦋','🌼','🍃'], astro:'☀️'}},
+ {id:'foret',   label:'Forêt Enchantée',  bg:'linear-gradient(135deg,#1b6b3a,#2ecc71)',emoji:'🌲',boss:'🐲',bossName:'Dragon de Forêt', level:'CE1',starsReq:10,  theme:'foret',
+  parallax:{sky:['#2d5a3d','#1a4d2e','#0f3520'], mountains:['#1b3a2a','#0a2418'], decor:['🍂','🦉','🌿'], astro:'🌙'}},
+ {id:'desert',  label:'Désert de Feu',    bg:'linear-gradient(135deg,#e67e22,#c0392b)',emoji:'🏜️',boss:'🦂',bossName:'Scorpion Géant',  level:'CE2',starsReq:30,  theme:'volcan',
+  parallax:{sky:['#f4a261','#e76f51','#9c2a1a'], mountains:['#a04020','#5e2410'], decor:['🌵','🦅','💨'], astro:'☀️'}},
+ {id:'glace',   label:'Pics de Glace',    bg:'linear-gradient(135deg,#2980b9,#74b9ff)',emoji:'🏔️',boss:'❄️',bossName:'Géant de Glace',  level:'CM1',starsReq:60,  theme:'standard',
+  parallax:{sky:['#dfe6e9','#a8c8e0','#74b9ff'], mountains:['#7a9eb8','#3a5a7a'], decor:['❄️','💎','🌬️'], astro:'☀️'}},
+ {id:'volcan',  label:'Volcan Maudit',    bg:'linear-gradient(135deg,#8b0000,#e74c3c)',emoji:'🌋',boss:'🔥',bossName:'Seigneur des Flammes',level:'CM2',starsReq:100,theme:'volcan',
+  parallax:{sky:['#3a0a0a','#6b1010','#a02020'], mountains:['#4a0808','#1a0202'], decor:['🔥','💥','⚡'], astro:'🌑'}},
+ {id:'espace',  label:'Galaxie Infinie',  bg:'linear-gradient(135deg,#1a1c2c,#9b59b6)',emoji:'🌌',boss:'👽',bossName:'Alien Quantique',  level:'CM2',starsReq:200,theme:'espace',
+  parallax:{sky:['#0a0a2e','#1a1c4a','#3a2c6e'], mountains:['#2a1a4a','#0a0530'], decor:['✨','🌠','🪐'], astro:'🌕'}},
 ];
 
 const HERO_TITLES=[
