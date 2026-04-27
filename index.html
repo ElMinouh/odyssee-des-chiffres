@@ -531,11 +531,11 @@
 <!-- Enregistrement du Service Worker (mode hors-ligne + installation PWA) -->
 <script>
 if ('serviceWorker' in navigator) {
-  let _swInitialVersion = null;   // version active au chargement initial
   let _updateNotified = false;    // évite de notifier plusieurs fois
+  let _refreshing = false;         // évite la boucle de reload sur controllerchange
 
   // Notification visuelle : nouvelle version dispo
-  function _showUpdateBanner(newVersion){
+  function _showUpdateBanner(){
     if(_updateNotified) return;
     _updateNotified = true;
     const banner = document.createElement('div');
@@ -556,23 +556,33 @@ if ('serviceWorker' in navigator) {
     document.body.appendChild(banner);
     document.getElementById('sw-update-btn').onclick = ()=>{
       banner.remove();
-      window.location.reload();
+      _swActivateAndReload();
     };
     document.getElementById('sw-update-dismiss').onclick = ()=>banner.remove();
   }
 
-  // Écoute les messages du SW
+  // Active le SW en attente puis recharge la page après bascule du controller.
+  function _swActivateAndReload(){
+    navigator.serviceWorker.getRegistration().then(reg => {
+      if(!reg || !reg.waiting){
+        // Pas de SW en attente : reload simple
+        window.location.reload();
+        return;
+      }
+      // On reload dès que le nouveau SW prend le contrôle
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if(_refreshing) return;
+        _refreshing = true;
+        window.location.reload();
+      });
+      reg.waiting.postMessage('skipWaiting');
+    }).catch(() => window.location.reload());
+  }
+
+  // Écoute les messages du SW (mise à jour du titre avec la version)
   navigator.serviceWorker.addEventListener('message', (event) => {
     if(event.data?.type === 'SW_UPDATED'){
-      const newVersion = event.data.version;
-      // Met à jour le titre de l'onglet avec la version
-      document.title = `L'Odyssée des Chiffres ${newVersion}`;
-      // Si le SW vient d'être activé MAIS qu'on était déjà sur une version, c'est une vraie maj
-      if(_swInitialVersion && newVersion !== _swInitialVersion){
-        _showUpdateBanner(newVersion);
-      }
-      // Au tout premier chargement, on mémorise juste la version active
-      if(!_swInitialVersion) _swInitialVersion = newVersion;
+      document.title = `L'Odyssée des Chiffres ${event.data.version}`;
     }
   });
 
@@ -580,19 +590,23 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js')
       .then(reg => {
         console.info('[PWA] Service Worker actif (scope: ' + reg.scope + ')');
-        // Récupère la version actuellement servie
+        // Récupère la version actuellement servie pour le titre
         if(navigator.serviceWorker.controller){
-          // SW déjà actif (visite ultérieure)
           navigator.serviceWorker.controller.postMessage({type:'GET_VERSION'});
         }
-        // Détecter une nouvelle version qui se télécharge
+        // Cas 1 : un SW est déjà en attente au moment de l'enregistrement
+        // (l'utilisateur a ouvert l'onglet alors qu'une maj précédente est prête)
+        if(reg.waiting && navigator.serviceWorker.controller){
+          _showUpdateBanner();
+        }
+        // Cas 2 : un nouveau SW se télécharge maintenant pendant que l'app tourne
         reg.addEventListener('updatefound', () => {
           const newWorker = reg.installing;
           newWorker?.addEventListener('statechange', () => {
             if(newWorker.state === 'installed' && navigator.serviceWorker.controller){
-              // Une nouvelle version est prête, mais l'ancienne est encore active
-              // On force l'activation immédiate en envoyant skipWaiting
-              newWorker.postMessage('skipWaiting');
+              // Le nouveau SW est prêt mais en attente. On affiche le banner :
+              // c'est l'utilisateur qui décidera quand activer + reload.
+              _showUpdateBanner();
             }
           });
         });

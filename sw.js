@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v8.1.0'; // chantier B3 carte avec parallaxe
+const CACHE_VERSION = 'v8.1.1'; // hotfix : restaurer le banner de notification de mise à jour
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources à mettre en cache au premier chargement (squelette de l'app).
@@ -49,11 +49,14 @@ const PRECACHE_URLS = [
 ];
 
 // ── Installation : pré-cache des fichiers de base ──────────────────
+// Note : on ne fait PAS skipWaiting() ici. Le nouveau SW reste en "waiting"
+// jusqu'à ce que le client le décide explicitement (via clic sur le banner
+// "Actualiser"). C'est ce qui permet d'afficher la notification de mise à jour
+// au lieu d'écraser silencieusement l'ancienne version.
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(PRECACHE_URLS))
-      .then(() => self.skipWaiting())
   );
 });
 
