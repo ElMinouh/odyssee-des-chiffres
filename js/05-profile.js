@@ -8,12 +8,12 @@
 // ═══════════════════════════════════════════════════════
 // Incrémenter SAVE_VERSION quand le format change. Ajouter une fonction de
 // migration `migrate_v{N-1}_to_v{N}` qui transforme l'ancien format en nouveau.
-const SAVE_VERSION = 6;
+const SAVE_VERSION = 7;
 
 const _MIGRATIONS = {
  // De V5 vers V6 : ajout du champ opFilters et mapBossBeaten.
- // Exemple de migration future :
- // 6: (raw) => { raw.newField = 'default'; return raw; },
+ // De V6 vers V7 : ajout du champ heroStageId (chantier B2).
+ 7: (raw) => { raw.heroStageId = raw.heroStageId || 'oeuf'; return raw; },
 };
 
 function migrateProfile(raw){
@@ -140,7 +140,8 @@ function defProfile(name){
   sessionMinutes:0,weeklyChallenge:null,wcDate:null,
   objective:0,objectiveDone:0,objDate:null,
   avatar:'🧙',heroTitle:'novice',ownedSkins:[],equippedSkin:null,victorySound:'fanfare',ownedFigurines:[],
-  opFilters:{add:true,sub:true,mult:true,div:true,miss:true,frac:true,geo:true}};
+  opFilters:{add:true,sub:true,mult:true,div:true,miss:true,frac:true,geo:true},
+  heroStageId:'oeuf'};
 }
 function loadProfile(){
  const sel=$('playerSelect').value;

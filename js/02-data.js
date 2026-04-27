@@ -8,7 +8,20 @@ const KNOWN=['Soren','Peyo','Tomi','Maman','Papa'];
 const UNLOCK_REQ={CP:0,CE1:3,CE2:5,CM1:4,CM2:5};
 const HP_LVL={CP:1,CE1:2,CE2:3,CM1:4,CM2:5};
 const EMOJIS=['🍎','🎂','⭐','🎈','🐟','🌸','🍬','🚗','🐱','🐶'];
-const AVATAR_LIST=['🧙','🦸','🧝','🧜','🐉','🦊','🐺','🐸','🦁','🐯','🦄','👽','🤖','🧟','🧛','🎭','🌟','⚡','🔥','❄️','🌈','💎','👑','🏆','🌀','🟢','😈','🍬','⚔️','☯️','👱‍♀️','💥','⭐','📚','♟️','🔮','💀','🧪','🐍','🧦','🌙','💙','😤','🧘','☀️','🎲','🧔','💚','🪖','🐻','🎯','🪨','💧','🎋','👹','👻','🟠','🌸','⛄','⛏️','🦌','🧊','🤴','🐭','🎀','🦆','💐','🐶','🐕','🐿️','🕷️','🦾','🛡️','🕸️','💜','🐾','🔪','✨','🧬','🌿','😴','🔵','🍄','🦎','💛','💗','🚀','⚕️','👱'];
+// AVATAR_LIST = ensemble exhaustif des avatars du jeu, réparti par stade dans HERO_STAGES (chantier B2).
+// Si tu ajoutes un avatar, ajoute-le ICI **et** dans le stade correspondant de HERO_STAGES.unlockedAvatars.
+const AVATAR_LIST=[
+ // Œuf (15) — visages enfantins, animaux mignons, formes basiques
+ '🧒','🧑','👦','👧','🐣','🐥','🐶','🐕','🐭','🐸','🟢','🟠','🔵','⭐','🍬',
+ // Apprenti (27) — mages débutants, animaux, nature, couleurs, jeux
+ '🧙','🧝','🦊','🐺','🐻','🦌','🐯','🐍','🐿️','🦆','🦎','🌿','🌸','🎋','🍄','💐','💚','💙','💜','💛','💗','📚','🎲','♟️','🌀','🎀','🧦',
+ // Aventurier (30) — héros, créatures, équipement, sciences, éléments
+ '🦸','🦹','🥷','🧜','🦄','🐉','🛡️','⚔️','🦁','🤴','🧔','🪖','🪨','⛏️','🎯','🧬','🧪','🐾','🕷️','🕸️','👻','👹','🔪','⚕️','💧','❄️','🧊','😤','😴','🧘',
+ // Maître (23) — sages avancés, magie cosmique, créatures puissantes
+ '🧙\u200D♂️','🧙\u200D♀️','🦸\u200D♂️','🦸\u200D♀️','🧜\u200D♀️','🧜\u200D♂️','🧚','💎','🔮','🌟','⚡','🔥','🌙','☀️','⛄','😈','🧛','🧟','💀','🦾','🎭','☯️','🚀',
+ // Légende (14) — symboles ultimes, divin, futur
+ '👑','🏆','🌈','✨','💫','🎆','🎇','🪐','🛸','👽','🤖','💥','👱\u200D♀️','👱',
+];
 
 // ── XP SYSTÈME ── niveau 1→50
 const XP_TABLE=Array.from({length:50},(_,i)=>Math.round(20+i*25));
@@ -243,7 +256,7 @@ const HERO_STAGES = [
   color:'#bdc3c7',
   desc:'Tu fais tes premiers pas dans le monde des chiffres.',
   ok: d => true, // toujours dispo (stade de départ)
-  unlockedAvatars: ['🧒','🧑','👦','👧','🐣','🐥'],
+  unlockedAvatars: ['🧒','🧑','👦','👧','🐣','🐥','🐶','🐕','🐭','🐸','🟢','🟠','🔵','⭐','🍬'],
  },
  {
   id:'apprenti',
@@ -252,7 +265,7 @@ const HERO_STAGES = [
   color:'#2ecc71',
   desc:'Tu maîtrises tes premières opérations.',
   ok: d => (d.totalWins||0) >= 5,
-  unlockedAvatars: ['🧙','🧝','🦊','🐺','🐸','🐻','🐭','🦌'],
+  unlockedAvatars: ['🧙','🧝','🦊','🐺','🐻','🦌','🐯','🐍','🐿️','🦆','🦎','🌿','🌸','🎋','🍄','💐','💚','💙','💜','💛','💗','📚','🎲','♟️','🌀','🎀','🧦'],
  },
  {
   id:'aventurier',
@@ -261,7 +274,7 @@ const HERO_STAGES = [
   color:'#3498db',
   desc:'Tu es devenu un vrai héros !',
   ok: d => (d.totalWins||0) >= 25,
-  unlockedAvatars: ['🦸','🦹','🥷','🧜','🦄','🐉','🦁','🐯','🛡️','⚔️'],
+  unlockedAvatars: ['🦸','🦹','🥷','🧜','🦄','🐉','🛡️','⚔️','🦁','🤴','🧔','🪖','🪨','⛏️','🎯','🧬','🧪','🐾','🕷️','🕸️','👻','👹','🔪','⚕️','💧','❄️','🧊','😤','😴','🧘'],
  },
  {
   id:'maitre',
@@ -270,7 +283,7 @@ const HERO_STAGES = [
   color:'#e67e22',
   desc:'Ta sagesse mathématique est reconnue.',
   ok: d => (d.totalWins||0) >= 50 && (d._totalStarsEarned||0) >= 100,
-  unlockedAvatars: ['🧙‍♂️','🧙‍♀️','🦸‍♂️','🦸‍♀️','🧜‍♀️','🧜‍♂️','🧚','💎','🔮','🌟','⚡','🔥'],
+  unlockedAvatars: ['🧙\u200D♂️','🧙\u200D♀️','🦸\u200D♂️','🦸\u200D♀️','🧜\u200D♀️','🧜\u200D♂️','🧚','💎','🔮','🌟','⚡','🔥','🌙','☀️','⛄','😈','🧛','🧟','💀','🦾','🎭','☯️','🚀'],
  },
  {
   id:'legende',
@@ -279,7 +292,7 @@ const HERO_STAGES = [
   color:'#f1c40f',
   desc:'Tu fais partie des héros légendaires des chiffres !',
   ok: d => (d.totalWins||0) >= 100 && (d._totalStarsEarned||0) >= 500 && (d.figurinesCount||0) >= 30,
-  unlockedAvatars: ['👑','🏆','🌈','✨','💫','🎆','🎇','☀️','🌙','🪐','🛸'],
+  unlockedAvatars: ['👑','🏆','🌈','✨','💫','🎆','🎇','🪐','🛸','👽','🤖','💥','👱\u200D♀️','👱'],
  },
 ];
 
@@ -314,6 +327,7 @@ function getNextHeroStage(){
 
 /**
  * Retourne tous les avatars accessibles au joueur (cumul de tous les stades atteints).
+ * Dédupe en cas de doublon inter-stade (filet de sécurité pour la maintenance).
  */
 function getUnlockedAvatars(){
  const current = getHeroStage();
@@ -322,5 +336,5 @@ function getUnlockedAvatars(){
  for(let i=0; i<=idx; i++){
   unlocked.push(...HERO_STAGES[i].unlockedAvatars);
  }
- return unlocked;
+ return [...new Set(unlocked)];
 }
