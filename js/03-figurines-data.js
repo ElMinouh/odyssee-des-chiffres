@@ -47,12 +47,52 @@ if (typeof window !== 'undefined') {
 // ═══════════════════════════════════════════════════════
 // Chantier E1 : portraits HD (images WebP) avec fallback SVG
 // ═══════════════════════════════════════════════════════
-// Liste des IDs ayant une image HD disponible dans assets/figurines/{id}.webp.
-// Ajouter un ID ici dès qu'on a généré et placé son fichier .webp.
-// Ordre indifférent. La taille de la liste n'a pas d'impact sur les perfs.
-const FIG_IMG_AVAILABLE = new Set([
-  'db01', // Goku Super Saiyen
-]);
+// Détection automatique : on tente de charger l'image au premier appel ;
+// si elle existe, on la garde en cache (Set) ; si 404, on la marque comme absente
+// pour ne plus retenter.
+// AVANTAGE : aucune maintenance du Set quand tu ajoutes une figurine.
+// Il suffit de déposer le .webp dans assets/figurines/ et c'est détecté.
+const FIG_IMG_AVAILABLE = new Set();
+const FIG_IMG_TESTED = new Set(); // évite de re-tester les images déjà checkées
+const FIG_IMG_FAILED = new Set();  // images confirmées absentes (404)
+
+/**
+ * Probe l'existence d'une image figurine. Async, met à jour les Sets.
+ * Si tu préfères forcer manuellement la liste, ajoute les IDs dans FIG_IMG_AVAILABLE
+ * dans la liste FIG_IMG_PRELOAD ci-dessous.
+ */
+function _probeFigImage(id){
+ if(FIG_IMG_TESTED.has(id)) return; // déjà testée
+ FIG_IMG_TESTED.add(id);
+ const img = new Image();
+ img.onload = ()=>{
+  FIG_IMG_AVAILABLE.add(id);
+  // Re-render éventuel de la galerie si elle est ouverte (sinon ce sera au prochain rendu)
+  if(typeof renderFigCollection==='function' && document.getElementById('v-figs') && !document.getElementById('v-figs').classList.contains('hidden')){
+   renderFigCollection();
+  }
+ };
+ img.onerror = ()=>{ FIG_IMG_FAILED.add(id); };
+ img.src = 'assets/figurines/' + id + '.webp';
+}
+
+// Liste de pré-chargement explicite : pour les figurines que tu sais avoir
+// une image HD (évite le délai de probe au premier rendu).
+// Ajoute simplement l'ID quand tu pousses un nouveau .webp.
+const FIG_IMG_PRELOAD = [
+     'db01', 'db02', 'db03', 'db04', 'db05', 'db06',
+     'db07', 'db08', 'db09', 'db10', 'db11', 'db12',
+   ];
+// Marque immédiatement comme disponibles + précharge
+if(typeof window !== 'undefined'){
+ FIG_IMG_PRELOAD.forEach(id => {
+  FIG_IMG_AVAILABLE.add(id);
+  FIG_IMG_TESTED.add(id);
+  // Précharge le fichier pour qu'il soit déjà en cache navigateur quand l'utilisateur ouvre la galerie
+  const img = new Image();
+  img.src = 'assets/figurines/' + id + '.webp';
+ });
+}
 
 /**
  * Retourne le HTML du portrait d'une figurine, en privilégiant l'image HD si dispo,
@@ -65,19 +105,23 @@ const FIG_IMG_AVAILABLE = new Set([
 function getCharPortrait(id, opts = {}){
  const size = opts.size || 100;
  const emoji = opts.emoji || '❓';
- // 1. Image HD si disponible
+ // 1. Image HD si disponible (préchargée OU détectée)
  if(FIG_IMG_AVAILABLE.has(id)){
-  // loading="lazy" + decoding="async" : ne bloque pas le rendu de la galerie
-  // onerror : si pour une raison X l'image rate (404, cache corrompu), retombe sur SVG/emoji
   const fallbackHTML = (CHAR_PORTRAITS[id] || `<div style="font-size:${size*0.45}px;line-height:${size}px;text-align:center;">${emoji}</div>`)
     .replace(/'/g, '&#39;').replace(/"/g, '&quot;');
   return `<img src="assets/figurines/${id}.webp" alt="" loading="lazy" decoding="async"
     style="width:100%;height:100%;object-fit:contain;display:block;"
     onerror="this.outerHTML='${fallbackHTML}'"/>`;
  }
- // 2. Sprite SVG legacy
+ // 2. Pas en cache + pas encore testé : on lance une probe asynchrone (sans bloquer)
+ //    et on retombe sur SVG en attendant. Quand la probe réussit, la prochaine ouverture
+ //    de la galerie affichera l'image.
+ if(!FIG_IMG_TESTED.has(id) && !FIG_IMG_FAILED.has(id)){
+  _probeFigImage(id);
+ }
+ // 3. Sprite SVG legacy
  if(CHAR_PORTRAITS[id]) return CHAR_PORTRAITS[id];
- // 3. Emoji fallback
+ // 4. Emoji fallback
  return `<div style="font-size:${size*0.45}px;line-height:${size}px;text-align:center;">${emoji}</div>`;
 }
 

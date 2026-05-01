@@ -37,8 +37,9 @@ const PRECACHE_URLS = [
   './js/11-init.js',
   './assets/portraits.svg',
   './assets/icon.svg',
-  // Chantier E1 : figurines HD (ajouter chaque .webp ici)
-  './assets/figurines/db01.webp',
+  // Note : les images figurines (assets/figurines/*.webp) ne sont PAS précachées
+  // ici pour éviter de gonfler le précache. Elles sont cachées automatiquement
+  // au premier accès par la stratégie stale-while-revalidate ci-dessous.
 './assets/icon-192.png',
   './assets/icon-512.png',
   './assets/apple-touch-icon.png',
