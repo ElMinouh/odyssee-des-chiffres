@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v8.1.2'; // chantier C2 rapport hebdomadaire enrichi
+const CACHE_VERSION = 'v8.2.0'; // chantier E1 figurines HD (images WebP)
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources à mettre en cache au premier chargement (squelette de l'app).
@@ -37,6 +37,8 @@ const PRECACHE_URLS = [
   './js/11-init.js',
   './assets/portraits.svg',
   './assets/icon.svg',
+  // Chantier E1 : figurines HD (ajouter chaque .webp ici)
+  './assets/figurines/db01.webp',
 './assets/icon-192.png',
   './assets/icon-512.png',
   './assets/apple-touch-icon.png',

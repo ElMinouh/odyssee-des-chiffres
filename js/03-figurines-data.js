@@ -44,6 +44,43 @@ if (typeof window !== 'undefined') {
   window.addEventListener('load', () => { loadPortraits(); });
 }
 
+// ═══════════════════════════════════════════════════════
+// Chantier E1 : portraits HD (images WebP) avec fallback SVG
+// ═══════════════════════════════════════════════════════
+// Liste des IDs ayant une image HD disponible dans assets/figurines/{id}.webp.
+// Ajouter un ID ici dès qu'on a généré et placé son fichier .webp.
+// Ordre indifférent. La taille de la liste n'a pas d'impact sur les perfs.
+const FIG_IMG_AVAILABLE = new Set([
+  'db01', // Goku Super Saiyen
+]);
+
+/**
+ * Retourne le HTML du portrait d'une figurine, en privilégiant l'image HD si dispo,
+ * sinon le portrait SVG (sprite legacy), sinon une fallback emoji.
+ *
+ * @param {string} id - ID de la figurine (ex. 'db01')
+ * @param {object} [opts] - { size: number en px, emoji: string fallback emoji }
+ * @returns {string} HTML
+ */
+function getCharPortrait(id, opts = {}){
+ const size = opts.size || 100;
+ const emoji = opts.emoji || '❓';
+ // 1. Image HD si disponible
+ if(FIG_IMG_AVAILABLE.has(id)){
+  // loading="lazy" + decoding="async" : ne bloque pas le rendu de la galerie
+  // onerror : si pour une raison X l'image rate (404, cache corrompu), retombe sur SVG/emoji
+  const fallbackHTML = (CHAR_PORTRAITS[id] || `<div style="font-size:${size*0.45}px;line-height:${size}px;text-align:center;">${emoji}</div>`)
+    .replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+  return `<img src="assets/figurines/${id}.webp" alt="" loading="lazy" decoding="async"
+    style="width:100%;height:100%;object-fit:contain;display:block;"
+    onerror="this.outerHTML='${fallbackHTML}'"/>`;
+ }
+ // 2. Sprite SVG legacy
+ if(CHAR_PORTRAITS[id]) return CHAR_PORTRAITS[id];
+ // 3. Emoji fallback
+ return `<div style="font-size:${size*0.45}px;line-height:${size}px;text-align:center;">${emoji}</div>`;
+}
+
 const RARITY_COL={commun:'#95a5a6',rare:'#3498db',épique:'#9b59b6',légendaire:'#f39c12',mythique:'#e91e8c',exclusif:'#f1c40f'};
 const RARITY_STARS={commun:'◆',rare:'◆◆',épique:'◆◆◆',légendaire:'◆◆◆◆',mythique:'◆◆◆◆◆',exclusif:'✨◆✨'};
 const UNI_ICON={db:'🐉',hp:'⚡',sw:'🚀',nj:'🥷',fr:'❄️',mk:'🐭',mv:'⚡',pk:'⚡',mr:'🍄',br:'💗',gd:'🤖',mc:'🌟',cz:'🏆',tm:'⚔️',bm:'🦇',tn:'🔍',ax:'🏺',mi:'🐞',pj:'🦸',ot:'⚽',co:'🔫',al:'☠️',tu:'🐢',sm:'🌙',sp:'🕵️',bl:'🐕',dr:'🐉',sx:'🎂'};

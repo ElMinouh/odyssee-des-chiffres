@@ -87,7 +87,7 @@ function _renderFigurinesShop(filter){
   const isOwned=owned.includes(fig.id);
   html+=`<div class="fig-card${isOwned?' owned':''}${fig.r==='exclusif'?' rarity-exclusif':''}"${isOwned?` onclick="openFigViewer('${fig.id}')" title="Voir en 3D 🎬"`:''}>`;
   if(isOwned) html+='<div class="fig-mark">✓</div>';
-  html+=`<span class="fig-em">${CHAR_PORTRAITS[fig.id]||'<div style="font-size:2em;line-height:75px;text-align:center;">'+(fig.em||'❓')+'</div>'}</span>`;
+  html+=`<span class="fig-em">${getCharPortrait(fig.id, {size:75, emoji:fig.em})}</span>`;
   html+=`<div class="fig-rv" style="color:${RARITY_COL[fig.r]}">${RARITY_STARS[fig.r]}</div>`;
   html+=`<div class="fig-nm">${fig.name}</div>`;
   html+=`<span class="fig-unib u-${fig.uk}">${UNI_ICON[fig.uk]} ${fig.uni}</span><br>`;
@@ -158,7 +158,7 @@ function _sortedFigs(list){
 
 function _figShelfCard(fig, anim=false){
  const col=RARITY_COL[fig.r]||'#888';
- const portrait=CHAR_PORTRAITS[fig.id]||`<div style="font-size:1.8em;line-height:58px;text-align:center;">${fig.em||'❓'}</div>`;
+ const portrait=getCharPortrait(fig.id, {size:58, emoji:fig.em});
  return `<div class="shelf-fig" data-r="${fig.r}" onclick="openFigViewer('${fig.id}')" title="${fig.name}">
   <div class="shelf-fig-img" style="border-color:${col}22;border-width:1.5px;border-style:solid;">${portrait}</div>
   <div class="shelf-fig-glow" style="background:${col};"></div>
@@ -283,10 +283,18 @@ function _renderFigViewer(fig,id){
  $('fig-vuni').className=`fig-unib u-${fig.uk}`;
  $('fig-vtitle').textContent=fig.name;
  // Face avant
- const portrait=CHAR_PORTRAITS[fig.id];
- $('fv-em2').textContent=''; // portrait SVG remplace l'emoji
- if(portrait){$('fv-chr').innerHTML=portrait;$('fv-chr').style.filter=`drop-shadow(0 0 18px ${fig.gc})`;_initFigArms(fig.id);}
- else{$('fv-chr').textContent=fig.em;$('fv-chr').style.filter=`drop-shadow(0 0 24px ${fig.gc}) drop-shadow(0 6px 12px rgba(0,0,0,.6))`;$('fv-chr').style.fontSize='5.6em';}
+ // Chantier E1 : si image HD dispo, on l'affiche en priorité (sans animation de bras)
+ // sinon on retombe sur le portrait SVG avec animation _initFigArms.
+ if(typeof FIG_IMG_AVAILABLE !== 'undefined' && FIG_IMG_AVAILABLE.has(fig.id)){
+  $('fv-em2').textContent='';
+  $('fv-chr').innerHTML=getCharPortrait(fig.id, {size:200, emoji:fig.em});
+  $('fv-chr').style.filter=`drop-shadow(0 0 18px ${fig.gc})`;
+ } else {
+  const portrait=CHAR_PORTRAITS[fig.id];
+  $('fv-em2').textContent=''; // portrait SVG remplace l'emoji
+  if(portrait){$('fv-chr').innerHTML=portrait;$('fv-chr').style.filter=`drop-shadow(0 0 18px ${fig.gc})`;_initFigArms(fig.id);}
+  else{$('fv-chr').textContent=fig.em;$('fv-chr').style.filter=`drop-shadow(0 0 24px ${fig.gc}) drop-shadow(0 6px 12px rgba(0,0,0,.6))`;$('fv-chr').style.fontSize='5.6em';}
+ }
  $('fv-nm').textContent=fig.name;
  $('fv-nm').style.textShadow=`0 0 14px ${fig.gc}`;
  $('fv-rar').textContent=RARITY_STARS[fig.r]+' '+fig.r;
