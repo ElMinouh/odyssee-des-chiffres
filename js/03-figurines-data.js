@@ -80,8 +80,8 @@ function _probeFigImage(id){
 // une image HD (évite le délai de probe au premier rendu).
 // Ajoute simplement l'ID quand tu pousses un nouveau .webp.
 const FIG_IMG_PRELOAD = [
-     'db01', 'db02', 'db03', 'db04', 'db05', 'db06', 'db07', 'db08', 'db09', 'db10', 'db11', 'db12',
-   ];
+  'db01', 'db02', 'db03', 'db04', 'db05', 'db06', 'db07', 'db08', 'db09', 'db10', 'db11', 'db12', 'nj01', 'nj02', 'nj03', 'nj04', 'nj05', 'nj06', 'nj07', 'nj08', 'nj09', 'nj10', 'nj11', 'nj12', 'nj13', 'sm01', 'sm02', 'sm03', 'sm04', 'sm05', 'tu01', 'tu02', 'tu03', 'tu04', 'tu05', 'tu06', 'tu07',  
+];
 // Marque immédiatement comme disponibles + précharge
 if(typeof window !== 'undefined'){
  FIG_IMG_PRELOAD.forEach(id => {
