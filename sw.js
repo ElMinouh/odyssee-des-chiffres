@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v8.1.1'; // hotfix : restaurer le banner de notification de mise à jour
+const CACHE_VERSION = 'v8.1.2'; // chantier C2 rapport hebdomadaire enrichi
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources à mettre en cache au premier chargement (squelette de l'app).

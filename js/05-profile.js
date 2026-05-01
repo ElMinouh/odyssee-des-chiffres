@@ -76,7 +76,7 @@ function validateProfile(raw, defaultName){
    bomb:   _clampNum(raw.inventory?.bomb,   0, 99, 0),
   },
   history: _safeArr(raw.history).slice(-50),
-  historyDetailed: _safeArr(raw.historyDetailed).slice(-30),
+  historyDetailed: _safeArr(raw.historyDetailed).slice(-60),
   errors: _safeArr(raw.errors).slice(-60).filter(e => typeof e === 'string'),
   errorLog: _safeArr(raw.errorLog).slice(-30).filter(e => e && typeof e==='object' && typeof e.q==='string' && typeof e.t==='number'),
   milestonesClaimed: _safeArr(raw.milestonesClaimed).filter(s => typeof s === 'string'),

@@ -176,30 +176,323 @@ function renderReport(){
 }
 
 // ═══════════════════════════════════════════════════════
-// RÉSUMÉ HEBDOMADAIRE (copie email/SMS)
+// RAPPORT HEBDOMADAIRE ENRICHI (chantier C2)
 // ═══════════════════════════════════════════════════════
+// Le rapport combine plusieurs sources :
+//  - history (timestamp ou fallback date DD/MM) → comptage parties par jour
+//  - historyDetailed → maxCombo, errorsCount, opStats par partie
+//  - errorLog (avec t = timestamp) → top erreurs récurrentes
+// Comparaison S vs S-1, médailles, conseils, graph activité.
+
+/**
+ * Retourne un objet Date pour une entrée d'history :
+ *  - utilise timestamp si présent (entrées créées après v8.1.2)
+ *  - sinon fallback sur date DD/MM en supposant l'année en cours
+ */
+function _entryDate(entry){
+ if(entry.timestamp){ return new Date(entry.timestamp); }
+ if(!entry.date) return null;
+ const m = entry.date.match(/^(\d{1,2})\/(\d{1,2})/);
+ if(!m) return null;
+ const now = new Date();
+ const dd = +m[1], mm = +m[2];
+ // Si le mois est dans le futur (ex. décembre alors qu'on est en janvier), c'est l'année passée
+ let yr = now.getFullYear();
+ if(mm > now.getMonth()+1) yr--;
+ return new Date(yr, mm-1, dd);
+}
+
+/**
+ * Retourne {start, end} pour la semaine ISO contenant `ref` (lundi 00:00 → dimanche 23:59).
+ */
+function _weekBounds(ref){
+ const d = new Date(ref);
+ const day = d.getDay() || 7; // dimanche = 0 → 7
+ const start = new Date(d.getFullYear(), d.getMonth(), d.getDate() - day + 1);
+ const end = new Date(start.getTime() + 7*86400000 - 1);
+ return {start, end};
+}
+
+/**
+ * Filtre les entrées history dans une fenêtre [start, end].
+ */
+function _entriesInWindow(history, start, end){
+ return history.filter(e=>{
+  const d = _entryDate(e);
+  return d && d >= start && d <= end;
+ });
+}
+
+/**
+ * Calcule les KPIs d'un set d'entrées history.
+ */
+function _computeKPIs(entries, detailed){
+ const total = entries.length;
+ const wins = entries.filter(x=>x.won).length;
+ const winRate = total ? Math.round(wins/total*100) : 0;
+ const avgScore = total ? Math.round(entries.reduce((a,b)=>a+(b.score||0),0)/total) : 0;
+ const bestScore = total ? Math.max(...entries.map(x=>x.score||0)) : 0;
+ // maxCombo via croisement avec historyDetailed (par timestamp ou date+score)
+ let maxCombo = 0;
+ entries.forEach(e=>{
+  const d = detailed.find(x =>
+   (e.timestamp && x.timestamp === e.timestamp) ||
+   (x.date===e.date && x.score===e.score && x.won===e.won)
+  );
+  if(d && d.maxCombo > maxCombo) maxCombo = d.maxCombo;
+ });
+ // Jours actifs (set des YYYY-MM-DD)
+ const days = new Set(entries.map(e=>{
+  const d = _entryDate(e);
+  return d ? `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}` : null;
+ }).filter(Boolean));
+ return {total, wins, winRate, avgScore, bestScore, maxCombo, activeDays: days.size};
+}
+
+/**
+ * Renvoie un span coloré avec flèche selon le delta.
+ */
+function _deltaSpan(now, prev, suffix='', isPercent=false){
+ if(prev === 0 && now === 0) return '<span style="color:#7f8c8d;">→ —</span>';
+ if(prev === 0) return `<span style="color:#2ecc71;font-weight:700;">↗ nouveau</span>`;
+ const diff = now - prev;
+ const pctDiff = Math.round((diff/Math.abs(prev))*100);
+ const sign = diff > 0 ? '+' : '';
+ const arrow = diff > 0 ? '↗' : (diff < 0 ? '↘' : '→');
+ const col = diff > 0 ? '#2ecc71' : (diff < 0 ? '#e74c3c' : '#7f8c8d');
+ const txt = isPercent ? `${sign}${diff}pts` : `${sign}${diff}${suffix}`;
+ const pctStr = (Math.abs(pctDiff) >= 5 && !isPercent) ? ` (${sign}${pctDiff}%)` : '';
+ return `<span style="color:${col};font-weight:700;">${arrow} ${txt}${pctStr}</span>`;
+}
+
+/**
+ * Construit un graphique d'activité 7 colonnes (Lun→Dim) en SVG inline.
+ * Hauteur = nb de parties, couleur = taux de réussite ce jour-là.
+ */
+function _renderActivityChart(entries, weekStart){
+ const days = ['L','M','M','J','V','S','D'];
+ const buckets = [[],[],[],[],[],[],[]];
+ entries.forEach(e=>{
+  const d = _entryDate(e); if(!d) return;
+  const dayIdx = (d.getDay() || 7) - 1; // 0..6 (lundi=0)
+  buckets[dayIdx].push(e);
+ });
+ const maxN = Math.max(1, ...buckets.map(b=>b.length));
+ const W = 280, H = 80, gap = 6, barW = (W - gap*8) / 7;
+ const bars = buckets.map((bucket,i)=>{
+  const n = bucket.length;
+  const h = n ? Math.max(4, Math.round((n/maxN) * (H-22))) : 2;
+  const w = bucket.filter(x=>x.won).length;
+  const wRate = n ? w/n : 0;
+  // Couleur : rouge < 50%, jaune 50-75%, vert ≥ 75%
+  const col = !n ? '#3a4a5e' : (wRate >= 0.75 ? '#2ecc71' : (wRate >= 0.5 ? '#f1c40f' : '#e74c3c'));
+  const x = gap + i*(barW + gap);
+  const y = H - 14 - h;
+  return `
+   <rect x="${x}" y="${y}" width="${barW}" height="${h}" rx="3" fill="${col}" opacity="${n?1:.4}"/>
+   ${n?`<text x="${x+barW/2}" y="${y-2}" text-anchor="middle" fill="#ecf0f1" font-size="9" font-weight="700">${n}</text>`:''}
+   <text x="${x+barW/2}" y="${H-3}" text-anchor="middle" fill="#bdc3c7" font-size="10">${days[i]}</text>`;
+ }).join('');
+ return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:340px;display:block;margin:6px auto;">${bars}</svg>`;
+}
+
+/**
+ * Identifie les 3 erreurs les plus récurrentes cette semaine via errorLog.
+ * Retourne [{q, count}, ...] ordonné par fréquence.
+ */
+function _topRecurringErrors(d, weekStart){
+ const log = (d.errorLog||[]).filter(e=> e && e.t && e.t >= weekStart.getTime());
+ if(!log.length) return [];
+ const counts = {};
+ log.forEach(e=>{ counts[e.q] = (counts[e.q]||0) + 1; });
+ return Object.entries(counts)
+  .filter(([,n])=>n >= 2) // au moins 2 occurrences pour être "récurrente"
+  .sort((a,b)=>b[1]-a[1])
+  .slice(0,3)
+  .map(([q,n])=>({q, count:n}));
+}
+
+/**
+ * Calcule les médailles méritées cette semaine.
+ */
+function _weeklyMedals(now, prev){
+ const medals = [];
+ if(now.activeDays >= 5) medals.push({icon:'🌅', label:'Régulier', desc:`${now.activeDays}j sur 7`});
+ if(prev.winRate > 0 && now.winRate - prev.winRate >= 10) medals.push({icon:'🚀', label:'En progrès', desc:`+${now.winRate-prev.winRate}pts de réussite`});
+ if(now.total >= 5 && now.winRate >= 85) medals.push({icon:'🎯', label:'Précis', desc:`${now.winRate}% de réussite`});
+ if(now.maxCombo >= 20) medals.push({icon:'🔥', label:'Combo King', desc:`combo ×${now.maxCombo}`});
+ if(now.timeMin >= 60) medals.push({icon:'⏰', label:'Persévérant', desc:`${now.timeMin} min de jeu`});
+ if(now.total > 0 && prev.total === 0) medals.push({icon:'🌱', label:'Nouveau départ', desc:'première semaine'});
+ return medals;
+}
+
+/**
+ * Génère un conseil pour la semaine prochaine selon le profil.
+ */
+function _weeklyAdvice(now, prev, opStats, topErrors){
+ // Priorité 1 : erreurs récurrentes
+ if(topErrors.length){
+  return `🎯 <strong>Réviser :</strong> ${topErrors[0].q.replace('=?','')} est tombé ${topErrors[0].count}× cette semaine. Une session du mode "Révision" suffirait.`;
+ }
+ // Priorité 2 : régularité faible
+ if(now.activeDays <= 2 && now.total > 0){
+  return `🌅 <strong>Régularité :</strong> seulement ${now.activeDays} jour(s) actifs. Mieux vaut 2 sessions de 10 min plutôt qu'une longue.`;
+ }
+ // Priorité 3 : opération faible
+ const opN = {'+':"l'addition", '-':"la soustraction", 'x':"la multiplication", '/':"la division", 'geo':"la géométrie"};
+ const weak = Object.entries(opStats||{}).filter(([,s])=>{const t=s.ok+s.fail;return t>5 && s.ok/t<.6;}).map(([op])=>op);
+ if(weak.length){
+  return `📚 <strong>Renforcer ${opN[weak[0]]||weak[0]} :</strong> moins de 60% de réussite — privilégier les exercices ciblés.`;
+ }
+ // Priorité 4 : encouragement
+ if(now.winRate >= 80 && now.total >= 5){
+  return `🚀 <strong>Tente le mode Survie ou Chrono :</strong> les bases sont solides, le défi accéléré sera bénéfique.`;
+ }
+ if(now.total === 0){
+  return `📅 <strong>Reprendre en douceur :</strong> aucune partie cette semaine. Un objectif de 5 min/jour serait un bon redémarrage.`;
+ }
+ return `👏 <strong>Continuer comme ça !</strong> La progression est régulière.`;
+}
+
+/**
+ * Construit le verdict en 1 phrase pour l'en-tête du rapport.
+ */
+function _buildVerdict(player, now, prev){
+ if(now.total === 0){
+  return `${player} n'a pas joué cette semaine. ${prev.total>0?'(la semaine dernière : '+prev.total+' parties)':''}`;
+ }
+ const parts = [];
+ if(prev.winRate > 0){
+  const diff = now.winRate - prev.winRate;
+  if(Math.abs(diff) >= 5){
+   parts.push(`${diff>0?'+':''}${diff}pts de réussite vs S-1`);
+  }
+ }
+ parts.push(`${now.activeDays} jour${now.activeDays>1?'s':''} sur 7 d'activité`);
+ if(now.maxCombo >= 15) parts.push(`combo max ×${now.maxCombo}`);
+ const tone = now.winRate >= 75 ? 'progresse très bien' :
+              now.winRate >= 60 ? 'progresse bien' :
+              now.winRate >= 40 ? 'travaille sérieusement' : 'a besoin de soutien';
+ return `${player} ${tone} : ${parts.join(', ')}.`;
+}
+
+/**
+ * Rend le rapport hebdomadaire complet dans #weekly-summary-zone.
+ * Génère aussi le texte plat pour copier (dataset.text).
+ */
 function renderWeeklySummary(){
  const player=$('parent-player')?.value||'Soren';
  let d=null;try{d=JSON.parse(localStorage.getItem('user_'+player)||'null');}catch(e){}
  const el=$('weekly-summary-zone');
- if(!d){el.innerHTML='<span style="color:#bdc3c7;">Aucune donnée.</span>';return;}
- const h=d.history||[];const now=new Date();
- const weekStart=new Date(now.getFullYear(),now.getMonth(),now.getDate()-now.getDay());
- const thisWeek=h.filter(x=>{if(!x.date)return false;const[dd,mm]=x.date.split('/');const yr=now.getFullYear()-(now.getMonth()===0&&+mm===12?1:0);const hDate=new Date(yr,+mm-1,+dd);return hDate>=weekStart;});
- const wins=thisWeek.filter(x=>x.won).length,total=thisWeek.length;
- const avg=total?Math.round(thisWeek.reduce((a,b)=>a+(b.score||0),0)/total):0;
- const best=total?Math.max(...thisWeek.map(x=>x.score)):0;
- const lvl=levelFromXP(d.xp||0);
- const sumText=`📊 Résumé Odyssée des Chiffres – Semaine du ${weekStart.toLocaleDateString('fr-FR')}
-Joueur : ${player} · Niveau ${lvl}
-Parties cette semaine : ${total} (${wins} victoires)
-Score moyen : ${avg} pts · Meilleur : ${best} pts
-Temps de jeu total : ${d.sessionMinutes||0} min
-Trésor : ${d.stars||0} ⭐ · Boss battus : ${(d.mapBossBeaten||[]).length}/${MAP_ZONES.length}
-—
-Généré par L'Odyssée des Chiffres`;
- el.innerHTML=`<pre style="white-space:pre-wrap;font-size:.8em;color:#ecf0f1;line-height:1.6;">${sumText}</pre>`;
- el.dataset.text=sumText;
+ if(!d){el.innerHTML='<span style="color:#bdc3c7;">Aucune donnée pour '+player+'.</span>';return;}
+ const history = d.history||[];
+ const detailed = d.historyDetailed||[];
+ // Fenêtres temporelles
+ const now = new Date();
+ const wThis = _weekBounds(now);
+ const wPrev = _weekBounds(new Date(wThis.start.getTime() - 86400000));
+ const eThis = _entriesInWindow(history, wThis.start, wThis.end);
+ const ePrev = _entriesInWindow(history, wPrev.start, wPrev.end);
+ // KPIs
+ const kThis = _computeKPIs(eThis, detailed);
+ const kPrev = _computeKPIs(ePrev, detailed);
+ // Estimation du temps de jeu cette semaine (proportionnel : sessionMinutes total × parties_semaine / parties_total)
+ const totalParties = history.length || 1;
+ kThis.timeMin = Math.round((d.sessionMinutes||0) * eThis.length / totalParties);
+ kPrev.timeMin = Math.round((d.sessionMinutes||0) * ePrev.length / totalParties);
+ // Verdict
+ const verdict = _buildVerdict(player, kThis, kPrev);
+ // Top erreurs
+ const topErrors = _topRecurringErrors(d, wThis.start);
+ // Médailles
+ const medals = _weeklyMedals(kThis, kPrev);
+ // Conseil
+ const advice = _weeklyAdvice(kThis, kPrev, d.opStats, topErrors);
+ // Graph d'activité
+ const chart = _renderActivityChart(eThis, wThis.start);
+ // ────── RENDU HTML ──────
+ const fmtD = (date) => date.toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit'});
+ const html = `
+  <div class="wreport">
+   <div class="wreport-head">
+    <strong style="color:#f1c40f;font-size:1.05em;">📊 Semaine du ${fmtD(wThis.start)} au ${fmtD(wThis.end)}</strong>
+    <div style="margin-top:6px;font-size:.92em;line-height:1.4;">${verdict}</div>
+   </div>
+   ${kThis.total === 0 ? '' : `
+   <div class="wreport-section">
+    <h4>📈 Cette semaine vs semaine dernière</h4>
+    <table class="wreport-table">
+     <tr><td>🎮 Parties</td><td class="wr-now">${kThis.total}</td><td class="wr-prev">${kPrev.total}</td><td>${_deltaSpan(kThis.total, kPrev.total)}</td></tr>
+     <tr><td>🏆 Réussite</td><td class="wr-now">${kThis.winRate}%</td><td class="wr-prev">${kPrev.winRate}%</td><td>${_deltaSpan(kThis.winRate, kPrev.winRate, '', true)}</td></tr>
+     <tr><td>⏱️ Temps</td><td class="wr-now">${kThis.timeMin}min</td><td class="wr-prev">${kPrev.timeMin}min</td><td>${_deltaSpan(kThis.timeMin, kPrev.timeMin, 'min')}</td></tr>
+     <tr><td>📊 Score moy.</td><td class="wr-now">${kThis.avgScore}</td><td class="wr-prev">${kPrev.avgScore}</td><td>${_deltaSpan(kThis.avgScore, kPrev.avgScore)}</td></tr>
+     <tr><td>🔥 Combo max</td><td class="wr-now">${kThis.maxCombo}</td><td class="wr-prev">${kPrev.maxCombo}</td><td>${_deltaSpan(kThis.maxCombo, kPrev.maxCombo)}</td></tr>
+    </table>
+   </div>
+   <div class="wreport-section">
+    <h4>📅 Activité quotidienne</h4>
+    ${chart}
+    <div style="text-align:center;font-size:.72em;color:#bdc3c7;">Hauteur = parties · Couleur = taux réussite (vert ≥75%, jaune ≥50%, rouge &lt;50%)</div>
+   </div>
+   `}
+   ${topErrors.length ? `
+   <div class="wreport-section">
+    <h4>🎯 Erreurs récurrentes (≥2×)</h4>
+    ${topErrors.map(e=>`<div class="wr-error-row"><span style="font-family:monospace;">${e.q.replace('=?','= ?')}</span><span class="wr-error-count">${e.count}×</span></div>`).join('')}
+   </div>` : ''}
+   ${medals.length ? `
+   <div class="wreport-section">
+    <h4>🏅 Médailles de la semaine</h4>
+    <div class="wr-medals">${medals.map(m=>`<div class="wr-medal" title="${m.desc}"><span class="wr-medal-icon">${m.icon}</span><span class="wr-medal-label">${m.label}</span><span class="wr-medal-desc">${m.desc}</span></div>`).join('')}</div>
+   </div>` : ''}
+   <div class="wreport-section wr-advice">
+    <h4>💡 Conseil pour la semaine prochaine</h4>
+    <div style="line-height:1.5;">${advice}</div>
+   </div>
+   <div class="wreport-actions no-print">
+    <button onclick="copyWeeklySummary()" style="background:#3498db;">📋 Copier le résumé</button>
+    <button onclick="printReport()" style="background:#9b59b6;">🖨️ Imprimer / PDF</button>
+   </div>
+  </div>`;
+ el.innerHTML = html;
+ // Texte plat pour la copie (formaté SMS/email, max ~200 mots)
+ const txtParts = [
+  `📊 Odyssée des Chiffres — Semaine du ${fmtD(wThis.start)} au ${fmtD(wThis.end)}`,
+  `Joueur : ${player} · ${verdict}`,
+  '',
+ ];
+ if(kThis.total > 0){
+  txtParts.push(
+   `Cette semaine : ${kThis.total} partie(s), ${kThis.winRate}% réussite, ${kThis.timeMin} min`,
+   `Vs S-1 : ${kPrev.total} partie(s), ${kPrev.winRate}% réussite, ${kPrev.timeMin} min`,
+   `Score moyen : ${kThis.avgScore} · Meilleur : ${kThis.bestScore} · Combo max : ×${kThis.maxCombo}`,
+  );
+ }
+ if(topErrors.length){
+  txtParts.push('', 'Erreurs récurrentes :');
+  topErrors.forEach(e=>txtParts.push(`  · ${e.q.replace('=?','= ?')}  (${e.count}×)`));
+ }
+ if(medals.length){
+  txtParts.push('', 'Médailles : ' + medals.map(m=>`${m.icon} ${m.label}`).join(' · '));
+ }
+ // Conseil sans HTML
+ const adviceTxt = advice.replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
+ txtParts.push('', `Conseil : ${adviceTxt}`, '', '— Généré par L\'Odyssée des Chiffres');
+ el.dataset.text = txtParts.join('\n');
+}
+
+/**
+ * Lance l'impression du rapport (le CSS @media print s'occupe du formatage).
+ */
+function printReport(){
+ // Petit titre temporaire pour la version imprimée
+ const player = $('parent-player')?.value || 'Joueur';
+ const oldTitle = document.title;
+ document.title = `Rapport hebdomadaire — ${player} — ${new Date().toLocaleDateString('fr-FR')}`;
+ setTimeout(()=>{
+  window.print();
+  setTimeout(()=>{ document.title = oldTitle; }, 500);
+ }, 100);
 }
 function copyWeeklySummary(){
  const txt=$('weekly-summary-zone').dataset.text||'';

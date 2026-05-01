@@ -1147,8 +1147,8 @@ function endGame(won){
  const heart=$('timer-heart');if(heart)heart.style.display='none';
  P.sessionMinutes=(P.sessionMinutes||0)+Math.round((Date.now()-GS.sessionStart)/60000);
  const fl=GM.mode2==='combat'?combatPlayers.map(p=>p.level).join('+'):GM.level;
- P.history=([...(P.history||[]),{date:fmtDate(),score:GS.score,mode:GM.mode2,level:fl,won}]).slice(-50);
- P.historyDetailed=([...(P.historyDetailed||[]),{date:fmtDate(),timestamp:Date.now(),score:GS.score,mode:GM.mode2,level:fl,won,maxCombo:GS.maxCombo,errorsCount:GS.errInGame}]).slice(-30);
+ P.history=([...(P.history||[]),{date:fmtDate(),timestamp:Date.now(),score:GS.score,mode:GM.mode2,level:fl,won}]).slice(-50);
+ P.historyDetailed=([...(P.historyDetailed||[]),{date:fmtDate(),timestamp:Date.now(),score:GS.score,mode:GM.mode2,level:fl,won,maxCombo:GS.maxCombo,errorsCount:GS.errInGame}]).slice(-60);
  P.stars=(P.stars||0)+GS.score;
  // Chantier 2.1 : stats cumulatives pour les paliers
  P._totalStarsEarned=(P._totalStarsEarned||0)+GS.score;

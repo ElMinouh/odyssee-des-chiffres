@@ -1466,3 +1466,163 @@ html[data-appearance="light"] .mp-mountains-near{opacity:.55;}
  .mp-decor{font-size:1em;}
  .mp-astro{font-size:2.4em;top:4%;right:6%;}
 }
+
+/* ══════════════ Chantier C2 — Rapport hebdomadaire ══════════════ */
+.wreport{
+ background:rgba(255,255,255,.04);
+ border-radius:12px;
+ padding:12px;
+ margin:6px 0;
+}
+.wreport-head{
+ padding-bottom:10px;
+ border-bottom:1px solid rgba(241,196,15,.25);
+ margin-bottom:10px;
+}
+.wreport-section{
+ padding:10px 0;
+ border-bottom:1px solid rgba(255,255,255,.05);
+}
+.wreport-section:last-of-type{border-bottom:none;}
+.wreport-section h4{
+ margin:0 0 8px 0;
+ font-size:.92em;
+ color:#f1c40f;
+ font-weight:700;
+}
+.wreport-table{
+ width:100%;
+ border-collapse:collapse;
+ font-size:.85em;
+}
+.wreport-table td{
+ padding:5px 4px;
+ border-bottom:1px solid rgba(255,255,255,.05);
+}
+.wreport-table td:first-child{font-weight:600;}
+.wr-now{text-align:right;font-weight:700;color:#fff;}
+.wr-prev{text-align:right;color:#7f8c8d;font-size:.92em;}
+.wreport-table td:last-child{text-align:right;font-size:.82em;white-space:nowrap;}
+/* Erreurs récurrentes */
+.wr-error-row{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ padding:5px 8px;
+ background:rgba(231,76,60,.12);
+ border-left:3px solid #e74c3c;
+ border-radius:4px;
+ margin:4px 0;
+ font-size:.88em;
+}
+.wr-error-count{
+ background:#e74c3c;
+ color:#fff;
+ padding:2px 8px;
+ border-radius:10px;
+ font-weight:700;
+ font-size:.85em;
+}
+/* Médailles */
+.wr-medals{
+ display:flex;
+ flex-wrap:wrap;
+ gap:8px;
+ justify-content:center;
+}
+.wr-medal{
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ background:rgba(241,196,15,.12);
+ border:1px solid rgba(241,196,15,.35);
+ border-radius:10px;
+ padding:8px 10px;
+ min-width:75px;
+}
+.wr-medal-icon{font-size:1.6em;}
+.wr-medal-label{font-size:.78em;font-weight:700;color:#f1c40f;margin-top:2px;}
+.wr-medal-desc{font-size:.68em;color:#bdc3c7;text-align:center;margin-top:2px;}
+/* Conseil */
+.wr-advice{
+ background:rgba(155,89,182,.12);
+ border-left:3px solid #9b59b6;
+ padding:10px 12px !important;
+ border-radius:6px;
+ margin-top:8px;
+}
+.wr-advice h4{color:#bb8fce !important;}
+/* Boutons d'actions */
+.wreport-actions{
+ display:flex;
+ gap:8px;
+ margin-top:12px;
+ padding-top:10px;
+ border-top:1px solid rgba(255,255,255,.1);
+}
+.wreport-actions button{
+ flex:1;
+ padding:8px;
+ font-size:.88em;
+ font-weight:700;
+}
+/* Mode clair */
+html[data-appearance="light"] .wreport{background:rgba(0,0,0,.04);}
+html[data-appearance="light"] .wreport-head{border-bottom-color:rgba(230,126,34,.4);}
+html[data-appearance="light"] .wreport-section h4{color:#d68910;}
+html[data-appearance="light"] .wr-now{color:#2c3e50;}
+html[data-appearance="light"] .wr-prev{color:#95a5a6;}
+html[data-appearance="light"] .wr-medal-label{color:#d68910;}
+html[data-appearance="light"] .wr-advice h4{color:#7d3c98 !important;}
+
+/* ══════════════ Impression du rapport (print only) ══════════════ */
+@media print{
+ /* Tout cacher par défaut */
+ body * { visibility:hidden !important; }
+ /* Sauf le rapport hebdomadaire et ses ancêtres */
+ .wreport, .wreport *, #weekly-summary-zone, #weekly-summary-zone * { visibility:visible !important; }
+ #weekly-summary-zone {
+  position:absolute !important;
+  top:0; left:0; right:0;
+  width:100% !important;
+  padding:0 !important;
+  margin:0 !important;
+ }
+ .wreport{
+  background:#fff !important;
+  color:#000 !important;
+  border:1px solid #ccc;
+  padding:20px !important;
+  page-break-inside:avoid;
+ }
+ .wreport *{color:#000 !important;}
+ .wreport-head strong{color:#c0392b !important;}
+ .wreport-section h4{color:#2c3e50 !important;border-bottom:1px solid #ccc;padding-bottom:4px;}
+ .wreport-table td{border-bottom:1px solid #eee !important;}
+ .wr-now{color:#000 !important;font-weight:700;}
+ .wr-prev{color:#666 !important;}
+ .wr-error-row{
+  background:#fef0ed !important;
+  border-left:3px solid #c0392b !important;
+ }
+ .wr-error-count{
+  background:#c0392b !important;
+  color:#fff !important;
+ }
+ .wr-medal{
+  background:#fef9e7 !important;
+  border:1px solid #d68910 !important;
+ }
+ .wr-medal-label{color:#d68910 !important;}
+ .wr-medal-desc{color:#555 !important;}
+ .wr-advice{
+  background:#f4ecf7 !important;
+  border-left:3px solid #7d3c98 !important;
+ }
+ .wr-advice h4{color:#7d3c98 !important;}
+ /* Cacher boutons et autres éléments inutiles à l'impression */
+ .no-print, .wreport-actions { display:none !important; }
+ /* Couleurs imprimables pour le SVG */
+ svg rect[fill="#3a4a5e"]{fill:#ddd !important;}
+ @page { margin:1.5cm; }
+}
