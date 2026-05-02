@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Debug PWA - Odyssée</title>
+<style>
+body { font-family: monospace; background:#1a1f2e; color:#fff; padding:12px; font-size:14px; line-height:1.5; }
+h1 { color:#f1c40f; margin:0 0 12px; font-size:18px; }
+h2 { color:#3498db; margin:18px 0 6px; font-size:15px; border-bottom:1px solid #2c3e50; padding-bottom:4px; }
+.ok { color:#2ecc71; }
+.fail { color:#e74c3c; font-weight:700; }
+.warn { color:#f39c12; }
+.box { background:#0d1117; padding:8px; border-radius:6px; margin:6px 0; word-wrap:break-word; }
+.btn { display:block; width:100%; padding:14px; background:#e74c3c; color:#fff; border:none; border-radius:8px; font-size:16px; font-weight:700; margin-top:18px; }
+.btn:active { background:#c0392b; }
+pre { white-space:pre-wrap; font-size:12px; margin:4px 0; }
+</style>
+</head>
+<body>
+<h1>🔍 Diagnostic PWA — L'Odyssée</h1>
+<p>Cette page teste tous les composants. Copie-colle le résultat à Claude.</p>
+
+<div id="results">Diagnostic en cours...</div>
+
+<button class="btn" onclick="resetAll()">🧹 Tout nettoyer + recharger</button>
+
+<script>
+const log = [];
+function out(html) { 
+  log.push(html); 
+  document.getElementById('results').innerHTML = log.join('');
+}
+
+async function diagnose() {
+  out('<h2>1. Environnement</h2>');
+  out('<div class="box">User-Agent : <pre>' + navigator.userAgent + '</pre></div>');
+  out('<div class="box">URL actuelle : <pre>' + location.href + '</pre></div>');
+  out('<div class="box">Origin : <pre>' + location.origin + '</pre></div>');
+  out('<div class="box">En ligne : ' + (navigator.onLine ? '<span class="ok">OUI</span>' : '<span class="fail">NON</span>') + '</div>');
+  out('<div class="box">Mode standalone (PWA installée) : ' + 
+    (window.matchMedia('(display-mode: standalone)').matches || window.matchMedia('(display-mode: fullscreen)').matches ? '<span class="warn">OUI (PWA)</span>' : '<span class="ok">NON (Chrome)</span>') + '</div>');
+
+  out('<h2>2. Fichiers critiques</h2>');
+  const files = [
+    './index.html',
+    './manifest.webmanifest',
+    './sw.js',
+    './css/styles.css',
+    './js/01-core.js',
+    './js/02-data.js',
+    './js/03-figurines-data.js',
+    './js/11-init.js',
+    './assets/icon.svg',
+    './assets/icon-192.png',
+    './assets/icon-512.png',
+    './assets/icon-maskable.png',
+    './assets/favicon-32.png',
+    './assets/apple-touch-icon.png',
+    './assets/portraits.svg',
+    './assets/fonts/google-fonts.css',
+  ];
+  for (const f of files) {
+    try {
+      const r = await fetch(f, { cache: 'no-cache' });
+      const ct = r.headers.get('content-type') || '?';
+      const ok = r.ok && (
+        f.endsWith('.html') ? ct.includes('html') :
+        f.endsWith('.js') ? (ct.includes('javascript') || ct.includes('text')) :
+        f.endsWith('.css') ? ct.includes('css') :
+        f.endsWith('.svg') ? ct.includes('svg') :
+        f.endsWith('.png') ? ct.includes('png') :
+        f.endsWith('.webmanifest') ? (ct.includes('json') || ct.includes('manifest')) :
+        true
+      );
+      out('<div class="box">' + (ok ? '<span class="ok">✅</span>' : '<span class="fail">❌</span>') + ' ' + f + ' → HTTP ' + r.status + ' (' + ct + ')</div>');
+    } catch (e) {
+      out('<div class="box"><span class="fail">❌ ERREUR</span> ' + f + ' → ' + e.message + '</div>');
+    }
+  }
+
+  out('<h2>3. Service Workers</h2>');
+  if (!('serviceWorker' in navigator)) {
+    out('<div class="box"><span class="fail">PAS DE SUPPORT SW</span></div>');
+  } else {
+    try {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      out('<div class="box">SW enregistrés : <strong>' + regs.length + '</strong></div>');
+      for (const reg of regs) {
+        out('<div class="box">  Scope : <pre>' + reg.scope + '</pre>' + 
+          'Active : ' + (reg.active ? '<span class="ok">OUI (' + reg.active.scriptURL + ', state: ' + reg.active.state + ')</span>' : '<span class="fail">NON</span>') + '<br>' +
+          'Waiting : ' + (reg.waiting ? '<span class="warn">OUI</span>' : '<span class="ok">non</span>') + '<br>' +
+          'Installing : ' + (reg.installing ? '<span class="warn">OUI</span>' : '<span class="ok">non</span>') + 
+          '</div>');
+      }
+    } catch (e) {
+      out('<div class="box"><span class="fail">❌ Erreur lecture SW</span> : ' + e.message + '</div>');
+    }
+  }
+
+  out('<h2>4. Caches</h2>');
+  try {
+    const keys = await caches.keys();
+    out('<div class="box">Caches : <strong>' + keys.length + '</strong></div>');
+    for (const key of keys) {
+      const cache = await caches.open(key);
+      const reqs = await cache.keys();
+      out('<div class="box">' + key + ' → <strong>' + reqs.length + ' entrées</strong></div>');
+    }
+  } catch (e) {
+    out('<div class="box"><span class="fail">❌ Erreur caches</span> : ' + e.message + '</div>');
+  }
+
+  out('<h2>5. Manifest (parsé)</h2>');
+  try {
+    const r = await fetch('./manifest.webmanifest');
+    const m = await r.json();
+    out('<div class="box">Name : ' + m.name + '<br>start_url : ' + m.start_url + '<br>scope : ' + m.scope + '<br>icons : ' + (m.icons ? m.icons.length : 0) + '</div>');
+    if (m.icons) {
+      for (const ic of m.icons) {
+        try {
+          const ir = await fetch(ic.src, { cache: 'no-cache' });
+          const ict = ir.headers.get('content-type') || '?';
+          const expected = ic.type || '';
+          const ok = ir.ok && (expected ? ict.includes(expected.split('/')[1]) : true);
+          out('<div class="box">  ' + (ok ? '<span class="ok">✅</span>' : '<span class="fail">❌</span>') + ' ' + ic.src + ' (attendu: ' + (expected || '?') + ' / reçu: ' + ict + ')</div>');
+        } catch (e) {
+          out('<div class="box">  <span class="fail">❌</span> ' + ic.src + ' → ' + e.message + '</div>');
+        }
+      }
+    }
+  } catch (e) {
+    out('<div class="box"><span class="fail">❌ Manifest illisible</span> : ' + e.message + '</div>');
+  }
+
+  out('<h2>✅ Diagnostic terminé</h2>');
+  out('<div class="box">Capture cette page entière en screenshot et envoie-la à Claude.</div>');
+}
+
+async function resetAll() {
+  if (!confirm('Tout nettoyer (caches + SW) puis recharger ?')) return;
+  try {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs.map(r => r.unregister()));
+    const keys = await caches.keys();
+    await Promise.all(keys.map(k => caches.delete(k)));
+    alert('Nettoyé. La page va se recharger.');
+    location.reload();
+  } catch (e) {
+    alert('Erreur : ' + e.message);
+  }
+}
+
+diagnose();
+</script>
+</body>
+</html>
