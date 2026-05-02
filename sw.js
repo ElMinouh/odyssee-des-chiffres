@@ -9,13 +9,13 @@
  *
  * Pour forcer un rechargement complet après modification : changer CACHE_VERSION.
  *
- * Chantier hotfix v8.2.1 :
+ * Chantier hotfix v8.2.2 :
  *   - Précache résilient : si une URL est absente (404), le SW continue au lieu de planter
  *   - Liste de précache nettoyée (suppression des URLs fantômes qui causaient ERR_FAILED)
  */
 'use strict';
 
-const CACHE_VERSION = 'v8.2.1'; // hotfix précache résilient
+const CACHE_VERSION = 'v8.2.2'; // hotfix précache résilient
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources critiques à mettre en cache au premier chargement.
