@@ -586,22 +586,8 @@ if ('serviceWorker' in navigator) {
   });
 
   window.addEventListener('load', () => {
-    // Hotfix v8.2.1 : recovery pour les PWA installées qui ont un SW cassé.
-    // Si un SW existe mais que la page met trop de temps à s'initialiser, on force
-    // un nettoyage du cache et un reload pour récupérer la nouvelle version.
-    let _bootWatchdog = setTimeout(() => {
-      console.warn('[PWA] boot lent détecté, tentative de récupération...');
-      navigator.serviceWorker.getRegistrations().then(regs => {
-        Promise.all(regs.map(r => r.unregister()))
-          .then(() => caches.keys())
-          .then(keys => Promise.all(keys.map(k => caches.delete(k))))
-          .then(() => { window.location.reload(); });
-      });
-    }, 8000); // 8 secondes : si après ce délai l'app n'a pas fini de booter, recovery
-
     navigator.serviceWorker.register('sw.js')
       .then(reg => {
-        clearTimeout(_bootWatchdog); // boot OK, on annule le recovery
         console.info('[PWA] Service Worker actif (scope: ' + reg.scope + ')');
         // Récupère la version actuellement servie pour le titre
         if(navigator.serviceWorker.controller){
