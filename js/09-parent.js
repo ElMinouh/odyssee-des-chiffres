@@ -31,7 +31,7 @@ function ptab(name){
  document.querySelectorAll('#v-parent .tab').forEach((b,i)=>b.classList.toggle('active',['rapport','objectifs','controles','options','figurines'][i]===name));
  if(name==='rapport'){renderReport();renderWeeklySummary();}
  if(name==='controles'){loadBlockSettings();loadFilterSettings();}
- if(name==='options'){setTimeout(renderResetZone,60);}
+ if(name==='options'){setTimeout(renderResetZone,60); setTimeout(renderCloudPanel,80);}
  if(name==='figurines'){
   const sel=$('pfig-player');if(!sel)return;
   const cu=localStorage.getItem('customPlayerName');
@@ -781,4 +781,199 @@ function clearHomework(){
  }catch(e){
   console.error('[homework] clear error:', e);
  }
+}
+
+// ═══════════════════════════════════════════════════════
+// Chantier Cloud Sync : panneau de gestion (Vue Parent)
+// ═══════════════════════════════════════════════════════
+
+// Liste tous les profils joueurs présents en localStorage
+function _listAllProfilesNames(){
+ const names = new Set();
+ // Profils prédéfinis
+ ['Soren','Eden','Saraphina'].forEach(n => names.add(n));
+ // Profils personnalisés
+ try{
+  const customs = JSON.parse(localStorage.getItem('customPlayerNames') || '[]');
+  customs.forEach(n => { if(typeof n === 'string') names.add(n); });
+ }catch(e){}
+ // Profils détectés en localStorage (user_*)
+ for(let i=0;i<localStorage.length;i++){
+  const k = localStorage.key(i);
+  if(k && k.startsWith('user_')) names.add(k.slice(5));
+ }
+ return Array.from(names);
+}
+
+// Charge un profil depuis localStorage (sans toucher au profil actif P)
+function _readProfile(name){
+ try{ return JSON.parse(localStorage.getItem('user_'+name) || 'null'); }
+ catch(e){ return null; }
+}
+
+// Écrit un profil dans localStorage
+function _writeProfile(profile){
+ try{ localStorage.setItem('user_'+profile.name, JSON.stringify(profile)); return true; }
+ catch(e){ return false; }
+}
+
+// Met à jour le sélecteur du joueur dans le panneau cloud
+function _populateCloudPlayerSelect(){
+ const sel = document.getElementById('cloud-sync-player');
+ if(!sel) return;
+ const names = _listAllProfilesNames();
+ const current = sel.value || (P && P.name) || names[0] || '';
+ sel.innerHTML = names.map(n => `<option value="${n}"${n===current?' selected':''}>${n}</option>`).join('');
+}
+
+// Rendu du panneau Cloud pour le joueur sélectionné
+function renderCloudPanel(){
+ const container = document.getElementById('cloud-panel-content');
+ if(!container) return;
+ _populateCloudPlayerSelect();
+ const sel = document.getElementById('cloud-sync-player');
+ const name = sel ? sel.value : (P && P.name);
+ if(!name){ container.innerHTML = '<p style="font-size:.78em;color:#bdc3c7;">Aucun profil détecté.</p>'; return; }
+ // Si c'est le profil actif, on génère le code si manquant
+ if(P && P.name === name){
+  if(typeof ensureCloudCode === 'function') ensureCloudCode(P);
+  if(typeof saveProfileNow === 'function') saveProfileNow();
+ }
+ const prof = (P && P.name === name) ? P : _readProfile(name);
+ if(!prof){ container.innerHTML = '<p style="font-size:.78em;color:#bdc3c7;">Profil introuvable.</p>'; return; }
+ // Pour les profils non-actifs, on génère aussi le code si manquant
+ if(!prof.cloudCode && typeof generateCloudCode === 'function'){
+  prof.cloudCode = generateCloudCode(prof.name);
+  prof.cloudEnabled = false;
+  _writeProfile(prof);
+ }
+ const isActive = !!prof.cloudEnabled;
+ const code = prof.cloudCode || '(non généré)';
+ const lastSync = isActive && (P && P.name === name) && typeof getCloudStatus === 'function'
+  ? getCloudStatus().lastSync : 0;
+ const lastSyncStr = lastSync
+  ? new Date(lastSync).toLocaleString('fr-FR')
+  : (isActive ? 'en attente…' : '—');
+ container.innerHTML = `
+  <div style="background:rgba(52,152,219,.08);border:1px solid rgba(52,152,219,.3);border-radius:8px;padding:10px;margin-top:6px;">
+   <p style="font-size:.78em;color:#bdc3c7;margin:0 0 4px;">Code de sauvegarde de <strong style="color:#fff;">${prof.name}</strong> :</p>
+   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+    <code style="font-size:1.05em;color:#3498db;font-weight:700;background:rgba(0,0,0,.25);padding:6px 10px;border-radius:6px;letter-spacing:1px;font-family:monospace;">${code}</code>
+    <button onclick="doCloudCopyFor('${prof.name}')" style="font-size:.78em;padding:5px 10px;background:#34495e;">📋 Copier</button>
+   </div>
+   <p style="font-size:.72em;color:#bdc3c7;margin:8px 0 4px;">Statut : <strong style="color:${isActive?'#2ecc71':'#e67e22'};">${isActive?'☁️ Activé':'⏸ Désactivé'}</strong></p>
+   ${isActive ? `<p style="font-size:.72em;color:#bdc3c7;margin:4px 0;">Dernière sync : ${lastSyncStr}</p>` : ''}
+   <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
+    ${isActive
+     ? `<button onclick="doCloudSyncNow('${prof.name}')" style="background:#3498db;font-size:.82em;">🔄 Synchroniser maintenant</button>
+        <button onclick="doCloudDisable('${prof.name}')" style="background:#7f8c8d;font-size:.82em;">⏸ Désactiver</button>`
+     : `<button onclick="doCloudEnable('${prof.name}')" style="background:#27ae60;font-size:.82em;">☁️ Activer la sauvegarde cloud</button>`
+    }
+   </div>
+  </div>
+ `;
+}
+
+// Active la sync cloud pour un profil donné
+async function doCloudEnable(name){
+ if(!P || P.name !== name){
+  toast('⚠️ Activation possible uniquement pour le profil actif',3500);
+  return;
+ }
+ if(typeof enableCloudSync === 'function'){
+  const ok = await enableCloudSync();
+  renderCloudPanel();
+ }
+}
+
+// Désactive la sync cloud
+function doCloudDisable(name){
+ if(!P || P.name !== name){
+  toast('⚠️ Désactivation possible uniquement pour le profil actif',3500);
+  return;
+ }
+ if(typeof disableCloudSync === 'function'){
+  disableCloudSync();
+  renderCloudPanel();
+ }
+}
+
+// Force une synchronisation immédiate
+async function doCloudSyncNow(name){
+ if(!P || P.name !== name){
+  toast('⚠️ Sync possible uniquement pour le profil actif',3500);
+  return;
+ }
+ if(typeof pushProfileToCloud === 'function'){
+  const ok = await pushProfileToCloud();
+  if(ok) toast('☁️ Synchronisé !',2000);
+  else toast('⚠️ Échec de synchronisation',2500);
+  renderCloudPanel();
+ }
+}
+
+// Copie le code d'un profil donné
+async function doCloudCopyFor(name){
+ const prof = (P && P.name === name) ? P : _readProfile(name);
+ if(!prof || !prof.cloudCode){ toast('⚠️ Aucun code à copier',2000); return; }
+ try{
+  if(navigator.clipboard && navigator.clipboard.writeText){
+   await navigator.clipboard.writeText(prof.cloudCode);
+   toast('📋 Code copié !',2000);
+   return;
+  }
+ }catch(e){}
+ // Fallback
+ const ta = document.createElement('textarea');
+ ta.value = prof.cloudCode;
+ ta.style.position='fixed';ta.style.opacity='0';
+ document.body.appendChild(ta);
+ ta.select();
+ try{ document.execCommand('copy'); toast('📋 Code copié !',2000); }
+ catch(e){ toast('⚠️ Impossible de copier',2500); }
+ document.body.removeChild(ta);
+}
+
+// Restauration d'un profil par code (pour transférer depuis un autre appareil)
+async function doCloudRestore(){
+ const input = document.getElementById('cloud-restore-code');
+ const msg = document.getElementById('cloud-restore-msg');
+ if(!input || !msg) return;
+ const code = (input.value || '').trim().toUpperCase();
+ if(!code){ msg.style.color='#e74c3c'; msg.textContent='Entre un code valide.'; return; }
+ if(typeof restoreProfileByCode !== 'function'){
+  msg.style.color='#e74c3c'; msg.textContent='Cloud sync non disponible.'; return;
+ }
+ msg.style.color='#bdc3c7'; msg.textContent='⏳ Récupération en cours…';
+ const result = await restoreProfileByCode(code);
+ if(!result.ok){
+  msg.style.color='#e74c3c';
+  if(result.error === 'not_found') msg.textContent='❌ Code introuvable. Vérifie l\'orthographe.';
+  else if(result.error === 'invalid_code') msg.textContent='❌ Format de code invalide.';
+  else if(result.error === 'storage_full') msg.textContent='❌ Espace de stockage local plein.';
+  else msg.textContent='❌ Erreur : '+result.error;
+  return;
+ }
+ msg.style.color='#2ecc71';
+ msg.textContent=`✅ Profil "${result.name}" restauré ! Sélectionne-le sur l'écran d'accueil.`;
+ input.value='';
+ // Mettre à jour les listes déroulantes
+ if(typeof renderResetZone === 'function') renderResetZone();
+ _populateCloudPlayerSelect();
+ renderCloudPanel();
+ // Mettre à jour le selecteur de joueur sur l'accueil
+ try{
+  const playerSel = document.getElementById('playerSelect');
+  if(playerSel){
+   const exists = Array.from(playerSel.options).some(o => o.value === result.name);
+   if(!exists){
+    const opt = document.createElement('option');
+    opt.value = result.name; opt.textContent = result.name;
+    // Insérer avant "Autre"
+    const autreOpt = Array.from(playerSel.options).find(o => o.value === 'Autre');
+    if(autreOpt) playerSel.insertBefore(opt, autreOpt);
+    else playerSel.appendChild(opt);
+   }
+  }
+ }catch(e){}
 }

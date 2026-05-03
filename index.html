@@ -96,6 +96,16 @@
    &nbsp;&#11088;<span id="menu-stars">0</span>
   </p>
   <div id="xp-bar-wrap"><div id="xp-bar" style="width:0%"></div><div id="xp-label">0 XP</div></div>
+  <!-- Chantier Cloud Sync : bandeau opt-in (Décision 2 = option B) -->
+  <div id="cloud-optin-banner" class="hidden" style="background:linear-gradient(135deg,rgba(52,152,219,.15),rgba(52,152,219,.04));border:1px solid rgba(52,152,219,.4);border-radius:10px;padding:10px 14px;margin:8px auto 6px;max-width:480px;">
+   <p style="margin:0 0 6px;font-size:.85em;color:#fff;"><strong>&#9729;&#65039; Sauvegarde Cloud disponible</strong></p>
+   <p style="margin:0 0 8px;font-size:.76em;color:#bdc3c7;line-height:1.35;">Synchronise ta progression entre tous tes appareils. Pratique pour jouer sur ordi, tablette et téléphone sans perdre ses progrès.</p>
+   <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">
+    <button onclick="cloudOptInActivate()" style="background:#3498db;font-size:.85em;padding:6px 14px;">&#9989; Activer</button>
+    <button onclick="cloudOptInDismiss(false)" style="background:#7f8c8d;font-size:.85em;padding:6px 14px;">&#9203; Plus tard</button>
+    <button onclick="cloudOptInDismiss(true)" style="background:transparent;border:1px solid #7f8c8d;color:#bdc3c7;font-size:.78em;padding:5px 10px;">Ne plus afficher</button>
+   </div>
+  </div>
   <div id="music-viz"><div class="viz-bar"></div><div class="viz-bar" style="height:12px;"></div><div class="viz-bar" style="height:8px;"></div><div class="viz-bar" style="height:15px;"></div><div class="viz-bar"></div></div>
   <div id="hw-box" class="challenge-box hidden" style="border-color:#27ae60;background:linear-gradient(135deg,rgba(39,174,96,.18),rgba(39,174,96,.05));">
    <div style="font-weight:700;font-size:.9em;color:#2ecc71;">📚 Devoir du jour</div>
@@ -480,6 +490,21 @@
      <button onclick="doImport()" style="background:#27ae60;font-size:.85em;">&#9989; Valider</button>
      <p id="import-msg" style="font-size:.75em;margin-top:4px;"></p>
     </div>
+
+   <hr style="border-color:rgba(255,255,255,.1);margin:14px 0;">
+   <!-- Chantier Cloud Sync : sauvegarde automatique multi-appareils -->
+   <p style="font-size:.88em;font-weight:700;color:#3498db;">&#9729;&#65039; Sauvegarde Cloud (multi-appareils)</p>
+   <p style="font-size:.74em;color:#bdc3c7;margin:3px 0 8px;">Synchronise automatiquement la progression entre tous les appareils. Note bien le code, il sert à retrouver le profil.</p>
+   <select id="cloud-sync-player" style="width:90%;margin-bottom:8px;" onchange="renderCloudPanel()"></select>
+   <div id="cloud-panel-content"></div>
+   <details style="margin-top:10px;">
+    <summary style="font-size:.78em;color:#bdc3c7;cursor:pointer;">&#128229; J'ai déjà un code, je veux le restaurer ici</summary>
+    <p style="font-size:.74em;color:#bdc3c7;margin:6px 0 4px;">Entre le code reçu d'un autre appareil pour récupérer le profil :</p>
+    <input type="text" id="cloud-restore-code" placeholder="ex: SOREN-7B4K9X" style="width:80%;text-transform:uppercase;letter-spacing:1px;font-family:monospace;" maxlength="40"><br>
+    <button onclick="doCloudRestore()" style="background:#27ae60;margin-top:6px;">&#128229; Restaurer le profil</button>
+    <p id="cloud-restore-msg" style="font-size:.76em;margin-top:6px;"></p>
+   </details>
+
    <hr style="border-color:rgba(255,255,255,.1);margin:14px 0;">
     <p style="font-size:.88em;font-weight:700;color:#e74c3c;">🗑 Réinitialiser un profil</p>
     <p style="font-size:.76em;color:#bdc3c7;margin:3px 0 8px;">Remet un joueur à zéro : étoiles, figurines, XP, badges. Action irréversible.</p>
@@ -525,6 +550,7 @@
 <script src="js/07-game.js"></script><script src="js/08-ui.js"></script>
 <script src="js/09-parent.js"></script>
 <script src="js/10-figurines.js"></script>
+<script src="js/12-cloud.js"></script>
 <script src="js/11-init.js"></script>
 
 <!-- Enregistrement du Service Worker (mode hors-ligne + installation PWA) -->

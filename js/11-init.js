@@ -42,4 +42,6 @@ window.onload=()=>{
  persp.addEventListener('touchstart',e=>{_fvDragStart(e);e.preventDefault();},{passive:false});
  document.addEventListener('touchmove',e=>{_fvDragMove(e);},{passive:true});
  document.addEventListener('touchend',_fvDragEnd);
+ // ── Chantier Cloud Sync : initialise après chargement du profil ──
+ if(typeof initCloudSync==='function') initCloudSync();
 };

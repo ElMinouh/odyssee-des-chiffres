@@ -1189,6 +1189,7 @@ if(typeof checkMilestones==='function') checkMilestones();
  if(won){updateQuests('wins');if(GS.errInGame===0)updateQuests('perfect');updateQuests('stars',GS.score);}
  if(won){P.objectiveDone=(P.objectiveDone||0)+1;if((P.objective||0)>0&&P.objectiveDone>=P.objective)toast('🎯 Objectif du jour atteint !',3500);}
  const newBadges=checkBadges();saveProfileNow(); // sauvegarde immédiate en fin de partie
+ if(typeof syncCloudOnEndGame==='function') syncCloudOnEndGame();
  // reset thème si mode carte
  if(GM.mapZone)applyTheme(P.prefs.theme||'standard');
  showView('v-end');

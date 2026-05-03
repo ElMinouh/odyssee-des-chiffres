@@ -172,6 +172,12 @@ function loadProfile(){
  }
  if(P.objDate!==todayKey()){P.objectiveDone=0;P.objDate=todayKey();}
  applyPrefs();updateMenuUI();
+ // Chantier Cloud Sync : génère le code (silencieux) + relance le timer + bandeau
+ if(typeof ensureCloudCode==='function') ensureCloudCode(P);
+ if(typeof saveProfile==='function') saveProfile();
+ if(typeof cancelCloudSync==='function') cancelCloudSync();
+ if(P.cloudEnabled && typeof scheduleCloudSync==='function') scheduleCloudSync();
+ if(typeof showCloudOptInBannerIfRelevant==='function') setTimeout(showCloudOptInBannerIfRelevant, 200);
 }
 // saveProfile avec debounce : évite de sérialiser à chaque micro-action (quêtes, badges…)
 // saveProfileNow() force la sauvegarde immédiate (fin de partie, achats)
