@@ -80,14 +80,32 @@ function _probeFigImage(id){
 // une image HD (évite le délai de probe au premier rendu).
 // Ajoute simplement l'ID quand tu pousses un nouveau .webp.
 const FIG_IMG_PRELOAD = [
-  'db01', 'db02', 'db03', 'db04', 'db05', 'db06', 'db07', 'db08', 'db09', 'db10', 'db11', 'db12',
-  'nj01', 'nj02', 'nj03', 'nj04', 'nj05', 'nj06', 'nj07', 'nj08', 'nj09', 'nj10', 'nj11', 'nj12', 'nj13',
+  // Dragon Ball (12)
+  'db01', 'db02', 'db03', 'db04', 'db05', 'db06',
+  'db07', 'db08', 'db09', 'db10', 'db11', 'db12',
+  // Ninjago (13)
+  'nj01', 'nj02', 'nj03', 'nj04', 'nj05', 'nj06', 'nj07',
+  'nj08', 'nj09', 'nj10', 'nj11', 'nj12', 'nj13',
+  // Sailor Moon (5)
   'sm01', 'sm02', 'sm03', 'sm04', 'sm05',
+  // Tortues Ninja (7)
   'tu01', 'tu02', 'tu03', 'tu04', 'tu05', 'tu06', 'tu07',
+  // Bluey (6)
   'bl01', 'bl02', 'bl03', 'bl04', 'bl05', 'bl06',
-  'dr01', 'dr02', 'dr03', 'dr04', 'dr05', 'dr06', 'dr07', 'dr08', 'dr09', 'dr10', 'dr11', 'dr12', 'dr13',
+  // Dragons (13)
+  'dr01', 'dr02', 'dr03', 'dr04', 'dr05', 'dr06', 'dr07',
+  'dr08', 'dr09', 'dr10', 'dr11', 'dr12', 'dr13',
+  // Miraculous (6)
   'mi01', 'mi02', 'mi03', 'mi04', 'mi05', 'mi06',
+  // Pyjamasques (7)
   'pj01', 'pj02', 'pj03', 'pj04', 'pj05', 'pj06', 'pj07',
+  // Harry Potter (12)
+  'hp01', 'hp02', 'hp03', 'hp04', 'hp05', 'hp06',
+  'hp07', 'hp08', 'hp09', 'hp10', 'hp11', 'hp12',
+  // Star Wars (17)
+  'sw01', 'sw02', 'sw03', 'sw04', 'sw05', 'sw06',
+  'sw07', 'sw08', 'sw09', 'sw10', 'sw11', 'sw12',
+  'sw13', 'sw14', 'sw15', 'sw16', 'sw17',
 ];
 // Marque immédiatement comme disponibles + précharge
 if(typeof window !== 'undefined'){
@@ -162,16 +180,20 @@ const FIGURINES=[
 {id:'sw01',name:'Luke Skywalker',uni:'Star Wars',uk:'sw',em:'💙',em2:'⚔️',color:'#3498db',gc:'#5dade2',desc:'Fils d\'Anakin Skywalker, élevé sur Tatooine, Luke est le Jedi qui vaincra l\'Empire Galactique. Formé par Maître Yoda sur Dagobah, il manie son sabre laser vert avec maîtrise. Son amour filial et sa foi en la rédemption de son père permettront la chute de l\'Empereur Palpatine.',r:'épique',p:230},
 {id:'sw02',name:'Dark Vador',uni:'Star Wars',uk:'sw',em:'😤',em2:'🔴',color:'#c0392b',gc:'#e74c3c',desc:'Autrefois Anakin Skywalker, chevalier Jedi prometteur, il bascule dans le Côté Obscur. Son armure noire, son masque respiratoire et son sabre laser rouge sont les symboles absolus du mal intergalactique. Sa respiration est l\'un des sons les plus reconnaissables du cinéma. Il choisira finalement la lumière pour sauver Luke.',r:'légendaire',p:350},
 {id:'sw03',name:'Maître Yoda',uni:'Star Wars',uk:'sw',em:'🧘',em2:'💚',color:'#27ae60',gc:'#2ecc71',desc:'Grand Maître Jedi depuis 800 ans, Yoda est l\'être le plus sage dans la Force de toute la galaxie. Petit être vert de 900 ans, il parle en inversant sa syntaxe. Même à l\'article de la mort, il peut soulever un X-Wing par la Force. Sa connexion à la Force dépasse tout ce qu\'un humain peut concevoir.',r:'légendaire',p:350},
-{id:'sw04',name:'Rey',uni:'Star Wars',uk:'sw',em:'☀️',em2:'⚔️',color:'#f1c40f',gc:'#f4d03f',desc:'Solitaire de Jakku, Rey découvre ses pouvoirs en affrontant Kylo Ren. Mécanicienne de génie, elle pilote le Faucon Millenium parfaitement sans jamais l\'avoir piloté avant. Ses trois chignons caractéristiques sont sa marque de fabrique. Dernière des Skywalker par choix, elle enterre les sabres de Luke et Leia sur Tatooine.',r:'épique',p:230},
+{id:'sw04',name:'Princesse Leia',uni:'Star Wars',uk:'sw',em:'👸',em2:'⭐',color:'#ecf0f1',gc:'#bdc3c7',desc:'Princesse d\'Alderaan, sénatrice et Générale de la Rébellion. Ses deux chignons en macarons sont devenus iconiques. Soeur jumelle de Luke Skywalker et fille secrète de Dark Vador, elle dirige la Résistance avec courage et stratégie. Forte sensible à la Force, elle aurait pu devenir Jedi.',r:'épique',p:230},
 {id:'sw05',name:'Han Solo',uni:'Star Wars',uk:'sw',em:'🎲',em2:'🔫',color:'#795548',gc:'#a0522d',desc:'Contrebandier légendaire, capitaine du Faucon Millenium. Cynique et individualiste au départ, il devient un héros majeur de la Rébellion. Son Blaster DL-44 ne quitte jamais sa hanche. Son amitié avec Chewbacca est indéfectible depuis des décennies de voyages dans le vaisseau le plus rapide de la galaxie.',r:'rare',p:150},
-{id:'sw06',name:'Obi-Wan Kenobi',uni:'Star Wars',uk:'sw',em:'🧔',em2:'💙',color:'#3498db',gc:'#74b9ff',desc:'Maître Jedi exemplaire, Obi-Wan Kenobi forma Anakin Skywalker avant de le voir sombrer. Exilé sur Tatooine pour surveiller Luke, il se sacrifie face à Dark Vador et devient un avec la Force. Sa sagesse et son calme olympien en font l\'archétype du chevalier Jedi idéal.',r:'épique',p:230},
+{id:'sw06',name:'Chewbacca',uni:'Star Wars',uk:'sw',em:'🐻',em2:'🔫',color:'#795548',gc:'#a0522d',desc:'Wookiee de Kashyyyk, copilote loyal de Han Solo depuis des décennies. Son cri inimitable exprime une gamme d\'émotions surprenante. Fort comme dix hommes et mécanicien hors pair, sa bandoulière et son arbalète laser sont ses seuls accessoires. Sa loyauté wookiee envers ses amis est absolue et indéfectible.',r:'rare',p:150},
 {id:'sw07',name:'R2-D2',uni:'Star Wars',uk:'sw',em:'🤖',em2:'🔵',color:'#3498db',gc:'#5dade2',desc:'Droïde astromec, R2-D2 transporte les plans de l\'Étoile de la Mort dans sa mémoire. Son dôme bleu et blanc, ses sifflements et bips expressifs communiquent avec une clarté absolue. Courageux et débrouillard, il sauve la mise dans chaque situation critique grâce à ses nombreux outils cachés.',r:'rare',p:150},
 {id:'sw08',name:'C-3PO',uni:'Star Wars',uk:'sw',em:'🤖',em2:'🟡',color:'#f39c12',gc:'#f9c12d',desc:'Droïde de protocole qui parle plus de six millions de formes de communication. Son corps doré et ses yeux lumineux rouges sont immédiatement reconnaissables. Pessimiste chronique, il calcule les probabilités de survie avec une précision désespérante mais s\'en sort toujours. Son amitié avec R2-D2 traverse toute la saga.',r:'rare',p:150},
 {id:'sw09',name:'Grogu',uni:'Star Wars',uk:'sw',em:'💚',em2:'✋',color:'#27ae60',gc:'#00e676',desc:'Surnommé Bébé Yoda, Grogu est un mystérieux enfant de 50 ans de la même espèce que Yoda. Ses énormes oreilles vertes et ses grands yeux marron attendrissants en font la créature la plus adorable de la galaxie. Doté d\'un puissant lien avec la Force, le Mandalorien le protège au péril de sa vie.',r:'légendaire',p:350},
 {id:'sw10',name:'Le Mandalorien',uni:'Star Wars',uk:'sw',em:'🪖',em2:'🚀',color:'#7f8c8d',gc:'#aab7b8',desc:'Guerrier de Mandalore suivant le Code de la Voie avec une rigueur absolue. Son armure en Beskar, métal quasi-indestructible, le protège de tout. Chasseur de primes redouté, il devient le protecteur inattendu du petit Grogu, créant un lien père-fils unique. C\'est la Voie.',r:'légendaire',p:350},
-{id:'sw11',name:'Kylo Ren',uni:'Star Wars',uk:'sw',em:'⚔️',em2:'🖤',color:'#8e44ad',gc:'#c0392b',desc:'Ben Solo, fils de Han et de Leia, trahit l\'Ordre Jedi pour le Premier Ordre. Son sabre laser rouge à garde croisée instable est aussi imprévisible que son caractère. Déchiré entre Lumière et Obscurité, il vénère le masque fondu de Dark Vador. Sa rédemption finale lors de la Bataille d\'Exégol est inoubliable.',r:'épique',p:230},
-{id:'sw12',name:'Chewbacca',uni:'Star Wars',uk:'sw',em:'🐻',em2:'🔫',color:'#795548',gc:'#a0522d',desc:'Wookiee de Kashyyyk, copilote loyal de Han Solo depuis des décennies. Son cri inimitable exprime une gamme d\'émotions surprenante. Fort comme dix hommes et mécanicien hors pair, sa bandoulière et son arbalète laser sont ses seuls accessoires. Sa loyauté wookiee envers ses amis est absolue et indéfectible.',r:'rare',p:150},
+{id:'sw11',name:'Obi-Wan Kenobi',uni:'Star Wars',uk:'sw',em:'🧔',em2:'💙',color:'#3498db',gc:'#74b9ff',desc:'Maître Jedi exemplaire, Obi-Wan Kenobi forma Anakin Skywalker avant de le voir sombrer. Exilé sur Tatooine pour surveiller Luke, il se sacrifie face à Dark Vador et devient un avec la Force. Sa sagesse et son calme olympien en font l\'archétype du chevalier Jedi idéal.',r:'épique',p:230},
+{id:'sw12',name:'Stormtrooper',uni:'Star Wars',uk:'sw',em:'🪖',em2:'⚪',color:'#ecf0f1',gc:'#aab7b8',desc:'Soldat impérial standard de l\'Empire Galactique. Son armure blanche en plastoid est aussi reconnaissable que sa précision de tir... discutable. Anonyme dans la foule, il représente la force brute du régime de l\'Empereur. Issu du programme de clonage de Jango Fett, puis recruté parmi la population.',r:'commun',p:90},
 {id:'sw13',name:'Boba Fett',uni:'Star Wars',uk:'sw',em:'🎯',em2:'🪖',color:'#27ae60',gc:'#2ecc71',desc:'Chasseur de primes légendaire portant l\'armure mandalorienne de son père Jango. Peu disert, totalement efficace, il traque ses cibles avec patience redoutable. Sa jetpack et ses câbles de capture font de lui une machine de guerre mobile. Ayant survécu au Sarlacc de Tatooine, il règne finalement comme Daimyo.',r:'légendaire',p:350},
+{id:'sw14',name:'Rey',uni:'Star Wars',uk:'sw',em:'☀️',em2:'⚔️',color:'#f1c40f',gc:'#f4d03f',desc:'Solitaire de Jakku, Rey découvre ses pouvoirs en affrontant Kylo Ren. Mécanicienne de génie, elle pilote le Faucon Millenium parfaitement sans jamais l\'avoir piloté avant. Ses trois chignons caractéristiques sont sa marque de fabrique. Dernière des Skywalker par choix, elle enterre les sabres de Luke et Leia sur Tatooine.',r:'épique',p:230},
+{id:'sw15',name:'Kylo Ren',uni:'Star Wars',uk:'sw',em:'⚔️',em2:'🖤',color:'#8e44ad',gc:'#c0392b',desc:'Ben Solo, fils de Han et de Leia, trahit l\'Ordre Jedi pour le Premier Ordre. Son sabre laser rouge à garde croisée instable est aussi imprévisible que son caractère. Déchiré entre Lumière et Obscurité, il vénère le masque fondu de Dark Vador. Sa rédemption finale lors de la Bataille d\'Exégol est inoubliable.',r:'épique',p:230},
+{id:'sw16',name:'Empereur Palpatine',uni:'Star Wars',uk:'sw',em:'⚡',em2:'💀',color:'#7f0000',gc:'#c0392b',desc:'Dark Sidious, Maître Sith ayant orchestré la chute de la République et l\'Ordre 66. Sa capuche noire dissimule son visage corrompu par le côté obscur. Ses éclairs de Force cuisent ses ennemis. Manipulateur ultime, il a régné en secret depuis des décennies. Son rire glaçant résonne dans toute la galaxie.',r:'légendaire',p:350},
+{id:'sw17',name:'Dark Maul',uni:'Star Wars',uk:'sw',em:'😈',em2:'⚔️',color:'#c0392b',gc:'#e74c3c',desc:'Apprenti Sith de Dark Sidious, Maul est un Zabrak au visage tatoué de noir et rouge couronné de cornes. Son sabre laser à double lame rouge fait de lui un combattant redoutable et acrobatique. Tué par Obi-Wan sur Naboo, il survivra miraculeusement avec des jambes mécaniques pour traquer sa vengeance.',r:'légendaire',p:350},
 {id:'nj01',name:'Lloyd – Ninja Vert',uni:'Ninjago',uk:'nj',em:'💚',em2:'⚔️',color:'#27ae60',gc:'#00e676',desc:'Fils de Lord Garmadon et petit-fils du Grand Maître Wu, Lloyd est le Ninja Vert Ultime prédestiné. Maître de l\'Énergie et du Spinjitzu, il libère un tourbillon vert dévastateur. Son amour pour son père et sa foi en la rédemption font de lui le coeur battant de toute l\'équipe des Ninja.',r:'légendaire',p:350},
 {id:'nj02',name:'Kai – Maître du Feu',uni:'Ninjago',uk:'nj',em:'🔥',em2:'⚔️',color:'#e74c3c',gc:'#ff5252',desc:'Forgeron impulsif devenu Ninja du Feu, Kai est le combattant le plus offensif de l\'équipe. Protecteur de sa soeur Nya, sa colère se transforme en flammes purificatrices au combat. Son bandeau rouge et ses épées enflammées sont ses marques de fabrique emblématiques de tout Ninjago.',r:'épique',p:230},
 {id:'nj03',name:'Zane le Nindroid',uni:'Ninjago',uk:'nj',em:'❄️',em2:'🤖',color:'#bdc3c7',gc:'#ecf0f1',desc:'Robot ninja à l\'apparence humaine, Zane est le Ninja de la Glace créé par le Dr Julien. Logique, calme et précis, ses techniques figent les ennemis en une fraction de seconde. Sa capacité à ignorer la douleur et sa dévotion absolue envers ses amis en font un pilier essentiel de l\'équipe.',r:'épique',p:230},

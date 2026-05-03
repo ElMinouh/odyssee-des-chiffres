@@ -9,7 +9,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v8.2.5'; // vague figurines : Bluey + Dragons + Miraculous + Pyjamasques
+const CACHE_VERSION = 'v8.2.6';
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources critiques précachées au premier chargement.
