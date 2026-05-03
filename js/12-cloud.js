@@ -209,10 +209,11 @@ async function restoreProfileByCode(code){
  }catch(e){
   return { ok:false, error:'storage_full' };
  }
- // Ajouter le nom dans la liste des joueurs personnalisés s'il n'y est pas
+ // Ajouter le nom dans la liste des joueurs personnalisés s'il n'est ni prédéfini ni "Autre"
  try{
   const customs = JSON.parse(localStorage.getItem('customPlayerNames') || '[]');
-  if(!customs.includes(prof.name) && !['Soren','Eden','Saraphina','Autre'].includes(prof.name)){
+  const isPreset = (typeof KNOWN !== 'undefined' && Array.isArray(KNOWN)) ? KNOWN.includes(prof.name) : false;
+  if(!customs.includes(prof.name) && !isPreset && prof.name !== 'Autre'){
    customs.push(prof.name);
    localStorage.setItem('customPlayerNames', JSON.stringify(customs));
   }

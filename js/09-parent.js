@@ -790,8 +790,10 @@ function clearHomework(){
 // Liste tous les profils joueurs présents en localStorage
 function _listAllProfilesNames(){
  const names = new Set();
- // Profils prédéfinis
- ['Soren','Eden','Saraphina'].forEach(n => names.add(n));
+ // Profils prédéfinis (source de vérité : constante KNOWN dans 02-data.js)
+ if(typeof KNOWN !== 'undefined' && Array.isArray(KNOWN)){
+  KNOWN.forEach(n => names.add(n));
+ }
  // Profils personnalisés
  try{
   const customs = JSON.parse(localStorage.getItem('customPlayerNames') || '[]');
