@@ -124,6 +124,9 @@ function validateProfile(raw, defaultName){
   },
   homework: (raw.homework && typeof raw.homework==='object') ? raw.homework : null,
   heroStageId: _safeStr(raw.heroStageId, 20, 'oeuf'),
+  // Chantier Cloud Sync : préserver le code joueur et le statut d'activation
+  cloudCode: _safeStr(raw.cloudCode, 40, null),
+  cloudEnabled: _safeBool(raw.cloudEnabled, false),
  };
  return out;
 }
@@ -141,7 +144,8 @@ function defProfile(name){
   objective:0,objectiveDone:0,objDate:null,
   avatar:'🧙',heroTitle:'novice',ownedSkins:[],equippedSkin:null,victorySound:'fanfare',ownedFigurines:[],
   opFilters:{add:true,sub:true,mult:true,div:true,miss:true,frac:true,geo:true},
-  heroStageId:'oeuf'};
+  heroStageId:'oeuf',
+  cloudCode:null,cloudEnabled:false};
 }
 function loadProfile(){
  const sel=$('playerSelect').value;
