@@ -181,9 +181,11 @@ function getCharPortrait(id, opts = {}){
  if(FIG_IMG_AVAILABLE.has(id)){
   const fallbackHTML = (CHAR_PORTRAITS[id] || `<div style="font-size:${size*0.45}px;line-height:${size}px;text-align:center;">${emoji}</div>`)
     .replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+  // Le onerror : si le fichier .webp n'existe pas (404), on log pour diagnostic
+  // et on bascule sur le fallback (SVG ou emoji).
   return `<img src="assets/figurines/${id}.webp" alt="" loading="lazy" decoding="async"
     style="width:100%;height:100%;object-fit:contain;display:block;"
-    onerror="this.outerHTML='${fallbackHTML}'"/>`;
+    onerror="console.warn('[fig img 404] Fichier manquant : assets/figurines/${id}.webp');FIG_IMG_AVAILABLE.delete('${id}');FIG_IMG_FAILED.add('${id}');this.outerHTML='${fallbackHTML}'"/>`;
  }
  // 2. Pas en cache + pas encore testé : on lance une probe asynchrone (sans bloquer)
  //    et on retombe sur SVG en attendant. Quand la probe réussit, la prochaine ouverture

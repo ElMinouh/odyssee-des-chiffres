@@ -295,7 +295,9 @@ function showMonsterIntro(monster,cb){
  const monEl=$('trans-monster');
  const msgEl=$('trans-msg');
  monEl.textContent=monster.emoji;
- monEl.style.cssText='';
+ // Reset des styles inline mais on PRÉSERVE le font-size pour que l'emoji
+ // reste à la bonne taille (sinon il tombe sur la valeur par défaut du body ~16px).
+ monEl.style.cssText='font-size:5em;';
  monEl.style.setProperty('--mcol',monster.col);
  // Remove old class then reapply to trigger reflow
  monEl.className='';void monEl.offsetWidth;
