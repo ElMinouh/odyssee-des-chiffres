@@ -120,7 +120,7 @@ input::placeholder,textarea::placeholder{color:rgba(255,255,255,.5);}
 @keyframes trans-in{0%{opacity:0;transform:scale(.8);}100%{opacity:1;transform:scale(1);}}
 #transition-inner{animation:trans-in .4s ease forwards;}
 #gif-overlay{position:fixed;inset:0;background:rgba(0,0,0,.92);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:14px;z-index:100;padding:20px;box-sizing:border-box;}
-#congrats-gif{max-width:min(78vw,600px);max-height:60vh;width:auto;height:auto;object-fit:contain;border:5px solid gold;border-radius:15px;box-shadow:0 0 40px gold;display:block;margin:0;}
+#congrats-gif{width:min(78vw,500px);height:auto;min-height:280px;max-height:60vh;object-fit:contain;border:5px solid gold;border-radius:15px;box-shadow:0 0 40px gold;display:block;margin:0;background:rgba(0,0,0,.4);}
 #congrats-name{margin:0!important;font-size:1.4em;text-align:center;}
 @keyframes pulse{0%,100%{box-shadow:0 0 8px var(--glow);}50%{box-shadow:0 0 25px var(--glow);}}
 .pulse{animation:pulse 2s infinite;}
