@@ -7,8 +7,8 @@
 // Chantier UI lazy-load galerie : par défaut, rien d'affiché — uniquement le menu
 // déroulant + la recherche. La grille apparaît seulement quand on sélectionne un
 // univers ou qu'on tape une recherche.
-var _figFilter = (typeof _figFilter !== 'undefined') ? _figFilter : 'none';
-var _shopSearch = (typeof _shopSearch !== 'undefined') ? _shopSearch : '';
+var _figFilter = 'none';
+var _shopSearch = '';
 
 function renderFigurinesShop(filter){
  // Garantir que les portraits sont disponibles (ne fait rien si déjà chargé).
@@ -79,10 +79,10 @@ function _renderFigurinesShop(filter){
    <div style="font-size:2.6em;margin-bottom:8px;">🎴</div>
    <p style="font-size:.95em;margin:6px 0;"><strong>Sélectionne une licence dans le menu</strong></p>
    <p style="font-size:.78em;margin:4px 0;">ou utilise la barre de recherche pour trouver un personnage.</p>
-   <p style="font-size:.72em;margin-top:14px;color:#7f8c8d;">${FIGURINES.length} figurines à découvrir réparties dans 25 univers</p>
+   <p style="font-size:.72em;margin-top:14px;color:#7f8c8d;">${FIGURINES.length} figurines à découvrir</p>
   </div>`;
-  const t=document.getElementById('fig-shop-list')||document.getElementById('shop-list');
-  if(t)t.innerHTML=html;
+  const target=$('p-figurines');
+  if(target) target.innerHTML=html;
   return;
  }
  if(_figFilter==='all'||_figFilter==='none') list=FIGURINES;

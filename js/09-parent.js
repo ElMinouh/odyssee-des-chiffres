@@ -3,8 +3,8 @@
 
 // Vue parentale : statistiques, rapport hebdo, sauvegarde cloud, export PDF.
 // Variables globales du module
-var _pfigFilter = (typeof _pfigFilter !== 'undefined') ? _pfigFilter : 'none';
-var _pfigSearch = (typeof _pfigSearch !== 'undefined') ? _pfigSearch : '';
+var _pfigFilter = 'none';
+var _pfigSearch = '';
 
 // VUE PARENT
 // ═══════════════════════════════════════════════════════
