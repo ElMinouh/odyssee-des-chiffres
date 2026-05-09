@@ -4,6 +4,12 @@
 // Boutique figurines, viewer 3D, animations iconiques, sons synthétiques,
 // réinitialisation des profils.
 
+// Chantier UI lazy-load galerie : par défaut, rien d'affiché — uniquement le menu
+// déroulant + la recherche. La grille apparaît seulement quand on sélectionne un
+// univers ou qu'on tape une recherche.
+var _figFilter = (typeof _figFilter !== 'undefined') ? _figFilter : 'none';
+var _shopSearch = (typeof _shopSearch !== 'undefined') ? _shopSearch : '';
+
 function renderFigurinesShop(filter){
  // Garantir que les portraits sont disponibles (ne fait rien si déjà chargé).
  if(typeof loadPortraits==='function')loadPortraits().then(()=>{
@@ -18,6 +24,7 @@ function _renderFigurinesShop(filter){
 
  // Build filter bar
  const SHOP_LICENSES=[
+  {k:'none',label:'— Sélectionne une licence —'},
   {k:'all',label:'🌐 Toutes les licences'},
   {k:'mine',label:'⭐ Ma collection'},
   {k:'db',label:'🐉 Dragon Ball'},
@@ -35,7 +42,6 @@ function _renderFigurinesShop(filter){
   {k:'fr',label:'❄️ Reine des Neiges'},
   {k:'mk',label:'🐭 Mickey & Amis'},
   {k:'mr',label:'🍄 Mario Bros'},
-  {k:'br',label:'💗 Barbie'},
   {k:'sp',label:'🕵️ Totally Spies'},
   {k:'ot',label:'⚽ Olive & Tom'},
   {k:'mc',label:'🌟 Cités d\'Or'},
@@ -67,7 +73,19 @@ function _renderFigurinesShop(filter){
 
  // Filter list
  let list;
- if(_figFilter==='all') list=FIGURINES;
+ // Lazy-load : si aucun filtre choisi ET pas de recherche, on n'affiche pas la grille
+ if(_figFilter==='none' && !_shopSearch.trim()){
+  html+=`<div class="shop-empty-hint" style="text-align:center;padding:30px 16px;color:#bdc3c7;">
+   <div style="font-size:2.6em;margin-bottom:8px;">🎴</div>
+   <p style="font-size:.95em;margin:6px 0;"><strong>Sélectionne une licence dans le menu</strong></p>
+   <p style="font-size:.78em;margin:4px 0;">ou utilise la barre de recherche pour trouver un personnage.</p>
+   <p style="font-size:.72em;margin-top:14px;color:#7f8c8d;">${FIGURINES.length} figurines à découvrir réparties dans 25 univers</p>
+  </div>`;
+  const t=document.getElementById('fig-shop-list')||document.getElementById('shop-list');
+  if(t)t.innerHTML=html;
+  return;
+ }
+ if(_figFilter==='all'||_figFilter==='none') list=FIGURINES;
  else if(_figFilter==='mine') list=FIGURINES.filter(f=>owned.includes(f.id));
  else list=FIGURINES.filter(f=>f.uk===_figFilter);
 
@@ -171,7 +189,7 @@ function _figShelfCard(fig, anim=false){
 const UNIVERS_LIST=[
  {k:'db',label:'Dragon Ball'},{k:'hp',label:'Harry Potter'},{k:'sw',label:'Star Wars'},
  {k:'nj',label:'Ninjago'},{k:'fr',label:'Reine des Neiges'},{k:'mk',label:'Mickey & Amis'},
- {k:'mv',label:'Marvel'},{k:'pk',label:'Pokémon'},{k:'mr',label:'Mario Bros'},{k:'br',label:'Barbie'},
+ {k:'mv',label:'Marvel'},{k:'pk',label:'Pokémon'},{k:'mr',label:'Mario Bros'},
  {k:'mc',label:'Cités d\'Or'},{k:'gd',label:'Goldorak'},{k:'cz',label:'Chevaliers du Zodiaque'},
  {k:'tm',label:'3 Mousquetaires'},{k:'bm',label:'Batman'},{k:'tn',label:'Tintin'},{k:'ax',label:'Astérix'},
  {k:'mi',label:'Miraculous'},{k:'pj',label:'Pyjamasques'},{k:'ot',label:'Olive & Tom'},
@@ -274,7 +292,7 @@ function openFigViewer(id,_pm){
 function _renderFigViewer(fig,id){
  _fvRotY=0;_fvAuto=true;_fvSpeed=0.55;
  // Fond dynamique selon univers
- const bgCols={db:'#3d1c00',hp:'#3d0000',sw:'#001040',nj:'#003d00',fr:'#001428',mk:'#0a0a0a',mv:'#0a0010',pk:'#0a0a00',mr:'#1a0000',br:'#1a0028'};
+ const bgCols={db:'#3d1c00',hp:'#3d0000',sw:'#001040',nj:'#003d00',fr:'#001428',mk:'#0a0a0a',mv:'#0a0010',pk:'#0a0a00',mr:'#1a0000'};
  $('fig-vbg').style.background=`radial-gradient(ellipse at 50% 110%,${fig.gc}44 0%,${bgCols[fig.uk]||'#000'} 55%,#000 100%)`;
  $('fig-pglow').style.background=fig.gc;
  $('fig-card3d').style.setProperty('--fglow',fig.gc);
@@ -711,12 +729,6 @@ const FIG_CHAR_DATA={
  mr05:{fn:'bounce',  col:'#0f0',v:"Yoshi !",             p:1.25,r:1.2, g:'m',sk:'#40a040'},
  mr06:{fn:'bounce',  col:'#f00',v:"Toad !",              p:1.3, r:1.15,g:'m',sk:'#f5cba7'},
  mr07:{fn:'roar',    col:'#ff0',v:"Wahaha, l'argent est à moi !",p:0.88,r:1.05,g:'m',sk:'#c0a060'},
- // Barbie — positif, féminin
- br01:{fn:'heart',   col:'#f6a',v:"Tout est possible !",  p:1.1, r:1.0, g:'f',sk:'#fde3bb'},
- br02:{fn:'jump',    col:'#acf',v:"Cap sur les étoiles !",p:1.12,r:0.98,g:'f',sk:'#fde3bb'},
- br03:{fn:'bounce',  col:'#0c0',v:"La santé avant tout !", p:1.05,r:0.98,g:'f',sk:'#fde3bb'},
- br04:{fn:'wave',    col:'#f80',v:"Je suis juste Kène.",   p:1.0, r:0.95,g:'m',sk:'#fde3bb'},
- br05:{fn:'water',   col:'#08f',v:"Vive l'océan !",       p:1.08,r:1.0, g:'f',sk:'#fde3bb'},
 // ── NOUVELLES LICENCES
 mc01:{fn:'jump',    col:'#f1c40f',v:'Le soleil va briller !',    p:1.12,r:1.2, g:'m',sk:'#fde3bb'},
  mc02:{fn:'aura',    col:'#e74c3c',v:'Les cités nous attendent !',p:1.08,r:1.0, g:'f',sk:'#d4956a'},

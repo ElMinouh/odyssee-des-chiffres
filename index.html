@@ -230,7 +230,7 @@
       <div style="font-size:.68em;color:rgba(255,255,255,.55);line-height:1.3;">Répond <b>automatiquement et correctement</b> à la question en cours. Utilise le bouton 💣 en jeu.</div>
     </div>
    </div>
-   <button class="accordion" onclick="renderFigurinesShop('all')">&#128167; Figurines à collectionner</button>
+   <button class="accordion" onclick="renderFigurinesShop('none');_shopSearch='';">&#128167; Figurines à collectionner</button>
    <div class="panel"><div id="p-figurines"><div style="color:rgba(255,255,255,.4);font-size:.8em;text-align:center;padding:10px;">Clique sur l'accordéon pour voir les figurines</div></div></div>
    <button class="accordion">&#127941; Badges</button>
    <div class="panel" id="p-badges"></div>
@@ -516,9 +516,11 @@
      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">
       <span style="font-size:.8em;font-weight:700;color:#f1c40f;">👤 Joueur :</span>
       <select id="pfig-player" onchange="renderParentFigurines()" style="width:auto;padding:4px 8px;font-size:.78em;"></select>
-      <select id="pfig-license" onchange="renderParentFigurines()" style="width:auto;padding:4px 8px;font-size:.78em;margin-left:4px;"><option value="all">🌐 Toutes les licences</option></select>
+      <select id="pfig-license" onchange="renderParentFigurines()" style="width:auto;padding:4px 8px;font-size:.78em;margin-left:4px;"><option value="none">— Sélectionne une licence —</option></select>
       <span id="pfig-stats" style="font-size:.72em;color:rgba(255,255,255,.5);margin-left:4px;"></span>
      </div>
+     <div style="margin-bottom:6px;">
+      <input id="pfig-search" type="text" placeholder="🔍 Rechercher un personnage…" oninput="_pfigSearch=this.value;renderParentFigurines()" maxlength="30" style="width:100%;padding:5px 8px;font-size:.78em;border-radius:6px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1);color:#fff;">
      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px;">
       <button onclick="pfigFilter('all')" id="pfig-btn-all" class="active" style="font-size:.62em;padding:4px 9px;border-radius:8px;margin:0;border-bottom:2px solid rgba(0,0,0,.3);">🌐 Tout</button>
       <button onclick="pfigFilter('owned')" id="pfig-btn-owned" style="font-size:.62em;padding:4px 9px;border-radius:8px;margin:0;background:rgba(255,255,255,.1);border-bottom:2px solid rgba(0,0,0,.3);">✅ Possédées</button>

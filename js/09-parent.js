@@ -2,6 +2,9 @@
 'use strict';
 
 // Vue parentale : statistiques, rapport hebdo, sauvegarde cloud, export PDF.
+// Variables globales du module
+var _pfigFilter = (typeof _pfigFilter !== 'undefined') ? _pfigFilter : 'none';
+var _pfigSearch = (typeof _pfigSearch !== 'undefined') ? _pfigSearch : '';
 
 // VUE PARENT
 // ═══════════════════════════════════════════════════════
@@ -38,7 +41,7 @@ function ptab(name){
   const allP=[...KNOWN,...(cu&&!KNOWN.includes(cu)?[cu]:[])]; 
   sel.innerHTML=allP.map(n=>`<option>${n}</option>`).join('');
   sel.value=P.name||KNOWN[0];
-  _pfigFilter='all';
+  _pfigFilter='none'; _pfigSearch='';
   renderParentFigurines();
  }
 }
@@ -60,24 +63,49 @@ function renderParentFigurines(){
  // Populate license select
  const licSel=$('pfig-license');
  if(licSel&&licSel.options.length<=1){
+  // Première option = "rien sélectionné" pour le lazy-load
+  const optNone=document.createElement('option');optNone.value='none';optNone.textContent='— Sélectionne une licence —';
+  licSel.appendChild(optNone);
+  const optAll=document.createElement('option');optAll.value='all';optAll.textContent='🌐 Toutes les licences';
+  licSel.appendChild(optAll);
   UNIVERS_LIST.forEach(({k,label})=>{
    const opt=document.createElement('option');opt.value=k;opt.textContent=`${UNI_ICON[k]||'🎴'} ${label}`;
    licSel.appendChild(opt);
   });
+  licSel.value='none';
  }
- const licFilter=licSel?licSel.value:'all';
+ const licFilter=licSel?licSel.value:'none';
  const el=$('pfig-content');if(!el)return;
+
+ // Lazy-load : si licence='none' ET pas de recherche, on n'affiche rien d'autre que le message d'accueil
+ if(licFilter==='none' && !(_pfigSearch||'').trim()){
+  el.innerHTML=`<div style="text-align:center;padding:30px 16px;color:#bdc3c7;">
+   <div style="font-size:2.6em;margin-bottom:8px;">🎴</div>
+   <p style="font-size:.95em;margin:6px 0;"><strong>Sélectionne une licence dans le menu déroulant</strong></p>
+   <p style="font-size:.78em;margin:4px 0;">ou utilise la barre de recherche pour trouver un personnage.</p>
+   <p style="font-size:.72em;margin-top:14px;color:#7f8c8d;">${total} figurines réparties dans 25 univers</p>
+  </div>`;
+  return;
+ }
+
  let html='';
- const listToShow=licFilter==='all'?UNIVERS_LIST:UNIVERS_LIST.filter(u=>u.k===licFilter);
+ // Filtrage par recherche
+ const searchQ=(_pfigSearch||'').trim().toLowerCase();
+ const listToShow = (licFilter==='all'||licFilter==='none')
+  ? UNIVERS_LIST
+  : UNIVERS_LIST.filter(u=>u.k===licFilter);
  listToShow.forEach(({k,label})=>{
-  const uFigs=FIGURINES.filter(f=>f.uk===k);
+  let uFigs=FIGURINES.filter(f=>f.uk===k);
+  if(searchQ){
+   uFigs=uFigs.filter(f=>(f.name||'').toLowerCase().includes(searchQ));
+  }
   let displayFigs=uFigs; // 'all' = ALL figurines in license, owned or not
   if(_pfigFilter==='owned') displayFigs=uFigs.filter(f=>owned.includes(f.id));
   if(_pfigFilter==='missing') displayFigs=uFigs.filter(f=>!owned.includes(f.id));
   if(!displayFigs.length)return;
 
   const uOwned=uFigs.filter(f=>owned.includes(f.id)).length;
-  const isOpen=uOwned>0||_pfigFilter!=='owned';
+  const isOpen=uOwned>0||_pfigFilter!=='owned'||searchQ;
 
   html+=`<div class="pfig-section">
    <div class="pfig-header" onclick="togglePfigSection('pf-${k}')">

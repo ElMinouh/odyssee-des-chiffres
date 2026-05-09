@@ -359,3 +359,53 @@ function cloudOptInDismiss(permanent){
  const banner = document.getElementById('cloud-optin-banner');
  if(banner) banner.classList.add('hidden');
 }
+
+// ══════════════ SAUVEGARDE À LA FERMETURE ══════════════
+// Déclenchement de saveProfileNow() + push cloud (best-effort) quand l'utilisateur :
+// - ferme l'onglet/la fenêtre (pagehide)
+// - bascule l'app en arrière-plan (visibilitychange → hidden) → critique sur mobile
+// - quitte la page (beforeunload, fallback desktop)
+//
+// Note : pushProfileToCloud() est asynchrone et peut être interrompu par le navigateur
+// à la fermeture. On utilise navigator.sendBeacon en complément pour fiabiliser.
+function _cloudSyncBeacon(){
+ if(!P || !P.cloudCode || !P.cloudEnabled) return false;
+ try{
+  const code = encodeURIComponent(P.cloudCode);
+  const payload = { ...P };
+  delete payload._syncedAt;
+  // sendBeacon = requête garantie d'aboutir même après la fermeture de la page.
+  // Pas de réponse récupérable mais c'est ce qu'on veut ici.
+  if(navigator.sendBeacon){
+   const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+   return navigator.sendBeacon(`${CLOUD_API}/profile/${code}`, blob);
+  }
+ } catch(e){ _cloudWarn('beacon erreur :', e); }
+ return false;
+}
+
+function _onPageHide(){
+ // Sauvegarde locale immédiate
+ if(typeof saveProfileNow === 'function') saveProfileNow();
+ // Push cloud via sendBeacon (sûr en fermeture)
+ _cloudSyncBeacon();
+}
+
+function _onVisibilityChange(){
+ // Quand l'app passe en arrière-plan (sur mobile, c'est crucial : l'OS peut
+ // suspendre la PWA à tout moment et perdre la mémoire).
+ if(document.visibilityState === 'hidden'){
+  _onPageHide();
+ }
+}
+
+// Enregistrer les hooks dès que le module est chargé
+if(typeof window !== 'undefined'){
+ window.addEventListener('pagehide', _onPageHide);
+ window.addEventListener('visibilitychange', _onVisibilityChange);
+ // beforeunload : fallback desktop (mobile l'ignore souvent)
+ window.addEventListener('beforeunload', () => {
+  if(typeof saveProfileNow === 'function') saveProfileNow();
+  _cloudSyncBeacon();
+ });
+}
