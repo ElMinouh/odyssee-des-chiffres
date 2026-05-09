@@ -4,11 +4,9 @@
 // Boutique figurines, viewer 3D, animations iconiques, sons synthétiques,
 // réinitialisation des profils.
 
-// Chantier UI lazy-load galerie : par défaut, rien d'affiché — uniquement le menu
-// déroulant + la recherche. La grille apparaît seulement quand on sélectionne un
-// univers ou qu'on tape une recherche.
-var _figFilter = 'none';
-var _shopSearch = '';
+// Note : _figFilter et _shopSearch sont déclarés dans 03-figurines-data.js
+// (chargé avant celui-ci). Initialisés à 'none' / '' pour le lazy-load galerie :
+// par défaut on n'affiche rien d'autre que le menu déroulant + barre de recherche.
 
 function renderFigurinesShop(filter){
  // Garantir que les portraits sont disponibles (ne fait rien si déjà chargé).
@@ -275,7 +273,8 @@ function toggleShelfSection(id){
 // ── Viewer 3D ──────────────────────────────────────────
 let _fvRotY=0,_fvSpeed=0.55,_fvAuto=true,_fvWasAuto=true,_fvRaf=null,_fvDrag=false,_fvDragX=0,_fvDragMoved=false,_fvResumeT=null;
 let _fvCurrentId=null,_fvCurrentGc=null,_fvParentMode=false;
-let _pfigFilter='all';
+// _pfigFilter et _pfigSearch sont désormais déclarés dans 09-parent.js
+// (chargé avant celui-ci dans index.html). Voir 09-parent.js ligne 6-7.
 
 function openFigViewer(id,_pm){
  _fvParentMode=!!_pm;

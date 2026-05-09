@@ -540,6 +540,7 @@ const FIGURINES=[
 ];
 
 // ── Boutique figurines ──────────────────────────────────
-let _figFilter='all';
+// Lazy-load par défaut : 'none' = aucune licence sélectionnée → pas de grille
+let _figFilter='none';
 // Shop state
 let _shopSearch='';
