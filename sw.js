@@ -9,7 +9,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v8.3.8';
+const CACHE_VERSION = 'v8.4.0';
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources critiques précachées au premier chargement.
@@ -44,6 +44,48 @@ const OPTIONAL_URLS = [
   './assets/apple-touch-icon.png',
   './assets/portraits.svg',
   './assets/fonts/google-fonts.css',
+  // GIFs de fin de partie (chantier v8.4.0) — précachés pour fonctionnement offline
+  './assets/gifs/ax_obelix.gif',
+  './assets/gifs/bl_happydance.gif',
+  './assets/gifs/cz_hyoga.gif',
+  './assets/gifs/cz_lion.gif',
+  './assets/gifs/cz_seiya.gif',
+  './assets/gifs/cz_shiryu.gif',
+  './assets/gifs/db_goku.gif',
+  './assets/gifs/db_krilin.gif',
+  './assets/gifs/db_tortue_geniale.gif',
+  './assets/gifs/db_trunks.gif',
+  './assets/gifs/db_vegeta.gif',
+  './assets/gifs/dc_batman.gif',
+  './assets/gifs/dr_krokmou.gif',
+  './assets/gifs/dr_mains.gif',
+  './assets/gifs/fr_cerf.gif',
+  './assets/gifs/fr_elsa.gif',
+  './assets/gifs/fr_olaf.gif',
+  './assets/gifs/gd_actarus.gif',
+  './assets/gifs/hp_harry_potter.gif',
+  './assets/gifs/hp_hermione.gif',
+  './assets/gifs/hp_ron_weasley.gif',
+  './assets/gifs/kp_applause.gif',
+  './assets/gifs/mc_tao.gif',
+  './assets/gifs/mi_ladybug.gif',
+  './assets/gifs/mk_donald.gif',
+  './assets/gifs/mk_mickey.gif',
+  './assets/gifs/mr_mario.gif',
+  './assets/gifs/mv_hulk.gif',
+  './assets/gifs/mv_ironman.gif',
+  './assets/gifs/nj_danse.gif',
+  './assets/gifs/ot_hyuga.gif',
+  './assets/gifs/ot_tsubasa.gif',
+  './assets/gifs/pj_victoire.gif',
+  './assets/gifs/pk_pikachu.gif',
+  './assets/gifs/sc_dance.gif',
+  './assets/gifs/sm_lune.gif',
+  './assets/gifs/sp_toutes.gif',
+  './assets/gifs/sw_dark_vador.gif',
+  './assets/gifs/sw_yoda.gif',
+  './assets/gifs/tu_highfive.gif',
+  './assets/gifs/zl_link.gif',
 ];
 
 // URLs jamais interceptées par le SW (debug, outils, etc.)
