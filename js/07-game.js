@@ -1251,20 +1251,9 @@ if(typeof checkMilestones==='function') checkMilestones();
 }
 function playCongrats(){
  playVS();const h=GIFS[ri(0,GIFS.length-1)];
- const gifEl=$('congrats-gif');
- const overlayEl=$('gif-overlay');
- gifEl.src=h.url;$('congrats-name').innerText=`Bravo ${P.name} ! 🎉`;
- $('v-game').classList.add('hidden');overlayEl.classList.remove('hidden');
- // DIAGNOSTIC : log les dimensions du GIF 200ms après affichage
- setTimeout(()=>{
-  const r=gifEl.getBoundingClientRect();
-  const ovR=overlayEl.getBoundingClientRect();
-  console.log('[DIAG congrats-gif]','width:',r.width,'height:',r.height,'top:',r.top,'left:',r.left);
-  console.log('[DIAG gif-overlay]','width:',ovR.width,'height:',ovR.height,'top:',ovR.top,'left:',ovR.left);
-  console.log('[DIAG style attr]',gifEl.getAttribute('style'));
-  console.log('[DIAG computed minHeight]',getComputedStyle(gifEl).minHeight);
- },200);
- safeTimeout(()=>{overlayEl.classList.add('hidden');endGame(true);},3500);
+ $('congrats-gif').src=h.url;$('congrats-name').innerText=`Bravo ${P.name} ! 🎉`;
+ $('v-game').classList.add('hidden');$('gif-overlay').classList.remove('hidden');
+ safeTimeout(()=>{$('gif-overlay').classList.add('hidden');endGame(true);},3500);
 }
 function startConfetti(){
  if(confettiRaf){cancelAnimationFrame(confettiRaf);confettiRaf=null;}
