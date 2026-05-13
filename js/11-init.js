@@ -4,8 +4,9 @@
 // Initialisation : exécutée une fois le DOM prêt.
 
 // ═══════════════════════════════════════════════════════
-// Chantier visuel v8.5.0 : gestion du splash screen
-// Affiché 3.5s au tout premier chargement de la session.
+// Chantier visuel v8.5.1 : gestion du splash screen narratif
+// Affiché 10 secondes au tout premier chargement de la session.
+// Animation en 4 phases : boussole centrale + chiffres volants → convergence → carte
 // Si l'utilisateur clique/touche, on saute le splash immédiatement.
 // On utilise sessionStorage pour ne PAS l'afficher à chaque navigation.
 // ═══════════════════════════════════════════════════════
@@ -29,8 +30,8 @@
  };
  splash.addEventListener('click', skip, { once: true });
  splash.addEventListener('touchstart', skip, { once: true, passive: true });
- // Retrait automatique du DOM après l'animation (3.6s) pour libérer la place
- setTimeout(() => { splash.classList.add('skipped'); }, 3700);
+ // Retrait automatique du DOM après l'animation complète (10s + 0.6s fade + marge)
+ setTimeout(() => { splash.classList.add('skipped'); }, 10800);
 })();
 
 window.onload=()=>{
