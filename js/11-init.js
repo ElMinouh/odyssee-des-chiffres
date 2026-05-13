@@ -4,6 +4,35 @@
 // Initialisation : exécutée une fois le DOM prêt.
 
 // ═══════════════════════════════════════════════════════
+// Chantier visuel v8.5.0 : gestion du splash screen
+// Affiché 3.5s au tout premier chargement de la session.
+// Si l'utilisateur clique/touche, on saute le splash immédiatement.
+// On utilise sessionStorage pour ne PAS l'afficher à chaque navigation.
+// ═══════════════════════════════════════════════════════
+(function handleSplash(){
+ const splash = document.getElementById('splash-screen');
+ if(!splash) return;
+ // Si déjà vu cette session, on cache immédiatement
+ let alreadySeen = false;
+ try{ alreadySeen = sessionStorage.getItem('splashSeen') === '1'; }catch(e){}
+ if(alreadySeen){
+  splash.classList.add('skipped');
+  return;
+ }
+ // Marquer comme vu dès maintenant pour éviter rebond si l'utilisateur recharge vite
+ try{ sessionStorage.setItem('splashSeen', '1'); }catch(e){}
+ // Permettre de skipper le splash en cliquant/touchant
+ const skip = () => {
+  splash.style.transition = 'opacity .4s';
+  splash.style.opacity = '0';
+  setTimeout(() => { splash.classList.add('skipped'); }, 400);
+ };
+ splash.addEventListener('click', skip, { once: true });
+ splash.addEventListener('touchstart', skip, { once: true, passive: true });
+ // Retrait automatique du DOM après l'animation (3.6s) pour libérer la place
+ setTimeout(() => { splash.classList.add('skipped'); }, 3700);
+})();
+
 window.onload=()=>{
  // OPT-1+2 : init des références DOM cachées et du canvas particules
  _initCachedDOM();

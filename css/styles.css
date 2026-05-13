@@ -1635,3 +1635,201 @@ html[data-appearance="light"] .wr-advice h4{color:#7d3c98 !important;}
 .fig-card.owned .fig-em img{filter:drop-shadow(0 2px 4px rgba(0,0,0,.4));}
 /* Dans le viewer (vue ouverte), l'image prend la place du SVG */
 #fv-chr img{width:100%;height:100%;max-width:200px;max-height:200px;object-fit:contain;display:block;margin:0 auto;}
+
+/* ═══════════════════════════════════════════════════════════════
+   CHANTIER VISUEL v8.5.0 — Logos, splash et filigrane
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Logo principal de l'écran de démarrage ── */
+.game-logo {
+ display: block;
+ max-width: min(420px, 88%);
+ width: 100%;
+ height: auto;
+ margin: 0 auto 6px;
+ user-select: none;
+ -webkit-user-drag: none;
+ filter: drop-shadow(0 4px 20px rgba(0,0,0,.5));
+ animation: logoFloat 6s ease-in-out infinite;
+}
+
+/* Petite respiration verticale (subtile, ne distrait pas) */
+@keyframes logoFloat {
+ 0%, 100% { transform: translateY(0); }
+ 50%      { transform: translateY(-6px); }
+}
+
+/* ── Logo circulaire (boussole avec texte) dans Vue Parent / Tableau de Bord ── */
+.page-logo-circle {
+ display: block;
+ width: 90px;
+ height: 90px;
+ margin: 4px auto 6px;
+ border-radius: 50%;
+ opacity: .92;
+ user-select: none;
+ -webkit-user-drag: none;
+ filter: drop-shadow(0 2px 10px rgba(241,196,15,.25));
+ animation: logoSpin 60s linear infinite;
+}
+
+/* Rotation TRÈS lente, juste un soupçon de mouvement */
+@keyframes logoSpin {
+ from { transform: rotate(0deg); }
+ to   { transform: rotate(360deg); }
+}
+
+/* ── Filigrane global en arrière-plan du body ── */
+/* Très subtil pour ne pas gêner la lisibilité du contenu */
+body::before {
+ content: '';
+ position: fixed;
+ top: 50%;
+ left: 50%;
+ width: min(85vw, 700px);
+ height: min(85vw, 700px);
+ max-width: 700px;
+ max-height: 700px;
+ transform: translate(-50%, -50%);
+ background-image: url('../assets/logo-circle.webp');
+ background-size: contain;
+ background-repeat: no-repeat;
+ background-position: center;
+ opacity: 0.05;
+ pointer-events: none;
+ z-index: 0;
+ filter: blur(.5px);
+}
+
+/* Le contenu doit être au-dessus du filigrane */
+#gc { z-index: 10; }
+
+/* ═══════════════════════════════════════════════════════════════
+   SPLASH SCREEN — animation de démarrage 3.5 secondes
+   ═══════════════════════════════════════════════════════════════ */
+
+#splash-screen {
+ position: fixed;
+ inset: 0;
+ background: radial-gradient(circle at center, #1a2a4a 0%, #060a18 70%, #000 100%);
+ z-index: 9999;
+ display: flex;
+ justify-content: center;
+ align-items: center;
+ overflow: hidden;
+ animation: splashFadeOut .6s ease-in 3.0s forwards;
+}
+
+#splash-content {
+ position: relative;
+ width: min(90vw, 500px);
+ height: min(90vw, 500px);
+ display: flex;
+ justify-content: center;
+ align-items: center;
+}
+
+/* Boussole (icône) : zoom depuis le centre + rotation lente */
+#splash-compass {
+ position: absolute;
+ width: 180px;
+ height: 180px;
+ border-radius: 50%;
+ box-shadow: 0 0 60px rgba(241,196,15,.6), 0 0 120px rgba(241,196,15,.2);
+ opacity: 0;
+ transform: scale(.2) rotate(-90deg);
+ animation: splashCompass 3.5s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+
+@keyframes splashCompass {
+ 0%   { opacity: 0; transform: scale(.2) rotate(-90deg); }
+ 25%  { opacity: 1; transform: scale(1.05) rotate(0deg); }
+ 60%  { opacity: 1; transform: scale(1) rotate(180deg); }
+ 80%  { opacity: 1; transform: scale(1) rotate(360deg); }
+ 100% { opacity: 0; transform: scale(2.5) rotate(360deg); }
+}
+
+/* Logo final (carte parchemin) : apparaît à la fin */
+#splash-logo {
+ position: absolute;
+ max-width: 88%;
+ height: auto;
+ opacity: 0;
+ transform: scale(.6);
+ filter: drop-shadow(0 8px 30px rgba(0,0,0,.6));
+ animation: splashLogo 1.2s cubic-bezier(.34,1.56,.64,1) 2.2s forwards;
+}
+
+@keyframes splashLogo {
+ 0%   { opacity: 0; transform: scale(.6) translateY(20px); }
+ 60%  { opacity: 1; transform: scale(1.04) translateY(0); }
+ 100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Chiffres qui orbitent autour de la boussole */
+#splash-numbers {
+ position: absolute;
+ width: 100%;
+ height: 100%;
+ pointer-events: none;
+}
+
+.splash-n {
+ position: absolute;
+ top: 50%;
+ left: 50%;
+ width: 50px;
+ height: 50px;
+ margin: -25px 0 0 -25px;
+ font-family: 'Cinzel Decorative', serif;
+ font-size: 2.4em;
+ font-weight: 800;
+ color: #f1c40f;
+ text-shadow: 0 0 20px rgba(241,196,15,.8);
+ display: flex;
+ justify-content: center;
+ align-items: center;
+ opacity: 0;
+ transform: rotate(var(--ang)) translateX(140px) rotate(calc(-1 * var(--ang)));
+ animation: splashNum 2.5s ease-out var(--delay) forwards;
+}
+
+@keyframes splashNum {
+ 0%   { opacity: 0; transform: rotate(var(--ang)) translateX(60px) rotate(calc(-1 * var(--ang))) scale(.3); }
+ 40%  { opacity: 1; transform: rotate(var(--ang)) translateX(140px) rotate(calc(-1 * var(--ang))) scale(1); }
+ 80%  { opacity: 1; transform: rotate(calc(var(--ang) + 180deg)) translateX(140px) rotate(calc(-1 * var(--ang) - 180deg)) scale(1); }
+ 100% { opacity: 0; transform: rotate(calc(var(--ang) + 360deg)) translateX(200px) rotate(calc(-1 * var(--ang) - 360deg)) scale(.4); }
+}
+
+/* Fade-out final du splash */
+@keyframes splashFadeOut {
+ from { opacity: 1; visibility: visible; }
+ to   { opacity: 0; visibility: hidden; }
+}
+
+/* Permettre de skipper le splash si déjà vu (classe ajoutée via JS) */
+#splash-screen.skipped {
+ display: none !important;
+}
+
+/* Petit responsive pour le splash sur mobile */
+@media (max-width: 480px) {
+ #splash-compass { width: 130px; height: 130px; }
+ .splash-n { font-size: 1.8em; }
+ .splash-n {
+  transform: rotate(var(--ang)) translateX(100px) rotate(calc(-1 * var(--ang)));
+ }
+ @keyframes splashNum {
+  0%   { opacity: 0; transform: rotate(var(--ang)) translateX(40px) rotate(calc(-1 * var(--ang))) scale(.3); }
+  40%  { opacity: 1; transform: rotate(var(--ang)) translateX(100px) rotate(calc(-1 * var(--ang))) scale(1); }
+  80%  { opacity: 1; transform: rotate(calc(var(--ang) + 180deg)) translateX(100px) rotate(calc(-1 * var(--ang) - 180deg)) scale(1); }
+  100% { opacity: 0; transform: rotate(calc(var(--ang) + 360deg)) translateX(150px) rotate(calc(-1 * var(--ang) - 360deg)) scale(.4); }
+ }
+}
+
+/* Respecter la préférence "reduce motion" : pas d'animations */
+@media (prefers-reduced-motion: reduce) {
+ .game-logo, .page-logo-circle { animation: none; }
+ #splash-screen { animation-duration: 1s; animation-delay: 1.5s; }
+ #splash-compass, #splash-logo, .splash-n { animation-duration: 1s; }
+}

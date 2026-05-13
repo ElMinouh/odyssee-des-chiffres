@@ -9,7 +9,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v8.4.1';
+const CACHE_VERSION = 'v8.5.0';
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources critiques précachées au premier chargement.
@@ -37,11 +37,16 @@ const CRITICAL_URLS = [
 
 // Ressources optionnelles (un 404 ne casse pas l'installation).
 const OPTIONAL_URLS = [
-  './assets/icon.svg',
+  // Icônes PWA et logos visuels (chantier v8.5.0)
   './assets/icon-192.png',
   './assets/icon-512.png',
+  './assets/icon-maskable-192.png',
+  './assets/icon-maskable-512.png',
   './assets/favicon-32.png',
   './assets/apple-touch-icon.png',
+  './assets/logo-main.webp',
+  './assets/logo-circle.webp',
+  // Autres assets
   './assets/portraits.svg',
   './assets/fonts/google-fonts.css',
   // GIFs de fin de partie (chantier v8.4.0) — précachés pour fonctionnement offline
