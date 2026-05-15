@@ -12,7 +12,19 @@
 // ═══════════════════════════════════════════════════════
 (function handleSplash(){
  const splash = document.getElementById('splash-screen');
- if(!splash) return;
+ if(!splash){ console.warn('[SPLASH v8.5.2] #splash-screen introuvable'); return; }
+ console.log('[SPLASH v8.5.2] init OK, durée 10s');
+ // Diagnostic : vérifier que les images chargent
+ const compass = document.getElementById('splash-compass');
+ const logo = document.getElementById('splash-logo');
+ if(compass){
+  compass.addEventListener('load', ()=>console.log('[SPLASH] boussole chargée'));
+  compass.addEventListener('error', ()=>console.error('[SPLASH] ❌ boussole FAILED:', compass.src));
+ }
+ if(logo){
+  logo.addEventListener('load', ()=>console.log('[SPLASH] carte chargée'));
+  logo.addEventListener('error', ()=>console.error('[SPLASH] ❌ carte FAILED:', logo.src));
+ }
  // Si déjà vu cette session, on cache immédiatement
  let alreadySeen = false;
  try{ alreadySeen = sessionStorage.getItem('splashSeen') === '1'; }catch(e){}
