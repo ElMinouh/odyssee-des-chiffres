@@ -4,6 +4,24 @@
 // Initialisation : exécutée une fois le DOM prêt.
 
 // ═══════════════════════════════════════════════════════
+// Ajustement adaptatif du logo principal (v8.5.6)
+// Le style inline garantit que la taille s'applique malgré
+// d'éventuels conflits de cache CSS. Adaptatif PC/mobile.
+// ═══════════════════════════════════════════════════════
+function adjustGameLogoSize(){
+ const logo = document.getElementById('game-logo-menu');
+ if(!logo) return;
+ const isLarge = window.innerWidth >= 768;
+ const maxW = isLarge ? '360px' : '280px';
+ logo.style.maxWidth = `min(${maxW}, 80%)`;
+}
+// Au chargement et au resize
+window.addEventListener('DOMContentLoaded', adjustGameLogoSize);
+window.addEventListener('resize', adjustGameLogoSize);
+// Sécurité : aussi à l'init
+adjustGameLogoSize();
+
+// ═══════════════════════════════════════════════════════
 // Chantier visuel v8.5.1 : gestion du splash screen narratif
 // Affiché 10 secondes au tout premier chargement de la session.
 // Animation en 4 phases : boussole centrale + chiffres volants → convergence → carte

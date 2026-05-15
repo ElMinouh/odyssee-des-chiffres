@@ -1821,12 +1821,15 @@ body::before {
  42%  { transform: translate(-50%, -50%) scale(1) rotate(90deg); }
  48%  { transform: translate(-50%, -50%) scale(1) rotate(-70deg); }
  54%  { transform: translate(-50%, -50%) scale(1) rotate(120deg); }
- /* Phase 3 : convergence — la boussole rétrécit vers son emplacement sur la carte */
+ /* Phase 3 : convergence — la boussole rétrécit vers son emplacement sur la carte
+    Position cible : haut-droite de la carte (qui occupe ~78% écran centrée)
+    En coordonnées absolues écran : ~73% X, ~30% Y depuis le centre 50/50
+    Décalage : +23vw en X, -20vh en Y */
  60%  { opacity: 1; transform: translate(-50%, -50%) scale(.85) rotate(180deg); }
- 70%  { opacity: .6; transform: translate(180%, -260%) scale(.25) rotate(280deg); }
+ 70%  { opacity: .6; transform: translate(calc(-50% + 23vw), calc(-50% - 20vh)) scale(.32) rotate(280deg); }
  /* À 75%, la carte prend le centre et la boussole fusionne avec elle */
- 75%  { opacity: 0; transform: translate(180%, -260%) scale(.15) rotate(360deg); }
- 100% { opacity: 0; transform: translate(180%, -260%) scale(.15) rotate(360deg); }
+ 75%  { opacity: 0; transform: translate(calc(-50% + 23vw), calc(-50% - 20vh)) scale(.22) rotate(360deg); }
+ 100% { opacity: 0; transform: translate(calc(-50% + 23vw), calc(-50% - 20vh)) scale(.22) rotate(360deg); }
 }
 
 @media (min-width: 768px) {
