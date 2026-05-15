@@ -1752,8 +1752,6 @@ body::before {
  left: 50%;
  top: 12%;
  width: 18%;
- max-width: 140px;
- min-width: 90px;
  height: auto;
  transform: translate(-50%, 0) scale(1);
  opacity: 0;
@@ -1777,9 +1775,8 @@ body::before {
  100% { opacity: 1; top: 50%; width: 78%; transform: translate(-50%, -50%) scale(1); }
 }
 
-/* Sur écrans larges, le logo final reste raisonnable */
+/* Sur écrans larges, on ajuste les pourcentages dans l'animation */
 @media (min-width: 768px) {
- #splash-logo { max-width: 200px; }
  @keyframes splashMap {
   0%   { opacity: 0; top: 12%; width: 14%; transform: translate(-50%, -10px) scale(.95); }
   6%   { opacity: .85; top: 12%; width: 14%; transform: translate(-50%, 0) scale(1); }
