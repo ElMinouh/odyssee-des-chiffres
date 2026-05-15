@@ -1823,10 +1823,10 @@ body::before {
  54%  { transform: translate(-50%, -50%) scale(1) rotate(120deg); }
  /* Phase 3 : convergence — la boussole rétrécit vers son emplacement sur la carte */
  60%  { opacity: 1; transform: translate(-50%, -50%) scale(.85) rotate(180deg); }
- 70%  { opacity: .6; transform: translate(15%, -80%) scale(.25) rotate(280deg); }
+ 70%  { opacity: .6; transform: translate(180%, -260%) scale(.25) rotate(280deg); }
  /* À 75%, la carte prend le centre et la boussole fusionne avec elle */
- 75%  { opacity: 0; transform: translate(15%, -80%) scale(.15) rotate(360deg); }
- 100% { opacity: 0; transform: translate(15%, -80%) scale(.15) rotate(360deg); }
+ 75%  { opacity: 0; transform: translate(180%, -260%) scale(.15) rotate(360deg); }
+ 100% { opacity: 0; transform: translate(180%, -260%) scale(.15) rotate(360deg); }
 }
 
 @media (min-width: 768px) {

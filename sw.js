@@ -9,7 +9,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v8.5.4';
+const CACHE_VERSION = 'v8.5.5';
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources critiques précachées au premier chargement.
@@ -185,7 +185,30 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Pour les ressources (CSS, JS, images) : stale-while-revalidate
+  // Pour les ressources (CSS, JS, images) :
+  // - CSS et JS : NETWORK FIRST (toujours essayer la fraîcheur, fallback cache si offline)
+  // - Images et autres : stale-while-revalidate (perf optimale, MAJ en arrière-plan)
+  const pathname = url.pathname;
+  const isCodeAsset = /\.(css|js|webmanifest|json)$/i.test(pathname);
+  
+  if (isCodeAsset) {
+    // NETWORK FIRST : indispensable pour que les nouvelles versions soient
+    // détectées immédiatement (résout les bugs de cache CSS/JS persistant).
+    event.respondWith(
+      fetch(request).then((response) => {
+        if (response && response.status === 200 && response.type === 'basic') {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(c => c.put(request, clone)).catch(()=>{});
+        }
+        return response;
+      }).catch(() =>
+        caches.open(CACHE_NAME).then(c => c.match(request))
+      )
+    );
+    return;
+  }
+
+  // STALE-WHILE-REVALIDATE pour images, fonts, etc.
   event.respondWith(
     caches.open(CACHE_NAME).then((cache) =>
       cache.match(request).then((cached) => {
