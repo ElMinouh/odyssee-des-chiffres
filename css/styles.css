@@ -1640,10 +1640,10 @@ html[data-appearance="light"] .wr-advice h4{color:#7d3c98 !important;}
    CHANTIER VISUEL v8.5.0 — Logos, splash et filigrane
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── Logo principal de l'écran de démarrage (v8.5.9 - taille /2) ── */
+/* ── Logo principal de l'écran de démarrage (v8.6.0 - mobile réduit) ── */
 .game-logo {
  display: block;
- max-width: min(140px, 45%); /* Mobile : 140px max */
+ max-width: min(100px, 32%); /* Mobile : 100px max (compact pour voir Commencer) */
  width: 100%;
  height: auto;
  margin: 0 auto 6px;
@@ -1698,7 +1698,7 @@ body::before {
  max-width: 700px;
  max-height: 700px;
  transform: translate(-50%, -50%);
- background-image: url('../assets/logo-circle.webp');
+ background-image: url('../assets/logo-circle.webp?v=860');
  background-size: contain;
  background-repeat: no-repeat;
  background-position: center;
@@ -1877,13 +1877,13 @@ body::before {
 }
 
 /* Trajectoires chaotiques individuelles, en vmin (responsive) */
-.splash-item:nth-child(1){--x1:-30vmin;--y1:-22vmin;--x2:26vmin;--y2:-28vmin;--x3:-24vmin;--y3:24vmin;--x4:28vmin;--y4:18vmin;--x5:-30vmin;--y5:-14vmin;--xf:-16vmin;--yf:-10vmin;}
-.splash-item:nth-child(2){--x1:26vmin;--y1:-26vmin;--x2:-28vmin;--y2:-16vmin;--x3:30vmin;--y3:22vmin;--x4:-22vmin;--y4:28vmin;--x5:32vmin;--y5:-12vmin;--xf:-22vmin;--yf:-16vmin;}
-.splash-item:nth-child(3){--x1:28vmin;--y1:16vmin;--x2:-26vmin;--y2:28vmin;--x3:-30vmin;--y3:-14vmin;--x4:32vmin;--y4:-22vmin;--x5:-28vmin;--y5:20vmin;--xf:18vmin;--yf:-4vmin;}
-.splash-item:nth-child(4){--x1:-22vmin;--y1:28vmin;--x2:28vmin;--y2:22vmin;--x3:-30vmin;--y3:-26vmin;--x4:26vmin;--y4:-14vmin;--x5:-24vmin;--y5:30vmin;--xf:22vmin;--yf:-16vmin;}
-.splash-item:nth-child(5){--x1:-28vmin;--y1:8vmin;--x2:28vmin;--y2:-12vmin;--x3:20vmin;--y3:28vmin;--x4:-30vmin;--y4:20vmin;--x5:28vmin;--y5:12vmin;--xf:-12vmin;--yf:-22vmin;}
-.splash-item:nth-child(6){--x1:28vmin;--y1:-8vmin;--x2:-26vmin;--y2:20vmin;--x3:22vmin;--y3:-28vmin;--x4:-28vmin;--y4:-20vmin;--x5:20vmin;--y5:28vmin;--xf:-9vmin;--yf:-22vmin;}
-.splash-item:nth-child(7){--x1:-26vmin;--y1:-28vmin;--x2:28vmin;--y2:28vmin;--x3:-30vmin;--y3:16vmin;--x4:22vmin;--y4:-26vmin;--x5:-24vmin;--y5:-14vmin;--xf:15vmin;--yf:-10vmin;}
+.splash-item:nth-child(1){--x1:-30vmin;--y1:-22vmin;--x2:26vmin;--y2:-28vmin;--x3:-24vmin;--y3:24vmin;--x4:28vmin;--y4:18vmin;--x5:-30vmin;--y5:-14vmin;--xf:-20vmin;--yf:2vmin;}
+.splash-item:nth-child(2){--x1:26vmin;--y1:-26vmin;--x2:-28vmin;--y2:-16vmin;--x3:30vmin;--y3:22vmin;--x4:-22vmin;--y4:28vmin;--x5:32vmin;--y5:-12vmin;--xf:-16vmin;--yf:-14vmin;}
+.splash-item:nth-child(3){--x1:28vmin;--y1:16vmin;--x2:-26vmin;--y2:28vmin;--x3:-30vmin;--y3:-14vmin;--x4:32vmin;--y4:-22vmin;--x5:-28vmin;--y5:20vmin;--xf:20vmin;--yf:14vmin;}
+.splash-item:nth-child(4){--x1:-22vmin;--y1:28vmin;--x2:28vmin;--y2:22vmin;--x3:-30vmin;--y3:-26vmin;--x4:26vmin;--y4:-14vmin;--x5:-24vmin;--y5:30vmin;--xf:22vmin;--yf:-2vmin;}
+.splash-item:nth-child(5){--x1:-28vmin;--y1:8vmin;--x2:28vmin;--y2:-12vmin;--x3:20vmin;--y3:28vmin;--x4:-30vmin;--y4:20vmin;--x5:28vmin;--y5:12vmin;--xf:-2vmin;--yf:-16vmin;}
+.splash-item:nth-child(6){--x1:28vmin;--y1:-8vmin;--x2:-26vmin;--y2:20vmin;--x3:22vmin;--y3:-28vmin;--x4:-28vmin;--y4:-20vmin;--x5:20vmin;--y5:28vmin;--xf:-16vmin;--yf:16vmin;}
+.splash-item:nth-child(7){--x1:-26vmin;--y1:-28vmin;--x2:28vmin;--y2:28vmin;--x3:-30vmin;--y3:16vmin;--x4:22vmin;--y4:-26vmin;--x5:-24vmin;--y5:-14vmin;--xf:20vmin;--yf:12vmin;}
 
 /* Scintillements sur le coffre : positions en % de la SCÈNE (= de la carte).
    Le coffre est en bas-droite de la carte : ~60-70% X, ~73-81% Y.

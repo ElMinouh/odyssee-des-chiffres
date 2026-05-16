@@ -12,8 +12,8 @@ function adjustGameLogoSize(){
  const logo = document.getElementById('game-logo-menu');
  if(!logo) return;
  const isLarge = window.innerWidth >= 768;
- const maxW = isLarge ? '180px' : '140px';
- logo.style.maxWidth = `min(${maxW}, 45%)`;
+ const maxW = isLarge ? '180px' : '100px';
+ logo.style.maxWidth = `min(${maxW}, ${isLarge ? '45%' : '32%'})`;
 }
 // Au chargement et au resize
 window.addEventListener('DOMContentLoaded', adjustGameLogoSize);
