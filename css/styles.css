@@ -1640,10 +1640,10 @@ html[data-appearance="light"] .wr-advice h4{color:#7d3c98 !important;}
    CHANTIER VISUEL v8.5.0 — Logos, splash et filigrane
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── Logo principal de l'écran de démarrage (Q3=C adaptatif v8.5.1) ── */
+/* ── Logo principal de l'écran de démarrage (v8.5.9 - taille /2) ── */
 .game-logo {
  display: block;
- max-width: min(280px, 80%); /* Mobile : 280px max */
+ max-width: min(140px, 45%); /* Mobile : 140px max */
  width: 100%;
  height: auto;
  margin: 0 auto 6px;
@@ -1656,7 +1656,7 @@ html[data-appearance="light"] .wr-advice h4{color:#7d3c98 !important;}
 /* Sur écrans larges (PC tablette horizontale), un peu plus grand */
 @media (min-width: 768px) {
  .game-logo {
-  max-width: min(360px, 80%);
+  max-width: min(180px, 45%);
  }
 }
 
@@ -1711,18 +1711,23 @@ body::before {
 /* Le contenu doit être au-dessus du filigrane */
 #gc { z-index: 10; }
 
+
 /* ═══════════════════════════════════════════════════════════════
-   SPLASH SCREEN v8.5.1 — animation narrative 10 secondes
+   SPLASH SCREEN v8.5.9 — animation narrative 10s, RESPONSIVE
    ───────────────────────────────────────────────────────────────
+   Architecture : #splash-stage est un conteneur au ratio FIXE de la
+   carte (800:639). La boussole, les chiffres et les scintillements
+   sont positionnés en % de CE conteneur. Du coup leurs positions
+   sont TOUJOURS correctes par rapport à la carte, que l'écran soit
+   un PC large (16:9) ou un Android portrait (9:16).
+
    Phases :
-   1. 0-2.5s     → carte vignette en HAUT, boussole grosse au centre,
-                   chiffres/symboles s'envolent autour
-   2. 2.5-6s    → tournoiement chaotique des chiffres/symboles
-   3. 6-8.5s    → CONVERGENCE : la carte grossit pour prendre la majeure
-                   partie de l'écran, la boussole rétrécit vers sa place,
-                   les chiffres/symboles convergent vers leur destination
-   4. 8.5-10s   → carte complète à pleine taille, pulse doux + scintillements
-                   sur le coffre au trésor, fade-out final
+   1. 0-2.5s   → carte vignette en HAUT (échelle réduite), boussole
+                 grosse au centre, chiffres/symboles volent
+   2. 2.5-6s   → tournoiement chaotique
+   3. 6-8.5s   → CONVERGENCE : la carte grossit (scale), la boussole
+                 converge vers son emplacement sur la carte
+   4. 8.5-10s  → carte pleine taille, pulse + scintillements coffre
    ═══════════════════════════════════════════════════════════════ */
 
 #splash-screen {
@@ -1737,71 +1742,64 @@ body::before {
 #splash-content {
  position: absolute;
  inset: 0;
- width: 100%;
- height: 100%;
+ display: flex;
+ justify-content: center;
+ align-items: center;
 }
 
-/* ─────────────────────────────────────────────────────────────
-   PHASE 1 → 4 : la carte parchemin
-   - Démarre PETITE en haut (vignette)
-   - Phase 3 : grossit et descend pour prendre le centre/majeure partie
-   - Phase 4 : pulse doux
-   ─────────────────────────────────────────────────────────────*/
+/* La SCÈNE : conteneur au ratio de la carte (800:639 ≈ 1.252).
+   Sa taille = la taille de la CARTE FINALE.
+   On le dimensionne pour qu'il occupe ~80% de l'écran sans déborder,
+   en respectant le ratio. C'est lui qui rend tout responsive. */
+#splash-stage {
+ position: relative;
+ /* On prend la plus petite contrainte entre largeur et hauteur dispo */
+ width: min(80vw, calc(80vh * 1.252));
+ aspect-ratio: 800 / 639;
+ max-width: 760px;
+}
+
+/* La carte : remplit toute la scène. Animée en scale (vignette → pleine). */
 #splash-logo {
  position: absolute;
  left: 50%;
- top: 12%;
- width: 18%;
+ top: 50%;
+ width: 100%;
  height: auto;
- transform: translate(-50%, 0) scale(1);
+ transform: translate(-50%, -50%) scale(.22);
  opacity: 0;
- filter: drop-shadow(0 4px 15px rgba(0,0,0,.5));
+ filter: drop-shadow(0 6px 25px rgba(0,0,0,.6));
  animation: splashMap 10s cubic-bezier(.65,0,.35,1) forwards;
 }
 
 @keyframes splashMap {
- /* Phase 1 : apparition discrète en haut */
- 0%   { opacity: 0; top: 12%; width: 18%; transform: translate(-50%, -10px) scale(.95); }
- 6%   { opacity: .85; top: 12%; width: 18%; transform: translate(-50%, 0) scale(1); }
- /* Phases 1-2 : reste discrète en haut */
- 25%  { opacity: .85; top: 12%; width: 18%; transform: translate(-50%, 0) scale(1); }
- 55%  { opacity: .9; top: 12%; width: 18%; transform: translate(-50%, 0) scale(1); }
- /* Phase 3 : convergence — grossit et descend au centre */
- 75%  { opacity: 1; top: 50%; width: 78%; transform: translate(-50%, -50%) scale(1); }
+ /* Phase 1 : petite vignette, légèrement remontée vers le haut */
+ 0%   { opacity: 0; transform: translate(-50%, -180%) scale(.22); }
+ 6%   { opacity: .9; transform: translate(-50%, -150%) scale(.24); }
+ 25%  { opacity: .9; transform: translate(-50%, -150%) scale(.24); }
+ 55%  { opacity: .92; transform: translate(-50%, -150%) scale(.24); }
+ /* Phase 3 : convergence — grossit et se recentre */
+ 75%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
  /* Phase 4 : pulse doux */
- 82%  { opacity: 1; top: 50%; width: 78%; transform: translate(-50%, -50%) scale(1.02); }
- 88%  { opacity: 1; top: 50%; width: 78%; transform: translate(-50%, -50%) scale(.99); }
- 94%  { opacity: 1; top: 50%; width: 78%; transform: translate(-50%, -50%) scale(1.015); }
- 100% { opacity: 1; top: 50%; width: 78%; transform: translate(-50%, -50%) scale(1); }
+ 82%  { opacity: 1; transform: translate(-50%, -50%) scale(1.02); }
+ 88%  { opacity: 1; transform: translate(-50%, -50%) scale(.99); }
+ 94%  { opacity: 1; transform: translate(-50%, -50%) scale(1.015); }
+ 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
-/* Sur écrans larges, on ajuste les pourcentages dans l'animation */
-@media (min-width: 768px) {
- @keyframes splashMap {
-  0%   { opacity: 0; top: 12%; width: 14%; transform: translate(-50%, -10px) scale(.95); }
-  6%   { opacity: .85; top: 12%; width: 14%; transform: translate(-50%, 0) scale(1); }
-  25%  { opacity: .85; top: 12%; width: 14%; transform: translate(-50%, 0) scale(1); }
-  55%  { opacity: .9; top: 12%; width: 14%; transform: translate(-50%, 0) scale(1); }
-  75%  { opacity: 1; top: 50%; width: 55%; transform: translate(-50%, -50%) scale(1); }
-  82%  { opacity: 1; top: 50%; width: 55%; transform: translate(-50%, -50%) scale(1.02); }
-  88%  { opacity: 1; top: 50%; width: 55%; transform: translate(-50%, -50%) scale(.99); }
-  94%  { opacity: 1; top: 50%; width: 55%; transform: translate(-50%, -50%) scale(1.015); }
-  100% { opacity: 1; top: 50%; width: 55%; transform: translate(-50%, -50%) scale(1); }
- }
-}
-
-/* ─────────────────────────────────────────────────────────────
-   La boussole — grosse au centre, tournoie, puis rétrécit + disparaît
-   en fondu sur la carte (qui contient la boussole intégrée)
-   ─────────────────────────────────────────────────────────────*/
+/* La boussole : grosse au centre de l'ÉCRAN (donc relative à #splash-content),
+   puis converge vers son emplacement sur la carte.
+   Emplacement de la boussole dessinée sur la carte : ~74% X, ~22% Y de la carte.
+   Comme la boussole est dans #splash-stage, on l'exprime en % de la scène. */
 #splash-compass {
  position: absolute;
  left: 50%;
  top: 50%;
- width: 60vw;
- max-width: 340px;
+ /* Taille initiale : grosse, ~ 1.6× la largeur de la scène pour occuper l'écran */
+ width: 130%;
+ max-width: 420px;
  height: auto;
- transform: translate(-50%, -50%) scale(.3) rotate(-30deg);
+ transform: translate(-50%, -50%) scale(.35) rotate(-30deg);
  opacity: 0;
  border-radius: 50%;
  box-shadow: 0 0 80px rgba(241,196,15,.5), 0 0 150px rgba(241,196,15,.2);
@@ -1809,10 +1807,9 @@ body::before {
 }
 
 @keyframes splashCompass {
- /* Phase 1 : zoom + apparition au centre */
- 0%   { opacity: 0; transform: translate(-50%, -50%) scale(.3) rotate(-30deg); }
- 6%   { opacity: 1; transform: translate(-50%, -50%) scale(1.05) rotate(15deg); }
- /* Phase 1-2 : aiguille qui tourne en tous sens (recherche du trésor) */
+ 0%   { opacity: 0; transform: translate(-50%, -50%) scale(.35) rotate(-30deg); }
+ 6%   { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(15deg); }
+ /* Phase 1-2 : l'aiguille tourne dans tous les sens (recherche du trésor) */
  12%  { transform: translate(-50%, -50%) scale(1) rotate(-25deg); }
  18%  { transform: translate(-50%, -50%) scale(1) rotate(40deg); }
  24%  { transform: translate(-50%, -50%) scale(1) rotate(-15deg); }
@@ -1821,26 +1818,19 @@ body::before {
  42%  { transform: translate(-50%, -50%) scale(1) rotate(90deg); }
  48%  { transform: translate(-50%, -50%) scale(1) rotate(-70deg); }
  54%  { transform: translate(-50%, -50%) scale(1) rotate(120deg); }
- /* Phase 3 : convergence — la boussole rétrécit vers son emplacement sur la carte
-    Position cible : haut-droite de la carte (qui occupe ~78% écran centrée)
-    En coordonnées absolues écran : ~73% X, ~30% Y depuis le centre 50/50
-    Décalage : +23vw en X, -20vh en Y */
- 60%  { opacity: 1; transform: translate(-50%, -50%) scale(.85) rotate(180deg); }
- 70%  { opacity: .6; transform: translate(calc(-50% + 23vw), calc(-50% - 20vh)) scale(.32) rotate(280deg); }
- /* À 75%, la carte prend le centre et la boussole fusionne avec elle */
- 75%  { opacity: 0; transform: translate(calc(-50% + 23vw), calc(-50% - 20vh)) scale(.22) rotate(360deg); }
- 100% { opacity: 0; transform: translate(calc(-50% + 23vw), calc(-50% - 20vh)) scale(.22) rotate(360deg); }
+ /* Phase 3 : convergence vers l'emplacement de la boussole sur la carte
+    Carte finale = toute la scène (centrée). Boussole dessinée à ~74% X, ~22% Y.
+    Donc depuis le centre (50%,50%) il faut aller à (74%,22%) de la scène :
+    décalage = +24% largeur scène en X, -28% hauteur scène en Y.
+    En translate %, c'est par rapport à la taille de la boussole elle-même...
+    donc on utilise plutôt left/top animés. */
+ 60%  { opacity: 1; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(.85) rotate(180deg); }
+ 70%  { opacity: .6; left: 74%; top: 24%; transform: translate(-50%, -50%) scale(.22) rotate(280deg); }
+ 75%  { opacity: 0; left: 74%; top: 24%; transform: translate(-50%, -50%) scale(.16) rotate(360deg); }
+ 100% { opacity: 0; left: 74%; top: 24%; transform: translate(-50%, -50%) scale(.16) rotate(360deg); }
 }
 
-@media (min-width: 768px) {
- #splash-compass { max-width: 380px; width: 40vw; }
-}
-
-/* ─────────────────────────────────────────────────────────────
-   Chiffres et symboles qui volent autour, puis convergent vers
-   les positions où ils figureront sur la carte.
-   On utilise --i (0..6) pour différencier les angles/trajectoires.
-   ─────────────────────────────────────────────────────────────*/
+/* Chiffres et symboles : volent autour, relatifs au centre de la scène */
 #splash-orbits {
  position: absolute;
  inset: 0;
@@ -1853,90 +1843,52 @@ body::before {
  top: 50%;
  font-family: 'Cinzel Decorative', serif;
  font-weight: 800;
- font-size: 2.6em;
+ font-size: clamp(1.4em, 4vw, 2.6em);
  color: #f1c40f;
  text-shadow: 0 0 18px rgba(241,196,15,.8), 0 2px 4px rgba(0,0,0,.6);
  display: flex;
  justify-content: center;
  align-items: center;
- width: 60px;
- height: 60px;
- margin: -30px 0 0 -30px;
+ width: 50px;
+ height: 50px;
+ margin: -25px 0 0 -25px;
  opacity: 0;
  transform: translate(0,0) scale(.3);
  animation: splashItem 10s ease-in-out forwards;
  animation-delay: calc(var(--i) * .12s);
 }
-
-/* Couleurs distinctes pour les symboles math */
 .splash-sym { color: #e74c3c; text-shadow: 0 0 18px rgba(231,76,60,.8), 0 2px 4px rgba(0,0,0,.6); }
 .splash-sym-mul { color: #ff6b6b; }
 .splash-sym-div { color: #f39c12; text-shadow: 0 0 18px rgba(243,156,18,.8), 0 2px 4px rgba(0,0,0,.6); }
 
-/*
-   Trajectoires individuelles : on utilise --i pour des positions chaotiques différentes.
-   Chaque item a un trajet propre via nth-child.
-   Convergence finale → coordonnées approximatives des chiffres/symboles tels qu'ils
-   apparaissent sur la carte du logo (top:12% width:18% en phase 1-2, puis top:50% width:78% en phase 3).
-*/
+/* Trajectoires : amplitude en vmin (s'adapte au plus petit côté de l'écran,
+   donc cohérent en portrait ET paysage). */
 @keyframes splashItem {
- 0%   { opacity: 0; transform: translate(0, 0) scale(.3) rotate(0deg); }
- 8%   { opacity: 1; transform: translate(var(--tx1, -180px), var(--ty1, -120px)) scale(1) rotate(20deg); }
- 20%  { opacity: 1; transform: translate(var(--tx2, 200px), var(--ty2, -80px)) scale(1) rotate(-30deg); }
- 32%  { opacity: 1; transform: translate(var(--tx3, -150px), var(--ty3, 150px)) scale(1) rotate(50deg); }
- 44%  { opacity: 1; transform: translate(var(--tx4, 220px), var(--ty4, 100px)) scale(1) rotate(-40deg); }
- 56%  { opacity: 1; transform: translate(var(--tx5, -100px), var(--ty5, -180px)) scale(1) rotate(60deg); }
- /* Convergence vers les positions finales sur la grande carte (74% à 78% du keyframe) */
- 75%  { opacity: 1; transform: translate(var(--tfx, 0), var(--tfy, 0)) scale(.6) rotate(0deg); }
- /* Fade avec la carte qui les recouvre */
- 80%  { opacity: 0; transform: translate(var(--tfx, 0), var(--tfy, 0)) scale(.3) rotate(0deg); }
- 100% { opacity: 0; transform: translate(var(--tfx, 0), var(--tfy, 0)) scale(.3) rotate(0deg); }
+ 0%   { opacity: 0; transform: translate(0,0) scale(.3) rotate(0deg); }
+ 8%   { opacity: 1; transform: translate(var(--x1), var(--y1)) scale(1) rotate(20deg); }
+ 20%  { opacity: 1; transform: translate(var(--x2), var(--y2)) scale(1) rotate(-30deg); }
+ 32%  { opacity: 1; transform: translate(var(--x3), var(--y3)) scale(1) rotate(50deg); }
+ 44%  { opacity: 1; transform: translate(var(--x4), var(--y4)) scale(1) rotate(-40deg); }
+ 56%  { opacity: 1; transform: translate(var(--x5), var(--y5)) scale(1) rotate(60deg); }
+ /* Convergence vers la carte puis disparition */
+ 72%  { opacity: 1; transform: translate(var(--xf), var(--yf)) scale(.6) rotate(0deg); }
+ 78%  { opacity: 0; transform: translate(var(--xf), var(--yf)) scale(.3) rotate(0deg); }
+ 100% { opacity: 0; transform: translate(var(--xf), var(--yf)) scale(.3) rotate(0deg); }
 }
 
-/* Positions individuelles : trajectoires chaotiques + cible finale unique */
-/* (Les positions cibles approximatives correspondent à où se trouvent les chiffres/symboles
-   dans le logo final centré au milieu de l'écran) */
-.splash-item:nth-child(1) { /* 3 */
- --tx1:-220px; --ty1:-150px; --tx2:180px; --ty2:-200px;
- --tx3:-180px; --ty3:180px; --tx4:200px; --ty4:140px; --tx5:-220px; --ty5:-100px;
- --tfx:-180px; --tfy:-90px;
-}
-.splash-item:nth-child(2) { /* 5 */
- --tx1:180px; --ty1:-180px; --tx2:-200px; --ty2:-120px;
- --tx3:220px; --ty3:160px; --tx4:-160px; --ty4:200px; --tx5:240px; --ty5:-80px;
- --tfx:-230px; --tfy:-150px;
-}
-.splash-item:nth-child(3) { /* 2 */
- --tx1:200px; --ty1:120px; --tx2:-180px; --ty2:200px;
- --tx3:-220px; --ty3:-100px; --tx4:240px; --ty4:-160px; --tx5:-200px; --ty5:140px;
- --tfx:180px; --tfy:-30px;
-}
-.splash-item:nth-child(4) { /* 7 */
- --tx1:-150px; --ty1:200px; --tx2:200px; --ty2:150px;
- --tx3:-220px; --ty3:-180px; --tx4:180px; --ty4:-100px; --tx5:-160px; --ty5:220px;
- --tfx:220px; --tfy:-150px;
-}
-.splash-item:nth-child(5) { /* + */
- --tx1:-200px; --ty1:60px; --tx2:200px; --ty2:-80px;
- --tx3:140px; --ty3:200px; --tx4:-220px; --ty4:140px; --tx5:200px; --ty5:80px;
- --tfx:-100px; --tfy:-200px;
-}
-.splash-item:nth-child(6) { /* × */
- --tx1:200px; --ty1:-60px; --tx2:-180px; --ty2:140px;
- --tx3:160px; --ty3:-200px; --tx4:-200px; --ty4:-140px; --tx5:140px; --ty5:200px;
- --tfx:-80px; --tfy:-200px;
-}
-.splash-item:nth-child(7) { /* ÷ */
- --tx1:-180px; --ty1:-200px; --tx2:200px; --ty2:200px;
- --tx3:-220px; --ty3:120px; --tx4:160px; --ty4:-180px; --tx5:-180px; --ty5:-100px;
- --tfx:140px; --tfy:-100px;
-}
+/* Trajectoires chaotiques individuelles, en vmin (responsive) */
+.splash-item:nth-child(1){--x1:-30vmin;--y1:-22vmin;--x2:26vmin;--y2:-28vmin;--x3:-24vmin;--y3:24vmin;--x4:28vmin;--y4:18vmin;--x5:-30vmin;--y5:-14vmin;--xf:-16vmin;--yf:-10vmin;}
+.splash-item:nth-child(2){--x1:26vmin;--y1:-26vmin;--x2:-28vmin;--y2:-16vmin;--x3:30vmin;--y3:22vmin;--x4:-22vmin;--y4:28vmin;--x5:32vmin;--y5:-12vmin;--xf:-22vmin;--yf:-16vmin;}
+.splash-item:nth-child(3){--x1:28vmin;--y1:16vmin;--x2:-26vmin;--y2:28vmin;--x3:-30vmin;--y3:-14vmin;--x4:32vmin;--y4:-22vmin;--x5:-28vmin;--y5:20vmin;--xf:18vmin;--yf:-4vmin;}
+.splash-item:nth-child(4){--x1:-22vmin;--y1:28vmin;--x2:28vmin;--y2:22vmin;--x3:-30vmin;--y3:-26vmin;--x4:26vmin;--y4:-14vmin;--x5:-24vmin;--y5:30vmin;--xf:22vmin;--yf:-16vmin;}
+.splash-item:nth-child(5){--x1:-28vmin;--y1:8vmin;--x2:28vmin;--y2:-12vmin;--x3:20vmin;--y3:28vmin;--x4:-30vmin;--y4:20vmin;--x5:28vmin;--y5:12vmin;--xf:-12vmin;--yf:-22vmin;}
+.splash-item:nth-child(6){--x1:28vmin;--y1:-8vmin;--x2:-26vmin;--y2:20vmin;--x3:22vmin;--y3:-28vmin;--x4:-28vmin;--y4:-20vmin;--x5:20vmin;--y5:28vmin;--xf:-9vmin;--yf:-22vmin;}
+.splash-item:nth-child(7){--x1:-26vmin;--y1:-28vmin;--x2:28vmin;--y2:28vmin;--x3:-30vmin;--y3:16vmin;--x4:22vmin;--y4:-26vmin;--x5:-24vmin;--y5:-14vmin;--xf:15vmin;--yf:-10vmin;}
 
-/* ─────────────────────────────────────────────────────────────
-   Scintillements sur le trésor (Phase 4)
-   Position approximative : coffre en bas-droite de la carte (~62-68% × 73-80%)
-   Délais staggers via --sd (8.2s à 9.4s)
-   ─────────────────────────────────────────────────────────────*/
+/* Scintillements sur le coffre : positions en % de la SCÈNE (= de la carte).
+   Le coffre est en bas-droite de la carte : ~60-70% X, ~73-81% Y.
+   Comme #splash-sparkles est dans #splash-stage, ces % suivent
+   automatiquement la carte quel que soit l'écran. */
 #splash-sparkles {
  position: absolute;
  inset: 0;
@@ -1947,9 +1899,9 @@ body::before {
  position: absolute;
  left: var(--sx);
  top: var(--sy);
- width: 16px;
- height: 16px;
- margin: -8px 0 0 -8px;
+ width: clamp(10px, 2.5vmin, 18px);
+ height: clamp(10px, 2.5vmin, 18px);
+ margin: -7px 0 0 -7px;
  background: radial-gradient(circle, #fff 0%, #f1c40f 40%, transparent 70%);
  border-radius: 50%;
  opacity: 0;
@@ -1963,61 +1915,14 @@ body::before {
  50%      { opacity: 1; transform: scale(1.2) rotate(180deg); }
 }
 
-/* Fade-out final du splash */
 @keyframes splashFadeOut {
  from { opacity: 1; visibility: visible; }
  to   { opacity: 0; visibility: hidden; }
 }
 
-/* Skip immédiat (classe ajoutée par JS via clic/touch) */
 #splash-screen.skipped { display: none !important; }
 
-/* ─────────────────────────────────────────────────────────────
-   Responsive splash sur petits écrans (mobile)
-   On réduit les amplitudes pour que les chiffres ne sortent pas de l'écran
-   ─────────────────────────────────────────────────────────────*/
-@media (max-width: 480px) {
- #splash-compass { max-width: 240px; width: 64vw; }
- .splash-item { font-size: 2.2em; width: 50px; height: 50px; margin: -25px 0 0 -25px; }
- 
- .splash-item:nth-child(1) {
-  --tx1:-130px; --ty1:-100px; --tx2:120px; --ty2:-130px;
-  --tx3:-110px; --ty3:130px; --tx4:130px; --ty4:90px; --tx5:-140px; --ty5:-70px;
-  --tfx:-100px; --tfy:-60px;
- }
- .splash-item:nth-child(2) {
-  --tx1:120px; --ty1:-120px; --tx2:-130px; --ty2:-80px;
-  --tx3:140px; --ty3:110px; --tx4:-100px; --ty4:130px; --tx5:150px; --ty5:-50px;
-  --tfx:-130px; --tfy:-100px;
- }
- .splash-item:nth-child(3) {
-  --tx1:130px; --ty1:80px; --tx2:-120px; --ty2:130px;
-  --tx3:-140px; --ty3:-70px; --tx4:150px; --ty4:-110px; --tx5:-130px; --ty5:90px;
-  --tfx:110px; --tfy:-20px;
- }
- .splash-item:nth-child(4) {
-  --tx1:-100px; --ty1:130px; --tx2:130px; --ty2:100px;
-  --tx3:-140px; --ty3:-130px; --tx4:120px; --ty4:-70px; --tx5:-110px; --ty5:140px;
-  --tfx:130px; --tfy:-100px;
- }
- .splash-item:nth-child(5) {
-  --tx1:-130px; --ty1:40px; --tx2:130px; --ty2:-50px;
-  --tx3:90px; --ty3:130px; --tx4:-140px; --ty4:90px; --tx5:130px; --ty5:50px;
-  --tfx:-60px; --tfy:-130px;
- }
- .splash-item:nth-child(6) {
-  --tx1:130px; --ty1:-40px; --tx2:-120px; --ty2:90px;
-  --tx3:100px; --ty3:-130px; --tx4:-130px; --ty4:-90px; --tx5:90px; --ty5:130px;
-  --tfx:-50px; --tfy:-130px;
- }
- .splash-item:nth-child(7) {
-  --tx1:-120px; --ty1:-130px; --tx2:130px; --ty2:130px;
-  --tx3:-140px; --ty3:80px; --tx4:100px; --ty4:-120px; --tx5:-110px; --ty5:-70px;
-  --tfx:90px; --tfy:-70px;
- }
-}
-
-/* Respecter prefers-reduced-motion : splash très court, pas d'animations excessives */
+/* Respecter prefers-reduced-motion : splash très court */
 @media (prefers-reduced-motion: reduce) {
  .game-logo, .page-logo-circle { animation: none; }
  #splash-screen { animation: splashFadeOut .8s ease-in 1.5s forwards; }

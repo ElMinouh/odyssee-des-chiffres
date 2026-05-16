@@ -16,7 +16,7 @@
 <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="stylesheet" href="assets/fonts/google-fonts.css">
-<link rel="stylesheet" href="css/styles.css?v=856">
+<link rel="stylesheet" href="css/styles.css?v=859">
 </head>
 <body id="BODY">
 <!-- ═══ SPLASH SCREEN (Chantier v8.5.1 — durée 10s narrative) ═══
@@ -35,27 +35,32 @@
 -->
 <div id="splash-screen">
  <div id="splash-content">
-  <!-- 1. La carte parchemin : démarre PETITE en haut, grossit et se centre -->
-  <img src="assets/logo-main.webp?v=856" alt="L'Odyssée des Chiffres" id="splash-logo">
-  <!-- 2. La boussole : grosse au centre puis rétrécit/se déplace -->
-  <img src="assets/icon-512.png?v=857" alt="" id="splash-compass" aria-hidden="true">
-  <!-- 3. Chiffres et symboles math qui volent en chaotique autour -->
-  <div id="splash-orbits" aria-hidden="true">
-   <span class="splash-item splash-num" style="--i:0">3</span>
-   <span class="splash-item splash-num" style="--i:1">5</span>
-   <span class="splash-item splash-num" style="--i:2">2</span>
-   <span class="splash-item splash-num" style="--i:3">7</span>
-   <span class="splash-item splash-sym" style="--i:4">+</span>
-   <span class="splash-item splash-sym splash-sym-mul" style="--i:5">×</span>
-   <span class="splash-item splash-sym splash-sym-div" style="--i:6">÷</span>
-  </div>
-  <!-- 4. Scintillements finaux sur le trésor -->
-  <div id="splash-sparkles" aria-hidden="true">
-   <span class="sparkle" style="--sx:58%;--sy:63%;--sd:8.2s"></span>
-   <span class="sparkle" style="--sx:62%;--sy:66%;--sd:8.5s"></span>
-   <span class="sparkle" style="--sx:60%;--sy:68%;--sd:8.8s"></span>
-   <span class="sparkle" style="--sx:64%;--sy:62%;--sd:9.1s"></span>
-   <span class="sparkle" style="--sx:66%;--sy:65%;--sd:9.4s"></span>
+  <!-- Conteneur "scène" : prend la taille/ratio de la carte finale.
+       Tous les éléments (boussole, sparkles) sont positionnés en % de CE conteneur,
+       donc parfaitement adaptés quel que soit l'écran (PC large ou Android portrait). -->
+  <div id="splash-stage">
+   <!-- 1. La carte parchemin (fond de la scène) -->
+   <img src="assets/logo-main.webp?v=859" alt="L'Odyssée des Chiffres" id="splash-logo">
+   <!-- 2. La boussole : grosse au centre écran puis converge vers sa place sur la carte -->
+   <img src="assets/icon-512.png?v=859" alt="" id="splash-compass" aria-hidden="true">
+   <!-- 3. Chiffres et symboles math qui volent en chaotique -->
+   <div id="splash-orbits" aria-hidden="true">
+    <span class="splash-item splash-num" style="--i:0">3</span>
+    <span class="splash-item splash-num" style="--i:1">5</span>
+    <span class="splash-item splash-num" style="--i:2">2</span>
+    <span class="splash-item splash-num" style="--i:3">7</span>
+    <span class="splash-item splash-sym" style="--i:4">+</span>
+    <span class="splash-item splash-sym splash-sym-mul" style="--i:5">×</span>
+    <span class="splash-item splash-sym splash-sym-div" style="--i:6">÷</span>
+   </div>
+   <!-- 4. Scintillements sur le coffre : positions en % de la CARTE (pas de l'écran) -->
+   <div id="splash-sparkles" aria-hidden="true">
+    <span class="sparkle" style="--sx:60%;--sy:74%;--sd:8.2s"></span>
+    <span class="sparkle" style="--sx:64%;--sy:78%;--sd:8.5s"></span>
+    <span class="sparkle" style="--sx:62%;--sy:81%;--sd:8.8s"></span>
+    <span class="sparkle" style="--sx:67%;--sy:73%;--sd:9.1s"></span>
+    <span class="sparkle" style="--sx:69%;--sy:77%;--sd:9.4s"></span>
+   </div>
   </div>
  </div>
 </div>
@@ -129,7 +134,7 @@
 
  <!-- ═══ MENU ═══ -->
  <div id="v-menu">
-  <img src="assets/logo-main.webp?v=856" alt="L'Odyssée des Chiffres" class="game-logo" id="game-logo-menu" loading="eager" decoding="async" style="max-width:min(280px,80%);width:100%;height:auto;display:block;margin:0 auto 6px;">
+  <img src="assets/logo-main.webp?v=859" alt="L'Odyssée des Chiffres" class="game-logo" id="game-logo-menu" loading="eager" decoding="async" style="max-width:min(140px,40%);width:100%;height:auto;display:block;margin:0 auto 6px;">
   <p style="color:#f1c40f;font-weight:bold;margin:3px 0;font-size:.9em;">
    <span id="menu-avatar">&#129497;</span>
    <span id="lvl-badge">Niv.1</span>
@@ -597,7 +602,7 @@
 <script src="js/09-parent.js"></script>
 <script src="js/10-figurines.js"></script>
 <script src="js/12-cloud.js"></script>
-<script src="js/11-init.js?v=856"></script>
+<script src="js/11-init.js?v=859"></script>
 
 <!-- Enregistrement du Service Worker (mode hors-ligne + installation PWA) -->
 <script>
