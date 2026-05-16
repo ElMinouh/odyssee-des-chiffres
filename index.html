@@ -16,7 +16,7 @@
 <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="stylesheet" href="assets/fonts/google-fonts.css">
-<link rel="stylesheet" href="css/styles.css?v=860">
+<link rel="stylesheet" href="css/styles.css?v=862">
 </head>
 <body id="BODY">
 <!-- ═══ SPLASH SCREEN (Chantier v8.5.1 — durée 10s narrative) ═══
@@ -40,9 +40,9 @@
        donc parfaitement adaptés quel que soit l'écran (PC large ou Android portrait). -->
   <div id="splash-stage">
    <!-- 1. La carte parchemin (fond de la scène) -->
-   <img src="assets/logo-main.webp?v=860" alt="L'Odyssée des Chiffres" id="splash-logo">
+   <img src="assets/logo-main.webp?v=862" alt="L'Odyssée des Chiffres" id="splash-logo">
    <!-- 2. La boussole : grosse au centre écran puis converge vers sa place sur la carte -->
-   <img src="assets/icon-512.png?v=860" alt="" id="splash-compass" aria-hidden="true">
+   <img src="assets/icon-512.png?v=862" alt="" id="splash-compass" aria-hidden="true">
    <!-- 3. Chiffres et symboles math qui volent en chaotique -->
    <div id="splash-orbits" aria-hidden="true">
     <span class="splash-item splash-num" style="--i:0">3</span>
@@ -134,7 +134,7 @@
 
  <!-- ═══ MENU ═══ -->
  <div id="v-menu">
-  <img src="assets/logo-main.webp?v=860" alt="L'Odyssée des Chiffres" class="game-logo" id="game-logo-menu" loading="eager" decoding="async" style="max-width:min(100px,32%);width:100%;height:auto;display:block;margin:0 auto 6px;">
+  <img src="assets/logo-main.webp?v=862" alt="L'Odyssée des Chiffres" class="game-logo" id="game-logo-menu" loading="eager" decoding="async" style="max-width:min(100px,32%);width:100%;height:auto;display:block;margin:0 auto 6px;">
   <p style="color:#f1c40f;font-weight:bold;margin:3px 0;font-size:.9em;">
    <span id="menu-avatar">&#129497;</span>
    <span id="lvl-badge">Niv.1</span>
@@ -240,7 +240,7 @@
  <div id="v-settings" class="hidden">
   <div class="back-top-bar"><button class="back-top-btn" onclick="toggleSettings()">&#8592; Retour</button></div>
   
-  <img src="assets/logo-circle.webp?v=860" alt="" class="page-logo-circle" aria-hidden="true">
+  <img src="assets/logo-circle.webp?v=862" alt="" class="page-logo-circle" aria-hidden="true">
   <h3>&#128202; Tableau de Bord &mdash; <span id="dash-player-name" style="color:#f1c40f;"></span></h3>
   <div class="tabs" id="stabs">
    <button class="tab active" onclick="stab('hero')"><span class="tab-wrap"><span>&#129464;</span><span class="tab-lbl">Héros</span></span></button>
@@ -412,7 +412,7 @@
  <div id="v-parent" class="hidden">
   <div class="back-top-bar"><button class="back-top-btn" onclick="showView('v-menu')">&#8592; Retour</button></div>
   
-  <img src="assets/logo-circle.webp?v=860" alt="" class="page-logo-circle" aria-hidden="true">
+  <img src="assets/logo-circle.webp?v=862" alt="" class="page-logo-circle" aria-hidden="true">
   <h2>&#128106; Vue Parent</h2>
   <div id="parent-lock">
    <p style="font-size:.9em;margin:4px 0;">Code parent :</p>
@@ -429,46 +429,24 @@
     <button class="tab" onclick="ptab('figurines')">&#128167; Figurines</button>
    </div>
    <div id="ptab-rapport">
-    <select id="parent-player" onchange="renderReport()" style="width:90%;margin-bottom:8px;"></select>
+    <select id="parent-player" onchange="renderReport();renderReportView();" style="width:90%;margin-bottom:8px;"></select>
     <div id="report-content"></div>
     <button onclick="exportPDF()" style="margin-top:6px;width:100%;background:#2c3e50;border:1px solid #f1c40f;">&#128196; Exporter PDF</button>
     <hr style="border-color:rgba(255,255,255,.1);margin:10px 0;">
-    <p style="font-size:.88em;font-weight:700;color:#f1c40f;">&#128679; Rapport Hebdomadaire</p>
-    <div id="weekly-summary-zone"></div>
+    <select id="report-view-mode" onchange="renderReportView()" style="width:90%;margin-bottom:10px;font-weight:700;">
+     <option value="weekly">&#128202; Rapport hebdomadaire</option>
+     <option value="errors">&#10060; Les 100 dernières opérations ratées</option>
+    </select>
+    <div id="report-view-weekly">
+     <p style="font-size:.88em;font-weight:700;color:#f1c40f;">&#128679; Rapport Hebdomadaire</p>
+     <div id="weekly-summary-zone"></div>
+    </div>
+    <div id="report-view-errors" class="hidden">
+     <p style="font-size:.88em;font-weight:700;color:#e74c3c;">&#10060; Opérations ratées (les plus récentes)</p>
+     <div id="errors-list-zone"></div>
+    </div>
    </div>
    <div id="ptab-objectifs" class="hidden">
-    <p style="font-size:.82em;margin:6px 0;">Objectif journalier :</p>
-    <select id="obj-player" style="width:80%;margin:4px 0;"></select><br>
-    <select id="obj-count" style="width:60%;">
-     <option value="0">Aucun</option><option value="1">1 partie/jour</option><option value="2">2 parties/jour</option><option value="3">3 parties/jour</option><option value="5">5 parties/jour</option>
-    </select><br>
-    <button onclick="saveObj()">&#128190; Enregistrer</button>
-    <div id="obj-status" style="font-size:.8em;margin-top:8px;color:#f1c40f;"></div>
-   </div>
-   <!-- CONTROLES PARENT : blocage horaire + filtres opérations -->
-   <div id="ptab-controles" class="hidden">
-    <p style="font-size:.88em;font-weight:700;color:#f1c40f;margin:8px 0 4px;">&#128336; Blocage Horaire</p>
-    <p style="font-size:.78em;color:#bdc3c7;margin:3px 0 8px;">Choisir le joueur, puis les créneaux autorisés.</p>
-    <select id="block-player" style="width:85%;margin-bottom:8px;" onchange="loadBlockSettings()"></select>
-    <div style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:6px;">
-     <label style="font-size:.82em;">De</label>
-     <input type="time" id="block-start" style="width:110px;padding:6px;" value="17:00">
-     <label style="font-size:.82em;">à</label>
-     <input type="time" id="block-end" style="width:110px;padding:6px;" value="18:00">
-    </div>
-    <label style="font-size:.82em;display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:8px;">
-     <input type="checkbox" id="block-enabled"> Activer le blocage horaire
-    </label>
-    <button onclick="saveBlockSettings()" style="width:90%;">&#128190; Enregistrer horaires</button>
-    <div id="block-status" style="font-size:.78em;margin-top:6px;color:#f1c40f;"></div>
-    <hr style="border-color:rgba(255,255,255,.1);margin:14px 0;">
-    <p style="font-size:.88em;font-weight:700;color:#f1c40f;margin:6px 0 4px;">&#9881;&#65039; Filtres d'Opérations</p>
-    <p style="font-size:.78em;color:#bdc3c7;margin:3px 0 8px;">Désactiver certains types de questions par joueur.</p>
-    <select id="filter-player" style="width:85%;margin-bottom:8px;" onchange="loadFilterSettings()"></select>
-    <div id="op-filters"></div>
-    <button onclick="saveFilterSettings()" style="width:90%;margin-top:6px;">&#128190; Enregistrer filtres</button>
-    <div id="filter-status" style="font-size:.78em;margin-top:6px;color:#f1c40f;"></div>
-    <hr style="border:0;border-top:1px solid rgba(255,255,255,.1);margin:12px 0;">
     <p style="font-size:.88em;font-weight:700;color:#f1c40f;">&#128218; Devoir du jour</p>
     <p style="font-size:.74em;color:#bdc3c7;margin:3px 0 6px;">Le parent peut fixer un objectif que l'enfant devra accomplir.</p>
     <select id="hw-player" style="width:85%;margin-bottom:6px;" onchange="loadHomework()"></select><br>
@@ -510,6 +488,30 @@
     <button onclick="clearHomework()" style="width:42%;margin-top:6px;background:#7f8c8d;">&#128683; Annuler</button>
     <div id="hw-status" style="font-size:.78em;margin-top:6px;color:#f1c40f;"></div>
    </div>
+   <!-- CONTROLES PARENT : blocage horaire + filtres opérations -->
+   <div id="ptab-controles" class="hidden">
+    <p style="font-size:.88em;font-weight:700;color:#f1c40f;margin:8px 0 4px;">&#128336; Blocage Horaire</p>
+    <p style="font-size:.78em;color:#bdc3c7;margin:3px 0 8px;">Choisir le joueur, puis les créneaux autorisés.</p>
+    <select id="block-player" style="width:85%;margin-bottom:8px;" onchange="loadBlockSettings()"></select>
+    <div style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:6px;">
+     <label style="font-size:.82em;">De</label>
+     <input type="time" id="block-start" style="width:110px;padding:6px;" value="17:00">
+     <label style="font-size:.82em;">à</label>
+     <input type="time" id="block-end" style="width:110px;padding:6px;" value="18:00">
+    </div>
+    <label style="font-size:.82em;display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:8px;">
+     <input type="checkbox" id="block-enabled"> Activer le blocage horaire
+    </label>
+    <button onclick="saveBlockSettings()" style="width:90%;">&#128190; Enregistrer horaires</button>
+    <div id="block-status" style="font-size:.78em;margin-top:6px;color:#f1c40f;"></div>
+    <hr style="border-color:rgba(255,255,255,.1);margin:14px 0;">
+    <p style="font-size:.88em;font-weight:700;color:#f1c40f;margin:6px 0 4px;">&#9881;&#65039; Filtres d'Opérations</p>
+    <p style="font-size:.78em;color:#bdc3c7;margin:3px 0 8px;">Désactiver certains types de questions par joueur.</p>
+    <select id="filter-player" style="width:85%;margin-bottom:8px;" onchange="loadFilterSettings()"></select>
+    <div id="op-filters"></div>
+    <button onclick="saveFilterSettings()" style="width:90%;margin-top:6px;">&#128190; Enregistrer filtres</button>
+    <div id="filter-status" style="font-size:.78em;margin-top:6px;color:#f1c40f;"></div>
+   </div>
    <div id="ptab-options" class="hidden">
     <p style="font-size:.82em;margin:6px 0;">Changer le code :</p>
     <input type="password" id="new-pin" placeholder="Nouveau code (4 chiffres)" style="width:65%;" maxlength="4"><br>
@@ -545,11 +547,20 @@
    <p style="font-size:.74em;color:#bdc3c7;margin:3px 0 8px;">Synchronise automatiquement la progression entre tous les appareils. Note bien le code, il sert à retrouver le profil.</p>
    <select id="cloud-sync-player" style="width:90%;margin-bottom:8px;" onchange="renderCloudPanel()"></select>
    <div id="cloud-panel-content"></div>
+   <!-- RÉCUPÉRATION FIABLE PAR CODE (v8.6.1) — visible, simple -->
+   <div style="margin-top:12px;background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.3);border-radius:10px;padding:12px;">
+    <p style="font-size:.86em;font-weight:700;color:#2ecc71;margin:0 0 4px;">&#128229; Récupérer un profil depuis son code</p>
+    <p style="font-size:.74em;color:#bdc3c7;margin:2px 0 8px;">Sur un nouvel appareil ou en cas de problème : entre le code du profil (visible sur un appareil où il fonctionne) pour le récupérer ici. Cela remplace la version locale par celle du cloud.</p>
+    <input type="text" id="cloud-force-code" placeholder="ex: SOREN-7B4K9X" style="width:78%;text-transform:uppercase;letter-spacing:1px;font-family:monospace;padding:7px;border-radius:6px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.15);color:#fff;"><br>
+    <button onclick="doForceCloudRestore()" style="background:#27ae60;margin-top:8px;font-size:.9em;padding:8px 16px;">&#128260; Récupérer ce profil</button>
+    <p id="cloud-force-msg" style="font-size:.78em;margin-top:8px;"></p>
+   </div>
+
    <details style="margin-top:10px;">
-    <summary style="font-size:.78em;color:#bdc3c7;cursor:pointer;">&#128229; J'ai déjà un code, je veux le restaurer ici</summary>
-    <p style="font-size:.74em;color:#bdc3c7;margin:6px 0 4px;">Entre le code reçu d'un autre appareil pour récupérer le profil :</p>
+    <summary style="font-size:.74em;color:#7f8c8d;cursor:pointer;">Ancienne méthode (restauration sans rechargement)</summary>
+    <p style="font-size:.72em;color:#7f8c8d;margin:6px 0 4px;">Entre le code reçu d'un autre appareil :</p>
     <input type="text" id="cloud-restore-code" placeholder="ex: SOREN-7B4K9X" style="width:80%;text-transform:uppercase;letter-spacing:1px;font-family:monospace;" maxlength="40"><br>
-    <button onclick="doCloudRestore()" style="background:#27ae60;margin-top:6px;">&#128229; Restaurer le profil</button>
+    <button onclick="doCloudRestore()" style="background:#7f8c8d;margin-top:6px;font-size:.82em;">&#128229; Restaurer (ancienne méthode)</button>
     <p id="cloud-restore-msg" style="font-size:.76em;margin-top:6px;"></p>
    </details>
 
@@ -602,7 +613,7 @@
 <script src="js/09-parent.js"></script>
 <script src="js/10-figurines.js"></script>
 <script src="js/12-cloud.js"></script>
-<script src="js/11-init.js?v=860"></script>
+<script src="js/11-init.js?v=862"></script>
 
 <!-- Enregistrement du Service Worker (mode hors-ligne + installation PWA) -->
 <script>

@@ -1773,11 +1773,13 @@ body::before {
 }
 
 @keyframes splashMap {
- /* Phase 1 : petite vignette, légèrement remontée vers le haut */
- 0%   { opacity: 0; transform: translate(-50%, -180%) scale(.22); }
- 6%   { opacity: .9; transform: translate(-50%, -150%) scale(.24); }
- 25%  { opacity: .9; transform: translate(-50%, -150%) scale(.24); }
- 55%  { opacity: .92; transform: translate(-50%, -150%) scale(.24); }
+ /* Phase 1 : petite vignette, placée en haut de l'écran.
+    On utilise vh (relatif à l'écran) au lieu de % (relatif à l'élément)
+    pour que la position soit cohérente PC ET Android. */
+ 0%   { opacity: 0; transform: translate(-50%, calc(-50% - 30vh)) scale(.22); }
+ 6%   { opacity: .9; transform: translate(-50%, calc(-50% - 26vh)) scale(.24); }
+ 25%  { opacity: .9; transform: translate(-50%, calc(-50% - 26vh)) scale(.24); }
+ 55%  { opacity: .92; transform: translate(-50%, calc(-50% - 26vh)) scale(.24); }
  /* Phase 3 : convergence — grossit et se recentre */
  75%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
  /* Phase 4 : pulse doux */

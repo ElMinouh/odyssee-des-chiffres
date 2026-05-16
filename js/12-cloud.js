@@ -221,6 +221,78 @@ async function restoreProfileByCode(code){
  return { ok:true, name: prof.name };
 }
 
+// ══════════════ RÉCUPÉRATION FORCÉE PAR CODE (v8.6.1) ══════════════
+// Version SIMPLE et FIABLE de la restauration. Contrairement à
+// restoreProfileByCode (qui peut entrer en conflit avec un profil local
+// existant et la sync auto), cette fonction :
+//   1. Télécharge le profil cloud par code (sans aucune condition)
+//   2. ÉCRASE TOUT en local pour ce nom (supprime l'ancien d'abord)
+//   3. Désactive la sync auto le temps de l'opération (anti re-push)
+//   4. Force un rechargement complet de la page → état propre garanti
+// C'est la solution recommandée à l'utilisateur pour fiabiliser le transfert.
+async function forceRestoreFromCloud(code){
+ if(!isValidCloudCode(code)){
+  return { ok:false, error:'invalid_code' };
+ }
+ // 1. Stopper toute sync auto pour éviter qu'un ancien profil local
+ //    ne réécrase le cloud pendant l'opération.
+ cancelCloudSync();
+ _cloudInflight = true; // bloque tout push concurrent
+
+ // 2. Télécharger le profil cloud
+ const result = await pullProfileFromCloud(code);
+ if(!result.ok){
+  _cloudInflight = false;
+  return { ok:false, error: result.error };
+ }
+ const cloudProfile = result.profile;
+ if(!cloudProfile || !cloudProfile.name){
+  _cloudInflight = false;
+  return { ok:false, error:'invalid_profile' };
+ }
+
+ // 3. Migration + validation
+ let prof = cloudProfile;
+ if(typeof migrateProfile==='function') prof = migrateProfile(prof);
+ if(typeof validateProfile==='function') prof = validateProfile(prof, cloudProfile.name);
+ if(!prof){
+  _cloudInflight = false;
+  return { ok:false, error:'invalid_profile' };
+ }
+
+ // 4. Forcer le code + activer cloud
+ prof.cloudCode = code.toUpperCase();
+ prof.cloudEnabled = true;
+
+ // 5. ÉCRASER en local SANS CONDITION : on supprime d'abord
+ //    l'ancien profil de ce nom (qui pourrait avoir un autre code).
+ try{
+  localStorage.removeItem('user_' + prof.name);
+  localStorage.setItem('user_' + prof.name, JSON.stringify(prof));
+ }catch(e){
+  _cloudInflight = false;
+  return { ok:false, error:'storage_full' };
+ }
+
+ // 6. Définir ce profil comme profil actif (lastPlayer)
+ try{
+  localStorage.setItem('lastPlayer', prof.name);
+ }catch(e){}
+
+ // 7. Ajouter le nom à la liste des joueurs si custom
+ try{
+  const customs = JSON.parse(localStorage.getItem('customPlayerNames') || '[]');
+  const isPreset = (typeof KNOWN !== 'undefined' && Array.isArray(KNOWN)) ? KNOWN.includes(prof.name) : false;
+  if(!customs.includes(prof.name) && !isPreset && prof.name !== 'Autre'){
+   customs.push(prof.name);
+   localStorage.setItem('customPlayerNames', JSON.stringify(customs));
+  }
+ }catch(e){}
+
+ // 8. Succès → on signale qu'un reload est nécessaire pour un état 100% propre
+ return { ok:true, name: prof.name, reload:true };
+}
+
 // ══════════════ TIMER DE SYNC AUTO TOUTES LES 5 MIN ══════════════
 function scheduleCloudSync(){
  cancelCloudSync();

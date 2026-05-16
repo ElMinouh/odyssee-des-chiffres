@@ -21,7 +21,7 @@ function checkPin(){
  const pin=$('pin-input').value;
  if(checkStoredPin(pin)){
   pinAttempts=0;
-  $('parent-lock').classList.add('hidden');$('parent-content').classList.remove('hidden');renderReport();renderWeeklySummary();
+  $('parent-lock').classList.add('hidden');$('parent-content').classList.remove('hidden');renderReport();renderReportView();
  }else{
   pinAttempts++;
   if(pinAttempts>=5){pinLockUntil=Date.now()+30000;pinAttempts=0;toast('🔒 5 tentatives échouées. Bloqué 30 secondes !',3500);}
@@ -32,7 +32,7 @@ function checkPin(){
 function ptab(name){
  ['rapport','objectifs','controles','options','figurines'].forEach(t=>$('ptab-'+t).classList.toggle('hidden',t!==name));
  document.querySelectorAll('#v-parent .tab').forEach((b,i)=>b.classList.toggle('active',['rapport','objectifs','controles','options','figurines'][i]===name));
- if(name==='rapport'){renderReport();renderWeeklySummary();}
+ if(name==='rapport'){renderReport();renderReportView();}
  if(name==='controles'){loadBlockSettings();loadFilterSettings();}
  if(name==='options'){setTimeout(renderResetZone,60); setTimeout(renderCloudPanel,80);}
  if(name==='figurines'){
@@ -204,7 +204,65 @@ function renderReport(){
 }
 
 // ═══════════════════════════════════════════════════════
-// RAPPORT HEBDOMADAIRE ENRICHI (chantier C2)
+// SÉLECTEUR DE VUE RAPPORT (v8.6.2)
+// Bascule entre "Rapport hebdomadaire" et "100 dernières opérations ratées"
+// ═══════════════════════════════════════════════════════
+function renderReportView(){
+ const mode = $('report-view-mode')?.value || 'weekly';
+ const weeklyZone = $('report-view-weekly');
+ const errorsZone = $('report-view-errors');
+ if(!weeklyZone || !errorsZone) return;
+ if(mode === 'errors'){
+  weeklyZone.classList.add('hidden');
+  errorsZone.classList.remove('hidden');
+  renderErrorsList();
+ } else {
+  errorsZone.classList.add('hidden');
+  weeklyZone.classList.remove('hidden');
+  if(typeof renderWeeklySummary === 'function') renderWeeklySummary();
+ }
+}
+
+// Affiche les opérations ratées les plus récentes (depuis errorLog).
+// errorLog contient {q:"3+5=8", t:timestamp, tries:nbEchecs} dédupliqué.
+function renderErrorsList(){
+ const player = $('parent-player')?.value || 'Soren';
+ let d = null;
+ try{ d = JSON.parse(localStorage.getItem('user_'+player) || 'null'); }catch(e){}
+ const el = $('errors-list-zone');
+ if(!el) return;
+ if(!d){
+  el.innerHTML = '<span style="color:#bdc3c7;font-size:.82em;">Aucune donnée pour '+player+'.</span>';
+  return;
+ }
+ const log = Array.isArray(d.errorLog) ? d.errorLog.slice() : [];
+ if(!log.length){
+  el.innerHTML = '<div style="text-align:center;padding:20px 10px;color:#2ecc71;font-size:.85em;">✅ Aucune opération ratée enregistrée pour '+player+' !<br><span style="color:#7f8c8d;font-size:.9em;">(Les erreurs apparaissent ici au fil des parties)</span></div>';
+  return;
+ }
+ // Tri par date décroissante (plus récentes d'abord), max 100
+ log.sort((a,b)=>(b.t||0)-(a.t||0));
+ const items = log.slice(0,100);
+ // Parse "3+5=8" → opération + bonne réponse
+ const rows = items.map(e=>{
+  const raw = String(e.q||'');
+  const eqIdx = raw.lastIndexOf('=');
+  const op = eqIdx>=0 ? raw.slice(0,eqIdx) : raw;
+  const good = eqIdx>=0 ? raw.slice(eqIdx+1) : '?';
+  const tries = e.tries||1;
+  const when = e.t ? new Date(e.t) : null;
+  const dateStr = when ? `${String(when.getDate()).padStart(2,'0')}/${String(when.getMonth()+1).padStart(2,'0')} ${String(when.getHours()).padStart(2,'0')}:${String(when.getMinutes()).padStart(2,'0')}` : '';
+  const triesBadge = tries>1 ? `<span style="background:rgba(231,76,60,.3);color:#e74c3c;border-radius:4px;padding:1px 6px;font-size:.72em;margin-left:6px;">×${tries}</span>` : '';
+  return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:.82em;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.06);">
+   <span><strong style="color:#fff;">${op}</strong> = <strong style="color:#2ecc71;">${good}</strong>${triesBadge}</span>
+   <span style="color:#7f8c8d;font-size:.85em;">${dateStr}</span>
+  </div>`;
+ }).join('');
+ el.innerHTML = `<div style="background:rgba(255,255,255,.04);border-radius:10px;padding:6px;margin-top:6px;">
+  <p style="font-size:.74em;color:#bdc3c7;margin:4px 8px 8px;">${items.length} opération(s) ratée(s) · la bonne réponse est en vert · ×N = nombre d'échecs</p>
+  ${rows}
+ </div>`;
+}
 // ═══════════════════════════════════════════════════════
 // Le rapport combine plusieurs sources :
 //  - history (timestamp ou fallback date DD/MM) → comptage parties par jour
@@ -964,7 +1022,40 @@ async function doCloudCopyFor(name){
  document.body.removeChild(ta);
 }
 
-// Restauration d'un profil par code (pour transférer depuis un autre appareil)
+// Restauration FORCÉE par code (v8.6.1) — simple et fiable.
+// Écrase le profil local et recharge la page pour un état propre.
+async function doForceCloudRestore(){
+ const input = document.getElementById('cloud-force-code');
+ const msg = document.getElementById('cloud-force-msg');
+ if(!input || !msg) return;
+ const code = (input.value || '').trim().toUpperCase();
+ if(!code){ msg.style.color='#e74c3c'; msg.textContent='Entre un code valide.'; return; }
+ if(typeof forceRestoreFromCloud !== 'function'){
+  msg.style.color='#e74c3c'; msg.textContent='Récupération non disponible.'; return;
+ }
+ msg.style.color='#bdc3c7'; msg.textContent='⏳ Récupération forcée en cours…';
+ const result = await forceRestoreFromCloud(code);
+ if(!result.ok){
+  msg.style.color='#e74c3c';
+  if(result.error === 'not_found') msg.textContent='❌ Code introuvable. Vérifie l\'orthographe (lettres + chiffres après le tiret).';
+  else if(result.error === 'invalid_code') msg.textContent='❌ Format de code invalide. Exemple : SOREN-7B4K9X';
+  else if(result.error === 'storage_full') msg.textContent='❌ Stockage local plein.';
+  else if(result.error === 'network_error') msg.textContent='❌ Pas de connexion internet. Réessaie connecté.';
+  else msg.textContent='❌ Erreur : '+result.error;
+  return;
+ }
+ msg.style.color='#2ecc71';
+ msg.textContent=`✅ Profil "${result.name}" récupéré ! Rechargement…`;
+ input.value='';
+ // Recharge complète de la page après 1.5s pour un état 100% propre
+ // (le profil restauré devient le profil actif au reload)
+ setTimeout(() => {
+  try{ window.location.reload(); }
+  catch(e){ window.location.href = window.location.href; }
+ }, 1500);
+}
+
+// Restauration d'un profil par code (ANCIENNE méthode, sans rechargement)
 async function doCloudRestore(){
  const input = document.getElementById('cloud-restore-code');
  const msg = document.getElementById('cloud-restore-msg');
