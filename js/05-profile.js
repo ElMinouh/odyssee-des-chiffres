@@ -195,14 +195,27 @@ function loadProfile(){
 // saveProfile avec debounce : évite de sérialiser à chaque micro-action (quêtes, badges…)
 // saveProfileNow() force la sauvegarde immédiate (fin de partie, achats)
 let _saveTimer=null;
+// v8.6.7 : verrou anti-sauvegarde. Quand true, AUCUNE sauvegarde locale
+// n'est effectuée. Utilisé par forceRestoreFromCloud pour empêcher qu'un
+// saveProfile() différé (debounce 800ms) n'écrase le profil cloud restauré
+// juste avant le reload de la page.
+let _saveLocked=false;
+function lockProfileSaves(){
+ _saveLocked=true;
+ clearTimeout(_saveTimer);
+ _saveTimer=null;
+}
 function saveProfile(){
+ if(_saveLocked) return;
  clearTimeout(_saveTimer);
  _saveTimer=setTimeout(()=>{
+  if(_saveLocked) return;
   try{localStorage.setItem('user_'+P.name,JSON.stringify(P));}
   catch(e){if(e.name==='QuotaExceededError'||e.code===22||e.code===1014)toast('⚠️ Stockage plein ! Progression non sauvegardée.',4000);}
  },800);
 }
 function saveProfileNow(){
+ if(_saveLocked) return;
  clearTimeout(_saveTimer);
  try{localStorage.setItem('user_'+P.name,JSON.stringify(P));}
  catch(e){if(e.name==='QuotaExceededError'||e.code===22||e.code===1014)toast('⚠️ Stockage plein ! Progression non sauvegardée.',4000);}

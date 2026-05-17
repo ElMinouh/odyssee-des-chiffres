@@ -270,6 +270,16 @@ async function forceRestoreFromCloud(code){
  //    ne réécrase le cloud pendant l'opération.
  cancelCloudSync();
  _cloudInflight = true; // bloque tout push concurrent
+ // v8.6.7 : VERROUILLER toute sauvegarde locale. Sans ça, un saveProfile()
+ // différé (debounce 800ms) contenant l'ANCIEN profil en mémoire écrase
+ // le profil cloud qu'on s'apprête à écrire, juste avant le reload.
+ // C'était LA cause du bug (diagnostic : profil bien écrit puis ré-écrasé 7s après).
+ if(typeof lockProfileSaves === 'function'){
+  lockProfileSaves();
+  _diagLog('FORCE-RESTORE: sauvegardes locales VERROUILLÉES (anti-écrasement)');
+ } else {
+  _diagLog('FORCE-RESTORE: ⚠️ lockProfileSaves indisponible (ancien 05-profile.js ?)');
+ }
 
  // 2. Télécharger le profil cloud
  _diagLog('FORCE-RESTORE: téléchargement depuis '+CLOUD_API+'/profile/'+code);
