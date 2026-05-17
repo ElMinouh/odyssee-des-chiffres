@@ -16,7 +16,7 @@
 <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="stylesheet" href="assets/fonts/google-fonts.css">
-<link rel="stylesheet" href="css/styles.css?v=865">
+<link rel="stylesheet" href="css/styles.css?v=866">
 </head>
 <body id="BODY">
 <!-- ═══ SPLASH SCREEN (Chantier v8.5.1 — durée 10s narrative) ═══
@@ -40,9 +40,9 @@
        donc parfaitement adaptés quel que soit l'écran (PC large ou Android portrait). -->
   <div id="splash-stage">
    <!-- 1. La carte parchemin (fond de la scène) -->
-   <img src="assets/logo-main.webp?v=865" alt="L'Odyssée des Chiffres" id="splash-logo">
+   <img src="assets/logo-main.webp?v=866" alt="L'Odyssée des Chiffres" id="splash-logo">
    <!-- 2. La boussole : grosse au centre écran puis converge vers sa place sur la carte -->
-   <img src="assets/icon-512.png?v=865" alt="" id="splash-compass" aria-hidden="true">
+   <img src="assets/icon-512.png?v=866" alt="" id="splash-compass" aria-hidden="true">
    <!-- 3. Chiffres et symboles math qui volent en chaotique -->
    <div id="splash-orbits" aria-hidden="true">
     <span class="splash-item splash-num" style="--i:0">3</span>
@@ -134,7 +134,7 @@
 
  <!-- ═══ MENU ═══ -->
  <div id="v-menu">
-  <img src="assets/logo-main.webp?v=865" alt="L'Odyssée des Chiffres" class="game-logo" id="game-logo-menu" loading="eager" decoding="async" style="max-width:min(100px,32%);width:100%;height:auto;display:block;margin:0 auto 6px;">
+  <img src="assets/logo-main.webp?v=866" alt="L'Odyssée des Chiffres" class="game-logo" id="game-logo-menu" loading="eager" decoding="async" style="max-width:min(100px,32%);width:100%;height:auto;display:block;margin:0 auto 6px;">
   <p style="color:#f1c40f;font-weight:bold;margin:3px 0;font-size:.9em;">
    <span id="menu-avatar">&#129497;</span>
    <span id="lvl-badge">Niv.1</span>
@@ -239,7 +239,7 @@
  <div id="v-settings" class="hidden">
   <div class="back-top-bar"><button class="back-top-btn" onclick="toggleSettings()">&#8592; Retour</button></div>
   
-  <img src="assets/logo-circle.webp?v=865" alt="" class="page-logo-circle" aria-hidden="true">
+  <img src="assets/logo-circle.webp?v=866" alt="" class="page-logo-circle" aria-hidden="true">
   <h3>&#128202; Tableau de Bord &mdash; <span id="dash-player-name" style="color:#f1c40f;"></span></h3>
   <div class="tabs" id="stabs">
    <button class="tab active" onclick="stab('hero')"><span class="tab-wrap"><span>&#129464;</span><span class="tab-lbl">Héros</span></span></button>
@@ -414,7 +414,7 @@
  <div id="v-parent" class="hidden">
   <div class="back-top-bar"><button class="back-top-btn" onclick="showView('v-menu')">&#8592; Retour</button></div>
   
-  <img src="assets/logo-circle.webp?v=865" alt="" class="page-logo-circle" aria-hidden="true">
+  <img src="assets/logo-circle.webp?v=866" alt="" class="page-logo-circle" aria-hidden="true">
   <h2>&#128106; Vue Parent</h2>
   <div id="parent-lock">
    <p style="font-size:.9em;margin:4px 0;">Code parent :</p>
@@ -558,6 +558,16 @@
     <p id="cloud-force-msg" style="font-size:.78em;margin-top:8px;"></p>
    </div>
 
+   <!-- DIAGNOSTIC SYNC (v8.6.6) — affiche les logs à l'écran, copiable -->
+   <div style="margin-top:12px;background:rgba(241,196,15,.06);border:1px solid rgba(241,196,15,.25);border-radius:10px;padding:10px;">
+    <p style="font-size:.8em;font-weight:700;color:#f1c40f;margin:0 0 6px;">&#128295; Diagnostic synchronisation</p>
+    <p style="font-size:.72em;color:#bdc3c7;margin:2px 0 8px;">En cas de souci : fais la récupération ci-dessus, puis appuie sur ce bouton et envoie le texte affiché.</p>
+    <button onclick="showSyncDiag()" style="background:#f39c12;font-size:.84em;padding:7px 14px;">&#128203; Afficher le diagnostic</button>
+    <button onclick="(function(){if(typeof clearSyncDiag==='function')clearSyncDiag();var z=document.getElementById('sync-diag-zone');if(z)z.value='';})()" style="background:#7f8c8d;font-size:.78em;padding:6px 12px;margin-left:4px;">&#128465;&#65039; Effacer</button>
+    <textarea id="sync-diag-zone" readonly placeholder="(Le diagnostic s'affichera ici après avoir cliqué sur le bouton)" style="width:95%;height:160px;margin-top:8px;resize:vertical;font-family:monospace;font-size:.68em;background:rgba(0,0,0,.35);color:#ddd;border:1px solid rgba(255,255,255,.15);border-radius:6px;padding:6px;"></textarea>
+    <button onclick="(function(){var z=document.getElementById('sync-diag-zone');if(z){z.select();try{document.execCommand('copy');if(typeof toast==='function')toast('📋 Diagnostic copié !',2000);}catch(e){}}})()" style="background:#34495e;font-size:.8em;padding:6px 12px;margin-top:4px;">&#128203; Tout copier</button>
+   </div>
+
    <details style="margin-top:10px;">
     <summary style="font-size:.74em;color:#7f8c8d;cursor:pointer;">Ancienne méthode (restauration sans rechargement)</summary>
     <p style="font-size:.72em;color:#7f8c8d;margin:6px 0 4px;">Entre le code reçu d'un autre appareil :</p>
@@ -615,7 +625,7 @@
 <script src="js/09-parent.js"></script>
 <script src="js/10-figurines.js"></script>
 <script src="js/12-cloud.js"></script>
-<script src="js/11-init.js?v=865"></script>
+<script src="js/11-init.js?v=866"></script>
 
 <!-- Enregistrement du Service Worker (mode hors-ligne + installation PWA) -->
 <script>

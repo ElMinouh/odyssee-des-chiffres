@@ -1022,6 +1022,35 @@ async function doCloudCopyFor(name){
  document.body.removeChild(ta);
 }
 
+// Affiche le diagnostic de sync dans la zone de texte (v8.6.6)
+function showSyncDiag(){
+ const zone = document.getElementById('sync-diag-zone');
+ if(!zone) return;
+ let diag = '(fonction de diagnostic indisponible)';
+ if(typeof getSyncDiag === 'function') diag = getSyncDiag();
+ let header = '=== DIAGNOSTIC SYNC ODYSSEE ===\n';
+ try{
+  header += 'Date: ' + new Date().toLocaleString('fr-FR') + '\n';
+  header += 'CACHE_VERSION attendu: v8.6.6\n';
+  header += 'En ligne: ' + (navigator.onLine ? 'OUI' : 'NON') + '\n';
+  header += 'lastPlayer: ' + (localStorage.getItem('lastPlayer')||'(aucun)') + '\n';
+  const profs = [];
+  for(let i=0;i<localStorage.length;i++){
+   const k = localStorage.key(i);
+   if(k && k.startsWith('user_')){
+    try{
+     const p = JSON.parse(localStorage.getItem(k));
+     profs.push('  '+k.slice(5)+': xp='+p.xp+' code='+p.cloudCode+' cloud='+p.cloudEnabled);
+    }catch(e){ profs.push('  '+k.slice(5)+': (illisible)'); }
+   }
+  }
+  header += 'Profils locaux:\n' + (profs.join('\n')||'  (aucun)') + '\n';
+ }catch(e){ header += '(erreur lecture contexte: '+e.message+')\n'; }
+ header += '=== JOURNAL DES ETAPES ===\n';
+ zone.value = header + diag;
+ zone.scrollTop = zone.scrollHeight;
+}
+
 // Restauration FORCÉE par code (v8.6.1) — simple et fiable.
 // Écrase le profil local et recharge la page pour un état propre.
 async function doForceCloudRestore(){

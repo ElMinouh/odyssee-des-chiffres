@@ -13,6 +13,33 @@
 //
 'use strict';
 
+// ═══════════════════════════════════════════════════════
+// DIAGNOSTIC À L'ÉCRAN (v8.6.6)
+// Capture les étapes clés de la sync dans sessionStorage pour
+// pouvoir les afficher dans une boîte copiable sur le téléphone
+// (pas besoin de console PC / câble USB).
+// ═══════════════════════════════════════════════════════
+function _diagLog(msg){
+ try{
+  const ts = new Date().toLocaleTimeString('fr-FR');
+  const line = `[${ts}] ${msg}`;
+  console.log(line);
+  let buf = [];
+  try{ buf = JSON.parse(sessionStorage.getItem('_syncDiag') || '[]'); }catch(e){}
+  buf.push(line);
+  // Garder les 60 dernières lignes max
+  if(buf.length > 60) buf = buf.slice(-60);
+  sessionStorage.setItem('_syncDiag', JSON.stringify(buf));
+ }catch(e){}
+}
+function getSyncDiag(){
+ try{ return (JSON.parse(sessionStorage.getItem('_syncDiag')||'[]')).join('\n'); }
+ catch(e){ return '(aucun diagnostic)'; }
+}
+function clearSyncDiag(){
+ try{ sessionStorage.removeItem('_syncDiag'); }catch(e){}
+}
+
 // ══════════════ CONFIGURATION ══════════════
 const CLOUD_API = 'https://odyssee-sync.air7841.workers.dev';
 const CLOUD_SYNC_INTERVAL_MS = 5 * 60 * 1000; // 5 min
@@ -146,10 +173,11 @@ async function pullProfileFromCloud(code){
  if(!isValidCloudCode(code)){
   return { ok:false, error:'invalid_code' };
  }
+ const url = `${CLOUD_API}/profile/${encodeURIComponent(code)}`;
  try{
-  const resp = await _cloudFetch(`${CLOUD_API}/profile/${encodeURIComponent(code)}`, {
-   method: 'GET',
-  });
+  if(typeof _diagLog==='function') _diagLog('PULL: GET '+url);
+  const resp = await _cloudFetch(url, { method: 'GET' });
+  if(typeof _diagLog==='function') _diagLog('PULL: réponse HTTP '+resp.status);
   if(resp.status === 404){
    return { ok:false, error:'not_found' };
   }
@@ -157,8 +185,10 @@ async function pullProfileFromCloud(code){
    return { ok:false, error:`HTTP ${resp.status}` };
   }
   const profile = await resp.json();
+  if(typeof _diagLog==='function') _diagLog('PULL: JSON reçu, name='+(profile&&profile.name)+' xp='+(profile&&profile.xp));
   return { ok:true, profile };
  } catch(e){
+  if(typeof _diagLog==='function') _diagLog('PULL: EXCEPTION '+(e.name||'')+' '+(e.message||'network_error'));
   return { ok:false, error: e.message || 'network_error' };
  }
 }
@@ -231,9 +261,9 @@ async function restoreProfileByCode(code){
 //   4. Force un rechargement complet de la page → état propre garanti
 // C'est la solution recommandée à l'utilisateur pour fiabiliser le transfert.
 async function forceRestoreFromCloud(code){
- console.log('[FORCE-RESTORE] début, code =', code);
+ _diagLog('FORCE-RESTORE début, code = '+code);
  if(!isValidCloudCode(code)){
-  console.warn('[FORCE-RESTORE] code invalide');
+  _diagLog('FORCE-RESTORE: code invalide (format)');
   return { ok:false, error:'invalid_code' };
  }
  // 1. Stopper toute sync auto pour éviter qu'un ancien profil local
@@ -242,28 +272,31 @@ async function forceRestoreFromCloud(code){
  _cloudInflight = true; // bloque tout push concurrent
 
  // 2. Télécharger le profil cloud
+ _diagLog('FORCE-RESTORE: téléchargement depuis '+CLOUD_API+'/profile/'+code);
  const result = await pullProfileFromCloud(code);
- console.log('[FORCE-RESTORE] pull result:', result.ok ? 'OK' : 'ÉCHEC '+result.error);
+ _diagLog('FORCE-RESTORE: pull result = '+(result.ok ? 'OK' : 'ÉCHEC ('+result.error+')'));
  if(!result.ok){
   _cloudInflight = false;
   return { ok:false, error: result.error };
  }
  const cloudProfile = result.profile;
  if(!cloudProfile || !cloudProfile.name){
-  console.warn('[FORCE-RESTORE] profil cloud invalide:', cloudProfile);
+  _diagLog('FORCE-RESTORE: profil cloud INVALIDE (pas de .name) = '+JSON.stringify(cloudProfile).slice(0,120));
   _cloudInflight = false;
   return { ok:false, error:'invalid_profile' };
  }
- console.log('[FORCE-RESTORE] profil cloud reçu pour:', cloudProfile.name, '| XP:', cloudProfile.xp);
+ _diagLog('FORCE-RESTORE: profil reçu name='+cloudProfile.name+' xp='+cloudProfile.xp+' cloudCode='+cloudProfile.cloudCode);
 
  // 3. Migration + validation
  let prof = cloudProfile;
  if(typeof migrateProfile==='function') prof = migrateProfile(prof);
  if(typeof validateProfile==='function') prof = validateProfile(prof, cloudProfile.name);
  if(!prof){
+  _diagLog('FORCE-RESTORE: validation a retourné NULL → échec');
   _cloudInflight = false;
   return { ok:false, error:'invalid_profile' };
  }
+ _diagLog('FORCE-RESTORE: après validation name='+prof.name+' xp='+prof.xp);
 
  // 4. Forcer le code + activer cloud
  prof.cloudCode = code.toUpperCase();
@@ -275,6 +308,7 @@ async function forceRestoreFromCloud(code){
   localStorage.removeItem('user_' + prof.name);
   localStorage.setItem('user_' + prof.name, JSON.stringify(prof));
  }catch(e){
+  _diagLog('FORCE-RESTORE: ERREUR écriture localStorage: '+e.message);
   _cloudInflight = false;
   return { ok:false, error:'storage_full' };
  }
@@ -295,12 +329,12 @@ async function forceRestoreFromCloud(code){
  }catch(e){}
 
  // 8. Succès → on signale qu'un reload est nécessaire pour un état 100% propre
- console.log('[FORCE-RESTORE] ✅ profil écrit dans user_'+prof.name+', lastPlayer='+prof.name+', reload imminent');
+ _diagLog('FORCE-RESTORE: ✅ écrit dans user_'+prof.name+', lastPlayer='+prof.name);
  // Vérification : relire ce qu'on vient d'écrire
  try{
   const check = JSON.parse(localStorage.getItem('user_'+prof.name)||'null');
-  console.log('[FORCE-RESTORE] vérif relecture: name='+(check?check.name:'NULL')+', xp='+(check?check.xp:'?')+', cloudEnabled='+(check?check.cloudEnabled:'?'));
- }catch(e){ console.warn('[FORCE-RESTORE] vérif relecture échouée', e); }
+  _diagLog('FORCE-RESTORE: vérif relecture name='+(check?check.name:'NULL')+' xp='+(check?check.xp:'?')+' cloudCode='+(check?check.cloudCode:'?')+' cloudEnabled='+(check?check.cloudEnabled:'?'));
+ }catch(e){ _diagLog('FORCE-RESTORE: vérif relecture ÉCHEC '+e.message); }
  return { ok:true, name: prof.name, reload:true };
 }
 
