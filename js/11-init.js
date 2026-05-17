@@ -49,7 +49,7 @@ adjustGameLogoSize();
  splash.addEventListener('click', skip, { once: true });
  splash.addEventListener('touchstart', skip, { once: true, passive: true });
  // Retrait automatique du DOM après l'animation complète (10s + 0.6s fade + marge)
- setTimeout(() => { splash.classList.add('skipped'); }, 10800);
+ setTimeout(() => { splash.classList.add('skipped'); }, 11800);
 })();
 
 window.onload=()=>{
@@ -64,6 +64,37 @@ window.onload=()=>{
  $('themeSelect').addEventListener('change',()=>savePrefs());
  $('modeSelect').addEventListener('change',()=>savePrefs());
  $('parent-player').addEventListener('change',()=>{renderReport();renderWeeklySummary();});
+ // v8.7.0 : nettoyage des profils corrompus (clés user_undefined, user_null,
+ // ou JSON illisible / sans nom). On NE touche JAMAIS aux profils valides
+ // (ceux avec un name défini), pour ne pas casser les sauvegardes actives.
+ try{
+  const toDelete = [];
+  for(let i=0;i<localStorage.length;i++){
+   const k = localStorage.key(i);
+   if(!k || !k.startsWith('user_')) continue;
+   const suffix = k.slice(5);
+   // Clés explicitement corrompues
+   if(suffix === 'undefined' || suffix === 'null' || suffix === ''){
+    toDelete.push(k);
+    continue;
+   }
+   // Contenu illisible ou profil sans nom valide
+   try{
+    const p = JSON.parse(localStorage.getItem(k));
+    if(!p || typeof p !== 'object' || !p.name || p.name === 'undefined' || p.name === 'null'){
+     toDelete.push(k);
+    }
+   }catch(e){
+    toDelete.push(k); // JSON corrompu
+   }
+  }
+  toDelete.forEach(k=>{
+   try{ localStorage.removeItem(k); }catch(e){}
+  });
+  if(toDelete.length && typeof console!=='undefined'){
+   console.log('[CLEANUP] profils corrompus supprimés:', toDelete.join(', '));
+  }
+ }catch(e){ /* nettoyage best-effort, ne bloque jamais le démarrage */ }
  // v8.6.3 : restaurer le dernier joueur actif (lastPlayer) AVANT loadProfile.
  // Indispensable pour que la récupération cloud forcée fonctionne :
  // forceRestoreFromCloud écrit lastPlayer puis recharge la page.

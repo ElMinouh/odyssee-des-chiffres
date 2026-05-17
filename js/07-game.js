@@ -1149,9 +1149,12 @@ function endGame(won){
  const fl=GM.mode2==='combat'?combatPlayers.map(p=>p.level).join('+'):GM.level;
  P.history=([...(P.history||[]),{date:fmtDate(),timestamp:Date.now(),score:GS.score,mode:GM.mode2,level:fl,won}]).slice(-50);
  P.historyDetailed=([...(P.historyDetailed||[]),{date:fmtDate(),timestamp:Date.now(),score:GS.score,mode:GM.mode2,level:fl,won,maxCombo:GS.maxCombo,errorsCount:GS.errInGame}]).slice(-60);
- P.stars=(P.stars||0)+GS.score;
+ // v8.7.0 : gains d'étoiles ×1.5 (beaucoup de figurines à collectionner,
+ // éviter la frustration). Math.round pour garder des entiers.
+ const _starsGain = Math.round(GS.score * 1.5);
+ P.stars=(P.stars||0)+_starsGain;
  // Chantier 2.1 : stats cumulatives pour les paliers
- P._totalStarsEarned=(P._totalStarsEarned||0)+GS.score;
+ P._totalStarsEarned=(P._totalStarsEarned||0)+_starsGain;
  P._bestCombo=Math.max(P._bestCombo||0, GS.maxCombo||0);
 if(typeof checkMilestones==='function') checkMilestones();
  // Chantier B2 : vérifier l'évolution du stade héros
@@ -1239,7 +1242,7 @@ if(typeof checkMilestones==='function') checkMilestones();
  $('end-title').innerText=won?'🏆 RÉUSSI !':'💀 DÉFAITE…';
  $('end-mode').innerText=`${GM.mapZone?'🗺️ Carte : '+GM.mapZone.label:'Mode : '+GM.mode2} · Niv. ${GM.level}`;
  $('end-score').innerText=`Score : ${GS.score} pts · Combo max : ×${GS.maxCombo}`;
- $('end-stars').innerText=`+${GS.score} ⭐`;
+ $('end-stars').innerText=`+${won?Math.round(GS.score*1.5):0} ⭐`;
  $('end-xp').innerText=`+${xpGained} XP · Niv.${levelFromXP(P.xp)}`;
  $('end-enc').innerText=won?msgs[ri(0,msgs.length-1)]:'';
  renderEndStars(computeStars(GS.score,won));
@@ -1253,7 +1256,7 @@ function playCongrats(){
  playVS();const h=GIFS[ri(0,GIFS.length-1)];
  $('congrats-gif').src=h.url;$('congrats-name').innerText=`Bravo ${P.name} ! 🎉`;
  $('v-game').classList.add('hidden');$('gif-overlay').classList.remove('hidden');
- safeTimeout(()=>{$('gif-overlay').classList.add('hidden');endGame(true);},3500);
+ safeTimeout(()=>{$('gif-overlay').classList.add('hidden');endGame(true);},4500);
 }
 function startConfetti(){
  if(confettiRaf){cancelAnimationFrame(confettiRaf);confettiRaf=null;}

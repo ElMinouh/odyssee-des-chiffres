@@ -120,6 +120,11 @@ function _playCinematic(opts, done){
   </div>
  `;
  document.body.appendChild(overlay);
+ // v8.7.0 : narration vocale du résultat (voix claire et posée)
+ if(typeof speak === 'function'){
+  const _spoken = [opts.title, opts.subtitle].filter(Boolean).join('. ');
+  if(_spoken) setTimeout(()=>{ try{ speak(_spoken); }catch(e){} }, 300);
+ }
  // Joue le jingle ascendant
  if(typeof beep === 'function' && Array.isArray(opts.jingle)){
   opts.jingle.forEach((freq, i) => setTimeout(()=>beep(freq, 'sine', .4, .12), i * 160));

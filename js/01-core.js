@@ -141,6 +141,72 @@ function speak(t){
  if(_frVoice)m.voice=_frVoice;
  try{window.speechSynthesis.speak(m);}catch(e){}
 }
+
+// ═══════════════════════════════════════════════════════
+// VOIX DIFFÉRENCIÉES PAR PERSONNAGE (v8.7.0)
+// Chaque monstre/boss reçoit un profil vocal (pitch + rate)
+// cohérent avec son physique, déduit de son emoji/animation.
+// ═══════════════════════════════════════════════════════
+// Profils : pitch (0=très grave, 2=très aigu), rate (vitesse)
+function _voiceProfileFor(monster){
+ if(!monster) return { pitch:1, rate:0.95 };
+ const e = monster.emoji || '';
+ const anim = monster.anim || '';
+ const name = (monster.name||'').toLowerCase();
+ // Gros / lourds / dragons / boss → voix grave et lente, menaçante
+ if(/🐉|🐲|🦖|🦕|🦏|🦛|🐘|🦣|👹|👺|👿|😈|🔥|🌋|🐊|🦁|🦂|💀|☠️|🗿/.test(e)
+    || /dragon|géant|seigneur|roi|maître|titan|colosse|boss|démon|monstre/.test(name)
+    || anim==='shake2'){
+  return { pitch:0.45, rate:0.82 };
+ }
+ // Petits / insectes / agiles → voix aiguë et rapide
+ if(/🐛|🐝|🐜|🦗|🕷️|🦟|🐞|🦋|🐭|🐹|🐤|🐣|🦠|🍄/.test(e)
+    || /larve|insecte|abeille|petit|mini|champign/.test(name)
+    || anim==='float'){
+  return { pitch:1.65, rate:1.12 };
+ }
+ // Reptiles / rampants / sournois → voix médium-grave, lente, sifflante
+ if(/🐍|🦎|🐊|🦂|🦗|🕸️/.test(e)
+    || /serpent|lézard|reptile|rampant|subtract|diviseur/.test(name)
+    || anim==='slither'){
+  return { pitch:0.7, rate:0.86 };
+ }
+ // Créatures glacées / éthérées / fantômes → voix médium, lente, posée
+ if(/❄️|🧊|👻|🌬️|🦇|🌌|👽|🛸|🔮|💎/.test(e)
+    || /glace|givre|fantôme|spectre|alien|quantique|cosmi/.test(name)
+    || anim==='freeze'){
+  return { pitch:0.92, rate:0.84 };
+ }
+ // Énergiques / lumineux / félins → voix médium-aiguë, dynamique
+ if(/🦊|🐺|🦝|🐯|🦁|⚡|✨|🌟|💥/.test(e)
+    || /renard|loup|lion|tigre|félin|éclair/.test(name)
+    || anim==='glow' || anim==='spin2'){
+  return { pitch:1.15, rate:1.0 };
+ }
+ // Rebondissants / amphibiens → voix médium, rythme enjoué
+ if(/🐸|🐰|🦘|🤺/.test(e) || anim==='bounce'){
+  return { pitch:1.25, rate:1.05 };
+ }
+ // Défaut : médium neutre
+ return { pitch:1, rate:0.92 };
+}
+
+// Fait parler un personnage avec sa voix propre.
+// Utilisé pour les intros, taunts, paroles de boss (avant/pendant/après).
+function speakAs(text, monster){
+ if(!$('voiceToggle')?.checked) return;
+ if(!window.speechSynthesis) return;
+ try{
+  window.speechSynthesis.cancel();
+  const prof = _voiceProfileFor(monster);
+  const m = new SpeechSynthesisUtterance(_humanizeForSpeech(text));
+  m.lang='fr-FR';
+  m.pitch = prof.pitch;
+  m.rate = prof.rate;
+  if(_frVoice) m.voice=_frVoice;
+  window.speechSynthesis.speak(m);
+ }catch(e){}
+}
 function saveVoice(){
  const t=$('voiceToggle');if(!t)return;
  localStorage.setItem(VOICE_KEY,t.checked?'1':'0');
@@ -306,6 +372,8 @@ function showMonsterIntro(monster,cb){
   <div id="monster-intro-name" style="color:${monster.col};">${monster.name}</div>
   <div id="monster-intro-quote">"${monster.intro}"</div>`;
  trans.classList.remove('hidden');
+ // v8.7.0 : le monstre prononce son intro avec sa voix propre
+ if(typeof speakAs==='function') speakAs(monster.intro, monster);
  // Themed beep
  try{
   const ctx=getAudio();
@@ -325,6 +393,8 @@ function applyMonsterAnim(el,monster){
 function monsterSpeak(text,duration=5300){
  const wrap=$('monster-wrap');if(!wrap)return;
  clearMonsterSpeech();
+ // v8.7.0 : le monstre prononce son taunt avec sa voix propre
+ if(typeof speakAs==='function') speakAs(text, _currentMonster);
  const b=document.createElement('div');
  b.id='monster-speech';b.textContent=text;
  wrap.appendChild(b);
@@ -339,6 +409,9 @@ function monsterSpeak(text,duration=5300){
 
 function clearMonsterSpeech(){
  clearTimeout(_speechTimer);
+ // v8.7.0 : couper aussi la synthèse vocale en cours (sinon le monstre
+ // continue de parler après la fin de la partie / changement d'écran)
+ try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
  if(_speechBubble){_speechBubble.remove();_speechBubble=null;}
 }
 // ═══════════════════════════════════════════════════════
