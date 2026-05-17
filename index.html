@@ -16,7 +16,7 @@
 <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="stylesheet" href="assets/fonts/google-fonts.css">
-<link rel="stylesheet" href="css/styles.css?v=862">
+<link rel="stylesheet" href="css/styles.css?v=863">
 </head>
 <body id="BODY">
 <!-- ═══ SPLASH SCREEN (Chantier v8.5.1 — durée 10s narrative) ═══
@@ -40,9 +40,9 @@
        donc parfaitement adaptés quel que soit l'écran (PC large ou Android portrait). -->
   <div id="splash-stage">
    <!-- 1. La carte parchemin (fond de la scène) -->
-   <img src="assets/logo-main.webp?v=862" alt="L'Odyssée des Chiffres" id="splash-logo">
+   <img src="assets/logo-main.webp?v=863" alt="L'Odyssée des Chiffres" id="splash-logo">
    <!-- 2. La boussole : grosse au centre écran puis converge vers sa place sur la carte -->
-   <img src="assets/icon-512.png?v=862" alt="" id="splash-compass" aria-hidden="true">
+   <img src="assets/icon-512.png?v=863" alt="" id="splash-compass" aria-hidden="true">
    <!-- 3. Chiffres et symboles math qui volent en chaotique -->
    <div id="splash-orbits" aria-hidden="true">
     <span class="splash-item splash-num" style="--i:0">3</span>
@@ -134,7 +134,7 @@
 
  <!-- ═══ MENU ═══ -->
  <div id="v-menu">
-  <img src="assets/logo-main.webp?v=862" alt="L'Odyssée des Chiffres" class="game-logo" id="game-logo-menu" loading="eager" decoding="async" style="max-width:min(100px,32%);width:100%;height:auto;display:block;margin:0 auto 6px;">
+  <img src="assets/logo-main.webp?v=863" alt="L'Odyssée des Chiffres" class="game-logo" id="game-logo-menu" loading="eager" decoding="async" style="max-width:min(100px,32%);width:100%;height:auto;display:block;margin:0 auto 6px;">
   <p style="color:#f1c40f;font-weight:bold;margin:3px 0;font-size:.9em;">
    <span id="menu-avatar">&#129497;</span>
    <span id="lvl-badge">Niv.1</span>
@@ -215,7 +215,6 @@
   </div>
   <button onclick="startGame()" style="margin-top:10px;width:90%;font-size:1.1em;" class="pulse">&#9876;&#65039; COMMENCER</button>
   <button onclick="openMap()" title="Carte des zones à débloquer" style="background:#16a085;font-size:.88em;padding:8px 16px;margin-top:4px;">&#128506;&#65039; Carte d'Exploration</button>
-  <button onclick="openMultTable()" title="Tables de multiplication à réviser" style="background:#2980b9;font-size:.82em;padding:7px 14px;margin-top:4px;">&#10006;&#65039; Tables de multiplication</button>
   <button onclick="openParent()" title="Statistiques et contrôle parental" style="background:#555;font-size:.78em;padding:6px 12px;margin-top:4px;">&#128106; Vue Parent</button>
  </div>
 
@@ -240,7 +239,7 @@
  <div id="v-settings" class="hidden">
   <div class="back-top-bar"><button class="back-top-btn" onclick="toggleSettings()">&#8592; Retour</button></div>
   
-  <img src="assets/logo-circle.webp?v=862" alt="" class="page-logo-circle" aria-hidden="true">
+  <img src="assets/logo-circle.webp?v=863" alt="" class="page-logo-circle" aria-hidden="true">
   <h3>&#128202; Tableau de Bord &mdash; <span id="dash-player-name" style="color:#f1c40f;"></span></h3>
   <div class="tabs" id="stabs">
    <button class="tab active" onclick="stab('hero')"><span class="tab-wrap"><span>&#129464;</span><span class="tab-lbl">Héros</span></span></button>
@@ -251,7 +250,6 @@
    <button class="tab" onclick="stab('revision')"><span class="tab-wrap"><span>&#128214;</span><span class="tab-lbl">Révision</span></span></button>
    <button class="tab" onclick="stab('avatar')"><span class="tab-wrap"><span>&#127912;</span><span class="tab-lbl">Style</span></span></button>
    <button class="tab" onclick="stab('figurines')"><span class="tab-wrap"><span>&#128167;</span><span class="tab-lbl">Ma collection</span></span></button>
-   <button class="tab" onclick="stab('history')"><span class="tab-wrap"><span>&#128220;</span><span class="tab-lbl">Historique</span></span></button>
   </div>
   <div id="tab-hero">
    <div id="tab-hero-header">
@@ -260,10 +258,11 @@
     <div class="hero-stat"><div class="hero-stat-val" id="th-figs">0</div><div class="hero-stat-lbl">🎴 Figurines</div></div>
     <div class="hero-stat"><div class="hero-stat-val" id="th-badges">0</div><div class="hero-stat-lbl">🏅 Badges</div></div>
    </div>
-   <button class="accordion">&#10024; Améliorations de Héros</button>
-   <div class="panel" id="p-skills"></div>
    <button class="accordion">&#127922; Boutique</button>
    <div class="panel">
+    <div style="font-size:.82em;font-weight:700;color:#f1c40f;margin:4px 0 6px;">&#10024; Améliorations de Héros</div>
+    <div id="p-skills"></div>
+    <div style="font-size:.82em;font-weight:700;color:#f1c40f;margin:14px 0 6px;border-top:1px solid rgba(255,255,255,.1);padding-top:10px;">&#129513; Objets consommables</div>
     <div class="skill-item" style="flex-direction:column;align-items:flex-start;gap:2px;">
       <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
         <span>&#129514; Potion de Vie</span><button onclick="buyItem('potion',10)">10 &#11088;</button>
@@ -292,6 +291,9 @@
    <h3 style="margin:6px 0;">&#128200; 7 dernières parties</h3>
    <div id="p-chart" class="chart-container"></div>
    <div id="p-opstats" style="margin-top:8px;font-size:.83em;"></div>
+   <hr style="border:0;border-top:1px solid rgba(255,255,255,.1);margin:14px 0;">
+   <h3 style="margin:6px 0;">&#128220; Historique détaillé</h3>
+   <div id="p-history"></div>
   </div>
   <div id="tab-milestones" class="hidden">
    <h3 style="margin:6px 0;">&#127942; Paliers à conquérir</h3>
@@ -306,6 +308,10 @@
    <h3 style="margin:6px 0;">&#128214; Erreurs récentes</h3>
    <div id="p-errors"></div>
    <button onclick="startRevision()" id="btn-revision" class="hidden" style="margin-top:8px;width:100%;background:#c0392b;">&#128257; Rejouer mes erreurs</button>
+   <hr style="border:0;border-top:1px solid rgba(255,255,255,.1);margin:14px 0;">
+   <h3 style="margin:6px 0;">&#10006;&#65039; Tables de multiplication</h3>
+   <p style="font-size:.8em;color:#bdc3c7;margin:3px 0 8px;">Réviser les tables de multiplication de 1 à 10.</p>
+   <button onclick="openMultTable()" style="width:100%;background:#2980b9;">&#10006;&#65039; Ouvrir les tables de multiplication</button>
   </div>
   <div id="tab-avatar" class="hidden">
    <h3 style="margin:6px 0;">&#127912; Personnalisation</h3>
@@ -319,10 +325,6 @@
    <div class="panel" id="p-skins"></div>
    <button class="accordion">&#127941; Titres de Héros</button>
    <div class="panel" id="p-titles"></div>
-  </div>
-  <div id="tab-history" class="hidden">
-   <h3 style="margin:6px 0;">&#128220; Historique détaillé</h3>
-   <div id="p-history"></div>
   </div>
   <div id="tab-figurines" class="hidden">
    <h3 style="margin:6px 0;">&#128167; Ma Collection de Figurines</h3>
@@ -412,7 +414,7 @@
  <div id="v-parent" class="hidden">
   <div class="back-top-bar"><button class="back-top-btn" onclick="showView('v-menu')">&#8592; Retour</button></div>
   
-  <img src="assets/logo-circle.webp?v=862" alt="" class="page-logo-circle" aria-hidden="true">
+  <img src="assets/logo-circle.webp?v=863" alt="" class="page-logo-circle" aria-hidden="true">
   <h2>&#128106; Vue Parent</h2>
   <div id="parent-lock">
    <p style="font-size:.9em;margin:4px 0;">Code parent :</p>
@@ -613,7 +615,7 @@
 <script src="js/09-parent.js"></script>
 <script src="js/10-figurines.js"></script>
 <script src="js/12-cloud.js"></script>
-<script src="js/11-init.js?v=862"></script>
+<script src="js/11-init.js?v=863"></script>
 
 <!-- Enregistrement du Service Worker (mode hors-ligne + installation PWA) -->
 <script>

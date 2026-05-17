@@ -64,6 +64,28 @@ window.onload=()=>{
  $('themeSelect').addEventListener('change',()=>savePrefs());
  $('modeSelect').addEventListener('change',()=>savePrefs());
  $('parent-player').addEventListener('change',()=>{renderReport();renderWeeklySummary();});
+ // v8.6.3 : restaurer le dernier joueur actif (lastPlayer) AVANT loadProfile.
+ // Indispensable pour que la récupération cloud forcée fonctionne :
+ // forceRestoreFromCloud écrit lastPlayer puis recharge la page.
+ try{
+  const lastP = localStorage.getItem('lastPlayer');
+  if(lastP){
+   const sel = $('playerSelect');
+   // Le joueur est-il dans la liste des options ?
+   const optionExists = Array.from(sel.options).some(o => o.value === lastP || o.text === lastP);
+   if(optionExists){
+    sel.value = lastP;
+   } else {
+    // Joueur custom : on l'ajoute et sélectionne "Autre" + customInput
+    localStorage.setItem('customPlayerName', lastP);
+    sel.value = 'Autre';
+    const ci = $('customInput');
+    if(ci){ ci.value = lastP; }
+    const cz = $('custom-zone');
+    if(cz){ cz.classList.remove('hidden'); }
+   }
+  }
+ }catch(e){ console.warn('[init] restauration lastPlayer échouée', e); }
  loadProfile();
  loadVibrate();
  loadVoice();

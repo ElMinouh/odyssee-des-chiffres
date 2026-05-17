@@ -189,7 +189,7 @@ function toggleSettings(){
 }
 function closeSettings(){showView('v-menu');loadProfile();}
 function stab(name){
- const ts=['hero','scores','stats','milestones','levels','revision','avatar','figurines','history'];
+ const ts=['hero','scores','stats','milestones','levels','revision','avatar','figurines'];
  ts.forEach(t=>$('tab-'+t).classList.toggle('hidden',t!==name));
  $('stabs').querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',ts[i]===name));
  if(name==='hero'){
@@ -201,9 +201,8 @@ function stab(name){
  }
  if(name==='revision')renderErrors();
  if(name==='avatar'){renderAvatars();renderVSounds();renderSkins();renderTitles();}
- if(name==='history')renderHistory();
  if(name==='scores'){renderLB();renderRecords();}
- if(name==='stats'){renderChart();renderOpStats();}
+ if(name==='stats'){renderChart();renderOpStats();if(typeof renderHistory==='function')renderHistory();}
  if(name==='levels')renderLevelUnlocks();
  if(name==='milestones')renderMilestones();
  if(name==='figurines')renderFigCollection();

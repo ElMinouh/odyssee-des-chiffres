@@ -231,7 +231,9 @@ async function restoreProfileByCode(code){
 //   4. Force un rechargement complet de la page → état propre garanti
 // C'est la solution recommandée à l'utilisateur pour fiabiliser le transfert.
 async function forceRestoreFromCloud(code){
+ console.log('[FORCE-RESTORE] début, code =', code);
  if(!isValidCloudCode(code)){
+  console.warn('[FORCE-RESTORE] code invalide');
   return { ok:false, error:'invalid_code' };
  }
  // 1. Stopper toute sync auto pour éviter qu'un ancien profil local
@@ -241,15 +243,18 @@ async function forceRestoreFromCloud(code){
 
  // 2. Télécharger le profil cloud
  const result = await pullProfileFromCloud(code);
+ console.log('[FORCE-RESTORE] pull result:', result.ok ? 'OK' : 'ÉCHEC '+result.error);
  if(!result.ok){
   _cloudInflight = false;
   return { ok:false, error: result.error };
  }
  const cloudProfile = result.profile;
  if(!cloudProfile || !cloudProfile.name){
+  console.warn('[FORCE-RESTORE] profil cloud invalide:', cloudProfile);
   _cloudInflight = false;
   return { ok:false, error:'invalid_profile' };
  }
+ console.log('[FORCE-RESTORE] profil cloud reçu pour:', cloudProfile.name, '| XP:', cloudProfile.xp);
 
  // 3. Migration + validation
  let prof = cloudProfile;
@@ -290,6 +295,12 @@ async function forceRestoreFromCloud(code){
  }catch(e){}
 
  // 8. Succès → on signale qu'un reload est nécessaire pour un état 100% propre
+ console.log('[FORCE-RESTORE] ✅ profil écrit dans user_'+prof.name+', lastPlayer='+prof.name+', reload imminent');
+ // Vérification : relire ce qu'on vient d'écrire
+ try{
+  const check = JSON.parse(localStorage.getItem('user_'+prof.name)||'null');
+  console.log('[FORCE-RESTORE] vérif relecture: name='+(check?check.name:'NULL')+', xp='+(check?check.xp:'?')+', cloudEnabled='+(check?check.cloudEnabled:'?'));
+ }catch(e){ console.warn('[FORCE-RESTORE] vérif relecture échouée', e); }
  return { ok:true, name: prof.name, reload:true };
 }
 
