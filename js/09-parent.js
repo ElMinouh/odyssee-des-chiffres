@@ -950,7 +950,7 @@ function renderCloudPanel(){
     <button onclick="doCloudCopyFor('${prof.name}')" style="font-size:.78em;padding:5px 10px;background:#34495e;">📋 Copier</button>
    </div>
    <p style="font-size:.72em;color:#bdc3c7;margin:8px 0 4px;">Statut : <strong style="color:${isActive?'#2ecc71':'#e67e22'};">${isActive?'☁️ Activé':'⏸ Désactivé'}</strong></p>
-   ${isActive ? `<p style="font-size:.72em;color:#bdc3c7;margin:4px 0;">Dernière sync : ${lastSyncStr}</p>` : ''}
+   ${isActive ? `<p style="font-size:.72em;color:#bdc3c7;margin:4px 0;">Dernière sync : ${lastSyncStr}</p>` : `<p style="font-size:.74em;color:#e67e22;margin:6px 0;background:rgba(230,126,34,.12);border-radius:6px;padding:6px 8px;">⚠️ <b>Sauvegarde non activée</b> : tant que ce bouton n'est pas activé, la progression de ${prof.name} n'est <b>pas envoyée au cloud</b> et ne peut pas être récupérée sur un autre appareil. Active-la ci-dessous.</p>`}
    <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
     ${isActive
      ? `<button onclick="doCloudSyncNow('${prof.name}')" style="background:#3498db;font-size:.82em;">🔄 Synchroniser maintenant</button>
@@ -1033,26 +1033,29 @@ async function doForceCloudRestore(){
  if(typeof forceRestoreFromCloud !== 'function'){
   msg.style.color='#e74c3c'; msg.textContent='Récupération non disponible.'; return;
  }
- msg.style.color='#bdc3c7'; msg.textContent='⏳ Récupération forcée en cours…';
+ msg.style.color='#bdc3c7'; msg.textContent='⏳ Récupération en cours…';
  const result = await forceRestoreFromCloud(code);
  if(!result.ok){
   msg.style.color='#e74c3c';
-  if(result.error === 'not_found') msg.textContent='❌ Code introuvable. Vérifie l\'orthographe (lettres + chiffres après le tiret).';
+  if(result.error === 'not_found'){
+   msg.innerHTML='❌ <b>Ce code n\'existe pas sur le serveur cloud.</b><br><br>'+
+    'Cause la plus probable : la <b>sauvegarde cloud n\'a jamais été activée</b> sur l\'appareil source (PC/tablette).<br><br>'+
+    '👉 Sur l\'appareil où le profil fonctionne : va dans Vue Parent → Sauvegarde Cloud → clique sur le bouton vert <b>"☁️ Activer la sauvegarde cloud"</b>. Attends quelques secondes, puis réessaie ici avec le code affiché là-bas.';
+  }
   else if(result.error === 'invalid_code') msg.textContent='❌ Format de code invalide. Exemple : SOREN-7B4K9X';
   else if(result.error === 'storage_full') msg.textContent='❌ Stockage local plein.';
-  else if(result.error === 'network_error') msg.textContent='❌ Pas de connexion internet. Réessaie connecté.';
+  else if(result.error === 'network_error' || result.error === 'Failed to fetch') msg.textContent='❌ Pas de connexion internet. Connecte-toi et réessaie.';
   else msg.textContent='❌ Erreur : '+result.error;
   return;
  }
  msg.style.color='#2ecc71';
- msg.textContent=`✅ Profil "${result.name}" récupéré ! Rechargement…`;
+ msg.innerHTML=`✅ Profil <b>"${result.name}"</b> récupéré avec succès !<br>Rechargement de la page…`;
  input.value='';
- // Recharge complète de la page après 1.5s pour un état 100% propre
- // (le profil restauré devient le profil actif au reload)
+ // Recharge complète après 2s pour un état 100% propre
  setTimeout(() => {
   try{ window.location.reload(); }
   catch(e){ window.location.href = window.location.href; }
- }, 1500);
+ }, 2000);
 }
 
 // Restauration d'un profil par code (ANCIENNE méthode, sans rechargement)

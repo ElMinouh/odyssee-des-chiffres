@@ -150,6 +150,7 @@ function defProfile(name){
 function loadProfile(){
  const sel=$('playerSelect').value;
  let name=sel==='Autre'?($('customInput').value.trim()||localStorage.getItem('customPlayerName')||'Joueur'):sel;
+ console.log('[LOAD-PROFILE] playerSelect.value =', sel, '| nom résolu =', name, '| lastPlayer =', localStorage.getItem('lastPlayer'));
  let saved=null;
  try{saved=JSON.parse(localStorage.getItem('user_'+name)||'null');}
  catch(e){
@@ -157,17 +158,22 @@ function loadProfile(){
   if(typeof toast==='function')toast('⚠️ Sauvegarde corrompue, profil réinitialisé.',4000);
  }
  if(saved){
+  console.log('[LOAD-PROFILE] profil trouvé pour', name, '| xp=', saved.xp, '| cloudCode=', saved.cloudCode, '| cloudEnabled=', saved.cloudEnabled);
   // 1. Migration : si format ancien, on le met à jour.
   saved = migrateProfile(saved);
   // 2. Validation : on garantit que toutes les valeurs sont bien typées et bornées.
   const validated = validateProfile(saved, name);
   if(validated){
    P = validated;
+   console.log('[LOAD-PROFILE] ✅ profil chargé après validation | cloudCode=', P.cloudCode, '| cloudEnabled=', P.cloudEnabled);
   }else{
-   console.warn('[profil] validation échouée — profil par défaut');
+   console.warn('[LOAD-PROFILE] ❌ validation échouée — profil par défaut');
    P = defProfile(name);
   }
- }else{P=defProfile(name);}
+ }else{
+  console.log('[LOAD-PROFILE] aucun profil sauvegardé pour', name, '→ profil par défaut');
+  P=defProfile(name);
+ }
  if(P.questsDate!==todayKey()){P.quests=genQuests();P.questsDate=todayKey();}
  if(P.wcDate!==weekKey()){
   const wc=WEEKLY_CH[ri(0,WEEKLY_CH.length-1)];
