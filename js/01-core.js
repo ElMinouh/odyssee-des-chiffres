@@ -247,7 +247,7 @@ let pinAttempts=0,pinLockUntil=0;
 
 let _monsterCenter={x:0,y:0}; // position précalculée du monstre (OPT-5)
 // ═══════════════════════════════════════════════════════
-const VIEWS=['v-menu','v-menu2','v-params','v-settings','v-game','v-end','v-mult','v-parent','v-map'];
+const VIEWS=['v-menu','v-menu2','v-params','v-mode-config','v-settings','v-game','v-end','v-mult','v-parent','v-map'];
 function showView(id){VIEWS.forEach(v=>$(v).classList.toggle('hidden',v!==id));const si=document.querySelector('.settings-icon');if(si)si.classList.toggle('si-hidden',id!=='v-menu');}
 // ═══════════════════════════════════════════════════════
 // PILE DE NAVIGATION (v8.7.3)
@@ -747,14 +747,128 @@ function startOdyssee(){
  if(typeof openMap==='function') openMap();
 }
 
-// Lance directement un mode depuis l'écran 2.
-// IMPORTANT : startGame() appelle loadProfile()→applyPrefs() qui réécrit
-// gameModeSelect avec la préférence sauvegardée. Pour éviter que le mode
-// choisi soit écrasé (bug "il faut 2 joueurs"), on passe par _forcedMode
-// qui est appliqué APRÈS applyPrefs, juste avant la lecture dans startGame.
+// ═══════════════════════════════════════════════════════
+// SOUS-ÉCRANS DE CONFIGURATION DE MODE (v8.7.4 — Étape B)
+// Normal/Survie/Chrono → choix niveau + saisie + commencer
+// Combat → joueurs (nom+niveau chacun) + saisie + commencer
+// ═══════════════════════════════════════════════════════
+const _MODE_META = {
+ normal:  { icon:'⚔️', title:'Mode Normal',  sub:'Affronte 6 monstres à la suite' },
+ survie:  { icon:'💀', title:'Mode Survie',  sub:'Enchaîne sans fin, une erreur = fin' },
+ chrono:  { icon:'⏱️', title:'Mode Chrono',  sub:'Un maximum de bonnes réponses en 60 secondes' },
+ combat:  { icon:'🏆', title:'Mode Combat',  sub:'2 à 5 joueurs s\'affrontent' },
+};
+let _mcMode = 'normal';
+// Config combat locale au sous-écran (réutilise la structure de combatCfg)
+let _mcCombat = [];
+
 function openModeConfig(mode){
- try{
-  window._forcedMode = mode;
+ _mcMode = mode;
+ const meta = _MODE_META[mode] || _MODE_META.normal;
+ const _t=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+ _t('mc-icon', meta.icon); _t('mc-title', meta.title); _t('mc-sub', meta.sub);
+
+ const solo = document.getElementById('mc-solo');
+ const combat = document.getElementById('mc-combat');
+
+ if(mode === 'combat'){
+  if(solo) solo.classList.add('hidden');
+  if(combat) combat.classList.remove('hidden');
+  // Initialiser 2 joueurs par défaut (le joueur courant + 1 vide)
+  _mcCombat = [
+   { name: (P && P.name) ? P.name : 'Joueur 1', level: (P && P.prefs && P.prefs.level) || 'CP' },
+   { name: '', level: 'CP' },
+  ];
+  mcRenderCombat();
+  const ic=document.getElementById('mc-input-combat');
+  if(ic) ic.value = (P && P.prefs && P.prefs.mode) || 'keyboard';
+ } else {
+  if(combat) combat.classList.add('hidden');
+  if(solo) solo.classList.remove('hidden');
+  // Peupler le sélecteur de niveau (avec verrouillage comme l'original)
+  const ls = document.getElementById('mc-level');
+  if(ls){
+   const cur = (P && P.prefs && P.prefs.level) || 'CP';
+   ls.innerHTML = ['CP','CE1','CE2','CM1','CM2'].map(l=>{
+    const ok = (typeof isUnlocked==='function') ? isUnlocked(l) : true;
+    const pW = (typeof prevWins==='function') ? prevWins(l) : 0;
+    const req = (typeof UNLOCK_REQ!=='undefined' && UNLOCK_REQ) ? UNLOCK_REQ[l] : 0;
+    return `<option value="${l}"${!ok?' disabled':''}${l===cur?' selected':''}>${ok?'':'🔒 '}${l}${!ok?' ('+pW+'/'+req+' vic.)':''}</option>`;
+   }).join('');
+  }
+  const inp = document.getElementById('mc-input');
+  if(inp) inp.value = (P && P.prefs && P.prefs.mode) || 'keyboard';
+ }
+ navTo('v-mode-config');
+}
+
+// Rendu des lignes joueurs du sous-écran Combat
+function mcRenderCombat(){
+ const box = document.getElementById('mc-combat-rows');
+ if(!box) return;
+ const KN = (typeof KNOWN!=='undefined' && Array.isArray(KNOWN)) ? KNOWN : ['Soren','Peyo','Tomi','Maman','Papa'];
+ const _esc = (typeof esc==='function') ? esc : (s=>String(s).replace(/[<>"']/g,''));
+ box.innerHTML = _mcCombat.map((p,i)=>{
+  const isCustom = !KN.includes(p.name);
+  return `<div style="display:flex;gap:6px;align-items:center;background:rgba(255,255,255,.04);padding:8px;border-radius:8px;">
+   <span style="font-size:1.1em;">👤</span>
+   <select onchange="mcCombatName(${i},this.value)" style="flex:1.2;margin:0;">
+    ${KN.map(n=>`<option value="${_esc(n)}"${n===p.name?' selected':''}>${_esc(n)}</option>`).join('')}
+    <option value="__c__"${isCustom?' selected':''}>✏️ Autre…</option>
+   </select>
+   ${isCustom?`<input type="text" placeholder="Prénom…" value="${_esc(p.name)}" maxlength="16" oninput="_mcCombat[${i}].name=this.value" style="flex:1;margin:0;">`:''}
+   <select onchange="_mcCombat[${i}].level=this.value" style="flex:.7;margin:0;">
+    ${['CP','CE1','CE2','CM1','CM2'].map(l=>`<option value="${l}"${l===p.level?' selected':''}>${l}</option>`).join('')}
+   </select>
+   ${_mcCombat.length>2?`<button onclick="mcRmCombat(${i})" style="background:#c0392b;padding:4px 9px;font-size:.8em;margin:0;">✕</button>`:''}
+  </div>`;
+ }).join('');
+ const addBtn = document.getElementById('mc-add-btn');
+ if(addBtn) addBtn.style.display = _mcCombat.length>=5 ? 'none' : '';
+}
+function mcCombatName(i,v){ _mcCombat[i].name = (v==='__c__') ? '' : v; mcRenderCombat(); }
+function mcAddCombatPlayer(){ if(_mcCombat.length<5){ _mcCombat.push({name:'',level:'CP'}); mcRenderCombat(); } }
+function mcRmCombat(i){ _mcCombat.splice(i,1); mcRenderCombat(); }
+
+// Lance la partie avec la config du sous-écran
+function mcStart(){
+ if(_mcMode === 'combat'){
+  const valid = _mcCombat.filter(p=>p.name && p.name.trim());
+  if(valid.length < 2){
+   if(typeof toast==='function') toast('⚠️ Il faut au moins 2 joueurs nommés !', 3000);
+   else alert('Il faut au moins 2 joueurs nommés !');
+   return;
+  }
+  // Alimenter la structure globale combatCfg utilisée par startGame
+  combatCfg = valid.map(p=>({ name:p.name.trim(), level:p.level||'CP' }));
+  const ic = document.getElementById('mc-input-combat');
+  const inputMode = ic ? ic.value : 'keyboard';
+  // Positionner les selects cachés
+  const ms=$('modeSelect'), gm=$('gameModeSelect');
+  if(ms) ms.value = inputMode;
+  if(gm) gm.value = 'combat';
+  window._forcedMode = 'combat';
+  window._forcedInput = inputMode;
   if(typeof startGame==='function') startGame();
- }catch(e){}
+ } else {
+  const lvl = document.getElementById('mc-level');
+  const inp = document.getElementById('mc-input');
+  const level = lvl ? lvl.value : 'CP';
+  const inputMode = inp ? inp.value : 'keyboard';
+  // Positionner les selects cachés
+  const ls=$('levelSelect'), ms=$('modeSelect'), gm=$('gameModeSelect');
+  if(ls){
+   // S'assurer que l'option existe dans le select caché
+   if(![...ls.options].some(o=>o.value===level)){
+    const opt=document.createElement('option'); opt.value=level; opt.textContent=level; ls.appendChild(opt);
+   }
+   ls.value = level;
+  }
+  if(ms) ms.value = inputMode;
+  if(gm) gm.value = _mcMode;
+  window._forcedMode = _mcMode;
+  window._forcedLevel = level;
+  window._forcedInput = inputMode;
+  if(typeof startGame==='function') startGame();
+ }
 }

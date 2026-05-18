@@ -679,13 +679,28 @@ function maybeEvent(){
 // ═══════════════════════════════════════════════════════
 function startGame(){
  getAudio();loadProfile();
- // v8.7.3 : si un mode a été forcé depuis l'écran 2 (openModeConfig),
- // l'appliquer APRÈS loadProfile/applyPrefs (qui réécrivent gameModeSelect).
+ // v8.7.4 : mode/niveau/saisie forcés depuis le sous-écran de config (Étape B).
+ // Appliqués APRÈS loadProfile/applyPrefs (qui réécrivent les selects).
  if(window._forcedMode){
   const gm=$('gameModeSelect');
   if(gm){ gm.value=window._forcedMode; }
   if(window._forcedMode==='combat' && typeof onGameModeChange==='function'){ onGameModeChange(); }
   window._forcedMode=null;
+ }
+ if(window._forcedLevel){
+  const ls=$('levelSelect');
+  if(ls){
+   if(![...ls.options].some(o=>o.value===window._forcedLevel)){
+    const opt=document.createElement('option');opt.value=window._forcedLevel;opt.textContent=window._forcedLevel;ls.appendChild(opt);
+   }
+   ls.value=window._forcedLevel;
+  }
+  window._forcedLevel=null;
+ }
+ if(window._forcedInput){
+  const ms=$('modeSelect');
+  if(ms) ms.value=window._forcedInput;
+  window._forcedInput=null;
  }
  // vérif blocage horaire
  if(isTimeBlocked()){showBlockScreen();return;}
