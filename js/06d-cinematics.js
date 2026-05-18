@@ -214,6 +214,8 @@ function saveParallax(){
  const toggle = document.getElementById('parallaxToggle');
  if(!toggle) return;
  localStorage.setItem('parallax_enabled', toggle.checked ? '1' : '0');
+ // v8.7.5 : figer aussi la décoration de fond animée des thèmes
+ try{ document.body.classList.toggle('no-parallax', !toggle.checked); }catch(e){}
  // Si la carte est ouverte, réagir immédiatement
  if(typeof refreshParallaxState === 'function') refreshParallaxState();
 }
@@ -223,6 +225,8 @@ function loadParallaxPref(){
  if(!toggle) return;
  const v = localStorage.getItem('parallax_enabled');
  toggle.checked = (v === null) ? true : (v === '1');
+ // v8.7.5 : appliquer l'état à la décoration de fond dès le chargement
+ try{ document.body.classList.toggle('no-parallax', !toggle.checked); }catch(e){}
 }
 
 /**

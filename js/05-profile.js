@@ -304,7 +304,15 @@ function onPlayerChange(){
 function applyCustom(){const n=$('customInput').value.trim();if(n)localStorage.setItem('customPlayerName',n);loadProfile();}
 function isUnlocked(lvl){return UNLOCK_REQ[lvl]===0||prevWins(lvl)>=UNLOCK_REQ[lvl];}
 function prevWins(lvl){const i=LEVEL_IDX[lvl];return i<=0?0:(P.levelWins[VALID_LEVELS[i-1]]||0);}
-function applyTheme(t){document.body.className=t==='standard'?'':'theme-'+t;if(musicOn){stopMusic();startMusic();}}
+function applyTheme(t){
+ // v8.7.5 : ne plus écraser TOUTES les classes du body (préserver
+ // no-parallax, mode clair/sombre, etc.). On retire seulement les
+ // anciennes classes theme-* puis on applique la nouvelle.
+ const b=document.body;
+ [...b.classList].forEach(c=>{ if(c.indexOf('theme-')===0) b.classList.remove(c); });
+ if(t && t!=='standard') b.classList.add('theme-'+t);
+ if(musicOn){stopMusic();startMusic();}
+}
 
 // ═══════════════════════════════════════════════════════
 // XP & LEVEL UP CINÉMATIQUE

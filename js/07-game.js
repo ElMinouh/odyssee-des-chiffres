@@ -376,7 +376,7 @@ function startMusic(){
   foret:[293,349,440,587,440,349,293,392],
   volcan:[233,277,311,466,311,233,392],
  };
- const t=document.body.className.replace('theme-','')||'standard';
+ const t=(([...document.body.classList].find(c=>c.indexOf('theme-')===0)||'').replace('theme-',''))||'standard';
  const notes=th[t]||th.standard;
  let step=0;
  function loop(){
@@ -400,7 +400,7 @@ function playVS(){const s=VSOUNDS.find(v=>v.id===(P.victorySound||'fanfare'))||V
 // OPT-2 : spawnP n'assigne plus canvas.width/height (fait une seule fois dans _initCachedDOM)
 // OPT-4 : animP évite filter() qui alloue un nouveau tableau à chaque frame RAF
 function spawnP(x,y,n=12){
- const t=document.body.className.replace('theme-','')||'standard';
+ const t=(([...document.body.classList].find(c=>c.indexOf('theme-')===0)||'').replace('theme-',''))||'standard';
  // Rich theme palettes
  const themeP={
   standard:['#f1c40f','#e67e22','#fff','#f39c12'],
