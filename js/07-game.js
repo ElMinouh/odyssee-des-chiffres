@@ -679,6 +679,14 @@ function maybeEvent(){
 // ═══════════════════════════════════════════════════════
 function startGame(){
  getAudio();loadProfile();
+ // v8.7.3 : si un mode a été forcé depuis l'écran 2 (openModeConfig),
+ // l'appliquer APRÈS loadProfile/applyPrefs (qui réécrivent gameModeSelect).
+ if(window._forcedMode){
+  const gm=$('gameModeSelect');
+  if(gm){ gm.value=window._forcedMode; }
+  if(window._forcedMode==='combat' && typeof onGameModeChange==='function'){ onGameModeChange(); }
+  window._forcedMode=null;
+ }
  // vérif blocage horaire
  if(isTimeBlocked()){showBlockScreen();return;}
  gameActive=true;clearPendingTimers();

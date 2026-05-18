@@ -16,7 +16,7 @@
 <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="stylesheet" href="assets/fonts/google-fonts.css">
-<link rel="stylesheet" href="css/styles.css?v=872">
+<link rel="stylesheet" href="css/styles.css?v=873">
 </head>
 <body id="BODY">
 <!-- ═══ SPLASH SCREEN (Chantier v8.5.1 — durée 10s narrative) ═══
@@ -40,9 +40,9 @@
        donc parfaitement adaptés quel que soit l'écran (PC large ou Android portrait). -->
   <div id="splash-stage">
    <!-- 1. La carte parchemin (fond de la scène) -->
-   <img src="assets/logo-main.webp?v=872" alt="L'Odyssée des Chiffres" id="splash-logo">
+   <img src="assets/logo-main.webp?v=873" alt="L'Odyssée des Chiffres" id="splash-logo">
    <!-- 2. La boussole : grosse au centre écran puis converge vers sa place sur la carte -->
-   <img src="assets/icon-512.png?v=872" alt="" id="splash-compass" aria-hidden="true">
+   <img src="assets/icon-512.png?v=873" alt="" id="splash-compass" aria-hidden="true">
    <!-- 3. Chiffres et symboles math qui volent en chaotique -->
    <div id="splash-orbits" aria-hidden="true">
     <span class="splash-item splash-num" style="--i:0">3</span>
@@ -130,12 +130,12 @@
 
 <button class="appearance-toggle" id="appearance-toggle" onclick="toggleAppearance()" title="Basculer mode clair/sombre" aria-label="Basculer mode clair/sombre">🌙</button>
 <div id="gc">
-  <button class="settings-icon" onclick="toggleSettings()">📊 Tableau de bord du joueur</button>
+  <button class="settings-icon" onclick="toggleSettings()">📊 Tableau de bord</button>
 
  <!-- ═══ MENU ═══ -->
  <!-- ═══ ÉCRAN 1 : QUI JOUE ? ═══ -->
  <div id="v-menu">
-  <img src="assets/logo-main.webp?v=872" alt="L'Odyssée des Chiffres" class="game-logo" id="game-logo-menu" loading="eager" decoding="async" style="max-width:min(110px,34%);width:100%;height:auto;display:block;margin:0 auto 10px;">
+  <img src="assets/logo-main.webp?v=873" alt="L'Odyssée des Chiffres" class="game-logo" id="game-logo-menu" loading="eager" decoding="async" style="max-width:min(110px,34%);width:100%;height:auto;display:block;margin:0 auto 10px;">
 
   <!-- Aperçu du joueur sélectionné -->
   <div id="menu1-playercard" style="background:linear-gradient(135deg,rgba(241,196,15,.12),rgba(241,196,15,.03));border:1px solid rgba(241,196,15,.35);border-radius:16px;padding:16px;margin:0 auto 14px;max-width:420px;">
@@ -172,10 +172,11 @@
    </div>
   </div>
 
-  <!-- Toggles principaux : Voix + Musique -->
-  <div style="display:flex;justify-content:center;gap:20px;margin:16px 0 6px;flex-wrap:wrap;">
+  <!-- Toggles principaux : Voix + Musique + bouton Paramètres -->
+  <div style="display:flex;justify-content:center;align-items:center;gap:18px;margin:16px 0 6px;flex-wrap:wrap;">
    <label style="font-size:.92em;display:inline-flex;align-items:center;gap:6px;"><input type="checkbox" id="voiceToggle" checked onchange="if(typeof saveVoice==='function')saveVoice();"> &#128266; Voix</label>
    <label style="font-size:.92em;display:inline-flex;align-items:center;gap:6px;"><input type="checkbox" id="musicToggle" onchange="toggleMusic()"> &#127925; Musique</label>
+   <button onclick="gotoParams()" title="Réglages avancés" style="background:#444;font-size:.8em;padding:6px 14px;">&#9881;&#65039; Paramètres</button>
   </div>
 
   <!-- Bandeau Cloud opt-in -->
@@ -192,10 +193,9 @@
   <!-- Grand bouton Continuer -->
   <button onclick="gotoMenu2()" style="margin-top:14px;width:90%;max-width:420px;font-size:1.2em;padding:16px;" class="pulse">&#9654;&#65039; CONTINUER</button>
 
-  <!-- Bas : Vue Parent + Paramètres -->
-  <div style="display:flex;justify-content:space-between;align-items:center;width:100%;max-width:420px;margin:12px auto 0;">
+  <!-- Bas : Vue Parent centré -->
+  <div style="display:flex;justify-content:center;align-items:center;width:100%;max-width:420px;margin:12px auto 0;">
    <button onclick="openParent()" title="Statistiques et contrôle parental" style="background:#555;font-size:.78em;padding:6px 12px;">&#128106; Vue Parent</button>
-   <button onclick="gotoParams()" title="Réglages avancés" style="background:#444;font-size:.78em;padding:6px 12px;">&#9881;&#65039; Paramètres</button>
   </div>
 
   <!-- Selects critiques conservés cachés (alimentés en étape B par les sous-écrans).
@@ -219,23 +219,24 @@
 
  <!-- ═══ ÉCRAN 2 : CHOISIS TON AVENTURE ═══ -->
  <div id="v-menu2" class="hidden">
-  <!-- Barre du haut : joueur (gauche) · tableau de bord + étoiles (droite) -->
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;width:100%;max-width:560px;margin:0 auto 10px;flex-wrap:wrap;">
-   <div style="text-align:left;flex:1;min-width:140px;">
-    <div style="font-size:1.8em;line-height:1;"><span id="m2-avatar">&#129497;</span></div>
-    <div id="m2-name" style="font-size:1.15em;font-weight:800;color:#f1c40f;margin-top:4px;">Joueur</div>
-    <div style="font-size:.78em;color:#bdc3c7;margin-top:2px;"><span id="m2-lvl">Niv.1</span> · <span id="m2-title" style="font-style:italic;"></span></div>
+  <!-- Logo tout en haut, plus gros -->
+  <img src="assets/logo-main.webp?v=873" alt="L'Odyssée des Chiffres" class="game-logo" loading="eager" decoding="async" style="max-width:min(150px,42%);width:100%;height:auto;display:block;margin:6px auto 14px;">
+
+  <!-- Barre : joueur (gauche, plus bas) · tableau de bord + étoiles (droite) -->
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;width:100%;max-width:560px;margin:8px auto 14px;flex-wrap:wrap;">
+   <div style="text-align:left;flex:1;min-width:150px;padding-top:10px;">
+    <div style="font-size:2.6em;line-height:1;"><span id="m2-avatar">&#129497;</span></div>
+    <div id="m2-name" style="font-size:1.3em;font-weight:800;color:#f1c40f;margin-top:8px;">Joueur</div>
+    <div style="font-size:.82em;color:#bdc3c7;margin-top:3px;"><span id="m2-lvl">Niv.1</span> · <span id="m2-title" style="font-style:italic;"></span></div>
    </div>
-   <div style="text-align:right;flex:1;min-width:140px;">
+   <div style="text-align:right;flex:1;min-width:150px;">
     <button onclick="toggleSettings()" style="background:#34495e;font-size:.82em;padding:7px 12px;">&#128202; Tableau de bord</button>
-    <div style="font-size:1.1em;font-weight:800;color:#f1c40f;margin-top:6px;">&#11088; <span id="m2-stars">0</span></div>
+    <div style="font-size:1.5em;font-weight:800;color:#f1c40f;margin-top:8px;">&#11088; <span id="m2-stars">0</span></div>
    </div>
   </div>
 
-  <img src="assets/logo-main.webp?v=872" alt="L'Odyssée des Chiffres" class="game-logo" loading="eager" decoding="async" style="max-width:min(90px,28%);width:100%;height:auto;display:block;margin:0 auto 12px;">
-
-  <!-- Gros bouton : L'Odyssée -->
-  <button onclick="startOdyssee()" style="width:92%;max-width:540px;font-size:1.15em;padding:20px 16px;background:linear-gradient(135deg,#16a085,#1abc9c);border:2px solid rgba(255,255,255,.2);" class="pulse">&#128506;&#65039; L'ODYSSÉE : L'AVENTURE MATHÉMATIQUE</button>
+  <!-- Gros bouton L'Odyssée : pleine largeur, mis en valeur, icône en double -->
+  <button onclick="startOdyssee()" style="width:92%;max-width:540px;font-size:1.05em;font-weight:800;padding:28px 16px;background:linear-gradient(135deg,#16a085,#1abc9c);border:2px solid rgba(255,255,255,.25);box-shadow:0 6px 24px rgba(26,188,156,.4);line-height:1.3;" class="pulse">&#128506;&#65039;&nbsp; L'ODYSSÉE : L'AVENTURE MATHÉMATIQUE &nbsp;&#128506;&#65039;</button>
 
   <!-- 4 modes en grille 2×2 -->
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:92%;max-width:540px;margin:14px auto 0;">
@@ -261,10 +262,19 @@
    <div id="wc-text" style="font-size:.75em;color:#bdc3c7;margin-top:3px;"></div>
   </div>
 
-  <!-- Bas : retour + Vue Parent -->
+  <!-- Devoir du jour (affiché seulement si le parent en a fixé un) -->
+  <div id="hw-box" class="challenge-box hidden" style="max-width:540px;margin:12px auto 0;border-color:rgba(46,204,113,.4);">
+   <div style="font-weight:700;font-size:.9em;color:#2ecc71;">📚 Devoir du jour</div>
+   <div id="hw-desc" style="font-size:.8em;margin-top:3px;"></div>
+   <div class="chal-prog"><div id="hw-fill" class="chal-fill" style="width:0%;background:#2ecc71;"></div></div>
+   <div id="hw-text" style="font-size:.75em;color:#bdc3c7;margin-top:3px;"></div>
+  </div>
+
+  <!-- Bas : Retour (gauche) · Vue Parent (centre) · Accueil (droite) -->
   <div style="display:flex;justify-content:space-between;align-items:center;width:100%;max-width:540px;margin:16px auto 0;">
-   <button onclick="backToMenu1()" style="background:#555;font-size:.8em;padding:7px 14px;">&#8592; Retour</button>
+   <button onclick="navBack()" style="background:#555;font-size:.8em;padding:7px 14px;">&#8592; Retour</button>
    <button onclick="openParent()" style="background:#555;font-size:.78em;padding:6px 12px;">&#128106; Vue Parent</button>
+   <button onclick="goHome()" style="background:#16a085;font-size:.8em;padding:7px 14px;">&#127968; Accueil</button>
   </div>
  </div>
 
@@ -308,9 +318,12 @@
 
  <!-- ═══ SETTINGS ═══ -->
  <div id="v-settings" class="hidden">
-  <div class="back-top-bar"><button class="back-top-btn" onclick="toggleSettings()">&#8592; Retour</button></div>
+  <div class="back-top-bar" style="display:flex;justify-content:space-between;align-items:center;">
+   <button class="back-top-btn" onclick="navBack()">&#8592; Retour</button>
+   <button class="back-top-btn" onclick="goHome()" style="background:#16a085;">&#127968; Accueil</button>
+  </div>
   
-  <img src="assets/logo-circle.webp?v=872" alt="" class="page-logo-circle" aria-hidden="true">
+  <img src="assets/logo-circle.webp?v=873" alt="" class="page-logo-circle" aria-hidden="true">
   <h3>&#128202; Tableau de Bord &mdash; <span id="dash-player-name" style="color:#f1c40f;"></span></h3>
   <div class="tabs" id="stabs">
    <button class="tab active" onclick="stab('hero')"><span class="tab-wrap"><span>&#129464;</span><span class="tab-lbl">Héros</span></span></button>
@@ -471,7 +484,7 @@
 
  <!-- ═══ TABLES MULT ═══ -->
  <div id="v-mult" class="hidden">
-  <div class="back-top-bar"><button class="back-top-btn" onclick="showView('v-menu')">&#8592; Retour</button></div>
+  <div class="back-top-bar" style="display:flex;justify-content:space-between;align-items:center;"><button class="back-top-btn" onclick="navBack()">&#8592; Retour</button><button class="back-top-btn" onclick="goHome()" style="background:#16a085;">&#127968; Accueil</button></div>
   
   <h2>&#10006;&#65039; Tables de Multiplication</h2>
   <div style="display:flex;align-items:center;gap:8px;justify-content:center;margin:8px 0;">
@@ -483,9 +496,9 @@
 
  <!-- ═══ PARENT ═══ -->
  <div id="v-parent" class="hidden">
-  <div class="back-top-bar"><button class="back-top-btn" onclick="showView('v-menu')">&#8592; Retour</button></div>
+  <div class="back-top-bar" style="display:flex;justify-content:space-between;align-items:center;"><button class="back-top-btn" onclick="navBack()">&#8592; Retour</button><button class="back-top-btn" onclick="goHome()" style="background:#16a085;">&#127968; Accueil</button></div>
   
-  <img src="assets/logo-circle.webp?v=872" alt="" class="page-logo-circle" aria-hidden="true">
+  <img src="assets/logo-circle.webp?v=873" alt="" class="page-logo-circle" aria-hidden="true">
   <h2>&#128106; Vue Parent</h2>
   <div id="parent-lock">
    <p style="font-size:.9em;margin:4px 0;">Code parent :</p>
@@ -696,7 +709,7 @@
 <script src="js/09-parent.js"></script>
 <script src="js/10-figurines.js"></script>
 <script src="js/12-cloud.js"></script>
-<script src="js/11-init.js?v=872"></script>
+<script src="js/11-init.js?v=873"></script>
 
 <!-- Enregistrement du Service Worker (mode hors-ligne + installation PWA) -->
 <script>

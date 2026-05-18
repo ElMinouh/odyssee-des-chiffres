@@ -13,7 +13,7 @@ function openParent(){
  const opts=KNOWN.map(n=>`<option>${n}</option>`).join('');
 ['parent-player','obj-player','block-player','filter-player','hw-player'].forEach(id=>{const e=$(id);if(e)e.innerHTML=opts;});
  $('cloud-player').innerHTML='<option value="ALL">Tous les joueurs</option>'+opts;
- showView('v-parent');
+ if(typeof navTo==='function') navTo('v-parent'); else showView('v-parent');
 }
 function checkPin(){
  const now=Date.now();

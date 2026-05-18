@@ -248,13 +248,45 @@ let pinAttempts=0,pinLockUntil=0;
 let _monsterCenter={x:0,y:0}; // position précalculée du monstre (OPT-5)
 // ═══════════════════════════════════════════════════════
 const VIEWS=['v-menu','v-menu2','v-params','v-settings','v-game','v-end','v-mult','v-parent','v-map'];
-function showView(id){VIEWS.forEach(v=>$(v).classList.toggle('hidden',v!==id));const si=document.querySelector('.settings-icon');if(si)si.classList.toggle('si-hidden',id!=='v-menu'&&id!=='v-menu2');}
+function showView(id){VIEWS.forEach(v=>$(v).classList.toggle('hidden',v!==id));const si=document.querySelector('.settings-icon');if(si)si.classList.toggle('si-hidden',id!=='v-menu');}
+// ═══════════════════════════════════════════════════════
+// PILE DE NAVIGATION (v8.7.3)
+// Permet à "Retour" de revenir à la vue PRÉCÉDENTE réelle,
+// et à "Accueil" de revenir à l'écran 1 en vidant la pile.
+// ═══════════════════════════════════════════════════════
+let _navStack = [];
+// Va vers une vue en empilant la vue courante
+function navTo(viewId){
+ const cur = VIEWS.find(v=>!$(v).classList.contains('hidden'));
+ if(cur && cur!==viewId) _navStack.push(cur);
+ showView(viewId);
+}
+// Retour à la vue précédente (dépile). Si pile vide → écran 1.
+function navBack(){
+ const prev = _navStack.pop();
+ if(prev){
+  showView(prev);
+  if(prev==='v-menu'){ if(typeof loadProfile==='function') loadProfile(); if(typeof refreshMenu1Card==='function') refreshMenu1Card(); }
+  if(prev==='v-menu2' && typeof refreshMenu2==='function') refreshMenu2();
+  if(prev==='v-settings' && typeof stab==='function') stab('hero');
+ }else{
+  goHome();
+ }
+}
+// Accueil : vide la pile, retourne à l'écran 1
+function goHome(){
+ _navStack = [];
+ if(typeof loadProfile==='function') loadProfile();
+ if(typeof refreshMenu1Card==='function') refreshMenu1Card();
+ showView('v-menu');
+}
+
 function toggleSettings(){
  const open=!$('v-settings').classList.contains('hidden');
- if(open){showView('v-menu');loadProfile();}
- else{showView('v-settings');if($('dash-player-name'))$('dash-player-name').textContent=P.name||'';stab('hero');if($('th-stars'))$('th-stars').textContent=P.stars||0;if($('th-figs'))$('th-figs').textContent=(P.ownedFigurines||[]).length;if($('th-badges'))$('th-badges').textContent=(P.badgesEarned||[]).length;renderSkills();renderBadges();renderQuests();}
+ if(open){navBack();}
+ else{navTo('v-settings');if($('dash-player-name'))$('dash-player-name').textContent=P.name||'';stab('hero');if($('th-stars'))$('th-stars').textContent=P.stars||0;if($('th-figs'))$('th-figs').textContent=(P.ownedFigurines||[]).length;if($('th-badges'))$('th-badges').textContent=(P.badgesEarned||[]).length;renderSkills();renderBadges();renderQuests();}
 }
-function closeSettings(){showView('v-menu');loadProfile();}
+function closeSettings(){navBack();}
 function stab(name){
  const ts=['hero','scores','stats','milestones','levels','revision','avatar','figurines'];
  ts.forEach(t=>$('tab-'+t).classList.toggle('hidden',t!==name));
@@ -274,7 +306,7 @@ function stab(name){
  if(name==='milestones')renderMilestones();
  if(name==='figurines')renderFigCollection();
 }
-function returnMenu(){gameActive=false;clearPendingTimers();clearMonsterSpeech();$('BODY').classList.remove('urgency-bg','body-alert');const heart=$('timer-heart');if(heart)heart.style.display='none';showView('v-menu');loadProfile();
+function returnMenu(){gameActive=false;clearPendingTimers();clearMonsterSpeech();$('BODY').classList.remove('urgency-bg','body-alert');const heart=$('timer-heart');if(heart)heart.style.display='none';_navStack=[];showView('v-menu');loadProfile();
  // Chantier B4 : retirer le skin de zone en revenant au menu
  if(typeof stopZoneSkin==='function') stopZoneSkin();
  // Chantier B3 : démonter le moteur parallaxe de la carte
@@ -673,7 +705,9 @@ function refreshMenu2(){
    if(tt) tt.textContent = P.heroTitle || '';
    if(st) st.textContent = P.stars || 0;
   }
-  // Défi hebdo (réutilise le rendu existant s'il existe)
+  // Défi hebdo + Devoir du jour (réutilisent les rendus existants)
+  if(typeof renderWC==='function') renderWC();
+  if(typeof renderHomework==='function') renderHomework();
   if(typeof renderChallenges==='function') renderChallenges();
  }catch(e){}
 }
@@ -682,12 +716,11 @@ function refreshMenu2(){
 function gotoMenu2(){
  if(typeof savePrefs==='function') savePrefs();
  refreshMenu2();
- showView('v-menu2');
+ navTo('v-menu2');
 }
-// Écran 2 → Écran 1
+// Écran 2 → Écran 1 (bouton Retour de l'écran 2)
 function backToMenu1(){
- refreshMenu1Card();
- showView('v-menu');
+ navBack();
 }
 // Écran 1 → Paramètres
 function gotoParams(){
@@ -698,7 +731,7 @@ function gotoParams(){
   if($('ambianceToggleUI')&&a) $('ambianceToggleUI').checked=a.checked;
   if($('parallaxToggleUI')&&p) $('parallaxToggleUI').checked=p.checked;
  }catch(e){}
- showView('v-params');
+ navTo('v-params');
 }
 // Synchronise un toggle de la page Paramètres vers le toggle réel (caché)
 function syncParamToggle(which, val){
@@ -714,13 +747,14 @@ function startOdyssee(){
  if(typeof openMap==='function') openMap();
 }
 
-// Ouvre la config d'un mode (Étape B : sous-écrans dédiés).
-// Pour l'instant (Étape A) : positionne le mode et lance le jeu directement.
+// Lance directement un mode depuis l'écran 2.
+// IMPORTANT : startGame() appelle loadProfile()→applyPrefs() qui réécrit
+// gameModeSelect avec la préférence sauvegardée. Pour éviter que le mode
+// choisi soit écrasé (bug "il faut 2 joueurs"), on passe par _forcedMode
+// qui est appliqué APRÈS applyPrefs, juste avant la lecture dans startGame.
 function openModeConfig(mode){
  try{
-  const gm=$('gameModeSelect');
-  if(gm){ gm.value=mode; if(typeof onGameModeChange==='function') onGameModeChange(); }
-  if(typeof savePrefs==='function') savePrefs();
+  window._forcedMode = mode;
   if(typeof startGame==='function') startGame();
  }catch(e){}
 }
