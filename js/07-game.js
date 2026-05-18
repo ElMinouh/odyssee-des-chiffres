@@ -388,10 +388,10 @@ function startMusic(){
   step++;
   musicTimer=setTimeout(loop,900+ri(0,500));
  }
- loop();$('music-viz').classList.add('viz-anim');
+ loop();const _mv=$('music-viz');if(_mv)_mv.classList.add('viz-anim');
 }
-function stopMusic(){clearTimeout(musicTimer);musicTimer=null;$('music-viz').classList.remove('viz-anim');}
-function toggleMusic(){musicOn=$('musicToggle').checked;if(musicOn)startMusic();else stopMusic();}
+function stopMusic(){clearTimeout(musicTimer);musicTimer=null;const _mv=$('music-viz');if(_mv)_mv.classList.remove('viz-anim');}
+function toggleMusic(){const _mt=$('musicToggle');musicOn=_mt?_mt.checked:false;if(musicOn)startMusic();else stopMusic();}
 function playVS(){const s=VSOUNDS.find(v=>v.id===(P.victorySound||'fanfare'))||VSOUNDS[0];try{s.play(getAudio());}catch(e){}}
 
 // ═══════════════════════════════════════════════════════
@@ -519,13 +519,15 @@ function checkBadges(){
 }
 function renderWC(){
  const wc=P.weeklyChallenge,box=$('wc-box');
+ if(!box) return; // box absente (selon écran) : rien à faire
  if(!wc){box.classList.add('hidden');return;}
  box.classList.remove('hidden');
- $('wc-title').innerText='📅 Défi : '+wc.label;
- $('wc-desc').innerText=`Réussir ${wc.target} questions · +${wc.reward}⭐${wc.done?' ✅':''}`;
+ const _s=(id,v)=>{const e=$(id);if(e)e.innerText=v;};
+ _s('wc-title','📅 Défi : '+wc.label);
+ _s('wc-desc',`Réussir ${wc.target} questions · +${wc.reward}⭐${wc.done?' ✅':''}`);
  const pct=Math.min(100,Math.round(wc.progress/wc.target*100));
- $('wc-fill').style.width=pct+'%';
- $('wc-text').innerText=`${wc.progress}/${wc.target} (${pct}%)`;
+ const f=$('wc-fill');if(f)f.style.width=pct+'%';
+ _s('wc-text',`${wc.progress}/${wc.target} (${pct}%)`);
 }
 function updateWC(q){
  const wc=P.weeklyChallenge;if(!wc||wc.done)return;

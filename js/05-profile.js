@@ -251,25 +251,50 @@ function savePrefs(){
  saveProfile();
 }
 function updateMenuUI(){
- $('menu-stars').innerText=P.stars||0;
- $('menu-avatar').innerText=P.avatar||'🧙';
- $('cnt-potion').innerText=P.inventory.potion||0;
- $('cnt-bomb').innerText=P.inventory.bomb||0;
- const t=getTopTitle();$('menu-htitle').innerText=t?t.label:'';
+ // v8.7.2 : accès défensifs — certains éléments (menu-stars, xp-bar, music-viz,
+ // hw-box…) ont été retirés de l'écran d'accueil lors de la refonte Étape A.
+ // On garde les écritures pour les éléments encore présents ailleurs (boutique…).
+ const _set=(id,val)=>{const el=$(id);if(el)el.innerText=val;};
+ _set('menu-stars',P.stars||0);
+ _set('menu-avatar',P.avatar||'🧙');
+ _set('cnt-potion',P.inventory.potion||0);
+ _set('cnt-bomb',P.inventory.bomb||0);
+ const t=getTopTitle();_set('menu-htitle',t?t.label:'');
  updateXPBar();renderWC();
- // Chantier C3 : afficher la carte devoir si présent
+ // Rafraîchir les nouveaux écrans de la refonte s'ils sont présents
+ if(typeof refreshMenu1Card==='function' && document.getElementById('menu1-name')) {
+  try{
+   const av=$('menu1-avatar'),nm=$('menu1-name'),sb=$('menu1-sub');
+   if(av)av.textContent=P.avatar||'🧙';
+   if(nm)nm.textContent=P.name||'Joueur';
+   if(sb){const lvl=levelFromXP(P.xp||0);const tt=(t?t.label:'');sb.textContent='Niveau '+lvl+(tt?' · '+tt:'');}
+  }catch(e){}
+ }
+ if(document.getElementById('m2-name')){
+  try{
+   const av=$('m2-avatar'),nm=$('m2-name'),lv=$('m2-lvl'),tt=$('m2-title'),st=$('m2-stars');
+   if(av)av.textContent=P.avatar||'🧙';
+   if(nm)nm.textContent=P.name||'Joueur';
+   if(lv)lv.textContent='Niv.'+levelFromXP(P.xp||0);
+   if(tt)tt.textContent=(t?t.label:'');
+   if(st)st.textContent=P.stars||0;
+  }catch(e){}
+ }
+ // Chantier C3 : afficher la carte devoir si présent (élément peut être absent)
  if(typeof renderHomework==='function') renderHomework();
 }
 function updateXPBar(){
+ // v8.7.2 : la jauge XP a été retirée de l'accueil — accès défensifs.
  const xp=P.xp||0,lvl=levelFromXP(xp);
- $('lvl-badge').innerText='Niv.'+lvl;
- // calcul de l'XP dans le niveau courant sans risque de négatif
+ const lb=$('lvl-badge');if(lb)lb.innerText='Niv.'+lvl;
+ const bar=$('xp-bar'), lab=$('xp-label');
+ if(!bar && !lab) return; // jauge absente : rien à faire
  let rem=xp;for(let i=0;i<lvl-1&&i<XP_TABLE.length;i++)rem-=XP_TABLE[i];
  const need=XP_TABLE[Math.min(lvl-1,XP_TABLE.length-1)]||1;
  const cur=Math.max(0,rem);
  const pct=Math.min(100,Math.round(cur/need*100));
- $('xp-bar').style.width=pct+'%';
- $('xp-label').innerText=`XP Niv.${lvl} · ${cur}/${need}`;
+ if(bar)bar.style.width=pct+'%';
+ if(lab)lab.innerText=`XP Niv.${lvl} · ${cur}/${need}`;
 }
 function onPlayerChange(){
  const v=$('playerSelect').value;

@@ -213,8 +213,9 @@ function saveVoice(){
 }
 function loadVoice(){
  const t=$('voiceToggle');if(!t)return;
- // Activé par défaut ? Non : laissé désactivé sauf si l'utilisateur l'a activé explicitement.
- t.checked=localStorage.getItem(VOICE_KEY)==='1';
+ // v8.7.2 : activé par défaut (lecture des questions ET voix des monstres),
+ // désactivé seulement si l'utilisateur l'a explicitement coupé ('0').
+ t.checked=localStorage.getItem(VOICE_KEY)!=='0';
 }
 // Répéter la dernière question à la demande de l'utilisateur
 function repeatQuestion(){
@@ -246,8 +247,8 @@ let pinAttempts=0,pinLockUntil=0;
 
 let _monsterCenter={x:0,y:0}; // position précalculée du monstre (OPT-5)
 // ═══════════════════════════════════════════════════════
-const VIEWS=['v-menu','v-settings','v-game','v-end','v-mult','v-parent','v-map'];
-function showView(id){VIEWS.forEach(v=>$(v).classList.toggle('hidden',v!==id));const si=document.querySelector('.settings-icon');if(si)si.classList.toggle('si-hidden',id!=='v-menu');}
+const VIEWS=['v-menu','v-menu2','v-params','v-settings','v-game','v-end','v-mult','v-parent','v-map'];
+function showView(id){VIEWS.forEach(v=>$(v).classList.toggle('hidden',v!==id));const si=document.querySelector('.settings-icon');if(si)si.classList.toggle('si-hidden',id!=='v-menu'&&id!=='v-menu2');}
 function toggleSettings(){
  const open=!$('v-settings').classList.contains('hidden');
  if(open){showView('v-menu');loadProfile();}
@@ -637,4 +638,89 @@ function maybeMidCombatTaunt(){
  if(hpRatio < 0.3 && Math.random() < 0.3 && typeof monsterSpeak === 'function'){
   monsterSpeak(_COMBAT_TAUNTS[ri(0, _COMBAT_TAUNTS.length-1)], 2200);
  }
+}
+// ═══════════════════════════════════════════════════════
+// NAVIGATION REFONTE ÉCRAN D'ACCUEIL (v8.7.2 — Étape A)
+// 2 écrans successifs + page paramètres.
+// Écran 1 (v-menu) : joueur, thème, voix/musique, cloud
+// Écran 2 (v-menu2) : modes de jeu + tableau de bord
+// Page params (v-params) : vibration, ambiance, mouvement
+// ═══════════════════════════════════════════════════════
+
+// Rafraîchit la carte du joueur sur l'écran 1
+function refreshMenu1Card(){
+ try{
+  if(typeof loadProfile==='function') loadProfile();
+  const av=$('menu1-avatar'), nm=$('menu1-name'), sb=$('menu1-sub');
+  if(av) av.textContent = (P && P.avatar) ? P.avatar : '🧙';
+  if(nm) nm.textContent = (P && P.name) ? P.name : 'Joueur';
+  if(sb){
+   const lvl = (typeof levelFromXP==='function' && P) ? levelFromXP(P.xp||0) : 1;
+   const ttl = (P && P.heroTitle) ? P.heroTitle : '';
+   sb.textContent = 'Niveau ' + lvl + (ttl ? ' · ' + ttl : '');
+  }
+ }catch(e){}
+}
+
+// Rafraîchit la barre joueur de l'écran 2
+function refreshMenu2(){
+ try{
+  if(P){
+   const av=$('m2-avatar'), nm=$('m2-name'), lv=$('m2-lvl'), tt=$('m2-title'), st=$('m2-stars');
+   if(av) av.textContent = P.avatar || '🧙';
+   if(nm) nm.textContent = P.name || 'Joueur';
+   if(lv){ const lvl=(typeof levelFromXP==='function')?levelFromXP(P.xp||0):1; lv.textContent='Niv.'+lvl; }
+   if(tt) tt.textContent = P.heroTitle || '';
+   if(st) st.textContent = P.stars || 0;
+  }
+  // Défi hebdo (réutilise le rendu existant s'il existe)
+  if(typeof renderChallenges==='function') renderChallenges();
+ }catch(e){}
+}
+
+// Écran 1 → Écran 2
+function gotoMenu2(){
+ if(typeof savePrefs==='function') savePrefs();
+ refreshMenu2();
+ showView('v-menu2');
+}
+// Écran 2 → Écran 1
+function backToMenu1(){
+ refreshMenu1Card();
+ showView('v-menu');
+}
+// Écran 1 → Paramètres
+function gotoParams(){
+ // Synchroniser les cases UI avec l'état réel
+ try{
+  const v=$('vibrateToggle'), a=$('ambianceToggle'), p=$('parallaxToggle');
+  if($('vibrateToggleUI')&&v) $('vibrateToggleUI').checked=v.checked;
+  if($('ambianceToggleUI')&&a) $('ambianceToggleUI').checked=a.checked;
+  if($('parallaxToggleUI')&&p) $('parallaxToggleUI').checked=p.checked;
+ }catch(e){}
+ showView('v-params');
+}
+// Synchronise un toggle de la page Paramètres vers le toggle réel (caché)
+function syncParamToggle(which, val){
+ try{
+  if(which==='vibrate'){ const t=$('vibrateToggle'); if(t){ t.checked=val; if(typeof saveVibrate==='function') saveVibrate(); } }
+  else if(which==='ambiance'){ const t=$('ambianceToggle'); if(t){ t.checked=val; if(typeof saveAmbiance==='function') saveAmbiance(); } }
+  else if(which==='parallax'){ const t=$('parallaxToggle'); if(t){ t.checked=val; if(typeof saveParallax==='function') saveParallax(); } }
+ }catch(e){}
+}
+
+// Lance directement l'Odyssée (la carte d'exploration)
+function startOdyssee(){
+ if(typeof openMap==='function') openMap();
+}
+
+// Ouvre la config d'un mode (Étape B : sous-écrans dédiés).
+// Pour l'instant (Étape A) : positionne le mode et lance le jeu directement.
+function openModeConfig(mode){
+ try{
+  const gm=$('gameModeSelect');
+  if(gm){ gm.value=mode; if(typeof onGameModeChange==='function') onGameModeChange(); }
+  if(typeof savePrefs==='function') savePrefs();
+  if(typeof startGame==='function') startGame();
+ }catch(e){}
 }
