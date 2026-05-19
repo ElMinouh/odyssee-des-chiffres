@@ -319,6 +319,31 @@ function returnMenu(){gameActive=false;clearPendingTimers();clearMonsterSpeech()
  if(typeof showPlateauHint==='function') setTimeout(showPlateauHint, 1500);
 }
 
+// v8.7.7 : interrompre une partie en cours (boutons Retour/Accueil en jeu).
+// dest='back' → page précédente · dest='home' → écran d'accueil.
+// Demande confirmation pour éviter les abandons accidentels.
+function quitGame(dest){
+ const ok = (typeof confirm==='function')
+  ? confirm('Quitter la partie en cours ? Ta progression de cette partie sera perdue.')
+  : true;
+ if(!ok) return;
+ // Arrêt propre de la partie (comme returnMenu mais sans forcer l'écran)
+ gameActive=false;
+ if(typeof clearPendingTimers==='function') clearPendingTimers();
+ if(typeof clearMonsterSpeech==='function') clearMonsterSpeech();
+ const b=$('BODY'); if(b) b.classList.remove('urgency-bg','body-alert');
+ const heart=$('timer-heart'); if(heart) heart.style.display='none';
+ if(typeof stopZoneSkin==='function') stopZoneSkin();
+ if(typeof teardownMapParallax==='function') teardownMapParallax();
+ if(typeof GM!=='undefined'){GM.homework=false;GM.homeworkConfig=null;}
+ if(typeof stopMusic==='function') stopMusic();
+ if(dest==='home'){
+  if(typeof goHome==='function') goHome(); else { showView('v-menu'); if(typeof loadProfile==='function') loadProfile(); }
+ }else{
+  if(typeof navBack==='function') navBack(); else { showView('v-menu'); if(typeof loadProfile==='function') loadProfile(); }
+ }
+}
+
 // ═══════════════════════════════════════════════════════
 // MONSTRES — Personnalités & Narration
 // ═══════════════════════════════════════════════════════

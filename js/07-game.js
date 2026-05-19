@@ -9,7 +9,7 @@
 // CARTE D'EXPLORATION + PARALLAXE (chantier B3)
 // ═══════════════════════════════════════════════════════
 function openMap(){
- showView('v-map');
+ if(typeof navTo==='function') navTo('v-map'); else showView('v-map');
  renderMap();
  // Chantier B3 : démarrer la parallaxe une fois le DOM stabilisé
  setTimeout(()=>{
@@ -23,7 +23,7 @@ function openMap(){
  */
 function closeMap(){
  if(typeof teardownMapParallax==='function') teardownMapParallax();
- showView('v-menu');
+ if(typeof navBack==='function') navBack(); else showView('v-menu');
 }
 
 function renderMap(){
