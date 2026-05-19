@@ -1218,8 +1218,14 @@ if(typeof checkMilestones==='function') checkMilestones();
  if(won){P.objectiveDone=(P.objectiveDone||0)+1;if((P.objective||0)>0&&P.objectiveDone>=P.objective)toast('🎯 Objectif du jour atteint !',3500);}
  const newBadges=checkBadges();saveProfileNow(); // sauvegarde immédiate en fin de partie
  if(typeof syncCloudOnEndGame==='function') syncCloudOnEndGame();
- // reset thème si mode carte
- if(GM.mapZone)applyTheme(P.prefs.theme||'standard');
+ // reset thème si mode carte (priorité clé globale = dernier choix explicite)
+ if(GM.mapZone){
+  let _th='standard';
+  try{ _th=localStorage.getItem('odyssee_theme')||(P.prefs&&P.prefs.theme)||'standard'; }
+  catch(e){ _th=(P.prefs&&P.prefs.theme)||'standard'; }
+  applyTheme(_th);
+  const _ts=$('themeSelect'); if(_ts)_ts.value=_th;
+ }
  showView('v-end');
  if(GM.mode2==='combat'){
   const sorted=[...combatPlayers].sort((a,b)=>b.score-a.score);const medals=['🥇','🥈','🥉','4️⃣','5️⃣'];

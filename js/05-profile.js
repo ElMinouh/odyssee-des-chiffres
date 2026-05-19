@@ -229,8 +229,17 @@ function applyPrefs(){
  }).join('');
  $('modeSelect').value=p.mode||'keyboard';
  $('gameModeSelect').value=p.mode2||'normal';
- applyTheme(p.theme||'standard');
- $('themeSelect').value=p.theme||'standard';
+ // v8.7.6 : priorité à la clé globale (dernier choix explicite du joueur),
+ // puis prefs profil, puis défaut. Corrige la non-persistance du thème.
+ let _theme='standard';
+ try{
+  const g=localStorage.getItem('odyssee_theme');
+  _theme = g || p.theme || 'standard';
+ }catch(e){ _theme = p.theme || 'standard'; }
+ applyTheme(_theme);
+ $('themeSelect').value=_theme;
+ // Garder les prefs du profil cohérentes avec le thème effectif
+ if(P && (!p.theme || p.theme!==_theme)){ P.prefs=P.prefs||{}; P.prefs.theme=_theme; }
  // Chantier B1 : appliquer le mode clair/sombre sauvegardé
  if(typeof initAppearance === 'function') initAppearance();
 }
@@ -312,6 +321,27 @@ function applyTheme(t){
  [...b.classList].forEach(c=>{ if(c.indexOf('theme-')===0) b.classList.remove(c); });
  if(t && t!=='standard') b.classList.add('theme-'+t);
  if(musicOn){stopMusic();startMusic();}
+}
+
+// v8.7.6 : sauvegarde IMMÉDIATE du thème (sans debounce) + clé globale
+// de secours. Corrige le bug "le thème ne persiste pas après rechargement
+// ou retour Accueil" (le debounce de 800ms perdait le choix si on
+// rechargeait/naviguait trop vite).
+function saveThemeNow(themeVal){
+ try{
+  const t = themeVal || ($('themeSelect') ? $('themeSelect').value : 'standard');
+  applyTheme(t);
+  if($('themeSelect')) $('themeSelect').value = t;
+  // 1) Clé globale (indépendante du profil, restaurée très tôt au boot)
+  localStorage.setItem('odyssee_theme', t);
+  // 2) Dans les prefs du profil courant
+  if(typeof P !== 'undefined' && P){
+   P.prefs = P.prefs || {};
+   P.prefs.theme = t;
+   if(typeof saveProfileNow === 'function') saveProfileNow();
+   else if(typeof saveProfile === 'function') saveProfile();
+  }
+ }catch(e){}
 }
 
 // ═══════════════════════════════════════════════════════

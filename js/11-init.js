@@ -61,7 +61,6 @@ window.onload=()=>{
   btn.addEventListener('click',function(){const p=this.nextElementSibling;p.style.display=p.style.display==='block'?'none':'block';});
  });
  $('gameModeSelect').addEventListener('change',()=>{if($('gameModeSelect').value!=='combat')combatCfg=[];});
- $('themeSelect').addEventListener('change',()=>savePrefs());
  $('modeSelect').addEventListener('change',()=>savePrefs());
  $('parent-player').addEventListener('change',()=>{renderReport();renderWeeklySummary();});
  // v8.7.0 : nettoyage des profils corrompus (clés user_undefined, user_null,
@@ -117,6 +116,16 @@ window.onload=()=>{
    }
   }
  }catch(e){ console.warn('[init] restauration lastPlayer échouée', e); }
+ // v8.7.6 : appliquer le thème sauvegardé AVANT loadProfile, pour éviter
+ // un flash du thème classique et garantir la persistance même si le
+ // profil n'a pas encore la pref (clé globale = dernier choix explicite).
+ try{
+  const gTheme = localStorage.getItem('odyssee_theme');
+  if(gTheme && typeof applyTheme==='function'){
+   applyTheme(gTheme);
+   const ts=$('themeSelect'); if(ts) ts.value=gTheme;
+  }
+ }catch(e){}
  loadProfile();
  loadVibrate();
  loadVoice();
