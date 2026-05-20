@@ -1483,7 +1483,9 @@ if(typeof checkMilestones==='function') checkMilestones();
  const errs=(P.errors||[]).slice(-GS.errInGame);
  $('end-correction').innerHTML=errs.length?'<strong style="color:#e74c3c">❌ Erreurs :</strong><br>'+[...new Set(errs)].map(e=>{const m=e.match(/^(.+?)([+\-x×\/÷])(.+?)=(\d+)$/);return m?`• ${m[1]} ${m[2]} ${m[3]} = <strong>${m[4]}</strong>`:' • '+e;}).join('<br>'):(won?'<span style="color:#2ecc71">✅ Parfait !</span>':'');
  if(won)startConfetti();
- GM.mapZone=null;
+ // v8.7.10 : NE PAS reset GM.mapZone ici. Le contexte doit être préservé
+ // pour que le bouton "Retour à la carte" sache où retourner.
+ // Le reset est désormais fait dans returnMenu/endReplayAction au clic.
 }
 function playCongrats(){
  playVS();const h=GIFS[ri(0,GIFS.length-1)];

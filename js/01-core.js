@@ -339,6 +339,9 @@ function returnMenu(){
   return;
  }
  _navStack=[];showView('v-menu');loadProfile();
+ // v8.7.10 : reset complet du contexte carte (sinon une partie classique
+ // lancée ensuite hériterait d'un GM.mapZone résiduel)
+ if(typeof GM!=='undefined'){GM.mapZone=null;GM.mapStep=null;}
  // Chantier B4 : retirer le skin de zone en revenant au menu
  if(typeof stopZoneSkin==='function') stopZoneSkin();
  // Chantier B3 : démonter le moteur parallaxe de la carte
