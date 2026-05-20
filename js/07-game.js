@@ -130,6 +130,9 @@ function startMapStep(zoneId, stepIdx){
   GS.isSeasonalBoss=false; GS.isBirthdayBoss=false; GS.seasonalMult=1; GS.seasonalFigId=null;
   // Nombre de questions de l'étape (override pour mini-parties)
   GS.questionsTarget = step.questions || 5;
+  // v8.7.9 (O1) : fixer _currentMonster au monstre de l'étape pour cohérence
+  // (taunts, voix, emoji affiché pendant les questions).
+  _currentMonster = monster;
   powers={};
   const pwI = Math.abs((P.name.charCodeAt(0)||0)) % POWERS.length;
   const pw = POWERS[pwI];
@@ -931,7 +934,11 @@ function nextTurn(){
  clearMonsterSpeech();
  const heart=$('timer-heart');if(heart)heart.style.display='none';
  // Pick monster personality
-_currentMonster=pickMonster(GM.level,GS.isBoss);
+ // v8.7.9 (O1) : en étape de zone (hors boss), garder le monstre défini par startMapStep.
+ // Le boss de zone garde l'intro spéciale ci-dessous.
+ if(!(GM.mapZone && GM.mapStep && !GS.isBoss)){
+  _currentMonster=pickMonster(GM.level,GS.isBoss);
+ }
  if(GS.isBoss){
   // Boss: full cinematic intro
   const mapBoss=GM.mapZone;
@@ -953,7 +960,10 @@ _currentMonster=pickMonster(GM.level,GS.isBoss);
     ? {emoji:mapBoss.boss,name:mapBoss.bossName,title:'Boss de la Carte',intro:`Bienvenue dans ${mapBoss.label}. Tu ne repartiras pas vivant.`,anim:'glow',col:'#e74c3c'}
     : _currentMonster);
   showMonsterIntro(bossM,renderQ);
- }else if(GS.qCount===1||(GM.mode2==='survie'&&GS.qCount%4===1)){
+ }else if((GS.qCount===1||(GM.mode2==='survie'&&GS.qCount%4===1)) && !(GM.mapZone && GM.mapStep)){
+  // v8.7.9 (O1) : ne PAS rejouer l'intro en étape de zone : on l'a déjà
+  // jouée dans startMapStep avec le bon monstre. Sinon un 2e monstre
+  // aléatoire apparaîtrait par-dessus celui de l'étape.
   // Show intro for first monster and every 4 in survie
   showMonsterIntro(_currentMonster,renderQ);
  }else renderQ();
@@ -1354,6 +1364,22 @@ if(typeof checkMilestones==='function') checkMilestones();
 // boss carte
  if(won&&GM.mapZone&&GS.isBoss){
   GS.mapBossWon=true;
+  // v8.7.9 (O1) : drop figurine rare au boss de zone uniquement (pas mini-boss)
+  if(GM.mapStep && GM.mapStep.def && GM.mapStep.def.dropRare){
+   try{
+    const owned = P.ownedFigurines || [];
+    // Cherche une figurine non possédée parmi les rares/épiques pour récompenser
+    const RARE_LIKE = ['rare','épique','epique','légendaire','legendaire','mythique'];
+    const FIG = (typeof FIGURINES!=='undefined' && Array.isArray(FIGURINES)) ? FIGURINES : [];
+    const candidates = FIG.filter(f=>f && f.id && !owned.includes(f.id) && RARE_LIKE.includes((f.rarity||'').toLowerCase()));
+    if(candidates.length){
+     const pick = candidates[Math.floor(Math.random()*candidates.length)];
+     P.ownedFigurines = [...owned, pick.id];
+     if(typeof toast==='function') toast(`🎉 ${pick.name} ajouté à ta collection !`, 3500);
+     if(typeof beep==='function'){beep(880,'sine',.4);setTimeout(()=>beep(1100,'sine',.3),180);}
+    }
+   }catch(e){console.warn('drop figurine boss zone failed', e);}
+  }
   if(!(P.mapBossBeaten||[]).includes(GM.mapZone.id)){
    P.mapBossBeaten=[...(P.mapBossBeaten||[]),GM.mapZone.id];
    // Chantier 3.10 : cinématique de zone conquise (remplace l'ancien transition-screen)
@@ -1390,6 +1416,17 @@ if(typeof checkMilestones==='function') checkMilestones();
   catch(e){ _th=(P.prefs&&P.prefs.theme)||'standard'; }
   applyTheme(_th);
   const _ts=$('themeSelect'); if(_ts)_ts.value=_th;
+ }
+ // v8.7.9 (O1) : adapter le bouton "Rejouer / Retour à la carte" selon contexte
+ const _btnReplay = $('btn-replay');
+ if(_btnReplay){
+  if(GM.mapZone && GM.mapStep){
+   _btnReplay.innerHTML = '🗺️ Retour à la carte';
+   _btnReplay.style.background = '#16a085';
+  } else {
+   _btnReplay.innerHTML = '🔄 REJOUER';
+   _btnReplay.style.background = '';
+  }
  }
  showView('v-end');
  if(GM.mode2==='combat'){

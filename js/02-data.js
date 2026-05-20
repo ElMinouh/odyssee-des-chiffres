@@ -42,7 +42,7 @@ const MAP_ZONES=[
    {type:'monster', emoji:'🐰', name:'Lapin agile',     questions:3, difficulty:'easy'},
    {type:'puzzle',  emoji:'🧩', name:'Énigme du champ', questions:4, difficulty:'easy'},
    {type:'monster', emoji:'🦊', name:'Renard rusé',     questions:5, difficulty:'medium'},
-   {type:'minibss', emoji:'🐗', name:'Sanglier furieux',questions:5, difficulty:'medium', dropCommon:true},
+   {type:'minibss', emoji:'🐗', name:'Sanglier furieux',questions:5, difficulty:'medium'},
    {type:'boss',    emoji:'🐺', name:'Loup des Plaines',questions:6, difficulty:'hard',   dropRare:true}
   ]},
  {id:'foret',   label:'Forêt Enchantée',  bg:'linear-gradient(135deg,#1b6b3a,#2ecc71)',emoji:'🌲',boss:'🐲',bossName:'Dragon de Forêt', level:'CE1',starsReq:10,  theme:'foret',
@@ -51,7 +51,7 @@ const MAP_ZONES=[
    {type:'monster', emoji:'🦋', name:'Papillon mystique',     questions:3, difficulty:'easy'},
    {type:'puzzle',  emoji:'🌿', name:'Énigme des lianes',     questions:4, difficulty:'easy'},
    {type:'monster', emoji:'🐗', name:'Sanglier sylvestre',    questions:5, difficulty:'medium'},
-   {type:'minibss', emoji:'🦉', name:'Hibou millénaire',      questions:5, difficulty:'medium', dropCommon:true},
+   {type:'minibss', emoji:'🦉', name:'Hibou millénaire',      questions:5, difficulty:'medium'},
    {type:'boss',    emoji:'🐲', name:'Dragon de Forêt',       questions:6, difficulty:'hard',   dropRare:true}
   ]},
  {id:'desert',  label:'Désert de Feu',    bg:'linear-gradient(135deg,#e67e22,#c0392b)',emoji:'🏜️',boss:'🦂',bossName:'Scorpion Géant',  level:'CE2',starsReq:30,  theme:'volcan',
@@ -60,7 +60,7 @@ const MAP_ZONES=[
    {type:'monster', emoji:'🐍', name:'Serpent du sable',      questions:3, difficulty:'medium'},
    {type:'puzzle',  emoji:'🏺', name:'Énigme du désert',      questions:4, difficulty:'medium'},
    {type:'monster', emoji:'🐪', name:'Chameau enragé',        questions:5, difficulty:'medium'},
-   {type:'minibss', emoji:'🦅', name:'Faucon des dunes',      questions:5, difficulty:'hard',   dropCommon:true},
+   {type:'minibss', emoji:'🦅', name:'Faucon des dunes',      questions:5, difficulty:'hard',   },
    {type:'boss',    emoji:'🦂', name:'Scorpion Géant',        questions:6, difficulty:'hard',   dropRare:true}
   ]},
  {id:'glace',   label:'Pics de Glace',    bg:'linear-gradient(135deg,#2980b9,#74b9ff)',emoji:'🏔️',boss:'❄️',bossName:'Géant de Glace',  level:'CM1',starsReq:60,  theme:'standard',
@@ -69,7 +69,7 @@ const MAP_ZONES=[
    {type:'monster', emoji:'🐧', name:'Manchot guerrier',      questions:3, difficulty:'medium'},
    {type:'puzzle',  emoji:'💎', name:'Énigme de cristal',     questions:4, difficulty:'medium'},
    {type:'monster', emoji:'🐺', name:'Loup polaire',          questions:5, difficulty:'hard'},
-   {type:'minibss', emoji:'🐻‍❄️',name:'Ours des neiges',      questions:5, difficulty:'hard',   dropCommon:true},
+   {type:'minibss', emoji:'🐻‍❄️',name:'Ours des neiges',      questions:5, difficulty:'hard',   },
    {type:'boss',    emoji:'❄️', name:'Géant de Glace',        questions:6, difficulty:'hard',   dropRare:true}
   ]},
  {id:'volcan',  label:'Volcan Maudit',    bg:'linear-gradient(135deg,#8b0000,#e74c3c)',emoji:'🌋',boss:'🔥',bossName:'Seigneur des Flammes',level:'CM2',starsReq:100,theme:'volcan',
@@ -78,7 +78,7 @@ const MAP_ZONES=[
    {type:'monster', emoji:'🦎', name:'Salamandre de feu',     questions:3, difficulty:'hard'},
    {type:'puzzle',  emoji:'🪨', name:'Énigme de magma',       questions:4, difficulty:'hard'},
    {type:'monster', emoji:'🐉', name:'Drake écailleux',       questions:5, difficulty:'hard'},
-   {type:'minibss', emoji:'👹', name:'Démon des cendres',     questions:5, difficulty:'hard',   dropCommon:true},
+   {type:'minibss', emoji:'👹', name:'Démon des cendres',     questions:5, difficulty:'hard',   },
    {type:'boss',    emoji:'🔥', name:'Seigneur des Flammes',  questions:6, difficulty:'hard',   dropRare:true}
   ]},
  {id:'espace',  label:'Galaxie Infinie',  bg:'linear-gradient(135deg,#1a1c2c,#9b59b6)',emoji:'🌌',boss:'👽',bossName:'Alien Quantique',  level:'CM2',starsReq:200,theme:'espace',
@@ -87,7 +87,7 @@ const MAP_ZONES=[
    {type:'monster', emoji:'🤖', name:'Robot sentinelle',      questions:3, difficulty:'hard'},
    {type:'puzzle',  emoji:'🛸', name:'Énigme cosmique',       questions:4, difficulty:'hard'},
    {type:'monster', emoji:'👾', name:'Envahisseur',           questions:5, difficulty:'hard'},
-   {type:'minibss', emoji:'🪐', name:'Gardien astral',        questions:5, difficulty:'hard',   dropCommon:true},
+   {type:'minibss', emoji:'🪐', name:'Gardien astral',        questions:5, difficulty:'hard',   },
    {type:'boss',    emoji:'👽', name:'Alien Quantique',       questions:6, difficulty:'hard',   dropRare:true}
   ]},
 ];

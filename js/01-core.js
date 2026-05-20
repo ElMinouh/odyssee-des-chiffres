@@ -308,6 +308,9 @@ function stab(name){
 }
 function returnMenu(){
  gameActive=false;clearPendingTimers();clearMonsterSpeech();
+ // v8.7.9 (O1) : annuler aussi les boucles requestAnimationFrame en cours
+ if(typeof stopTimer==='function') stopTimer();
+ if(typeof stopChrono==='function') stopChrono();
  $('BODY').classList.remove('urgency-bg','body-alert');
  const heart=$('timer-heart');if(heart)heart.style.display='none';
  // v8.7.8 (O1) : si on sort d'une étape de zone, on revient à la carte de zone
@@ -360,6 +363,11 @@ function quitGame(dest){
  gameActive=false;
  if(typeof clearPendingTimers==='function') clearPendingTimers();
  if(typeof clearMonsterSpeech==='function') clearMonsterSpeech();
+ // v8.7.9 (O1) : annuler les boucles requestAnimationFrame en cours
+ // (timer de question, chrono mode 60s) — sinon les alertes visuelles
+ // continuent et peuvent même appeler endGame après le retour à la carte.
+ if(typeof stopTimer==='function') stopTimer();
+ if(typeof stopChrono==='function') stopChrono();
  const b=$('BODY'); if(b) b.classList.remove('urgency-bg','body-alert');
  const heart=$('timer-heart'); if(heart) heart.style.display='none';
  if(typeof stopZoneSkin==='function') stopZoneSkin();
@@ -383,6 +391,18 @@ function quitGame(dest){
  }else{
   if(typeof navBack==='function') navBack(); else { showView('v-menu'); if(typeof loadProfile==='function') loadProfile(); }
  }
+}
+
+// v8.7.9 (O1) : action du bouton replay de l'écran de fin (v-end).
+// En étape de zone : retour à la carte de zone (étape suivante déverrouillée si gagnée).
+// Sinon : relance la partie normale (comme avant).
+function endReplayAction(){
+ if(typeof GM!=='undefined' && GM.mapZone && GM.mapStep){
+  // Retour à la carte de zone : on réutilise returnMenu qui gère bien ce cas
+  if(typeof returnMenu==='function') returnMenu();
+  return;
+ }
+ if(typeof startGame==='function') startGame();
 }
 
 // ═══════════════════════════════════════════════════════
