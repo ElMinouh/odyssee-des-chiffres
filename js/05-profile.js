@@ -94,6 +94,23 @@ function validateProfile(raw, defaultName){
    CM2: _clampNum(raw.levelWins?.CM2, 0, 9999, 0),
   },
   mapBossBeaten: _safeArr(raw.mapBossBeaten).filter(b => typeof b === 'string'),
+  // v8.7.8 (O1) : progression dans chaque zone (sous-niveaux)
+  zoneProgress: (function(){
+   const src = (raw.zoneProgress && typeof raw.zoneProgress === 'object') ? raw.zoneProgress : {};
+   const out = {};
+   // Garder uniquement les zones connues, sanitiser les valeurs
+   if(typeof MAP_ZONES !== 'undefined' && Array.isArray(MAP_ZONES)){
+    MAP_ZONES.forEach(z=>{
+     const s = src[z.id] || {};
+     const max = (Array.isArray(z.steps) ? z.steps.length : 5);
+     out[z.id] = {
+      stepsCompleted: _clampNum(s.stepsCompleted, 0, max, 0),
+      completed: !!s.completed
+     };
+    });
+   }
+   return out;
+  })(),
   prefs: {
    level:  _ALLOWED_LEVELS.includes(raw.prefs?.level)  ? raw.prefs.level  : 'CP',
    mode:   _ALLOWED_MODES.includes(raw.prefs?.mode)    ? raw.prefs.mode   : 'keyboard',
@@ -139,6 +156,8 @@ function defProfile(name){
   history:[],historyDetailed:[],errors:[],errorLog:[],badgesEarned:[],milestonesClaimed:[],_bestCombo:0,_totalStarsEarned:0,
   quests:null,questsDate:null,opStats:{'+':{ ok:0,fail:0},'-':{ok:0,fail:0},'x':{ok:0,fail:0},'/':{ ok:0,fail:0},'geo':{ok:0,fail:0}},
   levelWins:{CP:0,CE1:0,CE2:0,CM1:0,CM2:0},mapBossBeaten:[],
+  // v8.7.8 (O1) : progression sous-niveaux par zone (5 étapes par zone)
+  zoneProgress:(function(){const o={};if(typeof MAP_ZONES!=='undefined'&&Array.isArray(MAP_ZONES))MAP_ZONES.forEach(z=>{o[z.id]={stepsCompleted:0,completed:false};});return o;})(),
   prefs:{level:'CP',mode2:'normal',mode:'keyboard',theme:'standard'},
   sessionMinutes:0,weeklyChallenge:null,wcDate:null,
   objective:0,objectiveDone:0,objDate:null,

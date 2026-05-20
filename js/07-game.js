@@ -26,6 +26,143 @@ function closeMap(){
  if(typeof navBack==='function') navBack(); else showView('v-menu');
 }
 
+// ═══════════════════════════════════════════════════════
+// O1 — CARTE DE ZONE (sous-niveaux v8.7.8)
+// Affiche les 5 étapes d'une zone, gère la progression
+// ═══════════════════════════════════════════════════════
+
+// État courant : quelle zone et quelle étape on joue
+let _currentZoneId = null;
+let _currentStepIdx = -1;
+
+// Ouvre la carte de zone (au lieu de lancer directement le boss)
+function openZone(zoneId){
+ const zone = MAP_ZONES.find(z=>z.id===zoneId);
+ if(!zone) return;
+ _currentZoneId = zoneId;
+ // S'assurer que zoneProgress existe pour cette zone
+ P.zoneProgress = P.zoneProgress || {};
+ if(!P.zoneProgress[zoneId]){
+  P.zoneProgress[zoneId] = { stepsCompleted: 0, completed: false };
+ }
+ renderZoneMap();
+ if(typeof navTo==='function') navTo('v-zone'); else showView('v-zone');
+}
+
+// Affiche les étapes de la zone courante
+function renderZoneMap(){
+ const zone = MAP_ZONES.find(z=>z.id===_currentZoneId);
+ if(!zone) return;
+ const steps = Array.isArray(zone.steps) ? zone.steps : [];
+ const prog = (P.zoneProgress && P.zoneProgress[zone.id]) || { stepsCompleted: 0, completed: false };
+ const done = prog.stepsCompleted;
+ // Header
+ const _t=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+ _t('zone-emoji', zone.emoji);
+ _t('zone-title', zone.label);
+ _t('zone-sub', 'Niveau ' + zone.level + ' · ' + steps.length + ' étapes');
+ // Barre de progression
+ const total = steps.length || 1;
+ const pct = Math.round((done/total)*100);
+ const fill = document.getElementById('zone-progress-fill');
+ if(fill) fill.style.width = pct+'%';
+ _t('zone-progress-text', `${done}/${total} étape${done>1?'s':''} franchie${done>1?'s':''}`);
+ // Liste des étapes
+ const TAGS = { monster:'Monstre', puzzle:'Énigme', minibss:'Mini-boss', boss:'BOSS' };
+ const box = document.getElementById('zone-steps-path');
+ if(!box) return;
+ box.innerHTML = steps.map((s, i)=>{
+  let cls='locked', click='', extra='<span class="zone-step-lock">🔒</span>';
+  if(i < done){ cls='done'; click=`onclick="startMapStep('${zone.id}',${i})"`; extra=''; }
+  else if(i === done){ cls='current'; click=`onclick="startMapStep('${zone.id}',${i})"`; extra=''; }
+  const tagCls = 'tag-' + (s.type || 'monster');
+  const tagLabel = TAGS[s.type] || 'Étape';
+  const q = s.questions || 5;
+  return `
+   <div class="zone-step ${cls}" ${click}>
+    <div class="zone-step-emoji">${s.emoji||'❓'}</div>
+    <div class="zone-step-info">
+     <div class="zone-step-num">Étape ${i+1} / ${steps.length}</div>
+     <div class="zone-step-name">${s.name||'Étape'}<span class="zone-step-tag ${tagCls}">${tagLabel}</span></div>
+     <div class="zone-step-meta">${q} questions${s.dropCommon?' · 🎁 figurine':''}${s.dropRare?' · ⭐ figurine rare':''}</div>
+    </div>
+    ${extra}
+   </div>`;
+ }).join('');
+}
+
+// Lance une étape précise d'une zone
+function startMapStep(zoneId, stepIdx){
+ const zone = MAP_ZONES.find(z=>z.id===zoneId);
+ if(!zone || !Array.isArray(zone.steps)) return;
+ const step = zone.steps[stepIdx];
+ if(!step) return;
+ const prog = (P.zoneProgress && P.zoneProgress[zoneId]) || { stepsCompleted:0 };
+ // Étape verrouillée ? On refuse silencieusement
+ if(stepIdx > prog.stepsCompleted) return;
+ _currentZoneId = zoneId;
+ _currentStepIdx = stepIdx;
+ // Préparer GM avec la zone (réutilise tout le moteur existant)
+ GM.mapZone = zone;
+ GM.mapStep = { idx: stepIdx, def: step };
+ GM.level = zone.level;
+ GM.mode2 = 'normal';
+ GM.mode = P.prefs.mode || 'keyboard';
+ applyTheme(zone.theme);
+ // Construire le monstre/boss à partir de la définition de l'étape
+ const isBoss = (step.type === 'boss');
+ const isMiniBoss = (step.type === 'minibss');
+ const monster = {
+  emoji: step.emoji || '👹',
+  name:  step.name  || 'Adversaire',
+  title: isBoss ? `Gardien de : ${zone.label}` : (isMiniBoss ? `Mini-boss · ${zone.label}` : `Étape ${stepIdx+1}`),
+  intro: isBoss
+   ? `Tu oses entrer dans mon territoire ? ${zone.label} n'a pas de pitié pour les ignorants.`
+   : (isMiniBoss ? `Avant d'atteindre le boss, tu devras me passer !`
+                 : `Te voilà donc l'aventurier qui ose s'aventurer ici…`),
+  anim: 'glow',
+  col:  isBoss ? '#e74c3c' : (isMiniBoss ? '#e67e22' : '#3498db')
+ };
+ const _startCombat = ()=>{
+  loadProfile();
+  gameActive=true; clearPendingTimers(); resetGS();
+  GS.isBoss = isBoss;
+  GS.isSeasonalBoss=false; GS.isBirthdayBoss=false; GS.seasonalMult=1; GS.seasonalFigId=null;
+  // Nombre de questions de l'étape (override pour mini-parties)
+  GS.questionsTarget = step.questions || 5;
+  powers={};
+  const pwI = Math.abs((P.name.charCodeAt(0)||0)) % POWERS.length;
+  const pw = POWERS[pwI];
+  powers[P.name] = { id:pw.id, eff:pw.effect, charge:0, recharge:pw.recharge, shielded:false, dbl:false };
+  $('combat-bar').classList.add('hidden');
+  $('hud-name').innerText = (P.avatar||'👤') + ' ' + P.name;
+  $('hud-chrono').classList.add('hidden'); $('hud-combo').classList.add('hidden');
+  $('qcm-options').classList.toggle('hidden', GM.mode!=='qcm');
+  $('input-zone').classList.toggle('hidden', GM.mode==='qcm');
+  toggleNumpadForMode(GM.mode);
+  $('BODY').classList.remove('body-alert','urgency-bg');
+  showView('v-game');
+  nextTurn();
+  if(typeof startZoneSkin==='function') startZoneSkin(zone);
+ };
+ // Pour les étapes mineures : pas de cinématique d'entrée de zone (pour ne pas surcharger).
+ // Pour le boss final : on garde la cinématique d'entrée de zone (existante).
+ if(isBoss){
+  const _afterIntro = ()=>showMonsterIntro(monster, _startCombat);
+  if(typeof playZoneIntro==='function') playZoneIntro(zone, _afterIntro);
+  else _afterIntro();
+ } else {
+  showMonsterIntro(monster, _startCombat);
+ }
+}
+
+// Quitte la carte de zone
+function closeZone(){
+ _currentZoneId = null;
+ _currentStepIdx = -1;
+ if(typeof navBack==='function') navBack(); else showView('v-map');
+}
+
 function renderMap(){
  const beaten=P.mapBossBeaten||[];
  $('map-zones').innerHTML=MAP_ZONES.map((z,i)=>{
@@ -40,7 +177,7 @@ function renderMap(){
   return `
    ${i>0?`<div class="map-path ${prev?'lit':''}"><svg class="mp-path-svg" viewBox="0 0 40 60" preserveAspectRatio="none"><path d="M20,0 Q5,30 20,60" fill="none" stroke="${prev?'#f1c40f':'rgba(255,255,255,.18)'}" stroke-width="2" stroke-dasharray="4 4"/></svg></div>`:''}
    <div class="map-zone" data-zone-id="${z.id}" data-zone-idx="${i}">
-    <div class="map-zone-inner ${st}" style="background:${z.bg};" onclick="${canPlay?`startMapBoss('${z.id}')`:''}" title="${!canPlay?'Besoin de '+z.starsReq+' ⭐':''}">
+    <div class="map-zone-inner ${st}" style="background:${z.bg};" onclick="${canPlay?`openZone('${z.id}')`:''}" title="${!canPlay?'Besoin de '+z.starsReq+' ⭐':''}">
      <div style="display:flex;justify-content:space-between;align-items:center;">
       <span style="font-size:1.8em;">${z.emoji}</span>
       <span class="zone-boss">${z.boss}</span>
@@ -767,10 +904,24 @@ function startRevision(){
 function nextTurn(){
  if(GM.mode2==='combat')return nextCombat();
  if(GS.pv<=0)return endGame(false);
- if(GM.mode2==='normal'&&!isRevision&&GS.qCount>=6)return endGame(true);
+ // v8.7.8 (O1) : nombre de questions cible (par défaut 6 pour le mode normal classique,
+ // surchargé par questionsTarget pour les étapes de zone).
+ const _qTarget = (GS.questionsTarget && GS.questionsTarget>0) ? GS.questionsTarget : 6;
+ if(GM.mode2==='normal'&&!isRevision&&GS.qCount>=_qTarget)return endGame(true);
  if(GM.mode2==='revision'&&revQueue.length===0&&GS.qCount>0)return endGame(true);
- GS.qCount++;GS.isBoss=GM.mode2==='normal'&&GS.qCount===6&&!GM.mapZone;
- if(GM.mapZone&&GS.qCount===6)GS.isBoss=true;
+ GS.qCount++;
+ // Boss de la dernière question : pour le mode normal classique (6 questions) OU pour
+ // une étape de zone marquée comme boss (GS.isBoss déjà true). En étape intermédiaire
+ // de zone, GS.isBoss reste false (pas de boss à mi-parcours).
+ GS.isBoss = GM.mode2==='normal' && !GM.mapZone && GS.qCount===_qTarget;
+ if(GM.mapZone && GM.mapStep){
+  // En étape de zone : GS.isBoss est déjà positionné par startMapStep selon le type.
+  // On ne le modifie pas ici, sauf si on est sur la DERNIÈRE question (=combat final).
+  // L'ancien comportement (forcer isBoss=true à la question 6) est conservé pour les
+  // anciennes parties carte sans mapStep (rétrocompat).
+ } else if(GM.mapZone && GS.qCount===_qTarget){
+  GS.isBoss = true;
+ }
  GS.bossTypeQ={};
  GS.isGolden=Math.random()<.15;GS.frozen=false;
  _timerTauntFired=false;
@@ -1186,6 +1337,20 @@ if(typeof checkMilestones==='function') checkMilestones();
  if(typeof checkHeroStageProgress==='function') setTimeout(checkHeroStageProgress, 1500);
  // XP
  const xpGained=gainXP(GS.score,won);
+ // v8.7.8 (O1) : mise à jour de la progression de zone (sous-niveaux)
+ // Si on a gagné une étape de zone, on incrémente stepsCompleted.
+ if(won && GM.mapZone && GM.mapStep){
+  P.zoneProgress = P.zoneProgress || {};
+  const zid = GM.mapZone.id;
+  const totalSteps = (Array.isArray(GM.mapZone.steps) ? GM.mapZone.steps.length : 5);
+  const cur = P.zoneProgress[zid] || { stepsCompleted:0, completed:false };
+  // N'avancer que si on a battu l'étape attendue (évite triche / rejeu déjà fait)
+  if(GM.mapStep.idx === cur.stepsCompleted){
+   cur.stepsCompleted = Math.min(totalSteps, cur.stepsCompleted + 1);
+   if(cur.stepsCompleted >= totalSteps){ cur.completed = true; }
+   P.zoneProgress[zid] = cur;
+  }
+ }
 // boss carte
  if(won&&GM.mapZone&&GS.isBoss){
   GS.mapBossWon=true;

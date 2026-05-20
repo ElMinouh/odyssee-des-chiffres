@@ -247,7 +247,7 @@ let pinAttempts=0,pinLockUntil=0;
 
 let _monsterCenter={x:0,y:0}; // position précalculée du monstre (OPT-5)
 // ═══════════════════════════════════════════════════════
-const VIEWS=['v-menu','v-menu2','v-params','v-mode-config','v-settings','v-game','v-end','v-mult','v-parent','v-map'];
+const VIEWS=['v-menu','v-menu2','v-params','v-mode-config','v-settings','v-game','v-end','v-mult','v-parent','v-map','v-zone'];
 function showView(id){VIEWS.forEach(v=>$(v).classList.toggle('hidden',v!==id));const si=document.querySelector('.settings-icon');if(si)si.classList.toggle('si-hidden',id!=='v-menu');}
 // ═══════════════════════════════════════════════════════
 // PILE DE NAVIGATION (v8.7.3)
@@ -306,7 +306,36 @@ function stab(name){
  if(name==='milestones')renderMilestones();
  if(name==='figurines')renderFigCollection();
 }
-function returnMenu(){gameActive=false;clearPendingTimers();clearMonsterSpeech();$('BODY').classList.remove('urgency-bg','body-alert');const heart=$('timer-heart');if(heart)heart.style.display='none';_navStack=[];showView('v-menu');loadProfile();
+function returnMenu(){
+ gameActive=false;clearPendingTimers();clearMonsterSpeech();
+ $('BODY').classList.remove('urgency-bg','body-alert');
+ const heart=$('timer-heart');if(heart)heart.style.display='none';
+ // v8.7.8 (O1) : si on sort d'une étape de zone, on revient à la carte de zone
+ // (avec l'étape suivante débloquée si on a gagné). Sinon, retour à l'accueil.
+ const fromZoneStep = (typeof GM!=='undefined' && GM.mapZone && GM.mapStep);
+ if(fromZoneStep){
+  const zid = GM.mapZone.id;
+  // Reset état de partie mais on garde _currentZoneId pour renderZoneMap
+  GM.mapStep = null;
+  if(typeof stopZoneSkin==='function') stopZoneSkin();
+  // Si la zone est entièrement complétée, on retourne à la carte du monde (v-map)
+  const prog = (P.zoneProgress && P.zoneProgress[zid]);
+  if(prog && prog.completed){
+   GM.mapZone = null;
+   _navStack = [];
+   if(typeof loadProfile==='function') loadProfile();
+   if(typeof renderMap==='function') renderMap();
+   showView('v-map');
+  } else {
+   // Sinon retour à la carte de zone avec l'étape suivante prête
+   _currentZoneId = zid;
+   if(typeof renderZoneMap==='function') renderZoneMap();
+   showView('v-zone');
+  }
+  if(typeof renderHomework==='function') renderHomework();
+  return;
+ }
+ _navStack=[];showView('v-menu');loadProfile();
  // Chantier B4 : retirer le skin de zone en revenant au menu
  if(typeof stopZoneSkin==='function') stopZoneSkin();
  // Chantier B3 : démonter le moteur parallaxe de la carte
@@ -335,6 +364,18 @@ function quitGame(dest){
  const heart=$('timer-heart'); if(heart) heart.style.display='none';
  if(typeof stopZoneSkin==='function') stopZoneSkin();
  if(typeof teardownMapParallax==='function') teardownMapParallax();
+ // v8.7.8 (O1) : si on quitte une étape de zone via "Retour" (pas "Accueil"),
+ // revenir à la carte de zone (l'étape non terminée n'est pas marquée).
+ const fromZoneStep = (typeof GM!=='undefined' && GM.mapZone && GM.mapStep);
+ if(fromZoneStep && dest!=='home'){
+  const zid = GM.mapZone.id;
+  GM.mapStep = null;
+  _currentZoneId = zid;
+  if(typeof renderZoneMap==='function') renderZoneMap();
+  showView('v-zone');
+  if(typeof stopMusic==='function') stopMusic();
+  return;
+ }
  if(typeof GM!=='undefined'){GM.homework=false;GM.homeworkConfig=null;}
  if(typeof stopMusic==='function') stopMusic();
  if(dest==='home'){
