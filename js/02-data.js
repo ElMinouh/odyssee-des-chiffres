@@ -90,6 +90,89 @@ const MAP_ZONES=[
    {type:'minibss', emoji:'🪐', name:'Gardien astral',        questions:5, difficulty:'hard',   },
    {type:'boss',    emoji:'👽', name:'Alien Quantique',       questions:6, difficulty:'hard',   dropRare:true}
   ]},
+ // ═══════════════════════════════════════════════════════
+ // O2 — 8 nouvelles zones thématiques (v8.7.11)
+ // Progression linéaire : déblocage par étoiles cumulées
+ // ═══════════════════════════════════════════════════════
+ {id:'temple',  label:'Temple Antique',   bg:'linear-gradient(135deg,#8b6914,#d4af37)',emoji:'🏛️',boss:'🗿',bossName:'Gardien de Pierre', level:'CE2',starsReq:250,theme:'chateau',
+  parallax:{sky:['#d4a847','#b8902a','#8b6914'], mountains:['#5a4410','#2c2008'], decor:['🪨','🏺','📜'], astro:'☀️'},
+  steps:[
+   {type:'monster', emoji:'🐫', name:'Chamelier perdu',       questions:3, difficulty:'medium'},
+   {type:'puzzle',  emoji:'📜', name:'Énigme des hiéroglyphes', questions:4, difficulty:'medium'},
+   {type:'monster', emoji:'🦇', name:'Chauve-souris du temple', questions:5, difficulty:'medium'},
+   {type:'minibss', emoji:'🏺', name:'Vase Ensorcelé',        questions:5, difficulty:'hard'},
+   {type:'boss',    emoji:'🗿', name:'Gardien de Pierre',     questions:6, difficulty:'hard',   dropRare:true}
+  ]},
+ {id:'profondeurs',label:'Profondeurs Océanes',bg:'linear-gradient(135deg,#011f3f,#013a63)',emoji:'🌊',boss:'🐙',bossName:'Kraken Abyssal',  level:'CE2',starsReq:320,theme:'ocean',
+  parallax:{sky:['#011f3f','#012a4a','#013a63'], mountains:['#001a35','#000d1c'], decor:['🐠','🪸','🫧'], astro:'🌑'},
+  steps:[
+   {type:'monster', emoji:'🐡', name:'Poisson-globe',         questions:3, difficulty:'medium'},
+   {type:'puzzle',  emoji:'🪸', name:'Énigme du récif',       questions:4, difficulty:'medium'},
+   {type:'monster', emoji:'🦑', name:'Calamar géant',         questions:5, difficulty:'hard'},
+   {type:'minibss', emoji:'🦈', name:'Requin des abysses',    questions:5, difficulty:'hard'},
+   {type:'boss',    emoji:'🐙', name:'Kraken Abyssal',        questions:6, difficulty:'hard',   dropRare:true}
+  ]},
+ {id:'forteresse',label:'Forteresse Médiévale',bg:'linear-gradient(135deg,#3a2e1f,#5c4530)',emoji:'🏰',boss:'🐉',bossName:'Dragon Cuirassé', level:'CM1',starsReq:400,theme:'chateau',
+  parallax:{sky:['#5c4530','#3a2e1f','#1a1408'], mountains:['#2c1810','#0d0804'], decor:['⚔️','🛡️','🏹'], astro:'🌙'},
+  steps:[
+   {type:'monster', emoji:'🐀', name:'Rat des donjons',       questions:3, difficulty:'hard'},
+   {type:'puzzle',  emoji:'🗝️', name:'Énigme des cachots',    questions:4, difficulty:'hard'},
+   {type:'monster', emoji:'⚔️', name:'Garde royal',           questions:5, difficulty:'hard'},
+   {type:'minibss', emoji:'🛡️', name:'Capitaine de la garde', questions:5, difficulty:'hard'},
+   {type:'boss',    emoji:'🐉', name:'Dragon Cuirassé',       questions:6, difficulty:'hard',   dropRare:true}
+  ]},
+ {id:'sakura',  label:'Mont Sakura',      bg:'linear-gradient(135deg,#ff8fb3,#e56b9b)',emoji:'🌸',boss:'🥷',bossName:'Maître Ninja',     level:'CM1',starsReq:500,theme:'sakura',
+  parallax:{sky:['#ffd6e8','#ffb3d1','#ff8fb3'], mountains:['#9c4a6b','#5e2c40'], decor:['🌸','🍃','🏯'], astro:'🌕'},
+  steps:[
+   {type:'monster', emoji:'🦊', name:'Kitsune farceur',       questions:3, difficulty:'hard'},
+   {type:'puzzle',  emoji:'🏮', name:'Énigme des lanternes',  questions:4, difficulty:'hard'},
+   {type:'monster', emoji:'🐅', name:'Tigre de bambou',       questions:5, difficulty:'hard'},
+   {type:'minibss', emoji:'⛩️', name:'Samouraï errant',       questions:5, difficulty:'hard'},
+   {type:'boss',    emoji:'🥷', name:'Maître Ninja',          questions:6, difficulty:'hard',   dropRare:true}
+  ]},
+ {id:'nocturne',label:'Royaume Nocturne', bg:'linear-gradient(135deg,#1b2735,#090a0f)',emoji:'🌙',boss:'🧛',bossName:'Seigneur des Ombres',level:'CM1',starsReq:620,theme:'nuit',
+  parallax:{sky:['#090a0f','#1b2735','#2a3145'], mountains:['#050609','#000000'], decor:['🦇','🕯️','💀'], astro:'🌕'},
+  steps:[
+   {type:'monster', emoji:'🐺', name:'Loup-garou',            questions:3, difficulty:'hard'},
+   {type:'puzzle',  emoji:'🕯️', name:'Énigme du grimoire',    questions:4, difficulty:'hard'},
+   {type:'monster', emoji:'👻', name:'Spectre errant',        questions:5, difficulty:'hard'},
+   {type:'minibss', emoji:'💀', name:'Liche maudite',         questions:5, difficulty:'hard'},
+   {type:'boss',    emoji:'🧛', name:'Seigneur des Ombres',   questions:6, difficulty:'hard',   dropRare:true}
+  ]},
+ {id:'mecanique',label:'Cité Mécanique',  bg:'linear-gradient(135deg,#7a3a08,#c47a1f)',emoji:'⚙️',boss:'🤖',bossName:'Mecha Suprême',    level:'CM2',starsReq:760,theme:'volcan',
+  parallax:{sky:['#7a3a08','#9c4a10','#c47a1f'], mountains:['#3a1a04','#1a0a02'], decor:['⚙️','🔩','💨'], astro:'☀️'},
+  steps:[
+   {type:'monster', emoji:'🔩', name:'Boulon vivant',         questions:3, difficulty:'hard'},
+   {type:'puzzle',  emoji:'⚡', name:'Énigme des circuits',   questions:4, difficulty:'hard'},
+   {type:'monster', emoji:'🦾', name:'Bras mécanique',        questions:5, difficulty:'hard'},
+   {type:'minibss', emoji:'🚂', name:'Locomotive d\'acier',   questions:5, difficulty:'hard'},
+   {type:'boss',    emoji:'🤖', name:'Mecha Suprême',         questions:6, difficulty:'hard',   dropRare:true}
+  ]},
+ {id:'ile',     label:'Île Mystérieuse',  bg:'linear-gradient(135deg,#1b4332,#2d6a4f)',emoji:'🏝️',boss:'🏴‍☠️',bossName:'Capitaine Fantôme',level:'CM2',starsReq:920,theme:'foret',
+  parallax:{sky:['#2d6a4f','#1b4332','#081c15'], mountains:['#06150f','#020a05'], decor:['🌴','🦜','💎'], astro:'🌙'},
+  steps:[
+   {type:'monster', emoji:'🦜', name:'Perroquet pirate',      questions:3, difficulty:'hard'},
+   {type:'puzzle',  emoji:'🗺️', name:'Énigme de la carte',    questions:4, difficulty:'hard'},
+   {type:'monster', emoji:'🐊', name:'Crocodile de jungle',   questions:5, difficulty:'hard'},
+   {type:'minibss', emoji:'⚓', name:'Quartier-maître',       questions:5, difficulty:'hard'},
+   {type:'boss',    emoji:'🏴‍☠️', name:'Capitaine Fantôme',  questions:6, difficulty:'hard',   dropRare:true}
+  ]},
+ // ═══════════════════════════════════════════════════════
+ // SANCTUAIRE FINAL — Zone climax à 8 étapes (au lieu de 5)
+ // Crescendo dramatique vers le boss ultime de l'Odyssée
+ // ═══════════════════════════════════════════════════════
+ {id:'sanctuaire',label:'Sanctuaire Final',bg:'linear-gradient(135deg,#0a0014,#3a0a4a)',emoji:'⛩️',boss:'👹',bossName:'Empereur Cosmique',level:'CM2',starsReq:1100,theme:'nuit',
+  parallax:{sky:['#0a0014','#1a0530','#3a0a4a'], mountains:['#050008','#000000'], decor:['✨','💫','🌌'], astro:'🌑'},
+  steps:[
+   {type:'monster', emoji:'👁️',  name:'Sentinelle astrale',   questions:4, difficulty:'hard'},
+   {type:'puzzle',  emoji:'🔮',  name:'Énigme de l\'au-delà', questions:5, difficulty:'hard'},
+   {type:'monster', emoji:'🌀',  name:'Vortex chaotique',     questions:5, difficulty:'hard'},
+   {type:'monster', emoji:'⚡',  name:'Foudre primordiale',   questions:6, difficulty:'hard'},
+   {type:'puzzle',  emoji:'🧿',  name:'Énigme cosmique ultime',questions:5, difficulty:'hard'},
+   {type:'monster', emoji:'🌟',  name:'Étoile noire',         questions:6, difficulty:'hard'},
+   {type:'minibss', emoji:'👁️‍🗨️', name:'Œil de l\'Empereur', questions:6, difficulty:'hard'},
+   {type:'boss',    emoji:'👹',  name:'Empereur Cosmique',    questions:8, difficulty:'hard',   dropRare:true}
+  ]},
 ];
 
 const HERO_TITLES=[
