@@ -2213,3 +2213,209 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 @media (prefers-reduced-motion: reduce){
  .zone-step.current{ animation:none; }
 }
+
+/* ═══════════════════════════════════════════════════════
+   O3 — CARTE RÉGIONALISÉE (v8.7.13)
+   5 régions empilées (CP/CE1/CE2/CM1/CM2) + Sanctuaire
+   Sentier sinueux SVG entre les zones, ambiance par région
+   ═══════════════════════════════════════════════════════ */
+
+.map-region{
+ position:relative;
+ width:100%;
+ max-width:560px;
+ margin:0 auto 22px;
+ border-radius:18px;
+ overflow:hidden;
+ box-shadow:0 6px 24px rgba(0,0,0,.35);
+ border:2px solid rgba(255,255,255,.08);
+}
+.map-region-header{
+ padding:10px 14px;
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:8px;
+ background:rgba(0,0,0,.35);
+ backdrop-filter:blur(4px);
+ border-bottom:1px solid rgba(255,255,255,.1);
+}
+.map-region-title{
+ font-size:1em;
+ font-weight:800;
+ color:#fff;
+ text-shadow:1px 1px 3px rgba(0,0,0,.6);
+}
+.map-region-sub{
+ font-size:.72em;
+ color:#bdc3c7;
+}
+.map-region-badge{
+ display:inline-block;
+ padding:3px 8px;
+ border-radius:8px;
+ font-size:.7em;
+ font-weight:700;
+ background:rgba(255,255,255,.15);
+ color:#fff;
+}
+
+/* Ambiances par région */
+.map-region.r-cp   { background:linear-gradient(135deg,#5dba5d,#a8d8a8 60%,#e8f5d8); }
+.map-region.r-ce1  { background:linear-gradient(135deg,#2d5a3d,#5a8c5a 60%,#a8d4a8); }
+.map-region.r-ce2  { background:linear-gradient(135deg,#c47a1f,#f4a261 60%,#fce5c4); }
+.map-region.r-cm1  { background:linear-gradient(135deg,#2c4870,#5e7a9c 50%,#a8c0d8); }
+.map-region.r-cm2  { background:linear-gradient(135deg,#3a0a4a,#7c3a8c 50%,#c074d4); }
+.map-region.r-final{ background:linear-gradient(135deg,#0a0014,#3a0a4a 50%,#8b2db8); border-color:#f1c40f; box-shadow:0 0 24px rgba(241,196,15,.45); }
+
+/* Zone collapsible (pour réduire visuellement les régions terminées) */
+.map-region.collapsed .map-region-path{ max-height:60px; opacity:.55; overflow:hidden; }
+.map-region-toggle{
+ background:rgba(255,255,255,.18);
+ color:#fff;
+ border:none;
+ cursor:pointer;
+ font-size:.85em;
+ padding:3px 10px;
+ border-radius:6px;
+}
+.map-region-toggle:hover{ background:rgba(255,255,255,.28); }
+
+/* Conteneur du sentier SVG + nœuds */
+.map-region-path{
+ position:relative;
+ padding:24px 18px 28px;
+ transition:max-height .35s, opacity .35s;
+}
+.mr-svg{
+ position:absolute;
+ top:0;
+ left:0;
+ width:100%;
+ height:100%;
+ pointer-events:none;
+}
+
+/* Nœuds de zone (chemin sinueux) */
+.mr-nodes{
+ position:relative;
+ display:flex;
+ flex-wrap:wrap;
+ justify-content:space-around;
+ gap:14px 6px;
+ z-index:2;
+}
+.mr-node{
+ position:relative;
+ width:74px;
+ text-align:center;
+ cursor:pointer;
+ transition:transform .15s;
+}
+.mr-node:hover:not(.locked){ transform:scale(1.08); }
+.mr-node-circle{
+ width:62px;
+ height:62px;
+ border-radius:50%;
+ background:rgba(255,255,255,.18);
+ border:3px solid rgba(255,255,255,.4);
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ font-size:1.9em;
+ line-height:1;
+ margin:0 auto;
+ backdrop-filter:blur(2px);
+ box-shadow:0 3px 10px rgba(0,0,0,.3);
+ transition:all .25s;
+}
+.mr-node.completed .mr-node-circle{
+ background:linear-gradient(135deg,rgba(46,204,113,.55),rgba(46,204,113,.3));
+ border-color:#2ecc71;
+ box-shadow:0 0 14px rgba(46,204,113,.5);
+}
+.mr-node.current .mr-node-circle{
+ background:linear-gradient(135deg,rgba(241,196,15,.45),rgba(241,196,15,.2));
+ border-color:#f1c40f;
+ box-shadow:0 0 18px rgba(241,196,15,.65);
+ animation:mrNodeRing 1.8s ease-in-out infinite;
+}
+.mr-node.locked .mr-node-circle{
+ background:rgba(0,0,0,.45);
+ border-color:rgba(255,255,255,.18);
+ opacity:.55;
+ filter:grayscale(.7);
+}
+.mr-node.locked{ cursor:not-allowed; }
+.mr-node-label{
+ font-size:.65em;
+ color:#fff;
+ font-weight:700;
+ text-shadow:1px 1px 3px rgba(0,0,0,.7);
+ margin-top:5px;
+ line-height:1.15;
+ max-width:74px;
+ word-wrap:break-word;
+}
+.mr-node-check{
+ position:absolute;
+ top:-4px;
+ right:6px;
+ background:#2ecc71;
+ color:#fff;
+ width:18px;
+ height:18px;
+ border-radius:50%;
+ font-size:.65em;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ font-weight:900;
+ border:2px solid #0f0f12;
+}
+.mr-node-lock{
+ position:absolute;
+ top:-2px;
+ right:8px;
+ font-size:.85em;
+}
+.mr-node-req{
+ font-size:.58em;
+ color:#ffd6e8;
+ background:rgba(0,0,0,.4);
+ padding:1px 6px;
+ border-radius:4px;
+ display:inline-block;
+ margin-top:2px;
+}
+@keyframes mrNodeRing{
+ 0%,100%{ box-shadow:0 0 14px rgba(241,196,15,.55); }
+ 50%{    box-shadow:0 0 24px rgba(241,196,15,.85); }
+}
+
+/* Mini-personnage avatar (sera animé en O3-B) */
+.mr-avatar{
+ position:absolute;
+ top:-10px;
+ left:50%;
+ transform:translateX(-50%);
+ font-size:1.6em;
+ z-index:3;
+ filter:drop-shadow(0 2px 4px rgba(0,0,0,.6));
+ pointer-events:none;
+}
+
+/* Modes de zoom */
+.map-scroll.zoom-overview .mr-node{ width:54px; }
+.map-scroll.zoom-overview .mr-node-circle{ width:44px; height:44px; font-size:1.4em; border-width:2px; }
+.map-scroll.zoom-overview .mr-node-label{ font-size:.58em; }
+.map-scroll.zoom-overview .map-region-path{ padding:14px 12px 18px; }
+
+.map-scroll.zoom-close .mr-node{ width:90px; }
+.map-scroll.zoom-close .mr-node-circle{ width:78px; height:78px; font-size:2.3em; }
+.map-scroll.zoom-close .mr-node-label{ font-size:.72em; }
+
+/* Pour reduce-motion */
+@media (prefers-reduced-motion: reduce){
+ .mr-node.current .mr-node-circle{ animation:none; }
+}

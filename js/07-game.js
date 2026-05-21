@@ -166,33 +166,162 @@ function closeZone(){
  if(typeof navBack==='function') navBack(); else showView('v-map');
 }
 
-function renderMap(){
- const beaten=P.mapBossBeaten||[];
- $('map-zones').innerHTML=MAP_ZONES.map((z,i)=>{
-  const prev=i===0||beaten.includes(MAP_ZONES[i-1].id);
-  const done=beaten.includes(z.id);
-  const cur=prev&&!done;
-  let st=prev?'unlocked':'locked';if(done)st='completed';if(cur)st+=' current';
-  const stars=done?'⭐⭐⭐':cur?'☆☆☆':'🔒';
-  const starsTotal=P.stars||0;
-  const canPlay=prev&&(starsTotal>=z.starsReq);
-  // Chantier B3 : data-zone-id permet à l'observer de détecter la zone "active" pendant le scroll
+// ═══════════════════════════════════════════════════════
+// O3-A — CARTE RÉGIONALISÉE (v8.7.13)
+// Les 23 zones sont regroupées en 5 régions par niveau scolaire
+// + Sanctuaire à part. Chaque région a son ambiance visuelle.
+// ═══════════════════════════════════════════════════════
+
+// Métadonnées de chaque région
+const _MAP_REGIONS = [
+ { id:'cp',    label:'🌱 Région des Débuts',   sub:'CP — Premiers pas',          cssCls:'r-cp',    transport:'🚶' },
+ { id:'ce1',   label:'🌳 Bois et Plages',      sub:'CE1 — L\'exploration',       cssCls:'r-ce1',   transport:'🚶' },
+ { id:'ce2',   label:'🏜️ Terres d\'Aventure',  sub:'CE2 — Vers l\'inconnu',      cssCls:'r-ce2',   transport:'🐪' },
+ { id:'cm1',   label:'🏰 Royaumes Périlleux',  sub:'CM1 — La grande aventure',   cssCls:'r-cm1',   transport:'⛷️' },
+ { id:'cm2',   label:'🌌 Au-delà des Étoiles', sub:'CM2 — L\'épopée finale',     cssCls:'r-cm2',   transport:'🚀' },
+ { id:'final', label:'⛩️ Sanctuaire Final',    sub:'Le défi ultime',             cssCls:'r-final', transport:'✨' },
+];
+
+// Découpe MAP_ZONES en régions selon le level
+function _groupZonesByRegion(){
+ const groups = { cp:[], ce1:[], ce2:[], cm1:[], cm2:[], final:[] };
+ MAP_ZONES.forEach((z,idx)=>{
+  if(z.id==='sanctuaire'){ groups.final.push({z,idx}); return; }
+  const lvl = (z.level||'CP').toLowerCase();
+  if(groups[lvl]) groups[lvl].push({z,idx});
+  else groups.cp.push({z,idx}); // fallback
+ });
+ return groups;
+}
+
+// Génère le HTML d'une région
+function _renderRegion(region, zones, beaten, starsTotal, avatarZoneId){
+ if(!zones || zones.length===0) return '';
+ // Statut global de la région
+ const allDone = zones.every(({z})=>beaten.includes(z.id));
+ const anyUnlocked = zones.some(({z,idx})=>{
+  const prev = idx===0 || beaten.includes(MAP_ZONES[idx-1].id);
+  return prev && starsTotal>=z.starsReq;
+ });
+ const badge = allDone ? '✅ Conquise' : anyUnlocked ? '⚔️ En cours' : '🔒 Verrouillée';
+ // Génère les nœuds de zones
+ const nodesHtml = zones.map(({z,idx})=>{
+  const prev = idx===0 || beaten.includes(MAP_ZONES[idx-1].id);
+  const done = beaten.includes(z.id);
+  const canPlay = prev && (starsTotal>=z.starsReq);
+  let cls = 'mr-node';
+  if(done) cls += ' completed';
+  else if(canPlay) cls += ' current';
+  else cls += ' locked';
+  const isHere = (z.id===avatarZoneId);
+  // Avatar mini-personnage sur la zone actuelle de l'avatar
+  const avatarChar = (P && P.avatar) ? P.avatar : '🧙';
+  const avatarHtml = isHere ? `<div class="mr-avatar" id="mr-avatar-marker">${avatarChar}</div>` : '';
+  const checkHtml = done ? `<div class="mr-node-check">✓</div>` : '';
+  const lockHtml = (!prev || !canPlay) && !done ? `<div class="mr-node-lock">🔒</div>` : '';
+  const reqHtml = (!canPlay && !done && prev) ? `<div class="mr-node-req">${z.starsReq}★</div>` : '';
+  const onclick = canPlay ? `onclick="onMapNodeClick('${z.id}')"` : '';
   return `
-   ${i>0?`<div class="map-path ${prev?'lit':''}"><svg class="mp-path-svg" viewBox="0 0 40 60" preserveAspectRatio="none"><path d="M20,0 Q5,30 20,60" fill="none" stroke="${prev?'#f1c40f':'rgba(255,255,255,.18)'}" stroke-width="2" stroke-dasharray="4 4"/></svg></div>`:''}
-   <div class="map-zone" data-zone-id="${z.id}" data-zone-idx="${i}">
-    <div class="map-zone-inner ${st}" style="background:${z.bg};" onclick="${canPlay?`openZone('${z.id}')`:''}" title="${!canPlay?'Besoin de '+z.starsReq+' ⭐':''}">
-     <div style="display:flex;justify-content:space-between;align-items:center;">
-      <span style="font-size:1.8em;">${z.emoji}</span>
-      <span class="zone-boss">${z.boss}</span>
-     </div>
-     <div class="zone-title">${done?'✅ ':cur?'⚔️ ':'🔒 '}${z.label}</div>
-     <div class="zone-sub">Boss : ${z.bossName} · Niveau ${z.level}</div>
-     <div class="zone-stars">${stars}</div>
-     ${!prev?`<div class="zone-req">🔒 Bat le boss précédent</div>`:!canPlay&&!done?`<div class="zone-req">Besoin de ${z.starsReq} ⭐ (tu as ${starsTotal})</div>`:''}
-    </div>
+   <div class="${cls}" data-zone-id="${z.id}" data-zone-idx="${idx}" ${onclick}>
+    ${avatarHtml}
+    <div class="mr-node-circle">${z.emoji}</div>
+    ${checkHtml}${lockHtml}
+    <div class="mr-node-label">${z.label}</div>
+    ${reqHtml}
    </div>`;
  }).join('');
+ // Région avec header collapsable
+ return `
+  <div class="map-region ${region.cssCls}" id="map-region-${region.id}">
+   <div class="map-region-header">
+    <div>
+     <div class="map-region-title">${region.label}</div>
+     <div class="map-region-sub">${region.sub}</div>
+    </div>
+    <div style="display:flex;gap:6px;align-items:center;">
+     <span class="map-region-badge">${badge}</span>
+     <button class="map-region-toggle" onclick="toggleRegion('${region.id}')" title="Réduire/Agrandir">▾</button>
+    </div>
+   </div>
+   <div class="map-region-path">
+    <div class="mr-nodes">${nodesHtml}</div>
+   </div>
+  </div>`;
 }
+
+function renderMap(){
+ const beaten = P.mapBossBeaten || [];
+ const starsTotal = P.stars || 0;
+ // Auto-update avatar : si la zone actuelle est verrouillée mais d'autres sont débloquées,
+ // placer l'avatar sur la 1ère zone débloquée
+ let avatarZoneId = P.mapAvatarZone || 'plaine';
+ const cur = MAP_ZONES.find(z=>z.id===avatarZoneId);
+ if(!cur){ avatarZoneId='plaine'; P.mapAvatarZone='plaine'; }
+ const groups = _groupZonesByRegion();
+ const html = _MAP_REGIONS.map(r=>_renderRegion(r, groups[r.id], beaten, starsTotal, avatarZoneId)).join('');
+ const cont = $('map-zones');
+ if(cont) cont.innerHTML = html;
+ // Appliquer le mode de zoom courant
+ if(cont) cont.classList.add('zoom-default');
+ _applyMapZoom();
+ _autoCenterOnAvatar();
+}
+
+// Action sur clic d'une zone (point d'entrée unique pour l'O3-B animation)
+function onMapNodeClick(zoneId){
+ // O3-A : clic direct → ouvre la zone
+ // O3-B (futur) : animation pas à pas avant openZone
+ const z = MAP_ZONES.find(z=>z.id===zoneId);
+ if(!z) return;
+ // Mettre à jour la position de l'avatar (sera animée en O3-B)
+ if(P){ P.mapAvatarZone = zoneId; if(typeof saveProfileNow==='function') saveProfileNow(); }
+ if(typeof openZone==='function') openZone(zoneId);
+}
+
+// Toggle d'une région (collapser pour gagner de la place visuelle)
+function toggleRegion(regionId){
+ const el = document.getElementById('map-region-'+regionId);
+ if(el) el.classList.toggle('collapsed');
+}
+
+// ═══ ZOOM ADAPTATIF (O3) ═══
+let _mapZoom = 'default'; // 'overview' | 'default' | 'close'
+function _applyMapZoom(){
+ const cont = $('map-zones');
+ if(!cont) return;
+ cont.classList.remove('zoom-overview','zoom-default','zoom-close');
+ cont.classList.add('zoom-'+_mapZoom);
+ const lbl = $('map-zoom-label');
+ if(lbl){
+  lbl.textContent = _mapZoom==='overview' ? 'Vue d\'ensemble'
+                  : _mapZoom==='close'    ? 'Vue rapprochée'
+                  : 'Vue régions';
+ }
+}
+function mapZoomIn(){
+ _mapZoom = _mapZoom==='overview' ? 'default' : 'close';
+ _applyMapZoom();
+}
+function mapZoomOut(){
+ _mapZoom = _mapZoom==='close' ? 'default' : 'overview';
+ _applyMapZoom();
+}
+function mapCenterOnAvatar(){
+ _autoCenterOnAvatar(true);
+}
+function _autoCenterOnAvatar(force){
+ try{
+  const avatar = document.getElementById('mr-avatar-marker');
+  if(!avatar) return;
+  const rect = avatar.getBoundingClientRect();
+  // Centrer le viewport sur l'avatar (scroll de la page)
+  if(force || rect.top<60 || rect.bottom>window.innerHeight-60){
+   avatar.scrollIntoView({behavior:'smooth', block:'center', inline:'center'});
+  }
+ }catch(e){}
+}
+
+
 
 // ──────────────────────────────────────────────────────────────────────
 // MOTEUR PARALLAXE (chantier B3)
@@ -347,7 +476,8 @@ function _applyZoneParallax(zone){
 function _setupZoneObserver(){
  if(_MP.io){ try{_MP.io.disconnect();}catch(e){} }
  if(typeof IntersectionObserver==='undefined') return;
- const zoneEls = document.querySelectorAll('.map-zone[data-zone-id]');
+ // O3 : adapté à la nouvelle carte régionalisée (.mr-node remplace .map-zone)
+ const zoneEls = document.querySelectorAll('.mr-node[data-zone-id], .map-zone[data-zone-id]');
  if(!zoneEls.length) return;
  _MP.io = new IntersectionObserver((entries)=>{
   // On prend la zone avec le ratio d'intersection le plus élevé

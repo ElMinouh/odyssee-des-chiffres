@@ -94,6 +94,8 @@ function validateProfile(raw, defaultName){
    CM2: _clampNum(raw.levelWins?.CM2, 0, 9999, 0),
   },
   mapBossBeaten: _safeArr(raw.mapBossBeaten).filter(b => typeof b === 'string'),
+  // O3 — Position du mini-personnage sur la carte régionalisée
+  mapAvatarZone: (typeof raw.mapAvatarZone==='string' && raw.mapAvatarZone) ? raw.mapAvatarZone : 'plaine',
   // v8.7.8 (O1) : progression dans chaque zone (sous-niveaux)
   zoneProgress: (function(){
    const src = (raw.zoneProgress && typeof raw.zoneProgress === 'object') ? raw.zoneProgress : {};
@@ -155,7 +157,7 @@ function defProfile(name){
  return{_v:SAVE_VERSION,name,stars:0,xp:0,skills:{shield:0,sword:0,clock:0},inventory:{potion:0,bomb:0},
   history:[],historyDetailed:[],errors:[],errorLog:[],badgesEarned:[],milestonesClaimed:[],_bestCombo:0,_totalStarsEarned:0,
   quests:null,questsDate:null,opStats:{'+':{ ok:0,fail:0},'-':{ok:0,fail:0},'x':{ok:0,fail:0},'/':{ ok:0,fail:0},'geo':{ok:0,fail:0}},
-  levelWins:{CP:0,CE1:0,CE2:0,CM1:0,CM2:0},mapBossBeaten:[],
+  levelWins:{CP:0,CE1:0,CE2:0,CM1:0,CM2:0},mapBossBeaten:[],mapAvatarZone:'plaine',
   // v8.7.8 (O1) : progression sous-niveaux par zone (5 étapes par zone)
   zoneProgress:(function(){const o={};if(typeof MAP_ZONES!=='undefined'&&Array.isArray(MAP_ZONES))MAP_ZONES.forEach(z=>{o[z.id]={stepsCompleted:0,completed:false};});return o;})(),
   prefs:{level:'CP',mode2:'normal',mode:'keyboard',theme:'standard'},
