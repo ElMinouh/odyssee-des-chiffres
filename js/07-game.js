@@ -167,125 +167,322 @@ function closeZone(){
 }
 
 // ═══════════════════════════════════════════════════════
-// O3-A — CARTE RÉGIONALISÉE (v8.7.13)
-// Les 23 zones sont regroupées en 5 régions par niveau scolaire
-// + Sanctuaire à part. Chaque région a son ambiance visuelle.
+// O3-A — ARCHIPEL D'UNIVERS (v8.7.15)
+// Carte mondiale unique avec îlots organiques variés sur fond cosmique,
+// sentier sinueux continu qui traverse tout, zoom intelligent vers
+// vue détaillée d'une sous-zone (avec ses étapes).
 // ═══════════════════════════════════════════════════════
 
-// Métadonnées de chaque région
-const _MAP_REGIONS = [
- { id:'cp',    label:'🌱 Région des Débuts',   sub:'CP — Premiers pas',          cssCls:'r-cp',    transport:'🚶' },
- { id:'ce1',   label:'🌳 Bois et Plages',      sub:'CE1 — L\'exploration',       cssCls:'r-ce1',   transport:'🚶' },
- { id:'ce2',   label:'🏜️ Terres d\'Aventure',  sub:'CE2 — Vers l\'inconnu',      cssCls:'r-ce2',   transport:'🐪' },
- { id:'cm1',   label:'🏰 Royaumes Périlleux',  sub:'CM1 — La grande aventure',   cssCls:'r-cm1',   transport:'⛷️' },
- { id:'cm2',   label:'🌌 Au-delà des Étoiles', sub:'CM2 — L\'épopée finale',     cssCls:'r-cm2',   transport:'🚀' },
- { id:'final', label:'⛩️ Sanctuaire Final',    sub:'Le défi ultime',             cssCls:'r-final', transport:'✨' },
+// Métadonnées des 5 régions + Sanctuaire (titres calligraphiés)
+const _ARCH_REGIONS = [
+ { id:'cp',    label:'Région des Débuts',     levels:['CP'],  shape:'colline' },
+ { id:'ce1',   label:'Bois et Plages',         levels:['CE1'], shape:'feuille' },
+ { id:'ce2',   label:'Terres d\'Aventure',     levels:['CE2'], shape:'dune' },
+ { id:'cm1',   label:'Royaumes Périlleux',     levels:['CM1'], shape:'citadelle' },
+ { id:'cm2',   label:'Au-delà des Étoiles',    levels:['CM2'], shape:'nebuleuse' },
+ { id:'final', label:'Sanctuaire Final',       levels:['FINAL'], shape:'mandala' },
 ];
 
-// Découpe MAP_ZONES en régions selon le level
-function _groupZonesByRegion(){
- const groups = { cp:[], ce1:[], ce2:[], cm1:[], cm2:[], final:[] };
- MAP_ZONES.forEach((z,idx)=>{
-  if(z.id==='sanctuaire'){ groups.final.push({z,idx}); return; }
-  const lvl = (z.level||'CP').toLowerCase();
-  if(groups[lvl]) groups[lvl].push({z,idx});
-  else groups.cp.push({z,idx}); // fallback
+// Layout vertical : chaque sous-zone a une coordonnée Y croissante
+// X alterne gauche/droite pour zigzag naturel. Calcul dynamique.
+function _computeArchipelLayout(){
+ const W = 560; // largeur de référence du conteneur
+ const positions = []; // [{x,y, zone, regionId, zoneIdx}]
+ let curY = 70; // marge haute
+ const dyZone = 90; // espace vertical entre 2 zones d'une même région
+ const dyBetweenRegion = 50; // espace supplémentaire entre régions
+ // Pattern X en zigzag léger
+ const xPattern = [0.22, 0.48, 0.74, 0.5, 0.26, 0.62, 0.38]; // 7 positions pour gérer 5+
+ _ARCH_REGIONS.forEach((region, rIdx)=>{
+  const zonesInRegion = MAP_ZONES.map((z,i)=>({z,i})).filter(({z})=>{
+   if(region.id==='final') return z.id==='sanctuaire';
+   return region.levels.includes(z.level) && z.id!=='sanctuaire';
+  });
+  zonesInRegion.forEach(({z,i}, jdx)=>{
+   const x = W * xPattern[jdx % xPattern.length];
+   positions.push({ x, y: curY, zone: z, regionId: region.id, zoneIdx: i, jdx });
+   curY += dyZone;
+  });
+  curY += dyBetweenRegion; // espace tampon entre régions
  });
- return groups;
+ const totalHeight = curY + 40;
+ return { positions, totalHeight, W };
 }
 
-// Génère le HTML d'une région
-function _renderRegion(region, zones, beaten, starsTotal, avatarZoneId){
- if(!zones || zones.length===0) return '';
- // Statut global de la région
- const allDone = zones.every(({z})=>beaten.includes(z.id));
- const anyUnlocked = zones.some(({z,idx})=>{
-  const prev = idx===0 || beaten.includes(MAP_ZONES[idx-1].id);
-  return prev && starsTotal>=z.starsReq;
- });
- const badge = allDone ? '✅ Conquise' : anyUnlocked ? '⚔️ En cours' : '🔒 Verrouillée';
- // Génère les nœuds de zones
- const nodesHtml = zones.map(({z,idx})=>{
-  const prev = idx===0 || beaten.includes(MAP_ZONES[idx-1].id);
-  const done = beaten.includes(z.id);
-  const canPlay = prev && (starsTotal>=z.starsReq);
-  let cls = 'mr-node';
-  if(done) cls += ' completed';
-  else if(canPlay) cls += ' current';
-  else cls += ' locked';
-  const isHere = (z.id===avatarZoneId);
-  // Avatar mini-personnage sur la zone actuelle de l'avatar
-  const avatarChar = (P && P.avatar) ? P.avatar : '🧙';
-  const avatarHtml = isHere ? `<div class="mr-avatar" id="mr-avatar-marker">${avatarChar}</div>` : '';
-  const checkHtml = done ? `<div class="mr-node-check">✓</div>` : '';
-  const lockHtml = (!prev || !canPlay) && !done ? `<div class="mr-node-lock">🔒</div>` : '';
-  const reqHtml = (!canPlay && !done && prev) ? `<div class="mr-node-req">${z.starsReq}★</div>` : '';
-  const onclick = canPlay ? `onclick="onMapNodeClick('${z.id}')"` : '';
-  return `
-   <div class="${cls}" data-zone-id="${z.id}" data-zone-idx="${idx}" ${onclick}>
-    ${avatarHtml}
-    <div class="mr-node-circle">${z.emoji}</div>
-    ${checkHtml}${lockHtml}
-    <div class="mr-node-label">${z.label}</div>
-    ${reqHtml}
-   </div>`;
- }).join('');
- // Région avec header collapsable
- return `
-  <div class="map-region ${region.cssCls}" id="map-region-${region.id}">
-   <div class="map-region-header">
-    <div>
-     <div class="map-region-title">${region.label}</div>
-     <div class="map-region-sub">${region.sub}</div>
-    </div>
-    <div style="display:flex;gap:6px;align-items:center;">
-     <span class="map-region-badge">${badge}</span>
-     <button class="map-region-toggle" onclick="toggleRegion('${region.id}')" title="Réduire/Agrandir">▾</button>
-    </div>
-   </div>
-   <div class="map-region-path">
-    <div class="mr-nodes">${nodesHtml}</div>
-   </div>
-  </div>`;
+// Génère un chemin SVG sinueux et arrondi entre les nœuds (courbe de Bézier)
+function _buildArchipelPath(positions){
+ if(positions.length === 0) return '';
+ let d = `M ${positions[0].x.toFixed(1)},${positions[0].y.toFixed(1)} `;
+ for(let i=1;i<positions.length;i++){
+  const prev = positions[i-1];
+  const cur = positions[i];
+  // Point de contrôle pour courbe douce
+  const midX = (prev.x + cur.x) / 2;
+  const cy1 = prev.y + (cur.y - prev.y) * 0.5;
+  d += `Q ${midX.toFixed(1)},${cy1.toFixed(1)} ${cur.x.toFixed(1)},${cur.y.toFixed(1)} `;
+ }
+ return d;
+}
+
+// Génère le SVG d'un îlot organique selon sa forme et ses positions de zones
+function _renderIslandSvg(regionId, shape, zonePositions, totalH, W){
+ if(zonePositions.length === 0) return '';
+ // Calculer la bounding box des zones de cette région
+ const xs = zonePositions.map(p=>p.x);
+ const ys = zonePositions.map(p=>p.y);
+ const minX = Math.min(...xs) - 70;
+ const maxX = Math.max(...xs) + 70;
+ const minY = Math.min(...ys) - 50;
+ const maxY = Math.max(...ys) + 60;
+ const cx = (minX + maxX) / 2;
+ const cy = (minY + maxY) / 2;
+ const w = maxX - minX;
+ const h = maxY - minY;
+ // Génère un blob organique selon la forme
+ const blobPath = _generateBlobPath(shape, cx, cy, w, h);
+ // Couleurs et textures selon la région
+ const styles = {
+  cp:    { fill:'url(#archGradCP)',    stroke:'#2c5a1c', deco:['🌾','🌻','🦋','🐝'] },
+  ce1:   { fill:'url(#archGradCE1)',   stroke:'#0a2418', deco:['🌳','🍄','🌿','🐌'] },
+  ce2:   { fill:'url(#archGradCE2)',   stroke:'#5e3208', deco:['🌵','🏺','🦅','💨'] },
+  cm1:   { fill:'url(#archGradCM1)',   stroke:'#1a3a5a', deco:['❄️','🏰','🗡️','💎'] },
+  cm2:   { fill:'url(#archGradCM2)',   stroke:'#1a0530', deco:['✨','🌟','🪐','👽'] },
+  final: { fill:'url(#archGradFinal)', stroke:'#8b6914', deco:['⛩️','🌟','✨','💫'] },
+ };
+ const st = styles[regionId] || styles.cp;
+ // Ajout de quelques décorations thématiques posées sur l'îlot
+ const decoElements = [];
+ const decoCount = Math.min(6, st.deco.length * 2);
+ for(let i=0;i<decoCount;i++){
+  const angle = (i / decoCount) * Math.PI * 2;
+  const dx = cx + Math.cos(angle) * (w * 0.32);
+  const dy = cy + Math.sin(angle) * (h * 0.32);
+  const emoji = st.deco[i % st.deco.length];
+  decoElements.push(`<text x="${dx.toFixed(1)}" y="${dy.toFixed(1)}" font-size="14" opacity="0.5" text-anchor="middle">${emoji}</text>`);
+ }
+ return `<path d="${blobPath}" fill="${st.fill}" stroke="${st.stroke}" stroke-width="1.5" stroke-opacity="0.45" opacity="0.93"/>${decoElements.join('')}`;
+}
+
+// Génère un blob organique selon la forme demandée
+function _generateBlobPath(shape, cx, cy, w, h){
+ // 8 points autour du centre, avec variations radiales selon la forme
+ const points = 12;
+ const pts = [];
+ // Profils de variations pour chaque forme (12 valeurs entre 0.7 et 1.2)
+ const profiles = {
+  colline:    [1.1, 1.15, 1.2, 1.15, 1.0, 0.85, 0.7, 0.75, 0.85, 1.0, 1.1, 1.15],
+  feuille:    [0.7, 0.85, 1.1, 1.2, 1.15, 0.9, 0.75, 0.85, 1.1, 1.2, 1.15, 0.9],
+  dune:       [1.0, 1.15, 1.2, 1.1, 0.95, 0.85, 0.8, 0.85, 0.95, 1.1, 1.2, 1.15],
+  citadelle:  [1.15, 0.85, 1.2, 0.85, 1.15, 0.85, 1.2, 0.85, 1.15, 0.85, 1.2, 0.85],
+  nebuleuse:  [1.2, 0.85, 1.15, 0.75, 1.2, 0.85, 1.15, 0.75, 1.2, 0.85, 1.15, 0.75],
+  mandala:    [1.1, 1.0, 1.1, 1.0, 1.1, 1.0, 1.1, 1.0, 1.1, 1.0, 1.1, 1.0],
+ };
+ const prof = profiles[shape] || profiles.colline;
+ for(let i=0;i<points;i++){
+  const angle = (i / points) * Math.PI * 2 - Math.PI/2;
+  const r = prof[i % prof.length];
+  const px = cx + Math.cos(angle) * (w/2) * r;
+  const py = cy + Math.sin(angle) * (h/2) * r;
+  pts.push([px, py]);
+ }
+ // Construire un path avec courbes Q lissées
+ let d = `M ${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)} `;
+ for(let i=1;i<=points;i++){
+  const cur = pts[i % points];
+  const prev = pts[i-1];
+  const mx = (prev[0] + cur[0]) / 2;
+  const my = (prev[1] + cur[1]) / 2;
+  d += `Q ${prev[0].toFixed(1)},${prev[1].toFixed(1)} ${mx.toFixed(1)},${my.toFixed(1)} `;
+ }
+ d += 'Z';
+ return d;
 }
 
 function renderMap(){
  const beaten = P.mapBossBeaten || [];
  const starsTotal = P.stars || 0;
- // Auto-update avatar : si la zone actuelle est verrouillée mais d'autres sont débloquées,
- // placer l'avatar sur la 1ère zone débloquée
+ // Vérifier que l'avatar pointe vers une zone existante
  let avatarZoneId = P.mapAvatarZone || 'plaine';
- const cur = MAP_ZONES.find(z=>z.id===avatarZoneId);
- if(!cur){ avatarZoneId='plaine'; P.mapAvatarZone='plaine'; }
- const groups = _groupZonesByRegion();
- const html = _MAP_REGIONS.map(r=>_renderRegion(r, groups[r.id], beaten, starsTotal, avatarZoneId)).join('');
+ if(!MAP_ZONES.find(z=>z.id===avatarZoneId)){ avatarZoneId = 'plaine'; P.mapAvatarZone = 'plaine'; }
+ // Calculer le layout
+ const layout = _computeArchipelLayout();
+ const { positions, totalHeight, W } = layout;
+ // Construire le SVG global (sentier + îlots)
+ const pathD = _buildArchipelPath(positions);
+ // Grouper les positions par région pour générer les îlots
+ const byRegion = {};
+ positions.forEach(p => { (byRegion[p.regionId] = byRegion[p.regionId] || []).push(p); });
+ // Générer les îlots SVG
+ const islandsSvg = _ARCH_REGIONS.map(r =>
+  _renderIslandSvg(r.id, r.shape, byRegion[r.id] || [], totalHeight, W)
+ ).join('');
+ // Noms de régions (calligraphie au-dessus du 1er nœud de chaque région)
+ const regionNamesHtml = _ARCH_REGIONS.map(r=>{
+  const ps = byRegion[r.id];
+  if(!ps || ps.length === 0) return '';
+  const y = ps[0].y - 35;
+  return `<div class="archipel-region-name" style="top:${y}px;">${r.label}</div>`;
+ }).join('');
+ // Générer les nœuds de zones
+ const zonesHtml = positions.map(p=>{
+  const z = p.zone;
+  const idx = p.zoneIdx;
+  const prev = idx===0 || beaten.includes(MAP_ZONES[idx-1].id);
+  const done = beaten.includes(z.id);
+  const canPlay = prev && (starsTotal >= z.starsReq);
+  let cls = 'archipel-zone';
+  if(done) cls += ' completed';
+  else if(canPlay) cls += ' current';
+  else cls += ' locked';
+  // Badge progression (étapes faites / total)
+  let badgeHtml = '';
+  if(canPlay && !done){
+   const zp = (P.zoneProgress && P.zoneProgress[z.id]) || {stepsCompleted:0};
+   const total = (z.steps && z.steps.length) || 5;
+   if(zp.stepsCompleted > 0){
+    badgeHtml = `<div class="archipel-zone-progress">${zp.stepsCompleted}/${total}</div>`;
+   }
+  }
+  const checkHtml = done ? `<div class="archipel-zone-check">✓</div>` : '';
+  const lockHtml = (!canPlay && !done) ? `<div class="archipel-zone-lock">🔒</div>` : '';
+  const reqHtml = (!canPlay && !done && prev) ? `<div class="archipel-zone-req">${z.starsReq}★</div>` : '';
+  const onclick = canPlay ? `onclick="openArchipelZoom('${z.id}')"` : '';
+  return `
+   <div class="${cls}" style="left:${p.x}px;top:${p.y}px;" data-zone-id="${z.id}" ${onclick}>
+    <div class="archipel-zone-circle">${z.emoji}${checkHtml}${lockHtml}</div>
+    <div class="archipel-zone-label">${z.label}</div>
+    ${badgeHtml}${reqHtml}
+   </div>`;
+ }).join('');
+ // Avatar
+ const avatarPos = positions.find(p => p.zone.id === avatarZoneId);
+ const avatarHtml = avatarPos ?
+  `<div class="archipel-avatar" style="left:${avatarPos.x}px;top:${avatarPos.y}px;">${(P&&P.avatar)||'🧙'}</div>` : '';
+ // Assemblage final
  const cont = $('map-zones');
- if(cont) cont.innerHTML = html;
- // Appliquer le mode de zoom courant
- if(cont) cont.classList.add('zoom-default');
- _applyMapZoom();
- _autoCenterOnAvatar();
+ if(!cont) return;
+ cont.style.minHeight = totalHeight + 'px';
+ cont.innerHTML = `
+  <div class="archipel-stars"></div>
+  <div class="archipel-compass">🧭</div>
+  <svg class="archipel-path-svg" viewBox="0 0 ${W} ${totalHeight}" preserveAspectRatio="none">
+   <defs>
+    <radialGradient id="archGradCP" cx="0.5" cy="0.5"><stop offset="0%" stop-color="#a8e8a8"/><stop offset="100%" stop-color="#5dba5d"/></radialGradient>
+    <radialGradient id="archGradCE1" cx="0.5" cy="0.5"><stop offset="0%" stop-color="#3a8c5a"/><stop offset="100%" stop-color="#1b4d2e"/></radialGradient>
+    <radialGradient id="archGradCE2" cx="0.5" cy="0.5"><stop offset="0%" stop-color="#f4c578"/><stop offset="100%" stop-color="#c47a1f"/></radialGradient>
+    <radialGradient id="archGradCM1" cx="0.5" cy="0.5"><stop offset="0%" stop-color="#dfe6e9"/><stop offset="100%" stop-color="#74b9ff"/></radialGradient>
+    <radialGradient id="archGradCM2" cx="0.5" cy="0.5"><stop offset="0%" stop-color="#b074d4"/><stop offset="100%" stop-color="#3a0a4a"/></radialGradient>
+    <radialGradient id="archGradFinal" cx="0.5" cy="0.5"><stop offset="0%" stop-color="#f1c40f"/><stop offset="100%" stop-color="#8b6914"/></radialGradient>
+   </defs>
+   ${islandsSvg}
+   <path d="${pathD}" stroke="#f1c40f" stroke-width="3" fill="none" stroke-dasharray="6,4" opacity="0.78" stroke-linecap="round"/>
+  </svg>
+  ${regionNamesHtml}
+  ${zonesHtml}
+  ${avatarHtml}
+ `;
+ // Auto-centrer sur l'avatar après rendu
+ setTimeout(()=>_autoCenterOnAvatar(), 50);
 }
 
-// Action sur clic d'une zone (point d'entrée unique pour l'O3-B animation)
-function onMapNodeClick(zoneId){
- // O3-A : clic direct → ouvre la zone
- // O3-B (futur) : animation pas à pas avant openZone
- const z = MAP_ZONES.find(z=>z.id===zoneId);
- if(!z) return;
- // Mettre à jour la position de l'avatar (sera animée en O3-B)
+// Ouvre la vue zoomée d'une sous-zone (modale qui montre les 5 étapes)
+function openArchipelZoom(zoneId){
+ const zone = MAP_ZONES.find(z=>z.id===zoneId);
+ if(!zone) return;
+ // Mémoriser la position de l'avatar
  if(P){ P.mapAvatarZone = zoneId; if(typeof saveProfileNow==='function') saveProfileNow(); }
- if(typeof openZone==='function') openZone(zoneId);
+ // Construire la vue zoomée
+ const prog = (P.zoneProgress && P.zoneProgress[zoneId]) || { stepsCompleted: 0 };
+ const steps = Array.isArray(zone.steps) ? zone.steps : [];
+ const done = prog.stepsCompleted;
+ // Couleur de fond de l'îlot zoomé selon le niveau de la zone
+ const bgColors = {
+  CP:  {top:'#a8e8a8', bot:'#2c5a1c'},
+  CE1: {top:'#3a8c5a', bot:'#0a2418'},
+  CE2: {top:'#f4c578', bot:'#5e3208'},
+  CM1: {top:'#dfe6e9', bot:'#1a3a5a'},
+  CM2: {top:'#b074d4', bot:'#1a0530'},
+ };
+ const bg = bgColors[zone.level] || bgColors.CP;
+ // Layout des 5 étapes : sentier en S
+ const stepCount = steps.length;
+ const stepPositions = [];
+ const containerW = 480;
+ const containerH = 320;
+ for(let i=0;i<stepCount;i++){
+  const t = i / Math.max(1, stepCount-1);
+  // Sinusoïde douce
+  const x = 60 + (containerW - 120) * t;
+  const y = 50 + (containerH - 100) * (0.5 + 0.4 * Math.sin(t * Math.PI * 1.8));
+  stepPositions.push({x, y});
+ }
+ // Sentier rouge entre les étapes
+ let stepPathD = '';
+ if(stepPositions.length > 0){
+  stepPathD = `M ${stepPositions[0].x.toFixed(1)},${stepPositions[0].y.toFixed(1)} `;
+  for(let i=1;i<stepPositions.length;i++){
+   const prev = stepPositions[i-1];
+   const cur = stepPositions[i];
+   const midX = (prev.x + cur.x) / 2;
+   const midY = (prev.y + cur.y) / 2;
+   stepPathD += `Q ${midX.toFixed(1)},${prev.y.toFixed(1)} ${cur.x.toFixed(1)},${cur.y.toFixed(1)} `;
+  }
+ }
+ // HTML des étapes
+ const TAGS = { monster:'Monstre', puzzle:'Énigme', minibss:'Mini-boss', boss:'BOSS' };
+ const stepsHtml = steps.map((s, i)=>{
+  const p = stepPositions[i];
+  let cls = 'archipel-zoom-step';
+  if(i < done) cls += ' completed';
+  else if(i === done) cls += ' current';
+  else cls += ' locked';
+  if(s.type === 'boss') cls += ' boss';
+  const click = (i <= done) ? `onclick="startMapStep('${zoneId}',${i});closeArchipelZoom();"` : '';
+  return `
+   <div class="${cls}" style="left:${p.x}px;top:${p.y}px;" ${click}>
+    <div class="archipel-zoom-step-circle">${s.emoji||'❓'}</div>
+    <div class="archipel-zoom-step-label">Étape ${i+1}</div>
+    <div class="archipel-zoom-step-name">${s.name||TAGS[s.type]||''}</div>
+   </div>`;
+ }).join('');
+ const total = stepCount;
+ const overlay = document.createElement('div');
+ overlay.className = 'archipel-zoom-overlay';
+ overlay.id = 'archipel-zoom-overlay';
+ overlay.onclick = function(e){ if(e.target === overlay) closeArchipelZoom(); };
+ overlay.innerHTML = `
+  <div class="archipel-zoom-content" style="--zone-bg-top:${bg.top};--zone-bg-bot:${bg.bot};">
+   <button class="archipel-zoom-close" onclick="closeArchipelZoom()">✕</button>
+   <div class="archipel-zoom-header">
+    <div style="font-size:2em;line-height:1;">${zone.emoji}</div>
+    <div class="archipel-zoom-title">${zone.label}</div>
+    <div class="archipel-zoom-sub">${zone.level} · ${done}/${total} étapes franchies</div>
+   </div>
+   <div class="archipel-zoom-steps" style="height:${containerH+20}px;">
+    <svg class="archipel-zoom-path-svg" viewBox="0 0 ${containerW} ${containerH+20}" preserveAspectRatio="none">
+     <path d="${stepPathD}" stroke="#c0392b" stroke-width="2.5" fill="none" stroke-dasharray="5,3" opacity="0.85" stroke-linecap="round"/>
+    </svg>
+    ${stepsHtml}
+   </div>
+  </div>`;
+ document.body.appendChild(overlay);
 }
 
-// Toggle d'une région (collapser pour gagner de la place visuelle)
-function toggleRegion(regionId){
- const el = document.getElementById('map-region-'+regionId);
- if(el) el.classList.toggle('collapsed');
+function closeArchipelZoom(){
+ const el = document.getElementById('archipel-zoom-overlay');
+ if(el) el.remove();
 }
 
-// ═══ ZOOM ADAPTATIF (O3) ═══
-let _mapZoom = 'default'; // 'overview' | 'default' | 'close'
+// Action point d'entrée (legacy compat)
+function onMapNodeClick(zoneId){
+ openArchipelZoom(zoneId);
+}
+
+// Toggle d'une région (legacy compat, désactivé en O3)
+function toggleRegion(regionId){ /* no-op en mode Archipel */ }
+
+// ═══ ZOOM ADAPTATIF (carte mondiale, conservé) ═══
+let _mapZoom = 'default';
 function _applyMapZoom(){
  const cont = $('map-zones');
  if(!cont) return;
@@ -311,15 +508,15 @@ function mapCenterOnAvatar(){
 }
 function _autoCenterOnAvatar(force){
  try{
-  const avatar = document.getElementById('mr-avatar-marker');
+  const avatar = document.querySelector('.archipel-avatar');
   if(!avatar) return;
   const rect = avatar.getBoundingClientRect();
-  // Centrer le viewport sur l'avatar (scroll de la page)
-  if(force || rect.top<60 || rect.bottom>window.innerHeight-60){
+  if(force || rect.top < 60 || rect.bottom > window.innerHeight - 60){
    avatar.scrollIntoView({behavior:'smooth', block:'center', inline:'center'});
   }
  }catch(e){}
 }
+
 
 
 
