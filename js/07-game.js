@@ -183,43 +183,81 @@ const _ARCH_REGIONS = [
  { id:'final', label:'Sanctuaire Final',       levels:['FINAL'], shape:'mandala' },
 ];
 
-// Layout vertical : chaque sous-zone a une coordonnée Y croissante
-// X alterne gauche/droite pour zigzag naturel. Calcul dynamique.
+// Hash simple d'une chaîne (pour générer des positions pseudo-aléatoires reproductibles).
+// Retourne un nombre entre 0 et 1.
+function _archHash(str, salt=0){
+ let h = 5381 + salt;
+ for(let i=0;i<str.length;i++){ h = ((h<<5)+h) + str.charCodeAt(i); h |= 0; }
+ // Normaliser entre 0 et 1
+ return (Math.abs(h % 10000) / 10000);
+}
+
+// Layout vertical : chaque sous-zone a une coordonnée Y croissante.
+// X est généré par hash de l'id pour des positions variées mais déterministes.
 function _computeArchipelLayout(){
- const W = 560; // largeur de référence du conteneur
- const positions = []; // [{x,y, zone, regionId, zoneIdx}]
- let curY = 70; // marge haute
- const dyZone = 90; // espace vertical entre 2 zones d'une même région
- const dyBetweenRegion = 50; // espace supplémentaire entre régions
- // Pattern X en zigzag léger
- const xPattern = [0.22, 0.48, 0.74, 0.5, 0.26, 0.62, 0.38]; // 7 positions pour gérer 5+
+ const W = 560;
+ const positions = [];
+ let curY = 90;
+ const dyZone = 110;
+ const dyBetweenRegion = 60;
+ // Bornes X : marges pour que les nœuds restent à l'intérieur
+ const xMin = W * 0.18;
+ const xMax = W * 0.82;
  _ARCH_REGIONS.forEach((region, rIdx)=>{
   const zonesInRegion = MAP_ZONES.map((z,i)=>({z,i})).filter(({z})=>{
    if(region.id==='final') return z.id==='sanctuaire';
    return region.levels.includes(z.level) && z.id!=='sanctuaire';
   });
+  // Garder une variation X mais alternée pour rester lisible (gauche/droite/gauche…)
+  let lastSide = (rIdx % 2 === 0) ? 'right' : 'left'; // alterne à chaque région
   zonesInRegion.forEach(({z,i}, jdx)=>{
-   const x = W * xPattern[jdx % xPattern.length];
-   positions.push({ x, y: curY, zone: z, regionId: region.id, zoneIdx: i, jdx });
+   // Côté alterné (zigzag franc) MAIS variation aléatoire de la position exacte
+   const side = (jdx % 2 === 0) ? lastSide : (lastSide === 'left' ? 'right' : 'left');
+   // Position de base selon le côté + variation par hash de l'id
+   const variationRange = (xMax - xMin) * 0.35;
+   const noise = (_archHash(z.id, jdx) - 0.5) * variationRange;
+   let x;
+   if(side === 'left'){
+    x = xMin + (xMax - xMin) * 0.25 + noise;
+   } else {
+    x = xMin + (xMax - xMin) * 0.75 + noise;
+   }
+   // Clamp pour rester dans les bornes
+   x = Math.max(xMin, Math.min(xMax, x));
+   // Variation Y légère (±15px) pour casser le quadrillage
+   const yNoise = (_archHash(z.id, jdx + 100) - 0.5) * 30;
+   const y = curY + yNoise;
+   positions.push({ x, y, zone: z, regionId: region.id, zoneIdx: i, jdx });
    curY += dyZone;
+   lastSide = side;
   });
-  curY += dyBetweenRegion; // espace tampon entre régions
+  curY += dyBetweenRegion;
  });
- const totalHeight = curY + 40;
+ const totalHeight = curY + 60;
  return { positions, totalHeight, W };
 }
 
-// Génère un chemin SVG sinueux et arrondi entre les nœuds (courbe de Bézier)
+// Génère un chemin SVG vraiment sinueux entre les nœuds.
+// Utilise des points de contrôle excentrés alternés pour créer de vraies courbes.
 function _buildArchipelPath(positions){
  if(positions.length === 0) return '';
  let d = `M ${positions[0].x.toFixed(1)},${positions[0].y.toFixed(1)} `;
  for(let i=1;i<positions.length;i++){
   const prev = positions[i-1];
   const cur = positions[i];
-  // Point de contrôle pour courbe douce
-  const midX = (prev.x + cur.x) / 2;
-  const cy1 = prev.y + (cur.y - prev.y) * 0.5;
-  d += `Q ${midX.toFixed(1)},${cy1.toFixed(1)} ${cur.x.toFixed(1)},${cur.y.toFixed(1)} `;
+  const dx = cur.x - prev.x;
+  const dy = cur.y - prev.y;
+  // Vraie distance euclidienne (et non |dx+dy| qui peut s'annuler)
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  // Vecteur perpendiculaire normalisé
+  const perpX = -dy / (dist || 1);
+  const perpY = dx / (dist || 1);
+  // Amplitude alternée gauche/droite, variée par hash (en pixels absolus)
+  const dir = (i % 2 === 0) ? 1 : -1;
+  const ampPx = (60 + _archHash(cur.zone.id, i) * 50) * dir; // 60-110px excentrement
+  const cpX = (prev.x + cur.x) / 2 + perpX * ampPx;
+  const cpY = (prev.y + cur.y) / 2 + perpY * ampPx * 0.4; // moins de Y pour éviter rebroussement
+  d += `Q ${cpX.toFixed(1)},${cpY.toFixed(1)} ${cur.x.toFixed(1)},${cur.y.toFixed(1)} `;
  }
  return d;
 }
@@ -404,28 +442,44 @@ function openArchipelZoom(zoneId){
   CM2: {top:'#b074d4', bot:'#1a0530'},
  };
  const bg = bgColors[zone.level] || bgColors.CP;
- // Layout des 5 étapes : sentier en S
+ // Layout des étapes : positions VARIÉES selon la zone (hash de l'id)
+ // pour que chaque modale soit différente et donne une vraie sensation d'aventure
  const stepCount = steps.length;
  const stepPositions = [];
  const containerW = 480;
- const containerH = 320;
+ const containerH = 340;
+ const xMargin = 60;
+ const yMargin = 50;
+ // Pour chaque étape : x suit un zigzag pseudo-aléatoire, y monte progressivement avec variation
  for(let i=0;i<stepCount;i++){
   const t = i / Math.max(1, stepCount-1);
-  // Sinusoïde douce
-  const x = 60 + (containerW - 120) * t;
-  const y = 50 + (containerH - 100) * (0.5 + 0.4 * Math.sin(t * Math.PI * 1.8));
+  // Y monte progressivement (de yMargin à containerH-yMargin) avec petite variation
+  const yNoise = (_archHash(zoneId, i*7+1) - 0.5) * 40;
+  const y = yMargin + (containerH - 2*yMargin) * t + yNoise;
+  // X alterne mais avec amplitude variée par zone
+  const side = (i % 2 === 0) ? 0.25 : 0.75;
+  const xNoise = (_archHash(zoneId, i*13+3) - 0.5) * (containerW * 0.35);
+  let x = xMargin + (containerW - 2*xMargin) * side + xNoise;
+  x = Math.max(xMargin, Math.min(containerW - xMargin, x));
   stepPositions.push({x, y});
  }
- // Sentier rouge entre les étapes
+ // Sentier rouge SINUEUX entre les étapes (courbes de Bézier excentrées)
  let stepPathD = '';
  if(stepPositions.length > 0){
   stepPathD = `M ${stepPositions[0].x.toFixed(1)},${stepPositions[0].y.toFixed(1)} `;
   for(let i=1;i<stepPositions.length;i++){
    const prev = stepPositions[i-1];
    const cur = stepPositions[i];
-   const midX = (prev.x + cur.x) / 2;
-   const midY = (prev.y + cur.y) / 2;
-   stepPathD += `Q ${midX.toFixed(1)},${prev.y.toFixed(1)} ${cur.x.toFixed(1)},${cur.y.toFixed(1)} `;
+   const dx = cur.x - prev.x;
+   const dy = cur.y - prev.y;
+   const dist = Math.sqrt(dx*dx + dy*dy);
+   const perpX = -dy / (dist || 1);
+   const perpY = dx / (dist || 1);
+   const dir = (i % 2 === 0) ? 1 : -1;
+   const ampPx = (40 + _archHash(zoneId, i*5) * 35) * dir;
+   const cpX = (prev.x + cur.x) / 2 + perpX * ampPx;
+   const cpY = (prev.y + cur.y) / 2 + perpY * ampPx * 0.3;
+   stepPathD += `Q ${cpX.toFixed(1)},${cpY.toFixed(1)} ${cur.x.toFixed(1)},${cur.y.toFixed(1)} `;
   }
  }
  // HTML des étapes
