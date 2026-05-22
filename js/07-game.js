@@ -194,40 +194,38 @@ function _archHash(str, salt=0){
 
 // Layout vertical : chaque sous-zone a une coordonnée Y croissante.
 // X est généré par hash de l'id pour des positions variées mais déterministes.
+// IMPORTANT : x est stocké en POURCENTAGE (0-100) pour être responsive.
 function _computeArchipelLayout(){
- const W = 560;
+ const W = 560; // largeur de référence pour les calculs SVG (viewBox)
  const positions = [];
  let curY = 90;
  const dyZone = 110;
  const dyBetweenRegion = 60;
- // Bornes X : marges pour que les nœuds restent à l'intérieur
- const xMin = W * 0.18;
- const xMax = W * 0.82;
+ // Bornes X en POURCENTAGE (au lieu de pixels) : laisse de la marge pour le label sous le cercle
+ const xMinPct = 22; // 22% du conteneur
+ const xMaxPct = 78; // 78% du conteneur
  _ARCH_REGIONS.forEach((region, rIdx)=>{
   const zonesInRegion = MAP_ZONES.map((z,i)=>({z,i})).filter(({z})=>{
    if(region.id==='final') return z.id==='sanctuaire';
    return region.levels.includes(z.level) && z.id!=='sanctuaire';
   });
-  // Garder une variation X mais alternée pour rester lisible (gauche/droite/gauche…)
-  let lastSide = (rIdx % 2 === 0) ? 'right' : 'left'; // alterne à chaque région
+  let lastSide = (rIdx % 2 === 0) ? 'right' : 'left';
   zonesInRegion.forEach(({z,i}, jdx)=>{
-   // Côté alterné (zigzag franc) MAIS variation aléatoire de la position exacte
    const side = (jdx % 2 === 0) ? lastSide : (lastSide === 'left' ? 'right' : 'left');
-   // Position de base selon le côté + variation par hash de l'id
-   const variationRange = (xMax - xMin) * 0.35;
+   const variationRange = (xMaxPct - xMinPct) * 0.32;
    const noise = (_archHash(z.id, jdx) - 0.5) * variationRange;
-   let x;
+   let xPct;
    if(side === 'left'){
-    x = xMin + (xMax - xMin) * 0.25 + noise;
+    xPct = xMinPct + (xMaxPct - xMinPct) * 0.25 + noise;
    } else {
-    x = xMin + (xMax - xMin) * 0.75 + noise;
+    xPct = xMinPct + (xMaxPct - xMinPct) * 0.75 + noise;
    }
-   // Clamp pour rester dans les bornes
-   x = Math.max(xMin, Math.min(xMax, x));
-   // Variation Y légère (±15px) pour casser le quadrillage
+   xPct = Math.max(xMinPct, Math.min(xMaxPct, xPct));
+   // Conversion pour le SVG (qui utilise viewBox 0..W)
+   const x = (xPct / 100) * W;
    const yNoise = (_archHash(z.id, jdx + 100) - 0.5) * 30;
    const y = curY + yNoise;
-   positions.push({ x, y, zone: z, regionId: region.id, zoneIdx: i, jdx });
+   positions.push({ x, y, xPct, zone: z, regionId: region.id, zoneIdx: i, jdx });
    curY += dyZone;
    lastSide = side;
   });
@@ -386,7 +384,7 @@ function renderMap(){
   const reqHtml = (!canPlay && !done && prev) ? `<div class="archipel-zone-req">${z.starsReq}★</div>` : '';
   const onclick = canPlay ? `onclick="openArchipelZoom('${z.id}')"` : '';
   return `
-   <div class="${cls}" style="left:${p.x}px;top:${p.y}px;" data-zone-id="${z.id}" ${onclick}>
+   <div class="${cls}" style="left:${p.xPct.toFixed(1)}%;top:${p.y}px;" data-zone-id="${z.id}" ${onclick}>
     <div class="archipel-zone-circle">${z.emoji}${checkHtml}${lockHtml}</div>
     <div class="archipel-zone-label">${z.label}</div>
     ${badgeHtml}${reqHtml}
@@ -395,7 +393,7 @@ function renderMap(){
  // Avatar
  const avatarPos = positions.find(p => p.zone.id === avatarZoneId);
  const avatarHtml = avatarPos ?
-  `<div class="archipel-avatar" style="left:${avatarPos.x}px;top:${avatarPos.y}px;">${(P&&P.avatar)||'🧙'}</div>` : '';
+  `<div class="archipel-avatar" style="left:${avatarPos.xPct.toFixed(1)}%;top:${avatarPos.y}px;">${(P&&P.avatar)||'🧙'}</div>` : '';
  // Assemblage final
  const cont = $('map-zones');
  if(!cont) return;
