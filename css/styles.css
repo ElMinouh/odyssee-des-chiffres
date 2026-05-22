@@ -2455,16 +2455,21 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  text-shadow:2px 2px 5px rgba(0,0,0,.9), 0 0 8px rgba(0,0,0,.7);
  letter-spacing:.08em;
  text-align:center;
- z-index:4;
+ z-index:6;
  pointer-events:none;
  white-space:nowrap;
+ padding:6px 14px;
+ background:linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,0,.55) 20%, rgba(0,0,0,.55) 80%, rgba(0,0,0,0));
+ border-radius:6px;
+ max-width:90%;
 }
 .archipel-region-name::before,
 .archipel-region-name::after{
  content:'❖';
  margin:0 8px;
  font-size:.7em;
- opacity:.6;
+ opacity:.7;
+ color:#f1c40f;
 }
 
 /* ═══ Vue ZOOMÉE : modale qui montre une sous-zone en détail ═══ */

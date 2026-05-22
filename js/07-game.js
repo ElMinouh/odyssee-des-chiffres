@@ -198,17 +198,24 @@ function _archHash(str, salt=0){
 function _computeArchipelLayout(){
  const W = 560; // largeur de référence pour les calculs SVG (viewBox)
  const positions = [];
- let curY = 90;
- const dyZone = 110;
- const dyBetweenRegion = 60;
- // Bornes X en POURCENTAGE (au lieu de pixels) : laisse de la marge pour le label sous le cercle
- const xMinPct = 22; // 22% du conteneur
- const xMaxPct = 78; // 78% du conteneur
+ const regionTitleY = []; // [{regionId, y}] — position Y de chaque titre de région
+ let curY = 55; // marge haute (réservée pour le titre de la 1ère région)
+ const dyZone = 115; // espace vertical entre 2 zones d'une même région
+ const titleSpace = 70; // espace réservé pour le titre de région (au-dessus du 1er nœud)
+ const dyBetweenRegion = 50; // espace supplémentaire entre régions (en plus de titleSpace)
+ // Bornes X en POURCENTAGE
+ const xMinPct = 22;
+ const xMaxPct = 78;
  _ARCH_REGIONS.forEach((region, rIdx)=>{
   const zonesInRegion = MAP_ZONES.map((z,i)=>({z,i})).filter(({z})=>{
    if(region.id==='final') return z.id==='sanctuaire';
    return region.levels.includes(z.level) && z.id!=='sanctuaire';
   });
+  if(zonesInRegion.length === 0) return;
+  // Mémoriser la position du titre (au milieu de l'espace réservé, avant les nœuds)
+  regionTitleY.push({ regionId: region.id, y: curY });
+  // Réserver l'espace pour le titre AVANT de placer le 1er nœud
+  curY += titleSpace;
   let lastSide = (rIdx % 2 === 0) ? 'right' : 'left';
   zonesInRegion.forEach(({z,i}, jdx)=>{
    const side = (jdx % 2 === 0) ? lastSide : (lastSide === 'left' ? 'right' : 'left');
@@ -221,9 +228,8 @@ function _computeArchipelLayout(){
     xPct = xMinPct + (xMaxPct - xMinPct) * 0.75 + noise;
    }
    xPct = Math.max(xMinPct, Math.min(xMaxPct, xPct));
-   // Conversion pour le SVG (qui utilise viewBox 0..W)
    const x = (xPct / 100) * W;
-   const yNoise = (_archHash(z.id, jdx + 100) - 0.5) * 30;
+   const yNoise = (_archHash(z.id, jdx + 100) - 0.5) * 25;
    const y = curY + yNoise;
    positions.push({ x, y, xPct, zone: z, regionId: region.id, zoneIdx: i, jdx });
    curY += dyZone;
@@ -232,7 +238,7 @@ function _computeArchipelLayout(){
   curY += dyBetweenRegion;
  });
  const totalHeight = curY + 60;
- return { positions, totalHeight, W };
+ return { positions, totalHeight, W, regionTitleY };
 }
 
 // Génère un chemin SVG vraiment sinueux entre les nœuds.
@@ -352,12 +358,13 @@ function renderMap(){
  const islandsSvg = _ARCH_REGIONS.map(r =>
   _renderIslandSvg(r.id, r.shape, byRegion[r.id] || [], totalHeight, W)
  ).join('');
- // Noms de régions (calligraphie au-dessus du 1er nœud de chaque région)
+ // Noms de régions : utiliser regionTitleY (positions calculées avec espace réservé)
+ const titleByRegion = {};
+ (layout.regionTitleY || []).forEach(rt => { titleByRegion[rt.regionId] = rt.y; });
  const regionNamesHtml = _ARCH_REGIONS.map(r=>{
-  const ps = byRegion[r.id];
-  if(!ps || ps.length === 0) return '';
-  const y = ps[0].y - 35;
-  return `<div class="archipel-region-name" style="top:${y}px;">${r.label}</div>`;
+  const ty = titleByRegion[r.id];
+  if(ty === undefined) return '';
+  return `<div class="archipel-region-name" style="top:${ty}px;">${r.label}</div>`;
  }).join('');
  // Générer les nœuds de zones
  const zonesHtml = positions.map(p=>{
@@ -442,24 +449,26 @@ function openArchipelZoom(zoneId){
  const bg = bgColors[zone.level] || bgColors.CP;
  // Layout des étapes : positions VARIÉES selon la zone (hash de l'id)
  // pour que chaque modale soit différente et donne une vraie sensation d'aventure
+ // IMPORTANT : positions en POURCENTAGE pour être responsive (mobile/tablette/PC)
  const stepCount = steps.length;
  const stepPositions = [];
- const containerW = 480;
+ const containerW = 480; // référence pour viewBox SVG seulement
  const containerH = 340;
- const xMargin = 60;
+ const xMarginPct = 14; // marge en %
  const yMargin = 50;
  // Pour chaque étape : x suit un zigzag pseudo-aléatoire, y monte progressivement avec variation
  for(let i=0;i<stepCount;i++){
   const t = i / Math.max(1, stepCount-1);
-  // Y monte progressivement (de yMargin à containerH-yMargin) avec petite variation
-  const yNoise = (_archHash(zoneId, i*7+1) - 0.5) * 40;
+  const yNoise = (_archHash(zoneId, i*7+1) - 0.5) * 30;
   const y = yMargin + (containerH - 2*yMargin) * t + yNoise;
-  // X alterne mais avec amplitude variée par zone
-  const side = (i % 2 === 0) ? 0.25 : 0.75;
-  const xNoise = (_archHash(zoneId, i*13+3) - 0.5) * (containerW * 0.35);
-  let x = xMargin + (containerW - 2*xMargin) * side + xNoise;
-  x = Math.max(xMargin, Math.min(containerW - xMargin, x));
-  stepPositions.push({x, y});
+  // X en POURCENTAGE
+  const sidePct = (i % 2 === 0) ? 30 : 70; // 30% ou 70% du conteneur
+  const xNoisePct = (_archHash(zoneId, i*13+3) - 0.5) * 20; // ±10% de variation
+  let xPct = sidePct + xNoisePct;
+  xPct = Math.max(xMarginPct, Math.min(100 - xMarginPct, xPct));
+  // Conversion pour le SVG (qui utilise viewBox 0..containerW)
+  const x = (xPct / 100) * containerW;
+  stepPositions.push({x, y, xPct});
  }
  // Sentier rouge SINUEUX entre les étapes (courbes de Bézier excentrées)
  let stepPathD = '';
@@ -491,7 +500,7 @@ function openArchipelZoom(zoneId){
   if(s.type === 'boss') cls += ' boss';
   const click = (i <= done) ? `onclick="startMapStep('${zoneId}',${i});closeArchipelZoom();"` : '';
   return `
-   <div class="${cls}" style="left:${p.x}px;top:${p.y}px;" ${click}>
+   <div class="${cls}" style="left:${p.xPct.toFixed(1)}%;top:${p.y}px;" ${click}>
     <div class="archipel-zoom-step-circle">${s.emoji||'❓'}</div>
     <div class="archipel-zoom-step-label">Étape ${i+1}</div>
     <div class="archipel-zoom-step-name">${s.name||TAGS[s.type]||''}</div>
