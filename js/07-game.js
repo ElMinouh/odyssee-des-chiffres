@@ -447,26 +447,59 @@ function openArchipelZoom(zoneId){
   CM2: {top:'#b074d4', bot:'#1a0530'},
  };
  const bg = bgColors[zone.level] || bgColors.CP;
- // Layout des étapes : positions VARIÉES selon la zone (hash de l'id)
- // pour que chaque modale soit différente et donne une vraie sensation d'aventure
- // IMPORTANT : positions en POURCENTAGE pour être responsive (mobile/tablette/PC)
+ // Layout des étapes : positions VRAIMENT VARIÉES selon la zone
+ // - Côté de départ aléatoire (par zone, déterministe)
+ // - Amplitude de bruit plus large
+ // - Bruit Y important pour casser l'alignement vertical
+ // - Pattern interne de la zone (zigzag franc, zigzag mou, courbe S, vague, étoile)
  const stepCount = steps.length;
  const stepPositions = [];
- const containerW = 480; // référence pour viewBox SVG seulement
+ const containerW = 480;
  const containerH = 340;
- const xMarginPct = 14; // marge en %
- const yMargin = 50;
- // Pour chaque étape : x suit un zigzag pseudo-aléatoire, y monte progressivement avec variation
+ const xMarginPct = 16;
+ const yMargin = 40;
+ // Caractéristiques globales de cette modale (déterminées par hash de l'id de zone)
+ const startSide = _archHash(zoneId, 999) < 0.5 ? -1 : 1; // -1 = gauche, +1 = droite
+ const patternType = Math.floor(_archHash(zoneId, 777) * 4); // 0..3 : 4 patterns différents
+ const baseAmplitude = 18 + _archHash(zoneId, 555) * 15; // 18 à 33% d'amplitude
+ const yJitter = _archHash(zoneId, 333) * 0.35; // 0 à 35% de jitter Y
  for(let i=0;i<stepCount;i++){
   const t = i / Math.max(1, stepCount-1);
-  const yNoise = (_archHash(zoneId, i*7+1) - 0.5) * 30;
-  const y = yMargin + (containerH - 2*yMargin) * t + yNoise;
-  // X en POURCENTAGE
-  const sidePct = (i % 2 === 0) ? 30 : 70; // 30% ou 70% du conteneur
-  const xNoisePct = (_archHash(zoneId, i*13+3) - 0.5) * 20; // ±10% de variation
-  let xPct = sidePct + xNoisePct;
+  // Position Y : monte progressivement avec un bruit qui DÉPEND DE LA ZONE
+  const ySpan = (containerH - 2*yMargin);
+  const yLocalNoise = (_archHash(zoneId, i*7+11) - 0.5) * ySpan * yJitter;
+  // Pour certains patterns, casser la stricte progression Y
+  let yShift = 0;
+  if(patternType === 1){ // pattern "vague" : Y oscille
+   yShift = Math.sin(t * Math.PI * 2) * ySpan * 0.08;
+  } else if(patternType === 2){ // pattern "accélération" : étapes serrées au début, espacées à la fin
+   const tCurved = t * t;
+   yShift = (tCurved - t) * ySpan;
+  }
+  const y = yMargin + ySpan * t + yLocalNoise + yShift;
+  // Position X : différentes stratégies selon patternType
+  let xPct;
+  if(patternType === 0){
+   // Zigzag classique mais avec côté de départ déterminé par la zone
+   const direction = ((i % 2 === 0) ? startSide : -startSide);
+   const center = 50 + direction * baseAmplitude * 0.7;
+   const xNoise = (_archHash(zoneId, i*13+3) - 0.5) * baseAmplitude * 0.6;
+   xPct = center + xNoise;
+  } else if(patternType === 1){
+   // Pattern "vague" : courbe sinusoïdale en X
+   const phase = _archHash(zoneId, 222) * Math.PI * 2;
+   xPct = 50 + Math.sin(t * Math.PI * 2 + phase) * baseAmplitude;
+  } else if(patternType === 2){
+   // Pattern "drift" : tendance globale gauche→droite ou droite→gauche
+   const drift = startSide * (t - 0.5) * baseAmplitude * 2;
+   const xNoise = (_archHash(zoneId, i*17+5) - 0.5) * baseAmplitude * 1.0;
+   xPct = 50 + drift + xNoise;
+  } else {
+   // Pattern "chaotique" : positions vraiment aléatoires (mais déterministes)
+   const xNoise = (_archHash(zoneId, i*23+7) - 0.5) * baseAmplitude * 2.4;
+   xPct = 50 + xNoise;
+  }
   xPct = Math.max(xMarginPct, Math.min(100 - xMarginPct, xPct));
-  // Conversion pour le SVG (qui utilise viewBox 0..containerW)
   const x = (xPct / 100) * containerW;
   stepPositions.push({x, y, xPct});
  }
