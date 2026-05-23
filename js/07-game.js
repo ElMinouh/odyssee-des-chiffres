@@ -200,10 +200,10 @@ function _archHash(str, salt=0){
 // xPctOverride : pourcentage forcé (0-100). yShiftOverride : décalage Y en pixels (peut être négatif).
 const _ARCH_OVERRIDES = {
  'bonbons':  { xPctOverride: 60, yShiftOverride: -20 }, // remonter et recentrer
- 'foret':    {                   yShiftOverride: 25  }, // descendre pour entrer dans le blob
+ 'foret':    {                   yShiftOverride: 60  }, // descendre franchement pour entrer dans le blob CE1
  'glace':    { xPctOverride: 50, yShiftOverride: 60  }, // descendre franchement, centrer
  'nocturne': { xPctOverride: 55                       }, // décaler à droite
- 'volcan':   { xPctOverride: 65, yShiftOverride: 25  }, // descendre + recentrer
+ 'volcan':   { xPctOverride: 65, yShiftOverride: 65  }, // descendre franchement + recentrer dans le blob CM2
 };
 
 function _computeArchipelLayout(){
