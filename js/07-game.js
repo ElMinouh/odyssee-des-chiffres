@@ -199,11 +199,11 @@ function _archHash(str, salt=0){
 // Overrides : positions forcées pour les zones qui sortaient des îlots avec le hash naturel.
 // xPctOverride : pourcentage forcé (0-100). yShiftOverride : décalage Y en pixels (peut être négatif).
 const _ARCH_OVERRIDES = {
- 'bonbons':  { xPctOverride: 60, yShiftOverride: -20 }, // remonter et recentrer
- 'foret':    {                   yShiftOverride: 60  }, // descendre franchement pour entrer dans le blob CE1
- 'glace':    { xPctOverride: 50, yShiftOverride: 60  }, // descendre franchement, centrer
- 'nocturne': { xPctOverride: 55                       }, // décaler à droite
- 'volcan':   { xPctOverride: 65, yShiftOverride: 65  }, // descendre franchement + recentrer dans le blob CM2
+ 'bonbons':  { xPctOverride: 55, yShiftOverride: -55 }, // remonter franchement dans le blob CP (era -20, trop léger)
+ 'foret':    { xPctOverride: 32, yShiftOverride: 150 }, // descendre considérablement : passe SOUS Vallée des Champignons (qui devient minY) + ancrage gauche dans la bosse "feuille" i=9-10
+ 'glace':    { xPctOverride: 50, yShiftOverride: 60  }, // inchangé (déjà OK)
+ 'nocturne': { xPctOverride: 55                       }, // inchangé
+ 'volcan':   { xPctOverride: 22, yShiftOverride: 330 }, // déplacer en BAS-GAUCHE du blob CM2 (bosse i=8 du profil "nebuleuse" = 1.18, marge ~100px)
 };
 
 function _computeArchipelLayout(){
@@ -324,13 +324,16 @@ function _generateBlobPath(shape, cx, cy, w, h){
  // 8 points autour du centre, avec variations radiales selon la forme
  const points = 12;
  const pts = [];
- // Profils de variations pour chaque forme (12 valeurs entre 0.7 et 1.2)
+ // Profils de variations pour chaque forme (12 valeurs entre ~0.88 et 1.2).
+ // Les creux les plus profonds (0.7-0.75) ont été adoucis vers 0.88-0.92 :
+ // les zones first/last d'une région tombent naturellement aux positions HAUT/BAS du blob,
+ // où les profils avaient des creux qui faisaient déborder les nœuds hors de l'îlot.
  const profiles = {
-  colline:    [1.1, 1.15, 1.2, 1.15, 1.0, 0.85, 0.7, 0.75, 0.85, 1.0, 1.1, 1.15],
-  feuille:    [0.7, 0.85, 1.1, 1.2, 1.15, 0.9, 0.75, 0.85, 1.1, 1.2, 1.15, 0.9],
-  dune:       [1.0, 1.15, 1.2, 1.1, 0.95, 0.85, 0.8, 0.85, 0.95, 1.1, 1.2, 1.15],
-  citadelle:  [1.15, 0.85, 1.2, 0.85, 1.15, 0.85, 1.2, 0.85, 1.15, 0.85, 1.2, 0.85],
-  nebuleuse:  [1.2, 0.85, 1.15, 0.75, 1.2, 0.85, 1.15, 0.75, 1.2, 0.85, 1.15, 0.75],
+  colline:    [1.1, 1.15, 1.2, 1.15, 1.0, 0.92, 0.88, 0.92, 0.95, 1.0, 1.1, 1.15],
+  feuille:    [0.9, 0.95, 1.1, 1.2, 1.15, 0.95, 0.9, 0.95, 1.1, 1.2, 1.15, 0.95],
+  dune:       [1.0, 1.15, 1.2, 1.1, 0.95, 0.92, 0.88, 0.92, 0.95, 1.1, 1.2, 1.15],
+  citadelle:  [1.15, 0.9, 1.2, 0.9, 1.15, 0.9, 1.2, 0.9, 1.15, 0.9, 1.2, 0.9],
+  nebuleuse:  [1.18, 0.95, 1.15, 0.92, 1.18, 0.95, 1.15, 0.92, 1.18, 0.95, 1.15, 0.92],
   mandala:    [1.1, 1.0, 1.1, 1.0, 1.1, 1.0, 1.1, 1.0, 1.1, 1.0, 1.1, 1.0],
  };
  const prof = profiles[shape] || profiles.colline;
