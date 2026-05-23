@@ -92,6 +92,53 @@ function renderZoneMap(){
 }
 
 // Lance une étape précise d'une zone
+// ─── v8.7.27 : Pool de dialogues diversifiés pour les monstres ───
+// 3 catégories × 10 phrases chacune. Le tirage est seedé par zoneId+stepIdx,
+// donc une même étape produit toujours le même dialogue (cohérent entre rejeux).
+const MONSTER_DIALOGUES = {
+ monster: [
+  "Te voilà donc l'aventurier qui ose s'aventurer ici…",
+  "Encore un curieux à terrasser. Le temps presse !",
+  "Tu pensais passer sans m'affronter ? Quelle erreur.",
+  "Approche, petit téméraire. Ton voyage s'arrête ici.",
+  "Mes énigmes ont fait pleurer plus d'un héros…",
+  "Sens-tu mon souffle ? Il porte le défi.",
+  "Voyons si ton esprit vaut mieux que tes pas.",
+  "Tu trembles déjà ? Et pourtant je n'ai rien dit…",
+  "Réponds vite, ou tombe à mes pieds !",
+  "Beaucoup ont essayé. Beaucoup ont échoué.",
+ ],
+ miniboss: [
+  "Avant d'atteindre le boss, tu devras me passer !",
+  "Je garde le chemin. Personne ne passe sans payer le prix.",
+  "Tu crois avoir vaincu mes serviteurs ? Mauvaise nouvelle : me voilà.",
+  "Le boss m'attend de l'autre côté. Mais d'abord… moi !",
+  "Ton ascension s'arrête ici, intrus.",
+  "Je suis le dernier rempart avant le maître des lieux.",
+  "Sans m'abattre, tu ne verras jamais ce qui se cache plus loin.",
+  "On ne devient pas légende sans m'avoir affronté.",
+  "Si tu chutes ici, le boss n'aura même pas à se déplacer.",
+  "Petite leçon avant la fin : combien de chances te reste-t-il ?",
+ ],
+ boss: [
+  "Tu oses entrer dans mon territoire ? ${zone} n'a pas de pitié pour les ignorants.",
+  "Bienvenue à ${zone}, mortel. Personne n'en repart vivant.",
+  "${zone} est ma forteresse. Tu ne franchiras pas mes portes.",
+  "Tu as combattu pour arriver jusqu'ici. Tu mourras pour en repartir.",
+  "Je règne sur ${zone} depuis des siècles. Tu n'es qu'un grain de poussière.",
+  "Mes serviteurs t'ont laissé passer pour mieux savourer ta défaite.",
+  "Tant d'héros sont tombés ici… Veux-tu vraiment être le suivant ?",
+  "${zone} sera ton tombeau, aventurier.",
+  "Tu sens cette aura ? C'est celle de ta propre fin.",
+  "Beaucoup parlent de courage. Peu en montrent face à moi.",
+ ],
+};
+function _pickDialogue(kind, seedStr){
+ const pool = MONSTER_DIALOGUES[kind] || MONSTER_DIALOGUES.monster;
+ const idx = Math.floor(_archHash(seedStr || ('def_'+kind), 42) * pool.length);
+ return pool[Math.min(idx, pool.length - 1)];
+}
+
 function startMapStep(zoneId, stepIdx){
  const zone = MAP_ZONES.find(z=>z.id===zoneId);
  if(!zone || !Array.isArray(zone.steps)) return;
@@ -116,10 +163,14 @@ function startMapStep(zoneId, stepIdx){
   emoji: step.emoji || '👹',
   name:  step.name  || 'Adversaire',
   title: isBoss ? `Gardien de : ${zone.label}` : (isMiniBoss ? `Mini-boss · ${zone.label}` : `Étape ${stepIdx+1}`),
-  intro: isBoss
-   ? `Tu oses entrer dans mon territoire ? ${zone.label} n'a pas de pitié pour les ignorants.`
-   : (isMiniBoss ? `Avant d'atteindre le boss, tu devras me passer !`
-                 : `Te voilà donc l'aventurier qui ose s'aventurer ici…`),
+  // v8.7.27 : tirage diversifié dans le pool de dialogues, seedé par zone+étape
+  // (cohérent entre rejeux mais varié entre étapes).
+  intro: (() => {
+   const kind = isBoss ? 'boss' : (isMiniBoss ? 'miniboss' : 'monster');
+   const seed = zoneId + '_' + stepIdx;
+   const tpl = _pickDialogue(kind, seed);
+   return tpl.replace('${zone}', zone.label);
+  })(),
   anim: 'glow',
   col:  isBoss ? '#e74c3c' : (isMiniBoss ? '#e67e22' : '#3498db')
  };
@@ -166,6 +217,26 @@ function closeZone(){
  if(typeof navBack==='function') navBack(); else showView('v-map');
 }
 
+// v8.7.27 : retour direct à la modale zoom de la zone qu'on vient de jouer
+// (depuis l'écran v-end après une étape).
+function returnToModule(){
+ const btn = document.getElementById('btn-return-module');
+ const zoneId = btn ? btn.dataset.zoneId : null;
+ if(!zoneId){ if(typeof returnMenu === 'function') returnMenu(); return; }
+ // Reset état de partie + revenir à la carte mondiale puis ouvrir la modale.
+ // L'avatar est déjà sur la bonne zone (mapAvatarZone = zoneId puisqu'on y a joué),
+ // donc requestZoneOpen ne déclenchera PAS d'animation et ouvrira la modale direct.
+ GM.mapZone = null;
+ GM.mapStep = null;
+ gameActive = false;
+ clearPendingTimers();
+ if(typeof navTo === 'function') navTo('v-map'); else showView('v-map');
+ renderMap();
+ setTimeout(()=>{
+  try{ requestZoneOpen(zoneId); }catch(e){ openArchipelZoom(zoneId); }
+ }, 60);
+}
+
 // ═══════════════════════════════════════════════════════
 // O3-A — ARCHIPEL D'UNIVERS (v8.7.15)
 // Carte mondiale unique avec îlots organiques variés sur fond cosmique,
@@ -192,6 +263,36 @@ function _archHash(str, salt=0){
  return (Math.abs(h % 10000) / 10000);
 }
 
+// ─── v8.7.27 : Boutiques par îlot ───
+// Chaque région a une boutique stylisée selon son thème. Position dans le blob,
+// à l'opposé du sentier doré (xPctOffset = pourcentage par rapport au centre de la
+// bounding box ; yShift = décalage Y depuis le centre Y du blob).
+const _ARCH_SHOPS = {
+ 'cp':    { emoji:'🍬', name:'Échoppe Sucrée',     theme:'sweets',
+            bg:'linear-gradient(160deg,#ffc7e4 0%,#ff8fb1 45%,#f368a0 100%)',
+            accent:'#c0398a',
+            xPctOffset:-22, yShift:-50 },
+ 'ce1':   { emoji:'🍃', name:'Cabane du Bûcheron',  theme:'forest',
+            bg:'linear-gradient(160deg,#a8e6a2 0%,#5fb95a 50%,#2c6e26 100%)',
+            accent:'#1f5a1c',
+            xPctOffset: 25, yShift: 0 },
+ 'ce2':   { emoji:'🐪', name:'Bazar du Désert',     theme:'desert',
+            bg:'linear-gradient(160deg,#fde7b6 0%,#e9b04e 45%,#b76b1c 100%)',
+            accent:'#834a14',
+            xPctOffset:-24, yShift: 30 },
+ 'cm1':   { emoji:'⚒️', name:'Forge Royale',         theme:'castle',
+            bg:'linear-gradient(160deg,#d3dce6 0%,#7e8fa3 50%,#3d4a5d 100%)',
+            accent:'#1f2733',
+            xPctOffset: 23, yShift:-80 },
+ 'cm2':   { emoji:'🛸', name:'Comptoir Stellaire',   theme:'space',
+            bg:'linear-gradient(160deg,#cbb1ee 0%,#7e57c4 50%,#2a1357 100%)',
+            accent:'#1f0a45',
+            xPctOffset: 23, yShift:-20 },
+ 'final': { emoji:'💎', name:'Trésor Sacré',         theme:'sacred',
+            bg:'linear-gradient(160deg,#fff4c0 0%,#f1c40f 50%,#a17806 100%)',
+            accent:'#6a4d04',
+            xPctOffset:-22, yShift: 0 },
+};
 // Layout vertical : chaque sous-zone a une coordonnée Y croissante.
 // X est généré par hash de l'id pour des positions variées mais déterministes.
 // IMPORTANT : x est stocké en POURCENTAGE (0-100) pour être responsive.
@@ -616,6 +717,28 @@ function renderMap(){
  const avatarPos = positions.find(p => p.zone.id === avatarZoneId);
  const avatarHtml = avatarPos ?
   `<div class="archipel-avatar" style="left:${avatarPos.xPct.toFixed(1)}%;top:${avatarPos.y}px;">${(P&&P.avatar)||'🧙'}</div>` : '';
+ // v8.7.27 : boutiques par îlot — 1 par région, positionnée à l'opposé du sentier doré.
+ const shopsHtml = _ARCH_REGIONS.map(region => {
+  const shop = _ARCH_SHOPS[region.id];
+  if(!shop) return '';
+  // Calcul du centre du blob de cette région (mêmes zones que pour l'îlot)
+  const zonesInRegion = positions.filter(p => p.regionId === region.id && !p.excludeFromBlob);
+  if(zonesInRegion.length === 0) return '';
+  const xs = zonesInRegion.map(p => p.x);
+  const ys = zonesInRegion.map(p => p.y);
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+  const cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+  // Application de l'offset configuré
+  const shopX = cx + (shop.xPctOffset / 100) * W;
+  const shopY = cy + shop.yShift;
+  const shopXPct = (shopX / W) * 100;
+  return `<div class="archipel-shop" data-theme="${shop.theme}" data-region="${region.id}"
+              style="left:${shopXPct.toFixed(1)}%;top:${shopY.toFixed(1)}px;background:${shop.bg};border-color:${shop.accent};"
+              onclick="openArchipelShop('${region.id}')">
+            <div class="archipel-shop-emoji">${shop.emoji}</div>
+            <div class="archipel-shop-label" style="color:${shop.accent};">${shop.name}</div>
+          </div>`;
+ }).join('');
  // Assemblage final
  const cont = $('map-zones');
  if(!cont) return;
@@ -637,6 +760,7 @@ function renderMap(){
   </svg>
   ${regionNamesHtml}
   ${zonesHtml}
+  ${shopsHtml}
   ${avatarHtml}
  `;
  // Auto-centrer sur l'avatar après rendu
@@ -803,6 +927,85 @@ function onMapNodeClick(zoneId){
 
 // Toggle d'une région (legacy compat, désactivé en O3)
 function toggleRegion(regionId){ /* no-op en mode Archipel */ }
+
+// ─── v8.7.27 : Boutiques par îlot ───
+// Ouvre une modale boutique stylisée selon le thème de la région.
+// Contient les mêmes items que la boutique du tableau de bord :
+//   - Skills (Armure, Puissance, Sablier) achetables jusqu'à Niv.3
+//   - Items consommables (Potion, Bombe)
+// Tarif identique au dashboard, paiement en étoiles ⭐.
+function openArchipelShop(regionId){
+ const shop = _ARCH_SHOPS[regionId];
+ if(!shop){ return; }
+ // Skills disponibles : structure identique à renderSkills()
+ const SKILL_DEFS = [
+  ['shield', '🛡️', 'Armure',    '+1 ❤️ max'],
+  ['sword',  '⚔️', 'Puissance', '+2 pts par bonne réponse'],
+  ['clock',  '⏳', 'Sablier',   '+5 secondes par question'],
+ ];
+ const skillsHtml = SKILL_DEFS.map(([id, emoji, name, desc]) => {
+  const lvl = (P.skills && P.skills[id]) || 0;
+  const maxed = lvl >= 3;
+  const price = (lvl + 1) * 20;
+  const btn = maxed
+   ? `<button class="shop-buy-btn" disabled style="background:#7f8c8d;">MAX</button>`
+   : `<button class="shop-buy-btn" style="background:${shop.accent};" onclick="buySkill('${id}');openArchipelShop('${regionId}')">${price} ⭐</button>`;
+  return `<div class="shop-row">
+    <div class="shop-row-icon">${emoji}</div>
+    <div class="shop-row-body">
+     <div class="shop-row-name">${name} <span class="shop-row-lvl">Niv.${lvl}</span></div>
+     <div class="shop-row-desc">${desc}</div>
+    </div>
+    ${btn}
+   </div>`;
+ }).join('');
+ const ITEM_DEFS = [
+  ['potion', '🧪', 'Potion de Vie',  'Restaure +1 ❤️ pendant la partie',                10],
+  ['bomb',   '💣', 'Bombe Réponse', 'Répond automatiquement à la question en cours',    20],
+ ];
+ const itemsHtml = ITEM_DEFS.map(([id, emoji, name, desc, price]) => {
+  const owned = (P.inventory && P.inventory[id]) || 0;
+  return `<div class="shop-row">
+    <div class="shop-row-icon">${emoji}</div>
+    <div class="shop-row-body">
+     <div class="shop-row-name">${name} <span class="shop-row-lvl">×${owned}</span></div>
+     <div class="shop-row-desc">${desc}</div>
+    </div>
+    <button class="shop-buy-btn" style="background:${shop.accent};" onclick="buyItem('${id}',${price});openArchipelShop('${regionId}')">${price} ⭐</button>
+   </div>`;
+ }).join('');
+ // Solde étoiles courant
+ const stars = (P && P.stars) || 0;
+ // Construction overlay
+ const existing = document.getElementById('archipel-shop-overlay');
+ if(existing) existing.remove();
+ const overlay = document.createElement('div');
+ overlay.className = 'archipel-shop-overlay';
+ overlay.id = 'archipel-shop-overlay';
+ overlay.onclick = function(e){ if(e.target === overlay) closeArchipelShop(); };
+ overlay.innerHTML = `
+  <div class="archipel-shop-content" data-theme="${shop.theme}" style="background:${shop.bg};border-color:${shop.accent};">
+   <button class="archipel-shop-close" onclick="closeArchipelShop()" style="color:${shop.accent};">✕</button>
+   <div class="archipel-shop-header">
+    <div class="archipel-shop-header-emoji">${shop.emoji}</div>
+    <div class="archipel-shop-header-title" style="color:${shop.accent};">${shop.name}</div>
+    <div class="archipel-shop-header-stars">${stars} ⭐</div>
+   </div>
+   <div class="archipel-shop-section">
+    <div class="archipel-shop-section-title" style="color:${shop.accent};">✨ Améliorations</div>
+    ${skillsHtml}
+   </div>
+   <div class="archipel-shop-section">
+    <div class="archipel-shop-section-title" style="color:${shop.accent};">🧰 Objets</div>
+    ${itemsHtml}
+   </div>
+  </div>`;
+ document.body.appendChild(overlay);
+}
+function closeArchipelShop(){
+ const el = document.getElementById('archipel-shop-overlay');
+ if(el) el.remove();
+}
 
 // ═══ ZOOM ADAPTATIF (carte mondiale, conservé) ═══
 let _mapZoom = 'default';
@@ -1132,7 +1335,8 @@ function startMapBoss(zoneId){
  GM.mapZone=zone;GM.level=zone.level;GM.mode2='normal';GM.mode=P.prefs.mode||'keyboard';
  applyTheme(zone.theme);
  const bossMonster={emoji:zone.boss,name:zone.bossName,title:`Gardien de : ${zone.label}`,
-  intro:`Tu oses entrer dans mon territoire ? ${zone.label} n'a pas de pitié pour les ignorants.`,
+  // v8.7.27 : tirage diversifié (boss legacy entry point)
+  intro:_pickDialogue('boss', zoneId+'_bossfinal').replace('${zone}', zone.label),
   anim:'glow',col:'#e74c3c'};
  // Chantier 3.10 : cinématique d'entrée de zone, puis intro boss, puis combat
  const _startCombat = ()=>{
@@ -2076,6 +2280,18 @@ if(typeof checkMilestones==='function') checkMilestones();
   } else {
    _btnReplay.innerHTML = '🔄 REJOUER';
    _btnReplay.style.background = '';
+  }
+ }
+ // v8.7.27 : bouton "Retour au module" affiché si on vient d'une étape de map.
+ // Mémorise la zone pour pouvoir y revenir directement.
+ const _btnReturnModule = $('btn-return-module');
+ if(_btnReturnModule){
+  if(GM.mapZone && GM.mapStep){
+   _btnReturnModule.classList.remove('hidden');
+   _btnReturnModule.dataset.zoneId = GM.mapZone.id;
+  } else {
+   _btnReturnModule.classList.add('hidden');
+   _btnReturnModule.dataset.zoneId = '';
   }
  }
  showView('v-end');

@@ -489,10 +489,12 @@ function showMonsterIntro(monster,cb){
  // Remove old class then reapply to trigger reflow
  monEl.className='';void monEl.offsetWidth;
  if(monster.anim!=='none')monEl.className='anim-'+monster.anim;
+ // v8.7.27 : indicateur de skip "Toucher pour passer"
  msgEl.innerHTML=`
   <div id="monster-intro-badge" style="background:${monster.col}33;color:${monster.col};border:1px solid ${monster.col}60;">${monster.title}</div>
   <div id="monster-intro-name" style="color:${monster.col};">${monster.name}</div>
-  <div id="monster-intro-quote">"${monster.intro}"</div>`;
+  <div id="monster-intro-quote">"${monster.intro}"</div>
+  <div id="monster-intro-skip-hint">Toucher pour passer</div>`;
  trans.classList.remove('hidden');
  // v8.7.0 : le monstre prononce son intro avec sa voix propre
  if(typeof speakAs==='function') speakAs(monster.intro, monster);
@@ -503,7 +505,20 @@ function showMonsterIntro(monster,cb){
   const ff=freqMap[monster.anim]||[440,550];
   ff.forEach((f,i)=>setTimeout(()=>pNote(ctx,f,'sine',.38,.1),i*130));
  }catch(e){}
-setTimeout(()=>{trans.classList.add('hidden');monEl.className='';cb();},5700);
+ // v8.7.27 : skip au clic. Timer + handler nettoyés ensemble pour éviter double-trigger.
+ let _introDone = false;
+ const _finishIntro = () => {
+  if(_introDone) return;
+  _introDone = true;
+  clearTimeout(_introTimer);
+  trans.removeEventListener('click', _finishIntro);
+  trans.classList.add('hidden');
+  monEl.className='';
+  try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
+  cb();
+ };
+ const _introTimer = setTimeout(_finishIntro, 5700);
+ trans.addEventListener('click', _finishIntro);
 }
 
 function applyMonsterAnim(el,monster){
