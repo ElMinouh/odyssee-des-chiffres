@@ -364,42 +364,33 @@ function _generateBlobPath(shape, cx, cy, w, h){
  return d;
 }
 
-// ─── v8.7.25 (O3-B.1) : Animation pas-à-pas de l'avatar sur le sentier doré ───
-// Compromis 1 (accélération adaptative) :
+// ─── v8.7.26 (O3-B.1bis) : Animation pas-à-pas multi-segments ───
+// L'avatar est le personnage du joueur sur la carte. À chaque clic sur une zone
+// (carte mondiale) ou une étape (modale zoom), il parcourt le sentier réel jusqu'à
+// destination, puis le contenu s'ouvre. Skip au clic = téléport + ouverture immédiate.
+//
+// Compromis 1 (accélération adaptative) PAR SEGMENT :
 //   duréeTotale = min(5000ms, N × 500ms)   où N = nombre de cases (≈ 1 case / 30px)
 //   duréeParCase = max(80ms, duréeTotale / N)   ← floor de sécurité
-// Skip : un clic n'importe où sur la map pendant l'anim téléporte l'avatar à destination.
-// Persistance : mapAvatarZone est saved AVANT l'anim (cohérence si app fermée).
+// Persistance : mapAvatarZone est saved DÈS LE DÉBUT de l'animation (cohérence si crash).
 
 let _mapAvatarAnimRunning = false;
 let _mapAvatarSkipRequested = false;
 
-function _runMapAvatarAnim(fromZoneId, toZoneId){
- if(_mapAvatarAnimRunning) return;
- if(!fromZoneId || !toZoneId || fromZoneId === toZoneId) return;
- const avatarEl = document.querySelector('.archipel-avatar');
- if(!avatarEl) return;
- const layout = _computeArchipelLayout();
- const { positions, W } = layout;
- const iFrom = positions.findIndex(p => p.zone.id === fromZoneId);
- const iTo = positions.findIndex(p => p.zone.id === toZoneId);
- if(iFrom < 0 || iTo < 0) return;
- // On anime sur un seul segment du sentier (zones adjacentes dans MAP_ZONES).
- // Si l'avatar est "en retard" de plusieurs zones, on téléporte d'abord à iTo-1.
- if(iTo !== iFrom + 1) return;
- const prev = positions[iFrom];
- const cur = positions[iTo];
- // Recalcule du control point Q comme _buildArchipelPath le fait (pour cohérence du tracé).
+// Échantillonne un segment Q-curve en un path SVG temporaire ; retourne le path DOM
+// et sa longueur, à utiliser via getPointAtLength.
+function _archMakeSegmentPath(prev, cur, segIdx){
  const dx = cur.x - prev.x;
  const dy = cur.y - prev.y;
  const dist = Math.sqrt(dx*dx + dy*dy) || 1;
  const perpX = -dy / dist;
  const perpY = dx / dist;
- const dir = (iTo % 2 === 0) ? 1 : -1;
- const ampPx = (60 + _archHash(cur.zone.id, iTo) * 50) * dir;
+ const dir = (segIdx % 2 === 0) ? 1 : -1;
+ // Note : on utilise cur.zone.id si dispo (carte mondiale), sinon un fallback
+ const hashKey = (cur.zone && cur.zone.id) ? cur.zone.id : ('s'+segIdx);
+ const ampPx = (60 + _archHash(hashKey, segIdx) * 50) * dir;
  const cpX = (prev.x + cur.x) / 2 + perpX * ampPx;
  const cpY = (prev.y + cur.y) / 2 + perpY * ampPx * 0.4;
- // Path SVG éphémère dans un SVG temporaire hors-écran pour utiliser getPointAtLength()
  const NS = 'http://www.w3.org/2000/svg';
  const tmpSvg = document.createElementNS(NS, 'svg');
  tmpSvg.style.cssText = 'position:absolute;width:0;height:0;visibility:hidden;pointer-events:none;';
@@ -407,61 +398,161 @@ function _runMapAvatarAnim(fromZoneId, toZoneId){
  tmpPath.setAttribute('d', `M ${prev.x} ${prev.y} Q ${cpX} ${cpY} ${cur.x} ${cur.y}`);
  tmpSvg.appendChild(tmpPath);
  document.body.appendChild(tmpSvg);
- const totalLen = tmpPath.getTotalLength();
- // Nombre de cases : 1 case ≈ 30px de sentier (min 2 cases)
- const N = Math.max(2, Math.round(totalLen / 30));
- // Formule compromis 1 : durée totale plafonnée à 5s, croît linéairement jusqu'à là
- const totalMs = Math.min(5000, N * 500);
- const dtMs = Math.max(80, Math.round(totalMs / N));
- // Position initiale : on FORCE l'avatar à fromZone (au cas où il serait ailleurs)
- avatarEl.style.left = prev.xPct.toFixed(2) + '%';
- avatarEl.style.top = prev.y.toFixed(1) + 'px';
- // Skip handler en capture sur le conteneur map-zones : tout clic = skip
- const cont = document.getElementById('map-zones');
- const skipHandler = (ev) => {
-  ev.stopPropagation();
-  ev.preventDefault();
-  _mapAvatarSkipRequested = true;
- };
- if(cont) cont.addEventListener('click', skipHandler, { capture: true });
- _mapAvatarAnimRunning = true;
- _mapAvatarSkipRequested = false;
- // Helper scroll : ne déplace l'écran que si l'avatar sort du viewport
- const scrollIfOutOfView = () => {
-  const r = avatarEl.getBoundingClientRect();
-  const margin = 100;
-  if(r.top < margin || r.bottom > window.innerHeight - margin){
-   avatarEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
- };
- const cleanup = () => {
-  _mapAvatarAnimRunning = false;
+ return { svg: tmpSvg, path: tmpPath, length: tmpPath.getTotalLength() };
+}
+
+// Anime un avatar (DOM element) le long d'une LISTE de segments (multi-zones).
+// `viewportW` = largeur logique du viewBox SVG (pour convertir x→xPct).
+// `containerSel` = sélecteur du conteneur sur lequel poser le skip handler.
+// Retourne une Promise résolue quand l'animation est finie (terminée ou skippée).
+function _animateAlongSegments(avatarEl, segmentPositions, viewportW, containerSel){
+ return new Promise(resolve => {
+  if(_mapAvatarAnimRunning){ resolve(); return; }
+  if(!avatarEl || segmentPositions.length < 2){ resolve(); return; }
+  _mapAvatarAnimRunning = true;
   _mapAvatarSkipRequested = false;
-  if(cont) cont.removeEventListener('click', skipHandler, { capture: true });
-  if(tmpSvg.parentNode) tmpSvg.parentNode.removeChild(tmpSvg);
- };
- // Boucle d'animation step-by-step
- (async function loop(){
-  try{
-   for(let step = 1; step <= N; step++){
-    if(_mapAvatarSkipRequested) break;
-    const pt = tmpPath.getPointAtLength((step / N) * totalLen);
-    avatarEl.style.left = ((pt.x / W) * 100).toFixed(2) + '%';
-    avatarEl.style.top = pt.y.toFixed(1) + 'px';
-    // Scroll de suivi tous les 3 pas (pas à chaque pas pour ne pas saccader)
-    if(step % 3 === 0) scrollIfOutOfView();
-    await new Promise(r => setTimeout(r, dtMs));
-   }
-   // Position finale forcée (utile si skip)
-   avatarEl.style.left = cur.xPct.toFixed(2) + '%';
-   avatarEl.style.top = cur.y.toFixed(1) + 'px';
-   scrollIfOutOfView();
-  }catch(e){
-   console.warn('Map avatar anim error', e);
-  }finally{
-   cleanup();
+  // Préparer tous les paths à l'avance
+  const segs = [];
+  for(let i=1;i<segmentPositions.length;i++){
+   segs.push({
+    prev: segmentPositions[i-1],
+    cur: segmentPositions[i],
+    seg: _archMakeSegmentPath(segmentPositions[i-1], segmentPositions[i], i),
+   });
   }
- })();
+  // Position initiale sur le 1er point (au cas où l'avatar serait ailleurs)
+  const first = segmentPositions[0];
+  avatarEl.style.left = ((first.x / viewportW) * 100).toFixed(2) + '%';
+  avatarEl.style.top = first.y.toFixed(1) + 'px';
+  // Skip handler en capture sur le conteneur : tout clic = skip
+  const cont = document.querySelector(containerSel);
+  const skipHandler = (ev) => {
+   ev.stopPropagation();
+   ev.preventDefault();
+   _mapAvatarSkipRequested = true;
+  };
+  if(cont) cont.addEventListener('click', skipHandler, { capture: true });
+  // Helper scroll (seulement si l'avatar est dans la fenêtre principale, pas dans une modale)
+  const scrollIfOutOfView = () => {
+   const isInModal = containerSel.indexOf('zoom') >= 0;
+   if(isInModal) return; // pas de scroll dans la modale (elle est en overlay)
+   const r = avatarEl.getBoundingClientRect();
+   const margin = 100;
+   if(r.top < margin || r.bottom > window.innerHeight - margin){
+    avatarEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+   }
+  };
+  const cleanup = () => {
+   _mapAvatarAnimRunning = false;
+   _mapAvatarSkipRequested = false;
+   if(cont) cont.removeEventListener('click', skipHandler, { capture: true });
+   segs.forEach(s => { if(s.seg.svg.parentNode) s.seg.svg.parentNode.removeChild(s.seg.svg); });
+  };
+  (async function loop(){
+   try{
+    for(const s of segs){
+     if(_mapAvatarSkipRequested) break;
+     const totalLen = s.seg.length;
+     const N = Math.max(2, Math.round(totalLen / 30));
+     const totalMs = Math.min(5000, N * 500);
+     const dtMs = Math.max(80, Math.round(totalMs / N));
+     for(let step = 1; step <= N; step++){
+      if(_mapAvatarSkipRequested) break;
+      const pt = s.seg.path.getPointAtLength((step / N) * totalLen);
+      avatarEl.style.left = ((pt.x / viewportW) * 100).toFixed(2) + '%';
+      avatarEl.style.top = pt.y.toFixed(1) + 'px';
+      if(step % 3 === 0) scrollIfOutOfView();
+      await new Promise(r => setTimeout(r, dtMs));
+     }
+    }
+    // Position finale forcée (utile si skip)
+    const last = segmentPositions[segmentPositions.length - 1];
+    avatarEl.style.left = ((last.x / viewportW) * 100).toFixed(2) + '%';
+    avatarEl.style.top = last.y.toFixed(1) + 'px';
+    scrollIfOutOfView();
+   }catch(e){
+    console.warn('Avatar anim error', e);
+   }finally{
+    cleanup();
+    resolve();
+   }
+  })();
+ });
+}
+
+// Wrapper public : déplace l'avatar de la carte mondiale vers la zone cliquée,
+// puis ouvre la modale zoom. Multi-segments : parcourt tout le sentier réel.
+function requestZoneOpen(zoneId){
+ if(_mapAvatarAnimRunning) return; // ignore les clics pendant une anim en cours
+ const targetZone = MAP_ZONES.find(z => z.id === zoneId);
+ if(!targetZone) return;
+ const currentZoneId = P.mapAvatarZone || 'plaine';
+ if(currentZoneId === zoneId){
+  // Déjà sur place, ouvrir directement
+  openArchipelZoom(zoneId);
+  return;
+ }
+ const layout = _computeArchipelLayout();
+ const { positions, W } = layout;
+ const iFrom = positions.findIndex(p => p.zone.id === currentZoneId);
+ const iTo = positions.findIndex(p => p.zone.id === zoneId);
+ if(iFrom < 0 || iTo < 0){
+  // Avatar perdu / zone invalide → ouvrir directement sans anim
+  openArchipelZoom(zoneId);
+  return;
+ }
+ // Construire la séquence de positions traversées (en avant ou en arrière)
+ const step = iFrom < iTo ? 1 : -1;
+ const seqPositions = [];
+ for(let i = iFrom; i !== iTo + step; i += step){
+  seqPositions.push(positions[i]);
+ }
+ // Save destination immédiatement (cohérence si app fermée pendant l'anim)
+ P.mapAvatarZone = zoneId;
+ if(typeof saveProfileNow === 'function') saveProfileNow();
+ const avatarEl = document.querySelector('.archipel-avatar');
+ if(!avatarEl){
+  openArchipelZoom(zoneId);
+  return;
+ }
+ _animateAlongSegments(avatarEl, seqPositions, W, '#map-zones').then(()=>{
+  // Petite pause avant l'ouverture de la modale, pour que l'utilisateur voie l'avatar arrivé
+  setTimeout(()=> openArchipelZoom(zoneId), 180);
+ });
+}
+
+// Wrapper public : déplace l'avatar dans la modale zoom vers l'étape cliquée,
+// puis lance l'étape. Multi-segments à l'intérieur de la zone.
+function requestStepStart(zoneId, stepIdx){
+ if(_mapAvatarAnimRunning) return;
+ const zoomAv = document.querySelector('.archipel-zoom-avatar');
+ if(!zoomAv){
+  // Pas d'avatar visible → fallback direct
+  startMapStep(zoneId, stepIdx);
+  closeArchipelZoom();
+  return;
+ }
+ const curStep = parseInt(zoomAv.dataset.curStep || '0', 10);
+ const stepPositions = window._zoomStepPositions || [];
+ const containerW = window._zoomStepContainerW || 320;
+ if(stepIdx === curStep || stepPositions.length === 0){
+  startMapStep(zoneId, stepIdx);
+  closeArchipelZoom();
+  return;
+ }
+ const iFrom = curStep, iTo = stepIdx;
+ const step = iFrom < iTo ? 1 : -1;
+ const seqPositions = [];
+ for(let i = iFrom; i !== iTo + step; i += step){
+  seqPositions.push(stepPositions[i]);
+ }
+ _animateAlongSegments(zoomAv, seqPositions, containerW, '#archipel-zoom-overlay').then(()=>{
+  zoomAv.dataset.curStep = String(stepIdx);
+  setTimeout(()=>{
+   startMapStep(zoneId, stepIdx);
+   closeArchipelZoom();
+  }, 180);
+ });
 }
 
 function renderMap(){
@@ -513,7 +604,7 @@ function renderMap(){
   const checkHtml = done ? `<div class="archipel-zone-check">✓</div>` : '';
   const lockHtml = (!canPlay && !done) ? `<div class="archipel-zone-lock">🔒</div>` : '';
   const reqHtml = (!canPlay && !done && prev) ? `<div class="archipel-zone-req">${z.starsReq}★</div>` : '';
-  const onclick = canPlay ? `onclick="openArchipelZoom('${z.id}')"` : '';
+  const onclick = canPlay ? `onclick="requestZoneOpen('${z.id}')"` : '';
   return `
    <div class="${cls}" style="left:${p.xPct.toFixed(1)}%;top:${p.y}px;" data-zone-id="${z.id}" ${onclick}>
     <div class="archipel-zone-circle">${z.emoji}${checkHtml}${lockHtml}</div>
@@ -522,14 +613,7 @@ function renderMap(){
    </div>`;
  }).join('');
  // Avatar
- // v8.7.25 (O3-B.1) : si une animation pas-à-pas est pending, placer l'avatar
- // à sa position de DÉPART (fromZoneId) plutôt qu'à la destination déjà saved.
- // Ça évite un flash où l'avatar apparaîtrait à destination puis sauterait en arrière.
- let _displayAvatarZoneId = avatarZoneId;
- if(window._pendingMapAnim && window._pendingMapAnim.toZoneId === avatarZoneId){
-  _displayAvatarZoneId = window._pendingMapAnim.fromZoneId;
- }
- const avatarPos = positions.find(p => p.zone.id === _displayAvatarZoneId);
+ const avatarPos = positions.find(p => p.zone.id === avatarZoneId);
  const avatarHtml = avatarPos ?
   `<div class="archipel-avatar" style="left:${avatarPos.xPct.toFixed(1)}%;top:${avatarPos.y}px;">${(P&&P.avatar)||'🧙'}</div>` : '';
  // Assemblage final
@@ -557,16 +641,6 @@ function renderMap(){
  `;
  // Auto-centrer sur l'avatar après rendu
  setTimeout(()=>_autoCenterOnAvatar(), 50);
- // v8.7.25 (O3-B.1) : si une victoire boss vient de poser le flag d'animation pas-à-pas,
- // lance l'animation après que le DOM soit prêt et que l'auto-centre ait fait son scroll.
- if(window._pendingMapAnim){
-  const _anim = window._pendingMapAnim;
-  window._pendingMapAnim = null; // clear immédiat pour éviter tout double trigger
-  setTimeout(()=>{
-   try{ _runMapAvatarAnim(_anim.fromZoneId, _anim.toZoneId); }
-   catch(e){ console.warn('Map avatar anim trigger failed', e); }
-  }, 350);
- }
 }
 
 // Ouvre la vue zoomée d'une sous-zone (modale qui montre les 5 étapes)
@@ -664,6 +738,10 @@ function openArchipelZoom(zoneId){
   }
  }
  // HTML des étapes
+ // v8.7.26 (O3-B.1bis) : le clic sur une étape déclenche l'animation de l'avatar
+ // dans la modale (multi-segments le long du sentier rouge interne), puis lance
+ // l'étape à l'arrivée. L'avatar est positionné par défaut sur stepsCompleted
+ // (l'étape suivante à jouer, ou la dernière si zone terminée).
  const TAGS = { monster:'Monstre', puzzle:'Énigme', minibss:'Mini-boss', boss:'BOSS' };
  const stepsHtml = steps.map((s, i)=>{
   const p = stepPositions[i];
@@ -672,7 +750,7 @@ function openArchipelZoom(zoneId){
   else if(i === done) cls += ' current';
   else cls += ' locked';
   if(s.type === 'boss') cls += ' boss';
-  const click = (i <= done) ? `onclick="startMapStep('${zoneId}',${i});closeArchipelZoom();"` : '';
+  const click = (i <= done) ? `onclick="requestStepStart('${zoneId}',${i})"` : '';
   return `
    <div class="${cls}" style="left:${p.xPct.toFixed(1)}%;top:${p.y}px;" ${click}>
     <div class="archipel-zoom-step-circle">${s.emoji||'❓'}</div>
@@ -680,6 +758,15 @@ function openArchipelZoom(zoneId){
     <div class="archipel-zoom-step-name">${s.name||TAGS[s.type]||''}</div>
    </div>`;
  }).join('');
+ // Avatar dans la modale : position initiale = étape "current" (= done si zone non terminée,
+ // sinon la dernière étape). Bornée à [0, stepCount-1].
+ const avatarStepIdx = Math.max(0, Math.min(stepCount - 1, done));
+ const avatarStepPos = stepPositions[avatarStepIdx];
+ const zoomAvatarHtml = avatarStepPos ?
+  `<div class="archipel-zoom-avatar" data-cur-step="${avatarStepIdx}" style="left:${avatarStepPos.xPct.toFixed(1)}%;top:${avatarStepPos.y}px;">${(P&&P.avatar)||'🧙'}</div>` : '';
+ // Exposer les positions des étapes pour _animateAlongSegments (utilisé par requestStepStart)
+ window._zoomStepPositions = stepPositions;
+ window._zoomStepContainerW = containerW;
  const total = stepCount;
  const overlay = document.createElement('div');
  overlay.className = 'archipel-zoom-overlay';
@@ -698,6 +785,7 @@ function openArchipelZoom(zoneId){
      <path d="${stepPathD}" stroke="#c0392b" stroke-width="2.5" fill="none" stroke-dasharray="5,3" opacity="0.85" stroke-linecap="round"/>
     </svg>
     ${stepsHtml}
+    ${zoomAvatarHtml}
    </div>
   </div>`;
  document.body.appendChild(overlay);
@@ -708,9 +796,9 @@ function closeArchipelZoom(){
  if(el) el.remove();
 }
 
-// Action point d'entrée (legacy compat)
+// Action point d'entrée (legacy compat) — anime aussi maintenant
 function onMapNodeClick(zoneId){
- openArchipelZoom(zoneId);
+ requestZoneOpen(zoneId);
 }
 
 // Toggle d'une région (legacy compat, désactivé en O3)
@@ -1944,19 +2032,6 @@ if(typeof checkMilestones==='function') checkMilestones();
   }
   if(!(P.mapBossBeaten||[]).includes(GM.mapZone.id)){
    P.mapBossBeaten=[...(P.mapBossBeaten||[]),GM.mapZone.id];
-   // v8.7.25 (O3-B.1) : animation pas-à-pas de l'avatar sur le sentier doré.
-   // L'avatar marque la dernière zone conquise → il avance de [zone précédente] vers [zone battue].
-   // On save mapAvatarZone = destination IMMÉDIATEMENT pour garantir la cohérence
-   // si l'app est fermée pendant l'animation. Le flag _pendingMapAnim (in-memory)
-   // déclenche l'animation au prochain rendu de la map.
-   try{
-    const _zIdx = MAP_ZONES.findIndex(z => z.id === GM.mapZone.id);
-    if(_zIdx > 0){
-     const _fromZoneId = MAP_ZONES[_zIdx - 1].id;
-     window._pendingMapAnim = { fromZoneId: _fromZoneId, toZoneId: GM.mapZone.id };
-    }
-    P.mapAvatarZone = GM.mapZone.id;
-   }catch(e){ console.warn('map anim flag set failed', e); }
    // Chantier 3.10 : cinématique de zone conquise (remplace l'ancien transition-screen)
    const _zone = GM.mapZone;
    setTimeout(()=>{
