@@ -199,11 +199,12 @@ function _archHash(str, salt=0){
 // Overrides : positions forcées pour les zones qui sortaient des îlots avec le hash naturel.
 // xPctOverride : pourcentage forcé (0-100). yShiftOverride : décalage Y en pixels (peut être négatif).
 const _ARCH_OVERRIDES = {
- 'bonbons':  { xPctOverride: 55, yShiftOverride: -55 }, // remonter franchement dans le blob CP (era -20, trop léger)
- 'foret':    { xPctOverride: 32, yShiftOverride: 150 }, // descendre considérablement : passe SOUS Vallée des Champignons (qui devient minY) + ancrage gauche dans la bosse "feuille" i=9-10
+ 'bonbons':  { xPctOverride: 55, yShiftOverride: -55 }, // remonter franchement dans le blob CP
+ 'foret':    { xPctOverride: 32, yShiftOverride: 150 }, // descendre sous Vallée des Champignons (qui devient minY)
  'glace':    { xPctOverride: 50, yShiftOverride: 60  }, // inchangé (déjà OK)
  'nocturne': { xPctOverride: 55                       }, // inchangé
- 'volcan':   { xPctOverride: 22, yShiftOverride: 330 }, // déplacer en BAS-GAUCHE du blob CM2 (bosse i=8 du profil "nebuleuse" = 1.18, marge ~100px)
+ 'volcan':   { xPctOverride: 60, yShiftOverride: 130 }, // HAUT-DROITE du blob CM2 (bosse adoucie i=1-2), sentier lisible vers Galaxie sans enchevêtrement
+ 'ile':      { excludeFromBlob: true                  }, // Île Mystérieuse : DÉTACHÉE du continent CM2 — cohérence narrative (c'est une île). Ne participe pas au calcul de la bbox du blob, donc reste visuellement hors-îlot tout en restant connectée par le sentier.
 };
 
 function _computeArchipelLayout(){
@@ -240,12 +241,14 @@ function _computeArchipelLayout(){
    let y = curY + yNoise;
    // Appliquer les overrides éventuels
    const ov = _ARCH_OVERRIDES[z.id];
+   let excludeFromBlob = false;
    if(ov){
     if(typeof ov.xPctOverride === 'number') xPct = ov.xPctOverride;
     if(typeof ov.yShiftOverride === 'number') y += ov.yShiftOverride;
+    if(ov.excludeFromBlob === true) excludeFromBlob = true;
    }
    const x = (xPct / 100) * W;
-   positions.push({ x, y, xPct, zone: z, regionId: region.id, zoneIdx: i, jdx });
+   positions.push({ x, y, xPct, zone: z, regionId: region.id, zoneIdx: i, jdx, excludeFromBlob });
    curY += dyZone;
    lastSide = side;
   });
@@ -283,9 +286,13 @@ function _buildArchipelPath(positions){
 // Génère le SVG d'un îlot organique selon sa forme et ses positions de zones
 function _renderIslandSvg(regionId, shape, zonePositions, totalH, W){
  if(zonePositions.length === 0) return '';
- // Calculer la bounding box des zones de cette région
- const xs = zonePositions.map(p=>p.x);
- const ys = zonePositions.map(p=>p.y);
+ // Pour le calcul de la bbox du blob, exclure les zones marquées "détachées"
+ // (ex: Île Mystérieuse, qui doit rester franchement hors du continent CM2).
+ // Le sentier doré, lui, traverse toutes les positions sans exclusion.
+ const blobZones = zonePositions.filter(p => !p.excludeFromBlob);
+ if(blobZones.length === 0) return '';
+ const xs = blobZones.map(p=>p.x);
+ const ys = blobZones.map(p=>p.y);
  const minX = Math.min(...xs) - 70;
  const maxX = Math.max(...xs) + 70;
  const minY = Math.min(...ys) - 50;
