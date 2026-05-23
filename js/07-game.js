@@ -195,15 +195,25 @@ function _archHash(str, salt=0){
 // Layout vertical : chaque sous-zone a une coordonnée Y croissante.
 // X est généré par hash de l'id pour des positions variées mais déterministes.
 // IMPORTANT : x est stocké en POURCENTAGE (0-100) pour être responsive.
+//
+// Overrides : positions forcées pour les zones qui sortaient des îlots avec le hash naturel.
+// xPctOverride : pourcentage forcé (0-100). yShiftOverride : décalage Y en pixels (peut être négatif).
+const _ARCH_OVERRIDES = {
+ 'bonbons':  { xPctOverride: 60, yShiftOverride: -20 }, // remonter et recentrer
+ 'foret':    {                   yShiftOverride: 25  }, // descendre pour entrer dans le blob
+ 'glace':    { xPctOverride: 50, yShiftOverride: 60  }, // descendre franchement, centrer
+ 'nocturne': { xPctOverride: 55                       }, // décaler à droite
+ 'volcan':   { xPctOverride: 65, yShiftOverride: 25  }, // descendre + recentrer
+};
+
 function _computeArchipelLayout(){
  const W = 560; // largeur de référence pour les calculs SVG (viewBox)
  const positions = [];
- const regionTitleY = []; // [{regionId, y}] — position Y de chaque titre de région
- let curY = 55; // marge haute (réservée pour le titre de la 1ère région)
- const dyZone = 115; // espace vertical entre 2 zones d'une même région
- const titleSpace = 70; // espace réservé pour le titre de région (au-dessus du 1er nœud)
- const dyBetweenRegion = 50; // espace supplémentaire entre régions (en plus de titleSpace)
- // Bornes X en POURCENTAGE
+ const regionTitleY = [];
+ let curY = 55;
+ const dyZone = 115;
+ const titleSpace = 70;
+ const dyBetweenRegion = 50;
  const xMinPct = 22;
  const xMaxPct = 78;
  _ARCH_REGIONS.forEach((region, rIdx)=>{
@@ -212,9 +222,7 @@ function _computeArchipelLayout(){
    return region.levels.includes(z.level) && z.id!=='sanctuaire';
   });
   if(zonesInRegion.length === 0) return;
-  // Mémoriser la position du titre (au milieu de l'espace réservé, avant les nœuds)
   regionTitleY.push({ regionId: region.id, y: curY });
-  // Réserver l'espace pour le titre AVANT de placer le 1er nœud
   curY += titleSpace;
   let lastSide = (rIdx % 2 === 0) ? 'right' : 'left';
   zonesInRegion.forEach(({z,i}, jdx)=>{
@@ -228,9 +236,15 @@ function _computeArchipelLayout(){
     xPct = xMinPct + (xMaxPct - xMinPct) * 0.75 + noise;
    }
    xPct = Math.max(xMinPct, Math.min(xMaxPct, xPct));
-   const x = (xPct / 100) * W;
    const yNoise = (_archHash(z.id, jdx + 100) - 0.5) * 25;
-   const y = curY + yNoise;
+   let y = curY + yNoise;
+   // Appliquer les overrides éventuels
+   const ov = _ARCH_OVERRIDES[z.id];
+   if(ov){
+    if(typeof ov.xPctOverride === 'number') xPct = ov.xPctOverride;
+    if(typeof ov.yShiftOverride === 'number') y += ov.yShiftOverride;
+   }
+   const x = (xPct / 100) * W;
    positions.push({ x, y, xPct, zone: z, regionId: region.id, zoneIdx: i, jdx });
    curY += dyZone;
    lastSide = side;

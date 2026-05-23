@@ -96,16 +96,7 @@ const MAP_ZONES=[
    {type:'minibss', emoji:'🐸', name:'Crapaud farceur',    questions:5, difficulty:'medium'},
    {type:'boss',    emoji:'🐌', name:'Escargot Géant',     questions:6, difficulty:'hard', dropRare:true}
   ]},
- {id:'plage',   label:'Plage Ensoleillée',bg:'linear-gradient(135deg,#fff5d6,#fcbf49)',emoji:'🏖️',boss:'🦀',bossName:'Crabe Royal',     level:'CE1',starsReq:145, theme:'ocean',
-  parallax:{sky:['#fff5d6','#fcbf49','#f77f00'], mountains:['#a85a10','#5c3208'], decor:['🐚','⛱️','🌴'], astro:'☀️'},
-  steps:[
-   {type:'monster', emoji:'🐚', name:'Coquillage chanteur',questions:3, difficulty:'easy'},
-   {type:'puzzle',  emoji:'⛱️', name:'Énigme du sable',   questions:4, difficulty:'medium'},
-   {type:'monster', emoji:'🐟', name:'Poisson saute-vague',questions:5, difficulty:'medium'},
-   {type:'minibss', emoji:'🐢', name:'Tortue centenaire',  questions:5, difficulty:'medium'},
-   {type:'boss',    emoji:'🦀', name:'Crabe Royal',        questions:6, difficulty:'hard', dropRare:true}
-  ]},
- {id:'trolls',  label:'Forêt des Trolls', bg:'linear-gradient(135deg,#2d4a2d,#5a7a5a)',emoji:'⛺',boss:'👺',bossName:'Grand Troll',     level:'CE1',starsReq:185, theme:'foret',
+ {id:'trolls',  label:'Forêt des Trolls', bg:'linear-gradient(135deg,#2d4a2d,#5a7a5a)',emoji:'⛺',boss:'👺',bossName:'Grand Troll',     level:'CE1',starsReq:145, theme:'foret',
   parallax:{sky:['#5a7a5a','#2d4a2d','#1a3a1a'], mountains:['#0f2810','#051405'], decor:['🌳','🍄','🪵'], astro:'🌑'},
   steps:[
    {type:'monster', emoji:'🐗', name:'Marcassin sauvage',  questions:3, difficulty:'medium'},
@@ -113,6 +104,15 @@ const MAP_ZONES=[
    {type:'monster', emoji:'🦝', name:'Raton farceur',      questions:5, difficulty:'medium'},
    {type:'minibss', emoji:'👹', name:'Troll des cavernes', questions:5, difficulty:'hard'},
    {type:'boss',    emoji:'👺', name:'Grand Troll',        questions:6, difficulty:'hard', dropRare:true}
+  ]},
+ {id:'plage',   label:'Plage Ensoleillée',bg:'linear-gradient(135deg,#fff5d6,#fcbf49)',emoji:'🏖️',boss:'🦀',bossName:'Crabe Royal',     level:'CE1',starsReq:185, theme:'ocean',
+  parallax:{sky:['#fff5d6','#fcbf49','#f77f00'], mountains:['#a85a10','#5c3208'], decor:['🐚','⛱️','🌴'], astro:'☀️'},
+  steps:[
+   {type:'monster', emoji:'🐚', name:'Coquillage chanteur',questions:3, difficulty:'easy'},
+   {type:'puzzle',  emoji:'⛱️', name:'Énigme du sable',   questions:4, difficulty:'medium'},
+   {type:'monster', emoji:'🐟', name:'Poisson saute-vague',questions:5, difficulty:'medium'},
+   {type:'minibss', emoji:'🐢', name:'Tortue centenaire',  questions:5, difficulty:'medium'},
+   {type:'boss',    emoji:'🦀', name:'Crabe Royal',        questions:6, difficulty:'hard', dropRare:true}
   ]},
  // ═══════════════════════════════════════════════════════
  // CE2 — 4 zones d'aventure (235→415⭐)
