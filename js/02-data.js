@@ -39,7 +39,7 @@ const MAP_ZONES=[
  // ═══════════════════════════════════════════════════════
  // CP — 4 zones douces pour débutants (15→60⭐)
  // ═══════════════════════════════════════════════════════
- {id:'plaine',  label:'Plaine des Débuts',bg:'linear-gradient(135deg,#27ae60,#2ecc71)',emoji:'🌾',boss:'🐺',bossName:'Loup des Plaines',level:'CP', starsReq:15,  theme:'standard',
+ {id:'plaine',  label:'Plaine des Débuts',bg:'linear-gradient(135deg,#27ae60,#2ecc71)',emoji:'🌾',boss:'🐺',bossName:'Loup des Plaines',level:'CP', starsReq:0,   theme:'standard',
   parallax:{sky:['#87ceeb','#b8e0d2','#a8d8a8'], mountains:['#5a8c5a','#3a6c3a'], decor:['🦋','🌼','🍃'], astro:'☀️'},
   steps:[
    {type:'monster', emoji:'🐰', name:'Lapin agile',     questions:3, difficulty:'easy'},
