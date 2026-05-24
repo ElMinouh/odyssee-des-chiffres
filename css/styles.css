@@ -2596,6 +2596,7 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  z-index:10;
  width:44px;
  height:44px;
+ pointer-events:none;     /* v8.7.32 : crucial — sinon l'avatar capture les clics destinés à la zone où il est posé, rendant la zone "inaccessible" */
  display:flex;
  align-items:center;
  justify-content:center;
@@ -2629,6 +2630,7 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  position:absolute;
  transform:translate(-50%,-130%);
  z-index:10;
+ pointer-events:none;     /* v8.7.32 : ne bloque pas les clics sur les étapes sous l'avatar */
  width:38px;
  height:38px;
  display:flex;

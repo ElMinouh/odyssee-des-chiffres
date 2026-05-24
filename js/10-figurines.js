@@ -1750,7 +1750,10 @@ function resetProfile(playerName){
 }
 // v8.7.31 : reset spécifique à L'Odyssée (l'aventure mathématique sur la carte).
 // Ne touche PAS aux étoiles, figurines, XP, badges, skills, inventaire.
-// Vide uniquement mapBossBeaten, remet mapAvatarZone à 'plaine', reset levelWins.
+// v8.7.32 : ajout du reset de zoneProgress (les étapes complétées par zone).
+// Sans ça, une zone restait affichée "5/5 étapes franchies" même après reset,
+// alors que mapBossBeaten était vide → la zone suivante restait verrouillée
+// (inaccessible) car la condition de débloquage utilise mapBossBeaten.
 function resetAdventure(playerName){
   if(!playerName) return;
   const msg=`Réinitialiser uniquement L'Odyssée (l'aventure mathématique) pour ${playerName} ?\n\nToutes les zones de la carte seront à reconquérir, l'avatar repart de la Plaine des Débuts.\n\nLes étoiles, figurines, XP, badges, skills et inventaire sont CONSERVÉS.`;
@@ -1759,8 +1762,10 @@ function resetAdventure(playerName){
     const raw = localStorage.getItem('user_'+playerName);
     if(!raw){ toast(`Aucun profil trouvé pour ${playerName}.`); return; }
     const data = JSON.parse(raw);
+    // Données carte qui matérialisent la progression
     data.mapBossBeaten = [];
     data.mapAvatarZone = 'plaine';
+    data.zoneProgress  = {};   // v8.7.32 : ré-initialisé à validateProfile au prochain load
     if(data.levelWins){
       Object.keys(data.levelWins).forEach(k => { data.levelWins[k] = 0; });
     }
