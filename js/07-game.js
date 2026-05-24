@@ -2306,10 +2306,27 @@ if(typeof checkMilestones==='function') checkMilestones();
    P.mapBossBeaten=[...(P.mapBossBeaten||[]),GM.mapZone.id];
    // Chantier 3.10 : cinématique de zone conquise (remplace l'ancien transition-screen)
    const _zone = GM.mapZone;
+   // v8.7.30 (O3-B.2) : détection de la conquête d'un îlot complet.
+   // Si toutes les zones de la région sont battues, on enchaîne avec playIslandVictory.
+   let _conqueredRegionId = null;
+   try{
+    const _zoneRegion = _ARCH_REGIONS.find(r => r.levels.includes(_zone.level));
+    if(_zoneRegion){
+     const _zonesOfRegion = MAP_ZONES.filter(z => _zoneRegion.levels.includes(z.level));
+     const _allBeaten = _zonesOfRegion.every(z => (P.mapBossBeaten || []).includes(z.id));
+     if(_allBeaten) _conqueredRegionId = _zoneRegion.id;
+    }
+   }catch(e){ console.warn('Island conquest detection failed', e); }
    setTimeout(()=>{
     if(typeof playZoneVictory==='function'){
      try{startConfetti();}catch(e){}
-     playZoneVictory(_zone);
+     // v8.7.30 : si l'îlot est entièrement conquis, enchaîne playZoneVictory → playIslandVictory
+     playZoneVictory(_zone, _conqueredRegionId ? () => {
+      try{
+       if(typeof startConfetti==='function') startConfetti();
+       if(typeof playIslandVictory==='function') playIslandVictory(_conqueredRegionId);
+      }catch(e){ console.warn('Island victory chain failed', e); }
+     } : undefined);
     } else {
      // Fallback ancien comportement si le module cinematics n'est pas chargé
      const trans=$('transition-screen');
