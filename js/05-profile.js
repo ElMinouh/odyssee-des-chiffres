@@ -147,6 +147,23 @@ function validateProfile(raw, defaultName){
   cloudCode: _safeStr(raw.cloudCode, 40, null),
   cloudEnabled: _safeBool(raw.cloudEnabled, false),
  };
+ // v8.7.33 : MIGRATION RÉTROACTIVE pour le bug critique de GS.isBoss.
+ // Avant ce fix, mapBossBeaten n'était pas mis à jour quand un joueur battait le boss
+ // d'une zone (parce que GS.isBoss était écrasé à false pendant le combat). Du coup
+ // les zones étaient marquées "5/5 étapes franchies" dans zoneProgress, mais la zone
+ // suivante restait verrouillée. On répare ici : pour chaque zone complétée à 100%
+ // dans zoneProgress, on s'assure qu'elle figure aussi dans mapBossBeaten.
+ try{
+  if(out.zoneProgress && typeof out.zoneProgress === 'object'){
+   const beatenSet = new Set(out.mapBossBeaten || []);
+   Object.keys(out.zoneProgress).forEach(zid => {
+    if(out.zoneProgress[zid] && out.zoneProgress[zid].completed === true){
+     beatenSet.add(zid);
+    }
+   });
+   out.mapBossBeaten = Array.from(beatenSet);
+  }
+ }catch(e){ console.warn('mapBossBeaten migration failed', e); }
  return out;
 }
 

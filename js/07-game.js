@@ -1835,17 +1835,19 @@ function nextTurn(){
  if(GM.mode2==='normal'&&!isRevision&&GS.qCount>=_qTarget)return endGame(true);
  if(GM.mode2==='revision'&&revQueue.length===0&&GS.qCount>0)return endGame(true);
  GS.qCount++;
- // Boss de la dernière question : pour le mode normal classique (6 questions) OU pour
- // une étape de zone marquée comme boss (GS.isBoss déjà true). En étape intermédiaire
- // de zone, GS.isBoss reste false (pas de boss à mi-parcours).
- GS.isBoss = GM.mode2==='normal' && !GM.mapZone && GS.qCount===_qTarget;
+ // v8.7.33 : logique de GS.isBoss clarifiée — bug critique avant.
+ // - Étape de map moderne (GM.mapStep défini) : GS.isBoss reste comme startMapStep
+ //   l'a positionné (true si step.type === 'boss', false sinon). On NE TOUCHE PAS.
+ //   Avant : la ligne suivante écrasait GS.isBoss à false → mapBossBeaten non
+ //   poussé → zone suivante restait verrouillée même après réussite du boss.
+ // - Carte legacy (mapZone sans mapStep) : forcer boss à la dernière question.
+ // - Mode normal classique : boss à la dernière question.
  if(GM.mapZone && GM.mapStep){
-  // En étape de zone : GS.isBoss est déjà positionné par startMapStep selon le type.
-  // On ne le modifie pas ici, sauf si on est sur la DERNIÈRE question (=combat final).
-  // L'ancien comportement (forcer isBoss=true à la question 6) est conservé pour les
-  // anciennes parties carte sans mapStep (rétrocompat).
- } else if(GM.mapZone && GS.qCount===_qTarget){
-  GS.isBoss = true;
+  // No-op : GS.isBoss déjà bon depuis startMapStep
+ } else if(GM.mapZone){
+  GS.isBoss = (GS.qCount === _qTarget);
+ } else {
+  GS.isBoss = (GM.mode2 === 'normal' && GS.qCount === _qTarget);
  }
  GS.bossTypeQ={};
  GS.isGolden=Math.random()<.15;GS.frozen=false;
@@ -2284,7 +2286,11 @@ if(typeof checkMilestones==='function') checkMilestones();
   }
  }
 // boss carte
- if(won&&GM.mapZone&&GS.isBoss){
+ // v8.7.33 : on vérifie le TYPE de l'étape (source de vérité immuable) plutôt que
+ // GS.isBoss (état mouvant pendant le combat). Plus robuste face à d'éventuels
+ // futurs bugs qui pourraient altérer GS.isBoss en cours de partie.
+ const _isMapBossStep = !!(GM.mapStep && GM.mapStep.def && GM.mapStep.def.type === 'boss');
+ if(won && GM.mapZone && _isMapBossStep){
   GS.mapBossWon=true;
   // v8.7.9 (O1) : drop figurine rare au boss de zone uniquement (pas mini-boss)
   if(GM.mapStep && GM.mapStep.def && GM.mapStep.def.dropRare){
