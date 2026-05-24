@@ -108,12 +108,27 @@ let _frVoice=null;
 // Remplace les symboles math par leur prononciation française
 function _humanizeForSpeech(t){
  return String(t)
+  // v8.7.31 : onomatopées avec consonnes répétées (grrrr, brrr, etc.)
+  // → ajout d'une voyelle pour que la TTS prononce comme syllabe au lieu d'épeler
+  .replace(/\bg[rR]{2,}\b/gi, 'graah')      // "grrrr" → "graah" (grognement)
+  .replace(/\bb[rR]{2,}\b/gi, 'brrah')      // "brrr" → "brrah" (frisson)
+  .replace(/\br[rR]{2,}\b/gi, 'rraah')      // "rrrr" → "rraah" (rugissement)
+  .replace(/\bh[aA]{2,}\b/gi, 'ha ha ha')   // "haaaa" → "ha ha ha" (rire)
+  .replace(/\bh[eE]{2,}\b/gi, 'hé hé hé')   // "héééé" → "hé hé hé"
+  .replace(/\bm[uU]{2,}\b/gi, 'mouah')      // "muuu" → "mouah"
+  // Fallback générique : 3+ consonnes identiques → seulement 2 (évite l'épellation)
+  .replace(/([bcdfghjklmnpqrstvwxz])\1{2,}/gi, '$1$1')
+  // Opérateurs math
   .replace(/×|x/g,' fois ')
   .replace(/÷|\//g,' divisé par ')
   .replace(/−|-/g,' moins ')
   .replace(/\+/g,' plus ')
   .replace(/=/g,' égale ')
-  .replace(/\?/g,' quoi ')
+  // v8.7.31 : "?" n'est plus remplacé par "quoi" (anomalie vocale).
+  // Le ton interrogatif est porté par la formulation ("combien", "quel"…).
+  .replace(/\?/g,' ')
+  // Multiples ! → un seul (évite "exclamation exclamation exclamation")
+  .replace(/!{2,}/g,'!')
   .replace(/\s+/g,' ').trim();
 }
 // Choisit la meilleure voix française dispo (appelé 1 fois au boot)

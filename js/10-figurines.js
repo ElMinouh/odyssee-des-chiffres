@@ -1748,6 +1748,37 @@ function resetProfile(playerName){
   }
   renderResetZone();
 }
+// v8.7.31 : reset spécifique à L'Odyssée (l'aventure mathématique sur la carte).
+// Ne touche PAS aux étoiles, figurines, XP, badges, skills, inventaire.
+// Vide uniquement mapBossBeaten, remet mapAvatarZone à 'plaine', reset levelWins.
+function resetAdventure(playerName){
+  if(!playerName) return;
+  const msg=`Réinitialiser uniquement L'Odyssée (l'aventure mathématique) pour ${playerName} ?\n\nToutes les zones de la carte seront à reconquérir, l'avatar repart de la Plaine des Débuts.\n\nLes étoiles, figurines, XP, badges, skills et inventaire sont CONSERVÉS.`;
+  if(!confirm(msg)) return;
+  try{
+    const raw = localStorage.getItem('user_'+playerName);
+    if(!raw){ toast(`Aucun profil trouvé pour ${playerName}.`); return; }
+    const data = JSON.parse(raw);
+    data.mapBossBeaten = [];
+    data.mapAvatarZone = 'plaine';
+    if(data.levelWins){
+      Object.keys(data.levelWins).forEach(k => { data.levelWins[k] = 0; });
+    }
+    localStorage.setItem('user_'+playerName, JSON.stringify(data));
+    toast(`🗺️ Aventure de ${playerName} réinitialisée !`);
+    // Si c'est le joueur actif, recharger
+    if(P && P.name === playerName){
+      loadProfile(); updateHUD();
+      if(typeof renderMap === 'function' && document.getElementById('v-map') && !document.getElementById('v-map').classList.contains('hidden')){
+        renderMap();
+      }
+    }
+    renderResetZone();
+  }catch(e){
+    console.warn('resetAdventure failed', e);
+    toast(`Erreur lors du reset de l'aventure de ${playerName}.`);
+  }
+}
 function renderResetZone(){
   const z=$('reset-zone');if(!z)return;
   // Utiliser KNOWN (liste fixe) + le joueur custom si existant
@@ -1755,17 +1786,22 @@ function renderResetZone(){
   const custom=localStorage.getItem('customPlayerName');
   const players=[...knownPlayers,...(custom&&!knownPlayers.includes(custom)?[custom]:[])];
   z.innerHTML=players.map(name=>{
-    let stars=0,figs=0,lvl=1;
+    let stars=0,figs=0,lvl=1,zonesBeaten=0;
     try{const p=JSON.parse(localStorage.getItem('user_'+name)||'null');
-      if(p){stars=p.stars||0;figs=(p.ownedFigurines||[]).length;lvl=p.xp?Math.floor(p.xp/100)+1:1;}
+      if(p){stars=p.stars||0;figs=(p.ownedFigurines||[]).length;lvl=p.xp?Math.floor(p.xp/100)+1:1;zonesBeaten=(p.mapBossBeaten||[]).length;}
     }catch(e){}
     const enc=encodeURIComponent(name);
-    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;margin:4px 0;background:rgba(255,255,255,.08);border-radius:10px;gap:8px;">'
+    // v8.7.31 : deux boutons distincts (reset aventure + reset total)
+    return '<div style="display:flex;flex-direction:column;padding:10px 12px;margin:4px 0;background:rgba(255,255,255,.08);border-radius:10px;gap:8px;">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">'
       +'<div style="text-align:left;flex:1;">'
       +'<div style="font-weight:700;font-size:.9em;">'+esc(name)+'</div>'
-      +'<div style="font-size:.72em;color:#bdc3c7;">Niv.'+lvl+' · '+stars+' étoiles · '+figs+' figurines</div>'
+      +'<div style="font-size:.72em;color:#bdc3c7;">Niv.'+lvl+' · '+stars+' étoiles · '+figs+' figurines · '+zonesBeaten+'/23 zones</div>'
+      +'</div></div>'
+      +'<div style="display:flex;gap:6px;">'
+      +'<button data-pname="'+enc+'" onclick="resetAdventure(decodeURIComponent(this.dataset.pname))" style="flex:1;background:#16a085;color:#fff;padding:8px 10px;font-size:.78em;font-weight:700;border-radius:8px;border:2px solid #1abc9c;cursor:pointer;">&#128506; Reset Aventure</button>'
+      +'<button data-pname="'+enc+'" onclick="resetProfile(decodeURIComponent(this.dataset.pname))" style="flex:1;background:#c0392b;color:#fff;padding:8px 10px;font-size:.78em;font-weight:700;border-radius:8px;border:2px solid #ff6b6b;cursor:pointer;">&#128465; Reset Total</button>'
       +'</div>'
-      +'<button data-pname="'+enc+'" onclick="resetProfile(decodeURIComponent(this.dataset.pname))" style="background:#c0392b;color:#fff;padding:8px 14px;font-size:.82em;font-weight:700;border-radius:8px;white-space:nowrap;border:2px solid #ff6b6b;">&#128465; Reset</button>'
       +'</div>';
   }).join('');
 }
