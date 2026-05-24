@@ -2537,7 +2537,7 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  max-height:90vh;
  border-radius:18px;
  border:3px solid;
- padding:18px 16px 22px;
+ padding:62px 16px 22px; /* v8.7.29 : padding-top augmenté pour bien dégager le bouton X */
  box-shadow:0 18px 50px rgba(0,0,0,.7), inset 0 -4px 14px rgba(0,0,0,.18);
  overflow-y:auto;
  position:relative; /* v8.7.28 : nécessaire pour ancrer le bouton X qui est en position:absolute */
@@ -2545,14 +2545,21 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 }
 @keyframes shopPopIn{ from{opacity:0;transform:scale(.85);} to{opacity:1;transform:scale(1);} }
 .archipel-shop-close{
- position:absolute; top:8px; right:10px;
- background:rgba(255,255,255,.85);
+ position:absolute;
+ top:14px; right:14px;
+ background:rgba(255,255,255,.92);
  border:none;
- width:34px; height:34px;
+ width:44px; height:44px;          /* v8.7.29 : zone tactile WCAG (44px min) */
  border-radius:50%;
- font-size:1.1em; font-weight:bold;
+ font-size:1.3em; font-weight:bold;
  cursor:pointer;
- box-shadow:0 2px 6px rgba(0,0,0,.35);
+ display:flex;                     /* v8.7.29 : centrage parfait du X */
+ align-items:center;
+ justify-content:center;
+ padding:0;
+ line-height:1;
+ box-shadow:0 3px 8px rgba(0,0,0,.5);
+ z-index:5;                         /* v8.7.29 : assure le bon hit-test */
 }
 .archipel-shop-header{ text-align:center; margin-bottom:14px; }
 .archipel-shop-header-emoji{ font-size:2.6em; line-height:1; filter:drop-shadow(0 3px 5px rgba(0,0,0,.45)); }

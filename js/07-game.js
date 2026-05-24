@@ -317,11 +317,11 @@ const _ARCH_SHOPS = {
  'cm1':   { emoji:'⚒️', name:'Forge Royale',         theme:'castle',
             bg:'linear-gradient(160deg,#d3dce6 0%,#7e8fa3 50%,#3d4a5d 100%)',
             accent:'#1f2733',
-            xPctOffset:-28, yShift: 0 },    // v8.7.28 : gauche-milieu (en face de Forteresse)
+            xPctOffset:-14, yShift:-100 }, // v8.7.29 : Forge Royale était hors du blob → ramenée plus à droite et plus haut
  'cm2':   { emoji:'🛸', name:'Comptoir Stellaire',   theme:'space',
             bg:'linear-gradient(160deg,#cbb1ee 0%,#7e57c4 50%,#2a1357 100%)',
             accent:'#1f0a45',
-            xPctOffset: 0, yShift: -43 },   // v8.7.28 : centre du blob (entre Volcan et Cité Mécanique)
+            xPctOffset: 13, yShift: -15 }, // v8.7.29 : décalée à droite pour quitter le sentier doré
  'final': { emoji:'💎', name:'Trésor Sacré',         theme:'sacred',
             bg:'linear-gradient(160deg,#fff4c0 0%,#f1c40f 50%,#a17806 100%)',
             accent:'#6a4d04',
