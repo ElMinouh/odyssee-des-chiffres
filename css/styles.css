@@ -2540,7 +2540,7 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  padding:18px 16px 22px;
  box-shadow:0 18px 50px rgba(0,0,0,.7), inset 0 -4px 14px rgba(0,0,0,.18);
  overflow-y:auto;
- position:relative;
+ position:relative; /* v8.7.28 : nécessaire pour ancrer le bouton X qui est en position:absolute */
  animation:shopPopIn .35s cubic-bezier(.34,1.56,.64,1);
 }
 @keyframes shopPopIn{ from{opacity:0;transform:scale(.85);} to{opacity:1;transform:scale(1);} }
