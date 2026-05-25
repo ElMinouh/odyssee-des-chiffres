@@ -782,12 +782,17 @@ function renderMap(){
    }
   }
   const checkHtml = done ? `<div class="archipel-zone-check">✓</div>` : '';
+  // v8.7.39 (O3-B.5) : Trophée du boss vaincu sur la zone complétée.
+  // Médaillon doré qui montre l'emoji du boss avec un anneau pulsant subtil.
+  // Marqueur de fierté permanent sur la carte mondiale.
+  const trophyHtml = done ? `<div class="archipel-zone-trophy" title="Boss vaincu : ${z.bossName||'Inconnu'}">${z.boss||'🏆'}</div>` : '';
   const lockHtml = (!canPlay && !done) ? `<div class="archipel-zone-lock">🔒</div>` : '';
   const reqHtml = (!canPlay && !done && prev) ? `<div class="archipel-zone-req">${z.starsReq}★</div>` : '';
   const onclick = canPlay ? `onclick="requestZoneOpen('${z.id}')"` : '';
   return `
    <div class="${cls}" style="left:${p.xPct.toFixed(1)}%;top:${p.y}px;" data-zone-id="${z.id}" ${onclick}>
     <div class="archipel-zone-circle">${z.emoji}${checkHtml}${lockHtml}</div>
+    ${trophyHtml}
     <div class="archipel-zone-label">${z.label}</div>
     ${badgeHtml}${reqHtml}
    </div>`;
@@ -1001,6 +1006,15 @@ function openArchipelZoom(zoneId){
     <div style="font-size:2em;line-height:1;">${zone.emoji}</div>
     <div class="archipel-zoom-title">${zone.label}</div>
     <div class="archipel-zoom-sub">${zone.level} · ${done}/${total} étapes franchies</div>
+    ${(P.mapBossBeaten||[]).includes(zoneId) ? `
+    <div class="archipel-zoom-trophy-banner" title="Zone conquise">
+     <span class="archipel-zoom-trophy-emoji">${zone.boss||'🏆'}</span>
+     <span class="archipel-zoom-trophy-text">
+      <span class="archipel-zoom-trophy-title">BOSS VAINCU</span>
+      <span class="archipel-zoom-trophy-name">${zone.bossName||''}</span>
+     </span>
+     <span class="archipel-zoom-trophy-medal">🏆</span>
+    </div>` : ''}
    </div>
    <div class="archipel-zoom-steps" style="height:${containerH+20}px;">
     <svg class="archipel-zoom-path-svg" viewBox="0 0 ${containerW} ${containerH+20}" preserveAspectRatio="none">
