@@ -432,7 +432,7 @@ function _buildArchipelPath(positions){
 }
 
 // Génère le SVG d'un îlot organique selon sa forme et ses positions de zones
-function _renderIslandSvg(regionId, shape, zonePositions, totalH, W){
+function _renderIslandSvg(regionId, shape, zonePositions, totalH, W, fogged){
  if(zonePositions.length === 0) return '';
  // Pour le calcul de la bbox du blob, exclure les zones marquées "détachées"
  // (ex: Île Mystérieuse, qui doit rester franchement hors du continent CM2).
@@ -471,7 +471,7 @@ function _renderIslandSvg(regionId, shape, zonePositions, totalH, W){
   const emoji = st.deco[i % st.deco.length];
   decoElements.push(`<text x="${dx.toFixed(1)}" y="${dy.toFixed(1)}" font-size="14" opacity="0.5" text-anchor="middle">${emoji}</text>`);
  }
- return `<path d="${blobPath}" fill="${st.fill}" stroke="${st.stroke}" stroke-width="1.5" stroke-opacity="0.45" opacity="0.93"/>${decoElements.join('')}`;
+ return `<g class="archipel-island-svg${fogged?' fogged':''}" data-region="${regionId}"><path d="${blobPath}" fill="${st.fill}" stroke="${st.stroke}" stroke-width="1.5" stroke-opacity="0.45" opacity="0.93"/>${decoElements.join('')}</g>`;
 }
 
 // Génère un blob organique selon la forme demandée
@@ -726,14 +726,30 @@ function renderMap(){
  // Calculer le layout
  const layout = _computeArchipelLayout();
  const { positions, totalHeight, W } = layout;
+ // v8.7.36+ (O3-B.4 strict) : un îlot est "foggé" tant qu'AUCUNE de ses zones n'est
+ // accessible. Dès qu'au moins une zone devient canPlay (avatar peut entrer dans
+ // l'îlot), TOUT l'îlot sort du brouillard d'un coup. L'effet englobe le SVG,
+ // le nom de région, toutes les zones, et la boutique.
+ const _islandFogged = {};
+ _ARCH_REGIONS.forEach(r => {
+  const zonesOfRegion = positions.filter(p => p.regionId === r.id);
+  const anyAccessible = zonesOfRegion.some(p => {
+   const idx = p.zoneIdx;
+   const prev = idx === 0 || beaten.includes(MAP_ZONES[idx-1].id);
+   return prev && (starsTotal >= p.zone.starsReq);
+  });
+  // Une région complètement battue n'est jamais foggée (cas du joueur qui revient)
+  const anyBeaten = zonesOfRegion.some(p => beaten.includes(p.zone.id));
+  _islandFogged[r.id] = !anyAccessible && !anyBeaten;
+ });
  // Construire le SVG global (sentier + îlots)
  const pathD = _buildArchipelPath(positions);
  // Grouper les positions par région pour générer les îlots
  const byRegion = {};
  positions.forEach(p => { (byRegion[p.regionId] = byRegion[p.regionId] || []).push(p); });
- // Générer les îlots SVG
+ // Générer les îlots SVG (avec flag fogged)
  const islandsSvg = _ARCH_REGIONS.map(r =>
-  _renderIslandSvg(r.id, r.shape, byRegion[r.id] || [], totalHeight, W)
+  _renderIslandSvg(r.id, r.shape, byRegion[r.id] || [], totalHeight, W, _islandFogged[r.id])
  ).join('');
  // Noms de régions : utiliser regionTitleY (positions calculées avec espace réservé)
  const titleByRegion = {};
@@ -741,7 +757,8 @@ function renderMap(){
  const regionNamesHtml = _ARCH_REGIONS.map(r=>{
   const ty = titleByRegion[r.id];
   if(ty === undefined) return '';
-  return `<div class="archipel-region-name" style="top:${ty}px;">${r.label}</div>`;
+  const foggedCls = _islandFogged[r.id] ? ' island-fogged' : '';
+  return `<div class="archipel-region-name${foggedCls}" data-region="${r.id}" style="top:${ty}px;">${r.label}</div>`;
  }).join('');
  // Générer les nœuds de zones
  const zonesHtml = positions.map(p=>{
@@ -754,6 +771,7 @@ function renderMap(){
   if(done) cls += ' completed';
   else if(canPlay) cls += ' current';
   else cls += ' locked';
+  if(_islandFogged[p.regionId]) cls += ' island-fogged';
   // Badge progression (étapes faites / total)
   let badgeHtml = '';
   if(canPlay && !done){
@@ -793,7 +811,7 @@ function renderMap(){
   const shopX = cx + (shop.xPctOffset / 100) * W;
   const shopY = cy + shop.yShift;
   const shopXPct = (shopX / W) * 100;
-  return `<div class="archipel-shop" data-theme="${shop.theme}" data-region="${region.id}"
+  return `<div class="archipel-shop${_islandFogged[region.id]?' island-fogged':''}" data-theme="${shop.theme}" data-region="${region.id}"
               style="left:${shopXPct.toFixed(1)}%;top:${shopY.toFixed(1)}px;background:${shop.bg};border-color:${shop.accent};"
               onclick="openArchipelShop('${region.id}')">
             <div class="archipel-shop-emoji">${shop.emoji}</div>

@@ -2527,10 +2527,12 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 .archipel-zone{
  transition: filter 0.9s ease, opacity 0.9s ease;
 }
+/* Zone individuellement bloquée DANS un îlot débloqué : effet léger (la zone
+   reste visible, l'utilisateur voit ce qui l'attend après la zone courante). */
 .archipel-zone.locked{
  cursor:not-allowed;
- opacity:0.55;
- filter:grayscale(0.85) blur(0.7px) brightness(0.7);
+ opacity:0.65;
+ filter:grayscale(0.55) brightness(0.85);
 }
 .archipel-zone.locked .archipel-zone-circle{
  background:rgba(0,0,0,.55);
@@ -2551,9 +2553,53 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  opacity:0.9;
  filter:drop-shadow(0 1px 2px rgba(0,0,0,.7));
 }
+/* v8.7.37 (O3-B.4 strict) : Brouillard FORT par îlot entier. */
+/* Couvre : la forme SVG, le nom de région, toutes les zones, la boutique. */
+/* Tant que l'avatar n'a pas accès à au moins une zone de l'îlot, tout est */
+/* dans la brume. Au débloquage, transition douce de ~1s pour effet "lever de */
+/* brouillard". */
+.archipel-island-svg{
+ transition: filter 1s ease, opacity 1s ease;
+}
+.archipel-island-svg.fogged{
+ opacity:0.32;
+ filter:grayscale(1) brightness(0.45);
+}
+.archipel-region-name{
+ transition: filter 1s ease, opacity 1s ease;
+}
+.archipel-region-name.island-fogged{
+ opacity:0.18;
+ filter:grayscale(1) blur(2px) brightness(0.55);
+ pointer-events:none;
+}
+.archipel-shop{
+ transition: filter 1s ease, opacity 1s ease;
+}
+.archipel-shop.island-fogged{
+ opacity:0.22;
+ filter:grayscale(1) blur(3px) brightness(0.4);
+ pointer-events:none;
+ cursor:not-allowed;
+}
+.archipel-zone.island-fogged{
+ opacity:0.22 !important;
+ filter:grayscale(1) blur(2.5px) brightness(0.4) !important;
+ pointer-events:none;
+}
+.archipel-zone.island-fogged .archipel-zone-lock{
+ display:none;  /* le cadenas individuel n'a plus de sens : tout l'îlot est dans le brouillard */
+}
+.archipel-zone.island-fogged .archipel-zone-req{
+ display:none;
+}
 @media (prefers-reduced-motion: reduce){
- .archipel-zone{ transition:none; }
- .archipel-zone.locked{ filter:grayscale(0.85) brightness(0.7); }
+ .archipel-zone, .archipel-island-svg, .archipel-region-name, .archipel-shop{ transition:none; }
+ .archipel-zone.locked{ filter:grayscale(0.55) brightness(0.85); }
+ .archipel-island-svg.fogged{ filter:grayscale(1) brightness(0.45); }
+ .archipel-zone.island-fogged, .archipel-shop.island-fogged, .archipel-region-name.island-fogged{
+  filter:grayscale(1) brightness(0.4);
+ }
 }
 .archipel-zone-label{
  font-size:.72em;
