@@ -2495,7 +2495,6 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  text-align:center;
 }
 .archipel-zone:hover:not(.locked){ transform:translate(-50%,-50%) scale(1.1); }
-.archipel-zone.locked{ cursor:not-allowed; }
 .archipel-zone-circle{
  width:54px;
  height:54px;
@@ -2523,11 +2522,38 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  box-shadow:0 0 20px rgba(241,196,15,.85);
  animation:archZonePulse 1.8s ease-in-out infinite;
 }
+/* v8.7.36 (O3-B.4) : Brouillard de guerre sur zones non débloquées. */
+/* Effet global (cercle + label + badges) + transition douce de débloquage. */
+.archipel-zone{
+ transition: filter 0.9s ease, opacity 0.9s ease;
+}
+.archipel-zone.locked{
+ cursor:not-allowed;
+ opacity:0.55;
+ filter:grayscale(0.85) blur(0.7px) brightness(0.7);
+}
 .archipel-zone.locked .archipel-zone-circle{
  background:rgba(0,0,0,.55);
  border-color:rgba(255,255,255,.25);
  opacity:.6;
  filter:grayscale(.7);
+ box-shadow:none;
+}
+.archipel-zone.locked .archipel-zone-label{
+ color:#aab2bd;
+ text-shadow:1px 1px 3px rgba(0,0,0,.7);
+}
+.archipel-zone.locked .archipel-zone-req{
+ background:rgba(0,0,0,.45);
+ color:#ffe39a;
+}
+.archipel-zone.locked .archipel-zone-lock{
+ opacity:0.9;
+ filter:drop-shadow(0 1px 2px rgba(0,0,0,.7));
+}
+@media (prefers-reduced-motion: reduce){
+ .archipel-zone{ transition:none; }
+ .archipel-zone.locked{ filter:grayscale(0.85) brightness(0.7); }
 }
 .archipel-zone-label{
  font-size:.72em;
