@@ -339,6 +339,38 @@ function _showBiomeBanner(regionId){
  setTimeout(()=> banner.remove(), 2700);
 }
 
+// v8.7.41 (O3-C.2) : Météo locale par région.
+// Particules ambiantes animées sur les îlots DÉBLOQUÉS (les foggés ont déjà leurs
+// nuages). Animation très légère pour donner vie à chaque biome sans surcharger.
+const _WEATHER_BY_REGION = {
+ cp:    { emojis:['🦋','🌸','🐝','🍀'],     count:5, anim:'drift'   },
+ ce1:   { emojis:['🍃','🌿','🐚','🍂'],     count:6, anim:'falling' },
+ ce2:   { emojis:['🌪️','💨','☀️'],          count:4, anim:'wind'    },
+ cm1:   { emojis:['❄️','🌨️','💎'],          count:7, anim:'falling' },
+ cm2:   { emojis:['⭐','✨','💫','🌟'],      count:8, anim:'twinkle' },
+ final: { emojis:['✨','🌟','💛'],           count:6, anim:'rising'  },
+};
+// Génère le HTML des particules météo pour un îlot débloqué.
+// bbox = {leftPct, topPx, widthPct, heightPx} relative au conteneur map-zones.
+function _buildWeatherOverlay(regionId, bbox){
+ const cfg = _WEATHER_BY_REGION[regionId];
+ if(!cfg) return '';
+ // Hash déterministe pour répartition pseudo-aléatoire mais stable entre renders
+ const seed = _archHash(regionId, 1);
+ const particles = [];
+ for(let i=0;i<cfg.count;i++){
+  const emoji = cfg.emojis[i % cfg.emojis.length];
+  // Position aléatoire seedée dans la bbox
+  const lx = (_archHash(regionId, 100+i) * 100); // 0-100% de la bbox
+  const ly = (_archHash(regionId, 200+i) * 100);
+  const delay = (_archHash(regionId, 300+i) * 4).toFixed(2);  // 0-4s
+  const dur = (4 + _archHash(regionId, 400+i) * 4).toFixed(2); // 4-8s
+  const size = (0.85 + _archHash(regionId, 500+i) * 0.5).toFixed(2); // 0.85-1.35em
+  particles.push(`<span class="weather-particle wp-${cfg.anim}" style="left:${lx.toFixed(1)}%;top:${ly.toFixed(1)}%;animation-delay:${delay}s;animation-duration:${dur}s;font-size:${size}em;">${emoji}</span>`);
+ }
+ return `<div class="archipel-weather" data-region="${regionId}" style="left:${bbox.leftPct.toFixed(1)}%;top:${bbox.topPx.toFixed(0)}px;width:${bbox.widthPct.toFixed(1)}%;height:${bbox.heightPx.toFixed(0)}px;">${particles.join('')}</div>`;
+}
+
 // Hash simple d'une chaîne (pour générer des positions pseudo-aléatoires reproductibles).
 // Retourne un nombre entre 0 et 1.
 function _archHash(str, salt=0){
@@ -875,22 +907,38 @@ function renderMap(){
           </div>`;
  }).join('');
  // v8.7.38 (O3-B.4 polish) : Overlay nuageux animé par-dessus chaque îlot foggé.
- // Donne vie au brouillard : des nuances claires flottent doucement par-dessus
- // la zone grisée, comme un véritable brouillard qui ondule sur l'horizon.
- const fogOverlaysHtml = _ARCH_REGIONS.map(r => {
-  if(!_islandFogged[r.id]) return '';
+ // v8.7.41 (O3-C.2) : OU météo locale pour les îlots débloqués (papillons,
+ // feuilles, flocons, étoiles, etc. selon le biome).
+ // Calcul de bbox factorisé : utilisé pour les deux types d'overlay.
+ const _islandBboxes = {};
+ _ARCH_REGIONS.forEach(r => {
   const zonesOfRegion = (byRegion[r.id] || []).filter(p => !p.excludeFromBlob);
-  if(zonesOfRegion.length === 0) return '';
-  // Bbox élargie pour couvrir l'îlot avec marge confortable
+  if(zonesOfRegion.length === 0) return;
   const xs = zonesOfRegion.map(p => p.x);
   const ys = zonesOfRegion.map(p => p.y);
   const minX = Math.min(...xs) - 90;
   const maxX = Math.max(...xs) + 90;
   const minY = Math.min(...ys) - 70;
   const maxY = Math.max(...ys) + 80;
-  const leftPct = (minX / W) * 100;
-  const widthPct = ((maxX - minX) / W) * 100;
-  return `<div class="archipel-fog-overlay" data-region="${r.id}" style="left:${leftPct.toFixed(1)}%;top:${minY.toFixed(0)}px;width:${widthPct.toFixed(1)}%;height:${(maxY-minY).toFixed(0)}px;"></div>`;
+  _islandBboxes[r.id] = {
+   leftPct: (minX / W) * 100,
+   topPx:   minY,
+   widthPct:((maxX - minX) / W) * 100,
+   heightPx:(maxY - minY),
+  };
+ });
+ const fogOverlaysHtml = _ARCH_REGIONS.map(r => {
+  if(!_islandFogged[r.id]) return '';
+  const b = _islandBboxes[r.id];
+  if(!b) return '';
+  return `<div class="archipel-fog-overlay" data-region="${r.id}" style="left:${b.leftPct.toFixed(1)}%;top:${b.topPx.toFixed(0)}px;width:${b.widthPct.toFixed(1)}%;height:${b.heightPx.toFixed(0)}px;"></div>`;
+ }).join('');
+ // v8.7.41 : météo locale sur les îlots débloqués uniquement.
+ const weatherOverlaysHtml = _ARCH_REGIONS.map(r => {
+  if(_islandFogged[r.id]) return ''; // les foggés ont déjà leurs nuages
+  const b = _islandBboxes[r.id];
+  if(!b) return '';
+  return _buildWeatherOverlay(r.id, b);
  }).join('');
  // Assemblage final
  const cont = $('map-zones');
@@ -914,6 +962,7 @@ function renderMap(){
   ${regionNamesHtml}
   ${zonesHtml}
   ${shopsHtml}
+  ${weatherOverlaysHtml}
   ${fogOverlaysHtml}
   ${avatarHtml}
  `;

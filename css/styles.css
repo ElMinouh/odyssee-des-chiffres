@@ -3301,3 +3301,82 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  .biome-banner-emoji{ animation:none; }
  .biome-banner.biome-banner-out{ animation:none; opacity:0; }
 }
+
+/* v8.7.41 (O3-C.2) : Météo locale par région — particules ambiantes animées */
+/* sur les îlots débloqués. 5 styles d'animation : drift (papillons CP), */
+/* falling (feuilles CE1 / flocons CM1), wind (vents CE2), twinkle (étoiles CM2), */
+/* rising (énergie sacrée Final). */
+.archipel-weather{
+ position:absolute;
+ pointer-events:none;
+ z-index:2;
+ overflow:hidden;
+}
+.weather-particle{
+ position:absolute;
+ line-height:1;
+ filter:drop-shadow(0 1px 2px rgba(0,0,0,.35));
+ will-change:transform, opacity;
+}
+/* DRIFT — flottement libre (papillons, abeilles, fleurs) */
+.wp-drift{
+ animation:wpDrift linear infinite;
+ opacity:0;
+}
+@keyframes wpDrift{
+ 0%   { transform:translate(0,0) rotate(0deg); opacity:0; }
+ 12%  { opacity:.95; }
+ 30%  { transform:translate(40px,-20px) rotate(15deg); }
+ 55%  { transform:translate(-15px,-50px) rotate(-12deg); }
+ 80%  { transform:translate(30px,-80px) rotate(20deg); opacity:.9; }
+ 100% { transform:translate(0,-110px) rotate(0deg); opacity:0; }
+}
+/* FALLING — chute douce verticale (feuilles, flocons) */
+.wp-falling{
+ animation:wpFalling linear infinite;
+ opacity:0;
+}
+@keyframes wpFalling{
+ 0%   { transform:translate(0,-30px) rotate(0deg); opacity:0; }
+ 10%  { opacity:.9; }
+ 50%  { transform:translate(20px,80px) rotate(180deg); }
+ 90%  { opacity:.9; }
+ 100% { transform:translate(-10px,200px) rotate(360deg); opacity:0; }
+}
+/* WIND — translation horizontale (tourbillons désertiques) */
+.wp-wind{
+ animation:wpWind linear infinite;
+ opacity:0;
+}
+@keyframes wpWind{
+ 0%   { transform:translate(-30px,0) scale(.8); opacity:0; }
+ 15%  { opacity:.85; }
+ 50%  { transform:translate(60px,-10px) scale(1.1); }
+ 85%  { opacity:.7; }
+ 100% { transform:translate(150px,5px) scale(.9); opacity:0; }
+}
+/* TWINKLE — scintillement sur place (étoiles cosmiques) */
+.wp-twinkle{
+ animation:wpTwinkle ease-in-out infinite;
+ opacity:.3;
+ transform-origin:center;
+}
+@keyframes wpTwinkle{
+ 0%, 100% { transform:scale(.7) rotate(0deg);   opacity:.25; filter:drop-shadow(0 0 1px rgba(255,255,255,.4)) drop-shadow(0 1px 2px rgba(0,0,0,.35)); }
+ 50%      { transform:scale(1.25) rotate(180deg); opacity:1;   filter:drop-shadow(0 0 8px rgba(255,255,255,.9)) drop-shadow(0 1px 2px rgba(0,0,0,.35)); }
+}
+/* RISING — ascension dorée (énergie sacrée du Sanctuaire) */
+.wp-rising{
+ animation:wpRising linear infinite;
+ opacity:0;
+}
+@keyframes wpRising{
+ 0%   { transform:translate(0,20px) scale(.6); opacity:0; }
+ 15%  { opacity:.95; }
+ 50%  { transform:translate(15px,-40px) scale(1.1); opacity:1; }
+ 85%  { opacity:.8; }
+ 100% { transform:translate(-10px,-110px) scale(.5); opacity:0; }
+}
+@media (prefers-reduced-motion:reduce){
+ .weather-particle{ animation:none !important; opacity:.5; }
+}
