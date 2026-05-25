@@ -3380,3 +3380,114 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 @media (prefers-reduced-motion:reduce){
  .weather-particle{ animation:none !important; opacity:.5; }
 }
+
+/* v8.7.42 (O3-C.3) : PNJ et figurants sur les îlots débloqués. */
+/* Petits personnages secondaires posés sur le décor, animés avec un bobbing */
+/* idle. Cliquables → bulle de dialogue + narration vocale. */
+.archipel-npcs-layer{
+ position:absolute;
+ pointer-events:none; /* mais les .archipel-npc enfants restent cliquables (auto) */
+ z-index:4; /* au-dessus du weather (z:2) et des fog (z:3), en dessous des zones (z:10) */
+}
+.archipel-npc{
+ position:absolute;
+ transform:translate(-50%,-50%);
+ cursor:pointer;
+ pointer-events:auto;
+ user-select:none;
+ -webkit-user-select:none;
+ animation:npcIdleBob 2.4s ease-in-out infinite;
+ transition:transform .2s ease;
+ filter:drop-shadow(0 2px 4px rgba(0,0,0,.55));
+}
+.archipel-npc:hover{
+ transform:translate(-50%,-50%) scale(1.18);
+ filter:drop-shadow(0 3px 8px rgba(255,235,150,.8)) drop-shadow(0 0 4px rgba(255,255,255,.6));
+}
+.archipel-npc:active{
+ transform:translate(-50%,-50%) scale(.95);
+}
+.archipel-npc-emoji{
+ display:inline-block;
+ font-size:1.7em;
+ line-height:1;
+ pointer-events:none;
+}
+@keyframes npcIdleBob{
+ 0%, 100% { transform:translate(-50%, -50%); }
+ 50%      { transform:translate(-50%, calc(-50% - 3px)); }
+}
+/* Bulle de dialogue */
+.archipel-npc-bubble{
+ position:absolute;
+ bottom:130%;
+ left:50%;
+ transform:translateX(-50%);
+ min-width:200px;
+ max-width:260px;
+ padding:10px 14px;
+ background:rgba(20,25,40,.96);
+ border:2px solid #f1c40f;
+ border-radius:12px;
+ box-shadow:
+  0 6px 20px rgba(0,0,0,.65),
+  0 0 14px rgba(241,196,15,.3);
+ color:#fff;
+ text-align:center;
+ z-index:20;
+ pointer-events:auto;
+ cursor:default;
+ animation:npcBubbleIn .35s cubic-bezier(.34,1.56,.64,1);
+}
+.archipel-npc-bubble::after{
+ content:'';
+ position:absolute;
+ top:100%;
+ left:50%;
+ transform:translateX(-50%);
+ border:8px solid transparent;
+ border-top-color:#f1c40f;
+}
+.archipel-npc-bubble::before{
+ content:'';
+ position:absolute;
+ top:100%;
+ left:50%;
+ transform:translate(-50%,-2.5px);
+ border:8px solid transparent;
+ border-top-color:rgba(20,25,40,.96);
+ z-index:1;
+}
+.archipel-npc-bubble.archipel-npc-bubble-out{
+ animation:npcBubbleOut .3s ease-in forwards;
+}
+@keyframes npcBubbleIn{
+ 0%   { opacity:0; transform:translateX(-50%) translateY(8px) scale(.85); }
+ 100% { opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
+}
+@keyframes npcBubbleOut{
+ 0%   { opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
+ 100% { opacity:0; transform:translateX(-50%) translateY(-6px) scale(.9); }
+}
+.archipel-npc-bubble-name{
+ font-family:'MedievalSharp','Cinzel',Georgia,serif;
+ font-size:.85em;
+ font-weight:800;
+ color:#f1c40f;
+ letter-spacing:.04em;
+ margin-bottom:4px;
+}
+.archipel-npc-bubble-line{
+ font-size:.82em;
+ line-height:1.35;
+ color:#fff;
+}
+@media (max-width:420px){
+ .archipel-npc-emoji{ font-size:1.4em; }
+ .archipel-npc-bubble{ min-width:160px; max-width:220px; padding:8px 12px; }
+ .archipel-npc-bubble-line{ font-size:.76em; }
+}
+@media (prefers-reduced-motion:reduce){
+ .archipel-npc{ animation:none; }
+ .archipel-npc-bubble{ animation:none; }
+}

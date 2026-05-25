@@ -350,6 +350,101 @@ const _WEATHER_BY_REGION = {
  cm2:   { emojis:['⭐','✨','💫','🌟'],      count:8, anim:'twinkle' },
  final: { emojis:['✨','🌟','💛'],           count:6, anim:'rising'  },
 };
+// v8.7.42 (O3-C.3) : PNJ et figurants sur les îlots débloqués.
+// 2 personnages secondaires par région qui donnent vie au monde, avec dialogue
+// d'accueil au clic. Position seedée stable, animation idle bobbing.
+const _NPCS_BY_REGION = {
+ cp: [
+  { emoji:'🧙‍♂️', name:'Maître Élio',   line:'Bienvenue, jeune aventurier ! Les chiffres seront tes alliés.' },
+  { emoji:'🐑',   name:'Berger Pâquerette', line:'Mes moutons savent compter… presque aussi bien que toi !' },
+ ],
+ ce1: [
+  { emoji:'🧚',   name:'Fée Lumelle',   line:'Les forêts murmurent les tables de multiplication, écoute-les !' },
+  { emoji:'🦌',   name:'Cerf Sylvain',  line:'Avance avec sagesse, brave héros. Chaque pas compte.' },
+ ],
+ ce2: [
+  { emoji:'🧞',   name:'Génie Sablo',   line:'Trois vœux pour qui résout trois énigmes ! Mais d\'abord, prouve-toi.' },
+  { emoji:'🦅',   name:'Aigle Vent-Pur', line:'Mes ailes connaissent tous les nombres du désert.' },
+ ],
+ cm1: [
+  { emoji:'🛡️',  name:'Sir Cassel',    line:'Halte ! Seuls les vrais mathématiciens passent par cette voie.' },
+  { emoji:'🧝',   name:'Elfe Veylis',   line:'Les anciens calculs sont gravés dans la pierre des montagnes.' },
+ ],
+ cm2: [
+  { emoji:'👽',   name:'Zorbax du Nébula', line:'Bzzip ! Tes équations résonnent dans toute la galaxie.' },
+  { emoji:'🪐',   name:'Sage Cosmik',    line:'L\'univers entier est un théorème. Décompose-le.' },
+ ],
+ final: [
+  { emoji:'🦄',   name:'Licorne Astralia', line:'Tu es arrivé jusqu\'ici. Le Sanctuaire t\'observe.' },
+  { emoji:'🕊️',  name:'Esprit Aelune',  line:'Les nombres sacrés t\'attendent. Sois digne.' },
+ ],
+};
+// Génère le HTML des PNJ pour un îlot débloqué.
+// bbox = bbox de l'îlot. On évite les zones et le centre exact.
+function _buildNpcsOverlay(regionId, bbox, zonePositions){
+ const npcs = _NPCS_BY_REGION[regionId];
+ if(!npcs || npcs.length === 0) return '';
+ // Positions seedées dans la bbox, en bordure pour éviter le sentier central
+ const html = npcs.map((npc, i) => {
+  // 2 PNJ par îlot → positions opposées (coin haut-gauche et coin bas-droit par défaut)
+  const baseLx = i === 0 ? 12 : 78;  // % horizontal dans la bbox
+  const baseLy = i === 0 ? 18 : 70;  // % vertical
+  // Petit jitter seedé pour pas avoir un placement trop strict
+  const jx = (_archHash(regionId, 700+i) - 0.5) * 12; // ±6%
+  const jy = (_archHash(regionId, 800+i) - 0.5) * 10; // ±5%
+  const lx = Math.max(5, Math.min(92, baseLx + jx));
+  const ly = Math.max(5, Math.min(90, baseLy + jy));
+  const delay = (_archHash(regionId, 900+i) * 2).toFixed(2);
+  return `<div class="archipel-npc" data-region="${regionId}" data-npc-idx="${i}"
+              style="left:${lx.toFixed(1)}%;top:${ly.toFixed(1)}%;animation-delay:${delay}s;"
+              onclick="_npcClicked('${regionId}',${i})"
+              title="${npc.name}">
+           <span class="archipel-npc-emoji">${npc.emoji}</span>
+          </div>`;
+ }).join('');
+ return `<div class="archipel-npcs-layer" data-region="${regionId}" style="left:${bbox.leftPct.toFixed(1)}%;top:${bbox.topPx.toFixed(0)}px;width:${bbox.widthPct.toFixed(1)}%;height:${bbox.heightPx.toFixed(0)}px;">${html}</div>`;
+}
+// Handler clic sur un PNJ : affiche une bulle de dialogue + narration vocale.
+function _npcClicked(regionId, idx){
+ const npc = (_NPCS_BY_REGION[regionId] || [])[idx];
+ if(!npc) return;
+ // Bulle de dialogue flottante au-dessus du PNJ
+ const npcEl = document.querySelector(`.archipel-npc[data-region="${regionId}"][data-npc-idx="${idx}"]`);
+ if(!npcEl) return;
+ // Si une bulle existe déjà, la retirer
+ const existing = document.querySelector('.archipel-npc-bubble');
+ if(existing) existing.remove();
+ const bubble = document.createElement('div');
+ bubble.className = 'archipel-npc-bubble';
+ bubble.innerHTML = `
+  <div class="archipel-npc-bubble-name">${npc.name}</div>
+  <div class="archipel-npc-bubble-line">${npc.line}</div>
+ `;
+ npcEl.appendChild(bubble);
+ // Narration vocale
+ if(typeof speak === 'function'){
+  setTimeout(()=>{ try{ speak(npc.line); }catch(e){} }, 150);
+ }
+ // Vibration douce
+ if(typeof vibrate === 'function' && typeof VIBE !== 'undefined'){
+  vibrate(VIBE.good || 30);
+ }
+ // Auto-close après 4.5s ou au clic n'importe où
+ const close = () => {
+  bubble.classList.add('archipel-npc-bubble-out');
+  setTimeout(() => bubble.remove(), 350);
+  document.removeEventListener('click', closeOnOutside, true);
+  try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
+ };
+ const closeOnOutside = (ev) => {
+  if(!bubble.contains(ev.target) && ev.target !== npcEl && !npcEl.contains(ev.target)){
+   close();
+  }
+ };
+ setTimeout(close, 4500);
+ // Délai avant d'activer le click-outside (sinon le clic actuel le ferme immédiatement)
+ setTimeout(() => document.addEventListener('click', closeOnOutside, true), 100);
+}
 // Génère le HTML des particules météo pour un îlot débloqué.
 // bbox = {leftPct, topPx, widthPct, heightPx} relative au conteneur map-zones.
 function _buildWeatherOverlay(regionId, bbox){
@@ -940,6 +1035,13 @@ function renderMap(){
   if(!b) return '';
   return _buildWeatherOverlay(r.id, b);
  }).join('');
+ // v8.7.42 (O3-C.3) : PNJ et figurants sur les îlots débloqués.
+ const npcsOverlaysHtml = _ARCH_REGIONS.map(r => {
+  if(_islandFogged[r.id]) return '';
+  const b = _islandBboxes[r.id];
+  if(!b) return '';
+  return _buildNpcsOverlay(r.id, b, byRegion[r.id] || []);
+ }).join('');
  // Assemblage final
  const cont = $('map-zones');
  if(!cont) return;
@@ -963,6 +1065,7 @@ function renderMap(){
   ${zonesHtml}
   ${shopsHtml}
   ${weatherOverlaysHtml}
+  ${npcsOverlaysHtml}
   ${fogOverlaysHtml}
   ${avatarHtml}
  `;
