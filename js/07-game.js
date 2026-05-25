@@ -818,6 +818,24 @@ function renderMap(){
             <div class="archipel-shop-label" style="color:${shop.accent};">${shop.name}</div>
           </div>`;
  }).join('');
+ // v8.7.38 (O3-B.4 polish) : Overlay nuageux animé par-dessus chaque îlot foggé.
+ // Donne vie au brouillard : des nuances claires flottent doucement par-dessus
+ // la zone grisée, comme un véritable brouillard qui ondule sur l'horizon.
+ const fogOverlaysHtml = _ARCH_REGIONS.map(r => {
+  if(!_islandFogged[r.id]) return '';
+  const zonesOfRegion = (byRegion[r.id] || []).filter(p => !p.excludeFromBlob);
+  if(zonesOfRegion.length === 0) return '';
+  // Bbox élargie pour couvrir l'îlot avec marge confortable
+  const xs = zonesOfRegion.map(p => p.x);
+  const ys = zonesOfRegion.map(p => p.y);
+  const minX = Math.min(...xs) - 90;
+  const maxX = Math.max(...xs) + 90;
+  const minY = Math.min(...ys) - 70;
+  const maxY = Math.max(...ys) + 80;
+  const leftPct = (minX / W) * 100;
+  const widthPct = ((maxX - minX) / W) * 100;
+  return `<div class="archipel-fog-overlay" data-region="${r.id}" style="left:${leftPct.toFixed(1)}%;top:${minY.toFixed(0)}px;width:${widthPct.toFixed(1)}%;height:${(maxY-minY).toFixed(0)}px;"></div>`;
+ }).join('');
  // Assemblage final
  const cont = $('map-zones');
  if(!cont) return;
@@ -840,6 +858,7 @@ function renderMap(){
   ${regionNamesHtml}
   ${zonesHtml}
   ${shopsHtml}
+  ${fogOverlaysHtml}
   ${avatarHtml}
  `;
  // Auto-centrer sur l'avatar après rendu
