@@ -287,6 +287,19 @@ const _ARCH_REGIONS = [
  { id:'final', label:'Sanctuaire Final',       levels:['FINAL'], shape:'mandala' },
 ];
 
+// v8.7.35 (O3-B.3) : Transports thématiques par région.
+// Sur la carte mondiale uniquement (jamais dans la modale zoom), pendant l'animation
+// pas-à-pas de l'avatar, l'emoji change selon la région traversée pour évoquer
+// le mode de déplacement adapté au biome. À l'arrêt, l'avatar reprend P.avatar.
+const _REGION_TRANSPORTS = {
+ cp:    '🚶',  // marcheur — humble débutant dans la Région des Débuts
+ ce1:   '🛶',  // canoë — forêts et plages humides
+ ce2:   '🐪',  // dromadaire — déserts et plaines venteuses
+ cm1:   '⛷️',  // skieur — montagnes, glaces, forteresses
+ cm2:   '🚀',  // fusée — au-delà des étoiles
+ final: '✨',  // téléportation — Sanctuaire Final
+};
+
 // Hash simple d'une chaîne (pour générer des positions pseudo-aléatoires reproductibles).
 // Retourne un nombre entre 0 et 1.
 function _archHash(str, salt=0){
@@ -546,6 +559,10 @@ function _animateAlongSegments(avatarEl, segmentPositions, viewportW, containerS
   if(!avatarEl || segmentPositions.length < 2){ resolve(); return; }
   _mapAvatarAnimRunning = true;
   _mapAvatarSkipRequested = false;
+  // v8.7.35 (O3-B.3) : transports thématiques par région — uniquement sur la carte
+  // mondiale (la modale zoom garde l'avatar du joueur, plus personnel).
+  const _isMainMap = containerSel.indexOf('zoom') < 0;
+  const _originalEmoji = avatarEl.textContent;
   // Préparer tous les paths à l'avance
   const segs = [];
   for(let i=1;i<segmentPositions.length;i++){
@@ -582,11 +599,21 @@ function _animateAlongSegments(avatarEl, segmentPositions, viewportW, containerS
    _mapAvatarSkipRequested = false;
    if(cont) cont.removeEventListener('click', skipHandler, { capture: true });
    segs.forEach(s => { if(s.seg.svg.parentNode) s.seg.svg.parentNode.removeChild(s.seg.svg); });
+   // v8.7.35 : restaurer l'emoji original (P.avatar) en fin d'animation,
+   // y compris en cas de skip ou d'erreur (toujours appelé via finally).
+   if(_isMainMap) avatarEl.textContent = _originalEmoji;
   };
   (async function loop(){
    try{
     for(const s of segs){
      if(_mapAvatarSkipRequested) break;
+     // v8.7.35 : avant chaque segment, adapter l'emoji au transport de la région
+     // de DESTINATION. La région CHANGE quand on franchit la frontière entre îlots
+     // → l'avatar prend le nouveau mode de transport dès qu'il entre dans la région.
+     if(_isMainMap && s.cur && s.cur.regionId){
+      const transport = _REGION_TRANSPORTS[s.cur.regionId];
+      if(transport) avatarEl.textContent = transport;
+     }
      const totalLen = s.seg.length;
      const N = Math.max(2, Math.round(totalLen / 30));
      const totalMs = Math.min(5000, N * 500);
