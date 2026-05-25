@@ -300,6 +300,45 @@ const _REGION_TRANSPORTS = {
  final: '✨',  // téléportation — Sanctuaire Final
 };
 
+// v8.7.40 (O3-C.1) : Bannière de transition entre biomes.
+// Affichée quand l'avatar franchit la frontière entre deux îlots pendant son
+// déplacement animé. Emoji, couleurs et phrase d'accueil thématiques par région.
+const _BIOME_BANNER_META = {
+ cp:    { emoji:'🌾', accent:'#a8e6a2', bgGrad:'linear-gradient(135deg,#27ae60,#74b9ff)',     subtitle:'Région des Débuts' },
+ ce1:   { emoji:'🌲', accent:'#5fb95a', bgGrad:'linear-gradient(135deg,#1b6b3a,#2ecc71)',     subtitle:'Bois et Plages' },
+ ce2:   { emoji:'🏜️', accent:'#f6cb8b', bgGrad:'linear-gradient(135deg,#c87b27,#e67e22)',     subtitle:'Terres d\'Aventure' },
+ cm1:   { emoji:'🏰', accent:'#b6c8d4', bgGrad:'linear-gradient(135deg,#4b6584,#1f2733)',     subtitle:'Royaumes Périlleux' },
+ cm2:   { emoji:'🌌', accent:'#cbb1ee', bgGrad:'linear-gradient(135deg,#3a0a4a,#9b59b6)',     subtitle:'Au-delà des Étoiles' },
+ final: { emoji:'🕉️', accent:'#fff4c0', bgGrad:'linear-gradient(135deg,#b7950b,#f1c40f)',     subtitle:'Sanctuaire Final' },
+};
+function _showBiomeBanner(regionId){
+ const meta = _BIOME_BANNER_META[regionId];
+ if(!meta) return;
+ // Si une bannière précédente existe encore (cas d'enchaînement rapide), la retirer
+ const existing = document.querySelector('.biome-banner');
+ if(existing) existing.remove();
+ const banner = document.createElement('div');
+ banner.className = 'biome-banner';
+ banner.style.background = meta.bgGrad;
+ banner.style.borderColor = meta.accent;
+ banner.innerHTML = `
+  <div class="biome-banner-emoji">${meta.emoji}</div>
+  <div class="biome-banner-text">
+   <div class="biome-banner-lead">Vous entrez dans</div>
+   <div class="biome-banner-name" style="color:${meta.accent};">${meta.subtitle}</div>
+  </div>
+  <div class="biome-banner-emoji">${meta.emoji}</div>
+ `;
+ document.body.appendChild(banner);
+ // Narration vocale discrète : annonce du nouveau biome
+ if(typeof speak === 'function'){
+  setTimeout(()=>{ try{ speak(meta.subtitle); }catch(e){} }, 200);
+ }
+ // Cycle : slide-in (0.5s) → hold (1.6s) → slide-out (0.5s) → remove
+ setTimeout(()=> banner.classList.add('biome-banner-out'), 2100);
+ setTimeout(()=> banner.remove(), 2700);
+}
+
 // Hash simple d'une chaîne (pour générer des positions pseudo-aléatoires reproductibles).
 // Retourne un nombre entre 0 et 1.
 function _archHash(str, salt=0){
@@ -604,9 +643,21 @@ function _animateAlongSegments(avatarEl, segmentPositions, viewportW, containerS
    if(_isMainMap) avatarEl.textContent = _originalEmoji;
   };
   (async function loop(){
+   // v8.7.40 (O3-C.1) : suivi de la région courante pour détecter les franchissements
+   // de frontière entre îlots (et déclencher la bannière de biome correspondante).
+   let _lastRegionId = segmentPositions[0] && segmentPositions[0].regionId;
    try{
     for(const s of segs){
      if(_mapAvatarSkipRequested) break;
+     // v8.7.40 (O3-C.1) : Si on entre dans une nouvelle région, afficher la
+     // bannière calligraphique du biome. Non-bloquant : l'animation continue
+     // pendant que la bannière apparaît, ce qui donne un effet "voyage" naturel.
+     if(_isMainMap && s.cur && s.cur.regionId && s.cur.regionId !== _lastRegionId){
+      if(typeof _showBiomeBanner === 'function'){
+       try{ _showBiomeBanner(s.cur.regionId); }catch(e){}
+      }
+      _lastRegionId = s.cur.regionId;
+     }
      // v8.7.35 : avant chaque segment, adapter l'emoji au transport de la région
      // de DESTINATION. La région CHANGE quand on franchit la frontière entre îlots
      // → l'avatar prend le nouveau mode de transport dès qu'il entre dans la région.
