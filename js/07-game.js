@@ -380,20 +380,86 @@ const _NPCS_BY_REGION = {
  ],
 };
 // Génère le HTML des PNJ pour un îlot débloqué.
-// bbox = bbox de l'îlot. On évite les zones et le centre exact.
-function _buildNpcsOverlay(regionId, bbox, zonePositions){
+// v8.7.43 : placement intelligent — chaque PNJ teste 24 positions candidates dans
+// la bbox STRICTE des zones (qui est forcément à l'intérieur du blob, puisque les
+// zones sont dans le blob). Filtres durs : >55px des zones, >55px de la boutique,
+// >80px des autres PNJ déjà placés. Score = max(distance aux zones) − 0.3 × distance
+// au centroïde des zones (pour rester dans le ventre de l'îlot).
+function _buildNpcsOverlay(regionId, bbox, zonePositions, shopPos, mapW){
  const npcs = _NPCS_BY_REGION[regionId];
  if(!npcs || npcs.length === 0) return '';
- // Positions seedées dans la bbox, en bordure pour éviter le sentier central
- const html = npcs.map((npc, i) => {
-  // 2 PNJ par îlot → positions opposées (coin haut-gauche et coin bas-droit par défaut)
-  const baseLx = i === 0 ? 12 : 78;  // % horizontal dans la bbox
-  const baseLy = i === 0 ? 18 : 70;  // % vertical
-  // Petit jitter seedé pour pas avoir un placement trop strict
-  const jx = (_archHash(regionId, 700+i) - 0.5) * 12; // ±6%
-  const jy = (_archHash(regionId, 800+i) - 0.5) * 10; // ±5%
-  const lx = Math.max(5, Math.min(92, baseLx + jx));
-  const ly = Math.max(5, Math.min(90, baseLy + jy));
+ if(zonePositions.length === 0) return '';
+ const W_vb = mapW || 560; // largeur de référence du viewBox (cohérente avec p.x)
+ // Bbox STRICTE = celle des zones (sans marge) — garantie d'être à l'intérieur du blob.
+ // On la rétrécit de 8% de chaque côté pour rester bien dans le ventre.
+ const zoneXs = zonePositions.map(p => p.x);
+ const zoneYs = zonePositions.map(p => p.y);
+ const minX = Math.min(...zoneXs);
+ const maxX = Math.max(...zoneXs);
+ const minY = Math.min(...zoneYs);
+ const maxY = Math.max(...zoneYs);
+ const padX = (maxX - minX) * 0.08;
+ const padY = (maxY - minY) * 0.08;
+ const sMinX = minX + padX, sMaxX = maxX - padX;
+ const sMinY = minY + padY, sMaxY = maxY - padY;
+ const widthAbs = Math.max(1, sMaxX - sMinX);
+ const heightAbs = Math.max(1, sMaxY - sMinY);
+ // Centroïde des zones (pour préférer les candidats proches du centre du blob)
+ const cx = zonePositions.reduce((s,p)=>s+p.x,0) / zonePositions.length;
+ const cy = zonePositions.reduce((s,p)=>s+p.y,0) / zonePositions.length;
+ // Choix des positions une à une (chaque PNJ évite les précédents)
+ const placed = [];
+ npcs.forEach((npc, i) => {
+  let best = null, bestScore = -Infinity;
+  let fallback = null, fallbackDist = -Infinity; // meilleur candidat même s'il viole les filtres
+  for(let attempt = 0; attempt < 32; attempt++){
+   const r1 = _archHash(regionId, 1000 + i*200 + attempt*7);
+   const r2 = _archHash(regionId, 2000 + i*200 + attempt*7);
+   const absX = sMinX + r1 * widthAbs;
+   const absY = sMinY + r2 * heightAbs;
+   // Distance min aux zones
+   let minDistZone = Infinity;
+   for(const p of zonePositions){
+    const d = Math.hypot(p.x - absX, p.y - absY);
+    if(d < minDistZone) minDistZone = d;
+   }
+   // Distance à la boutique + autres PNJ
+   const dShop = shopPos ? Math.hypot(shopPos.x - absX, shopPos.y - absY) : Infinity;
+   let minDistOther = Infinity;
+   for(const o of placed){
+    const d = Math.hypot(o.absX - absX, o.absY - absY);
+    if(d < minDistOther) minDistOther = d;
+   }
+   // Suivi du candidat de repli : celui qui combine le mieux distance zones + boutique + autres
+   const combinedClearance = Math.min(minDistZone, dShop, minDistOther);
+   if(combinedClearance > fallbackDist){
+    fallbackDist = combinedClearance;
+    fallback = { absX, absY };
+   }
+   // Filtres durs
+   if(minDistZone < 62) continue;
+   if(dShop < 58) continue;
+   if(minDistOther < 75) continue;
+   // Score : maximiser distance aux zones, mais pénaliser éloignement du centroïde
+   const dCentroid = Math.hypot(cx - absX, cy - absY);
+   const score = minDistZone - 0.3 * dCentroid;
+   if(score > bestScore){
+    bestScore = score;
+    best = { absX, absY };
+   }
+  }
+  // Si aucun candidat n'a passé les filtres durs, prendre le candidat de repli
+  // (le plus dégagé possible) plutôt qu'une position fixe arbitraire.
+  if(!best) best = fallback || { absX: cx, absY: cy };
+  placed.push(best);
+ });
+ // Construire le HTML — positions absolues converties en % de la bbox du layer
+ const layerW = (bbox.widthPct / 100) * W_vb;
+ const html = placed.map((pos, i) => {
+  const npc = npcs[i];
+  const layerLeftAbs = (bbox.leftPct / 100) * W_vb;
+  const lx = ((pos.absX - layerLeftAbs) / Math.max(1, layerW)) * 100;
+  const ly = ((pos.absY - bbox.topPx) / Math.max(1, bbox.heightPx)) * 100;
   const delay = (_archHash(regionId, 900+i) * 2).toFixed(2);
   return `<div class="archipel-npc" data-region="${regionId}" data-npc-idx="${i}"
               style="left:${lx.toFixed(1)}%;top:${ly.toFixed(1)}%;animation-delay:${delay}s;"
@@ -980,6 +1046,7 @@ function renderMap(){
  const avatarHtml = avatarPos ?
   `<div class="archipel-avatar" style="left:${avatarPos.xPct.toFixed(1)}%;top:${avatarPos.y}px;">${(P&&P.avatar)||'🧙'}</div>` : '';
  // v8.7.27 : boutiques par îlot — 1 par région, positionnée à l'opposé du sentier doré.
+ const _islandShopPos = {};
  const shopsHtml = _ARCH_REGIONS.map(region => {
   const shop = _ARCH_SHOPS[region.id];
   if(!shop) return '';
@@ -994,6 +1061,8 @@ function renderMap(){
   const shopX = cx + (shop.xPctOffset / 100) * W;
   const shopY = cy + shop.yShift;
   const shopXPct = (shopX / W) * 100;
+  // v8.7.43 : mémoriser la position absolue de la boutique pour le placement des PNJ
+  _islandShopPos[region.id] = { x: shopX, y: shopY };
   return `<div class="archipel-shop${_islandFogged[region.id]?' island-fogged':''}" data-theme="${shop.theme}" data-region="${region.id}"
               style="left:${shopXPct.toFixed(1)}%;top:${shopY.toFixed(1)}px;background:${shop.bg};border-color:${shop.accent};"
               onclick="openArchipelShop('${region.id}')">
@@ -1040,7 +1109,7 @@ function renderMap(){
   if(_islandFogged[r.id]) return '';
   const b = _islandBboxes[r.id];
   if(!b) return '';
-  return _buildNpcsOverlay(r.id, b, byRegion[r.id] || []);
+  return _buildNpcsOverlay(r.id, b, byRegion[r.id] || [], _islandShopPos[r.id], W);
  }).join('');
  // Assemblage final
  const cont = $('map-zones');
