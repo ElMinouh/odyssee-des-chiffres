@@ -3896,3 +3896,73 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 @media (prefers-reduced-motion:reduce){
  .numpad-scrambled .np-btn[data-k], .boss-words-q, .numpad-frozen::after{ animation:none; }
 }
+
+/* ═══ v8.7.54 (O4.2c) : Attaques boss — bouclier & régénération ═══ */
+/* ⚔️ Boss avec bouclier : halo bleu protecteur pulsant */
+.boss-shielded{
+ position:relative;
+}
+.boss-shielded::after{
+ content:'🛡️';
+ position:absolute;
+ top:-8px; right:-8px;
+ font-size:1.3em;
+ filter:drop-shadow(0 0 8px rgba(100,180,255,.9));
+ animation:bossShieldFloat 1.6s ease-in-out infinite;
+ z-index:4;
+}
+.boss-shielded{
+ filter:drop-shadow(0 0 14px rgba(100,180,255,.7));
+}
+@keyframes bossShieldFloat{
+ 0%, 100% { transform:translateY(0) rotate(-8deg); }
+ 50%      { transform:translateY(-4px) rotate(8deg); }
+}
+/* Bouclier qui encaisse (clang) */
+.boss-shield-clang{
+ animation:bossShieldClang 0.45s ease-out !important;
+}
+@keyframes bossShieldClang{
+ 0%   { transform:scale(1); filter:drop-shadow(0 0 14px rgba(100,180,255,.7)) brightness(1); }
+ 30%  { transform:scale(1.06) translateX(4px); filter:drop-shadow(0 0 22px rgba(180,220,255,1)) brightness(1.5); }
+ 60%  { transform:scale(1.02) translateX(-3px); }
+ 100% { transform:scale(1); filter:drop-shadow(0 0 14px rgba(100,180,255,.7)) brightness(1); }
+}
+/* Bouclier brisé (shatter) */
+.boss-shield-shatter{
+ animation:bossShieldShatter 0.6s ease-out !important;
+}
+@keyframes bossShieldShatter{
+ 0%   { filter:drop-shadow(0 0 20px rgba(180,220,255,1)) brightness(1.6); }
+ 100% { filter:none; }
+}
+/* 💚 Régénération : lueur verte de soin */
+.boss-regen{
+ animation:bossRegenGlow 1.2s ease-in-out !important;
+}
+@keyframes bossRegenGlow{
+ 0%, 100% { filter:none; }
+ 50%      { filter:drop-shadow(0 0 16px rgba(80,230,120,.95)) brightness(1.3) saturate(1.3); }
+}
+.boss-regen-layer{
+ position:absolute; inset:0;
+ z-index:7;
+ pointer-events:none;
+ overflow:hidden;
+}
+.boss-regen-plus{
+ position:absolute;
+ bottom:30%;
+ opacity:0;
+ font-size:1.3em;
+ filter:drop-shadow(0 0 6px rgba(80,230,120,.9));
+ animation:bossRegenRise ease-out forwards;
+}
+@keyframes bossRegenRise{
+ 0%   { transform:translateY(0) scale(.6); opacity:0; }
+ 25%  { opacity:1; }
+ 100% { transform:translateY(-90px) scale(1.1); opacity:0; }
+}
+@media (prefers-reduced-motion:reduce){
+ .boss-shielded::after, .boss-shield-clang, .boss-shield-shatter, .boss-regen, .boss-regen-plus{ animation:none !important; }
+}

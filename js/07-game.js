@@ -1162,7 +1162,7 @@ function renderMap(){
   <div class="archipel-stars"></div>
   <div class="archipel-logbook" onclick="openAdventureLog()" title="Carnet d'aventure" role="button">📖</div>
   <div class="archipel-compass" onclick="_spinCompass(this)" title="Boussole">🧭</div>
-  <svg class="archipel-path-svg" viewBox="0 0 ${W} ${totalHeight}" preserveAspectRatio="none">
+  <svg class="archipel-path-svg" viewBox="0 0 ${W} ${totalHeight}" preserveAspectRatio="none" style="height:${totalHeight}px;">
    <defs>
     <radialGradient id="archGradCP" cx="0.5" cy="0.5"><stop offset="0%" stop-color="#a8e8a8"/><stop offset="100%" stop-color="#5dba5d"/></radialGradient>
     <radialGradient id="archGradCE1" cx="0.5" cy="0.5"><stop offset="0%" stop-color="#3a8c5a"/><stop offset="100%" stop-color="#1b4d2e"/></radialGradient>
@@ -2280,7 +2280,8 @@ function nextTurn(){
  _timerTauntFired=false;
  GS.monsterMaxHP=GS.isBoss?HP_LVL[GM.level]+2:HP_LVL[GM.level];GS.monsterHP=GS.monsterMaxHP;
  GS.bossEnraged=false;  // v8.7.50 (O4) : reset de la phase d'enrage à chaque combat
- { const _ma=$('monster-area'); if(_ma) _ma.classList.remove('monster-enraged'); }
+ GS.bossShieldActive=false; GS.bossShieldHits=0; GS.bossRegenCount=0;  // v8.7.54 (O4.2c)
+ { const _ma=$('monster-area'); if(_ma) _ma.classList.remove('monster-enraged','boss-shielded'); }
  maybeEvent();GS.q=generateQ();
  $('BODY').classList.remove('body-alert','urgency-bg');$('correction').classList.add('hidden');
  clearMonsterSpeech();
@@ -2444,7 +2445,21 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
   // Monster reacts to being hit
   if(Math.random()<.55)monsterSpeak(CORRECT_TAUNTS[ri(0,CORRECT_TAUNTS.length-1)],1800);
   if(GM.mode==='qcm')markQCM(ans,true);updateHUD();
-  GS.monsterHP--;updateMonsterHP();
+  // v8.7.54 (O4.2c) : bouclier du boss — absorbe le 1er coup, cède au 2e.
+  let _shieldHeld = false;
+  if(GS.isBoss && GS.bossShieldActive){
+   GS.bossShieldHits = (GS.bossShieldHits||0) + 1;
+   if(GS.bossShieldHits >= 2){
+    GS.bossShieldActive = false; GS.bossShieldHits = 0;
+    if(typeof _bossShieldBreak === 'function') _bossShieldBreak();
+    GS.monsterHP--; updateMonsterHP();
+   } else {
+    _shieldHeld = true;
+    if(typeof _bossShieldBlock === 'function') _bossShieldBlock();
+   }
+  } else {
+   GS.monsterHP--; updateMonsterHP();
+  }
   // v8.7.50 (O4) : phase d'enrage — quand le boss tombe à la moitié de ses HP,
   // il entre dans une phase plus difficile (transition épique + timer réduit).
   if(GS.isBoss && !GS.bossEnraged && GS.monsterHP > 0 && GS.monsterHP <= Math.ceil(GS.monsterMaxHP/2)){
@@ -2454,7 +2469,7 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
   // Chantier A4 : taunt aléatoire en milieu de combat (HP bas)
   if(typeof maybeMidCombatTaunt==='function') maybeMidCombatTaunt();
   if(GS.activeEvent){GS.eventLeft--;if(GS.eventLeft<=0)GS.activeEvent=null;}
-  if(GS.monsterHP>0){$('feedback').innerText=`✅ TOUCHÉ ! ❤️${GS.monsterHP}/${GS.monsterMaxHP}`;GS.q=generateQ();safeTimeout(()=>{clearMonsterSpeech();renderQ();},800);}
+  if(GS.monsterHP>0){$('feedback').innerText=_shieldHeld?`🛡️ Le bouclier résiste ! Frappe encore !`:`✅ TOUCHÉ ! ❤️${GS.monsterHP}/${GS.monsterMaxHP}`;GS.q=generateQ();safeTimeout(()=>{clearMonsterSpeech();renderQ();},800);}
   else{$('feedback').innerText='✅ BRAVO !';ma.classList.add('monster-die');clearMonsterSpeech();if(GS.isBoss){vibrate(VIBE.boss);
    // Chantier 2.2 : débloquer la figurine exclusive du boss saisonnier
    if(GS.isSeasonalBoss && GS.seasonalFigId && typeof unlockSeasonalFigurine==='function'){
@@ -3194,7 +3209,7 @@ function _maybeBossAttack(){
  // ~55% de chance par question (pas systématique, pour garder la surprise)
  if(Math.random() > 0.55) return;
  const attacks = [_atkRoar, _atkLightning, _atkLureRain, _atkWobble, _atkFireflies,
-                  _atkFreeze, _atkScramble, _atkWords];
+                  _atkFreeze, _atkScramble, _atkWords, _atkShield, _atkRegen];
  const atk = attacks[Math.floor(Math.random() * attacks.length)];
  try{ atk(); }catch(e){ console.warn('boss attack failed', e); }
 }
@@ -3367,4 +3382,62 @@ function _numberToFrenchWords(n){
  const th = Math.floor(n / 1000), rem = n % 1000;
  const thPart = (th === 1 ? 'mille' : below1000(th) + ' mille');
  return rem === 0 ? thPart : thPart + ' ' + below1000(rem);
+}
+
+// ═══════════════════════════════════════════════════════
+// v8.7.54 (O4.2c) : ATTAQUES BOSS — mécaniques de combat
+// ⚔️ Bouclier (2 bonnes réponses pour 1 PV) + 💚 Régénération (le boss récupère 1 PV)
+// ═══════════════════════════════════════════════════════
+// ⚔️ Bouclier : le boss lève un bouclier qui absorbe le prochain coup
+function _atkShield(){
+ if(GS.bossShieldActive) return; // déjà levé
+ GS.bossShieldActive = true;
+ GS.bossShieldHits = 0;
+ const ma = document.getElementById('monster-area');
+ if(ma) ma.classList.add('boss-shielded');
+ if(typeof beep === 'function'){ try{ beep(330,'square',.18,.08); setTimeout(()=>beep(440,'square',.2,.07),110); }catch(e){} }
+ if(typeof monsterSpeak === 'function'){ try{ monsterSpeak('Mon bouclier va me protéger !', 2000); }catch(e){} }
+ if(typeof vibrate === 'function') vibrate(35);
+}
+// Bouclier qui absorbe un coup (le 1er) : flash métallique + son
+function _bossShieldBlock(){
+ const ma = document.getElementById('monster-area');
+ if(ma){ ma.classList.add('boss-shield-clang'); setTimeout(()=>ma.classList.remove('boss-shield-clang'), 450); }
+ if(typeof beep === 'function'){ try{ beep(700,'square',.12,.09); setTimeout(()=>beep(520,'square',.14,.07),70); }catch(e){} }
+ if(typeof vibrate === 'function') vibrate(25);
+}
+// Bouclier brisé (au 2e coup) : éclats + son de bris
+function _bossShieldBreak(){
+ const ma = document.getElementById('monster-area');
+ if(ma){
+  ma.classList.remove('boss-shielded');
+  ma.classList.add('boss-shield-shatter');
+  setTimeout(()=>ma.classList.remove('boss-shield-shatter'), 600);
+ }
+ if(typeof beep === 'function'){ try{ [600,440,300,200].forEach((f,i)=>setTimeout(()=>beep(f,'triangle',.14,.08), i*55)); }catch(e){} }
+ if(typeof vibrate === 'function') vibrate([30,20,40]);
+}
+// 💚 Régénération : le boss récupère 1 PV (cap au max, 2 fois max par combat)
+function _atkRegen(){
+ if((GS.bossRegenCount||0) >= 2) return;            // max 2 régénérations par combat
+ if(GS.monsterHP >= GS.monsterMaxHP) return;        // déjà au max
+ GS.bossRegenCount = (GS.bossRegenCount||0) + 1;
+ GS.monsterHP++;
+ if(typeof updateMonsterHP === 'function') updateMonsterHP();
+ const ma = document.getElementById('monster-area');
+ if(ma){ ma.classList.add('boss-regen'); setTimeout(()=>ma.classList.remove('boss-regen'), 1200); }
+ // particules de soin vertes
+ const host = document.getElementById('v-game') || document.body;
+ const layer = document.createElement('div');
+ layer.className = 'boss-regen-layer';
+ let html='';
+ for(let i=0;i<8;i++){
+  const left=35+Math.random()*30, delay=Math.random()*.5, dur=1+Math.random()*.8;
+  html+=`<span class="boss-regen-plus" style="left:${left}%;animation-delay:${delay}s;animation-duration:${dur}s;">💚</span>`;
+ }
+ layer.innerHTML=html;
+ host.appendChild(layer);
+ setTimeout(()=>layer.remove(), 2000);
+ if(typeof beep === 'function'){ try{ [440,550,660].forEach((f,i)=>setTimeout(()=>beep(f,'sine',.2,.07), i*100)); }catch(e){} }
+ if(typeof monsterSpeak === 'function'){ try{ monsterSpeak('Je me soigne, hé hé !', 1800); }catch(e){} }
 }
