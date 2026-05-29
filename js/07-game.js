@@ -3009,7 +3009,7 @@ function openAdventureLog(){
     <div class="advlog-avatar">${P.avatar || '🧒'}</div>
     <div class="advlog-header-text">
      <div class="advlog-hero-name">${P.name || 'Héros'}</div>
-     <div class="advlog-hero-level">Niveau ${lvl} · Aventurier${(P.name||'').slice(-1)==='a'?'e':''}</div>
+     <div class="advlog-hero-level">Niveau ${lvl} · Aventurier${heroGender(P.name)==='f'?'ère':''}</div>
     </div>
    </div>
    <div class="advlog-global">

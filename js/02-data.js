@@ -5,6 +5,18 @@
 // badges, quêtes, défis hebdo, encouragements, GIFs, géométrie, filtres ops.
 
 const KNOWN=['Soren','Peyo','Tomi','Maman','Papa'];
+// v8.7.47 : genre des joueurs connus pour les accords (Aventurier/Aventurière, etc.)
+// 'm' = masculin, 'f' = féminin. Clés en minuscules pour comparaison insensible à la casse.
+const KNOWN_GENDERS={ soren:'m', peyo:'m', tomi:'m', papa:'m', maman:'f' };
+// Retourne 'm' ou 'f' pour un prénom donné.
+// 1) table des prénoms connus, 2) heuristique française (finit par 'a'/'e' → féminin).
+function heroGender(name){
+ const key=(name||'').trim().toLowerCase();
+ if(KNOWN_GENDERS[key]) return KNOWN_GENDERS[key];
+ // Heuristique de repli pour les prénoms personnalisés
+ if(/[ae]$/.test(key)) return 'f';
+ return 'm';
+}
 const UNLOCK_REQ={CP:0,CE1:3,CE2:5,CM1:4,CM2:5};
 const HP_LVL={CP:1,CE1:2,CE2:3,CM1:4,CM2:5};
 const EMOJIS=['🍎','🎂','⭐','🎈','🐟','🌸','🍬','🚗','🐱','🐶'];
