@@ -2464,6 +2464,50 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  z-index:5;
  filter:drop-shadow(0 2px 6px rgba(0,0,0,.7));
  opacity:.85;
+ cursor:pointer;
+ transition:opacity .2s, transform .2s;
+ user-select:none;
+ -webkit-user-select:none;
+}
+.archipel-compass:hover{ opacity:1; transform:scale(1.12); }
+.archipel-compass:active{ transform:scale(.95); }
+/* v8.7.46 : rotation erratique "dans tous les sens" pendant 4s au clic */
+.archipel-compass.compass-spinning{
+ animation:compassErratic 4s cubic-bezier(.5,.05,.5,.95) forwards;
+ opacity:1;
+}
+@keyframes compassErratic{
+ 0%   { transform:rotate(0deg)    scale(1); }
+ 8%   { transform:rotate(380deg)  scale(1.1); }
+ 18%  { transform:rotate(160deg)  scale(1); }
+ 28%  { transform:rotate(620deg)  scale(1.12); }
+ 38%  { transform:rotate(300deg)  scale(1); }
+ 50%  { transform:rotate(900deg)  scale(1.14); }
+ 60%  { transform:rotate(560deg)  scale(1); }
+ 70%  { transform:rotate(1180deg) scale(1.1); }
+ 80%  { transform:rotate(820deg)  scale(1); }
+ 90%  { transform:rotate(1320deg) scale(1.06); }
+ 96%  { transform:rotate(1200deg) scale(1); }
+ 100% { transform:rotate(1260deg) scale(1); }
+}
+/* v8.7.46 (O3-C.4) : Bouton Carnet d'aventure, symétrique à la boussole (haut-gauche) */
+.archipel-logbook{
+ position:absolute;
+ top:14px;
+ left:14px;
+ font-size:2.2em;
+ z-index:5;
+ filter:drop-shadow(0 2px 6px rgba(0,0,0,.7));
+ opacity:.85;
+ cursor:pointer;
+ transition:opacity .2s, transform .2s;
+ user-select:none;
+ -webkit-user-select:none;
+}
+.archipel-logbook:hover{ opacity:1; transform:scale(1.12) rotate(-6deg); }
+.archipel-logbook:active{ transform:scale(.95); }
+@media (prefers-reduced-motion:reduce){
+ .archipel-compass.compass-spinning{ animation:none; }
 }
 
 /* Conteneur SVG du sentier doré */
@@ -3576,8 +3620,8 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 .advlog-global-pct{
  position:absolute; inset:0;
  display:flex; align-items:center; justify-content:center;
- font-size:.82em; font-weight:800; color:#1a1c2c;
- text-shadow:0 1px 1px rgba(255,255,255,.4);
+ font-size:.82em; font-weight:800; color:#fff;
+ text-shadow:0 1px 3px rgba(0,0,0,.95), 0 0 5px rgba(0,0,0,.8), 0 0 2px rgba(0,0,0,.9);
 }
 .advlog-stats{
  display:flex; gap:10px;

@@ -1132,7 +1132,8 @@ function renderMap(){
  cont.style.minHeight = totalHeight + 'px';
  cont.innerHTML = `
   <div class="archipel-stars"></div>
-  <div class="archipel-compass">🧭</div>
+  <div class="archipel-logbook" onclick="openAdventureLog()" title="Carnet d'aventure" role="button">📖</div>
+  <div class="archipel-compass" onclick="_spinCompass(this)" title="Boussole">🧭</div>
   <svg class="archipel-path-svg" viewBox="0 0 ${W} ${totalHeight}" preserveAspectRatio="none">
    <defs>
     <radialGradient id="archGradCP" cx="0.5" cy="0.5"><stop offset="0%" stop-color="#a8e8a8"/><stop offset="100%" stop-color="#5dba5d"/></radialGradient>
@@ -3042,4 +3043,20 @@ function closeAdventureLog(){
  if(!overlay) return;
  overlay.classList.remove('advlog-show');
  setTimeout(() => overlay.remove(), 300);
+}
+
+// v8.7.46 (O3-C.4 polish) : Animation de la boussole au clic.
+// L'aiguille (l'emoji entier) tourne rapidement dans tous les sens pendant 4s.
+let _compassSpinning = false;
+function _spinCompass(el){
+ if(!el || _compassSpinning) return;
+ _compassSpinning = true;
+ el.classList.add('compass-spinning');
+ // Petit retour sonore/haptique
+ if(typeof beep === 'function'){ try{ beep(660,'sine',.12,.06); }catch(e){} }
+ if(typeof vibrate === 'function' && typeof VIBE !== 'undefined'){ vibrate(VIBE.good || 30); }
+ setTimeout(() => {
+  el.classList.remove('compass-spinning');
+  _compassSpinning = false;
+ }, 4000);
 }
