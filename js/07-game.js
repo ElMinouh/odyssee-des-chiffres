@@ -311,6 +311,31 @@ const _BIOME_BANNER_META = {
  cm2:   { emoji:'🌌', accent:'#cbb1ee', bgGrad:'linear-gradient(135deg,#3a0a4a,#9b59b6)',     subtitle:'Au-delà des Étoiles' },
  final: { emoji:'🕉️', accent:'#fff4c0', bgGrad:'linear-gradient(135deg,#b7950b,#f1c40f)',     subtitle:'Sanctuaire Final' },
 };
+// v8.7.48 (O3-C.5) : Signature sonore régionale.
+// Court motif mélodique synthétisé (via beep) joué à l'entrée d'une région.
+// Chaque biome a sa "couleur" musicale. Pas de nappe continue (fatigante et
+// difficile à rendre convaincante sans assets audio) — un jingle ponctuel.
+const _REGION_AUDIO_SIGNATURE = {
+ // CP : fanfare douce ascendante, accueillante (do-mi-sol-do aigu)
+ cp:    { notes:[523, 659, 784, 1047],        type:'sine',     gap:130, dur:.35, vol:.10 },
+ // CE1 : quintes boisées, mystère doux de forêt (sol-si-ré-si)
+ ce1:   { notes:[392, 494, 587, 494],         type:'triangle', gap:150, dur:.40, vol:.10 },
+ // CE2 : motif oriental/désertique légèrement mineur (la-do-si-sol-la)
+ ce2:   { notes:[440, 523, 494, 392, 440],    type:'triangle', gap:140, dur:.38, vol:.10 },
+ // CM1 : accord héroïque puissant de montagne (do grave-sol-do-mi)
+ cm1:   { notes:[262, 392, 523, 659],         type:'triangle', gap:150, dur:.42, vol:.11 },
+ // CM2 : intervalles larges éthérés, cosmiques (do-sol-mi-do aigu)
+ cm2:   { notes:[523, 784, 659, 1047],        type:'sine',     gap:170, dur:.50, vol:.09 },
+ // Final : montée glorieuse et sacrée (do-mi-sol-do-mi aigus)
+ final: { notes:[523, 659, 784, 1047, 1319],  type:'sine',     gap:160, dur:.50, vol:.11 },
+};
+function _playRegionSignature(regionId){
+ const sig = _REGION_AUDIO_SIGNATURE[regionId];
+ if(!sig || typeof beep !== 'function') return;
+ sig.notes.forEach((f, i) => {
+  setTimeout(() => { try{ beep(f, sig.type, sig.dur, sig.vol); }catch(e){} }, i * sig.gap);
+ });
+}
 function _showBiomeBanner(regionId){
  const meta = _BIOME_BANNER_META[regionId];
  if(!meta) return;
@@ -330,9 +355,11 @@ function _showBiomeBanner(regionId){
   <div class="biome-banner-emoji">${meta.emoji}</div>
  `;
  document.body.appendChild(banner);
- // Narration vocale discrète : annonce du nouveau biome
+ // v8.7.48 : signature sonore du biome (jingle court synthétisé)
+ _playRegionSignature(regionId);
+ // Narration vocale discrète : annonce du nouveau biome (après le jingle)
  if(typeof speak === 'function'){
-  setTimeout(()=>{ try{ speak(meta.subtitle); }catch(e){} }, 200);
+  setTimeout(()=>{ try{ speak(meta.subtitle); }catch(e){} }, 850);
  }
  // Cycle : slide-in (0.5s) → hold (1.6s) → slide-out (0.5s) → remove
  setTimeout(()=> banner.classList.add('biome-banner-out'), 2100);
@@ -1156,7 +1183,24 @@ function renderMap(){
  `;
  // Auto-centrer sur l'avatar après rendu
  setTimeout(()=>_autoCenterOnAvatar(), 50);
+ // v8.7.48 (O3-C.5) : signature sonore de la région où se trouve l'avatar, jouée
+ // à l'ouverture de la carte. Cooldown de 30s pour éviter la répétition si on
+ // ouvre/ferme rapidement la carte.
+ try{
+  const avatarZone = MAP_ZONES.find(z => z.id === avatarZoneId);
+  if(avatarZone){
+   const avatarRegion = _ARCH_REGIONS.find(r => r.levels.includes(avatarZone.level));
+   if(avatarRegion){
+    const now = Date.now();
+    if(!_lastRegionSignatureTime || (now - _lastRegionSignatureTime) > 30000){
+     _lastRegionSignatureTime = now;
+     setTimeout(() => _playRegionSignature(avatarRegion.id), 350);
+    }
+   }
+  }
+ }catch(e){}
 }
+let _lastRegionSignatureTime = 0;
 
 // Ouvre la vue zoomée d'une sous-zone (modale qui montre les 5 étapes)
 function openArchipelZoom(zoneId){
