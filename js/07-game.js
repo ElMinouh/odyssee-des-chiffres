@@ -2948,3 +2948,98 @@ function maybeRefereeComment(){
  _refereeLastIdx = idx;
  if(typeof toast === 'function') toast(comments[idx], 2400);
 }
+
+// ═══════════════════════════════════════════════════════
+// v8.7.45 (O3-C.4) : CARNET D'AVENTURE
+// Modale visuelle accessible depuis la carte. Montre la progression par région
+// (barres colorées), la galerie des boss vaincus (médaillons), et les stats clés.
+// ═══════════════════════════════════════════════════════
+function openAdventureLog(){
+ if(typeof P === 'undefined' || !P) return;
+ const beaten = P.mapBossBeaten || [];
+ // Couleurs accent par région (réutilise la palette des cinématiques d'îlot)
+ const regionAccent = {
+  cp:'#a8e6a2', ce1:'#5fb95a', ce2:'#f6cb8b', cm1:'#b6c8d4', cm2:'#cbb1ee', final:'#fff4c0',
+ };
+ // Progression globale
+ const totalZones = MAP_ZONES.length;
+ const totalBeaten = MAP_ZONES.filter(z => beaten.includes(z.id)).length;
+ const globalPct = totalZones > 0 ? Math.round((totalBeaten / totalZones) * 100) : 0;
+ // Progression par région
+ const regionRows = _ARCH_REGIONS.map(r => {
+  const zonesOfRegion = MAP_ZONES.filter(z => r.levels.includes(z.level));
+  if(zonesOfRegion.length === 0) return '';
+  const done = zonesOfRegion.filter(z => beaten.includes(z.id)).length;
+  const pct = Math.round((done / zonesOfRegion.length) * 100);
+  const accent = regionAccent[r.id] || '#f1c40f';
+  const isComplete = done === zonesOfRegion.length && done > 0;
+  return `
+   <div class="advlog-region-row">
+    <div class="advlog-region-head">
+     <span class="advlog-region-name">${r.label}${isComplete ? ' <span class="advlog-region-crown">👑</span>' : ''}</span>
+     <span class="advlog-region-count">${done}/${zonesOfRegion.length}</span>
+    </div>
+    <div class="advlog-bar-track">
+     <div class="advlog-bar-fill" style="width:${pct}%;background:linear-gradient(90deg,${accent},#fff);"></div>
+    </div>
+   </div>`;
+ }).join('');
+ // Galerie des boss vaincus (dans l'ordre des zones)
+ const bossMedals = MAP_ZONES.filter(z => beaten.includes(z.id)).map(z => `
+  <div class="advlog-medal" title="${z.bossName || 'Boss'} — ${z.label}">
+   <div class="advlog-medal-boss">${z.boss || '🏆'}</div>
+   <div class="advlog-medal-zone">${z.label}</div>
+  </div>`).join('');
+ const bossGallery = bossMedals
+  ? `<div class="advlog-medals">${bossMedals}</div>`
+  : `<div class="advlog-empty">Aucun boss vaincu pour l'instant. À l'aventure !</div>`;
+ // Stats clés
+ const stars = P.stars || 0;
+ const figs = (P.ownedFigurines || []).length;
+ const xp = P.xp || 0;
+ const lvl = Math.floor(xp / 100) + 1;
+ // Construction de l'overlay
+ const overlay = document.createElement('div');
+ overlay.className = 'advlog-overlay';
+ overlay.innerHTML = `
+  <div class="advlog-modal">
+   <button class="advlog-close" onclick="closeAdventureLog()" aria-label="Fermer">✕</button>
+   <div class="advlog-header">
+    <div class="advlog-avatar">${P.avatar || '🧒'}</div>
+    <div class="advlog-header-text">
+     <div class="advlog-hero-name">${P.name || 'Héros'}</div>
+     <div class="advlog-hero-level">Niveau ${lvl} · Aventurier${(P.name||'').slice(-1)==='a'?'e':''}</div>
+    </div>
+   </div>
+   <div class="advlog-global">
+    <div class="advlog-global-label">Progression de l'Odyssée</div>
+    <div class="advlog-bar-track advlog-bar-big">
+     <div class="advlog-bar-fill" style="width:${globalPct}%;background:linear-gradient(90deg,#f1c40f,#f39c12,#fff5d6);"></div>
+     <span class="advlog-global-pct">${totalBeaten}/${totalZones} zones · ${globalPct}%</span>
+    </div>
+   </div>
+   <div class="advlog-stats">
+    <div class="advlog-stat"><span class="advlog-stat-ico">⭐</span><span class="advlog-stat-val">${stars}</span><span class="advlog-stat-lbl">étoiles</span></div>
+    <div class="advlog-stat"><span class="advlog-stat-ico">🎭</span><span class="advlog-stat-val">${figs}</span><span class="advlog-stat-lbl">figurines</span></div>
+    <div class="advlog-stat"><span class="advlog-stat-ico">⚡</span><span class="advlog-stat-val">${xp}</span><span class="advlog-stat-lbl">XP</span></div>
+   </div>
+   <div class="advlog-section-title">🗺️ Progression par région</div>
+   <div class="advlog-regions">${regionRows}</div>
+   <div class="advlog-section-title">🏆 Boss vaincus (${totalBeaten})</div>
+   ${bossGallery}
+  </div>
+ `;
+ document.body.appendChild(overlay);
+ // Fermeture au clic sur le fond
+ overlay.addEventListener('click', (ev) => {
+  if(ev.target === overlay) closeAdventureLog();
+ });
+ // Animation d'entrée
+ requestAnimationFrame(() => overlay.classList.add('advlog-show'));
+}
+function closeAdventureLog(){
+ const overlay = document.querySelector('.advlog-overlay');
+ if(!overlay) return;
+ overlay.classList.remove('advlog-show');
+ setTimeout(() => overlay.remove(), 300);
+}
