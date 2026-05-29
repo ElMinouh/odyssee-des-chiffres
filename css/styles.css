@@ -62,8 +62,42 @@ input::placeholder,textarea::placeholder{color:rgba(255,255,255,.5);}
 .tw{background:#f1c40f!important;}.td{background:#e74c3c!important;}
 #monster-hp-wrap{margin:4px 0;}
 #monster-hp-label{font-size:.75em;color:#e74c3c;font-weight:700;margin-bottom:2px;}
-#monster-hp-bar-bg{background:rgba(0,0,0,.4);width:100%;height:12px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,.15);}
-#monster-hp-bar{height:100%;border-radius:8px;transition:width .4s ease;}
+#monster-hp-bar-bg{position:relative;background:rgba(0,0,0,.4);width:100%;height:12px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,.15);}
+#monster-hp-bar{height:100%;border-radius:8px;transition:width .4s ease, background .4s ease;}
+/* v8.7.55 (O4.3) : marqueur du seuil d'enrage + barre enragée */
+#monster-hp-threshold{
+ position:absolute; top:0; bottom:0;
+ left:50%;
+ border-left:2px dashed rgba(255,255,255,.9);
+ transform:translateX(-50%);
+ z-index:2;
+ pointer-events:none;
+ transition:opacity .4s ease;
+}
+#monster-hp-threshold.threshold-passed{ opacity:.2; }
+#monster-hp-wrap.boss-enraged-bar #monster-hp-bar{
+ animation:hpEnragePulse .7s ease-in-out infinite;
+}
+@keyframes hpEnragePulse{
+ 0%,100%{ filter:brightness(1); box-shadow:0 0 4px rgba(231,76,60,.6); }
+ 50%{ filter:brightness(1.25); box-shadow:0 0 12px rgba(231,76,60,1); }
+}
+#monster-hp-wrap.boss-enraged-bar #monster-hp-bar-bg{
+ border-color:rgba(231,76,60,.85);
+ box-shadow:0 0 8px rgba(231,76,60,.5);
+}
+#monster-hp-wrap.boss-enraged-bar #monster-hp-label::after{
+ content:' ⚡ ENRAGÉ';
+ color:#e74c3c;
+ font-weight:900;
+ letter-spacing:.04em;
+ animation:enrageTagBlink .9s ease-in-out infinite;
+}
+@keyframes enrageTagBlink{ 0%,100%{opacity:1;} 50%{opacity:.45;} }
+@media (prefers-reduced-motion:reduce){
+ #monster-hp-wrap.boss-enraged-bar #monster-hp-bar,
+ #monster-hp-wrap.boss-enraged-bar #monster-hp-label::after{ animation:none; }
+}
 #power-bar{display:flex;justify-content:center;gap:6px;margin:4px 0;flex-wrap:wrap;}
 .pow-btn{font-size:.8em;padding:5px 10px;border-radius:16px;border-bottom:2px solid rgba(0,0,0,.3);min-width:70px;}
 .pow-btn.ready{background:linear-gradient(135deg,#9b59b6,#6c3483);animation:pglow .8s infinite alternate;}

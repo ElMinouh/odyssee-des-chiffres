@@ -2538,7 +2538,25 @@ function updateMonsterHP(){
   $('mhp-val').innerText=GS.monsterHP;$('mhp-max').innerText=GS.monsterMaxHP;
   const pct=Math.max(0,GS.monsterHP/GS.monsterMaxHP*100);
   const bar=$('monster-hp-bar');bar.style.width=pct+'%';
-  bar.style.background=pct>60?'#2ecc71':pct>30?'#f1c40f':'#e74c3c';
+  // v8.7.55 (O4.3) : en phase enragée la barre vire au rouge sombre menaçant,
+  // sinon dégradé vert→jaune→rouge classique selon le niveau de vie.
+  const enraged = !!(GS.isBoss && GS.bossEnraged);
+  bar.style.background = enraged ? '#c0392b' : (pct>60?'#2ecc71':pct>30?'#f1c40f':'#e74c3c');
+  // Marqueur du seuil d'enrage (boss uniquement) : repère visuel de mi-vie
+  const thr=$('monster-hp-threshold');
+  if(thr){
+   if(GS.isBoss){
+    const seuil=Math.ceil(GS.monsterMaxHP/2);
+    thr.style.left=((seuil/GS.monsterMaxHP)*100)+'%';
+    thr.classList.remove('hidden');
+    // Une fois enragé, le seuil est franchi : on l'estompe
+    thr.classList.toggle('threshold-passed', enraged);
+   } else {
+    thr.classList.add('hidden');
+   }
+  }
+  // État enragé sur le conteneur (barre pulsante + tag "⚡ ENRAGÉ")
+  wrap.classList.toggle('boss-enraged-bar', enraged);
  }
 }
 
