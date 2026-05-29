@@ -2100,6 +2100,8 @@ function stopTimer(){if(timerRaf){cancelAnimationFrame(timerRaf);timerRaf=null;}
 function startTimer(){
  stopTimer();if(GS.frozen)return;
  totalTime=(GS.isBoss?12:20)+(P.skills.clock||0)*5;
+ // v8.7.50 (O4) : en phase enragée, le boss met plus de pression (timer -3s, plancher 9s)
+ if(GS.isBoss && GS.bossEnraged) totalTime = Math.max(9, totalTime - 3);
  if(GS.activeEvent?.effect==='reduce_timer')totalTime=Math.max(8,totalTime-5);
  timerEnd=performance.now()+totalTime*1000;
  _timerTauntFired=false;
@@ -2277,6 +2279,8 @@ function nextTurn(){
  GS.isGolden=Math.random()<.15;GS.frozen=false;
  _timerTauntFired=false;
  GS.monsterMaxHP=GS.isBoss?HP_LVL[GM.level]+2:HP_LVL[GM.level];GS.monsterHP=GS.monsterMaxHP;
+ GS.bossEnraged=false;  // v8.7.50 (O4) : reset de la phase d'enrage à chaque combat
+ { const _ma=$('monster-area'); if(_ma) _ma.classList.remove('monster-enraged'); }
  maybeEvent();GS.q=generateQ();
  $('BODY').classList.remove('body-alert','urgency-bg');$('correction').classList.add('hidden');
  clearMonsterSpeech();
@@ -2376,6 +2380,8 @@ function renderQ(){
  }else{const ai=$('answer-input');ai.value='';if(!_numpadIsTouch())setTimeout(()=>ai.focus(),100);}
  renderPowerBar();
  if(GM.mode2!=='chrono')startTimer();
+ // v8.7.52 (O4.2) : en phase enragée, le boss peut lancer une attaque spéciale
+ if(GS.isBoss && GS.bossEnraged && typeof _maybeBossAttack==='function') _maybeBossAttack();
 }
 function submitAns(){const v=parseInt($('answer-input').value);validate(isNaN(v)?null:v);}
 function validate(ans){
@@ -2437,6 +2443,12 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
   if(Math.random()<.55)monsterSpeak(CORRECT_TAUNTS[ri(0,CORRECT_TAUNTS.length-1)],1800);
   if(GM.mode==='qcm')markQCM(ans,true);updateHUD();
   GS.monsterHP--;updateMonsterHP();
+  // v8.7.50 (O4) : phase d'enrage — quand le boss tombe à la moitié de ses HP,
+  // il entre dans une phase plus difficile (transition épique + timer réduit).
+  if(GS.isBoss && !GS.bossEnraged && GS.monsterHP > 0 && GS.monsterHP <= Math.ceil(GS.monsterMaxHP/2)){
+   GS.bossEnraged = true;
+   if(typeof _triggerBossEnrage === 'function') _triggerBossEnrage();
+  }
   // Chantier A4 : taunt aléatoire en milieu de combat (HP bas)
   if(typeof maybeMidCombatTaunt==='function') maybeMidCombatTaunt();
   if(GS.activeEvent){GS.eventLeft--;if(GS.eventLeft<=0)GS.activeEvent=null;}
@@ -3117,4 +3129,132 @@ function _spinCompass(el){
   el.classList.remove('compass-spinning');
   _compassSpinning = false;
  }, 4000);
+}
+
+// ═══════════════════════════════════════════════════════
+// v8.7.50 (O4) : PHASE D'ENRAGE DES BOSS
+// Déclenchée quand un boss de zone tombe à la moitié de ses HP. Transition
+// épique : screen shake, flash rouge, le monstre devient enragé (rouge + grossit),
+// dialogue menaçant, son grave. Effet gameplay : timer réduit (géré dans startTimer).
+// ═══════════════════════════════════════════════════════
+const _BOSS_ENRAGE_LINES = [
+ "Tu m'as assez énervé… Maintenant je ne retiens plus rien !",
+ "GRAAH ! Tu vas regretter de m'avoir défié !",
+ "Assez joué ! Voici ma vraie puissance !",
+ "Tu crois m'avoir ? La vraie bataille commence MAINTENANT !",
+ "Impossible… tu es plus fort que prévu. Mais je ne céderai pas !",
+ "Ma colère décuple mes forces ! Prépare-toi !",
+];
+function _triggerBossEnrage(){
+ const ma = document.getElementById('monster-area');
+ // Effet visuel sur le monstre : classe enragée (rouge + grossissement pulsant)
+ if(ma){
+  ma.classList.add('monster-enraged');
+ }
+ // Screen shake + flash rouge sur tout l'écran de jeu
+ const gameView = document.getElementById('v-game') || document.body;
+ gameView.classList.add('boss-enrage-shake');
+ setTimeout(() => gameView.classList.remove('boss-enrage-shake'), 700);
+ // Flash rouge overlay
+ const flash = document.createElement('div');
+ flash.className = 'boss-enrage-flash';
+ document.body.appendChild(flash);
+ setTimeout(() => flash.remove(), 800);
+ // Bannière "ENRAGÉ !"
+ const banner = document.createElement('div');
+ banner.className = 'boss-enrage-banner';
+ banner.textContent = '⚡ ENRAGÉ ! ⚡';
+ document.body.appendChild(banner);
+ setTimeout(() => banner.classList.add('boss-enrage-banner-out'), 1400);
+ setTimeout(() => banner.remove(), 1900);
+ // Dialogue menaçant (via le système de voix du monstre si dispo)
+ const line = _BOSS_ENRAGE_LINES[Math.floor(Math.random() * _BOSS_ENRAGE_LINES.length)];
+ if(typeof monsterSpeak === 'function'){
+  try{ monsterSpeak(line, 2600); }catch(e){}
+ }
+ // Son grave menaçant (descente de notes)
+ if(typeof beep === 'function'){
+  [220, 185, 155, 130].forEach((f, i) => setTimeout(() => { try{ beep(f, 'sawtooth', .25, .12); }catch(e){} }, i * 90));
+ }
+ // Vibration forte
+ if(typeof vibrate === 'function' && typeof VIBE !== 'undefined'){
+  vibrate(VIBE.boss || [60, 30, 60, 30, 100]);
+ }
+}
+
+// ═══════════════════════════════════════════════════════
+// v8.7.52 (O4.2a) : ATTAQUES SPÉCIALES DES BOSS ENRAGÉS — effets cosmétiques
+// Déclenchées aléatoirement par question pendant la phase enragée.
+// (Les attaques touchant la logique de combat sont en O4.2b.)
+// ═══════════════════════════════════════════════════════
+function _maybeBossAttack(){
+ if(!GS.isBoss || !GS.bossEnraged) return;
+ // ~55% de chance par question (pas systématique, pour garder la surprise)
+ if(Math.random() > 0.55) return;
+ const attacks = [_atkRoar, _atkLightning, _atkLureRain, _atkWobble, _atkFireflies];
+ const atk = attacks[Math.floor(Math.random() * attacks.length)];
+ try{ atk(); }catch(e){ console.warn('boss attack failed', e); }
+}
+// 🐉 Rugissement intimidant : zoom sur le boss + son grave + vibration
+function _atkRoar(){
+ const ma = document.getElementById('monster-area');
+ if(ma){ ma.classList.add('boss-roar'); setTimeout(()=>ma.classList.remove('boss-roar'), 750); }
+ if(typeof beep === 'function'){
+  [140, 115, 95].forEach((f, i) => setTimeout(()=>{ try{ beep(f, 'sawtooth', .3, .13); }catch(e){} }, i * 80));
+ }
+ if(typeof vibrate === 'function' && typeof VIBE !== 'undefined') vibrate(VIBE.boss || [50, 30, 50]);
+ if(typeof monsterSpeak === 'function'){ try{ monsterSpeak('GROAAAR !', 1400); }catch(e){} }
+}
+// ⚡ Éclair surprise : flash bleu-blanc plein écran + tonnerre
+function _atkLightning(){
+ const f = document.createElement('div');
+ f.className = 'boss-lightning-flash';
+ document.body.appendChild(f);
+ setTimeout(()=> f.remove(), 650);
+ if(typeof beep === 'function'){
+  try{ beep(70, 'sawtooth', .45, .12); setTimeout(()=>beep(55, 'square', .3, .1), 60); }catch(e){}
+ }
+ if(typeof vibrate === 'function') vibrate(45);
+}
+// 🌟 Pluie de leurres : symboles mathématiques qui tombent en fond
+function _atkLureRain(){
+ const host = document.getElementById('v-game') || document.body;
+ const layer = document.createElement('div');
+ layer.className = 'boss-lure-layer';
+ const syms = ['➕','➖','✖️','➗','🟰','❓','🔢','💢'];
+ let html = '';
+ for(let i = 0; i < 14; i++){
+  const left = Math.random() * 100;
+  const delay = Math.random() * 1.2;
+  const dur = 2 + Math.random() * 1.6;
+  const sz = 0.8 + Math.random() * 0.9;
+  html += `<span class="boss-lure" style="left:${left}%;animation-delay:${delay}s;animation-duration:${dur}s;font-size:${sz}em;">${syms[i % syms.length]}</span>`;
+ }
+ layer.innerHTML = html;
+ host.appendChild(layer);
+ setTimeout(()=> layer.remove(), 4000);
+}
+// 🌀 Énoncé qui tangue : la question oscille/pivote doucement
+function _atkWobble(){
+ const q = document.getElementById('question');
+ if(!q) return;
+ q.classList.add('boss-wobble');
+ setTimeout(()=> q.classList.remove('boss-wobble'), 2600);
+}
+// ✨ Distraction lucioles : lucioles dorées qui flottent devant l'écran
+function _atkFireflies(){
+ const host = document.getElementById('v-game') || document.body;
+ const layer = document.createElement('div');
+ layer.className = 'boss-firefly-layer';
+ let html = '';
+ for(let i = 0; i < 12; i++){
+  const left = Math.random() * 100;
+  const top = Math.random() * 100;
+  const delay = Math.random() * 2;
+  const dur = 2.5 + Math.random() * 2;
+  html += `<span class="boss-firefly" style="left:${left}%;top:${top}%;animation-delay:${delay}s;animation-duration:${dur}s;">✨</span>`;
+ }
+ layer.innerHTML = html;
+ host.appendChild(layer);
+ setTimeout(()=> layer.remove(), 4500);
 }
