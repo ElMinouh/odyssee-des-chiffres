@@ -2337,6 +2337,8 @@ function generateQ(){
 function getSkin(){const s=SKINS.find(x=>x.id===(P.equippedSkin||'default'))||SKINS[0];return s.m;}
 function renderQ(){
  GS.answering=false;
+ // v8.7.53 (O4.2b) : nettoyer les effets d'attaque de la question précédente
+ if(typeof _resetBossAttackEffects==='function') _resetBossAttackEffects();
  const q=GS.q;
  const txt=q.display||(q.a!==undefined&&q.b!==undefined?`${q.a} ${q.op||'='} ${q.b}`:String(q.res));
  $('question').innerText=txt;$('question').className=GS.isGolden?'gold-q':q.isRevision?'revision-q-inline':'';
@@ -3191,7 +3193,8 @@ function _maybeBossAttack(){
  if(!GS.isBoss || !GS.bossEnraged) return;
  // ~55% de chance par question (pas systématique, pour garder la surprise)
  if(Math.random() > 0.55) return;
- const attacks = [_atkRoar, _atkLightning, _atkLureRain, _atkWobble, _atkFireflies];
+ const attacks = [_atkRoar, _atkLightning, _atkLureRain, _atkWobble, _atkFireflies,
+                  _atkFreeze, _atkScramble, _atkWords];
  const atk = attacks[Math.floor(Math.random() * attacks.length)];
  try{ atk(); }catch(e){ console.warn('boss attack failed', e); }
 }
@@ -3257,4 +3260,111 @@ function _atkFireflies(){
  layer.innerHTML = html;
  host.appendChild(layer);
  setTimeout(()=> layer.remove(), 4500);
+}
+
+// ═══════════════════════════════════════════════════════
+// v8.7.53 (O4.2b) : ATTAQUES BOSS — effets sur saisie & affichage
+// Gel temporaire, pavé mélangé, chiffres en lettres.
+// ═══════════════════════════════════════════════════════
+// Nettoyage des effets d'attaque entre deux questions (appelé en début de renderQ)
+function _resetBossAttackEffects(){
+ const numpad = document.getElementById('numpad');
+ if(numpad){
+  numpad.classList.remove('numpad-frozen','numpad-scrambled');
+  _restoreNumpadOrder();
+ }
+ const ai = document.getElementById('answer-input');
+ if(ai){ ai.classList.remove('input-frozen'); ai.disabled = false; }
+ const qEl = document.getElementById('question');
+ if(qEl) qEl.classList.remove('boss-words-q');
+}
+// Restaure l'ordre canonique 1..9 des touches chiffres du pavé
+function _restoreNumpadOrder(){
+ const numpad = document.getElementById('numpad');
+ if(!numpad) return;
+ const minusBtn = numpad.querySelector('.np-minus');
+ if(!minusBtn) return;
+ // Réinsérer les boutons 1..9 dans l'ordre avant le bouton "−"
+ for(let d = 1; d <= 9; d++){
+  const btn = numpad.querySelector(`.np-btn[data-k="${d}"]`);
+  if(btn) numpad.insertBefore(btn, minusBtn);
+ }
+}
+// ❄️ Gel temporaire : pavé givré + timer en pause 2s (non punitif grâce à GS.frozen)
+function _atkFreeze(){
+ const numpad = document.getElementById('numpad');
+ const ai = document.getElementById('answer-input');
+ GS.frozen = true; // met le timer en pause (géré dans le tick de startTimer)
+ if(numpad) numpad.classList.add('numpad-frozen');
+ if(ai){ ai.classList.add('input-frozen'); ai.disabled = true; }
+ if(typeof beep === 'function'){ try{ beep(880,'sine',.2,.07); setTimeout(()=>beep(660,'sine',.25,.06),120); }catch(e){} }
+ if(typeof monsterSpeak === 'function'){ try{ monsterSpeak('Gèle sur place !', 1600); }catch(e){} }
+ setTimeout(() => {
+  GS.frozen = false;
+  if(numpad) numpad.classList.remove('numpad-frozen');
+  if(ai){ ai.classList.remove('input-frozen'); ai.disabled = false; }
+ }, 2000);
+}
+// 🔀 Pavé mélangé : les touches 1..9 changent de place (la valeur reste correcte)
+function _atkScramble(){
+ const numpad = document.getElementById('numpad');
+ if(!numpad) return;
+ const minusBtn = numpad.querySelector('.np-minus');
+ if(!minusBtn) return;
+ const digits = [];
+ for(let d = 1; d <= 9; d++){
+  const btn = numpad.querySelector(`.np-btn[data-k="${d}"]`);
+  if(btn) digits.push(btn);
+ }
+ if(digits.length < 9) return;
+ // Mélange Fisher-Yates
+ for(let i = digits.length - 1; i > 0; i--){
+  const j = Math.floor(Math.random() * (i + 1));
+  [digits[i], digits[j]] = [digits[j], digits[i]];
+ }
+ digits.forEach(b => numpad.insertBefore(b, minusBtn));
+ numpad.classList.add('numpad-scrambled');
+ if(typeof monsterSpeak === 'function'){ try{ monsterSpeak('Bonne chance pour trouver les chiffres !', 2000); }catch(e){} }
+}
+// 🔢 Chiffres en lettres : l'énoncé affiche les nombres en toutes lettres
+function _atkWords(){
+ const qEl = document.getElementById('question');
+ if(!qEl) return;
+ const original = qEl.innerText;
+ const converted = original.replace(/\d+/g, m => _numberToFrenchWords(parseInt(m, 10)));
+ if(converted === original) return; // pas de chiffre converti → effet inutile
+ qEl.innerText = converted;
+ qEl.classList.add('boss-words-q');
+ if(typeof monsterSpeak === 'function'){ try{ monsterSpeak('Sais-tu encore lire ?', 1800); }catch(e){} }
+}
+// Conversion d'un entier (0-9999) en toutes lettres françaises
+function _numberToFrenchWords(n){
+ if(n === 0) return 'zéro';
+ if(n < 0) return 'moins ' + _numberToFrenchWords(-n);
+ const units = ['','un','deux','trois','quatre','cinq','six','sept','huit','neuf','dix',
+  'onze','douze','treize','quatorze','quinze','seize','dix-sept','dix-huit','dix-neuf'];
+ const tens = ['','','vingt','trente','quarante','cinquante','soixante','soixante','quatre-vingt','quatre-vingt'];
+ function below100(x){
+  if(x < 20) return units[x];
+  const t = Math.floor(x / 10), u = x % 10;
+  if(t === 7 || t === 9){ // soixante-dix / quatre-vingt-dix
+   const base = t === 7 ? 'soixante' : 'quatre-vingt';
+   const rem = below100(10 + u); // dix..dix-neuf
+   return base + '-' + rem;
+  }
+  if(u === 0) return tens[t] + (t === 8 ? 's' : '');
+  if(u === 1 && t !== 8) return tens[t] + '-et-un';
+  return tens[t] + '-' + units[u];
+ }
+ function below1000(x){
+  if(x < 100) return below100(x);
+  const h = Math.floor(x / 100), rem = x % 100;
+  const hPart = (h === 1 ? 'cent' : units[h] + '-cent');
+  if(rem === 0) return hPart + (h > 1 ? 's' : '');
+  return hPart + ' ' + below100(rem);
+ }
+ if(n < 1000) return below1000(n);
+ const th = Math.floor(n / 1000), rem = n % 1000;
+ const thPart = (th === 1 ? 'mille' : below1000(th) + ' mille');
+ return rem === 0 ? thPart : thPart + ' ' + below1000(rem);
 }

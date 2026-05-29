@@ -3846,3 +3846,53 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  .boss-roar, .boss-wobble, .boss-lure, .boss-firefly{ animation:none !important; }
  .boss-lightning-flash{ animation:bossLightning 0.4s ease-out forwards; }
 }
+
+/* ═══ v8.7.53 (O4.2b) : Attaques boss — saisie & affichage ═══ */
+/* ❄️ Gel temporaire du pavé : givre bleuté + non cliquable */
+.numpad-frozen{
+ pointer-events:none !important;
+ position:relative;
+ filter:hue-rotate(160deg) brightness(1.1) saturate(.6);
+}
+.numpad-frozen::after{
+ content:'❄️ Gelé !';
+ position:absolute; inset:0;
+ display:flex; align-items:center; justify-content:center;
+ font-size:1.3em; font-weight:800; color:#fff;
+ background:linear-gradient(135deg, rgba(150,210,255,.55), rgba(200,235,255,.4));
+ border:2px solid rgba(180,225,255,.8);
+ border-radius:12px;
+ text-shadow:0 1px 3px rgba(0,60,120,.8);
+ backdrop-filter:blur(1.5px);
+ -webkit-backdrop-filter:blur(1.5px);
+ animation:numpadFreezeIn .25s ease-out;
+ z-index:3;
+}
+@keyframes numpadFreezeIn{ from{opacity:0;} to{opacity:1;} }
+.input-frozen{
+ filter:hue-rotate(160deg) brightness(1.05) saturate(.6);
+ opacity:.7;
+}
+/* 🔀 Pavé mélangé : petit flash pour signaler le réarrangement */
+.numpad-scrambled .np-btn[data-k]{
+ animation:numpadScrambleFlash .5s ease-out;
+}
+@keyframes numpadScrambleFlash{
+ 0%   { transform:scale(.6) rotate(-8deg); opacity:.3; }
+ 60%  { transform:scale(1.08) rotate(4deg); }
+ 100% { transform:scale(1) rotate(0); opacity:1; }
+}
+/* 🔢 Chiffres en lettres : énoncé plus petit pour tenir sur l'écran */
+.boss-words-q{
+ font-size:1.5em !important;
+ line-height:1.2;
+ color:#ffd97a !important;
+ animation:bossWordsIn .4s ease-out;
+}
+@keyframes bossWordsIn{
+ 0%   { opacity:0; transform:scale(.9); }
+ 100% { opacity:1; transform:scale(1); }
+}
+@media (prefers-reduced-motion:reduce){
+ .numpad-scrambled .np-btn[data-k], .boss-words-q, .numpad-frozen::after{ animation:none; }
+}
