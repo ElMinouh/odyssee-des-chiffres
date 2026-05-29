@@ -477,9 +477,22 @@ function _npcClicked(regionId, idx){
  // Bulle de dialogue flottante au-dessus du PNJ
  const npcEl = document.querySelector(`.archipel-npc[data-region="${regionId}"][data-npc-idx="${idx}"]`);
  if(!npcEl) return;
- // Si une bulle existe déjà, la retirer
+ // Si une bulle existe déjà, la retirer (et restaurer le z-index de son layer)
  const existing = document.querySelector('.archipel-npc-bubble');
- if(existing) existing.remove();
+ if(existing){
+  const prevLayer = existing.closest('.archipel-npcs-layer');
+  if(prevLayer) prevLayer.style.zIndex = '';
+  existing.remove();
+ }
+ // v8.7.44 : élever le z-index du layer parent pendant l'affichage de la bulle.
+ // Sinon la bulle (z-index:20 interne) reste piégée dans le stacking context du
+ // layer (z-index:4) et passe SOUS les zones (z-index:10) et autres PNJ → texte
+ // illisible. En remontant le layer à 80, toute la bulle passe au-dessus.
+ const layer = npcEl.closest('.archipel-npcs-layer');
+ if(layer) layer.style.zIndex = '80';
+ // v8.7.44 : élever aussi le PNJ cliqué au-dessus de ses frères du même layer
+ // (sinon un autre PNJ rendu plus tard dans le DOM masque la bulle).
+ npcEl.style.zIndex = '10';
  const bubble = document.createElement('div');
  bubble.className = 'archipel-npc-bubble';
  bubble.innerHTML = `
@@ -498,6 +511,8 @@ function _npcClicked(regionId, idx){
  // Auto-close après 4.5s ou au clic n'importe où
  const close = () => {
   bubble.classList.add('archipel-npc-bubble-out');
+  if(layer) layer.style.zIndex = '';   // restaurer le z-index normal du layer
+  npcEl.style.zIndex = '';              // restaurer le z-index normal du PNJ
   setTimeout(() => bubble.remove(), 350);
   document.removeEventListener('click', closeOnOutside, true);
   try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
