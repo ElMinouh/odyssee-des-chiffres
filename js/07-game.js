@@ -1157,6 +1157,7 @@ function renderMap(){
  const cont = $('map-zones');
  if(!cont) return;
  cont.style.minHeight = totalHeight + 'px';
+ cont.dataset.baseHeight = totalHeight;   // v8.7.49 : base pour le calcul du zoom
  cont.innerHTML = `
   <div class="archipel-stars"></div>
   <div class="archipel-logbook" onclick="openAdventureLog()" title="Carnet d'aventure" role="button">📖</div>
@@ -1183,6 +1184,8 @@ function renderMap(){
  `;
  // Auto-centrer sur l'avatar après rendu
  setTimeout(()=>_autoCenterOnAvatar(), 50);
+ // v8.7.49 : réappliquer le niveau de zoom courant (la box vient d'être recréée)
+ if(typeof _applyMapZoom === 'function') _applyMapZoom();
  // v8.7.48 (O3-C.5) : signature sonore de la région où se trouve l'avatar, jouée
  // à l'ouverture de la carte. Cooldown de 30s pour éviter la répétition si on
  // ouvre/ferme rapidement la carte.
@@ -1492,6 +1495,17 @@ function _applyMapZoom(){
  if(!cont) return;
  cont.classList.remove('zoom-overview','zoom-default','zoom-close');
  cont.classList.add('zoom-'+_mapZoom);
+ // v8.7.49 : ajuster la hauteur de la box pour que le scroll de page suive le scale.
+ // transform:scale ne modifie pas la box → sans ça, en vue rapprochée le bas serait
+ // coupé, et en vue d'ensemble il resterait un grand vide.
+ const scale = _mapZoom==='overview' ? 0.62 : _mapZoom==='close' ? 1.3 : 1;
+ let baseH = parseFloat(cont.dataset.baseHeight || '0');
+ if(!baseH){
+  baseH = parseFloat(cont.style.minHeight) || 1200;
+  cont.dataset.baseHeight = baseH;
+ }
+ cont.style.height = (baseH * scale) + 'px';
+ cont.style.minHeight = (baseH * scale) + 'px';  // sinon min-height bloque le rétrécissement en vue d'ensemble
  const lbl = $('map-zoom-label');
  if(lbl){
   lbl.textContent = _mapZoom==='overview' ? 'Vue d\'ensemble'
