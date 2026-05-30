@@ -3838,6 +3838,65 @@ const _STORY = {
     { emoji:'💎', text:"« Relève les défis de chaque lieu pour gagner en courage, puis affronte le Loup au bout du chemin. Libère le Cristal de l'Unité... et la toute première lueur d'espoir renaîtra sur Calcultopia ! » En avant, héros !" },
    ],
   },
+  ce1: {
+   id:'chap_ce1',
+   title:'Chapitre II — Bois et Plages',
+   crystal:'Cristal de l\'Élan',
+   pages:[
+    { emoji:'🌲', text:"Le Cristal de l'Unité brille de nouveau ! Mais à peine as-tu quitté les plaines que tu pénètres dans les <b>Bois et Plages</b>, où les arbres murmurent et les vagues ont oublié comment compter leurs rouleaux." },
+    { emoji:'🧙', text:"Maître Comptin, le vieux sage, t'a suivi : « Tu progresses vite, {hero} ! Mais sois prudent... » Soudain, une petite lumière dorée volette autour de toi en pétillant !" },
+    { emoji:'✨', text:"« Bonjour ! Je suis <b>Lumo</b>, une étincelle née d'un Cristal ! » couine la luciole. « Là où je vole, le brouillard recule. Je viens avec toi ! » Tu as trouvé un compagnon fidèle." },
+    { emoji:'🦌', text:"Maître Comptin reprend : « Le <b>Cristal de l'Élan</b> est gardé par le Cerf Spectral, au cœur de la forêt. Mais prends garde : le {villain} sait désormais qu'un héros se dresse contre lui... »" },
+    { emoji:'⚔️', text:"Au loin, un rire glacial résonne entre les arbres. Le {villain} t'observe ! Qu'importe — tu serres les poings, Lumo brille plus fort, et tu t'enfonces dans les bois. Rien ne t'arrêtera." },
+   ],
+  },
+  ce2: {
+   id:'chap_ce2',
+   title:'Chapitre III — Les Terres d\'Aventure',
+   crystal:'Cristal du Voyage',
+   pages:[
+    { emoji:'🏜️', text:"Deux Cristaux retrouvés ! Te voilà dans les <b>Terres d'Aventure</b> : déserts brûlants et temples oubliés où le sable efface les chiffres aussi vite qu'on les trace." },
+    { emoji:'🥷', text:"Mais une ombre te barre la route ! C'est le <b>Sergent Virgule</b>, lieutenant du {villain}. « Halte, petit héros ! Le maître m'envoie te ralentir ! » ricane-t-il en brouillant les dunes." },
+    { emoji:'💪', text:"Lumo se cache, effrayée. Mais toi, {hero}, tu redresses la tête : « Je n'ai pas peur de toi ! » Ton courage fait reculer le Sergent, qui s'enfuit en jurant que le maître se vengera." },
+    { emoji:'🏺', text:"Maître Comptin te rejoint, essoufflé : « Bravo ! Quel cran ! Le <b>Cristal du Voyage</b> repose dans le Temple Antique, gardé par le Sphinx des Sables. Réponds à ses énigmes et il sera tien. »" },
+    { emoji:'🌟', text:"Lumo réapparaît, un peu honteuse : « Tu es si brave... je serai courageuse moi aussi ! » Ensemble, vous avancez vers le temple, le cœur vaillant. Trois Cristaux bientôt !" },
+   ],
+  },
+  cm1: {
+   id:'chap_cm1',
+   title:'Chapitre IV — Les Royaumes Périlleux',
+   crystal:'Cristal de la Bravoure',
+   pages:[
+    { emoji:'🏰', text:"Les <b>Royaumes Périlleux</b> t'accueillent dans le froid : forteresses de pierre, remparts de givre, et un brouillard si épais qu'on n'y voit plus ses propres mains." },
+    { emoji:'😰', text:"Soudain, un cri ! Le {villain} a capturé <b>Maître Comptin</b> et l'enferme dans une tour de glace ! « Si tu veux ton vieil ami, héros, viens donc le chercher... si tu l'oses ! » tonne sa voix." },
+    { emoji:'🔥', text:"Ton sang ne fait qu'un tour. Lumo tremble : « C'est un piège ! » — « Peut-être, » réponds-tu, « mais on n'abandonne jamais un ami. » C'est ton plus grand acte de bravoure." },
+    { emoji:'🐉', text:"Pour atteindre la tour, tu devras vaincre le Dragon des Remparts, gardien du <b>Cristal de la Bravoure</b>. Chaque calcul juste fissure la glace qui retient Maître Comptin." },
+    { emoji:'💎', text:"« Tiens bon, {hero} ! » lance Lumo, brillant de mille feux. « Quatre Cristaux, et déjà tu fais reculer les ténèbres ! » Tu inspires un grand coup... et tu t'élances." },
+   ],
+  },
+  cm2: {
+   id:'chap_cm2',
+   title:'Chapitre V — Au-delà des Étoiles',
+   crystal:'Cristal de l\'Infini',
+   pages:[
+    { emoji:'🌌', text:"Maître Comptin libéré, vous voilà projetés <b>Au-delà des Étoiles</b>, dans le grand vide cosmique où flottent les derniers nombres du royaume, scintillant comme des constellations." },
+    { emoji:'🧙', text:"Maître Comptin devient grave : « {hero}, il est temps que tu saches la vérité. Le {villain}... fut jadis le plus grand mathématicien de Calcultopia. »" },
+    { emoji:'💔', text:"« Mais un jour, une seule erreur de calcul lui coûta tout. De honte et de colère, il jura d'effacer TOUS les nombres, pour que plus personne ne puisse jamais se tromper... ni réussir. »" },
+    { emoji:'🌠', text:"Tu comprends alors : le {villain} n'est pas qu'un monstre, mais un cœur brisé. Le <b>Cristal de l'Infini</b>, gardé par le Colosse Stellaire, pourrait bien être la clé pour le raisonner." },
+    { emoji:'✨', text:"« Cinq Cristaux, {hero} ! » s'écrie Lumo. « Il ne reste plus que le Sanctuaire ! » Le destin de Calcultopia tient désormais entre tes mains. Sois fort. Sois juste." },
+   ],
+  },
+  final: {
+   id:'chap_final',
+   title:'Chapitre VI — Le Sanctuaire',
+   crystal:'',
+   pages:[
+    { emoji:'🕉️', text:"Les cinq Cristaux flottent autour de toi, irradiant une lumière pure. Devant s'élève le <b>Sanctuaire Final</b>, dernier repaire du {villain}, là où tout a commencé... et où tout va se jouer." },
+    { emoji:'👹', text:"« Te voilà donc, » murmure le {villain}, plus las que furieux. « Tu as repris mes Cristaux... mais comprends-tu seulement pourquoi je les ai brisés ? » Sa voix tremble." },
+    { emoji:'❤️', text:"Maître Comptin pose une main sur ton épaule : « Montre-lui, {hero}. Montre-lui qu'une erreur n'est pas une fin — mais le début d'un nouvel apprentissage. C'est ça, la vraie magie des nombres. »" },
+    { emoji:'⚔️', text:"Le {villain} lève les bras dans un dernier sursaut de colère : « Assez de belles paroles ! Prouve-moi ta valeur, héros ! » Le combat ultime commence. Pour Calcultopia. Pour Maître Comptin. Pour Lumo. <b>Pour toi.</b>" },
+   ],
+  },
  },
 };
 // Affiche une scène narrative (parchemin paginé). onDone() appelé à la fermeture.
