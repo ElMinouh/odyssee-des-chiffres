@@ -1209,6 +1209,7 @@ function renderMap(){
      const ry = (avatarPos && totalHeight) ? (avatarPos.y / totalHeight) : null;
      _refreshMiniMap(avatarRegion.id, _islandFogged, ry, (P&&P.avatar)||'🧙');
     }
+    if(typeof _refreshQuestJournal === 'function') _refreshQuestJournal(_islandFogged);
     const now = Date.now();
     if(!_lastRegionSignatureTime || (now - _lastRegionSignatureTime) > 30000){
      _lastRegionSignatureTime = now;
@@ -3271,6 +3272,7 @@ function openAdventureLog(){
    <div class="advlog-regions">${regionRows}</div>
    <div class="advlog-section-title">🏆 Boss vaincus (${totalBeaten})</div>
    ${bossGallery}
+   ${(typeof _questJournalCarnetHtml==='function')?_questJournalCarnetHtml():''}
   </div>
  `;
  document.body.appendChild(overlay);
@@ -3965,4 +3967,84 @@ function _maybeShowStory(){
    _showStoryModal(chap, null);
   }
  }catch(e){}
+}
+
+// ═══════════════════════════════════════════════════════
+// v8.7.69 (O5) : JOURNAL DE QUÊTE — relire les chapitres de l'histoire.
+// Panneau fixe à droite de la carte (symétrique à la mini-map) + section dans
+// le carnet d'aventure. Chaque chapitre est relisable s'il est débloqué (région
+// atteinte), verrouillé (🔒) sinon. Extensible : suit _ARCH_REGIONS / _STORY.
+// ═══════════════════════════════════════════════════════
+let _questUnlockedCache = {};
+// Liste ordonnée des entrées du journal : prologue puis un chapitre par région.
+function _questEntries(){
+ const entries = [{ id:'intro', label:'📜', regionId:null, color:'#c9a86a' }];
+ const roman = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
+ let i = 0;
+ _ARCH_REGIONS.forEach(r => {
+  const chap = _STORY.chapters[r.id];
+  if(!chap) return;
+  const meta = _BIOME_BANNER_META[r.id] || {};
+  entries.push({ id:chap.id, label:(roman[i]||String(i+1)), regionId:r.id, color:(meta.accent||'#888') });
+  i++;
+ });
+ return entries;
+}
+function _chapterUnlocked(entry, foggedMap){
+ const seen = (typeof P!=='undefined' && P && Array.isArray(P.storySeen)) ? P.storySeen : [];
+ if(entry.id === 'intro') return seen.includes('intro');
+ if(seen.includes(entry.id)) return true;                       // déjà lu → relisable
+ if(entry.regionId && foggedMap && !foggedMap[entry.regionId]) return true; // région atteinte
+ return false;
+}
+function _refreshQuestJournal(foggedMap){
+ const host = document.getElementById('map-header') || document.getElementById('v-map');
+ if(!host) return;
+ let q = document.getElementById('archipel-quest');
+ if(!q){ q = document.createElement('div'); q.id = 'archipel-quest'; q.className = 'archipel-quest'; host.appendChild(q); }
+ _questUnlockedCache = {};
+ const rows = _questEntries().map(e => {
+  const unlocked = _chapterUnlocked(e, foggedMap);
+  _questUnlockedCache[e.id] = unlocked;
+  return `<div class="quest-entry${unlocked?'':' locked'}" style="--qc:${e.color};" `
+       + `onclick="_replayChapter('${e.id}')" role="button" `
+       + `title="${unlocked?'Relire ce chapitre':'Chapitre verrouillé'}">`
+       + `${unlocked?e.label:'🔒'}</div>`;
+ }).join('');
+ q.innerHTML = `<div class="quest-head">QUÊTE</div><div class="quest-body">${rows}</div>`;
+}
+// Retrouve un chapitre par son id (intro ou chap_xxx)
+function _findChapter(id){
+ if(id === 'intro') return _STORY.intro;
+ for(const k in _STORY.chapters){ if(_STORY.chapters[k].id === id) return _STORY.chapters[k]; }
+ return null;
+}
+function _replayChapter(id){
+ if(!_questUnlockedCache[id]){
+  if(typeof beep==='function'){ try{ beep(180,'square',.12,.06); }catch(e){} }
+  return; // verrouillé
+ }
+ const chap = _findChapter(id);
+ if(chap) _showStoryModal(chap, null);
+}
+
+// v8.7.69 (O5) : HTML de la section « Journal de quête » dans le carnet d'aventure
+function _questJournalCarnetHtml(){
+ const entries = _questEntries();
+ const items = entries.map(e => {
+  const cached = _questUnlockedCache[e.id];
+  const seen = (typeof P!=='undefined' && P && Array.isArray(P.storySeen)) ? P.storySeen : [];
+  const unlocked = (cached !== undefined) ? cached : (e.id==='intro' ? seen.includes('intro') : seen.includes(e.id));
+  const chap = _findChapter(e.id);
+  const title = chap ? chap.title : '';
+  const sub = (chap && chap.crystal) ? ('💎 '+chap.crystal) : (e.id==='intro' ? 'Le commencement de l\'odyssée' : '');
+  return `<div class="advlog-quest-item${unlocked?'':' locked'}" `
+       + (unlocked?`onclick="closeAdventureLog();setTimeout(()=>_replayChapter('${e.id}'),320);"`:'')
+       + `>`
+       + `<div class="advlog-quest-badge" style="background:${unlocked?e.color:'#777'};">${unlocked?e.label:'🔒'}</div>`
+       + `<div><div class="advlog-quest-label">${unlocked?title:'Chapitre verrouillé'}</div>`
+       + `${(unlocked&&sub)?`<div class="advlog-quest-sub">${sub}</div>`:''}</div>`
+       + `</div>`;
+ }).join('');
+ return `<div class="advlog-quest"><div class="advlog-quest-title">📜 Journal de quête</div><div class="advlog-quest-list">${items}</div></div>`;
 }

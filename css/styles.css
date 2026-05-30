@@ -4380,3 +4380,67 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 @media (prefers-reduced-motion:reduce){
  .story-overlay,.story-parchment,.story-emoji{ animation:none; }
 }
+
+/* ═══ v8.7.69 (O5) : Journal de quête (panneau droite, symétrique mini-map) ═══ */
+.archipel-quest{
+ position:absolute;
+ top:90px; right:6px;
+ z-index:51;
+ width:48px;
+ background:rgba(10,12,30,.74);
+ border:1.5px solid rgba(255,255,255,.22);
+ border-radius:10px;
+ padding:4px 4px 5px;
+ backdrop-filter:blur(3px);
+ -webkit-backdrop-filter:blur(3px);
+ box-shadow:0 3px 12px rgba(0,0,0,.55);
+ user-select:none; -webkit-user-select:none;
+}
+.quest-head{
+ font-size:.52em; font-weight:800; letter-spacing:.1em;
+ text-align:center; color:rgba(255,255,255,.78);
+ margin-bottom:4px;
+}
+.quest-body{ display:flex; flex-direction:column; gap:3px; }
+.quest-entry{
+ height:19px; border-radius:5px;
+ background:var(--qc);
+ display:flex; align-items:center; justify-content:center;
+ cursor:pointer;
+ font-size:.66em; font-weight:800; color:#fff;
+ text-shadow:0 1px 2px rgba(0,0,0,.6);
+ border:1.5px solid transparent;
+ transition:transform .15s ease, filter .15s ease;
+}
+.quest-entry:hover{ transform:scale(1.09); filter:brightness(1.18); }
+.quest-entry.locked{
+ background:rgba(120,120,135,.42);
+ cursor:default;
+ filter:grayscale(.85);
+ font-size:.72em;
+}
+.quest-entry.locked:hover{ transform:none; filter:grayscale(.85); }
+/* Section journal de quête dans le carnet d'aventure */
+.advlog-quest{ margin:14px 0 6px; }
+.advlog-quest-title{ font-size:.95em; font-weight:800; color:#ffd97a; margin-bottom:8px; text-align:left; }
+.advlog-quest-list{ display:flex; flex-direction:column; gap:6px; }
+.advlog-quest-item{
+ display:flex; align-items:center; gap:10px;
+ padding:8px 10px; border-radius:10px;
+ background:rgba(255,255,255,.06);
+ border:1px solid rgba(255,255,255,.1);
+ cursor:pointer; text-align:left;
+ transition:background .15s;
+}
+.advlog-quest-item:hover{ background:rgba(255,255,255,.13); }
+.advlog-quest-item.locked{ opacity:.5; cursor:default; }
+.advlog-quest-item.locked:hover{ background:rgba(255,255,255,.06); }
+.advlog-quest-badge{
+ width:26px; height:26px; flex:0 0 26px;
+ border-radius:6px;
+ display:flex; align-items:center; justify-content:center;
+ font-weight:800; font-size:.8em; color:#fff;
+ text-shadow:0 1px 2px rgba(0,0,0,.6);
+}
+.advlog-quest-label{ font-size:.9em; font-weight:600; }
+.advlog-quest-sub{ font-size:.75em; opacity:.7; }
