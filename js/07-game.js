@@ -1528,16 +1528,21 @@ function mapZoomIn(){
 let _mapAutoFocus = false;
 function _autoFocusActiveRegion(){
  try{
-  // 1) Vue d'ensemble brève : on voit tout le monde
+  const cont = $('map-zones');
+  // 1) Vue d'ensemble : on voit tout le monde (1,5s)
   _mapZoom = 'overview';
   _applyMapZoom();
-  setTimeout(()=>_autoCenterOnAvatar(true), 60);
-  // 2) Puis zoom-in en douceur sur la région active (transition CSS .35s)
+  setTimeout(()=>_autoCenterOnAvatar(true), 80);
+  // 2) Puis zoom-in très progressif sur la région active.
+  //    La classe .map-cinematic applique une transition longue et douce,
+  //    sans ralentir les boutons loupe (qui gardent la transition standard).
   setTimeout(()=>{
+   if(cont) cont.classList.add('map-cinematic');
    _mapZoom = 'close';
    _applyMapZoom();
-   setTimeout(()=>_autoCenterOnAvatar(true), 240);
-  }, 600);
+   setTimeout(()=>_autoCenterOnAvatar(true), 900);
+   setTimeout(()=>{ if(cont) cont.classList.remove('map-cinematic'); }, 2300);
+  }, 1500);
  }catch(e){}
 }
 function mapZoomOut(){

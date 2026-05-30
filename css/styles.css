@@ -2463,8 +2463,13 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 #map-zones.zoom-overview{ transform:scale(0.62); }
 #map-zones.zoom-default{ transform:scale(1); }
 #map-zones.zoom-close{ transform:scale(1.3); }
+/* v8.7.58 (O3-C.6.1) : zoom cinématique d'ouverture — long et très doux,
+   sans ralentir les boutons loupe (transition standard conservée hors focus) */
+#map-zones.map-cinematic{
+ transition:transform 2.1s cubic-bezier(.33,.0,.2,1), height 2.1s cubic-bezier(.33,.0,.2,1), min-height 2.1s cubic-bezier(.33,.0,.2,1) !important;
+}
 @media (prefers-reduced-motion:reduce){
- #map-zones{ transition:none; }
+ #map-zones, #map-zones.map-cinematic{ transition:none !important; }
 }
 
 /* Étoiles animées sur le fond cosmique */
