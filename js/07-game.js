@@ -1349,7 +1349,6 @@ function openArchipelZoom(zoneId){
  overlay.onclick = function(e){ if(e.target === overlay) closeArchipelZoom(); };
  overlay.innerHTML = `
   <div class="archipel-zoom-content" style="--zone-bg-top:${bg.top};--zone-bg-bot:${bg.bot};">
-   <div class="archipel-zoom-scene">${(typeof _buildZoomSceneHtml==='function')?_buildZoomSceneHtml(zoneId):''}</div>
    <button class="archipel-zoom-close" onclick="closeArchipelZoom()">✕</button>
    <div class="archipel-zoom-header">
     <div style="font-size:2em;line-height:1;">${zone.emoji}</div>
@@ -1366,6 +1365,7 @@ function openArchipelZoom(zoneId){
     </div>` : ''}
    </div>
    <div class="archipel-zoom-steps" style="height:${containerH+20}px;">
+    <div class="archipel-zoom-scene">${(typeof _buildZoomSceneHtml==='function')?_buildZoomSceneHtml(zoneId, zone, stepPositions, containerW, containerH+20):''}</div>
     <svg class="archipel-zoom-path-svg" viewBox="0 0 ${containerW} ${containerH+20}" preserveAspectRatio="none">
      <path d="${stepPathD}" stroke="#c0392b" stroke-width="2.5" fill="none" stroke-dasharray="5,3" opacity="0.85" stroke-linecap="round"/>
     </svg>
@@ -3696,27 +3696,95 @@ function _buildZoneDecorHtml(positions, foggedMap, W){
  return html;
 }
 
-// v8.7.65 (esthétique) : SCÈNE DE FOND THÉMATIQUE dans la modale de zoom de zone.
-// Disperse des décors du lieu (depuis _ZONE_DECOR) en fond de la modale, en
-// semi-transparence et derrière les étapes, pour personnaliser chaque lieu.
-function _buildZoomSceneHtml(zoneId){
+// v8.7.66 (esthétique) : SCÈNE PAYSAGE dans la modale de zoom de zone.
+// Vraie composition : dégradé ciel→sol par biome, éléments aériens en haut,
+// éléments posés sur la ligne d'horizon en bas, tailles proportionnées, et
+// placement par rejet pour ne jamais chevaucher les étapes ni les autres décors.
+// Tout est confiné à la zone des étapes (sous l'encart "boss vaincu").
+const _BIOME_SCENE = {
+ CP:  { sky:'#bfe9ff', ground:'#5fa83f' },
+ CE1: { sky:'#a7dcc6', ground:'#2f6b4e' },
+ CE2: { sky:'#ffe0a6', ground:'#c47e38' },
+ CM1: { sky:'#d2e2ee', ground:'#7d8a99' },
+ CM2: { sky:'#2a1448', ground:'#532a76' },
+};
+// Taille relative par emoji (un arbre/maison >> une poule/fleur)
+const _DECOR_SIZE = {
+ '🌳':1.75,'🌲':1.85,'🌴':1.75,'🏠':1.7,'🏡':1.7,'🏯':1.95,'🏰':2.05,'🏛️':1.9,'🗿':1.6,'🌋':2.0,'⛰️':1.95,'🏔️':1.95,'🪐':1.8,'🏝️':1.7,'⛩️':1.85,'🏮':1.35,
+ '🦌':1.3,'🐂':1.35,'🐄':1.35,'🐑':1.2,'🦬':1.4,'🐉':1.55,'🐙':1.35,'⛺':1.45,'🚀':1.55,'🤖':1.35,'⛄':1.25,'⚙️':1.25,'🏺':1.05,'🛡️':1.05,'⚔️':1.1,'🚩':1.15,'🗺️':1.1,
+};
+const _decorSize = (e)=> _DECOR_SIZE[e] || 0.82;
+// Éléments aériens (placés dans le ciel)
+const _DECOR_SKY = new Set(['☀️','🌞','🌙','⭐','☁️','🦋','🦅','🦜','🐦','🦇','☄️','🪐','🌌','💨','🌬️','✨','🎏','🧚','🦉']);
+
+function _buildZoomSceneHtml(zoneId, zone, stepPositions, containerW, sceneH){
  const decor = _ZONE_DECOR[zoneId];
  if(!decor || typeof _archHash !== 'function') return '';
- let html = '';
- const N = 16;
- for(let i=0;i<N;i++){
-  const emoji = decor[i % decor.length];
-  const x = (_archHash(zoneId, i*31+3) * 92 + 4);          // 4-96 %
-  const y = (_archHash(zoneId, i*47+9) * 92 + 4);          // 4-96 %
-  // Plus gros et plus opaque vers le bas (effet de profondeur "sol")
-  const depth = y / 100;
-  const size = (1.3 + _archHash(zoneId, i*13+5) * 1.4) * (0.8 + depth*0.7); // 1.0 → ~3.0em
-  const op = (0.16 + _archHash(zoneId, i*19+7) * 0.20) + depth*0.10;        // ~0.16 → ~0.46
-  const delay = (i % 6) * 0.45;
-  const dur = (4 + (i % 4)).toFixed(1);
-  html += `<div class="archipel-zoom-decor" style="left:${x.toFixed(1)}%;top:${y.toFixed(1)}%;`
-        + `font-size:${size.toFixed(2)}em;opacity:${op.toFixed(2)};`
-        + `animation-delay:${delay}s;animation-duration:${dur}s;">${emoji}</div>`;
+ const biome = _BIOME_SCENE[(zone&&zone.level)] || _BIOME_SCENE.CP;
+ const horizonPct = 72;                                  // ligne d'horizon (sol en dessous)
+ const horizonPx = (horizonPct/100) * sceneH;
+ const skyEls = decor.filter(e=>_DECOR_SKY.has(e));
+ const groundEls = decor.filter(e=>!_DECOR_SKY.has(e));
+ const groundList = groundEls.length ? groundEls : decor;
+ const skyList = skyEls.length ? skyEls : ['☁️'];
+ const placed = [];
+ const STEP_R = 48;                                       // rayon d'exclusion autour des étapes
+ function free(xPx, yPx, rPx){
+  for(const sp of stepPositions){
+   const dx=xPx-sp.x, dy=yPx-sp.y;
+   if(Math.sqrt(dx*dx+dy*dy) < STEP_R + rPx) return false;
+  }
+  for(const p of placed){
+   const dx=xPx-p.x, dy=yPx-p.y;
+   if(Math.sqrt(dx*dx+dy*dy) < p.r + rPx + 8) return false;
+  }
+  return true;
+ }
+ // Dégradé ciel + bande de sol (avec ligne d'horizon)
+ let html = `<div class="zoom-scene-sky" style="background:linear-gradient(to bottom, ${biome.sky}, ${biome.sky}00 ${horizonPct}%);"></div>`
+          + `<div class="zoom-scene-ground" style="top:${horizonPct}%;background:linear-gradient(to bottom, ${biome.ground}, ${biome.ground}cc);"></div>`;
+ // Éléments de sol : posés sur la ligne d'horizon, répartis horizontalement
+ const groundCount = Math.min(8, 5 + groundList.length);
+ for(let i=0;i<groundCount;i++){
+  const e = groundList[i % groundList.length];
+  const sz = _decorSize(e);
+  const fontPx = 17 * sz;                                 // taille rendue approx (em→px)
+  const rPx = fontPx * 0.55;
+  let placedOk=false;
+  for(let k=0;k<18 && !placedOk;k++){
+   const xPct = 7 + _archHash(zoneId, i*37+k*7+1)*86;
+   const xPx = xPct/100*containerW;
+   // base posée sur la ligne d'horizon (+ légère variation pour profondeur)
+   const yPx = horizonPx - rPx*0.2 + _archHash(zoneId,i*11+k+2)*26 - 4;
+   if(free(xPx, yPx, rPx)){
+    placed.push({x:xPx,y:yPx,r:rPx});
+    const op = (0.6 + _archHash(zoneId,i*5+9)*0.25).toFixed(2);
+    const delay = ((i)%5)*0.4, dur=(4.5+(i%3)).toFixed(1);
+    html += `<div class="archipel-zoom-decor" style="left:${xPct.toFixed(1)}%;top:${yPx.toFixed(0)}px;font-size:${(sz).toFixed(2)}em;opacity:${op};animation-delay:${delay}s;animation-duration:${dur}s;">${e}</div>`;
+    placedOk=true;
+   }
+  }
+ }
+ // Éléments de ciel : flottant dans la moitié haute
+ const skyCount = Math.min(5, 3 + skyList.length);
+ for(let i=0;i<skyCount;i++){
+  const e = skyList[i % skyList.length];
+  const sz = _decorSize(e);
+  const fontPx = 17 * sz;
+  const rPx = fontPx * 0.5;
+  let placedOk=false;
+  for(let k=0;k<18 && !placedOk;k++){
+   const xPct = 8 + _archHash(zoneId, i*53+k*5+3)*84;
+   const xPx = xPct/100*containerW;
+   const yPx = 16 + _archHash(zoneId, i*29+k+4)*(horizonPx*0.42);
+   if(free(xPx, yPx, rPx)){
+    placed.push({x:xPx,y:yPx,r:rPx});
+    const op = (0.55 + _archHash(zoneId,i*7+1)*0.25).toFixed(2);
+    const delay = ((i)%5)*0.5, dur=(5+(i%3)).toFixed(1);
+    html += `<div class="archipel-zoom-decor sky" style="left:${xPct.toFixed(1)}%;top:${yPx.toFixed(0)}px;font-size:${(sz).toFixed(2)}em;opacity:${op};animation-delay:${delay}s;animation-duration:${dur}s;">${e}</div>`;
+    placedOk=true;
+   }
+  }
  }
  return html;
 }
