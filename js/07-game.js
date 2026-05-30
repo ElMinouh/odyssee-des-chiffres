@@ -16,6 +16,8 @@ function openMap(){
  setTimeout(()=>{
   if(typeof initMapParallax==='function') initMapParallax();
  }, 50);
+ // v8.7.67 (O5) : déclencher la narration (prologue, ou chapitre de la région active)
+ setTimeout(()=>{ if(typeof _maybeShowStory==='function') _maybeShowStory(); }, 500);
 }
 
 /**
@@ -3787,4 +3789,121 @@ function _buildZoomSceneHtml(zoneId, zone, stepPositions, containerW, sceneH){
   }
  }
  return html;
+}
+
+// ═══════════════════════════════════════════════════════
+// v8.7.67 (O5) : FIL NARRATIF — « Les Cristaux de Calcultopia »
+// Système data-driven et EXTENSIBLE : pour ajouter un îlot (et donc un Cristal),
+// il suffit d'ajouter une région à _ARCH_REGIONS et un chapitre à _STORY.chapters.
+// Le nombre de Cristaux et les déclencheurs s'adaptent automatiquement.
+// ═══════════════════════════════════════════════════════
+const STORY_VILLAIN = 'Comte Zéro de Cafouillac';
+const STORY_KINGDOM = 'Calcultopia';
+// Nombre de Cristaux régionaux = nombre de régions de jeu (hors Sanctuaire final).
+function _storyCrystalCount(){
+ try{ return _ARCH_REGIONS.filter(r => r.id !== 'final').length; }catch(e){ return 5; }
+}
+// Interpolation des textes : {hero}, {villain}, {kingdom}, {crystals}
+function _storyText(s){
+ const hero = (typeof P!=='undefined' && P && P.name) ? P.name : 'jeune Calculateur';
+ return String(s)
+  .replace(/\{hero\}/g, hero)
+  .replace(/\{villain\}/g, STORY_VILLAIN)
+  .replace(/\{kingdom\}/g, STORY_KINGDOM)
+  .replace(/\{crystals\}/g, _storyCrystalCount());
+}
+const _STORY = {
+ intro: {
+  id:'intro',
+  title:'Prologue — L\'Ombre sur Calcultopia',
+  pages:[
+   { emoji:'🏰', text:"Il était une fois un royaume lumineux nommé <b>Calcultopia</b>, où les nombres dansaient dans l'air comme des lucioles dorées. Tout y était harmonie : les rivières comptaient leurs vagues, les arbres alignaient leurs feuilles, et chaque matin le soleil se levait pile à l'heure." },
+   { emoji:'💎', text:"Cette harmonie venait des <b>Cristaux de Calcultopia</b>, des joyaux magiques cachés à travers le monde. Tant qu'ils brillaient, l'ordre régnait, les récoltes étaient justes et personne ne se trompait jamais dans ses calculs." },
+   { emoji:'🌑', text:"Mais une nuit sans étoiles, surgi du Grand Vide, apparut le terrible <b>{villain}</b> ! D'un rire glacial qui gela les fontaines, il hurla : « Plus de nombres ! Plus d'ordre ! Que TOUT devienne FLOU ! »" },
+   { emoji:'💥', text:"D'un claquement de doigts, il fit voler les Cristaux en éclats de lumière. Un à un, ils s'éteignirent... et un épais <b>brouillard</b> recouvrit chaque région du royaume, emmêlant les nombres et brouillant tous les calculs." },
+   { emoji:'👹', text:"Le {villain} confia alors chaque Cristal brisé à un <b>gardien corrompu</b>, une bête transformée par sa magie noire, pour qu'aucun héros ne puisse jamais les reprendre. Puis il se retira dans son Sanctuaire, tout au bout du monde." },
+   { emoji:'🦸', text:"Mais une vieille légende murmurait qu'un jour se lèverait un <b>jeune Calculateur</b> au cœur vaillant et à l'esprit vif... {hero}, ce héros annoncé, c'est <b>TOI</b> !" },
+   { emoji:'🗺️', text:"Ton odyssée commence. Traverse les {crystals} régions, affronte les gardiens, reprends les Cristaux un par un, puis marche jusqu'au Sanctuaire affronter le {villain} lui-même. <b>Calcultopia compte sur toi !</b>" },
+  ],
+ },
+ // Chapitres d'ENTRÉE de région (indexés par regionId — extensible)
+ chapters: {
+  cp: {
+   id:'chap_cp',
+   title:'Chapitre I — La Région des Débuts',
+   crystal:'Cristal de l\'Unité',
+   pages:[
+    { emoji:'🌾', text:"Te voici dans la <b>Région des Débuts</b>, de douces plaines vallonnées où ton aventure prend racine. Ici, le brouillard est encore léger — mais les animaux errent, perdus, incapables de compter leurs propres pas." },
+    { emoji:'🧙', text:"Un vieux sage à la barbe d'argent s'approche : « Enfin, te voilà, brave {hero} ! Le tout premier joyau, le <b>Cristal de l'Unité</b>, est gardé par le <b>Loup des Plaines</b>, devenu féroce depuis que le {villain} l'a corrompu. »" },
+    { emoji:'💎', text:"« Relève les défis de chaque lieu pour gagner en courage, puis affronte le Loup au bout du chemin. Libère le Cristal de l'Unité... et la toute première lueur d'espoir renaîtra sur Calcultopia ! » En avant, héros !" },
+   ],
+  },
+ },
+};
+// Affiche une scène narrative (parchemin paginé). onDone() appelé à la fermeture.
+function _showStoryModal(chapter, onDone){
+ if(!chapter || !Array.isArray(chapter.pages) || !chapter.pages.length){ if(onDone) onDone(); return; }
+ let page = 0;
+ const overlay = document.createElement('div');
+ overlay.className = 'story-overlay';
+ function close(){
+  overlay.classList.add('story-out');
+  setTimeout(()=>{ try{ overlay.remove(); }catch(e){} if(onDone) onDone(); }, 300);
+ }
+ function render(){
+  const p = chapter.pages[page];
+  const last = page >= chapter.pages.length - 1;
+  overlay.innerHTML = `
+   <div class="story-parchment">
+    <div class="story-title">${chapter.title||''}</div>
+    <div class="story-emoji">${p.emoji||'📖'}</div>
+    <div class="story-text">${_storyText(p.text)}</div>
+    <div class="story-nav">
+     ${page>0?`<button class="story-btn story-prev">‹</button>`:`<span class="story-spacer"></span>`}
+     <div class="story-dots">${chapter.pages.map((_,i)=>`<span class="story-dot${i===page?' on':''}"></span>`).join('')}</div>
+     <button class="story-btn story-next">${last?'Commencer ! ⚔️':'Suivant ›'}</button>
+    </div>
+    ${!last?`<button class="story-skip">Passer l'histoire</button>`:''}
+   </div>`;
+  const nx = overlay.querySelector('.story-next');
+  if(nx) nx.onclick = ()=>{ if(!last){ page++; render(); } else close(); };
+  const pv = overlay.querySelector('.story-prev');
+  if(pv) pv.onclick = ()=>{ if(page>0){ page--; render(); } };
+  const sk = overlay.querySelector('.story-skip');
+  if(sk) sk.onclick = close;
+  if(typeof beep==='function'){ try{ beep(520,'sine',.12,.05); }catch(e){} }
+ }
+ render();
+ document.body.appendChild(overlay);
+}
+function _markStorySeen(id){
+ if(typeof P==='undefined' || !P) return;
+ P.storySeen = P.storySeen || [];
+ if(!P.storySeen.includes(id)){
+  P.storySeen.push(id);
+  if(typeof saveProfile==='function') saveProfile();
+ }
+}
+// Déclencheur principal : prologue en priorité, puis chapitre d'entrée de la région active.
+function _maybeShowStory(){
+ if(typeof P==='undefined' || !P) return;
+ P.storySeen = P.storySeen || [];
+ // 1) Prologue, une seule fois, au tout début
+ if(!P.storySeen.includes('intro')){
+  _markStorySeen('intro');
+  _showStoryModal(_STORY.intro, null);
+  return;
+ }
+ // 2) Chapitre d'entrée de la région où se trouve l'avatar (si pas encore vu)
+ try{
+  const avZone = MAP_ZONES.find(z => z.id === (P.mapAvatarZone||'plaine'));
+  if(!avZone) return;
+  const reg = _ARCH_REGIONS.find(r => r.levels.includes(avZone.level));
+  if(!reg) return;
+  const chap = _STORY.chapters[reg.id];
+  if(chap && !P.storySeen.includes(chap.id)){
+   _markStorySeen(chap.id);
+   _showStoryModal(chap, null);
+  }
+ }catch(e){}
 }

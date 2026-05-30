@@ -94,6 +94,8 @@ function validateProfile(raw, defaultName){
    CM2: _clampNum(raw.levelWins?.CM2, 0, 9999, 0),
   },
   mapBossBeaten: _safeArr(raw.mapBossBeaten).filter(b => typeof b === 'string'),
+  // v8.7.67 (O5) : chapitres narratifs déjà vus (extensible — un id par chapitre)
+  storySeen: _safeArr(raw.storySeen).filter(s => typeof s === 'string'),
   // O3 — Position du mini-personnage sur la carte régionalisée
   mapAvatarZone: (typeof raw.mapAvatarZone==='string' && raw.mapAvatarZone) ? raw.mapAvatarZone : 'plaine',
   // v8.7.8 (O1) : progression dans chaque zone (sous-niveaux)
