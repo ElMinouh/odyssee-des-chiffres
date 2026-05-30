@@ -2281,7 +2281,8 @@ function nextTurn(){
  GS.monsterMaxHP=GS.isBoss?HP_LVL[GM.level]+2:HP_LVL[GM.level];GS.monsterHP=GS.monsterMaxHP;
  GS.bossEnraged=false;  // v8.7.50 (O4) : reset de la phase d'enrage à chaque combat
  GS.bossShieldActive=false; GS.bossShieldHits=0; GS.bossRegenCount=0;  // v8.7.54 (O4.2c)
- { const _ma=$('monster-area'); if(_ma) _ma.classList.remove('monster-enraged','boss-shielded'); }
+ GS.bossFury=false;  // v8.7.56 (O4.4) : 3e phase des gros boss
+ { const _ma=$('monster-area'); if(_ma) _ma.classList.remove('monster-enraged','boss-shielded','monster-fury'); }
  maybeEvent();GS.q=generateQ();
  $('BODY').classList.remove('body-alert','urgency-bg');$('correction').classList.add('hidden');
  clearMonsterSpeech();
@@ -2466,6 +2467,12 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
    GS.bossEnraged = true;
    if(typeof _triggerBossEnrage === 'function') _triggerBossEnrage();
   }
+  // v8.7.56 (O4.4) : 3e phase "Furie" — uniquement pour les gros boss (≥6 PV :
+  // CM1, CM2, Sanctuaire). Déclenchée à 25% de vie, après l'enrage.
+  if(GS.isBoss && GS.bossEnraged && !GS.bossFury && GS.monsterMaxHP >= 6 && GS.monsterHP > 0 && GS.monsterHP <= Math.ceil(GS.monsterMaxHP/4)){
+   GS.bossFury = true;
+   if(typeof _triggerBossFury === 'function') _triggerBossFury();
+  }
   // Chantier A4 : taunt aléatoire en milieu de combat (HP bas)
   if(typeof maybeMidCombatTaunt==='function') maybeMidCombatTaunt();
   if(GS.activeEvent){GS.eventLeft--;if(GS.eventLeft<=0)GS.activeEvent=null;}
@@ -2541,7 +2548,8 @@ function updateMonsterHP(){
   // v8.7.55 (O4.3) : en phase enragée la barre vire au rouge sombre menaçant,
   // sinon dégradé vert→jaune→rouge classique selon le niveau de vie.
   const enraged = !!(GS.isBoss && GS.bossEnraged);
-  bar.style.background = enraged ? '#c0392b' : (pct>60?'#2ecc71':pct>30?'#f1c40f':'#e74c3c');
+  const fury = !!(GS.isBoss && GS.bossFury);
+  bar.style.background = fury ? '#6a0dad' : enraged ? '#c0392b' : (pct>60?'#2ecc71':pct>30?'#f1c40f':'#e74c3c');
   // Marqueur du seuil d'enrage (boss uniquement) : repère visuel de mi-vie
   const thr=$('monster-hp-threshold');
   if(thr){
@@ -2555,8 +2563,21 @@ function updateMonsterHP(){
     thr.classList.add('hidden');
    }
   }
-  // État enragé sur le conteneur (barre pulsante + tag "⚡ ENRAGÉ")
-  wrap.classList.toggle('boss-enraged-bar', enraged);
+  // v8.7.56 (O4.4) : 2e marqueur (seuil de Furie à 25%) pour les boss à 3 phases
+  const thr2=$('monster-hp-threshold-fury');
+  if(thr2){
+   if(GS.isBoss && GS.monsterMaxHP >= 6){
+    const seuilF=Math.ceil(GS.monsterMaxHP/4);
+    thr2.style.left=((seuilF/GS.monsterMaxHP)*100)+'%';
+    thr2.classList.remove('hidden');
+    thr2.classList.toggle('threshold-passed', fury);
+   } else {
+    thr2.classList.add('hidden');
+   }
+  }
+  // État enragé / furie sur le conteneur
+  wrap.classList.toggle('boss-enraged-bar', enraged && !fury);
+  wrap.classList.toggle('boss-fury-bar', fury);
  }
 }
 
@@ -3224,8 +3245,9 @@ function _triggerBossEnrage(){
 // ═══════════════════════════════════════════════════════
 function _maybeBossAttack(){
  if(!GS.isBoss || !GS.bossEnraged) return;
- // ~55% de chance par question (pas systématique, pour garder la surprise)
- if(Math.random() > 0.55) return;
+ // v8.7.56 : en Furie (phase 3), les attaques sont bien plus fréquentes
+ const proba = GS.bossFury ? 0.80 : 0.55;
+ if(Math.random() > proba) return;
  const attacks = [_atkRoar, _atkLightning, _atkLureRain, _atkWobble, _atkFireflies,
                   _atkFreeze, _atkScramble, _atkWords, _atkShield, _atkRegen];
  const atk = attacks[Math.floor(Math.random() * attacks.length)];
@@ -3458,4 +3480,52 @@ function _atkRegen(){
  setTimeout(()=>layer.remove(), 2000);
  if(typeof beep === 'function'){ try{ [440,550,660].forEach((f,i)=>setTimeout(()=>beep(f,'sine',.2,.07), i*100)); }catch(e){} }
  if(typeof monsterSpeak === 'function'){ try{ monsterSpeak('Je me soigne, hé hé !', 1800); }catch(e){} }
+}
+
+// ═══════════════════════════════════════════════════════
+// v8.7.56 (O4.4) : 3e PHASE "FURIE" des gros boss (≥6 PV)
+// Déclenchée à 25% de vie, après l'enrage. Transition encore plus intense :
+// le monstre vire au violet-noir, double secousse, dialogue désespéré, attaques
+// plus fréquentes (gérées dans _maybeBossAttack).
+// ═══════════════════════════════════════════════════════
+const _BOSS_FURY_LINES = [
+ "NON ! C'est impossible… Je vais TOUT donner !",
+ "Tu ne me vaincras JAMAIS ! JAMAIS !",
+ "Ma dernière once de pouvoir… RECEVEZ MA FUREUR !",
+ "Si je tombe, je t'emporte avec moi !",
+ "AAARGH ! Mes forces ultimes se déchaînent !",
+];
+function _triggerBossFury(){
+ const ma = document.getElementById('monster-area');
+ if(ma){
+  ma.classList.remove('monster-enraged');
+  ma.classList.add('monster-fury');
+ }
+ // Double secousse plus violente
+ const gameView = document.getElementById('v-game') || document.body;
+ gameView.classList.add('boss-fury-shake');
+ setTimeout(() => gameView.classList.remove('boss-fury-shake'), 900);
+ // Flash violet
+ const flash = document.createElement('div');
+ flash.className = 'boss-fury-flash';
+ document.body.appendChild(flash);
+ setTimeout(() => flash.remove(), 900);
+ // Bannière "FURIE !"
+ const banner = document.createElement('div');
+ banner.className = 'boss-fury-banner';
+ banner.textContent = '🔥 FURIE ! 🔥';
+ document.body.appendChild(banner);
+ setTimeout(() => banner.classList.add('boss-fury-banner-out'), 1600);
+ setTimeout(() => banner.remove(), 2100);
+ // Dialogue désespéré
+ const line = _BOSS_FURY_LINES[Math.floor(Math.random() * _BOSS_FURY_LINES.length)];
+ if(typeof monsterSpeak === 'function'){ try{ monsterSpeak(line, 2800); }catch(e){} }
+ // Son très grave et menaçant (descente profonde)
+ if(typeof beep === 'function'){
+  [180, 150, 120, 95, 75].forEach((f, i) => setTimeout(()=>{ try{ beep(f, 'sawtooth', .3, .14); }catch(e){} }, i * 100));
+ }
+ // Vibration prolongée
+ if(typeof vibrate === 'function' && typeof VIBE !== 'undefined'){
+  vibrate([80, 40, 80, 40, 80, 40, 140]);
+ }
 }
