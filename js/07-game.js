@@ -10,6 +10,7 @@
 // ═══════════════════════════════════════════════════════
 function openMap(){
  if(typeof navTo==='function') navTo('v-map'); else showView('v-map');
+ _mapAutoFocus = true;  // v8.7.57 (O3-C.6) : cadrage caméra sur la région active à l'ouverture
  renderMap();
  // Chantier B3 : démarrer la parallaxe une fois le DOM stabilisé
  setTimeout(()=>{
@@ -1186,6 +1187,11 @@ function renderMap(){
  setTimeout(()=>_autoCenterOnAvatar(), 50);
  // v8.7.49 : réappliquer le niveau de zoom courant (la box vient d'être recréée)
  if(typeof _applyMapZoom === 'function') _applyMapZoom();
+ // v8.7.57 (O3-C.6) : à l'ouverture (depuis le menu), cadrer en douceur sur la région active
+ if(_mapAutoFocus){
+  _mapAutoFocus = false;
+  setTimeout(()=>{ if(typeof _autoFocusActiveRegion==='function') _autoFocusActiveRegion(); }, 80);
+ }
  // v8.7.48 (O3-C.5) : signature sonore de la région où se trouve l'avatar, jouée
  // à l'ouverture de la carte. Cooldown de 30s pour éviter la répétition si on
  // ouvre/ferme rapidement la carte.
@@ -1516,6 +1522,23 @@ function _applyMapZoom(){
 function mapZoomIn(){
  _mapZoom = _mapZoom==='overview' ? 'default' : 'close';
  _applyMapZoom();
+}
+// v8.7.57 (O3-C.6) : focus caméra cinématique sur la région active à l'ouverture.
+// La carte s'ouvre en vue d'ensemble puis « plonge » (zoom) sur la région de l'avatar.
+let _mapAutoFocus = false;
+function _autoFocusActiveRegion(){
+ try{
+  // 1) Vue d'ensemble brève : on voit tout le monde
+  _mapZoom = 'overview';
+  _applyMapZoom();
+  setTimeout(()=>_autoCenterOnAvatar(true), 60);
+  // 2) Puis zoom-in en douceur sur la région active (transition CSS .35s)
+  setTimeout(()=>{
+   _mapZoom = 'close';
+   _applyMapZoom();
+   setTimeout(()=>_autoCenterOnAvatar(true), 240);
+  }, 600);
+ }catch(e){}
 }
 function mapZoomOut(){
  _mapZoom = _mapZoom==='close' ? 'default' : 'overview';
