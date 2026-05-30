@@ -1349,6 +1349,7 @@ function openArchipelZoom(zoneId){
  overlay.onclick = function(e){ if(e.target === overlay) closeArchipelZoom(); };
  overlay.innerHTML = `
   <div class="archipel-zoom-content" style="--zone-bg-top:${bg.top};--zone-bg-bot:${bg.bot};">
+   <div class="archipel-zoom-scene">${(typeof _buildZoomSceneHtml==='function')?_buildZoomSceneHtml(zoneId):''}</div>
    <button class="archipel-zoom-close" onclick="closeArchipelZoom()">✕</button>
    <div class="archipel-zoom-header">
     <div style="font-size:2em;line-height:1;">${zone.emoji}</div>
@@ -3692,5 +3693,30 @@ function _buildZoneDecorHtml(positions, foggedMap, W){
    html += `<div class="archipel-zone-decor" style="left:${leftPct.toFixed(1)}%;top:${topPx.toFixed(0)}px;animation-delay:${delay}s;">${emoji}</div>`;
   });
  });
+ return html;
+}
+
+// v8.7.65 (esthétique) : SCÈNE DE FOND THÉMATIQUE dans la modale de zoom de zone.
+// Disperse des décors du lieu (depuis _ZONE_DECOR) en fond de la modale, en
+// semi-transparence et derrière les étapes, pour personnaliser chaque lieu.
+function _buildZoomSceneHtml(zoneId){
+ const decor = _ZONE_DECOR[zoneId];
+ if(!decor || typeof _archHash !== 'function') return '';
+ let html = '';
+ const N = 16;
+ for(let i=0;i<N;i++){
+  const emoji = decor[i % decor.length];
+  const x = (_archHash(zoneId, i*31+3) * 92 + 4);          // 4-96 %
+  const y = (_archHash(zoneId, i*47+9) * 92 + 4);          // 4-96 %
+  // Plus gros et plus opaque vers le bas (effet de profondeur "sol")
+  const depth = y / 100;
+  const size = (1.3 + _archHash(zoneId, i*13+5) * 1.4) * (0.8 + depth*0.7); // 1.0 → ~3.0em
+  const op = (0.16 + _archHash(zoneId, i*19+7) * 0.20) + depth*0.10;        // ~0.16 → ~0.46
+  const delay = (i % 6) * 0.45;
+  const dur = (4 + (i % 4)).toFixed(1);
+  html += `<div class="archipel-zoom-decor" style="left:${x.toFixed(1)}%;top:${y.toFixed(1)}%;`
+        + `font-size:${size.toFixed(2)}em;opacity:${op.toFixed(2)};`
+        + `animation-delay:${delay}s;animation-duration:${dur}s;">${emoji}</div>`;
+ }
  return html;
 }

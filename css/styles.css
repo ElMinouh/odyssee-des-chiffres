@@ -4250,3 +4250,31 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 @media (prefers-reduced-motion:reduce){
  .archipel-zone-decor{ animation:none; }
 }
+
+/* ═══ v8.7.65 : Scène de fond thématique dans la modale de zoom de zone ═══ */
+.archipel-zoom-scene{
+ position:absolute;
+ inset:0;
+ z-index:0;
+ pointer-events:none;
+ overflow:hidden;
+ border-radius:20px;
+}
+.archipel-zoom-decor{
+ position:absolute;
+ transform:translate(-50%,-50%);
+ line-height:1;
+ filter:drop-shadow(0 1px 3px rgba(0,0,0,.3));
+ animation:zoomDecorFloat ease-in-out infinite;
+ will-change:transform;
+}
+@keyframes zoomDecorFloat{
+ 0%,100%{ transform:translate(-50%,-50%) translateY(0); }
+ 50%    { transform:translate(-50%,-50%) translateY(-6px); }
+}
+/* Header et étapes au-dessus de la scène décorative */
+.archipel-zoom-header{ position:relative; z-index:1; }
+.archipel-zoom-steps{ z-index:1; }
+@media (prefers-reduced-motion:reduce){
+ .archipel-zoom-decor{ animation:none; }
+}
