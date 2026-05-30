@@ -1084,6 +1084,8 @@ function renderMap(){
     ${badgeHtml}${reqHtml}
    </div>`;
  }).join('');
+ // v8.7.64 : couche de décors thématiques par zone (sous les nœuds)
+ const zoneDecorHtml = (typeof _buildZoneDecorHtml==='function') ? _buildZoneDecorHtml(positions, _islandFogged, W) : '';
  // Avatar
  const avatarPos = positions.find(p => p.zone.id === avatarZoneId);
  const avatarHtml = avatarPos ?
@@ -1175,6 +1177,7 @@ function renderMap(){
    <path d="${pathD}" stroke="#f1c40f" stroke-width="3" fill="none" stroke-dasharray="6,4" opacity="0.78" stroke-linecap="round"/>
   </svg>
   ${regionNamesHtml}
+  ${zoneDecorHtml}
   ${zonesHtml}
   ${shopsHtml}
   ${weatherOverlaysHtml}
@@ -1503,12 +1506,15 @@ let _mapZoom = 'default';
 function _applyMapZoom(){
  const cont = $('map-zones');
  if(!cont) return;
- cont.classList.remove('zoom-overview','zoom-default','zoom-close');
+ cont.classList.remove('zoom-overview','zoom-default','zoom-close','zoom-veryclose');
  cont.classList.add('zoom-'+_mapZoom);
  // v8.7.49 : ajuster la hauteur de la box pour que le scroll de page suive le scale.
  // transform:scale ne modifie pas la box → sans ça, en vue rapprochée le bas serait
  // coupé, et en vue d'ensemble il resterait un grand vide.
- const scale = _mapZoom==='overview' ? 0.62 : _mapZoom==='close' ? 1.3 : 1;
+ const scale = _mapZoom==='overview' ? 0.62
+             : _mapZoom==='close'    ? 1.3
+             : _mapZoom==='veryclose'? 1.9
+             : 1;
  let baseH = parseFloat(cont.dataset.baseHeight || '0');
  if(!baseH){
   baseH = parseFloat(cont.style.minHeight) || 1200;
@@ -1520,6 +1526,7 @@ function _applyMapZoom(){
  if(lbl){
   lbl.textContent = _mapZoom==='overview' ? 'Vue d\'ensemble'
                   : _mapZoom==='close'    ? 'Vue rapprochée'
+                  : _mapZoom==='veryclose'? 'Vue détaillée'
                   : 'Vue régions';
  }
 }
@@ -1575,7 +1582,9 @@ function _miniMapGoTo(regionId){
  }catch(e){}
 }
 function mapZoomIn(){
- _mapZoom = _mapZoom==='overview' ? 'default' : 'close';
+ _mapZoom = _mapZoom==='overview' ? 'default'
+          : _mapZoom==='default'  ? 'close'
+          : 'veryclose';
  _applyMapZoom();
 }
 // v8.7.57 (O3-C.6) : focus caméra cinématique sur la région active à l'ouverture.
@@ -1602,7 +1611,9 @@ function _autoFocusActiveRegion(){
  }catch(e){}
 }
 function mapZoomOut(){
- _mapZoom = _mapZoom==='close' ? 'default' : 'overview';
+ _mapZoom = _mapZoom==='veryclose' ? 'close'
+          : _mapZoom==='close'     ? 'default'
+          : 'overview';
  _applyMapZoom();
 }
 function mapCenterOnAvatar(){
@@ -3631,4 +3642,55 @@ function _triggerBossFury(){
  if(typeof vibrate === 'function' && typeof VIBE !== 'undefined'){
   vibrate([80, 40, 80, 40, 80, 40, 140]);
  }
+}
+
+// ═══════════════════════════════════════════════════════
+// v8.7.64 (esthétique) : DÉCORS THÉMATIQUES PAR ZONE
+// Petits éléments décoratifs dispersés autour de chaque nœud de zone pour rendre
+// chaque lieu vivant et reconnaissable. Affichés seulement sur les îlots débloqués.
+// ═══════════════════════════════════════════════════════
+const _ZONE_DECOR = {
+ plaine:           ['🌾','🐰','🦋','🌼'],
+ village:          ['🏠','🧑‍🌾','🐔','🌳'],
+ prairie:          ['🌻','🌷','🐝','🦋'],
+ bonbons:          ['🍬','🧁','🍩','🍫'],
+ foret:            ['🌲','🦌','🧚','🦉'],
+ champignons:      ['🍄','🐌','🌿','🦋'],
+ trolls:           ['🌲','⛺','🪵','👺'],
+ plage:            ['🌴','🦀','🐚','⛱️'],
+ desert:           ['🌵','🦂','🌞','🦎'],
+ plaines_venteuses:['🌾','💨','🦬','🍃'],
+ temple:           ['🗿','🏺','📜','🕯️'],
+ profondeurs:      ['🐠','🐚','🪸','🐙'],
+ glace:            ['❄️','⛄','🧊','🐧'],
+ marais:           ['🐸','🕷️','🌿','🐍'],
+ forteresse:       ['⚔️','🛡️','🚩','🐉'],
+ sakura:           ['🌸','🏯','🎏','🐦'],
+ nocturne:         ['🌙','⭐','🦇','🦉'],
+ volcan:           ['🔥','🪨','💨','🦎'],
+ espace:           ['⭐','🪐','🚀','☄️'],
+ cimes:            ['🦅','☁️','🪨','🌬️'],
+ mecanique:        ['⚙️','🔧','🔩','💡'],
+ ile:              ['🌴','🦜','🗺️','💰'],
+ sanctuaire:       ['✨','🔮','🏮','⛩️'],
+};
+function _buildZoneDecorHtml(positions, foggedMap, W){
+ let html = '';
+ positions.forEach(p => {
+  if(foggedMap && foggedMap[p.regionId]) return;          // rien sur les îlots verrouillés
+  const decor = _ZONE_DECOR[p.zone.id];
+  if(!decor) return;
+  decor.forEach((emoji, i) => {
+   // Position déterministe autour du nœud (stable entre les rendus, pas de scintillement)
+   const angle = (i / decor.length) * Math.PI * 2 + (p.zoneIdx * 0.7) + 0.4;
+   const radius = 48 + (i % 2) * 16;
+   const dx = Math.cos(angle) * radius;
+   const dy = Math.sin(angle) * radius * 0.62 - 8;        // aplati + remonté (évite le label sous le nœud)
+   const leftPct = p.xPct + (dx / W) * 100;
+   const topPx = p.y + dy;
+   const delay = ((p.zoneIdx + i) % 5) * 0.4;
+   html += `<div class="archipel-zone-decor" style="left:${leftPct.toFixed(1)}%;top:${topPx.toFixed(0)}px;animation-delay:${delay}s;">${emoji}</div>`;
+  });
+ });
+ return html;
 }
