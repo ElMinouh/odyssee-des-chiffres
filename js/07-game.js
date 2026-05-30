@@ -1134,6 +1134,7 @@ function renderMap(){
    heightPx:(maxY - minY),
   };
  });
+ _miniMapBboxes = _islandBboxes;  // v8.7.60 : exposé pour la navigation mini-map
  const fogOverlaysHtml = _ARCH_REGIONS.map(r => {
   if(!_islandFogged[r.id]) return '';
   const b = _islandBboxes[r.id];
@@ -1161,8 +1162,6 @@ function renderMap(){
  cont.dataset.baseHeight = totalHeight;   // v8.7.49 : base pour le calcul du zoom
  cont.innerHTML = `
   <div class="archipel-stars"></div>
-  <div class="archipel-logbook" onclick="openAdventureLog()" title="Carnet d'aventure" role="button">📖</div>
-  <div class="archipel-compass" onclick="_spinCompass(this)" title="Boussole">🧭</div>
   <svg class="archipel-path-svg" viewBox="0 0 ${W} ${totalHeight}" preserveAspectRatio="none" style="height:${totalHeight}px;">
    <defs>
     <radialGradient id="archGradCP" cx="0.5" cy="0.5"><stop offset="0%" stop-color="#a8e8a8"/><stop offset="100%" stop-color="#5dba5d"/></radialGradient>
@@ -1525,7 +1524,7 @@ function _applyMapZoom(){
 // Montre les 6 régions empilées (haut→bas), grise les verrouillées, marque la
 // région active, et permet de sauter à une région débloquée d'un clic.
 function _refreshMiniMap(avatarRegionId, foggedMap){
- const host = document.getElementById('v-map');
+ const host = document.getElementById('map-header') || document.getElementById('v-map');
  if(!host) return;
  let mm = document.getElementById('archipel-minimap');
  if(!mm){
@@ -1550,11 +1549,21 @@ function _refreshMiniMap(avatarRegionId, foggedMap){
 }
 function _miniMapGoTo(regionId){
  try{
+  // Cibler le CENTRE de l'îlot (via sa bbox mémorisée), pas le titre de région
+  const bb = (typeof _miniMapBboxes !== 'undefined') ? _miniMapBboxes[regionId] : null;
+  const cont = document.getElementById('map-zones');
+  if(bb && cont){
+   // Position verticale du centre de l'îlot dans la page, en tenant compte du zoom (scale)
+   const scale = _mapZoom==='overview' ? 0.62 : _mapZoom==='close' ? 1.3 : 1;
+   const centerY = (bb.topPx + bb.heightPx/2) * scale;            // centre îlot dans #map-zones (scalé)
+   const contTop = cont.getBoundingClientRect().top + window.scrollY; // haut de #map-zones dans la page
+   const target = contTop + centerY - (window.innerHeight/2);
+   window.scrollTo({ top: Math.max(0, target), behavior:'smooth' });
+   return;
+  }
+  // Repli : centrer le nom de région
   const el = document.querySelector(`.archipel-region-name[data-region="${regionId}"]`);
-  if(el){ el.scrollIntoView({behavior:'smooth', block:'center'}); return; }
-  // Repli : cibler une zone de la région
-  const z = document.querySelector(`.archipel-zone[data-region="${regionId}"]`);
-  if(z) z.scrollIntoView({behavior:'smooth', block:'center'});
+  if(el) el.scrollIntoView({behavior:'smooth', block:'center'});
  }catch(e){}
 }
 function mapZoomIn(){
@@ -1564,6 +1573,7 @@ function mapZoomIn(){
 // v8.7.57 (O3-C.6) : focus caméra cinématique sur la région active à l'ouverture.
 // La carte s'ouvre en vue d'ensemble puis « plonge » (zoom) sur la région de l'avatar.
 let _mapAutoFocus = false;
+let _miniMapBboxes = {};  // v8.7.60 : bbox des îlots pour la navigation mini-map
 function _autoFocusActiveRegion(){
  try{
   const cont = $('map-zones');
