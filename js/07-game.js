@@ -1200,12 +1200,14 @@ function renderMap(){
   if(avatarZone){
    const avatarRegion = _ARCH_REGIONS.find(r => r.levels.includes(avatarZone.level));
    if(avatarRegion){
+    // v8.7.59 (O3-C.6.2) : rafraîchir la mini-map (région active mise en avant)
+    if(typeof _refreshMiniMap === 'function') _refreshMiniMap(avatarRegion.id, _islandFogged);
     const now = Date.now();
     if(!_lastRegionSignatureTime || (now - _lastRegionSignatureTime) > 30000){
      _lastRegionSignatureTime = now;
      setTimeout(() => _playRegionSignature(avatarRegion.id), 350);
     }
-   }
+   } else if(typeof _refreshMiniMap === 'function'){ _refreshMiniMap(null, _islandFogged); }
   }
  }catch(e){}
 }
@@ -1518,6 +1520,42 @@ function _applyMapZoom(){
                   : _mapZoom==='close'    ? 'Vue rapprochée'
                   : 'Vue régions';
  }
+}
+// v8.7.59 (O3-C.6.2) : MINI-MAP — vignette verticale des régions sous le carnet.
+// Montre les 6 régions empilées (haut→bas), grise les verrouillées, marque la
+// région active, et permet de sauter à une région débloquée d'un clic.
+function _refreshMiniMap(avatarRegionId, foggedMap){
+ const host = document.getElementById('v-map');
+ if(!host) return;
+ let mm = document.getElementById('archipel-minimap');
+ if(!mm){
+  mm = document.createElement('div');
+  mm.id = 'archipel-minimap';
+  mm.className = 'archipel-minimap';
+  host.appendChild(mm);
+ }
+ const rows = _ARCH_REGIONS.map(r => {
+  const meta = _BIOME_BANNER_META[r.id] || {};
+  const fogged = !!(foggedMap && foggedMap[r.id]);
+  const active = (r.id === avatarRegionId);
+  return `<div class="minimap-region${fogged?' locked':''}${active?' active':''}" `
+    + `style="--mm-c:${meta.accent||'#888'};" `
+    + `onclick="_miniMapGoTo('${r.id}')" role="button" `
+    + `title="${r.label}${fogged?' (verrouillé)':''}">`
+    + `<span class="minimap-emoji">${fogged?'🔒':(meta.emoji||'•')}</span>`
+    + (active?'<span class="minimap-here">📍</span>':'')
+    + `</div>`;
+ }).join('');
+ mm.innerHTML = `<div class="minimap-head">CARTE</div><div class="minimap-body">${rows}</div>`;
+}
+function _miniMapGoTo(regionId){
+ try{
+  const el = document.querySelector(`.archipel-region-name[data-region="${regionId}"]`);
+  if(el){ el.scrollIntoView({behavior:'smooth', block:'center'}); return; }
+  // Repli : cibler une zone de la région
+  const z = document.querySelector(`.archipel-zone[data-region="${regionId}"]`);
+  if(z) z.scrollIntoView({behavior:'smooth', block:'center'});
+ }catch(e){}
 }
 function mapZoomIn(){
  _mapZoom = _mapZoom==='overview' ? 'default' : 'close';

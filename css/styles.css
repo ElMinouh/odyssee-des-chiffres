@@ -4116,3 +4116,61 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  #monster-hp-wrap.boss-fury-bar #monster-hp-bar,
  #monster-hp-wrap.boss-fury-bar #monster-hp-label::after{ animation:none; }
 }
+
+/* ═══ v8.7.59 (O3-C.6.2) : Mini-map sous le carnet d'aventure ═══ */
+.archipel-minimap{
+ position:fixed;
+ top:58px; left:14px;
+ z-index:30;
+ width:48px;
+ background:rgba(10,12,30,.74);
+ border:1.5px solid rgba(255,255,255,.22);
+ border-radius:10px;
+ padding:4px 4px 5px;
+ backdrop-filter:blur(3px);
+ -webkit-backdrop-filter:blur(3px);
+ box-shadow:0 3px 12px rgba(0,0,0,.55);
+ user-select:none; -webkit-user-select:none;
+}
+.minimap-head{
+ font-size:.52em; font-weight:800; letter-spacing:.12em;
+ text-align:center; color:rgba(255,255,255,.78);
+ margin-bottom:4px;
+}
+.minimap-body{ display:flex; flex-direction:column; gap:3px; }
+.minimap-region{
+ position:relative;
+ height:19px; border-radius:5px;
+ background:var(--mm-c);
+ display:flex; align-items:center; justify-content:center;
+ cursor:pointer;
+ border:1.5px solid transparent;
+ transition:transform .15s ease, border-color .15s ease, filter .15s ease;
+}
+.minimap-region:hover{ transform:scale(1.09); filter:brightness(1.18); }
+.minimap-region.locked{
+ background:rgba(120,120,135,.42);
+ cursor:default;
+ filter:grayscale(.85);
+}
+.minimap-region.locked:hover{ transform:none; filter:grayscale(.85); }
+.minimap-region.active{
+ border-color:#fff;
+ box-shadow:0 0 8px var(--mm-c), 0 0 4px rgba(255,255,255,.65);
+}
+.minimap-emoji{ font-size:.82em; line-height:1; filter:drop-shadow(0 1px 1px rgba(0,0,0,.55)); }
+.minimap-here{
+ position:absolute;
+ right:-7px; top:-8px;
+ font-size:.9em;
+ filter:drop-shadow(0 0 3px rgba(255,255,255,.85));
+ animation:minimapHere 1.4s ease-in-out infinite;
+}
+@keyframes minimapHere{
+ 0%,100%{ transform:translateY(0); }
+ 50%{ transform:translateY(-3px); }
+}
+@media (prefers-reduced-motion:reduce){
+ .minimap-here{ animation:none; }
+ .minimap-region{ transition:none; }
+}
