@@ -1199,8 +1199,11 @@ function renderMap(){
   if(avatarZone){
    const avatarRegion = _ARCH_REGIONS.find(r => r.levels.includes(avatarZone.level));
    if(avatarRegion){
-    // v8.7.59 (O3-C.6.2) : rafraîchir la mini-map (région active mise en avant)
-    if(typeof _refreshMiniMap === 'function') _refreshMiniMap(avatarRegion.id, _islandFogged);
+    // v8.7.59 (O3-C.6.2) : rafraîchir la mini-map (région active + position réelle de l'avatar)
+    if(typeof _refreshMiniMap === 'function'){
+     const ry = (avatarPos && totalHeight) ? (avatarPos.y / totalHeight) : null;
+     _refreshMiniMap(avatarRegion.id, _islandFogged, ry, (P&&P.avatar)||'🧙');
+    }
     const now = Date.now();
     if(!_lastRegionSignatureTime || (now - _lastRegionSignatureTime) > 30000){
      _lastRegionSignatureTime = now;
@@ -1523,7 +1526,7 @@ function _applyMapZoom(){
 // v8.7.59 (O3-C.6.2) : MINI-MAP — vignette verticale des régions sous le carnet.
 // Montre les 6 régions empilées (haut→bas), grise les verrouillées, marque la
 // région active, et permet de sauter à une région débloquée d'un clic.
-function _refreshMiniMap(avatarRegionId, foggedMap){
+function _refreshMiniMap(avatarRegionId, foggedMap, avatarRatioY, avatarEmoji){
  const host = document.getElementById('map-header') || document.getElementById('v-map');
  if(!host) return;
  let mm = document.getElementById('archipel-minimap');
@@ -1542,23 +1545,28 @@ function _refreshMiniMap(avatarRegionId, foggedMap){
     + `onclick="_miniMapGoTo('${r.id}')" role="button" `
     + `title="${r.label}${fogged?' (verrouillé)':''}">`
     + `<span class="minimap-emoji">${fogged?'🔒':(meta.emoji||'•')}</span>`
-    + (active?'<span class="minimap-here">📍</span>':'')
     + `</div>`;
  }).join('');
- mm.innerHTML = `<div class="minimap-head">CARTE</div><div class="minimap-body">${rows}</div>`;
+ // Marqueur de position de l'avatar : glisse verticalement le long de la mini-map
+ // selon sa position réelle sur la carte (temps réel à chaque rafraîchissement).
+ const ratio = (typeof avatarRatioY === 'number') ? Math.max(0, Math.min(1, avatarRatioY)) : null;
+ const marker = (ratio !== null)
+   ? `<div class="minimap-avatar-marker" style="top:${(ratio*100).toFixed(1)}%;">${avatarEmoji||'🧙'}</div>`
+   : '';
+ mm.innerHTML = `<div class="minimap-head">CARTE</div><div class="minimap-body">${rows}${marker}</div>`;
 }
 function _miniMapGoTo(regionId){
  try{
-  // Cibler le CENTRE de l'îlot (via sa bbox mémorisée), pas le titre de région
   const bb = (typeof _miniMapBboxes !== 'undefined') ? _miniMapBboxes[regionId] : null;
   const cont = document.getElementById('map-zones');
   if(bb && cont){
-   // Position verticale du centre de l'îlot dans la page, en tenant compte du zoom (scale)
-   const scale = _mapZoom==='overview' ? 0.62 : _mapZoom==='close' ? 1.3 : 1;
-   const centerY = (bb.topPx + bb.heightPx/2) * scale;            // centre îlot dans #map-zones (scalé)
-   const contTop = cont.getBoundingClientRect().top + window.scrollY; // haut de #map-zones dans la page
-   const target = contTop + centerY - (window.innerHeight/2);
-   window.scrollTo({ top: Math.max(0, target), behavior:'smooth' });
+   // Marqueur temporaire au centre de l'îlot (coords non-scalées), puis scrollIntoView.
+   // scrollIntoView fonctionne quel que soit le conteneur de défilement (≠ window.scrollTo).
+   const marker = document.createElement('div');
+   marker.style.cssText = `position:absolute;left:50%;top:${(bb.topPx + bb.heightPx/2)}px;width:1px;height:1px;pointer-events:none;`;
+   cont.appendChild(marker);
+   marker.scrollIntoView({behavior:'smooth', block:'center'});
+   setTimeout(()=>{ try{ marker.remove(); }catch(e){} }, 900);
    return;
   }
   // Repli : centrer le nom de région

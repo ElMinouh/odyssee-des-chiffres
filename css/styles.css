@@ -4137,7 +4137,18 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  text-align:center; color:rgba(255,255,255,.78);
  margin-bottom:4px;
 }
-.minimap-body{ display:flex; flex-direction:column; gap:3px; }
+.minimap-body{ position:relative; display:flex; flex-direction:column; gap:3px; }
+.minimap-avatar-marker{
+ position:absolute;
+ right:-11px;
+ transform:translateY(-50%);
+ font-size:.95em;
+ line-height:1;
+ filter:drop-shadow(0 0 4px rgba(255,255,255,.95));
+ pointer-events:none;
+ z-index:3;
+ transition:top .5s ease;
+}
 .minimap-region{
  position:relative;
  height:19px; border-radius:5px;
