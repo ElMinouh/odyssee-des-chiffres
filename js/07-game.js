@@ -1608,6 +1608,25 @@ function mapZoomOut(){
 function mapCenterOnAvatar(){
  _autoCenterOnAvatar(true);
 }
+// v8.7.62 (O3-C.6.4) : aller à la prochaine zone jouable (objectif suivant).
+// Centre la première zone « current » (débloquée mais pas encore terminée) et la
+// met en valeur quelques secondes pour guider le joueur vers son prochain défi.
+function mapGoToNextZone(){
+ try{
+  const zones = Array.from(document.querySelectorAll('.archipel-zone.current'));
+  if(zones.length === 0){
+   // Plus aucune zone jouable disponible : recentrer sur l'avatar
+   _autoCenterOnAvatar(true);
+   if(typeof toast === 'function') toast('Tu es à jour ! Débloque plus d\'étoiles pour la suite ⭐');
+   return;
+  }
+  const target = zones[0]; // première dans l'ordre de progression
+  target.scrollIntoView({behavior:'smooth', block:'center'});
+  target.classList.add('zone-highlight-pulse');
+  setTimeout(()=>{ try{ target.classList.remove('zone-highlight-pulse'); }catch(e){} }, 2600);
+  if(typeof beep === 'function'){ try{ beep(660,'sine',.12,.06); setTimeout(()=>beep(880,'sine',.14,.06),90); }catch(e){} }
+ }catch(e){}
+}
 function _autoCenterOnAvatar(force){
  try{
   const avatar = document.querySelector('.archipel-avatar');
