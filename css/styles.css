@@ -4619,3 +4619,15 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  /* Isole les recalculs de mise en page des overlays pour limiter les reflows */
  .archipel-zoom-content, .advlog-content, .story-parchment{ contain:layout style; }
 }
+
+/* ═══ v9.0.5 (anti-jank) : geler la carte quand une modale est ouverte ═══
+   Quand une modale recouvre l'écran, on masque ET on met en pause TOUTES les
+   animations de la vue carte (PNJ, météo, décors, parallaxe...). Le compositeur
+   GPU n'a plus à redessiner l'arrière-plan → fin du clignotement par tuiles. */
+body.has-overlay #v-map{
+ visibility:hidden;
+}
+body.has-overlay #v-map *{
+ animation-play-state:paused !important;
+ transition:none !important;
+}

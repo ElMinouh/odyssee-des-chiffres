@@ -4146,3 +4146,24 @@ function _questJournalCarnetHtml(){
       + `<div class="advlog-accordion"><div class="advlog-quest-list">${items}</div></div>`
       + `</div>`;
 }
+
+// ═══════════════════════════════════════════════════════
+// v9.0.5 (anti-jank) : GELER l'arrière-plan animé quand une modale est ouverte.
+// La carte porte ~89 animations en boucle (PNJ, météo, décors, parallaxe...).
+// Tant qu'une modale (zone, livre, carnet, boutique...) est affichée par-dessus,
+// on masque + fige toute la vue carte : le GPU n'a plus rien à recomposer
+// derrière l'overlay → fin de la recomposition par tuiles (clignotement).
+(function(){
+ const OVERLAYS = '.archipel-zoom-overlay,.story-overlay,.advlog-overlay,.archipel-shop-overlay,#hero-evolution-overlay,.figurine-overlay';
+ function sync(){
+  try{
+   const hasOverlay = !!document.querySelector(OVERLAYS);
+   document.body.classList.toggle('has-overlay', hasOverlay);
+  }catch(e){}
+ }
+ if(typeof MutationObserver !== 'undefined' && document.body){
+  const mo = new MutationObserver(sync);
+  mo.observe(document.body, { childList:true });
+  sync();
+ }
+})();
