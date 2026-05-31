@@ -3900,6 +3900,41 @@ const _STORY = {
    ],
   },
  },
+ // Scènes de VICTOIRE : jouées quand un Cristal est récupéré (région conquise)
+ victories: {
+  cp: { id:'win_cp', title:'Cristal de l\'Unité libéré !', crystal:'Cristal de l\'Unité', pages:[
+   { emoji:'💎', text:"Le Loup des Plaines pousse un dernier grognement... puis la magie noire se dissipe ! Ses yeux redeviennent doux comme avant. De son pelage jaillit le <b>Cristal de l'Unité</b>, scintillant de mille feux !" },
+   { emoji:'🌅', text:"La toute première lueur revient sur Calcultopia ! Le brouillard recule. Lumo danse de joie : « Bravo {hero} ! » Et Maître Comptin sourit : « Je savais que tu en étais capable. La quête ne fait que commencer. »" },
+  ]},
+  ce1: { id:'win_ce1', title:'Cristal de l\'Élan libéré !', crystal:'Cristal de l\'Élan', pages:[
+   { emoji:'💎', text:"Le Cerf Spectral incline sa noble ramure et s'évapore en une pluie d'étincelles dorées. Le <b>Cristal de l'Élan</b> est à toi ! Les bois retrouvent leurs couleurs et les vagues se remettent à compter leurs rouleaux." },
+   { emoji:'✨', text:"« Un Cristal de plus, {hero} ! » s'émerveille Lumo. Au loin, le {villain} grince des dents : « Comment ose-t-il me défier ainsi... » Ta légende grandit dans tout le royaume." },
+  ]},
+  ce2: { id:'win_ce2', title:'Cristal du Voyage libéré !', crystal:'Cristal du Voyage', pages:[
+   { emoji:'💎', text:"Le Sphinx des Sables s'incline avec respect : « Tes réponses sont justes, jeune sage. Le Cristal t'appartient. » Le <b>Cristal du Voyage</b> s'élève des sables anciens dans un tourbillon de lumière." },
+   { emoji:'🏜️', text:"Vaincu et humilié, le Sergent Virgule déguerpit pour de bon ! Maître Comptin pose la main sur ton épaule : « Te voilà à mi-chemin. Le plus dur reste à venir... mais regarde comme tu as grandi. »" },
+  ]},
+  cm1: { id:'win_cm1', title:'Cristal de la Bravoure libéré !', crystal:'Cristal de la Bravoure', pages:[
+   { emoji:'💎', text:"Dans un fracas titanesque, le Dragon des Remparts s'effondre, enfin libéré de la corruption ! La tour de glace se fissure et explose — <b>Maître Comptin est libre</b> ! Le <b>Cristal de la Bravoure</b> brille entre tes mains." },
+   { emoji:'🤝', text:"« Tu es venu... pour moi, » murmure le vieux sage, les yeux humides. « Toujours, » réponds-tu simplement. Lumo essuie une larme de lumière. Un Cristal de plus, et surtout : un ami sauvé." },
+  ]},
+  cm2: { id:'win_cm2', title:'Cristal de l\'Infini libéré !', crystal:'Cristal de l\'Infini', pages:[
+   { emoji:'💎', text:"Le Colosse Stellaire s'agenouille, et toutes les étoiles applaudissent en scintillant ! Le <b>Cristal de l'Infini</b> rejoint les autres et, ensemble, ils tournoient autour de toi en une couronne de lumière pure." },
+   { emoji:'🌌', text:"« Tu as réuni tous les Cristaux, {hero} ! » s'écrie Lumo, éblouie. Il ne reste plus qu'une chose à faire : marcher vers le Sanctuaire, et affronter le {villain} en personne. Le moment de vérité est venu." },
+  ]},
+ },
+ // ÉPILOGUE : joué après la victoire au Sanctuaire Final
+ epilogue: {
+  id:'epilogue',
+  title:'Épilogue — La Lumière Retrouvée',
+  pages:[
+   { emoji:'⚔️', text:"Au terme d'un ultime affrontement, le {villain} tombe à genoux, à bout de forces. Mais au lieu de le frapper, {hero}, tu fais une chose que personne n'attendait : tu tends la main, et tu déposes doucement les Cristaux devant lui." },
+   { emoji:'❤️', text:"« Une erreur ne fait pas de toi un monstre, » dis-tu d'une voix calme. « Elle fait de toi quelqu'un qui peut apprendre, et recommencer. » Le {villain} contemple les Cristaux... et pour la première fois depuis mille ans, une larme roule sur sa joue." },
+   { emoji:'✨', text:"« J'avais... oublié cela, » souffle-t-il. « Merci, {hero}. » Alors son cœur s'illumine : il était le dernier Cristal manquant ! Tous les Cristaux fusionnent en une lumière éclatante qui balaie le tout dernier brouillard de Calcultopia." },
+   { emoji:'🌈', text:"Les nombres dansent à nouveau dans l'air, les rivières comptent leurs vagues, et le soleil se lève pile à l'heure. Le royaume est sauvé ! Sur la grande place s'élève bientôt une statue à ton effigie : {hero}, Héros de Calcultopia." },
+   { emoji:'🎉', text:"Maître Comptin, la fidèle Lumo, et même l'ancien Comte — devenu un humble professeur de mathématiques — t'acclament sous les étoiles. Ton odyssée restera gravée à jamais dans le ciel de Calcultopia. <b>FÉLICITATIONS, champion !</b>" },
+  ],
+ },
 };
 // Affiche une scène narrative (parchemin paginé). onDone() appelé à la fermeture.
 function _showStoryModal(chapter, onDone){
@@ -3945,7 +3980,19 @@ function _markStorySeen(id){
   if(typeof saveProfile==='function') saveProfile();
  }
 }
-// Déclencheur principal : prologue en priorité, puis chapitre d'entrée de la région active.
+// Une région est « conquise » quand toutes ses zones sont battues (cohérent avec
+// la détection de conquête d'îlot du moteur). Extensible via _ARCH_REGIONS/MAP_ZONES.
+function _regionConquered(regionId){
+ try{
+  const reg = _ARCH_REGIONS.find(r => r.id === regionId);
+  if(!reg) return false;
+  const zones = MAP_ZONES.filter(z => reg.levels.includes(z.level));
+  if(!zones.length) return false;
+  const beaten = (typeof P!=='undefined' && P && P.mapBossBeaten) ? P.mapBossBeaten : [];
+  return zones.every(z => beaten.includes(z.id));
+ }catch(e){ return false; }
+}
+// Déclencheur principal : prologue, puis victoire de Cristal, puis épilogue, puis chapitre d'entrée.
 function _maybeShowStory(){
  if(typeof P==='undefined' || !P) return;
  P.storySeen = P.storySeen || [];
@@ -3955,7 +4002,27 @@ function _maybeShowStory(){
   _showStoryModal(_STORY.intro, null);
   return;
  }
- // 2) Chapitre d'entrée de la région où se trouve l'avatar (si pas encore vu)
+ // 2) Scène de victoire : une région vient d'être conquise et son Cristal n'a pas été célébré
+ try{
+  for(const r of _ARCH_REGIONS){
+   if(r.id === 'final') continue;                 // le Sanctuaire → épilogue, géré plus bas
+   const win = _STORY.victories && _STORY.victories[r.id];
+   if(win && !P.storySeen.includes(win.id) && _regionConquered(r.id)){
+    _markStorySeen(win.id);
+    _showStoryModal(win, null);
+    return;
+   }
+  }
+ }catch(e){}
+ // 3) Épilogue : le Sanctuaire Final est conquis
+ try{
+  if(_STORY.epilogue && !P.storySeen.includes(_STORY.epilogue.id) && _regionConquered('final')){
+   _markStorySeen(_STORY.epilogue.id);
+   _showStoryModal(_STORY.epilogue, null);
+   return;
+  }
+ }catch(e){}
+ // 4) Chapitre d'entrée de la région où se trouve l'avatar (si pas encore vu)
  try{
   const avZone = MAP_ZONES.find(z => z.id === (P.mapAvatarZone||'plaine'));
   if(!avZone) return;
