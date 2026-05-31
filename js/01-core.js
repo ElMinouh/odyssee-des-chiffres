@@ -914,12 +914,20 @@ function openModeConfig(mode){
   const ls = document.getElementById('mc-level');
   if(ls){
    const cur = (P && P.prefs && P.prefs.level) || 'CP';
-   ls.innerHTML = ['CP','CE1','CE2','CM1','CM2'].map(l=>{
+   const _gi = (l)=> (typeof _groupIcon==='function') ? _groupIcon(l)+' ' : '';
+   const _ll = (l)=> (typeof _levelLabel==='function') ? _levelLabel(l) : l;
+   const opt = (l)=>{
     const ok = (typeof isUnlocked==='function') ? isUnlocked(l) : true;
     const pW = (typeof prevWins==='function') ? prevWins(l) : 0;
     const req = (typeof UNLOCK_REQ!=='undefined' && UNLOCK_REQ) ? UNLOCK_REQ[l] : 0;
-    return `<option value="${l}"${!ok?' disabled':''}${l===cur?' selected':''}>${ok?'':'🔒 '}${l}${!ok?' ('+pW+'/'+req+' vic.)':''}</option>`;
-   }).join('');
+    return `<option value="${l}"${!ok?' disabled':''}${l===cur?' selected':''}>${ok?'':'🔒 '}${_gi(l)}${_ll(l)}${!ok?' ('+pW+'/'+req+' vic.)':''}</option>`;
+   };
+   const prim = (typeof PRIMARY_LEVELS!=='undefined')?PRIMARY_LEVELS:['CP','CE1','CE2','CM1','CM2'];
+   const coll = (typeof COLLEGE_LEVELS!=='undefined')?COLLEGE_LEVELS:[];
+   const gm = (typeof GROUP_META!=='undefined')?GROUP_META:{primaire:{icon:'🎒',name:'Primaire'},college:{icon:'🎓',name:'Collège'}};
+   ls.innerHTML =
+     `<optgroup label="${gm.primaire.icon} ${gm.primaire.name}">${prim.map(opt).join('')}</optgroup>`
+   + (coll.length?`<optgroup label="${gm.college.icon} ${gm.college.name}">${coll.map(opt).join('')}</optgroup>`:'');
   }
   const inp = document.getElementById('mc-input');
   if(inp) inp.value = (P && P.prefs && P.prefs.mode) || 'keyboard';
@@ -943,7 +951,7 @@ function mcRenderCombat(){
    </select>
    ${isCustom?`<input type="text" placeholder="Prénom…" value="${_esc(p.name)}" maxlength="16" oninput="_mcCombat[${i}].name=this.value" style="flex:1;margin:0;">`:''}
    <select onchange="_mcCombat[${i}].level=this.value" style="flex:.7;margin:0;">
-    ${['CP','CE1','CE2','CM1','CM2'].map(l=>`<option value="${l}"${l===p.level?' selected':''}>${l}</option>`).join('')}
+    ${(()=>{ const _gi=(l)=>(typeof _groupIcon==='function')?_groupIcon(l)+' ':''; const _ll=(l)=>(typeof _levelLabel==='function')?_levelLabel(l):l; const o=(l)=>`<option value="${l}"${l===p.level?' selected':''}>${_gi(l)}${_ll(l)}</option>`; const prim=(typeof PRIMARY_LEVELS!=='undefined')?PRIMARY_LEVELS:['CP','CE1','CE2','CM1','CM2']; const coll=(typeof COLLEGE_LEVELS!=='undefined')?COLLEGE_LEVELS:[]; const gm=(typeof GROUP_META!=='undefined')?GROUP_META:{primaire:{icon:'🎒',name:'Primaire'},college:{icon:'🎓',name:'Collège'}}; return `<optgroup label="${gm.primaire.icon} ${gm.primaire.name}">${prim.map(o).join('')}</optgroup>`+(coll.length?`<optgroup label="${gm.college.icon} ${gm.college.name}">${coll.map(o).join('')}</optgroup>`:''); })()}
    </select>
    ${_mcCombat.length>2?`<button onclick="mcRmCombat(${i})" style="background:#c0392b;padding:4px 9px;font-size:.8em;margin:0;">✕</button>`:''}
   </div>`;

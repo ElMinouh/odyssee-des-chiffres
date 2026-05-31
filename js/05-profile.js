@@ -36,7 +36,7 @@ function migrateProfile(raw){
 // Garde-fous : un profil corrompu (ou bidouillé) ne doit pas crasher l'app.
 // Toutes les valeurs sont bornées à des plages raisonnables et typées.
 
-const _ALLOWED_LEVELS = ['CP','CE1','CE2','CM1','CM2'];
+const _ALLOWED_LEVELS = ['CP','CE1','CE2','CM1','CM2','6E','5E','4E','3E'];
 const _ALLOWED_MODES = ['keyboard','qcm'];
 const _ALLOWED_MODES2 = ['normal','survie','chrono','combat','revision'];
 const _ALLOWED_THEMES = ['standard','espace','foret','volcan'];
@@ -269,12 +269,12 @@ function applyPrefs(){
  const ls=$('levelSelect');
  const _opt=(l)=>{
   const ok=isUnlocked(l),pW=prevWins(l),req=UNLOCK_REQ[l];
-  const lab=(typeof LEVEL_LABEL!=='undefined'&&LEVEL_LABEL[l])?LEVEL_LABEL[l]:l;
+  const lab=_groupIcon(l)+' '+_levelLabel(l);
   return `<option value="${l}"${!ok?' disabled':''}${l===(p.level||'CP')?' selected':''}>${ok?'':'🔒 '}${lab}${!ok?' ('+pW+'/'+req+' vic.)':''}</option>`;
  };
  ls.innerHTML =
-   `<optgroup label="🎒 Primaire">${PRIMARY_LEVELS.map(_opt).join('')}</optgroup>`
- + `<optgroup label="🎓 Collège">${COLLEGE_LEVELS.map(_opt).join('')}</optgroup>`;
+   `<optgroup label="${GROUP_META.primaire.icon} ${GROUP_META.primaire.name}">${PRIMARY_LEVELS.map(_opt).join('')}</optgroup>`
+ + `<optgroup label="${GROUP_META.college.icon} ${GROUP_META.college.name}">${COLLEGE_LEVELS.map(_opt).join('')}</optgroup>`;
  $('modeSelect').value=p.mode||'keyboard';
  $('gameModeSelect').value=p.mode2||'normal';
  // v8.7.6 : priorité à la clé globale (dernier choix explicite du joueur),
@@ -298,6 +298,14 @@ const VALID_LEVELS=['CP','CE1','CE2','CM1','CM2','6E','5E','4E','3E'];
 const LEVEL_LABEL={CP:'CP',CE1:'CE1',CE2:'CE2',CM1:'CM1',CM2:'CM2','6E':'6ᵉ','5E':'5ᵉ','4E':'4ᵉ','3E':'3ᵉ'};
 const PRIMARY_LEVELS=['CP','CE1','CE2','CM1','CM2'];
 const COLLEGE_LEVELS=['6E','5E','4E','3E'];
+// v9.0.8 : identité visuelle distincte par cursus
+const GROUP_META={
+ primaire:{ icon:'🎒', name:'Primaire', levels:PRIMARY_LEVELS },
+ college :{ icon:'🎓', name:'Collège',  levels:COLLEGE_LEVELS },
+};
+function _groupKeyOf(lvl){ return COLLEGE_LEVELS.includes(lvl)?'college':'primaire'; }
+function _groupIcon(lvl){ return GROUP_META[_groupKeyOf(lvl)].icon; }
+function _levelLabel(lvl){ return (LEVEL_LABEL&&LEVEL_LABEL[lvl])?LEVEL_LABEL[lvl]:lvl; }
 function savePrefs(){
  const lvl=$('levelSelect').value;
  // Chantier B1 fix : préserver appearance et tout autre champ existant
@@ -364,7 +372,13 @@ function onPlayerChange(){
 }
 function applyCustom(){const n=$('customInput').value.trim();if(n)localStorage.setItem('customPlayerName',n);loadProfile();}
 function isUnlocked(lvl){return UNLOCK_REQ[lvl]===0||prevWins(lvl)>=UNLOCK_REQ[lvl];}
-function prevWins(lvl){const i=LEVEL_IDX[lvl];return i<=0?0:(P.levelWins[VALID_LEVELS[i-1]]||0);}
+// v9.0.8 : deux cursus de déblocage indépendants (Primaire / Collège).
+// Le « niveau précédent » d'un niveau est celui qui le précède DANS SON propre groupe ;
+// CP et 6ᵉ sont chacun en tête de leur cursus (aucun prérequis).
+function _levelGroupArr(lvl){
+ return (typeof COLLEGE_LEVELS!=='undefined' && COLLEGE_LEVELS.includes(lvl)) ? COLLEGE_LEVELS : PRIMARY_LEVELS;
+}
+function prevWins(lvl){ const g=_levelGroupArr(lvl); const i=g.indexOf(lvl); return i<=0?0:(P.levelWins[g[i-1]]||0); }
 function applyTheme(t){
  // v8.7.5 : ne plus écraser TOUTES les classes du body (préserver
  // no-parallax, mode clair/sombre, etc.). On retire seulement les
