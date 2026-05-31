@@ -617,7 +617,7 @@ button.pulse{font-size:1.15em!important;padding:13px 24px!important;width:100%!i
 .np-del{background:rgba(231,76,60,.3);}
 .np-minus{background:rgba(155,89,182,.3);}
 .np-ok{
- grid-column:span 3;
+ grid-column:span 2;
  background:var(--accent);
  font-size:1.15em;
  height:54px;
@@ -4723,3 +4723,5 @@ body.has-overlay #v-map *{
  .bosscard-inner{ transition:none; }
  .bosscard-portrait{ animation:none; }
 }
+
+.np-comma{ background:rgba(52,152,219,.22); font-weight:800; }

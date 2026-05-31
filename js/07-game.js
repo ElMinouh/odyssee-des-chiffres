@@ -2500,7 +2500,7 @@ function renderQ(){
  // v8.7.52 (O4.2) : en phase enragée, le boss peut lancer une attaque spéciale
  if(GS.isBoss && GS.bossEnraged && typeof _maybeBossAttack==='function') _maybeBossAttack();
 }
-function submitAns(){const v=parseInt($('answer-input').value);validate(isNaN(v)?null:v);}
+function submitAns(){const raw=($('answer-input').value||'').replace(',','.').trim();const v=parseFloat(raw);validate((raw===''||isNaN(v))?null:v);}
 function validate(ans){
  if(!GS.q||GS.answering)return; // guard : question null ou déjà en train de traiter
  GS.answering=true;
@@ -2508,7 +2508,7 @@ function validate(ans){
  if(GM.mode2!=='chrono')stopTimer();
  if(ans===null){hitPlayer('Réponse invalide !');return;}
  const q=GS.q;
- if(ans===q.res){
+ if(ans!==null && Math.abs(ans-q.res)<1e-6){
 GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
   // Chantier A4 : flash de milestone à 10/20/30/50
   if([10,20,30,50].includes(GS.combo) && typeof flashComboMilestone==='function'){

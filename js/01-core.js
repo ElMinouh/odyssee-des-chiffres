@@ -648,8 +648,14 @@ function setupNumpad(){
    input.value = input.value.startsWith('-') ? input.value.slice(1) : '-'+input.value;
    return;
   }
+  if(k===','){
+   // Virgule décimale : une seule, jamais en première position
+   const v = input.value;
+   if(!v.includes(',') && v !== '' && v !== '-') input.value = v + ',';
+   return;
+  }
   // Chiffre : on append (limite 6 caractères pour éviter les abus)
-  if(input.value.length < 6) input.value += k;
+  if(input.value.replace(/[-,]/g,'').length < 6) input.value += k;
  });
 }
 // Affiche / masque le numpad selon le mode en cours (clavier vs QCM)
