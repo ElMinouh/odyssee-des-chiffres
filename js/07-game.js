@@ -1040,15 +1040,9 @@ function renderMap(){
  const islandsSvg = _ARCH_REGIONS.map(r =>
   _renderIslandSvg(r.id, r.shape, byRegion[r.id] || [], totalHeight, W, _islandFogged[r.id])
  ).join('');
- // Noms de régions : utiliser regionTitleY (positions calculées avec espace réservé)
- const titleByRegion = {};
- (layout.regionTitleY || []).forEach(rt => { titleByRegion[rt.regionId] = rt.y; });
- const regionNamesHtml = _ARCH_REGIONS.map(r=>{
-  const ty = titleByRegion[r.id];
-  if(ty === undefined) return '';
-  const foggedCls = _islandFogged[r.id] ? ' island-fogged' : '';
-  return `<div class="archipel-region-name${foggedCls}" data-region="${r.id}" style="top:${ty}px;">${r.label}</div>`;
- }).join('');
+ // Noms de régions : recalculés plus bas, une fois les bboxes des îlots connus
+ // (v9.0.0 : placement juste au-dessus de chaque îlot, sans chevauchement).
+ let regionNamesHtml = '';
  // Générer les nœuds de zones
  const zonesHtml = positions.map(p=>{
   const z = p.zone;
@@ -1139,6 +1133,17 @@ function renderMap(){
   };
  });
  _miniMapBboxes = _islandBboxes;  // v8.7.60 : exposé pour la navigation mini-map
+ // v9.0.0 (demande 4) : placer chaque nom d'îlot juste au-dessus de SON îlot,
+ // centré sur lui, sans chevaucher l'îlot ni ses lieux.
+ regionNamesHtml = _ARCH_REGIONS.map(r => {
+  const b = _islandBboxes[r.id];
+  if(!b) return '';
+  const foggedCls = _islandFogged[r.id] ? ' island-fogged' : '';
+  const centerPct = b.leftPct + b.widthPct / 2;
+  const ty = Math.max(4, b.topPx - 30);   // juste au-dessus du sommet de l'îlot
+  return `<div class="archipel-region-name${foggedCls}" data-region="${r.id}" `
+       + `style="left:${centerPct.toFixed(1)}%;top:${ty.toFixed(0)}px;">${r.label}</div>`;
+ }).join('');
  const fogOverlaysHtml = _ARCH_REGIONS.map(r => {
   if(!_islandFogged[r.id]) return '';
   const b = _islandBboxes[r.id];
@@ -1538,15 +1543,8 @@ function _applyMapZoom(){
 // Montre les 6 régions empilées (haut→bas), grise les verrouillées, marque la
 // région active, et permet de sauter à une région débloquée d'un clic.
 function _refreshMiniMap(avatarRegionId, foggedMap, avatarRatioY, avatarEmoji){
- const host = document.getElementById('map-header') || document.getElementById('v-map');
- if(!host) return;
- let mm = document.getElementById('archipel-minimap');
- if(!mm){
-  mm = document.createElement('div');
-  mm.id = 'archipel-minimap';
-  mm.className = 'archipel-minimap';
-  host.appendChild(mm);
- }
+ const mm = document.getElementById('minimap-body');
+ if(!mm) return;
  const rows = _ARCH_REGIONS.map(r => {
   const meta = _BIOME_BANNER_META[r.id] || {};
   const fogged = !!(foggedMap && foggedMap[r.id]);
@@ -1558,13 +1556,11 @@ function _refreshMiniMap(avatarRegionId, foggedMap, avatarRatioY, avatarEmoji){
     + `<span class="minimap-emoji">${fogged?'🔒':(meta.emoji||'•')}</span>`
     + `</div>`;
  }).join('');
- // Marqueur de position de l'avatar : glisse verticalement le long de la mini-map
- // selon sa position réelle sur la carte (temps réel à chaque rafraîchissement).
  const ratio = (typeof avatarRatioY === 'number') ? Math.max(0, Math.min(1, avatarRatioY)) : null;
  const marker = (ratio !== null)
    ? `<div class="minimap-avatar-marker" style="top:${(ratio*100).toFixed(1)}%;">${avatarEmoji||'🧙'}</div>`
    : '';
- mm.innerHTML = `<div class="minimap-head">CARTE</div><div class="minimap-body">${rows}${marker}</div>`;
+ mm.innerHTML = `<div class="minimap-body">${rows}${marker}</div>`;
 }
 function _miniMapGoTo(regionId){
  try{
@@ -4043,32 +4039,37 @@ function _maybeShowStory(){
 // atteinte), verrouillé (🔒) sinon. Extensible : suit _ARCH_REGIONS / _STORY.
 // ═══════════════════════════════════════════════════════
 let _questUnlockedCache = {};
-// Liste ordonnée des entrées du journal : prologue puis un chapitre par région.
+// Liste ordonnée des entrées du journal : prologue, puis pour chaque région son
+// chapitre d'arrivée ET sa victoire de Cristal, enfin l'épilogue. Extensible.
 function _questEntries(){
- const entries = [{ id:'intro', label:'📜', regionId:null, color:'#c9a86a' }];
+ const entries = [{ id:'intro', kind:'intro', label:'📜', regionId:null, color:'#c9a86a' }];
  const roman = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
  let i = 0;
  _ARCH_REGIONS.forEach(r => {
   const chap = _STORY.chapters[r.id];
   if(!chap) return;
   const meta = _BIOME_BANNER_META[r.id] || {};
-  entries.push({ id:chap.id, label:(roman[i]||String(i+1)), regionId:r.id, color:(meta.accent||'#888') });
+  const col = meta.accent || '#888';
+  entries.push({ id:chap.id, kind:'chapter', label:(roman[i]||String(i+1)), regionId:r.id, color:col });
+  const win = _STORY.victories && _STORY.victories[r.id];
+  if(win) entries.push({ id:win.id, kind:'victory', label:'💎', regionId:r.id, color:col });
   i++;
  });
+ if(_STORY.epilogue) entries.push({ id:_STORY.epilogue.id, kind:'epilogue', label:'🏆', regionId:'final', color:'#ffd700' });
  return entries;
 }
 function _chapterUnlocked(entry, foggedMap){
  const seen = (typeof P!=='undefined' && P && Array.isArray(P.storySeen)) ? P.storySeen : [];
- if(entry.id === 'intro') return seen.includes('intro');
- if(seen.includes(entry.id)) return true;                       // déjà lu → relisable
- if(entry.regionId && foggedMap && !foggedMap[entry.regionId]) return true; // région atteinte
+ if(seen.includes(entry.id)) return true;                       // déjà vu → relisable
+ if(entry.kind === 'intro')   return seen.includes('intro');
+ if(entry.kind === 'chapter') return !!(entry.regionId && foggedMap && !foggedMap[entry.regionId]); // région atteinte
+ if(entry.kind === 'victory') return _regionConquered(entry.regionId);   // Cristal mérité = région conquise
+ if(entry.kind === 'epilogue')return _regionConquered('final');
  return false;
 }
 function _refreshQuestJournal(foggedMap){
- const host = document.getElementById('map-header') || document.getElementById('v-map');
- if(!host) return;
- let q = document.getElementById('archipel-quest');
- if(!q){ q = document.createElement('div'); q.id = 'archipel-quest'; q.className = 'archipel-quest'; host.appendChild(q); }
+ const q = document.getElementById('quest-body');
+ if(!q) return;
  _questUnlockedCache = {};
  const rows = _questEntries().map(e => {
   const unlocked = _chapterUnlocked(e, foggedMap);
@@ -4078,12 +4079,21 @@ function _refreshQuestJournal(foggedMap){
        + `title="${unlocked?'Relire ce chapitre':'Chapitre verrouillé'}">`
        + `${unlocked?e.label:'🔒'}</div>`;
  }).join('');
- q.innerHTML = `<div class="quest-head">QUÊTE</div><div class="quest-body">${rows}</div>`;
+ q.innerHTML = rows;
 }
-// Retrouve un chapitre par son id (intro ou chap_xxx)
+// v9.0.0 (demande 6) : ouvre/ferme les panneaux latéraux déroulants (mini-carte / quête)
+function _toggleSide(side){
+ const el = document.getElementById(side === 'left' ? 'side-left' : 'side-right');
+ if(!el) return;
+ el.classList.toggle('closed');
+ if(typeof beep==='function'){ try{ beep(el.classList.contains('closed')?320:520,'sine',.08,.04); }catch(e){} }
+}
+// Retrouve un chapitre par son id (intro, chap_xxx, win_xxx, epilogue)
 function _findChapter(id){
  if(id === 'intro') return _STORY.intro;
+ if(_STORY.epilogue && _STORY.epilogue.id === id) return _STORY.epilogue;
  for(const k in _STORY.chapters){ if(_STORY.chapters[k].id === id) return _STORY.chapters[k]; }
+ if(_STORY.victories){ for(const k in _STORY.victories){ if(_STORY.victories[k].id === id) return _STORY.victories[k]; } }
  return null;
 }
 function _replayChapter(id){
@@ -4098,18 +4108,26 @@ function _replayChapter(id){
 // v8.7.69 (O5) : HTML de la section « Journal de quête » dans le carnet d'aventure
 function _questJournalCarnetHtml(){
  const entries = _questEntries();
+ const seen = (typeof P!=='undefined' && P && Array.isArray(P.storySeen)) ? P.storySeen : [];
  const items = entries.map(e => {
   const cached = _questUnlockedCache[e.id];
-  const seen = (typeof P!=='undefined' && P && Array.isArray(P.storySeen)) ? P.storySeen : [];
-  const unlocked = (cached !== undefined) ? cached : (e.id==='intro' ? seen.includes('intro') : seen.includes(e.id));
+  const unlocked = (cached !== undefined) ? cached : seen.includes(e.id);
   const chap = _findChapter(e.id);
   const title = chap ? chap.title : '';
-  const sub = (chap && chap.crystal) ? ('💎 '+chap.crystal) : (e.id==='intro' ? 'Le commencement de l\'odyssée' : '');
+  let sub = '';
+  if(e.kind === 'intro') sub = "Le commencement de l'odyssée";
+  else if(e.kind === 'chapter'){ const reg = _ARCH_REGIONS.find(r => r.id === e.regionId); sub = 'Arrivée' + (reg ? (' — ' + reg.label) : ''); }
+  else if(e.kind === 'victory') sub = (chap && chap.crystal) ? ('💎 ' + chap.crystal) : 'Cristal libéré';
+  else if(e.kind === 'epilogue') sub = "Le dénouement de l'aventure";
+  let lockedLabel = 'Chapitre verrouillé';
+  if(e.kind === 'victory') lockedLabel = '💎 Cristal à libérer';
+  else if(e.kind === 'chapter') lockedLabel = 'Région à atteindre';
+  else if(e.kind === 'epilogue') lockedLabel = 'Fin à débloquer';
   return `<div class="advlog-quest-item${unlocked?'':' locked'}" `
        + (unlocked?`onclick="closeAdventureLog();setTimeout(()=>_replayChapter('${e.id}'),320);"`:'')
        + `>`
        + `<div class="advlog-quest-badge" style="background:${unlocked?e.color:'#777'};">${unlocked?e.label:'🔒'}</div>`
-       + `<div><div class="advlog-quest-label">${unlocked?title:'Chapitre verrouillé'}</div>`
+       + `<div><div class="advlog-quest-label">${unlocked?title:lockedLabel}</div>`
        + `${(unlocked&&sub)?`<div class="advlog-quest-sub">${sub}</div>`:''}</div>`
        + `</div>`;
  }).join('');
