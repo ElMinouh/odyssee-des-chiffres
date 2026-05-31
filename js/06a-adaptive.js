@@ -375,7 +375,7 @@ function detectPlateau(){
  * Une seule fois par session (variable globale _plateauShown).
  */
 let _plateauShown = false;
-function showPlateauHint(){
+function showPlateauHint(){ return false; /* v9.0.10: suggestions de changement de mode desactivees (juge inutile) */
  if(_plateauShown) return false;
  const detected = detectPlateau();
  if(!detected) return false;
