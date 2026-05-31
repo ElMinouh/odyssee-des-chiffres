@@ -4725,3 +4725,7 @@ body.has-overlay #v-map *{
 }
 
 .np-comma{ background:rgba(52,152,219,.22); font-weight:800; }
+
+/* v9.0.8 : titres de groupe (Primaire / Collège) dans les déblocages */
+.level-group-title{ font-size:.82em; font-weight:800; color:#ffd97a; margin:10px 0 4px; letter-spacing:.03em; }
+.level-group-title:first-child{ margin-top:0; }

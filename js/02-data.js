@@ -17,7 +17,7 @@ function heroGender(name){
  if(/[ae]$/.test(key)) return 'f';
  return 'm';
 }
-const UNLOCK_REQ={CP:0,CE1:3,CE2:5,CM1:4,CM2:5};
+const UNLOCK_REQ={CP:0,CE1:3,CE2:5,CM1:4,CM2:5,'6E':5,'5E':5,'4E':6,'3E':6};
 const HP_LVL={CP:1,CE1:2,CE2:3,CM1:4,CM2:5};
 const EMOJIS=['🍎','🎂','⭐','🎈','🐟','🌸','🍬','🚗','🐱','🐶'];
 // AVATAR_LIST = ensemble exhaustif des avatars du jeu, réparti par stade dans HERO_STAGES (chantier B2).

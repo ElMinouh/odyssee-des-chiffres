@@ -7,11 +7,17 @@
 // DASHBOARD
 // ═══════════════════════════════════════════════════════
 function renderLevelUnlocks(){
- $('p-levels').innerHTML=['CP','CE1','CE2','CM1','CM2'].map(lvl=>{
+ const ICON={CP:'⭐',CE1:'⭐⭐',CE2:'⭐⭐⭐',CM1:'🔥',CM2:'💎','6E':'🎓','5E':'🎓','4E':'📐','3E':'🏆'};
+ const lab=(l)=>(typeof LEVEL_LABEL!=='undefined'&&LEVEL_LABEL[l])?LEVEL_LABEL[l]:l;
+ const row=(lvl)=>{
   const ok=isUnlocked(lvl),pW=prevWins(lvl),req=UNLOCK_REQ[lvl];
-  const stars=['⭐','⭐⭐','⭐⭐⭐','🔥','💎'][['CP','CE1','CE2','CM1','CM2'].indexOf(lvl)];
-  return `<div class="level-lock ${ok?'unlocked':'locked'}"><span>${stars} ${lvl}</span><span style="font-size:.78em;color:${ok?'#2ecc71':'#e74c3c'};">${ok?'✅ Débloqué':'🔒 '+pW+'/'+req+' victoires'}</span></div>`;
- }).join('');
+  return `<div class="level-lock ${ok?'unlocked':'locked'}"><span>${ICON[lvl]||'🎓'} ${lab(lvl)}</span><span style="font-size:.78em;color:${ok?'#2ecc71':'#e74c3c'};">${ok?'✅ Débloqué':'🔒 '+pW+'/'+req+' victoires'}</span></div>`;
+ };
+ const prim = (typeof PRIMARY_LEVELS!=='undefined'?PRIMARY_LEVELS:['CP','CE1','CE2','CM1','CM2']);
+ const coll = (typeof COLLEGE_LEVELS!=='undefined'?COLLEGE_LEVELS:[]);
+ $('p-levels').innerHTML =
+   `<div class="level-group-title">🎒 Primaire</div>` + prim.map(row).join('')
+ + (coll.length?(`<div class="level-group-title">🎓 Collège</div>` + coll.map(row).join('')):'');
 }
 function renderChart(){
  const h=(P.history||[]).slice(-7);const el=$('p-chart');

@@ -92,6 +92,10 @@ function validateProfile(raw, defaultName){
    CE2: _clampNum(raw.levelWins?.CE2, 0, 9999, 0),
    CM1: _clampNum(raw.levelWins?.CM1, 0, 9999, 0),
    CM2: _clampNum(raw.levelWins?.CM2, 0, 9999, 0),
+   '6E': _clampNum(raw.levelWins?.['6E'], 0, 9999, 0),
+   '5E': _clampNum(raw.levelWins?.['5E'], 0, 9999, 0),
+   '4E': _clampNum(raw.levelWins?.['4E'], 0, 9999, 0),
+   '3E': _clampNum(raw.levelWins?.['3E'], 0, 9999, 0),
   },
   mapBossBeaten: _safeArr(raw.mapBossBeaten).filter(b => typeof b === 'string'),
   // v8.7.67 (O5) : chapitres narratifs déjà vus (extensible — un id par chapitre)
@@ -263,10 +267,14 @@ function saveProfileNow(){
 function applyPrefs(){
  const p=P.prefs||{};
  const ls=$('levelSelect');
- ls.innerHTML=['CP','CE1','CE2','CM1','CM2'].map(l=>{
+ const _opt=(l)=>{
   const ok=isUnlocked(l),pW=prevWins(l),req=UNLOCK_REQ[l];
-  return `<option value="${l}"${!ok?' disabled':''}${l===(p.level||'CP')?' selected':''}>${ok?'':'🔒 '}${l}${!ok?' ('+pW+'/'+req+' vic.)':''}`;
- }).join('');
+  const lab=(typeof LEVEL_LABEL!=='undefined'&&LEVEL_LABEL[l])?LEVEL_LABEL[l]:l;
+  return `<option value="${l}"${!ok?' disabled':''}${l===(p.level||'CP')?' selected':''}>${ok?'':'🔒 '}${lab}${!ok?' ('+pW+'/'+req+' vic.)':''}</option>`;
+ };
+ ls.innerHTML =
+   `<optgroup label="🎒 Primaire">${PRIMARY_LEVELS.map(_opt).join('')}</optgroup>`
+ + `<optgroup label="🎓 Collège">${COLLEGE_LEVELS.map(_opt).join('')}</optgroup>`;
  $('modeSelect').value=p.mode||'keyboard';
  $('gameModeSelect').value=p.mode2||'normal';
  // v8.7.6 : priorité à la clé globale (dernier choix explicite du joueur),
@@ -284,8 +292,12 @@ function applyPrefs(){
  if(typeof initAppearance === 'function') initAppearance();
 }
 // Table de correspondance niveau→index (évite indexOf à chaque appel)
-const LEVEL_IDX={CP:0,CE1:1,CE2:2,CM1:3,CM2:4};
-const VALID_LEVELS=['CP','CE1','CE2','CM1','CM2'];
+const LEVEL_IDX={CP:0,CE1:1,CE2:2,CM1:3,CM2:4,'6E':5,'5E':6,'4E':7,'3E':8};
+const VALID_LEVELS=['CP','CE1','CE2','CM1','CM2','6E','5E','4E','3E'];
+// v9.0.8 : libellés affichés (la valeur interne reste la clé GEN)
+const LEVEL_LABEL={CP:'CP',CE1:'CE1',CE2:'CE2',CM1:'CM1',CM2:'CM2','6E':'6ᵉ','5E':'5ᵉ','4E':'4ᵉ','3E':'3ᵉ'};
+const PRIMARY_LEVELS=['CP','CE1','CE2','CM1','CM2'];
+const COLLEGE_LEVELS=['6E','5E','4E','3E'];
 function savePrefs(){
  const lvl=$('levelSelect').value;
  // Chantier B1 fix : préserver appearance et tout autre champ existant

@@ -2516,7 +2516,7 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
   }
   // Multiplicateur niveau : plus c'est difficile, plus c'est rentable
   // CP~1-2⭐ CE1~1-3⭐ CE2~2-3⭐ CM1~2-4⭐ CM2~3-5⭐
-  const _lvlBase={CP:[1,2],CE1:[1,3],CE2:[2,3],CM1:[2,4],CM2:[3,5]}[GM.level]||[1,2];
+  const _lvlBase={CP:[1,2],CE1:[1,3],CE2:[2,3],CM1:[2,4],CM2:[3,5],'6E':[3,5],'5E':[3,6],'4E':[4,7],'3E':[4,8]}[GM.level]||[1,2];
   const _swordBonus=Math.floor(((P.skills.sword||0)*2)*0.5);
   let pts=_lvlBase[0]+Math.floor(Math.random()*(_lvlBase[1]-_lvlBase[0]+1))+_swordBonus;
   if(GS.isBoss)pts=Math.max(pts,_lvlBase[1]);
