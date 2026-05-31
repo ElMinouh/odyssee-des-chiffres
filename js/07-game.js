@@ -1549,18 +1549,13 @@ function _refreshMiniMap(avatarRegionId, foggedMap, avatarRatioY, avatarEmoji){
   const meta = _BIOME_BANNER_META[r.id] || {};
   const fogged = !!(foggedMap && foggedMap[r.id]);
   const active = (r.id === avatarRegionId);
-  return `<div class="minimap-region${fogged?' locked':''}${active?' active':''}" `
-    + `style="--mm-c:${meta.accent||'#888'};" `
-    + `onclick="_miniMapGoTo('${r.id}')" role="button" `
-    + `title="${r.label}${fogged?' (verrouillé)':''}">`
-    + `<span class="minimap-emoji">${fogged?'🔒':(meta.emoji||'•')}</span>`
+  return `<div class="drawer-row${fogged?' locked':''}${active?' active':''}" style="--row-c:${meta.accent||'#888'};" `
+    + (fogged?'':`onclick="_miniMapGoTo('${r.id}')"`) + ` role="button" title="${r.label}${fogged?' (verrouillé)':''}">`
+    + `<div class="drawer-row-badge">${fogged?'🔒':(meta.emoji||'•')}</div>`
+    + `<div class="drawer-row-label">${r.label}${active?' <span class="drawer-row-sub">• ici</span>':''}</div>`
     + `</div>`;
  }).join('');
- const ratio = (typeof avatarRatioY === 'number') ? Math.max(0, Math.min(1, avatarRatioY)) : null;
- const marker = (ratio !== null)
-   ? `<div class="minimap-avatar-marker" style="top:${(ratio*100).toFixed(1)}%;">${avatarEmoji||'🧙'}</div>`
-   : '';
- mm.innerHTML = `<div class="minimap-body">${rows}${marker}</div>`;
+ mm.innerHTML = rows;
 }
 function _miniMapGoTo(regionId){
  try{
@@ -4074,19 +4069,30 @@ function _refreshQuestJournal(foggedMap){
  const rows = _questEntries().map(e => {
   const unlocked = _chapterUnlocked(e, foggedMap);
   _questUnlockedCache[e.id] = unlocked;
-  return `<div class="quest-entry${unlocked?'':' locked'}" style="--qc:${e.color};" `
-       + `onclick="_replayChapter('${e.id}')" role="button" `
+  const chap = _findChapter(e.id);
+  let label;
+  if(unlocked && chap) label = chap.title;
+  else if(e.kind === 'victory') label = '💎 Cristal à libérer';
+  else if(e.kind === 'chapter') label = 'Région à atteindre';
+  else if(e.kind === 'epilogue') label = 'Fin à débloquer';
+  else label = 'Verrouillé';
+  return `<div class="drawer-row${unlocked?'':' locked'}" style="--row-c:${e.color};" `
+       + (unlocked?`onclick="_replayChapter('${e.id}')"`:'') + ` role="button" `
        + `title="${unlocked?'Relire ce chapitre':'Chapitre verrouillé'}">`
-       + `${unlocked?e.label:'🔒'}</div>`;
+       + `<div class="drawer-row-badge">${unlocked?e.label:'🔒'}</div>`
+       + `<div class="drawer-row-label">${label}</div>`
+       + `</div>`;
  }).join('');
  q.innerHTML = rows;
 }
-// v9.0.0 (demande 6) : ouvre/ferme les panneaux latéraux déroulants (mini-carte / quête)
-function _toggleSide(side){
- const el = document.getElementById(side === 'left' ? 'side-left' : 'side-right');
+// v9.0.1 : ouvre/ferme un panneau déroulant VERTICAL (mini-carte / livre d'aventure)
+function _toggleDrawer(name){
+ const el = document.getElementById('drawer-'+name);
+ const btn = document.getElementById('btn-'+name);
  if(!el) return;
- el.classList.toggle('closed');
- if(typeof beep==='function'){ try{ beep(el.classList.contains('closed')?320:520,'sine',.08,.04); }catch(e){} }
+ const open = el.classList.toggle('open');
+ if(btn) btn.classList.toggle('drawer-open', open);
+ if(typeof beep==='function'){ try{ beep(open?520:320,'sine',.08,.04); }catch(e){} }
 }
 // Retrouve un chapitre par son id (intro, chap_xxx, win_xxx, epilogue)
 function _findChapter(id){
@@ -4131,5 +4137,8 @@ function _questJournalCarnetHtml(){
        + `${(unlocked&&sub)?`<div class="advlog-quest-sub">${sub}</div>`:''}</div>`
        + `</div>`;
  }).join('');
- return `<div class="advlog-quest"><div class="advlog-quest-title">📜 Journal de quête</div><div class="advlog-quest-list">${items}</div></div>`;
+ return `<div class="advlog-quest">`
+      + `<button class="advlog-accordion-btn" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open');">📜 Journal de quête <span class="drawer-caret">▾</span></button>`
+      + `<div class="advlog-accordion"><div class="advlog-quest-list">${items}</div></div>`
+      + `</div>`;
 }
