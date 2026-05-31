@@ -4631,3 +4631,95 @@ body.has-overlay #v-map *{
  animation-play-state:paused !important;
  transition:none !important;
 }
+
+/* ═══ v9.0.6 (O5) : Cartes de boss recto/verso (façon cartes de collection) ═══ */
+.bosscard-overlay{
+ position:fixed; inset:0; z-index:2000;
+ display:flex; align-items:center; justify-content:center;
+ padding:24px;
+ background:rgba(6,8,18,.86);
+ opacity:0; transition:opacity .28s ease;
+}
+.bosscard-overlay.show{ opacity:1; }
+.bosscard{
+ width:100%; max-width:300px; aspect-ratio:3/4.4;
+ perspective:1200px; cursor:pointer;
+ transform:scale(.92); transition:transform .3s cubic-bezier(.34,1.4,.6,1);
+}
+.bosscard-overlay.show .bosscard{ transform:scale(1); }
+.bosscard-inner{
+ position:relative; width:100%; height:100%;
+ transform-style:preserve-3d;
+ transition:transform .6s cubic-bezier(.4,0,.2,1);
+}
+.bosscard.flipped .bosscard-inner{ transform:rotateY(180deg); }
+.bosscard-face{
+ position:absolute; inset:0;
+ backface-visibility:hidden; -webkit-backface-visibility:hidden;
+ border-radius:18px;
+ border:3px solid var(--bc-accent,#b8893f);
+ box-shadow:0 14px 40px rgba(0,0,0,.6), inset 0 0 30px rgba(0,0,0,.25);
+ display:flex; flex-direction:column; align-items:center;
+ padding:18px 16px; box-sizing:border-box;
+ overflow:hidden;
+}
+/* RECTO : portrait */
+.bosscard-front{
+ background:radial-gradient(circle at 50% 34%, var(--bc-accent,#b8893f), #12161f 74%);
+ justify-content:space-between;
+}
+.bosscard-badge{
+ font-size:.66em; font-weight:800; letter-spacing:.12em;
+ color:#fff; background:rgba(0,0,0,.35);
+ padding:5px 12px; border-radius:20px;
+ border:1px solid var(--bc-accent,#b8893f);
+}
+.bosscard-portrait{
+ font-size:6.2em; line-height:1; margin:6px 0;
+ filter:drop-shadow(0 6px 14px rgba(0,0,0,.5));
+ animation:bosscardFloat 3.5s ease-in-out infinite;
+}
+@keyframes bosscardFloat{ 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
+.bosscard-name{
+ font-family:'Cinzel',Georgia,serif;
+ font-size:1.22em; font-weight:800; color:#fff; text-align:center;
+ text-shadow:0 2px 6px rgba(0,0,0,.6); line-height:1.15;
+}
+.bosscard-zone{ font-size:.8em; color:rgba(255,255,255,.8); margin-top:4px; text-align:center; }
+.bosscard-flip-hint{
+ font-size:.68em; color:rgba(255,255,255,.6); margin-top:10px;
+}
+/* VERSO : biographie */
+.bosscard-back{
+ transform:rotateY(180deg);
+ background:linear-gradient(160deg, #f6e7c4, #e6c889);
+ color:#4a3418; justify-content:flex-start;
+}
+.bosscard-back-head{
+ display:flex; align-items:center; gap:8px;
+ font-family:'Cinzel',Georgia,serif; font-weight:800; color:#7a4f16;
+ font-size:1.02em; margin-bottom:12px;
+ border-bottom:2px solid rgba(122,79,22,.25); padding-bottom:8px; width:100%;
+ justify-content:center; text-align:center;
+}
+.bosscard-back-emoji{ font-size:1.3em; }
+.bosscard-bio{
+ font-size:.92em; line-height:1.5; text-align:left;
+ overflow-y:auto; flex:1; width:100%;
+}
+.bosscard-back .bosscard-flip-hint{ color:rgba(122,79,22,.7); margin-top:8px; }
+.bosscard-close{
+ position:absolute; top:16px; right:16px; z-index:2;
+ width:40px; height:40px; border-radius:50%;
+ background:rgba(0,0,0,.5); color:#fff;
+ border:2px solid rgba(255,255,255,.4);
+ font-size:1.1em; cursor:pointer;
+ display:flex; align-items:center; justify-content:center;
+}
+/* Médaillons cliquables : petit feedback */
+.advlog-medal{ cursor:pointer; transition:transform .12s, filter .12s; }
+.advlog-medal:hover{ transform:translateY(-3px); filter:brightness(1.12); }
+@media (prefers-reduced-motion:reduce){
+ .bosscard-inner{ transition:none; }
+ .bosscard-portrait{ animation:none; }
+}

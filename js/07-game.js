@@ -3226,7 +3226,7 @@ function openAdventureLog(){
  }).join('');
  // Galerie des boss vaincus (dans l'ordre des zones)
  const bossMedals = MAP_ZONES.filter(z => beaten.includes(z.id)).map(z => `
-  <div class="advlog-medal" title="${z.bossName || 'Boss'} — ${z.label}">
+  <div class="advlog-medal" onclick="closeAdventureLog();setTimeout(()=>_openBossCard('${z.id}'),300);" role="button" title="${z.bossName || 'Boss'} — ${z.label} (voir la carte)">
    <div class="advlog-medal-boss">${z.boss || '🏆'}</div>
    <div class="advlog-medal-zone">${z.label}</div>
   </div>`).join('');
@@ -4154,7 +4154,7 @@ function _questJournalCarnetHtml(){
 // on masque + fige toute la vue carte : le GPU n'a plus rien à recomposer
 // derrière l'overlay → fin de la recomposition par tuiles (clignotement).
 (function(){
- const OVERLAYS = '.archipel-zoom-overlay,.story-overlay,.advlog-overlay,.archipel-shop-overlay,#hero-evolution-overlay,.figurine-overlay';
+ const OVERLAYS = '.archipel-zoom-overlay,.story-overlay,.advlog-overlay,.archipel-shop-overlay,#hero-evolution-overlay,.figurine-overlay,.bosscard-overlay';
  function sync(){
   try{
    const hasOverlay = !!document.querySelector(OVERLAYS);
@@ -4167,3 +4167,82 @@ function _questJournalCarnetHtml(){
   sync();
  }
 })();
+
+// ═══════════════════════════════════════════════════════
+// v9.0.6 (O5) : CARTES DE BOSS — recto (portrait) / verso (biographie).
+// Cliquer un boss vaincu dans le carnet ouvre sa carte, qui se retourne au clic.
+// Biographies cohérentes avec l'univers (gardiens corrompus par le Comte Zéro).
+// Extensible : ajouter une zone → ajouter une entrée ici (sinon bio générique).
+// ═══════════════════════════════════════════════════════
+const _BOSS_BIOS = {
+ plaine:"Jadis gardien bienveillant des troupeaux, le Loup des Plaines hurlait pour rassembler les moutons égarés. Le Comte Zéro a empoisonné son cœur, et il s'est mis à brouiller les comptes des bergers. Vaincu, il a retrouvé toute sa noblesse d'antan.",
+ village:"Le fier coq qui réveillait le Village Joyeux à l'heure pile, chaque matin. Corrompu, il chantait à n'importe quelle heure et semait la pagaille dans les horaires. Sa défaite a rendu au village ses matins réglés comme une horloge.",
+ prairie:"Souveraine de la Prairie Fleurie, elle organisait ses ruches à l'abeille près. La magie du Comte Zéro l'a rendue furieuse, et ses abeilles comptaient tout de travers. Libérée, elle butine de nouveau en parfaite harmonie.",
+ bonbons:"Une simple douceur transformée en monstre sucré par le Comte Zéro. Il volait les friandises des enfants pour brouiller leurs additions gourmandes. Vaincu, il est redevenu un délicieux donut tout à fait inoffensif.",
+ foret:"Protecteur millénaire de la Forêt Enchantée, ce dragon veillait sur chaque arbre. Corrompu, son souffle brûlait les chiffres gravés dans l'écorce des troncs. Apaisé, il veille à nouveau sur la grande canopée.",
+ champignons:"Lent mais très sage, il comptait patiemment les spores de la Vallée des Champignons. La corruption l'a rendu visqueux et grognon, embrouillant tous les sentiers. Vaincu, il reprend enfin sa route tranquille.",
+ trolls:"Le plus costaud des trolls, gardien des vieux ponts de la forêt. Le Comte Zéro lui a soufflé de réclamer des péages impossibles à calculer. Battu, il laisse de nouveau passer les voyageurs en souriant.",
+ plage:"Roi des sables de la Plage Ensoleillée, il rangeait les coquillages par dizaines bien alignées. Corrompu, il pinçait quiconque osait compter juste. Vaincu, il retourne paisiblement à ses châteaux de sable.",
+ desert:"Sentinelle brûlante du Désert de Feu, son dard traçait des chiffres dans le sable chaud. La magie noire l'a rendu venimeux et confus. Apaisé, il garde de nouveau les précieuses oasis.",
+ plaines_venteuses:"Sa course faisait gronder les Plaines Venteuses comme un véritable orage. Corrompu, il piétinait les nombres au grand galop. Vaincu, son tonnerre n'effraie plus que les nuages.",
+ temple:"Statue éveillée du Temple Antique, gardienne d'énigmes oubliées depuis des siècles. Le Comte Zéro a effacé les réponses gravées dans sa mémoire de pierre. Vaincu, il révèle de nouveau ses secrets aux esprits dignes.",
+ profondeurs:"Colosse des Profondeurs Océanes, ses tentacules comptaient les courants marins. Corrompu, il créait des tourbillons de chiffres affolés. Apaisé, il sombre paisiblement au fond des abysses.",
+ glace:"Gardien gelé des Pics de Glace, il sculptait des flocons d'une symétrie parfaite. La corruption a figé son cœur et brouillé tous ses cristaux. Vaincu, sa banquise scintille de nouveau.",
+ marais:"Chacune de ses têtes comptait une partie du Marais Lugubre. Le Comte Zéro les a fait se contredire sans cesse les unes les autres. Vaincue, l'Hydre raisonne enfin d'une seule et même voix.",
+ forteresse:"Défenseur d'acier de la Forteresse Médiévale, nul ne franchissait ses remparts sans résoudre ses défis. Corrompu, il emprisonnait les voyageurs dans des calculs sans fin. Battu, il rouvre grand ses portes.",
+ sakura:"Ombre véloce du Mont Sakura, il comptait ses shurikens plus vite que l'éclair. La corruption a troublé sa concentration légendaire. Vaincu, il s'incline avec un profond respect.",
+ nocturne:"Maître du Royaume Nocturne, il comptait les étoiles pour endormir le monde entier. Corrompu, il volait le sommeil en mélangeant les nombres. Vaincu, la nuit retrouve toute sa douceur.",
+ volcan:"Né du cœur brûlant du Volcan Maudit, il forgeait les nombres dans la lave en fusion. La magie du Comte Zéro a attisé sa colère ardente. Apaisé, sa flamme réchauffe sans plus jamais détruire.",
+ espace:"Voyageur de la Galaxie Infinie, il calculait à la vitesse de la lumière. Corrompu, il dispersait les chiffres aux quatre coins du cosmos. Vaincu, il repart explorer les étoiles en paix.",
+ cimes:"Aigle colossal régnant sur les Cimes Vertigineuses, son regard portait jusqu'à l'infini. La corruption a obscurci sa vue autrefois si perçante. Libéré, il plane de nouveau au-dessus des nuages.",
+ mecanique:"Chef-d'œuvre de la Cité Mécanique, ses milliers de rouages calculaient sans la moindre erreur. Le Comte Zéro a déréglé ses engrenages délicats. Réparé, il bourdonne de nouveau avec une précision parfaite.",
+ ile:"Spectre d'un vieux pirate hantant l'Île Mystérieuse, il comptait un trésor introuvable. Corrompu, il enterrait les nombres comme autant de butins. Vaincu, il trouve enfin le repos qu'il cherchait.",
+ sanctuaire:"Ultime gardien du Sanctuaire, gigantesque colosse né de la magie du Comte Zéro lui-même. Il veille sur le cœur du royaume et sur le dernier secret de Calcultopia. Le vaincre ouvre la voie vers la vérité finale.",
+};
+function _bossBio(zoneId){
+ return _BOSS_BIOS[zoneId] || "Un gardien corrompu par le Comte Zéro de Cafouillac, qui veillait jadis sur sa contrée. Vaincu par ton courage, il a retrouvé la paix et rendu sa lumière à Calcultopia.";
+}
+const _BOSS_CARD_ACCENT = {
+ CP:'#6ab04c', CE1:'#2f8f5b', CE2:'#d68a3a', CM1:'#7d8fa6', CM2:'#7a4fc0', FINAL:'#caa92a',
+};
+function _openBossCard(zoneId){
+ const z = (typeof MAP_ZONES!=='undefined') ? MAP_ZONES.find(x => x.id === zoneId) : null;
+ if(!z) return;
+ const accent = _BOSS_CARD_ACCENT[z.level] || '#b8893f';
+ const emoji = z.boss || '🏆';
+ const name = z.bossName || 'Gardien';
+ const zone = z.label || '';
+ const lvl = z.level || '';
+ const bio = _bossBio(zoneId);
+ const overlay = document.createElement('div');
+ overlay.className = 'bosscard-overlay';
+ overlay.innerHTML = `
+  <button class="bosscard-close" aria-label="Fermer">✕</button>
+  <div class="bosscard" role="button" tabindex="0" title="Touche la carte pour la retourner">
+   <div class="bosscard-inner" style="--bc-accent:${accent};">
+    <div class="bosscard-face bosscard-front">
+     <div class="bosscard-badge">BOSS VAINCU 🏆</div>
+     <div class="bosscard-portrait">${emoji}</div>
+     <div class="bosscard-name">${name}</div>
+     <div class="bosscard-zone">${zone}${lvl?` · ${lvl}`:''}</div>
+     <div class="bosscard-flip-hint">↺ Touche pour lire son histoire</div>
+    </div>
+    <div class="bosscard-face bosscard-back">
+     <div class="bosscard-back-head"><span class="bosscard-back-emoji">${emoji}</span><span class="bosscard-back-name">${name}</span></div>
+     <div class="bosscard-bio">${bio}</div>
+     <div class="bosscard-flip-hint">↺ Touche pour revenir</div>
+    </div>
+   </div>
+  </div>`;
+ const card = overlay.querySelector('.bosscard');
+ card.addEventListener('click', () => card.classList.toggle('flipped'));
+ overlay.querySelector('.bosscard-close').addEventListener('click', (e) => { e.stopPropagation(); _closeBossCard(overlay); });
+ overlay.addEventListener('click', (e) => { if(e.target === overlay) _closeBossCard(overlay); });
+ document.body.appendChild(overlay);
+ requestAnimationFrame(() => overlay.classList.add('show'));
+ if(typeof beep==='function'){ try{ beep(440,'sine',.1,.05); }catch(e){} }
+}
+function _closeBossCard(overlay){
+ overlay.classList.remove('show');
+ setTimeout(() => { try{ overlay.remove(); }catch(e){} }, 280);
+}
