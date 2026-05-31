@@ -3169,11 +3169,11 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  align-items:center;
  justify-content:center;
  padding:16px;
- animation:archZoomFadeIn .3s ease-out;
+ animation:archOverlayFade .25s ease-out;
 }
-@keyframes archZoomFadeIn{
- from{ opacity:0; transform:scale(.95); }
- to{   opacity:1; transform:scale(1); }
+@keyframes archOverlayFade{
+ from{ opacity:0; }
+ to{   opacity:1; }
 }
 .archipel-zoom-content{
  position:relative;
@@ -3186,6 +3186,12 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  border:3px solid rgba(241,196,15,.7);
  box-shadow:0 12px 40px rgba(0,0,0,.65), 0 0 30px rgba(241,196,15,.3);
  padding:18px 18px 24px;
+ animation:archContentPop .3s cubic-bezier(.34,1.4,.6,1);
+ will-change:transform, opacity;
+}
+@keyframes archContentPop{
+ from{ opacity:0; transform:scale(.94) translateY(8px); }
+ to{   opacity:1; transform:scale(1) translateY(0); }
 }
 .archipel-zoom-close{
  position:absolute;
@@ -4590,4 +4596,26 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 }
 @media (prefers-reduced-motion:reduce){
  .compass-btn.compass-spinning{ animation:none; }
+}
+
+/* ═══ v9.0.4 (anti-jank mobile/tablette) ═══
+   Le backdrop-filter (flou en temps réel) est la 1re cause de saccades et de
+   "sauts" sur mobile : il refloute toute la page à chaque frame d'animation/scroll.
+   On le neutralise sous 1024px et on opacifie un peu les fonds pour compenser.
+   AUCUN effet au-dessus de 1024px (PC) — le rendu validé reste identique. */
+@media (max-width:1024px){
+ #gc, #map-header, #hero-evolution-overlay, .advlog-overlay, .appearance-toggle,
+ .archipel-shop-overlay, .archipel-zoom-overlay, .story-overlay, .map-drawer,
+ .theme-banquise, .theme-chateau, .theme-nuit, .theme-ocean, .theme-sakura, .theme-volcan{
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+ }
+ /* Fonds légèrement plus opaques pour garder la lisibilité sans le flou */
+ #map-header{ background:rgba(14,28,42,.95) !important; }
+ .story-overlay{ background:rgba(8,10,20,.92) !important; }
+ .archipel-zoom-overlay{ background:rgba(10,5,30,.90) !important; }
+ .advlog-overlay{ background:rgba(8,10,20,.92) !important; }
+ .archipel-shop-overlay{ background:rgba(10,5,30,.90) !important; }
+ /* Isole les recalculs de mise en page des overlays pour limiter les reflows */
+ .archipel-zoom-content, .advlog-content, .story-parchment{ contain:layout style; }
 }

@@ -1686,9 +1686,13 @@ function initMapParallax(){
  if(!_MP.layers.sky) return;
  _paintParallaxStatic();
  _setupZoneObserver();
- // Mouvement actif uniquement si toggle ON et pas reduced-motion
+ // v9.0.4 (anti-jank) : sur petit écran / tactile, on garde le décor STATIQUE
+ // mais on coupe le mouvement au scroll (source de reflows et de saccades).
+ const _smallOrTouch = (window.innerWidth <= 768) ||
+   (window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+ // Mouvement actif uniquement si toggle ON, pas reduced-motion, et pas petit/tactile
  const enabled = (typeof getParallaxEnabled==='function') ? getParallaxEnabled() : true;
- if(enabled){
+ if(enabled && !_smallOrTouch){
   _attachMotionListeners();
   _MP.active = true;
  }
