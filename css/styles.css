@@ -4222,70 +4222,83 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  font-size:.8em; color:#fff; min-width:84px; text-align:center;
  text-shadow:0 1px 3px rgba(0,0,0,.85); font-weight:600;
 }
-/* v9.0.1 : colonnes de boutons fixes (sous Retour / Accueil) + accordéons verticaux */
+/* v9.0.2 : colonnes de boutons fixes (sous Retour / Accueil) + drawers verticaux larges */
 .map-side-col{
  position:absolute;
- top:74px;
+ top:42px;
  z-index:52;
- display:flex; flex-direction:column; gap:5px;
- width:118px;
+ display:flex; flex-direction:column;
+ width:112px;
 }
-.map-side-left{ left:6px; align-items:flex-start; }
-.map-side-right{ right:6px; align-items:flex-end; }
-.map-side-btn{
+.map-side-left{ left:8px; align-items:flex-start; }
+.map-side-right{ right:8px; align-items:flex-end; }
+.map-side-col .back-top-btn{
  width:100%;
- background:rgba(22,26,52,.92);
- border:1.5px solid rgba(255,255,255,.2);
- color:#fff; cursor:pointer;
- font-size:.72em; font-weight:700;
- padding:7px 8px; border-radius:9px;
- box-shadow:0 3px 9px rgba(0,0,0,.45);
  display:flex; align-items:center; justify-content:center; gap:5px;
- white-space:nowrap;
- transition:filter .15s, transform .1s;
+ margin-bottom:6px; white-space:nowrap;
 }
-.map-side-btn:hover{ filter:brightness(1.18); }
-.map-side-btn:active{ transform:translateY(1px); }
-.compass-btn{ width:42px; align-self:flex-end; font-size:1.2em; padding:6px; border-radius:50%; }
-.compass-btn .archipel-compass-needle, .compass-btn{ }
-.drawer-caret{ font-size:.8em; transition:transform .3s; }
-.map-drawer-btn.drawer-open .drawer-caret{ transform:rotate(180deg); }
+/* Carnet : style Retour, couleur distincte + icône (façon Accueil) */
+.map-carnet-btn{ background:#8e44ad; }
+.map-carnet-btn:hover{ background:#9b59b6; transform:none; }
+/* Mini-carte / Livre : mêmes dimensions, un peu plus anguleux */
+.map-tool-btn{ background:#2c3e50; border-radius:9px; }
+.map-tool-btn:hover{ background:#34495e; transform:none; }
+.drawer-caret{ font-size:.85em; transition:transform .3s; }
+.map-tool-btn.drawer-open .drawer-caret{ transform:rotate(180deg); }
+/* Boussole : ronde, sous Accueil */
+.compass-btn{
+ width:40px; height:36px; padding:0; border-radius:50%;
+ font-size:1.15em; align-self:flex-end;
+ display:flex; align-items:center; justify-content:center;
+}
+.compass-btn:hover{ transform:none; }
+/* Panneaux déroulants : LARGES et aérés (lisibilité tous supports) */
 .map-drawer{
- width:100%;
+ position:absolute;
+ width:222px; max-width:76vw;
  max-height:0; overflow:hidden;
- background:rgba(10,12,30,.92);
- border-radius:10px;
- transition:max-height .35s ease, padding .35s ease, border .2s;
+ background:rgba(12,16,34,.96);
+ border-radius:13px;
+ box-shadow:0 8px 22px rgba(0,0,0,.6);
  border:0 solid rgba(255,255,255,.18);
+ transition:max-height .35s ease, border-width .2s;
 }
-.map-drawer.open{
- max-height:60vh; overflow-y:auto;
- padding:6px; border-width:1.5px;
- box-shadow:0 4px 14px rgba(0,0,0,.5);
-}
-/* Entrées verticales (mini-carte + livre) */
+.drawer-left{ top:72px; left:0; }
+.drawer-right{ top:80px; right:0; }
+.map-drawer.open{ max-height:62vh; overflow-y:auto; border-width:1.5px; }
+.map-drawer-pad{ padding:9px; }
+/* Lignes des drawers : aérées, texte qui passe à la ligne sans rognage */
 .drawer-row{
- display:flex; align-items:center; gap:8px;
- padding:6px 7px; border-radius:8px;
- cursor:pointer; margin-bottom:4px;
+ display:flex; align-items:center; gap:9px;
+ padding:9px 10px; border-radius:9px;
+ cursor:pointer; margin-bottom:6px;
  background:rgba(255,255,255,.06);
  border-left:3px solid var(--row-c,#888);
  transition:background .15s, transform .1s;
 }
 .drawer-row:last-child{ margin-bottom:0; }
 .drawer-row:hover{ background:rgba(255,255,255,.14); }
-.drawer-row:active{ transform:scale(.98); }
+.drawer-row:active{ transform:scale(.985); }
 .drawer-row.locked{ opacity:.5; cursor:default; }
 .drawer-row.locked:hover{ background:rgba(255,255,255,.06); }
-.drawer-row.active{ outline:2px solid #ffd97a; }
+.drawer-row.active{ outline:2px solid #ffd97a; outline-offset:-1px; }
 .drawer-row-badge{
- width:24px; height:24px; flex:0 0 24px; border-radius:6px;
+ width:28px; height:28px; flex:0 0 28px; border-radius:7px;
  display:flex; align-items:center; justify-content:center;
- font-size:.82em; font-weight:800; color:#fff;
+ font-size:.9em; font-weight:800; color:#fff;
  background:var(--row-c,#888); text-shadow:0 1px 2px rgba(0,0,0,.6);
 }
-.drawer-row-label{ font-size:.74em; font-weight:600; color:#fff; line-height:1.15; }
-.drawer-row-sub{ font-size:.64em; opacity:.7; color:#fff; }
+.drawer-row-label{
+ flex:1; min-width:0;
+ font-size:.82em; font-weight:600; color:#fff; line-height:1.34;
+ white-space:normal; overflow-wrap:anywhere; word-break:break-word;
+}
+.drawer-row-sub{ font-size:.82em; opacity:.72; font-weight:600; }
+@media (max-width:480px){
+ .map-side-col{ width:96px; }
+ .map-side-col .back-top-btn{ font-size:.66em; padding:5px 7px; }
+ .map-drawer{ width:200px; }
+}
 #map-header h2{ margin:2px 0; }
 @media (prefers-reduced-motion:reduce){
  #map-header{ backdrop-filter:none; -webkit-backdrop-filter:none; background:rgba(14,28,42,.94); }
