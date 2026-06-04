@@ -235,7 +235,7 @@ function loadVoice(){
 // Répéter la dernière question à la demande de l'utilisateur
 function repeatQuestion(){
  const q=typeof GS!=='undefined'?GS.q:null;if(!q)return;
- const txt=q.display||(q.a!==undefined&&q.b!==undefined?`${q.a} ${q.op||'='} ${q.b}`:String(q.res));
+ const txt=q.maternelle?(q.consigne||''):(q.display||(q.a!==undefined&&q.b!==undefined?`${q.a} ${q.op||'='} ${q.b}`:String(q.res)));
  // Forcer la lecture même si voix non activée : user a explicitement demandé
  if(!window.speechSynthesis)return;
  window.speechSynthesis.cancel();

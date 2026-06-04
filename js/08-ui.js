@@ -12,8 +12,9 @@ function renderLevelUnlocks(){
   const ok=isUnlocked(lvl),pW=prevWins(lvl),req=UNLOCK_REQ[lvl];
   return `<div class="level-lock ${ok?'unlocked':'locked'}"><span>${icon} ${lab(lvl)}</span><span style="font-size:.78em;color:${ok?'#2ecc71':'#e74c3c'};">${ok?'✅ Débloqué':'🔒 '+pW+'/'+req+' victoires'}</span></div>`;
  };
- const groups=(typeof GROUP_META!=='undefined')?[GROUP_META.primaire,GROUP_META.college]
-   :[{icon:'🎒',name:'Primaire',levels:['CP','CE1','CE2','CM1','CM2']},{icon:'🎓',name:'Collège',levels:['6E','5E','4E','3E']}];
+ const groups=(typeof GROUP_ORDER!=='undefined' && typeof GROUP_META!=='undefined')
+   ? GROUP_ORDER.map(k=>GROUP_META[k])
+   : [{icon:'🎒',name:'Primaire',levels:['CP','CE1','CE2','CM1','CM2']},{icon:'🎓',name:'Collège',levels:['6E','5E','4E','3E']}];
  $('p-levels').innerHTML = groups.map(g=>
    `<div class="level-group-title">${g.icon} ${g.name}</div>` + g.levels.map(l=>row(l,g.icon)).join('')
  ).join('');

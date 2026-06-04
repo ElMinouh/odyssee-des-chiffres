@@ -2310,6 +2310,11 @@ function startGame(){
  const rawLevel=$('levelSelect').value;
  GM.mode=$('modeSelect').value;GM.mode2=$('gameModeSelect').value;
  GM.level=VALID_LEVELS.includes(rawLevel)?rawLevel:'CP';GM.mapZone=null;
+ // M-A : la maternelle est un mode solo guidé, 100% visuel, sans combat ni chrono
+ if(typeof _isMaternelle==='function' && _isMaternelle(GM.level)){
+  GM.mode='qcm'; GM.mode2='normal';
+ }
+ if(typeof _matApplyAmbiance==='function') _matApplyAmbiance(GM.level);
  resetGS();powers={};isRevision=false;
  if(GM.mode2==='combat'){
   const valid=combatCfg.filter(p=>p.name&&p.name.trim());
@@ -2441,7 +2446,7 @@ function generateQ(){
   if(m)return{a:+m[1],b:+m[3],op:m[2],res:+m[4],type:'normal',opKey:m[2],display:`${m[1]} ${m[2]} ${m[3]}`,img:''};
  }
  // Chantier 1.2 : révision espacée en mode normal (pas en boss ni en combat/révision)
- if(GM.mode2==='normal' && !GS.isBoss && typeof getRevisionErrorToAsk==='function'){
+ if(GM.mode2==='normal' && !GS.isBoss && !(typeof _isMaternelle==='function'&&_isMaternelle(GM.level)) && typeof getRevisionErrorToAsk==='function'){
   const rev = getRevisionErrorToAsk();
   if(rev) return rev;
  }
@@ -2455,6 +2460,8 @@ function renderQ(){
  // v8.7.53 (O4.2b) : nettoyer les effets d'attaque de la question précédente
  if(typeof _resetBossAttackEffects==='function') _resetBossAttackEffects();
  const q=GS.q;
+ // M-A : rendu 100% visuel pour la maternelle (images cliquables, pas de pavé ni chrono)
+ if(q && q.maternelle && typeof _matRenderQ==='function'){ _matRenderQ(q); return; }
  const txt=q.display||(q.a!==undefined&&q.b!==undefined?`${q.a} ${q.op||'='} ${q.b}`:String(q.res));
  $('question').innerText=txt;$('question').className=GS.isGolden?'gold-q':q.isRevision?'revision-q-inline':'';
  // Chantier 1.2 : petit toast discret quand une question de révision espacée apparaît
@@ -2507,6 +2514,15 @@ function validate(ans){
  if(GM.mode2==='combat')return validateCombat(ans);
  if(GM.mode2!=='chrono')stopTimer();
  if(ans===null){hitPlayer('Réponse invalide !');return;}
+ // M-A : maternelle = aucune sanction. Mauvaise réponse → on grise le choix et on réessaie.
+ if(typeof _isMaternelle==='function' && _isMaternelle(GM.level) && Math.abs(ans-GS.q.res)>=1e-6){
+  const qcm=$('qcm-options');
+  if(qcm){ const b=qcm.querySelector(`.qcm-btn[data-val="${ans}"]`); if(b){ b.classList.add('mat-wrong'); b.disabled=true; } }
+  const fb=$('feedback'); if(fb){ fb.style.color='#e67e22'; fb.innerText='Presque ! Essaie encore 💛'; }
+  if(typeof speak==='function') speak('Essaie encore');
+  GS.answering=false;
+  return;
+ }
  const q=GS.q;
  if(ans!==null && Math.abs(ans-q.res)<1e-6){
 GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
@@ -2516,7 +2532,7 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
   }
   // Multiplicateur niveau : plus c'est difficile, plus c'est rentable
   // CP~1-2⭐ CE1~1-3⭐ CE2~2-3⭐ CM1~2-4⭐ CM2~3-5⭐
-  const _lvlBase={CP:[1,2],CE1:[1,3],CE2:[2,3],CM1:[2,4],CM2:[3,5],'6E':[3,5],'5E':[3,6],'4E':[4,7],'3E':[4,8]}[GM.level]||[1,2];
+  const _lvlBase={PS:[1,1],MS:[1,2],GS:[2,3],CP:[1,2],CE1:[1,3],CE2:[2,3],CM1:[2,4],CM2:[3,5],'6E':[3,5],'5E':[3,6],'4E':[4,7],'3E':[4,8]}[GM.level]||[1,2];
   const _swordBonus=Math.floor(((P.skills.sword||0)*2)*0.5);
   let pts=_lvlBase[0]+Math.floor(Math.random()*(_lvlBase[1]-_lvlBase[0]+1))+_swordBonus;
   if(GS.isBoss)pts=Math.max(pts,_lvlBase[1]);

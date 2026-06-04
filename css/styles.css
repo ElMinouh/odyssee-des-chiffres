@@ -4745,3 +4745,31 @@ select optgroup option{
  color:#f4f6f8;
  font-weight:600;
 }
+
+/* ═══════ M-A : MODE MATERNELLE (PS / MS / GS) ═══════ */
+/* Étincelle, la mascotte fil rouge */
+.mat-mascot{ font-size:3em; filter: drop-shadow(0 0 14px var(--mat-accent,#f1c40f)); animation: matTwinkle 2.4s ease-in-out infinite; }
+@keyframes matTwinkle{ 0%,100%{ transform: scale(1) rotate(-4deg); } 50%{ transform: scale(1.12) rotate(4deg); } }
+
+/* Consigne (lue à voix haute) — override la taille géante de #question */
+.mat-consigne{ font-size:1.45em !important; font-weight:700 !important; line-height:1.25; color:#fff; }
+
+/* Énoncé : la collection à dénombrer */
+.mat-collection{ display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:10px 14px; padding:14px 10px; max-width:460px; margin:0 auto; }
+.mat-obj{ font-size:2.6em; line-height:1; animation: matPop .35s ease both; }
+@keyframes matPop{ from{ transform: scale(.4); opacity:0; } to{ transform: scale(1); opacity:1; } }
+
+/* Réponses */
+.qcm-options.mat-choices{ display:grid; grid-template-columns: repeat(3, 1fr); gap:14px; max-width:440px; margin:16px auto 0; }
+.qcm-btn.mat-choice{ min-height:88px; border-radius:20px; padding:14px 8px; display:flex; align-items:center; justify-content:center; }
+.qcm-btn.mat-choice.mat-wrong{ opacity:.35; filter: grayscale(.7); }
+
+/* Cartes à points (PS/MS) */
+.mat-dots{ display:flex; flex-wrap:wrap; justify-content:center; align-content:center; gap:8px; max-width:84px; }
+.mat-dot{ width:18px; height:18px; border-radius:50%; display:inline-block; }
+
+/* Chiffre (GS) */
+.mat-num{ font-size:2.1em; font-weight:900; color:#fff; }
+
+/* Badge du monde */
+.mode-badge.m-mat{ background: var(--mat-accent,#1d9e75); color:#fff; }

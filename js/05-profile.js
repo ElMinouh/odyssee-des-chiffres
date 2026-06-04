@@ -36,7 +36,7 @@ function migrateProfile(raw){
 // Garde-fous : un profil corrompu (ou bidouillé) ne doit pas crasher l'app.
 // Toutes les valeurs sont bornées à des plages raisonnables et typées.
 
-const _ALLOWED_LEVELS = ['CP','CE1','CE2','CM1','CM2','6E','5E','4E','3E'];
+const _ALLOWED_LEVELS = ['PS','MS','GS','CP','CE1','CE2','CM1','CM2','6E','5E','4E','3E'];
 const _ALLOWED_MODES = ['keyboard','qcm'];
 const _ALLOWED_MODES2 = ['normal','survie','chrono','combat','revision'];
 const _ALLOWED_THEMES = ['standard','espace','foret','volcan'];
@@ -87,6 +87,9 @@ function validateProfile(raw, defaultName){
   questsDate: _safeStr(raw.questsDate, 12, null),
   opStats: { ...def.opStats, ...(raw.opStats || {}) },
   levelWins: {
+   PS:  _clampNum(raw.levelWins?.PS,  0, 9999, 0),
+   MS:  _clampNum(raw.levelWins?.MS,  0, 9999, 0),
+   GS:  _clampNum(raw.levelWins?.GS,  0, 9999, 0),
    CP:  _clampNum(raw.levelWins?.CP,  0, 9999, 0),
    CE1: _clampNum(raw.levelWins?.CE1, 0, 9999, 0),
    CE2: _clampNum(raw.levelWins?.CE2, 0, 9999, 0),
@@ -272,9 +275,10 @@ function applyPrefs(){
   const lab=_groupIcon(l)+' '+_levelLabel(l);
   return `<option value="${l}"${!ok?' disabled':''}${l===(p.level||'CP')?' selected':''}>${ok?'':'🔒 '}${lab}${!ok?' ('+pW+'/'+req+' vic.)':''}</option>`;
  };
- ls.innerHTML =
-   `<optgroup label="${GROUP_META.primaire.icon} ${GROUP_META.primaire.name}">${PRIMARY_LEVELS.map(_opt).join('')}</optgroup>`
- + `<optgroup label="${GROUP_META.college.icon} ${GROUP_META.college.name}">${COLLEGE_LEVELS.map(_opt).join('')}</optgroup>`;
+ ls.innerHTML = GROUP_ORDER.map(gk=>{
+   const g=GROUP_META[gk];
+   return `<optgroup label="${g.icon} ${g.name}">${g.levels.map(_opt).join('')}</optgroup>`;
+ }).join('');
  $('modeSelect').value=p.mode||'keyboard';
  $('gameModeSelect').value=p.mode2||'normal';
  // v8.7.6 : priorité à la clé globale (dernier choix explicite du joueur),
@@ -292,18 +296,25 @@ function applyPrefs(){
  if(typeof initAppearance === 'function') initAppearance();
 }
 // Table de correspondance niveau→index (évite indexOf à chaque appel)
-const LEVEL_IDX={CP:0,CE1:1,CE2:2,CM1:3,CM2:4,'6E':5,'5E':6,'4E':7,'3E':8};
-const VALID_LEVELS=['CP','CE1','CE2','CM1','CM2','6E','5E','4E','3E'];
-// v9.0.8 : libellés affichés (la valeur interne reste la clé GEN)
-const LEVEL_LABEL={CP:'CP',CE1:'CE1',CE2:'CE2',CM1:'CM1',CM2:'CM2','6E':'6ᵉ','5E':'5ᵉ','4E':'4ᵉ','3E':'3ᵉ'};
+const LEVEL_IDX={PS:0,MS:1,GS:2,CP:3,CE1:4,CE2:5,CM1:6,CM2:7,'6E':8,'5E':9,'4E':10,'3E':11};
+const VALID_LEVELS=['PS','MS','GS','CP','CE1','CE2','CM1','CM2','6E','5E','4E','3E'];
+// v9.0.8 / M-A : libellés affichés (la valeur interne reste la clé GEN)
+const LEVEL_LABEL={PS:'Petite section',MS:'Moyenne section',GS:'Grande section',CP:'CP',CE1:'CE1',CE2:'CE2',CM1:'CM1',CM2:'CM2','6E':'6ᵉ','5E':'5ᵉ','4E':'4ᵉ','3E':'3ᵉ'};
+const MATERNELLE_LEVELS=['PS','MS','GS'];
 const PRIMARY_LEVELS=['CP','CE1','CE2','CM1','CM2'];
 const COLLEGE_LEVELS=['6E','5E','4E','3E'];
-// v9.0.8 : identité visuelle distincte par cursus
+// Identité visuelle distincte par cursus (Maternelle en tête)
 const GROUP_META={
- primaire:{ icon:'🎒', name:'Primaire', levels:PRIMARY_LEVELS },
- college :{ icon:'🎓', name:'Collège',  levels:COLLEGE_LEVELS },
+ maternelle:{ icon:'🐣', name:'Maternelle', levels:MATERNELLE_LEVELS },
+ primaire:  { icon:'🎒', name:'Primaire',   levels:PRIMARY_LEVELS },
+ college:   { icon:'🎓', name:'Collège',    levels:COLLEGE_LEVELS },
 };
-function _groupKeyOf(lvl){ return COLLEGE_LEVELS.includes(lvl)?'college':'primaire'; }
+const GROUP_ORDER=['maternelle','primaire','college'];
+function _groupKeyOf(lvl){
+ if(MATERNELLE_LEVELS.indexOf(lvl)!==-1) return 'maternelle';
+ if(COLLEGE_LEVELS.indexOf(lvl)!==-1) return 'college';
+ return 'primaire';
+}
 function _groupIcon(lvl){ return GROUP_META[_groupKeyOf(lvl)].icon; }
 function _levelLabel(lvl){ return (LEVEL_LABEL&&LEVEL_LABEL[lvl])?LEVEL_LABEL[lvl]:lvl; }
 function savePrefs(){
