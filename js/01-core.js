@@ -922,12 +922,13 @@ function openModeConfig(mode){
     const req = (typeof UNLOCK_REQ!=='undefined' && UNLOCK_REQ) ? UNLOCK_REQ[l] : 0;
     return `<option value="${l}"${!ok?' disabled':''}${l===cur?' selected':''}>${ok?'':'🔒 '}${_gi(l)}${_ll(l)}${!ok?' ('+pW+'/'+req+' vic.)':''}</option>`;
    };
-   const prim = (typeof PRIMARY_LEVELS!=='undefined')?PRIMARY_LEVELS:['CP','CE1','CE2','CM1','CM2'];
-   const coll = (typeof COLLEGE_LEVELS!=='undefined')?COLLEGE_LEVELS:[];
-   const gm = (typeof GROUP_META!=='undefined')?GROUP_META:{primaire:{icon:'🎒',name:'Primaire'},college:{icon:'🎓',name:'Collège'}};
-   ls.innerHTML =
-     `<optgroup label="${gm.primaire.icon} ${gm.primaire.name}">${prim.map(opt).join('')}</optgroup>`
-   + (coll.length?`<optgroup label="${gm.college.icon} ${gm.college.name}">${coll.map(opt).join('')}</optgroup>`:'');
+   const groups = (typeof GROUP_ORDER!=='undefined' && typeof GROUP_META!=='undefined')
+     ? GROUP_ORDER.map(k=>GROUP_META[k])
+     : [{icon:'🎒',name:'Primaire',levels:(typeof PRIMARY_LEVELS!=='undefined'?PRIMARY_LEVELS:['CP','CE1','CE2','CM1','CM2'])},
+        {icon:'🎓',name:'Collège',levels:(typeof COLLEGE_LEVELS!=='undefined'?COLLEGE_LEVELS:[])}];
+   ls.innerHTML = groups.map(g=>
+     `<optgroup label="${g.icon} ${g.name}">${g.levels.map(opt).join('')}</optgroup>`
+   ).join('');
   }
   const inp = document.getElementById('mc-input');
   if(inp) inp.value = (P && P.prefs && P.prefs.mode) || 'keyboard';
