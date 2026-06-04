@@ -44,12 +44,11 @@ const _MAT_OBJ_NAME = {
 function _matObjName(e){ return _MAT_OBJ_NAME[e] || 'objets'; }
 
 // ── Petits utilitaires de rendu visuel ──────────────────────────────
+// Les objets bruts (sans conteneur)
+function _matObjsRaw(obj, n){ let s=''; for(let i=0;i<n;i++) s += `<span class="mat-obj">${obj}</span>`; return s; }
+function _matObjsCrossed(obj, n){ let s=''; for(let i=0;i<n;i++) s += `<span class="mat-obj mat-obj-gone">${obj}</span>`; return s; }
 // Une collection de N objets identiques (l'énoncé à dénombrer)
-function _matCollectionHtml(obj, n){
- let s = '';
- for(let i=0;i<n;i++) s += `<span class="mat-obj">${obj}</span>`;
- return `<div class="mat-collection">${s}</div>`;
-}
+function _matCollectionHtml(obj, n){ return `<div class="mat-collection">${_matObjsRaw(obj,n)}</div>`; }
 // Une « carte à points » (constellation) représentant une quantité — réponse PS/MS
 function _matDotsHtml(k, accent){
  let s = '';
@@ -59,41 +58,106 @@ function _matDotsHtml(k, accent){
 // Un chiffre — réponse GS
 function _matNumHtml(v){ return `<span class="mat-num">${v}</span>`; }
 
-// Construit les réponses : points en PS/MS, chiffres en GS
-function _matChoices(n, level){
- const w = _MAT_WORLDS[level];
+// ── Construction des réponses ───────────────────────────────────────
+function _matDistractors(n, max, count){
  const set = new Set([n]);
  let guard = 0;
- while(set.size < 3 && guard++ < 60){
+ while(set.size < count && guard++ < 80){
   const d = n + [-2,-1,1,2][ri(0,3)];
-  if(d >= 1 && d <= w.max) set.add(d);
+  if(d >= 1 && d <= max) set.add(d);
  }
- let v = 1; while(set.size < 3 && v <= w.max){ set.add(v); v++; }
- const vals = shuffle([...set]).slice(0,3);
- return vals.map(val => ({
-  val,
-  html: (level === 'GS') ? _matNumHtml(val) : _matDotsHtml(val, w.accent),
- }));
+ let v = 1; while(set.size < count && v <= max){ set.add(v); v++; }
+ return shuffle([...set]).slice(0, count);
+}
+function _matDistinct(min, max, count){
+ const pool=[]; for(let i=min;i<=max;i++) pool.push(i);
+ return shuffle(pool).slice(0, Math.min(count, pool.length));
+}
+function _matObj(w){ return w.objs[ri(0, w.objs.length-1)]; }
+// Réponses : cartes à points (PS/MS), chiffres, ou collections d'objets
+function _matChoicesDots(n, w){ return _matDistractors(n, w.max, 3).map(val=>({val, html:_matDotsHtml(val, w.accent)})); }
+function _matChoicesNum(n, max, count){ return _matDistractors(n, max, count||3).map(val=>({val, html:_matNumHtml(val)})); }
+function _matChoicesColl(n, w, obj){ const mx=Math.max(w.max, n+1); return _matDistractors(n, mx, 3).map(val=>({val, html:_matCollectionHtml(obj, val)})); }
+// En PS/MS les réponses chiffrées sont remplacées par des points (sauf « associe »)
+function _matAutoChoices(n, level){ const w=_MAT_WORLDS[level]; return (level==='GS') ? _matChoicesNum(n, Math.max(10,w.max)) : _matChoicesDots(n, w); }
+
+// ════════════ CATALOGUE D'EXERCICES (chaque fonction → une question) ════════════
+function _matBase(level, extra){ return Object.assign({ maternelle:true, level, type:'mat', opKey:'mat', img:'' }, extra); }
+
+// « Combien ? » — dénombrer une collection
+function _matCombien(level){
+ const w=_MAT_WORLDS[level]; const n=ri(1,w.max); const obj=_matObj(w);
+ return _matBase(level, { consigne:`Combien de ${_matObjName(obj)} y a-t-il ?`, visuelHtml:_matCollectionHtml(obj,n), choices:_matAutoChoices(n,level), res:n });
+}
+// Carton-éclair — la collection apparaît brièvement puis se cache (subitizing)
+function _matFlash(level){
+ const w=_MAT_WORLDS[level]; const n=ri(1,Math.min(w.max,5)); const obj=_matObj(w);
+ return _matBase(level, { flash:true, flashMs:1500, consigne:`Regarde bien... Combien de ${_matObjName(obj)} ?`, visuelHtml:_matCollectionHtml(obj,n), choices:_matAutoChoices(n,level), res:n });
+}
+// « Trouve autant » — choisir la collection qui a autant que les points montrés
+function _matPareil(level){
+ const w=_MAT_WORLDS[level]; const n=ri(1,w.max); const obj=_matObj(w);
+ return _matBase(level, { consigne:`Touche le tas qui en a autant.`, visuelHtml:`<div class="mat-collection">${_matDotsHtml(n,w.accent)}</div>`, choices:_matChoicesColl(n,w,obj), res:n });
+}
+// « Le plus grand tas » — comparaison de quantités
+function _matPlusGrand(level){
+ const w=_MAT_WORLDS[level]; const obj=_matObj(w); const vals=_matDistinct(1,w.max,3); const res=Math.max(...vals);
+ return _matBase(level, { consigne:`Touche le plus grand tas de ${_matObjName(obj)}.`, visuelHtml:'', choices: vals.map(v=>({val:v, html:_matCollectionHtml(obj,v)})), res });
+}
+// « Le plus petit tas »
+function _matPlusPetit(level){
+ const w=_MAT_WORLDS[level]; const obj=_matObj(w); const vals=_matDistinct(1,w.max,3); const res=Math.min(...vals);
+ return _matBase(level, { consigne:`Touche le plus petit tas de ${_matObjName(obj)}.`, visuelHtml:'', choices: vals.map(v=>({val:v, html:_matCollectionHtml(obj,v)})), res });
+}
+// « Donne-moi N » — le nombre est dit, choisir la bonne collection
+function _matDonne(level){
+ const w=_MAT_WORLDS[level]; const obj=_matObj(w); const n=ri(1,w.max);
+ return _matBase(level, { consigne:`Touche le tas de ${n} ${_matObjName(obj)}.`, visuelHtml:'', choices:_matChoicesColl(n,w,obj), res:n });
+}
+// « Complète » (MS) — combien en ajouter pour atteindre le total
+function _matDecompose(level){
+ const w=_MAT_WORLDS[level]; const obj=_matObj(w); const total=ri(3,w.max); const have=ri(1,total-1); const need=total-have;
+ return _matBase(level, { consigne:`Il en faut ${total}. Combien en ajouter ?`, visuelHtml:_matCollectionHtml(obj,have), choices:_matAutoChoices(need,level), res:need });
+}
+// « Associe » (MS) — collection → bon chiffre
+function _matAssocie(level){
+ const w=_MAT_WORLDS[level]; const n=ri(1,w.max); const obj=_matObj(w);
+ return _matBase(level, { consigne:`Quel chiffre va avec ce tas ?`, visuelHtml:_matCollectionHtml(obj,n), choices:_matChoicesNum(n, Math.max(6,w.max)), res:n });
+}
+// « Complément à 5 / à 10 » (GS)
+function _matComplement(level){
+ const w=_MAT_WORLDS[level]; const obj=_matObj(w); const target=[5,10][ri(0,1)]; const have=ri(1,target-1); const need=target-have;
+ return _matBase(level, { consigne:`Il y en a ${have}. Combien pour faire ${target} ?`, visuelHtml:_matCollectionHtml(obj,have), choices:_matChoicesNum(need, target), res:need });
+}
+// « Addition » (GS) — a et b, combien en tout
+function _matAddition(level){
+ const w=_MAT_WORLDS[level]; const obj=_matObj(w); const a=ri(1,5); const b=ri(1,Math.min(5,10-a)); const res=a+b;
+ return _matBase(level, { opKey:'+', consigne:`${a} et encore ${b}, combien en tout ?`, visuelHtml:`<div class="mat-collection mat-op">${_matObjsRaw(obj,a)}<span class="mat-op-sign">＋</span>${_matObjsRaw(obj,b)}</div>`, choices:_matChoicesNum(res,10), res });
+}
+// « Retrait » (GS) — on en enlève
+function _matRetrait(level){
+ const w=_MAT_WORLDS[level]; const obj=_matObj(w); const a=ri(3,9); const b=ri(1,a-1); const res=a-b;
+ return _matBase(level, { opKey:'-', consigne:`Il y a ${a} ${_matObjName(obj)}, on en enlève ${b}. Combien reste-t-il ?`, visuelHtml:`<div class="mat-collection mat-op">${_matObjsRaw(obj,a-b)}${_matObjsCrossed(obj,b)}</div>`, choices:_matChoicesNum(res,10), res });
+}
+// « Nombre d'avant / d'après » (GS) — suite numérique
+function _matApres(level){
+ const before=ri(0,1); const n=before?ri(2,10):ri(1,9); const res=before?n-1:n+1;
+ return _matBase(level, { consigne: before?`Quel nombre vient juste avant ${n} ?`:`Quel nombre vient juste après ${n} ?`, visuelHtml:`<div class="mat-suite"><span class="mat-num mat-num-big">${n}</span></div>`, choices:_matChoicesNum(res,10), res });
 }
 
-// ── Générateur d'exercice « Combien ? » (M-A) ───────────────────────
-function _matGenCombien(level){
- const w = _MAT_WORLDS[level];
- const n = ri(1, w.max);
- const obj = w.objs[ri(0, w.objs.length-1)];
- return {
-  maternelle:true, level, type:'mat', opKey:'mat',
-  consigne:`Combien de ${_matObjName(obj)} y a-t-il ?`,
-  visuelHtml:_matCollectionHtml(obj, n),
-  choices:_matChoices(n, level),
-  res:n, img:'',
- };
+// ── Pools par niveau & dispatchers ──────────────────────────────────
+const _MAT_POOL = {
+ PS: [_matCombien, _matCombien, _matPareil, _matPlusGrand, _matDonne],
+ MS: [_matCombien, _matFlash, _matDecompose, _matAssocie, _matPlusGrand, _matPlusPetit, _matDonne],
+ GS: [_matCombien, _matComplement, _matAddition, _matRetrait, _matApres, _matAssocie],
+};
+function _matGen(level){
+ const pool = _MAT_POOL[level] || _MAT_POOL.PS;
+ return pool[ri(0, pool.length-1)](level);
 }
-
-// Dispatcher par niveau (M-A : un seul type d'exercice ; M-B ajoutera les autres)
-function genQ_PS(){ return _matGenCombien('PS'); }
-function genQ_MS(){ return _matGenCombien('MS'); }
-function genQ_GS(){ return _matGenCombien('GS'); }
+function genQ_PS(){ return _matGen('PS'); }
+function genQ_MS(){ return _matGen('MS'); }
+function genQ_GS(){ return _matGen('GS'); }
 
 // Branchement dans le moteur de questions (GEN est défini dans 04-questions.js)
 if(typeof GEN !== 'undefined'){
@@ -122,7 +186,15 @@ function _matRenderQ(q){
 
  // Énoncé visuel : la collection à dénombrer
  const pi = $('problem-image');
- if(pi){ pi.innerHTML = q.visuelHtml; }
+ if(pi){
+  pi.innerHTML = q.visuelHtml || '';
+  if(q.flash){
+   pi.classList.add('mat-flash-on');
+   setTimeout(()=>{ if(typeof GS!=='undefined' && GS.q===q && pi){ pi.classList.remove('mat-flash-on'); pi.innerHTML='<div class="mat-flash-hidden">👀</div>'; } }, q.flashMs||1500);
+  } else {
+   pi.classList.remove('mat-flash-on');
+  }
+ }
 
  // Réponses cliquables (images en PS/MS, chiffres en GS)
  const qcm = $('qcm-options');

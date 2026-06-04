@@ -121,7 +121,8 @@ function _humanizeForSpeech(t){
   // Opérateurs math
   .replace(/×|x/g,' fois ')
   .replace(/÷|\//g,' divisé par ')
-  .replace(/−|-/g,' moins ')
+  .replace(/−/g,' moins ')                    // signe « moins » typographique (maths)
+  .replace(/(\d)\s*-\s*(\d)/g,'$1 moins $2')   // tiret entre deux nombres = soustraction
   .replace(/\+/g,' plus ')
   .replace(/=/g,' égale ')
   // v8.7.31 : "?" n'est plus remplacé par "quoi" (anomalie vocale).
