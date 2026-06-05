@@ -387,7 +387,9 @@ function isUnlocked(lvl){return UNLOCK_REQ[lvl]===0||prevWins(lvl)>=UNLOCK_REQ[l
 // Le « niveau précédent » d'un niveau est celui qui le précède DANS SON propre groupe ;
 // CP et 6ᵉ sont chacun en tête de leur cursus (aucun prérequis).
 function _levelGroupArr(lvl){
- return (typeof COLLEGE_LEVELS!=='undefined' && COLLEGE_LEVELS.includes(lvl)) ? COLLEGE_LEVELS : PRIMARY_LEVELS;
+ if(typeof MATERNELLE_LEVELS!=='undefined' && MATERNELLE_LEVELS.includes(lvl)) return MATERNELLE_LEVELS;
+ if(typeof COLLEGE_LEVELS!=='undefined' && COLLEGE_LEVELS.includes(lvl)) return COLLEGE_LEVELS;
+ return PRIMARY_LEVELS;
 }
 function prevWins(lvl){ const g=_levelGroupArr(lvl); const i=g.indexOf(lvl); return i<=0?0:(P.levelWins[g[i-1]]||0); }
 function applyTheme(t){

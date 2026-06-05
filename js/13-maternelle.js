@@ -15,7 +15,7 @@ const _MAT_WORLDS = {
  PS: {
   name:'Petite section', world:"L'océan tout doux",
   accent:'#1d9e75', soft:'#e1f5ee', sky:'linear-gradient(180deg,#bdeadd 0%,#d8f3ec 100%)',
-  objs:['🐟','🐠','🐡','🐙','🦀','🐚','🐬','🫧'],
+  objs:['🐟','🐠','🐡','🐙','🦀','🐚','🐬'],
   mascot:'⭐', mascotLabel:'Étincelle, l\'étoile de mer',
   max:3,
  },
@@ -35,13 +35,20 @@ const _MAT_WORLDS = {
  },
 };
 
-// Noms (pluriel) pour la consigne lue à voix haute
-const _MAT_OBJ_NAME = {
- '🐟':'poissons','🐠':'poissons','🐡':'poissons','🐙':'poulpes','🦀':'crabes','🐚':'coquillages','🐬':'dauphins','🫧':'bulles',
- '🐤':'poussins','🐥':'poussins','🥚':'œufs','🐑':'moutons','🐄':'vaches','🐖':'cochons','🍎':'pommes','🌻':'tournesols',
- '🌸':'fleurs','🌼':'fleurs','🦋':'papillons','🍄':'champignons','⭐':'étoiles','🌙':'lunes','☁️':'nuages','🐞':'coccinelles',
+// Objets : pluriel (p), singulier (s), genre (g) — pour accorder « un/une » et le nombre
+const _MAT_OBJ = {
+ '🐟':{p:'poissons',s:'poisson',g:'m'},'🐠':{p:'poissons',s:'poisson',g:'m'},'🐡':{p:'poissons',s:'poisson',g:'m'},
+ '🐙':{p:'poulpes',s:'poulpe',g:'m'},'🦀':{p:'crabes',s:'crabe',g:'m'},'🐚':{p:'coquillages',s:'coquillage',g:'m'},'🐬':{p:'dauphins',s:'dauphin',g:'m'},
+ '🐤':{p:'poussins',s:'poussin',g:'m'},'🐥':{p:'poussins',s:'poussin',g:'m'},'🥚':{p:'œufs',s:'œuf',g:'m'},'🐑':{p:'moutons',s:'mouton',g:'m'},'🐄':{p:'vaches',s:'vache',g:'f'},'🐖':{p:'cochons',s:'cochon',g:'m'},'🍎':{p:'pommes',s:'pomme',g:'f'},'🌻':{p:'tournesols',s:'tournesol',g:'m'},
+ '🌸':{p:'fleurs',s:'fleur',g:'f'},'🌼':{p:'fleurs',s:'fleur',g:'f'},'🦋':{p:'papillons',s:'papillon',g:'m'},'🍄':{p:'champignons',s:'champignon',g:'m'},'⭐':{p:'étoiles',s:'étoile',g:'f'},'🌙':{p:'lunes',s:'lune',g:'f'},'☁️':{p:'nuages',s:'nuage',g:'m'},'🐞':{p:'coccinelles',s:'coccinelle',g:'f'},
 };
-function _matObjName(e){ return _MAT_OBJ_NAME[e] || 'objets'; }
+function _matObjName(e){ return _MAT_OBJ[e] ? _MAT_OBJ[e].p : 'objets'; }
+// Quantité accordée : « une fleur » / « un poisson » / « 3 fleurs »
+function _matQty(n, e){
+ const o=_MAT_OBJ[e]; if(!o) return n+' objets';
+ if(n===1) return (o.g==='f'?'une ':'un ')+o.s;
+ return n+' '+o.p;
+}
 
 // ── Petits utilitaires de rendu visuel ──────────────────────────────
 // Les objets bruts (sans conteneur)
@@ -112,7 +119,7 @@ function _matPlusPetit(level){
 // « Donne-moi N » — le nombre est dit, choisir la bonne collection
 function _matDonne(level){
  const w=_MAT_WORLDS[level]; const obj=_matObj(w); const n=ri(1,w.max);
- return _matBase(level, { consigne:`Touche le tas de ${n} ${_matObjName(obj)}.`, visuelHtml:'', choices:_matChoicesColl(n,w,obj), res:n });
+ return _matBase(level, { consigne:`Touche le tas qui a ${_matQty(n,obj)}.`, visuelHtml:'', choices:_matChoicesColl(n,w,obj), res:n });
 }
 // « Complète » (MS) — combien en ajouter pour atteindre le total
 function _matDecompose(level){

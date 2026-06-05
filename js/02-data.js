@@ -18,7 +18,7 @@ function heroGender(name){
  return 'm';
 }
 const UNLOCK_REQ={PS:0,MS:3,GS:4,CP:0,CE1:3,CE2:5,CM1:4,CM2:5,'6E':0,'5E':5,'4E':6,'3E':6};
-const HP_LVL={CP:1,CE1:2,CE2:3,CM1:4,CM2:5};
+const HP_LVL={PS:1,MS:1,GS:1,CP:1,CE1:2,CE2:3,CM1:4,CM2:5,'6E':3,'5E':3,'4E':4,'3E':4};
 const EMOJIS=['🍎','🎂','⭐','🎈','🐟','🌸','🍬','🚗','🐱','🐶'];
 // AVATAR_LIST = ensemble exhaustif des avatars du jeu, réparti par stade dans HERO_STAGES (chantier B2).
 // Si tu ajoutes un avatar, ajoute-le ICI **et** dans le stade correspondant de HERO_STAGES.unlockedAvatars.

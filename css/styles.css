@@ -4801,3 +4801,11 @@ body.mat-mode #v-game{
 .qcm-options.mat-choices .mat-choice{ animation: matPop .32s ease both; }
 .qcm-options.mat-choices .mat-choice:nth-child(2){ animation-delay:.06s; }
 .qcm-options.mat-choices .mat-choice:nth-child(3){ animation-delay:.12s; }
+
+/* v9.1.4 : lisibilité des cartes à points */
+/* Énoncé (sur fond sombre) : gros points cerclés de blanc */
+#problem-image .mat-dots{ max-width:none; gap:12px; }
+#problem-image .mat-dot{ width:34px; height:34px; border:3px solid rgba(255,255,255,.8); box-shadow:0 2px 8px rgba(0,0,0,.45); }
+/* Réponses (sur boutons bleus) : points blancs bien visibles */
+.mat-choice .mat-dots{ max-width:none; gap:9px; }
+.mat-choice .mat-dot{ width:26px; height:26px; background:#fff !important; box-shadow:0 2px 5px rgba(0,0,0,.4); }
