@@ -4877,3 +4877,11 @@ body.mat-mode #v-game{
 @keyframes matTalk{ 0%,100%{ transform: translateY(0) scale(1.06) rotate(-6deg); } 50%{ transform: translateY(-9px) scale(1.2) rotate(6deg); } }
 /* La joie de la bonne réponse reste prioritaire sur la parole */
 .mat-mascot.mat-joy{ animation: matJoy .7s ease !important; }
+
+/* ═══════ v9.3.2 (P0 socle + P3) : choix visuels primaire & barre de fraction ═══════ */
+.qcm-options.prim-choices{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+.qcm-btn.prim-choice{ min-height:64px; font-size:1.4em; }
+.prim-fracbar{ display:flex; width:min(86%,320px); height:46px; margin:8px auto; border:2px solid #fff; border-radius:8px; overflow:hidden; box-shadow:0 3px 10px rgba(0,0,0,.35); }
+.pf-cell{ flex:1; border-right:2px solid rgba(255,255,255,.85); background:rgba(255,255,255,.12); }
+.pf-cell:last-child{ border-right:none; }
+.pf-cell.filled{ background:#f1c40f; }

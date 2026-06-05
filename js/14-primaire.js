@@ -122,18 +122,43 @@ function _primStrategie(level){
  return { display:`${big} - ${d} = ${big} - ${d+1} + 1 = ?`, res: big-d, type:'normal', opKey:'-', img:'' };
 }
 
+// ════════════════ Chantier P3 : Fractions (visuel) ════════════════
+function _primFracBarHtml(n, d){
+ let cells=''; for(let i=0;i<d;i++) cells += `<span class="pf-cell${i<n?' filled':''}"></span>`;
+ return `<div class="prim-fracbar">${cells}</div>`;
+}
+// Barre-unité partagée en d, n coloriés → lire la fraction (concret-imagé → abstrait)
+function _primFractionBar(level){
+ const denoms = {CE1:[2,3,4], CE2:[2,3,4,5,6,8], CM1:[2,3,4,5,6,8,10], CM2:[2,3,4,5,6,8,10,12]}[level] || [2,3,4];
+ const d = _primPick(denoms);
+ const n = level==='CE1' ? 1 : ri(1, d-1);   // CE1 : fractions unitaires ; fractions < 1 (programme)
+ const set = new Set([`${n}/${d}`]); let guard=0;
+ while(set.size<4 && guard++<50){
+  const dn = _primPick(denoms); const nn = (level==='CE1') ? 1 : ri(1, dn-1);
+  set.add(`${nn}/${dn}`);
+ }
+ const labels = shuffle([...set]);
+ const choices = labels.map((lab,i)=>({val:i, label:lab}));
+ return {
+  display:`Quelle fraction est coloriée ?`,
+  visualHtml: _primFracBarHtml(n, d),
+  choices, res: labels.indexOf(`${n}/${d}`),
+  type:'normal', opKey:'frac', img:''
+ };
+}
+
 // ── Pools par niveau ──────────────────────────────────────────────────
 const _PRIM_POOL = {
  CP:  [_primSuite, _primRangListe, _primComparer, _primValeurPosition,
        _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primStrategie],
  CE1: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines,
-       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primStrategie],
+       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primStrategie, _primFractionBar],
  CE2: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines, _primArrondi,
-       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primFamilleMul, _primCommut, _primStrategie],
+       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primFamilleMul, _primCommut, _primStrategie, _primFractionBar],
  CM1: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines, _primArrondi,
-       _primDouble, _primMoitie, _primComplement, _primFamilleMul, _primCommut, _primStrategie],
+       _primDouble, _primMoitie, _primComplement, _primFamilleMul, _primCommut, _primStrategie, _primFractionBar],
  CM2: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines, _primArrondi,
-       _primDouble, _primMoitie, _primComplement, _primFamilleMul, _primCommut, _primStrategie],
+       _primDouble, _primMoitie, _primComplement, _primFamilleMul, _primCommut, _primStrategie, _primFractionBar],
 };
 
 // Renvoie une question d'enrichissement pour le niveau, ou null.

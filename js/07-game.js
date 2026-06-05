@@ -2470,7 +2470,7 @@ function renderQ(){
  $('question').innerText=txt;$('question').className=GS.isGolden?'gold-q':q.isRevision?'revision-q-inline':'';
  // Chantier 1.2 : petit toast discret quand une question de révision espacée apparaît
  if(q.isRevision && typeof toast==='function') toast('🔁 Révision', 1200);
- $('problem-image').innerText=q.img||'';
+ { const _pi=$('problem-image'); if(q.visualHtml){ _pi.innerHTML=q.visualHtml; } else { _pi.innerText=q.img||''; } }
  const sk=getSkin();const ml=GS.isGolden?sk.g:GS.isBoss?sk.b:sk.n;
  const ma=$('monster-area');
  // Use monster roster emoji or skin emoji
@@ -2496,13 +2496,23 @@ function renderQ(){
  else ttl=`👾 ${GS.qCount}/6`;
  $('quest-title').innerHTML=`${ttl} <span class="mode-badge m-${GM.mapZone?'map':GM.mode2}">${GM.mapZone?'carte':GM.mode2}</span>`;
  $('feedback').innerText='';speak(txt);
- if(GM.mode==='qcm'){
+ const _hasChoices = q.choices && q.choices.length;
+ // Visibilité pavé/choix : forcée sur les questions à choix (exercices visuels), sinon selon le mode
+ $('qcm-options').classList.toggle('hidden', !(_hasChoices || GM.mode==='qcm'));
+ $('input-zone').classList.toggle('hidden', _hasChoices || GM.mode==='qcm');
+ if(_hasChoices){
+  const qcmEl=$('qcm-options');
+  qcmEl.classList.toggle('prim-choices', !!q.visualChoices);
+  qcmEl.innerHTML=q.choices.map(c=>`<button class="qcm-btn${q.visualChoices?' prim-choice':''}" data-val="${c.val}">${c.html!==undefined?c.html:c.label}</button>`).join('');
+  qcmEl.onclick=e=>{const b=e.target.closest('.qcm-btn');if(b&&!b.disabled)validate(+b.dataset.val);};
+ }else if(GM.mode==='qcm'){
   const correct=q.res;
   const offsets=shuffle([-7,-5,-3,-2,-1,1,2,3,5,7]);
   const opts=[correct];
   for(let i=0;opts.length<4;i++)opts.push(Math.max(0,correct+offsets[i%offsets.length]));
   const dedup=[...new Set(opts)];while(dedup.length<4)dedup.push(dedup[dedup.length-1]+1);
   const qcmEl=$('qcm-options');
+  qcmEl.classList.remove('prim-choices');
   qcmEl.innerHTML=shuffle(dedup).map(o=>`<button class="qcm-btn" data-val="${o}">${o}</button>`).join('');
   qcmEl.onclick=e=>{const b=e.target.closest('.qcm-btn');if(b&&!b.disabled)validate(+b.dataset.val);};
  }else{const ai=$('answer-input');ai.value='';if(!_numpadIsTouch())setTimeout(()=>ai.focus(),100);}
@@ -2581,7 +2591,7 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
   if(COMBO_MILESTONES.has(GS.combo))comboBanner(GS.combo);
   // Monster reacts to being hit
   if(!(typeof _isMaternelle==='function'&&_isMaternelle(GM.level)) && Math.random()<.55)monsterSpeak(CORRECT_TAUNTS[ri(0,CORRECT_TAUNTS.length-1)],1800);
-  if(GM.mode==='qcm')markQCM(ans,true);updateHUD();
+  if(GM.mode==='qcm'||(GS.q&&GS.q.choices&&GS.q.choices.length))markQCM(ans,true);updateHUD();
   if(typeof _isMaternelle==='function'&&_isMaternelle(GM.level)&&typeof _matCelebrate==='function')_matCelebrate();
   // v8.7.54 (O4.2c) : bouclier du boss — absorbe le 1er coup, cède au 2e.
   let _shieldHeld = false;
@@ -2642,7 +2652,7 @@ GS.errInGame++;GS.combo=0;GS.opCombo=0;GS.lastOpKey=null;$('gc').classList.remov
   if(typeof logError==='function' && q.display && q.res!==undefined) logError(q.display, q.res);
   // Monster taunts on wrong answer
   monsterSpeak(WRONG_TAUNTS[ri(0,WRONG_TAUNTS.length-1)],2200);
-  showCorr(q);if(GM.mode==='qcm')markQCM(ans,false,q.res);hitPlayer('💥 FAUX !');
+  showCorr(q);if(GM.mode==='qcm'||(q&&q.choices&&q.choices.length))markQCM(ans,false,q.res);hitPlayer('💥 FAUX !');
  }
 }
 function markQCM(chosen,correct,right){
