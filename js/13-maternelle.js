@@ -49,6 +49,8 @@ function _matQty(n, e){
  if(n===1) return (o.g==='f'?'une ':'un ')+o.s;
  return n+' '+o.p;
 }
+// Élision : « de poissons » mais « d'œufs », « d'étoiles »
+function _matDe(name){ return /^[aeiouyéèêàâîïôûœh]/i.test(name) ? "d'"+name : "de "+name; }
 
 // ── Petits utilitaires de rendu visuel ──────────────────────────────
 // Les objets bruts (sans conteneur)
@@ -94,12 +96,12 @@ function _matBase(level, extra){ return Object.assign({ maternelle:true, level, 
 // « Combien ? » — dénombrer une collection
 function _matCombien(level){
  const w=_MAT_WORLDS[level]; const n=ri(1,w.max); const obj=_matObj(w);
- return _matBase(level, { consigne:`Combien de ${_matObjName(obj)} y a-t-il ?`, visuelHtml:_matCollectionHtml(obj,n), choices:_matAutoChoices(n,level), res:n });
+ return _matBase(level, { consigne:`Combien ${_matDe(_matObjName(obj))} y a-t-il ?`, visuelHtml:_matCollectionHtml(obj,n), choices:_matAutoChoices(n,level), res:n });
 }
 // Carton-éclair — la collection apparaît brièvement puis se cache (subitizing)
 function _matFlash(level){
  const w=_MAT_WORLDS[level]; const n=ri(1,Math.min(w.max,5)); const obj=_matObj(w);
- return _matBase(level, { flash:true, flashMs:1500, consigne:`Regarde bien... Combien de ${_matObjName(obj)} ?`, visuelHtml:_matCollectionHtml(obj,n), choices:_matAutoChoices(n,level), res:n });
+ return _matBase(level, { flash:true, flashMs:3000, consigne:`Regarde bien... Combien ${_matDe(_matObjName(obj))} ?`, visuelHtml:_matCollectionHtml(obj,n), choices:_matAutoChoices(n,level), res:n });
 }
 // « Trouve autant » — choisir la collection qui a autant que les points montrés
 function _matPareil(level){
@@ -152,11 +154,23 @@ function _matApres(level){
  return _matBase(level, { consigne: before?`Quel nombre vient juste avant ${n} ?`:`Quel nombre vient juste après ${n} ?`, visuelHtml:`<div class="mat-suite"><span class="mat-num mat-num-big">${n}</span></div>`, choices:_matChoicesNum(res,10), res });
 }
 
+// « Le dé » — lire une constellation classique du dé (motif organisé / subitizing)
+const _DIE_POS = {1:[5],2:[1,9],3:[1,5,9],4:[1,3,7,9],5:[1,3,5,7,9],6:[1,4,7,3,6,9]};
+function _matDieFaceHtml(n){
+ const pos=_DIE_POS[n]||[5]; let cells='';
+ for(let i=1;i<=9;i++){ cells += `<span class="mat-die-cell">${pos.indexOf(i)>=0?'<span class="mat-die-pip"></span>':''}</span>`; }
+ return `<div class="mat-die">${cells}</div>`;
+}
+function _matDie(level){
+ const w=_MAT_WORLDS[level]; const max=Math.min(w.max,6); const n=ri(1,max);
+ return _matBase(level, { consigne:`Combien de points sur le dé ?`, visuelHtml:`<div class="mat-collection">${_matDieFaceHtml(n)}</div>`, choices:_matAutoChoices(n,level), res:n });
+}
+
 // ── Pools par niveau & dispatchers ──────────────────────────────────
 const _MAT_POOL = {
- PS: [_matCombien, _matCombien, _matPareil, _matPlusGrand, _matDonne],
- MS: [_matCombien, _matFlash, _matDecompose, _matAssocie, _matPlusGrand, _matPlusPetit, _matDonne],
- GS: [_matCombien, _matComplement, _matAddition, _matRetrait, _matApres, _matAssocie],
+ PS: [_matCombien, _matCombien, _matDie, _matPareil, _matPlusGrand, _matPlusPetit, _matDonne],
+ MS: [_matCombien, _matDie, _matFlash, _matDecompose, _matAssocie, _matPlusGrand, _matPlusPetit, _matDonne],
+ GS: [_matCombien, _matDie, _matComplement, _matAddition, _matRetrait, _matApres, _matAssocie],
 };
 function _matGen(level){
  const pool = _MAT_POOL[level] || _MAT_POOL.PS;
@@ -209,7 +223,8 @@ function _matRenderQ(q){
   qcm.classList.remove('hidden');
   qcm.classList.add('mat-choices');
   qcm.innerHTML = q.choices
-   .map(c => `<button class="qcm-btn mat-choice" data-val="${c.val}">${c.html}</button>`)
+   .map(c => { const kind = c.html.indexOf('mat-collection')>=0?'coll':(c.html.indexOf('mat-dots')>=0?'dots':'num');
+    return `<button class="qcm-btn mat-choice mat-choice-${kind}" data-val="${c.val}">${c.html}</button>`; })
    .join('');
   qcm.onclick = (e) => { const b = e.target.closest('.qcm-btn'); if(b && !b.disabled) validate(+b.dataset.val); };
  }

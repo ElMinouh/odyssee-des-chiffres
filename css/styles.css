@@ -4809,3 +4809,11 @@ body.mat-mode #v-game{
 /* Réponses (sur boutons bleus) : points blancs bien visibles */
 .mat-choice .mat-dots{ max-width:none; gap:9px; }
 .mat-choice .mat-dot{ width:26px; height:26px; background:#fff !important; box-shadow:0 2px 5px rgba(0,0,0,.4); }
+
+/* v9.1.5 : réponses « collection d'objets » sur fond clair (objets colorés lisibles) */
+.qcm-btn.mat-choice-coll{ background:#fdfaf2 !important; color:#2c3e50 !important; border:2px solid rgba(0,0,0,.12); }
+.qcm-btn.mat-choice-coll .mat-obj{ filter:drop-shadow(0 1px 1px rgba(0,0,0,.15)); }
+/* Face de dé (lecture des constellations) */
+.mat-die{ display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); gap:4px; width:94px; height:94px; background:#fff; border-radius:16px; padding:10px; box-shadow:0 4px 14px rgba(0,0,0,.4); }
+.mat-die-cell{ display:flex; align-items:center; justify-content:center; }
+.mat-die-pip{ width:19px; height:19px; border-radius:50%; background:#2c3e50; }

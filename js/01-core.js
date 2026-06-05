@@ -119,6 +119,7 @@ function _humanizeForSpeech(t){
   // Fallback générique : 3+ consonnes identiques → seulement 2 (évite l'épellation)
   .replace(/([bcdfghjklmnpqrstvwxz])\1{2,}/gi, '$1$1')
   // Opérateurs math
+  .replace(/\bb?[vz]z{1,}[a-zéèê]*/gi,' ')   // onomatopées « Bzzz / Vzzz » : pas d'épellation
   .replace(/×|x/g,' fois ')
   .replace(/÷|\//g,' divisé par ')
   .replace(/−/g,' moins ')                    // signe « moins » typographique (maths)
