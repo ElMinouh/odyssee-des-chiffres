@@ -136,7 +136,7 @@ function _matAssocie(level){
 // « Complément à 5 / à 10 » (GS)
 function _matComplement(level){
  const w=_MAT_WORLDS[level]; const obj=_matObj(w); const target=[5,10][ri(0,1)]; const have=ri(1,target-1); const need=target-have;
- return _matBase(level, { consigne:`Il y en a ${have}. Combien pour faire ${target} ?`, visuelHtml:_matCollectionHtml(obj,have), choices:_matChoicesNum(need, target), res:need });
+ return _matBase(level, { consigne:`Il y en a ${have}. Combien en ajouter pour faire ${target} ?`, visuelHtml:_matCollectionHtml(obj,have), choices:_matChoicesNum(need, target), res:need });
 }
 // « Addition » (GS) — a et b, combien en tout
 function _matAddition(level){
