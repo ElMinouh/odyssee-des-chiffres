@@ -4817,3 +4817,29 @@ body.mat-mode #v-game{
 .mat-die{ display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); gap:4px; width:94px; height:94px; background:#fff; border-radius:16px; padding:10px; box-shadow:0 4px 14px rgba(0,0,0,.4); }
 .mat-die-cell{ display:flex; align-items:center; justify-content:center; }
 .mat-die-pip{ width:19px; height:19px; border-radius:50%; background:#2c3e50; }
+
+/* ═══════ v9.2 : nouveaux supports maternelle ═══════ */
+/* Cadre à dix */
+.mat-tenframe{ display:grid; grid-template-columns:repeat(5,40px); grid-auto-rows:40px; gap:5px; justify-content:center; background:#fff; padding:10px; border-radius:14px; box-shadow:0 4px 14px rgba(0,0,0,.4); }
+.mat-tf-cell{ border:2px solid #34495e; border-radius:7px; display:flex; align-items:center; justify-content:center; }
+.mat-tf-dot{ width:24px; height:24px; border-radius:50%; background:var(--mat-accent,#1d9e75); }
+/* Doigts de la main */
+.mat-hand{ display:inline-flex; flex-direction:column; align-items:center; }
+.mat-fingers{ display:flex; gap:6px; align-items:flex-end; height:64px; }
+.mat-finger{ width:16px; border-radius:8px 8px 0 0; background:#f0b27a; }
+.mat-finger.up{ height:60px; }
+.mat-finger.down{ height:18px; opacity:.4; }
+.mat-palm{ width:98px; height:34px; border-radius:0 0 18px 18px; background:#f0b27a; margin-top:-2px; }
+/* Domino */
+.mat-domino{ display:inline-flex; align-items:center; gap:8px; background:#fff; padding:8px; border-radius:16px; box-shadow:0 4px 14px rgba(0,0,0,.4); }
+.mat-domino .mat-die{ box-shadow:none; width:74px; height:74px; }
+.mat-domino-bar{ width:3px; height:58px; background:#2c3e50; border-radius:2px; }
+/* Formes */
+.mat-shape{ display:inline-block; width:60px; height:60px; }
+.mat-shape-rond{ border-radius:50%; background:#D85A30; }
+.mat-shape-carre{ border-radius:8px; background:#378ADD; }
+.mat-shape-triangle{ width:0; height:0; background:transparent; border-left:32px solid transparent; border-right:32px solid transparent; border-bottom:58px solid #1D9E75; }
+/* Suites à motifs */
+.mat-suite-row{ display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; }
+.mat-suite-item{ font-size:2.2em; }
+.mat-suite-q{ font-size:1.8em; font-weight:900; color:#fff; width:46px; height:46px; border:3px dashed rgba(255,255,255,.6); border-radius:12px; display:inline-flex; align-items:center; justify-content:center; }

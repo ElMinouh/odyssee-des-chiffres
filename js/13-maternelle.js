@@ -168,9 +168,9 @@ function _matDie(level){
 
 // ── Pools par niveau & dispatchers ──────────────────────────────────
 const _MAT_POOL = {
- PS: [_matCombien, _matCombien, _matDie, _matPareil, _matPlusGrand, _matPlusPetit, _matDonne],
- MS: [_matCombien, _matDie, _matFlash, _matDecompose, _matAssocie, _matPlusGrand, _matPlusPetit, _matDonne],
- GS: [_matCombien, _matDie, _matComplement, _matAddition, _matRetrait, _matApres, _matAssocie],
+ PS: [_matCombien, _matDie, _matDoigts, _matPareil, _matPlusGrand, _matPlusPetit, _matDonne, _matForme, _matIntrus, _matSuite, _matRang],
+ MS: [_matCombien, _matDie, _matDoigts, _matTenFrame, _matDomino, _matFlash, _matDecompose, _matAssocie, _matPlusGrand, _matPlusPetit, _matDonne, _matForme, _matIntrus, _matSuite, _matRang],
+ GS: [_matCombien, _matDie, _matTenFrame, _matDomino, _matComplement, _matAddition, _matRetrait, _matApres, _matAssocie, _matSuite, _matIntrus, _matProbleme, _matRang, _matForme],
 };
 function _matGen(level){
  const pool = _MAT_POOL[level] || _MAT_POOL.PS;
@@ -242,7 +242,10 @@ function _matRenderQ(q){
 
  // Lecture de la consigne
  const fb = $('feedback'); if(fb) fb.innerText = '';
- if(typeof speak === 'function') speak(q.consigne);
+ if(typeof speak === 'function'){
+  const intro = (typeof GS!=='undefined' && GS.qCount===1 && typeof _matWelcomeText==='function') ? _matWelcomeText(q.level)+' ' : '';
+  speak(intro + q.consigne);
+ }
 }
 
 // Applique l'ambiance maternelle à l'écran de jeu (fond doux) / la retire
@@ -266,4 +269,95 @@ function _matCelebrate(){
  const msg=_MAT_BRAVO[ri(0,_MAT_BRAVO.length-1)];
  if(fb){ fb.style.color='#f1c40f'; fb.innerText='⭐ '+msg+' !'; }
  if(typeof speak==='function') speak(msg);
+}
+
+// ═══════════════════ NOUVEAUX EXERCICES (lot v9.2) ═══════════════════
+// Choix avec un plafond explicite (utile quand n dépasse w.max : ten-frame, doigts, domino)
+function _matChoicesAt(n, cap, level, w){
+ return _matDistractors(n, cap, 3).map(val=>({val, html:(level==='GS')?_matNumHtml(val):_matDotsHtml(val, w.accent)}));
+}
+
+// ── Cadre à dix (ten-frame) ─────────────────────────────────────────
+function _matTenFrameHtml(n){
+ let c=''; for(let i=0;i<10;i++){ c += `<span class="mat-tf-cell">${i<n?'<span class="mat-tf-dot"></span>':''}</span>`; }
+ return `<div class="mat-tenframe">${c}</div>`;
+}
+function _matTenFrame(level){
+ const w=_MAT_WORLDS[level]; const cap=(level==='GS')?10:(level==='MS')?6:5; const n=ri(1,cap);
+ return _matBase(level,{ consigne:`Combien de cases sont remplies ?`, visuelHtml:_matTenFrameHtml(n), choices:_matChoicesAt(n,cap,level,w), res:n });
+}
+
+// ── Doigts de la main ───────────────────────────────────────────────
+function _matHandHtml(n){
+ let f=''; for(let i=0;i<5;i++){ f += `<span class="mat-finger ${i<n?'up':'down'}"></span>`; }
+ return `<div class="mat-hand"><div class="mat-fingers">${f}</div><div class="mat-palm"></div></div>`;
+}
+function _matDoigts(level){
+ const w=_MAT_WORLDS[level]; const n=ri(1,5);
+ return _matBase(level,{ consigne:`Combien de doigts sont levés ?`, visuelHtml:`<div class="mat-collection">${_matHandHtml(n)}</div>`, choices:_matChoicesAt(n,5,level,w), res:n });
+}
+
+// ── Dominos (deux constellations à additionner) ─────────────────────
+function _matDominoHtml(a,b){ return `<div class="mat-domino">${_matDieFaceHtml(a)}<span class="mat-domino-bar"></span>${_matDieFaceHtml(b)}</div>`; }
+function _matDomino(level){
+ const w=_MAT_WORLDS[level]; const a=ri(1,3), b=ri(1,3); const res=a+b;
+ return _matBase(level,{ consigne:`Combien de points en tout ?`, visuelHtml:`<div class="mat-collection">${_matDominoHtml(a,b)}</div>`, choices:_matChoicesAt(res,6,level,w), res });
+}
+
+// ── Le rang (fonction ordinale) ─────────────────────────────────────
+const _MAT_ORD = {1:'premier',2:'deuxième',3:'troisième',4:'quatrième'};
+function _matRang(level){
+ const w=_MAT_WORLDS[level]; const obj=_matObj(w); const len=3; const k=ri(1,len);
+ const o=_MAT_OBJ[obj]||{s:'objet',g:'m'};
+ const label = (k===len) ? 'dernier' : (_MAT_ORD[k]||(k+'ᵉ'));
+ const consigne = `Touche le ${label} ${o.s}.`;
+ const choices = []; for(let p=1;p<=len;p++){ choices.push({val:p, html:_matCollectionHtml(obj,1)}); }
+ return _matBase(level,{ consigne, visuelHtml:'', choices, res:k });
+}
+
+// ── Reconnaître les formes ──────────────────────────────────────────
+const _MAT_SHAPES = [{id:'rond',n:'rond'},{id:'carre',n:'carré'},{id:'triangle',n:'triangle'}];
+function _matShapeHtml(id){ return `<div class="mat-collection"><span class="mat-shape mat-shape-${id}"></span></div>`; }
+function _matForme(level){
+ const target=_MAT_SHAPES[ri(0,_MAT_SHAPES.length-1)];
+ const opts=shuffle(_MAT_SHAPES.slice());
+ const choices=opts.map((s,i)=>({val:i, html:_matShapeHtml(s.id)}));
+ const res=opts.findIndex(s=>s.id===target.id);
+ return _matBase(level,{ consigne:`Touche le ${target.n}.`, visuelHtml:'', choices, res });
+}
+
+// ── Les suites à motifs (algorithmes) ───────────────────────────────
+function _matSuite(level){
+ const w=_MAT_WORLDS[level]; const a=_matObj(w); let b=_matObj(w); let g=0; while(b===a && g++<12) b=_matObj(w);
+ const period=[['A','B'],['A','A','B'],['A','B','B']][ri(0,2)];
+ const shown=5; const map={A:a,B:b}; const seq=[];
+ for(let i=0;i<shown;i++) seq.push(period[i%period.length]);
+ const nextSym=period[shown%period.length];
+ const visuel=`<div class="mat-suite-row">${seq.map(s=>`<span class="mat-suite-item">${map[s]}</span>`).join('')}<span class="mat-suite-q">?</span></div>`;
+ const choices=shuffle([{val:0,html:_matCollectionHtml(a,1)},{val:1,html:_matCollectionHtml(b,1)}]);
+ return _matBase(level,{ consigne:`Qu'est-ce qui vient après ?`, visuelHtml:visuel, choices, res:(nextSym==='A'?0:1) });
+}
+
+// ── L'intrus ────────────────────────────────────────────────────────
+function _matIntrus(level){
+ const w=_MAT_WORLDS[level]; const main=_matObj(w); let intr=_matObj(w); let g=0; while(intr===main && g++<12) intr=_matObj(w);
+ const len=ri(3,4); const pos=ri(0,len-1); const arr=[];
+ for(let i=0;i<len;i++) arr.push(i===pos?intr:main);
+ const choices=arr.map((o,i)=>({val:i, html:_matCollectionHtml(o,1)}));
+ return _matBase(level,{ consigne:`Touche celui qui n'est pas comme les autres.`, visuelHtml:'', choices, res:pos });
+}
+
+// ── Problèmes racontés par Étincelle ────────────────────────────────
+function _matProbleme(level){
+ const w=_MAT_WORLDS[level]; const obj=_matObj(w); const o=_MAT_OBJ[obj]||{p:'objets'};
+ if(ri(0,1)){ const a=ri(1,5), b=ri(1,Math.min(5,10-a)); const res=a+b;
+  return _matBase(level,{ opKey:'+', consigne:`Étincelle voit ${a} ${o.p}. Il en arrive ${b} de plus. Combien en tout ?`, visuelHtml:`<div class="mat-collection mat-op">${_matObjsRaw(obj,a)}<span class="mat-op-sign">＋</span>${_matObjsRaw(obj,b)}</div>`, choices:_matChoicesNum(res,10), res }); }
+ const a=ri(3,9), b=ri(1,a-1); const res=a-b;
+ return _matBase(level,{ opKey:'-', consigne:`Il y a ${a} ${o.p}. ${b} s'en vont. Combien en reste-t-il ?`, visuelHtml:`<div class="mat-collection mat-op">${_matObjsRaw(obj,a-b)}${_matObjsCrossed(obj,b)}</div>`, choices:_matChoicesNum(res,10), res });
+}
+
+// ── Voix d'accueil d'Étincelle (1ère question d'une partie) ─────────
+function _matWelcomeText(level){
+ const hi=['Coucou, je suis Étincelle !','Bonjour, c\'est moi, Étincelle !','Salut ! Étincelle est là !'][ri(0,2)];
+ return hi+' On compte ensemble ?';
 }
