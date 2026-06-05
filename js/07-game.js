@@ -3362,9 +3362,9 @@ function _triggerBossEnrage(){
  if(typeof monsterSpeak === 'function'){
   try{ monsterSpeak(line, 2600); }catch(e){}
  }
- // Son grave menaçant (descente de notes)
+ // Son grave menaçant : rugissement montant (growl) — timbre « bête » distinct du bip d'erreur
  if(typeof beep === 'function'){
-  [220, 185, 155, 130].forEach((f, i) => setTimeout(() => { try{ beep(f, 'sawtooth', .25, .12); }catch(e){} }, i * 90));
+  [[55,0],[70,130],[92,280],[78,430]].forEach(([f,d]) => setTimeout(() => { try{ beep(f,'square',.34,.13); beep(f*1.5,'sawtooth',.3,.05); }catch(e){} }, d));
  }
  // Vibration forte
  if(typeof vibrate === 'function' && typeof VIBE !== 'undefined'){
@@ -3392,7 +3392,7 @@ function _atkRoar(){
  const ma = document.getElementById('monster-area');
  if(ma){ ma.classList.add('boss-roar'); setTimeout(()=>ma.classList.remove('boss-roar'), 750); }
  if(typeof beep === 'function'){
-  [140, 115, 95].forEach((f, i) => setTimeout(()=>{ try{ beep(f, 'sawtooth', .3, .13); }catch(e){} }, i * 80));
+  [[60,0],[80,90],[64,200]].forEach(([f,d]) => setTimeout(()=>{ try{ beep(f,'square',.3,.13); beep(f*1.5,'sawtooth',.26,.05); }catch(e){} }, d));
  }
  if(typeof vibrate === 'function' && typeof VIBE !== 'undefined') vibrate(VIBE.boss || [50, 30, 50]);
  if(typeof monsterSpeak === 'function'){ try{ monsterSpeak('GROAAAR !', 1400); }catch(e){} }
@@ -3654,9 +3654,9 @@ function _triggerBossFury(){
  // Dialogue désespéré
  const line = _BOSS_FURY_LINES[Math.floor(Math.random() * _BOSS_FURY_LINES.length)];
  if(typeof monsterSpeak === 'function'){ try{ monsterSpeak(line, 2800); }catch(e){} }
- // Son très grave et menaçant (descente profonde)
+ // Son très grave et menaçant : rugissement profond montant (growl) — distinct du bip d'erreur
  if(typeof beep === 'function'){
-  [180, 150, 120, 95, 75].forEach((f, i) => setTimeout(()=>{ try{ beep(f, 'sawtooth', .3, .14); }catch(e){} }, i * 100));
+  [[48,0],[64,110],[88,230],[112,360],[82,520]].forEach(([f,d]) => setTimeout(()=>{ try{ beep(f,'square',.36,.15); beep(f*1.49,'sawtooth',.32,.06); }catch(e){} }, d));
  }
  // Vibration prolongée
  if(typeof vibrate === 'function' && typeof VIBE !== 'undefined'){

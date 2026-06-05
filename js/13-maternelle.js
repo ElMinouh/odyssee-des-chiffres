@@ -246,7 +246,9 @@ function _matRenderQ(q){
  const fb = $('feedback'); if(fb) fb.innerText = '';
  if(typeof speak === 'function'){
   const intro = (typeof GS!=='undefined' && GS.qCount===1 && typeof _matWelcomeText==='function') ? _matWelcomeText(q.level)+' ' : '';
-  speak(intro + q.consigne);
+  const full = intro + q.consigne;
+  speak(full);
+  _matSpeakAnim(full);
  }
 }
 
@@ -311,8 +313,10 @@ function _matTenFrame(level){
 
 // ── Doigts de la main ───────────────────────────────────────────────
 function _matHandHtml(n){
- let f=''; for(let i=0;i<5;i++){ f += `<span class="mat-finger ${i<n?'up':'down'}"></span>`; }
- return `<div class="mat-hand"><div class="mat-fingers">${f}</div><div class="mat-palm"></div></div>`;
+ // 4 doigts (index→auriculaire) levés d'abord (1→4), le pouce opposable complète à 5.
+ const fingersUp=Math.min(n,4); const thumbUp=n>=5; let f='';
+ for(let i=0;i<4;i++){ f += `<span class="mat-finger f${i+1} ${i<fingersUp?'up':'down'}"></span>`; }
+ return `<div class="mat-hand"><span class="mat-thumb ${thumbUp?'up':'down'}"></span><div class="mat-fingers">${f}</div><div class="mat-palm"></div></div>`;
 }
 function _matDoigts(level){
  const w=_MAT_WORLDS[level]; const n=ri(1,5);
@@ -432,4 +436,14 @@ function _matPartage(level){
  const w=_MAT_WORLDS[level]; const obj=_matObj(w); const o=_MAT_OBJ[obj]||{p:'objets'};
  const friends=ri(2,3); const per=ri(2,4); const total=friends*per;
  return _matBase(level,{ consigne:`Partage ${total} ${o.p} entre ${friends} amis. Combien chacun ?`, visuelHtml:_matCollectionHtml(obj,total), choices:_matChoicesNum(per, total), res:per });
+}
+
+// ── Animation « Étincelle parle » : rebond vif pendant la lecture vocale ──
+let _matSpeakT = null;
+function _matSpeakAnim(text){
+ const ma = $('monster-area'); if(!ma) return;
+ ma.classList.add('mat-speaking');
+ const dur = Math.min(7000, Math.max(1300, String(text).length * 85));
+ clearTimeout(_matSpeakT);
+ _matSpeakT = setTimeout(()=>{ ma.classList.remove('mat-speaking'); }, dur);
 }

@@ -110,12 +110,14 @@ function _humanizeForSpeech(t){
  return String(t)
   // v8.7.31 : onomatopées avec consonnes répétées (grrrr, brrr, etc.)
   // → ajout d'une voyelle pour que la TTS prononce comme syllabe au lieu d'épeler
-  .replace(/\bg[rR]{2,}\b/gi, 'graah')      // "grrrr" → "graah" (grognement)
-  .replace(/\bb[rR]{2,}\b/gi, 'brrah')      // "brrr" → "brrah" (frisson)
-  .replace(/\br[rR]{2,}\b/gi, 'rraah')      // "rrrr" → "rraah" (rugissement)
-  .replace(/\bh[aA]{2,}\b/gi, 'ha ha ha')   // "haaaa" → "ha ha ha" (rire)
-  .replace(/\bh[eE]{2,}\b/gi, 'hé hé hé')   // "héééé" → "hé hé hé"
-  .replace(/\bm[uU]{2,}\b/gi, 'mouah')      // "muuu" → "mouah"
+  // v9.2.3 : grognements/rugissements rendus prononçables, y compris collés à d'autres
+  // lettres ("Rrrgh", "Grrr!", "GROAAAR") qui échappaient aux anciennes règles (\b final).
+  .replace(/([aeiouyàâ])\1{2,}/gi, '$1$1')               // voyelle répétée 3+ → 2 ("GROAAAR" → "GROAAR")
+  .replace(/\b([gbv]?)r{3,}(?:gh|h|g)?/gi, '$1raah')     // 3+ r : "grrr"/"rrrgh"/"grrrr" → "(g)raah"
+  .replace(/\b([gbv])r{2,}(?:gh|h|g)?/gi, '$1raah')      // "gr/br/vr" + 2 r en début de mot → "(g)raah"
+  .replace(/\bh[aâ]{2,}\b/gi, 'ha ha ha')                // "haaaa" → "ha ha ha" (rire)
+  .replace(/\bh[eé]{2,}\b/gi, 'hé hé hé')                // "héééé" → "hé hé hé"
+  .replace(/\bm[uû]{2,}\b/gi, 'mouah')                   // "muuu" → "mouah"
   // Fallback générique : 3+ consonnes identiques → seulement 2 (évite l'épellation)
   .replace(/([bcdfghjklmnpqrstvwxz])\1{2,}/gi, '$1$1')
   // Opérateurs math
