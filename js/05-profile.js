@@ -100,6 +100,8 @@ function validateProfile(raw, defaultName){
    '4E': _clampNum(raw.levelWins?.['4E'], 0, 9999, 0),
    '3E': _clampNum(raw.levelWins?.['3E'], 0, 9999, 0),
   },
+  // M (bilan parent) : réussites par monde maternelle { PS:{ok,total}, MS:..., GS:... }
+  matStats: (raw.matStats && typeof raw.matStats === 'object') ? raw.matStats : {},
   mapBossBeaten: _safeArr(raw.mapBossBeaten).filter(b => typeof b === 'string'),
   // v8.7.67 (O5) : chapitres narratifs déjà vus (extensible — un id par chapitre)
   storySeen: _safeArr(raw.storySeen).filter(s => typeof s === 'string'),

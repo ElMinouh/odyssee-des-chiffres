@@ -2520,6 +2520,7 @@ function validate(ans){
   if(qcm){ const b=qcm.querySelector(`.qcm-btn[data-val="${ans}"]`); if(b){ b.classList.add('mat-wrong'); b.disabled=true; } }
   const fb=$('feedback'); if(fb){ fb.style.color='#e67e22'; fb.innerText='Presque ! Essaie encore 💛'; }
   if(typeof speak==='function') speak('Essaie encore');
+  GS.matFirstTry=false;
   GS.answering=false;
   return;
  }

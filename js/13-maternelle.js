@@ -168,9 +168,9 @@ function _matDie(level){
 
 // ── Pools par niveau & dispatchers ──────────────────────────────────
 const _MAT_POOL = {
- PS: [_matCombien, _matDie, _matDoigts, _matPareil, _matPlusGrand, _matPlusPetit, _matDonne, _matForme, _matGrandeur, _matIntrus, _matSuite, _matRang],
- MS: [_matCombien, _matDie, _matDoigts, _matTenFrame, _matDomino, _matFlash, _matDecompose, _matAssocie, _matPlusGrand, _matPlusPetit, _matDonne, _matForme, _matGrandeur, _matIntrus, _matSuite, _matRang, _matNombreManque, _matRanger, _matChiffre, _matChiffreColl],
- GS: [_matCombien, _matDie, _matTenFrame, _matDomino, _matComplement, _matAddition, _matRetrait, _matApres, _matAssocie, _matSuite, _matIntrus, _matProbleme, _matRang, _matForme, _matGrandeur, _matNombreManque, _matRanger, _matChiffre, _matChiffreColl, _matPartage],
+ PS: [_matCombien, _matDie, _matDoigts, _matPareil, _matPlusGrand, _matPlusPetit, _matDonne, _matForme, _matGrandeur, _matIntrus, _matSuite],
+ MS: [_matCombien, _matDie, _matDoigts, _matTenFrame, _matDomino, _matFlash, _matDecompose, _matAssocie, _matPlusGrand, _matPlusPetit, _matDonne, _matForme, _matGrandeur, _matIntrus, _matSuite, _matNombreManque, _matRanger, _matChiffre, _matChiffreColl],
+ GS: [_matCombien, _matDie, _matTenFrame, _matDomino, _matComplement, _matAddition, _matRetrait, _matApres, _matAssocie, _matSuite, _matIntrus, _matProbleme, _matForme, _matGrandeur, _matNombreManque, _matRanger, _matChiffre, _matChiffreColl, _matPartage],
 };
 function _matGen(level){
  const pool = _MAT_POOL[level] || _MAT_POOL.PS;
@@ -191,6 +191,7 @@ if(typeof GEN !== 'undefined'){
 // Remplit la zone de jeu en mode « image cliquable », sans pavé ni chrono.
 function _matRenderQ(q){
  const w = _MAT_WORLDS[q.level] || _MAT_WORLDS.PS;
+ if(typeof GS!=='undefined') GS.matFirstTry = true;
 
  // Étincelle, déclinée par monde (halo coloré), à la place du « monstre »
  const ma = $('monster-area');
@@ -270,6 +271,26 @@ function _matCelebrate(){
  const msg=_MAT_BRAVO[ri(0,_MAT_BRAVO.length-1)];
  if(fb){ fb.style.color='#f1c40f'; fb.innerText='⭐ '+msg+' !'; }
  if(typeof speak==='function') speak(msg);
+ // Bilan parent : compter la question (et le succès du premier coup)
+ if(typeof P!=='undefined' && typeof GM!=='undefined' && typeof _isMaternelle==='function' && _isMaternelle(GM.level)){
+  P.matStats = P.matStats || {};
+  const st = P.matStats[GM.level] = (P.matStats[GM.level] || {ok:0,total:0});
+  st.total++; if(typeof GS!=='undefined' && GS.matFirstTry !== false) st.ok++;
+  if(typeof saveProfile==='function') saveProfile();
+ }
+}
+
+// Bilan imagé pour le parent (injecté dans le rapport de l'espace parent)
+function _matBilanHtml(d){
+ const st = d && d.matStats; if(!st) return '';
+ const worlds = [['PS','🐟 Petite section'],['MS','🐤 Moyenne section'],['GS','🌸 Grande section']];
+ const rows = worlds.filter(([k]) => st[k] && st[k].total > 0).map(([k,name]) => {
+  const s = st[k]; const pct = Math.round((s.ok / s.total) * 100);
+  const appr = pct>=80 ? '🌟 très à l\'aise' : pct>=50 ? '🙂 en progrès' : '🌱 à encourager';
+  return `<div class="lb-row"><span>${name}</span><span>${s.total} questions · ${pct}% du 1er coup · ${appr}</span></div>`;
+ });
+ if(!rows.length) return '';
+ return `<div style="margin-top:10px;padding:8px;background:rgba(123,119,221,.18);border-radius:8px;"><strong style="color:#c8c2ff;">🐣 Maternelle</strong><div style="margin-top:6px;">${rows.join('')}</div></div>`;
 }
 
 // ═══════════════════ NOUVEAUX EXERCICES (lot v9.2) ═══════════════════
