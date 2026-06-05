@@ -219,7 +219,7 @@ function speakAs(text, monster){
   const m = new SpeechSynthesisUtterance(_humanizeForSpeech(text));
   m.lang='fr-FR';
   m.pitch = prof.pitch;
-  m.rate = prof.rate;
+  m.rate = Math.min(prof.rate || 0.9, 0.9);
   if(_frVoice) m.voice=_frVoice;
   window.speechSynthesis.speak(m);
  }catch(e){}

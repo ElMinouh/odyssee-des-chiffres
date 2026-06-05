@@ -168,9 +168,9 @@ function _matDie(level){
 
 // ── Pools par niveau & dispatchers ──────────────────────────────────
 const _MAT_POOL = {
- PS: [_matCombien, _matDie, _matDoigts, _matPareil, _matPlusGrand, _matPlusPetit, _matDonne, _matForme, _matIntrus, _matSuite, _matRang],
- MS: [_matCombien, _matDie, _matDoigts, _matTenFrame, _matDomino, _matFlash, _matDecompose, _matAssocie, _matPlusGrand, _matPlusPetit, _matDonne, _matForme, _matIntrus, _matSuite, _matRang],
- GS: [_matCombien, _matDie, _matTenFrame, _matDomino, _matComplement, _matAddition, _matRetrait, _matApres, _matAssocie, _matSuite, _matIntrus, _matProbleme, _matRang, _matForme],
+ PS: [_matCombien, _matDie, _matDoigts, _matPareil, _matPlusGrand, _matPlusPetit, _matDonne, _matForme, _matGrandeur, _matIntrus, _matSuite, _matRang],
+ MS: [_matCombien, _matDie, _matDoigts, _matTenFrame, _matDomino, _matFlash, _matDecompose, _matAssocie, _matPlusGrand, _matPlusPetit, _matDonne, _matForme, _matGrandeur, _matIntrus, _matSuite, _matRang, _matNombreManque, _matRanger, _matChiffre, _matChiffreColl],
+ GS: [_matCombien, _matDie, _matTenFrame, _matDomino, _matComplement, _matAddition, _matRetrait, _matApres, _matAssocie, _matSuite, _matIntrus, _matProbleme, _matRang, _matForme, _matGrandeur, _matNombreManque, _matRanger, _matChiffre, _matChiffreColl, _matPartage],
 };
 function _matGen(level){
  const pool = _MAT_POOL[level] || _MAT_POOL.PS;
@@ -222,6 +222,7 @@ function _matRenderQ(q){
  if(qcm){
   qcm.classList.remove('hidden');
   qcm.classList.add('mat-choices');
+  qcm.classList.toggle('mat-row', !!q.row);
   qcm.innerHTML = q.choices
    .map(c => { const kind = c.html.indexOf('mat-collection')>=0?'coll':(c.html.indexOf('mat-dots')>=0?'dots':'num');
     return `<button class="qcm-btn mat-choice mat-choice-${kind}" data-val="${c.val}">${c.html}</button>`; })
@@ -312,7 +313,7 @@ function _matRang(level){
  const label = (k===len) ? 'dernier' : (_MAT_ORD[k]||(k+'ᵉ'));
  const consigne = `Touche le ${label} ${o.s}.`;
  const choices = []; for(let p=1;p<=len;p++){ choices.push({val:p, html:_matCollectionHtml(obj,1)}); }
- return _matBase(level,{ consigne, visuelHtml:'', choices, res:k });
+ return _matBase(level,{ row:true, consigne, visuelHtml:'', choices, res:k });
 }
 
 // ── Reconnaître les formes ──────────────────────────────────────────
@@ -360,4 +361,54 @@ function _matProbleme(level){
 function _matWelcomeText(level){
  const hi=['Coucou, je suis Étincelle !','Bonjour, c\'est moi, Étincelle !','Salut ! Étincelle est là !'][ri(0,2)];
  return hi+' On compte ensemble ?';
+}
+
+// ═══════════════════ EXERCICES (lot v9.2.1) ═══════════════════
+// ── Le nombre qui manque (bande numérique : 1, 2, _, 4) ─────────────
+function _matNombreManque(level){
+ const w=_MAT_WORLDS[level]; const span=(level==='GS')?7:4; const start=ri(1, Math.max(1,(level==='GS'?6:3)));
+ const len=4; const seq=[]; for(let i=0;i<len;i++) seq.push(start+i);
+ const hole=ri(1,len-2); const res=seq[hole];
+ const cells=seq.map((v,i)=> i===hole ? `<span class="mat-band-cell mat-band-hole">?</span>` : `<span class="mat-band-cell">${v}</span>`).join('');
+ return _matBase(level,{ consigne:`Quel nombre manque ?`, visuelHtml:`<div class="mat-band">${cells}</div>`, choices:_matChoicesNum(res, start+len), res });
+}
+
+// ── Ranger du plus petit au plus grand (choisir la rangée bien rangée) ──
+function _matRowHtml(arr,obj){ return `<div class="mat-collection mat-rowtas">${arr.map(k=>`<span class="mat-tas">${_matObjsRaw(obj,k)}</span>`).join('')}</div>`; }
+function _matRanger(level){
+ const w=_MAT_WORLDS[level]; const obj=_matObj(w); const vals=_matDistinct(1,4,3);
+ const sorted=[...vals].sort((a,b)=>a-b); const perms=[]; let g=0;
+ while(perms.length<2 && g++<40){ const p=shuffle([...vals]); if(p.join()!==sorted.join() && !perms.some(x=>x.join()===p.join())) perms.push(p); }
+ const all=shuffle([sorted,...perms]); const res=all.findIndex(a=>a.join()===sorted.join());
+ const choices=all.map((arr,i)=>({val:i, html:_matRowHtml(arr,obj)}));
+ return _matBase(level,{ consigne:`Touche la rangée du plus petit au plus grand.`, visuelHtml:'', choices, res });
+}
+
+// ── Comparer des grandeurs (taille, pas quantité) ───────────────────
+function _matGrandeur(level){
+ const w=_MAT_WORLDS[level]; const obj=_matObj(w); const o=_MAT_OBJ[obj]||{s:'objet'};
+ const sizes=shuffle([1.4,2.1,2.9]).slice(0,3); const big=ri(0,1);
+ const target=big?Math.max(...sizes):Math.min(...sizes);
+ const choices=sizes.map((sz,i)=>({val:i, html:`<div class="mat-collection"><span class="mat-obj" style="font-size:${sz}em;animation:none;">${obj}</span></div>`}));
+ return _matBase(level,{ consigne: big?`Touche le plus grand ${o.s}.`:`Touche le plus petit ${o.s}.`, visuelHtml:'', choices, res:sizes.indexOf(target) });
+}
+
+// ── Reconnaître le chiffre écrit (« Touche le 3 ») ──────────────────
+function _matChiffre(level){
+ const max=(level==='GS')?9:6; const n=ri(1,max);
+ const choices=_matDistractors(n,max,3).map(v=>({val:v, html:_matNumHtml(v)}));
+ return _matBase(level,{ consigne:`Touche le ${n}.`, visuelHtml:'', choices, res:n });
+}
+
+// ── Chiffre → collection (on montre « 4 », choisir le bon tas) ───────
+function _matChiffreColl(level){
+ const w=_MAT_WORLDS[level]; const n=ri(1,w.max); const obj=_matObj(w);
+ return _matBase(level,{ consigne:`Touche le tas qui montre ce chiffre.`, visuelHtml:`<div class="mat-collection"><span class="mat-num mat-num-big">${n}</span></div>`, choices:_matChoicesColl(n,w,obj), res:n });
+}
+
+// ── Le partage équitable (GS) ───────────────────────────────────────
+function _matPartage(level){
+ const w=_MAT_WORLDS[level]; const obj=_matObj(w); const o=_MAT_OBJ[obj]||{p:'objets'};
+ const friends=ri(2,3); const per=ri(2,4); const total=friends*per;
+ return _matBase(level,{ consigne:`Partage ${total} ${o.p} entre ${friends} amis. Combien chacun ?`, visuelHtml:_matCollectionHtml(obj,total), choices:_matChoicesNum(per, total), res:per });
 }

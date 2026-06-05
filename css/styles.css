@@ -4843,3 +4843,16 @@ body.mat-mode #v-game{
 .mat-suite-row{ display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; }
 .mat-suite-item{ font-size:2.2em; }
 .mat-suite-q{ font-size:1.8em; font-weight:900; color:#fff; width:46px; height:46px; border:3px dashed rgba(255,255,255,.6); border-radius:12px; display:inline-flex; align-items:center; justify-content:center; }
+
+/* ═══════ v9.2.1 : rang aligné, bande numérique, ranger ═══════ */
+/* Rang : réponses sur une seule ligne (ordre lisible) */
+.qcm-options.mat-choices.mat-row{ display:flex; flex-wrap:nowrap; gap:10px; }
+.mat-choices.mat-row .mat-choice{ flex:1 1 0; min-width:0; min-height:72px; }
+/* Bande numérique (le nombre qui manque) */
+.mat-band{ display:flex; gap:8px; justify-content:center; }
+.mat-band-cell{ width:48px; height:48px; border-radius:10px; background:#fff; color:#2c3e50; font-size:1.7em; font-weight:900; display:flex; align-items:center; justify-content:center; box-shadow:0 3px 8px rgba(0,0,0,.3); }
+.mat-band-hole{ background:transparent; border:3px dashed rgba(255,255,255,.7); color:rgba(255,255,255,.85); box-shadow:none; }
+/* Ranger : rangées de petits tas */
+.mat-rowtas{ gap:10px; }
+.mat-tas{ display:inline-flex; gap:2px; padding:3px 6px; border-radius:8px; background:rgba(0,0,0,.06); }
+.mat-tas .mat-obj{ font-size:1.2em; animation:none; }
