@@ -2450,6 +2450,10 @@ function generateQ(){
   const rev = getRevisionErrorToAsk();
   if(rev) return rev;
  }
+ // P1 : exercices d'enrichissement numération (primaire, en mode normal hors boss)
+ if(GM.mode2==='normal' && !GS.isBoss && !(typeof _isMaternelle==='function'&&_isMaternelle(GM.level)) && typeof _primEnrich==='function' && typeof _PRIM_LEVELS!=='undefined' && _PRIM_LEVELS.includes(GM.level) && Math.random()<0.22){
+  const pe=_primEnrich(GM.level); if(pe) return pe;
+ }
  const fn=GEN[GM.level]||GEN.CP;let q=fn(GS.isBoss);
  if(GS.activeEvent?.effect==='next_golden'){GS.isGolden=true;GS.activeEvent=null;}
  return q;
