@@ -2566,15 +2566,18 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
   updateWC(q);
   beep(523,'square',.2);vibrate(VIBE.good);$('BODY').classList.add('flash');setTimeout(()=>$('BODY').classList.remove('flash'),50);
   $('feedback').style.color='#2ecc71';$('correction').classList.add('hidden');
-  const ma=$('monster-area');ma.classList.add('monster-hit');setTimeout(()=>ma.classList.remove('monster-hit'),350);
+  const ma=$('monster-area');
+  if(typeof _isMaternelle==='function'&&_isMaternelle(GM.level)){ma.classList.remove('mat-joy');void ma.offsetWidth;ma.classList.add('mat-joy');setTimeout(()=>ma.classList.remove('mat-joy'),750);}
+  else{ma.classList.add('monster-hit');setTimeout(()=>ma.classList.remove('monster-hit'),350);}
   // Chantier 3.1 : amplification graduelle selon combo + popups
   const _partN = GS.combo>=10?25:GS.combo>=5?18:12;
   spawnP(_monsterCenter.x||0,_monsterCenter.y||0,_partN);
   floatScore(`+${pts} ⭐`, _monsterCenter.x||window.innerWidth/2, _monsterCenter.y||window.innerHeight/2, GS.combo>=5);
   if(COMBO_MILESTONES.has(GS.combo))comboBanner(GS.combo);
   // Monster reacts to being hit
-  if(Math.random()<.55)monsterSpeak(CORRECT_TAUNTS[ri(0,CORRECT_TAUNTS.length-1)],1800);
+  if(!(typeof _isMaternelle==='function'&&_isMaternelle(GM.level)) && Math.random()<.55)monsterSpeak(CORRECT_TAUNTS[ri(0,CORRECT_TAUNTS.length-1)],1800);
   if(GM.mode==='qcm')markQCM(ans,true);updateHUD();
+  if(typeof _isMaternelle==='function'&&_isMaternelle(GM.level)&&typeof _matCelebrate==='function')_matCelebrate();
   // v8.7.54 (O4.2c) : bouclier du boss — absorbe le 1er coup, cède au 2e.
   let _shieldHeld = false;
   if(GS.isBoss && GS.bossShieldActive){

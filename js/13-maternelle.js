@@ -236,3 +236,12 @@ function _matApplyAmbiance(level){
   document.body.classList.remove('mat-mode');
  }
 }
+
+// ── Félicitations d'Étincelle (bonne réponse) ───────────────────────
+const _MAT_BRAVO = ['Bravo','Super','Génial','Bien joué','Youpi','Tu as réussi','Magnifique','Trop bien','Parfait'];
+function _matCelebrate(){
+ const fb=$('feedback');
+ const msg=_MAT_BRAVO[ri(0,_MAT_BRAVO.length-1)];
+ if(fb){ fb.style.color='#f1c40f'; fb.innerText='⭐ '+msg+' !'; }
+ if(typeof speak==='function') speak(msg);
+}
