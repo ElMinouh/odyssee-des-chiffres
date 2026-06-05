@@ -2609,7 +2609,7 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
   // Chantier A4 : taunt aléatoire en milieu de combat (HP bas)
   if(typeof maybeMidCombatTaunt==='function') maybeMidCombatTaunt();
   if(GS.activeEvent){GS.eventLeft--;if(GS.eventLeft<=0)GS.activeEvent=null;}
-  if(GS.monsterHP>0){$('feedback').innerText=_shieldHeld?`🛡️ Le bouclier résiste ! Frappe encore !`:`✅ TOUCHÉ ! ❤️${GS.monsterHP}/${GS.monsterMaxHP}`;GS.q=generateQ();safeTimeout(()=>{clearMonsterSpeech();renderQ();},800);}
+  if(GS.monsterHP>0){$('feedback').innerText=_shieldHeld?`🛡️ Le bouclier résiste ! Frappe encore !`:`✅ TOUCHÉ ! ❤️${GS.monsterHP}/${GS.monsterMaxHP}`;GS.q=generateQ();safeTimeout(()=>{renderQ();},950);}
   else{$('feedback').innerText='✅ BRAVO !';ma.classList.add('monster-die');clearMonsterSpeech();if(GS.isBoss){vibrate(VIBE.boss);
    // Chantier 2.2 : débloquer la figurine exclusive du boss saisonnier
    if(GS.isSeasonalBoss && GS.seasonalFigId && typeof unlockSeasonalFigurine==='function'){
@@ -3362,10 +3362,8 @@ function _triggerBossEnrage(){
  if(typeof monsterSpeak === 'function'){
   try{ monsterSpeak(line, 2600); }catch(e){}
  }
- // Son grave menaçant : rugissement montant (growl) — timbre « bête » distinct du bip d'erreur
- if(typeof beep === 'function'){
-  [[55,0],[70,130],[92,280],[78,430]].forEach(([f,d]) => setTimeout(() => { try{ beep(f,'square',.34,.13); beep(f*1.5,'sawtooth',.3,.05); }catch(e){} }, d));
- }
+ // v9.2.4 : plus de son d'enrage (trop proche du bip d'erreur). On s'appuie sur la
+ // réplique parlée du boss (_BOSS_ENRAGE_LINES) + les effets visuels (shake, flash, bannière).
  // Vibration forte
  if(typeof vibrate === 'function' && typeof VIBE !== 'undefined'){
   vibrate(VIBE.boss || [60, 30, 60, 30, 100]);
@@ -3391,9 +3389,7 @@ function _maybeBossAttack(){
 function _atkRoar(){
  const ma = document.getElementById('monster-area');
  if(ma){ ma.classList.add('boss-roar'); setTimeout(()=>ma.classList.remove('boss-roar'), 750); }
- if(typeof beep === 'function'){
-  [[60,0],[80,90],[64,200]].forEach(([f,d]) => setTimeout(()=>{ try{ beep(f,'square',.3,.13); beep(f*1.5,'sawtooth',.26,.05); }catch(e){} }, d));
- }
+ // v9.2.4 : plus de bip de rugissement (proche du son d'erreur) — on garde le « GROAAAR » parlé + le zoom.
  if(typeof vibrate === 'function' && typeof VIBE !== 'undefined') vibrate(VIBE.boss || [50, 30, 50]);
  if(typeof monsterSpeak === 'function'){ try{ monsterSpeak('GROAAAR !', 1400); }catch(e){} }
 }
@@ -3654,10 +3650,8 @@ function _triggerBossFury(){
  // Dialogue désespéré
  const line = _BOSS_FURY_LINES[Math.floor(Math.random() * _BOSS_FURY_LINES.length)];
  if(typeof monsterSpeak === 'function'){ try{ monsterSpeak(line, 2800); }catch(e){} }
- // Son très grave et menaçant : rugissement profond montant (growl) — distinct du bip d'erreur
- if(typeof beep === 'function'){
-  [[48,0],[64,110],[88,230],[112,360],[82,520]].forEach(([f,d]) => setTimeout(()=>{ try{ beep(f,'square',.36,.15); beep(f*1.49,'sawtooth',.32,.06); }catch(e){} }, d));
- }
+ // v9.2.4 : plus de son de furie (trop proche du bip d'erreur). Réplique parlée
+ // (_BOSS_FURY_LINES) + effets visuels suffisent à exprimer la rage.
  // Vibration prolongée
  if(typeof vibrate === 'function' && typeof VIBE !== 'undefined'){
   vibrate([80, 40, 80, 40, 80, 40, 140]);
