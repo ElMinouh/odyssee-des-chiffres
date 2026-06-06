@@ -372,21 +372,86 @@ function _primAire(level){
  return { display:`Quelle est l'aire de ce rectangle (en carreaux) ?`, visualHtml:_primGridRectHtml(L,l), res:L*l, type:'normal', opKey:'mes', img:'' };
 }
 
+// ════════════════ Chantier P7 : Géométrie ════════════════
+function _primRegPoly(n){
+ const cx=50, cy=52, r=38, pts=[];
+ for(let i=0;i<n;i++){ const a=(-90+i*360/n)*Math.PI/180; pts.push(`${(cx+r*Math.cos(a)).toFixed(1)},${(cy+r*Math.sin(a)).toFixed(1)}`); }
+ return `<polygon points="${pts.join(' ')}" fill="#7fb2e8" stroke="#2c3e50" stroke-width="3"/>`;
+}
+function _primShapeSvg(type){
+ const S='<svg viewBox="0 0 100 104" class="prim-shape">', E='</svg>';
+ const st='stroke="#2c3e50" stroke-width="3"', f='fill="#7fb2e8"';
+ switch(type){
+  case 'cercle':    return S+`<circle cx="50" cy="52" r="38" ${f} ${st}/>`+E;
+  case 'carré':     return S+`<rect x="16" y="18" width="68" height="68" rx="2" ${f} ${st}/>`+E;
+  case 'rectangle': return S+`<rect x="8" y="32" width="84" height="44" rx="2" ${f} ${st}/>`+E;
+  case 'triangle':  return S+`<polygon points="50,14 86,86 14,86" ${f} ${st}/>`+E;
+  case 'losange':   return S+`<polygon points="50,12 86,52 50,92 14,52" ${f} ${st}/>`+E;
+  case 'pentagone': return S+_primRegPoly(5)+E;
+  case 'hexagone':  return S+_primRegPoly(6)+E;
+  default:          return S+_primRegPoly(8)+E;
+ }
+}
+// Reconnaître une figure (choix visuels)
+function _primFigureReco(level){
+ const pool = {CP:['triangle','carré','rectangle','cercle'], CE1:['triangle','carré','rectangle','cercle','losange'],
+  CE2:['triangle','carré','rectangle','cercle','losange','pentagone'], CM1:['triangle','carré','rectangle','losange','pentagone','hexagone'],
+  CM2:['triangle','carré','rectangle','losange','pentagone','hexagone']}[level] || ['triangle','carré','rectangle','cercle'];
+ const opts = shuffle(pool.slice()).slice(0,4);
+ const target = _primPick(opts);
+ const art = /^[aeiouyéèh]/i.test(target) ? "l'" : 'le ';
+ return { display:`Touche ${art}${target}.`, choices: opts.map((t,i)=>({val:i, html:_primShapeSvg(t)})), visualChoices:true, res:opts.indexOf(target), type:'normal', opKey:'geo', img:'' };
+}
+// Compter les côtés d'une figure (lecture sur le dessin)
+function _primCotes(level){
+ const ns = {CE1:[3,4], CE2:[3,4,5], CM1:[3,4,5,6], CM2:[3,4,5,6,8]}[level] || [3,4,5];
+ const n = _primPick(ns);
+ const shape = n===3?'triangle':n===4?'carré':n===5?'pentagone':n===6?'hexagone':'octogone';
+ return { display:`Combien de côtés a cette figure ?`, visualHtml:_primShapeSvg(shape), res:n, type:'normal', opKey:'geo', img:'' };
+}
+// Comparer un angle à l'angle droit (CM1→CM2)
+function _primAngleSvg(deg){
+ const cx=22, cy=82, len=66, a=-deg*Math.PI/180;
+ const sq = deg===90 ? `<rect x="${cx}" y="${cy-12}" width="12" height="12" fill="none" stroke="#fff" stroke-width="2"/>` : '';
+ return `<svg viewBox="0 0 110 100" class="prim-angle"><line x1="${cx}" y1="${cy}" x2="${cx+len}" y2="${cy}" stroke="#f1c40f" stroke-width="4" stroke-linecap="round"/><line x1="${cx}" y1="${cy}" x2="${(cx+len*Math.cos(a)).toFixed(1)}" y2="${(cy+len*Math.sin(a)).toFixed(1)}" stroke="#f1c40f" stroke-width="4" stroke-linecap="round"/>${sq}<circle cx="${cx}" cy="${cy}" r="3" fill="#fff"/></svg>`;
+}
+function _primAngle(level){
+ const deg = _primPick([30,40,45,60,90,120,135,150]);
+ const labels = ["plus petit qu'un angle droit", "un angle droit", "plus grand qu'un angle droit"];
+ const res = deg<90 ? 0 : deg===90 ? 1 : 2;
+ return { display:`Cet angle est…`, visualHtml:_primAngleSvg(deg), choices:labels.map((l,i)=>({val:i,label:l})), res, type:'normal', opKey:'geo', img:'' };
+}
+// Axe de symétrie : oui / non (CE2→CM2)
+function _primSymetrie(level){
+ const kind = _primPick(['v','h','d1','d2']);
+ const yes = (kind==='v' || kind==='h');
+ const rect = '<rect x="18" y="32" width="64" height="40" fill="#7fb2e8" stroke="#2c3e50" stroke-width="3"/>';
+ const lines = {
+  v:'<line x1="50" y1="22" x2="50" y2="82" stroke="#e74c3c" stroke-width="3" stroke-dasharray="5 4"/>',
+  h:'<line x1="8" y1="52" x2="92" y2="52" stroke="#e74c3c" stroke-width="3" stroke-dasharray="5 4"/>',
+  d1:'<line x1="18" y1="32" x2="82" y2="72" stroke="#e74c3c" stroke-width="3" stroke-dasharray="5 4"/>',
+  d2:'<line x1="82" y1="32" x2="18" y2="72" stroke="#e74c3c" stroke-width="3" stroke-dasharray="5 4"/>'
+ };
+ const visual = `<svg viewBox="0 0 100 100" class="prim-shape">${rect}${lines[kind]}</svg>`;
+ const opts = shuffle([{label:'Oui', y:true}, {label:'Non', y:false}]);
+ return { display:`La ligne rouge est-elle un axe de symétrie ?`, visualHtml:visual, choices:opts.map((c,i)=>({val:i, label:c.label})), res:opts.findIndex(c=>c.y===yes), type:'normal', opKey:'geo', img:'' };
+}
+
 // ── Pools par niveau ──────────────────────────────────────────────────
 const _PRIM_POOL = {
  CP:  [_primSuite, _primRangListe, _primComparer, _primValeurPosition,
-       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primStrategie, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primMonnaieTotal, _primRendreMonnaie, _primDuree],
+       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primStrategie, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primMonnaieTotal, _primRendreMonnaie, _primDuree, _primFigureReco],
  CE1: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines,
-       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primStrategie, _primFractionBar, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus, _primMonnaieTotal, _primRendreMonnaie, _primDuree, _primHeure],
+       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primStrategie, _primFractionBar, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus, _primMonnaieTotal, _primRendreMonnaie, _primDuree, _primHeure, _primFigureReco, _primCotes],
  CE2: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines, _primArrondi,
        _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primFamilleMul, _primCommut, _primStrategie,
-       _primFractionBar, _primFracCompare, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus, _primProblemeFois, _primMonnaieTotal, _primRendreMonnaie, _primDuree, _primHeure, _primPerimetre, _primAire],
+       _primFractionBar, _primFracCompare, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus, _primProblemeFois, _primMonnaieTotal, _primRendreMonnaie, _primDuree, _primHeure, _primPerimetre, _primAire, _primFigureReco, _primCotes, _primSymetrie],
  CM1: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines, _primArrondi,
        _primDouble, _primMoitie, _primComplement, _primFamilleMul, _primCommut, _primStrategie,
-       _primFractionBar, _primFracCompare, _primFracDecimal, _primDecimalFrac, _primFracEquiv, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus, _primProblemeFois, _primMonnaieTotal, _primRendreMonnaie, _primDuree, _primHeure, _primPerimetre, _primAire],
+       _primFractionBar, _primFracCompare, _primFracDecimal, _primDecimalFrac, _primFracEquiv, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus, _primProblemeFois, _primMonnaieTotal, _primRendreMonnaie, _primDuree, _primHeure, _primPerimetre, _primAire, _primFigureReco, _primCotes, _primSymetrie, _primAngle],
  CM2: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines, _primArrondi,
        _primDouble, _primMoitie, _primComplement, _primFamilleMul, _primCommut, _primStrategie,
-       _primFractionBar, _primFracCompare, _primFracDecimal, _primDecimalFrac, _primFracEquiv, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus, _primProblemeFois, _primMonnaieTotal, _primRendreMonnaie, _primDuree, _primHeure, _primPerimetre, _primAire],
+       _primFractionBar, _primFracCompare, _primFracDecimal, _primDecimalFrac, _primFracEquiv, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus, _primProblemeFois, _primMonnaieTotal, _primRendreMonnaie, _primDuree, _primHeure, _primPerimetre, _primAire, _primFigureReco, _primCotes, _primSymetrie, _primAngle],
 };
 
 // Renvoie une question d'enrichissement pour le niveau, ou null.

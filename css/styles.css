@@ -4920,3 +4920,8 @@ body.mat-mode #v-game{
 .prim-grid{ display:inline-block; margin:10px auto; box-shadow:0 3px 10px rgba(0,0,0,.4); }
 .pg-row{ display:flex; }
 .pg-cell{ width:22px; height:22px; border:1px solid rgba(255,255,255,.55); background:rgba(127,178,232,.6); }
+
+/* ═══════ v9.3.7 (P7) : géométrie (figures, angle, symétrie) ═══════ */
+.prim-shape{ width:96px; height:96px; display:block; margin:6px auto; filter:drop-shadow(0 3px 8px rgba(0,0,0,.4)); }
+.qcm-btn.prim-choice .prim-shape{ width:58px; height:58px; margin:0; filter:none; }
+.prim-angle{ width:120px; height:104px; display:block; margin:6px auto; filter:drop-shadow(0 3px 8px rgba(0,0,0,.4)); }
