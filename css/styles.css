@@ -4914,3 +4914,9 @@ body.mat-mode #v-game{
 .pb-row{ display:flex; align-items:center; gap:8px; }
 .pb-name{ width:48px; color:#fff; font-weight:800; text-align:right; font-size:.92em; }
 .pb-bar-row{ height:36px; }
+
+/* ═══════ v9.3.6 (P6) : horloge & quadrillage ═══════ */
+.prim-clock{ width:128px; height:128px; display:block; margin:8px auto; filter:drop-shadow(0 3px 8px rgba(0,0,0,.4)); }
+.prim-grid{ display:inline-block; margin:10px auto; box-shadow:0 3px 10px rgba(0,0,0,.4); }
+.pg-row{ display:flex; }
+.pg-cell{ width:22px; height:22px; border:1px solid rgba(255,255,255,.55); background:rgba(127,178,232,.6); }

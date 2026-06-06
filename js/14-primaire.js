@@ -313,27 +313,92 @@ function _primProblemeFois(level){
   visualHtml:_primBarModel(segs, '?'), res:n*p, type:'normal', opKey:'x', img:'' };
 }
 
+// ════════════════ Chantier P6 : Grandeurs & mesures ════════════════
+// Monnaie — composer un total
+function _primMonnaieTotal(level){
+ const coins = {CP:[1,2], CE1:[1,2,5], CE2:[1,2,5,10], CM1:[1,2,5,10], CM2:[1,2,5,10,20]}[level] || [1,2,5];
+ const a=_primPick(coins); const rest=coins.filter(x=>x!==a); const b=rest.length?_primPick(rest):a;
+ const na=ri(1,3), nb=ri(1,3);
+ const pc=n=>n>1?'pièces':'pièce';
+ return { display:`J'ai ${na} ${pc(na)} de ${a}€ et ${nb} ${pc(nb)} de ${b}€. Combien en tout (en €) ?`, res:na*a+nb*b, type:'normal', opKey:'+', img:'' };
+}
+// Monnaie — rendre la monnaie
+function _primRendreMonnaie(level){
+ const max = {CP:9, CE1:19, CE2:49, CM1:49, CM2:99}[level] || 19;
+ const price = ri(2, max);
+ const bills = [5,10,20,50,100].filter(x=>x>price);
+ const paid = bills.length ? bills[0] : price + ri(1,5);
+ return { display:`Tu paies un objet à ${price}€ avec un billet de ${paid}€. Combien te rend-on (en €) ?`, res:paid-price, type:'normal', opKey:'-', img:'' };
+}
+// Durées (heures entières, ou minutes dans l'heure)
+function _primDuree(level){
+ if(ri(0,1)){
+  const h1=ri(8,14), dh=ri(1,4);
+  return { display:`De ${h1}h à ${h1+dh}h, combien d'heures se sont écoulées ?`, res:dh, type:'normal', opKey:'mes', img:'' };
+ }
+ const startM=_primPick([0,15,30]); const dm=_primPick([15,30,45]); const startH=ri(9,14);
+ let endH=startH, endM=startM+dm; if(endM>=60){ endH++; endM-=60; }
+ const f=(H,M)=>`${H}h${String(M).padStart(2,'0')}`;
+ return { display:`De ${f(startH,startM)} à ${f(endH,endM)}, combien de minutes se sont écoulées ?`, res:dm, type:'normal', opKey:'mes', img:'' };
+}
+// Horloge analogique (SVG) → lire l'heure
+function _primClockSvg(h, m){
+ const cx=60, cy=60, r=54;
+ const ha=((h%12)+m/60)*30, ma=m*6;
+ const hand=(ang,len,w,col)=>{ const a=(ang-90)*Math.PI/180; return `<line x1="${cx}" y1="${cy}" x2="${(cx+len*Math.cos(a)).toFixed(1)}" y2="${(cy+len*Math.sin(a)).toFixed(1)}" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`; };
+ let ticks=''; for(let i=0;i<12;i++){ const a=(i*30-90)*Math.PI/180; ticks+=`<line x1="${(cx+(r-5)*Math.cos(a)).toFixed(1)}" y1="${(cy+(r-5)*Math.sin(a)).toFixed(1)}" x2="${(cx+r*Math.cos(a)).toFixed(1)}" y2="${(cy+r*Math.sin(a)).toFixed(1)}" stroke="#34495e" stroke-width="2"/>`; }
+ return `<svg viewBox="0 0 120 120" class="prim-clock"><circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff" stroke="#2c3e50" stroke-width="3"/>${ticks}${hand(ha,28,5,'#2c3e50')}${hand(ma,42,3,'#e67e22')}<circle cx="${cx}" cy="${cy}" r="3.5" fill="#2c3e50"/></svg>`;
+}
+function _primHeure(level){
+ const mins = {CE1:[0,30], CE2:[0,15,30,45], CM1:[0,5,10,15,20,25,30,35,40,45,50,55], CM2:[0,5,10,15,20,25,30,35,40,45,50,55]}[level] || [0,30];
+ const h=ri(1,12), m=_primPick(mins);
+ const f=(H,M)=>`${H}h${M===0?'00':String(M).padStart(2,'0')}`;
+ const correct=f(h,m); const set=new Set([correct]); let g=0;
+ while(set.size<4 && g++<50){ const hh=Math.max(1,Math.min(12,h+ri(-3,3))); set.add(f(hh,_primPick(mins))); }
+ const labels=shuffle([...set]);
+ return { display:`Quelle heure est-il ?`, visualHtml:_primClockSvg(h,m), choices:labels.map((l,i)=>({val:i,label:l})), res:labels.indexOf(correct), type:'normal', opKey:'mes', img:'' };
+}
+// Quadrillage : périmètre & aire
+function _primGridRectHtml(L, l){
+ let rows=''; for(let r=0;r<l;r++){ let c=''; for(let k=0;k<L;k++) c+=`<span class="pg-cell"></span>`; rows+=`<div class="pg-row">${c}</div>`; }
+ return `<div class="prim-grid">${rows}</div>`;
+}
+function _primPerimetre(level){
+ const L=ri(2,8), l=ri(2,6);
+ return { display:`Quel est le périmètre de ce rectangle (en carreaux) ?`, visualHtml:_primGridRectHtml(L,l), res:2*(L+l), type:'normal', opKey:'mes', img:'' };
+}
+function _primAire(level){
+ const L=ri(2,8), l=ri(2,6);
+ return { display:`Quelle est l'aire de ce rectangle (en carreaux) ?`, visualHtml:_primGridRectHtml(L,l), res:L*l, type:'normal', opKey:'mes', img:'' };
+}
+
 // ── Pools par niveau ──────────────────────────────────────────────────
 const _PRIM_POOL = {
  CP:  [_primSuite, _primRangListe, _primComparer, _primValeurPosition,
-       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primStrategie, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff],
+       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primStrategie, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primMonnaieTotal, _primRendreMonnaie, _primDuree],
  CE1: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines,
-       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primStrategie, _primFractionBar, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus],
+       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primStrategie, _primFractionBar, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus, _primMonnaieTotal, _primRendreMonnaie, _primDuree, _primHeure],
  CE2: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines, _primArrondi,
        _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primFamilleMul, _primCommut, _primStrategie,
-       _primFractionBar, _primFracCompare, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus, _primProblemeFois],
+       _primFractionBar, _primFracCompare, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus, _primProblemeFois, _primMonnaieTotal, _primRendreMonnaie, _primDuree, _primHeure, _primPerimetre, _primAire],
  CM1: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines, _primArrondi,
        _primDouble, _primMoitie, _primComplement, _primFamilleMul, _primCommut, _primStrategie,
-       _primFractionBar, _primFracCompare, _primFracDecimal, _primDecimalFrac, _primFracEquiv, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus, _primProblemeFois],
+       _primFractionBar, _primFracCompare, _primFracDecimal, _primDecimalFrac, _primFracEquiv, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus, _primProblemeFois, _primMonnaieTotal, _primRendreMonnaie, _primDuree, _primHeure, _primPerimetre, _primAire],
  CM2: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines, _primArrondi,
        _primDouble, _primMoitie, _primComplement, _primFamilleMul, _primCommut, _primStrategie,
-       _primFractionBar, _primFracCompare, _primFracDecimal, _primDecimalFrac, _primFracEquiv, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus, _primProblemeFois],
+       _primFractionBar, _primFracCompare, _primFracDecimal, _primDecimalFrac, _primFracEquiv, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus, _primProblemeFois, _primMonnaieTotal, _primRendreMonnaie, _primDuree, _primHeure, _primPerimetre, _primAire],
 };
 
 // Renvoie une question d'enrichissement pour le niveau, ou null.
+// Rotation par « sac » mélangé : chaque type sort à tour de rôle avant de se répéter
+// → variété garantie et plus d'oublis de certains exercices.
+const _primBags = {};
 function _primEnrich(level){
  const pool = _PRIM_POOL[level];
  if(!pool || !pool.length) return null;
- try{ return pool[ri(0, pool.length - 1)](level); }
+ let bag = _primBags[level];
+ if(!bag || !bag.length){ bag = _primBags[level] = (typeof shuffle==='function' ? shuffle(pool.slice()) : pool.slice()); }
+ const fn = bag.pop();
+ try{ return fn(level); }
  catch(e){ return null; }
 }
