@@ -4891,3 +4891,12 @@ body.mat-mode #v-game{
 .prim-fracstack .pf-line{ display:flex; align-items:center; gap:10px; width:100%; justify-content:center; }
 .prim-fracstack .pf-lab{ font-weight:900; color:#fff; min-width:48px; text-align:right; font-size:1.1em; }
 .prim-fracstack .prim-fracbar{ margin:0; width:min(70%,260px); }
+
+/* ═══════ v9.3.4 (P4) : droite numérique ═══════ */
+.prim-line{ position:relative; width:min(88%,340px); height:66px; margin:20px auto 10px; }
+.pl-axis{ position:absolute; left:0; right:0; top:40px; height:3px; background:#fff; border-radius:2px; }
+.pl-tick{ position:absolute; top:34px; width:2px; height:13px; background:rgba(255,255,255,.85); transform:translateX(-50%); }
+.pl-label{ position:absolute; top:48px; transform:translateX(-50%); font-size:.82em; color:#fff; white-space:nowrap; }
+.pl-mark{ position:absolute; top:2px; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; color:#f1c40f; line-height:1; }
+.pl-mark-lab{ font-weight:900; font-size:1.05em; margin-bottom:2px; }
+.pl-arrow{ font-size:1.05em; }

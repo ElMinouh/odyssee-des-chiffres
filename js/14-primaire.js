@@ -208,21 +208,72 @@ function _primFracEquiv(level){
  };
 }
 
+// ════════════════ Chantier P4 : Droite numérique ════════════════
+function _lineRound(v){ return Math.round(v*1000)/1000; }
+function _primLineCfg(level){
+ return {
+  CP:  [{max:10},{max:20}],
+  CE1: [{max:100}],
+  CE2: [{max:1000},{max:100}],
+  CM1: [{max:1},{max:10}],
+  CM2: [{max:1},{max:10}],
+ }[level] || [{max:100}];
+}
+// Demi-droite graduée (10 intervalles) avec repères et marqueurs
+function _primLineHtml(max, labels, markers){
+ const pct = v => (v/max*100);
+ let ticks=''; for(let i=0;i<=10;i++) ticks += `<span class="pl-tick" style="left:${i*10}%"></span>`;
+ const labelsHtml = labels.map(v=>`<span class="pl-label" style="left:${pct(v)}%">${_frD(_lineRound(v))}</span>`).join('');
+ const markHtml = markers.map(m=>`<span class="pl-mark" style="left:${pct(m.v)}%">${m.label?`<span class="pl-mark-lab">${m.label}</span>`:''}<span class="pl-arrow">▼</span></span>`).join('');
+ return `<div class="prim-line"><div class="pl-axis"></div>${ticks}${labelsHtml}${markHtml}</div>`;
+}
+// Lire la position d'une flèche → choisir le bon nombre
+function _primDroiteLire(level){
+ const max = _primPick(_primLineCfg(level)).max;
+ const val = _lineRound(ri(1,9) * max/10);
+ const set = new Set([val]); let g=0;
+ while(set.size<4 && g++<40) set.add(_lineRound(ri(0,10) * max/10));
+ const opts = shuffle([...set]);
+ return {
+  display:`Quel nombre est indiqué par la flèche ?`,
+  visualHtml: _primLineHtml(max, [0, max/2, max], [{v:val}]),
+  choices: opts.map((x,i)=>({val:i, label:_frD(x)})),
+  res: opts.indexOf(val),
+  type:'normal', opKey:'num', img:''
+ };
+}
+// Localiser un nombre parmi des points A–D sur la droite
+function _primDroitePlacer(level){
+ const max = _primPick(_primLineCfg(level)).max;
+ const ks = shuffle([1,3,5,7,9]).slice(0,4);
+ const targetK = _primPick(ks);
+ const N = _lineRound(targetK * max/10);
+ const L = ['A','B','C','D'];
+ const markers = ks.map((k,i)=>({ v:_lineRound(k*max/10), label:L[i] }));
+ return {
+  display:`Quel point montre le nombre ${_frD(N)} ?`,
+  visualHtml: _primLineHtml(max, [0, max/2, max], markers),
+  choices: L.map((l,i)=>({val:i, label:l})),
+  res: ks.indexOf(targetK),
+  type:'normal', opKey:'num', img:''
+ };
+}
+
 // ── Pools par niveau ──────────────────────────────────────────────────
 const _PRIM_POOL = {
  CP:  [_primSuite, _primRangListe, _primComparer, _primValeurPosition,
-       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primStrategie, _primPartage],
+       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primStrategie, _primPartage, _primDroiteLire, _primDroitePlacer],
  CE1: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines,
-       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primStrategie, _primFractionBar, _primPartage],
+       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primStrategie, _primFractionBar, _primPartage, _primDroiteLire, _primDroitePlacer],
  CE2: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines, _primArrondi,
        _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primFamilleMul, _primCommut, _primStrategie,
-       _primFractionBar, _primFracCompare, _primPartage],
+       _primFractionBar, _primFracCompare, _primPartage, _primDroiteLire, _primDroitePlacer],
  CM1: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines, _primArrondi,
        _primDouble, _primMoitie, _primComplement, _primFamilleMul, _primCommut, _primStrategie,
-       _primFractionBar, _primFracCompare, _primFracDecimal, _primDecimalFrac, _primFracEquiv, _primPartage],
+       _primFractionBar, _primFracCompare, _primFracDecimal, _primDecimalFrac, _primFracEquiv, _primPartage, _primDroiteLire, _primDroitePlacer],
  CM2: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines, _primArrondi,
        _primDouble, _primMoitie, _primComplement, _primFamilleMul, _primCommut, _primStrategie,
-       _primFractionBar, _primFracCompare, _primFracDecimal, _primDecimalFrac, _primFracEquiv, _primPartage],
+       _primFractionBar, _primFracCompare, _primFracDecimal, _primDecimalFrac, _primFracEquiv, _primPartage, _primDroiteLire, _primDroitePlacer],
 };
 
 // Renvoie une question d'enrichissement pour le niveau, ou null.
