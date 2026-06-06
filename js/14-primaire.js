@@ -147,18 +147,82 @@ function _primFractionBar(level){
  };
 }
 
+// Comparer deux fractions de même dénominateur (visuel : deux barres)
+function _primFracCompare(level){
+ const denoms = {CE2:[3,4,5,6,8], CM1:[3,4,5,6,8,10], CM2:[3,4,5,6,8,10,12]}[level] || [3,4,5,6];
+ const d = _primPick(denoms);
+ let n1 = ri(1,d-1), n2 = ri(1,d-1), t=0; while(n2===n1 && t++<8) n2 = ri(1,d-1);
+ const visual = `<div class="prim-fracstack">`
+   + `<div class="pf-line"><span class="pf-lab">${n1}/${d}</span>${_primFracBarHtml(n1,d)}</div>`
+   + `<div class="pf-line"><span class="pf-lab">${n2}/${d}</span>${_primFracBarHtml(n2,d)}</div></div>`;
+ const big = ri(0,1)===1;
+ const opts = shuffle([{frac:`${n1}/${d}`, nn:n1}, {frac:`${n2}/${d}`, nn:n2}]);
+ const target = big ? Math.max(n1,n2) : Math.min(n1,n2);
+ return {
+  display:`Quelle fraction est la plus ${big?'grande':'petite'} ?`,
+  visualHtml: visual,
+  choices: opts.map((o,i)=>({val:i, label:o.frac})),
+  res: opts.findIndex(o=>o.nn===target),
+  type:'normal', opKey:'frac', img:''
+ };
+}
+// Fraction décimale → écriture à virgule (CM1→CM2)
+function _primFracDecimal(level){
+ const k = ri(0,2);
+ if(k===0){ const n=ri(1,9);  return { display:`${n}/10 = ? (nombre à virgule)`,  res:n/10,  type:'normal', opKey:'dec', img:'' }; }
+ if(k===1){ const n=ri(1,99); return { display:`${n}/100 = ? (nombre à virgule)`, res:n/100, type:'normal', opKey:'dec', img:'' }; }
+ const e=ri(1,9), n=ri(1,9);  return { display:`${e} + ${n}/10 = ? (nombre à virgule)`, res:e+n/10, type:'normal', opKey:'dec', img:'' };
+}
+// Écriture à virgule → fraction décimale (combien de dixièmes / centièmes)
+function _frD(x){ return String(x).replace('.', ','); }
+function _primDecimalFrac(level){
+ if(ri(0,1)){ const n=ri(1,9);  return { display:`Dans ${_frD(n/10)}, combien y a-t-il de dixièmes ?`,  res:n, type:'normal', opKey:'dec', img:'' }; }
+ const n=ri(1,99); return { display:`Dans ${_frD(n/100)}, combien y a-t-il de centièmes ?`, res:n, type:'normal', opKey:'dec', img:'' };
+}
+// Partage équitable (sens de la division, dès le CP via les problèmes)
+function _primPartage(level){
+ const cfg = {CP:[[1,3],[2,3]], CE1:[[2,5],[2,4]], CE2:[[2,6],[2,5]], CM1:[[2,9],[2,8]], CM2:[[2,12],[2,9]]}[level] || [[2,6],[2,5]];
+ const each = ri(cfg[0][0], cfg[0][1]);
+ const parts = ri(cfg[1][0], cfg[1][1]);
+ const ctx = _primPick([['billes','enfants'],['bonbons','amis'],['cartes','joueurs'],['images','élèves'],['gâteaux','assiettes']]);
+ return { display:`On partage ${each*parts} ${ctx[0]} entre ${parts} ${ctx[1]}. Combien chacun ?`, res:each, type:'normal', opKey:'/', img:'' };
+}
+// Fractions équivalentes (visuel : une barre, choisir la fraction égale) — CM1→CM2
+function _primFracEquiv(level){
+ const base = _primPick([[1,2],[1,3],[1,4],[2,3],[3,4],[2,5]]);
+ const bn = base[0], bd = base[1], baseVal = bn/bd;
+ const k = ri(2,3), en = bn*k, ed = bd*k;
+ const set = new Set([`${en}/${ed}`]); let g=0;
+ while(set.size<4 && g++<60){
+  const dd = bd*ri(2,4), dn = ri(1, dd-1);
+  if(Math.abs(dn/dd - baseVal) < 1e-9) continue;
+  set.add(`${dn}/${dd}`);
+ }
+ const labels = shuffle([...set]);
+ return {
+  display:`Quelle fraction est égale à ${bn}/${bd} ?`,
+  visualHtml: _primFracBarHtml(bn, bd),
+  choices: labels.map((lab,i)=>({val:i, label:lab})),
+  res: labels.indexOf(`${en}/${ed}`),
+  type:'normal', opKey:'frac', img:''
+ };
+}
+
 // ── Pools par niveau ──────────────────────────────────────────────────
 const _PRIM_POOL = {
  CP:  [_primSuite, _primRangListe, _primComparer, _primValeurPosition,
-       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primStrategie],
+       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primStrategie, _primPartage],
  CE1: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines,
-       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primStrategie, _primFractionBar],
+       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primStrategie, _primFractionBar, _primPartage],
  CE2: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines, _primArrondi,
-       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primFamilleMul, _primCommut, _primStrategie, _primFractionBar],
+       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primFamilleMul, _primCommut, _primStrategie,
+       _primFractionBar, _primFracCompare, _primPartage],
  CM1: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines, _primArrondi,
-       _primDouble, _primMoitie, _primComplement, _primFamilleMul, _primCommut, _primStrategie, _primFractionBar],
+       _primDouble, _primMoitie, _primComplement, _primFamilleMul, _primCommut, _primStrategie,
+       _primFractionBar, _primFracCompare, _primFracDecimal, _primDecimalFrac, _primFracEquiv, _primPartage],
  CM2: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines, _primArrondi,
-       _primDouble, _primMoitie, _primComplement, _primFamilleMul, _primCommut, _primStrategie, _primFractionBar],
+       _primDouble, _primMoitie, _primComplement, _primFamilleMul, _primCommut, _primStrategie,
+       _primFractionBar, _primFracCompare, _primFracDecimal, _primDecimalFrac, _primFracEquiv, _primPartage],
 };
 
 // Renvoie une question d'enrichissement pour le niveau, ou null.

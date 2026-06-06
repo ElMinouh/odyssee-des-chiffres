@@ -4885,3 +4885,9 @@ body.mat-mode #v-game{
 .pf-cell{ flex:1; border-right:2px solid rgba(255,255,255,.85); background:rgba(255,255,255,.12); }
 .pf-cell:last-child{ border-right:none; }
 .pf-cell.filled{ background:#f1c40f; }
+
+/* ═══════ v9.3.3 (P3) : comparaison de fractions (deux barres) ═══════ */
+.prim-fracstack{ display:flex; flex-direction:column; gap:10px; align-items:center; }
+.prim-fracstack .pf-line{ display:flex; align-items:center; gap:10px; width:100%; justify-content:center; }
+.prim-fracstack .pf-lab{ font-weight:900; color:#fff; min-width:48px; text-align:right; font-size:1.1em; }
+.prim-fracstack .prim-fracbar{ margin:0; width:min(70%,260px); }
