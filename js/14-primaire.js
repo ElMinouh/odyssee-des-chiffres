@@ -259,21 +259,75 @@ function _primDroitePlacer(level){
  };
 }
 
+// ════════════════ Chantier P5 : Problèmes en barres ════════════════
+const _PB_NAMES = ['Léa','Tom','Jade','Hugo','Manon','Noé','Lila','Sami'];
+const _PB_NOUNS = ['billes','cartes','images','jetons','perles','bonbons','autocollants'];
+function _pbRange(level){ return {CP:[2,9], CE1:[5,40], CE2:[20,150], CM1:[50,400], CM2:[100,800]}[level] || [5,40]; }
+function _pbTwo(arr){ const a=_primPick(arr); let b=_primPick(arr),t=0; while(b===a&&t++<6) b=_primPick(arr); return [a,b]; }
+function _pbDe(noun){ return (/^[aeiouhéàâ]/i.test(noun) ? "d'" : 'de ') + noun; }
+// Barre partie-tout (segments proportionnels + accolade du tout)
+function _primBarModel(segs, totalLabel){
+ const segHtml = segs.map(s=>`<div class="pb-seg ${s.cls||''}" style="flex:${s.v}">${s.label}</div>`).join('');
+ const brace = totalLabel!=null ? `<div class="pb-total">${totalLabel}</div>` : '';
+ return `<div class="prim-barmodel">${brace}<div class="pb-bar">${segHtml}</div></div>`;
+}
+// Barres de comparaison (deux lignes, à l'échelle)
+function _primBarCmpHtml(rows){
+ const max = Math.max(...rows.map(r=>r.segs.reduce((s,x)=>s+x.v,0)));
+ return `<div class="prim-barcmp">` + rows.map(r=>{
+  const tot = r.segs.reduce((s,x)=>s+x.v,0);
+  const segs = r.segs.map(x=>`<div class="pb-seg ${x.cls||''}" style="flex:${x.v}">${x.label}</div>`).join('');
+  return `<div class="pb-row"><span class="pb-name">${r.name}</span><div class="pb-bar pb-bar-row" style="width:${Math.max(12,tot/max*100)}%">${segs}</div></div>`;
+ }).join('') + `</div>`;
+}
+// Partie-tout : trouver le tout (addition)
+function _primProblemeTout(level){
+ const [lo,hi]=_pbRange(level); const a=ri(lo,hi), b=ri(lo,hi); const nm=_primPick(_PB_NAMES); const noun=_primPick(_PB_NOUNS);
+ return { display:`${nm} a ${a} ${noun} rouges et ${b} ${noun} bleues. Combien en tout ?`,
+  visualHtml:_primBarModel([{v:a,label:a},{v:b,label:b,cls:'alt'}], '?'), res:a+b, type:'normal', opKey:'+', img:'' };
+}
+// Partie-tout : trouver une partie (soustraction)
+function _primProblemePartie(level){
+ const [lo,hi]=_pbRange(level); const a=ri(lo,hi), b=ri(lo,hi); const t=a+b; const nm=_primPick(_PB_NAMES); const noun=_primPick(_PB_NOUNS);
+ return { display:`Il y a ${t} ${noun}. ${nm} en prend ${a}. Combien en reste-t-il ?`,
+  visualHtml:_primBarModel([{v:a,label:a},{v:b,label:'?',cls:'unknown'}], t), res:b, type:'normal', opKey:'-', img:'' };
+}
+// Comparaison : combien de plus (soustraction)
+function _primProblemeCompareDiff(level){
+ const [lo,hi]=_pbRange(level); let b=ri(lo,hi), s=ri(lo,hi); if(s>b){const k=s;s=b;b=k;} if(s===b) s=Math.max(lo,b-ri(1,3));
+ const [nA,nB]=_pbTwo(_PB_NAMES); const noun=_primPick(_PB_NOUNS);
+ return { display:`${nA} a ${b} ${noun}. ${nB} a ${s} ${noun}. Combien ${_pbDe(noun)} en plus a ${nA} ?`,
+  visualHtml:_primBarCmpHtml([{name:nA,segs:[{v:b,label:b}]},{name:nB,segs:[{v:s,label:s,cls:'alt'}]}]), res:b-s, type:'normal', opKey:'-', img:'' };
+}
+// Comparaison : « de plus que » → trouver le plus grand (addition)
+function _primProblemeComparePlus(level){
+ const [lo,hi]=_pbRange(level); const s=ri(lo,hi), d=ri(Math.max(1,Math.floor(lo/2)),hi); const [nA,nB]=_pbTwo(_PB_NAMES); const noun=_primPick(_PB_NOUNS);
+ return { display:`${nB} a ${s} ${noun}. ${nA} en a ${d} de plus. Combien en a ${nA} ?`,
+  visualHtml:_primBarCmpHtml([{name:nB,segs:[{v:s,label:s,cls:'alt'}]},{name:nA,segs:[{v:s,label:s,cls:'alt'},{v:d,label:'+'+d}]}]), res:s+d, type:'normal', opKey:'+', img:'' };
+}
+// Groupes égaux → le tout (multiplication, CE2→CM2)
+function _primProblemeFois(level){
+ const n=ri(2, level==='CE2'?4:6); const p=ri(2, level==='CE2'?10:level==='CM1'?20:40); const noun=_primPick(_PB_NOUNS);
+ const segs=[]; for(let i=0;i<n;i++) segs.push({v:p,label:p});
+ return { display:`${n} paquets de ${p} ${noun}. Combien de ${noun} en tout ?`,
+  visualHtml:_primBarModel(segs, '?'), res:n*p, type:'normal', opKey:'x', img:'' };
+}
+
 // ── Pools par niveau ──────────────────────────────────────────────────
 const _PRIM_POOL = {
  CP:  [_primSuite, _primRangListe, _primComparer, _primValeurPosition,
-       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primStrategie, _primPartage, _primDroiteLire, _primDroitePlacer],
+       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primStrategie, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff],
  CE1: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines,
-       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primStrategie, _primFractionBar, _primPartage, _primDroiteLire, _primDroitePlacer],
+       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primStrategie, _primFractionBar, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus],
  CE2: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines, _primArrondi,
        _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primFamilleMul, _primCommut, _primStrategie,
-       _primFractionBar, _primFracCompare, _primPartage, _primDroiteLire, _primDroitePlacer],
+       _primFractionBar, _primFracCompare, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus, _primProblemeFois],
  CM1: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines, _primArrondi,
        _primDouble, _primMoitie, _primComplement, _primFamilleMul, _primCommut, _primStrategie,
-       _primFractionBar, _primFracCompare, _primFracDecimal, _primDecimalFrac, _primFracEquiv, _primPartage, _primDroiteLire, _primDroitePlacer],
+       _primFractionBar, _primFracCompare, _primFracDecimal, _primDecimalFrac, _primFracEquiv, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus, _primProblemeFois],
  CM2: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines, _primArrondi,
        _primDouble, _primMoitie, _primComplement, _primFamilleMul, _primCommut, _primStrategie,
-       _primFractionBar, _primFracCompare, _primFracDecimal, _primDecimalFrac, _primFracEquiv, _primPartage, _primDroiteLire, _primDroitePlacer],
+       _primFractionBar, _primFracCompare, _primFracDecimal, _primDecimalFrac, _primFracEquiv, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus, _primProblemeFois],
 };
 
 // Renvoie une question d'enrichissement pour le niveau, ou null.
