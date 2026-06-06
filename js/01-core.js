@@ -122,7 +122,8 @@ function _humanizeForSpeech(t){
   .replace(/([bcdfghjklmnpqrstvwxz])\1{2,}/gi, '$1$1')
   // Opérateurs math
   .replace(/\bb?[vz]z{1,}[a-zéèê]*/gi,' ')   // onomatopées « Bzzz / Vzzz » : pas d'épellation
-  .replace(/×|x/g,' fois ')
+  .replace(/×/g,' fois ')                      // symbole de multiplication uniquement
+  .replace(/(\d)\s*[x]\s*(\d)/gi,'$1 fois $2')  // « x » entre deux nombres (ex. 3x4), pas la lettre dans un mot
   .replace(/÷|\//g,' divisé par ')
   .replace(/−/g,' moins ')                    // signe « moins » typographique (maths)
   .replace(/(\d)\s*-\s*(\d)/g,'$1 moins $2')   // tiret entre deux nombres = soustraction
@@ -551,6 +552,8 @@ function monsterSpeak(text,duration=5300){
  clearMonsterSpeech();
  // v8.7.0 : le monstre prononce son taunt avec sa voix propre
  if(typeof speakAs==='function') speakAs(text, _currentMonster);
+ // Durée estimée de la phrase parlée (sert à différer la question suivante)
+ try{ const _t=(typeof _humanizeForSpeech==='function'?_humanizeForSpeech(text):text)||''; window._monsterSpeakEnd = Date.now() + Math.min(4200, Math.max(1200, _t.length*68)); }catch(e){}
  const b=document.createElement('div');
  b.id='monster-speech';b.textContent=text;
  wrap.appendChild(b);

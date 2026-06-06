@@ -262,7 +262,7 @@ function _primDroitePlacer(level){
 // ════════════════ Chantier P5 : Problèmes en barres ════════════════
 const _PB_NAMES = ['Léa','Tom','Jade','Hugo','Manon','Noé','Lila','Sami'];
 const _PB_NOUNS = ['billes','cartes','images','jetons','perles','bonbons','autocollants'];
-function _pbRange(level){ return {CP:[2,9], CE1:[5,40], CE2:[20,150], CM1:[50,400], CM2:[100,800]}[level] || [5,40]; }
+function _pbRange(level){ return {CP:[2,9], CE1:[3,25], CE2:[10,60], CM1:[20,120], CM2:[30,200]}[level] || [5,30]; }
 function _pbTwo(arr){ const a=_primPick(arr); let b=_primPick(arr),t=0; while(b===a&&t++<6) b=_primPick(arr); return [a,b]; }
 function _pbDe(noun){ return (/^[aeiouhéàâ]/i.test(noun) ? "d'" : 'de ') + noun; }
 // Barre partie-tout (segments proportionnels + accolade du tout)

@@ -2216,6 +2216,8 @@ function startTimer(){
  // v8.7.50 (O4) : en phase enragée, le boss met plus de pression (timer -3s, plancher 9s)
  if(GS.isBoss && GS.bossEnraged) totalTime = Math.max(9, totalTime - 3);
  if(GS.activeEvent?.effect==='reduce_timer')totalTime=Math.max(8,totalTime-5);
+ // Plus de temps pour les questions à lire/observer (problèmes en barres, exercices visuels)
+ if(GS.q && (GS.q.visualHtml || (GS.q.display && GS.q.display.length>40))) totalTime += 12;
  timerEnd=performance.now()+totalTime*1000;
  _timerTauntFired=false;
  const tb=_timerBarEl||$('timer-bar');
@@ -2623,7 +2625,7 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
   // Chantier A4 : taunt aléatoire en milieu de combat (HP bas)
   if(typeof maybeMidCombatTaunt==='function') maybeMidCombatTaunt();
   if(GS.activeEvent){GS.eventLeft--;if(GS.eventLeft<=0)GS.activeEvent=null;}
-  if(GS.monsterHP>0){$('feedback').innerText=_shieldHeld?`🛡️ Le bouclier résiste ! Frappe encore !`:`✅ TOUCHÉ ! ❤️${GS.monsterHP}/${GS.monsterMaxHP}`;GS.q=generateQ();safeTimeout(()=>{renderQ();},950);}
+  if(GS.monsterHP>0){$('feedback').innerText=_shieldHeld?`🛡️ Le bouclier résiste ! Frappe encore !`:`✅ TOUCHÉ ! ❤️${GS.monsterHP}/${GS.monsterMaxHP}`;GS.q=generateQ();const _wait=Math.min(4800,Math.max(950,((window._monsterSpeakEnd||0)-Date.now())+350));safeTimeout(()=>{renderQ();},_wait);}
   else{$('feedback').innerText='✅ BRAVO !';ma.classList.add('monster-die');clearMonsterSpeech();if(GS.isBoss){vibrate(VIBE.boss);
    // Chantier 2.2 : débloquer la figurine exclusive du boss saisonnier
    if(GS.isSeasonalBoss && GS.seasonalFigId && typeof unlockSeasonalFigurine==='function'){
