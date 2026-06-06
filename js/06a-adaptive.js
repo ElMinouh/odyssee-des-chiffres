@@ -478,3 +478,87 @@ function showHeroEvolution(stage){
  };
  overlay.querySelector('.he-cta').onclick = close;
 }
+// ═══════════════════════════════════════════════════════
+// PROGRESSION INTRA-ANNÉE PAR CLASSE (chantier P9)
+// La difficulté démarre en « début d'année » puis monte avec les réussites
+// vers « milieu » puis « fin d'année » : déblocage progressif des types de
+// questions + plages de nombres qui s'élargissent. Régression douce sur erreur.
+// En Odyssée, la phase vient de la position dans l'îlot (pas de la jauge).
+// ═══════════════════════════════════════════════════════
+const _YEAR_LEVELS = ['PS','MS','GS','CP','CE1','CE2','CM1','CM2'];
+const PROG_UP   = 0.025;   // gain par bonne réponse (montée rapide : ~40 réussites = début→fin)
+const PROG_DOWN = 0.015;   // perte par erreur (régression douce)
+
+function _progGet(level){
+ if(typeof P==='undefined') return 0;
+ if(!P.yearProgress || typeof P.yearProgress!=='object') P.yearProgress={};
+ const v=P.yearProgress[level];
+ return (typeof v==='number' && isFinite(v)) ? v : 0;
+}
+function _progSet(level,v){
+ if(typeof P==='undefined') return;
+ if(!P.yearProgress || typeof P.yearProgress!=='object') P.yearProgress={};
+ P.yearProgress[level]=Math.max(0, Math.min(1, v));
+}
+function _progUpdate(level, correct){
+ if(!_YEAR_LEVELS.includes(level)) return;
+ _progSet(level, _progGet(level) + (correct ? PROG_UP : -PROG_DOWN));
+}
+function _phaseFromVal(v){ return v < 0.34 ? 1 : (v < 0.67 ? 2 : 3); }
+
+// Progression 0..1 dans l'Odyssée : (index de l'îlot dans la classe + avancée dans l'îlot) / nb d'îlots
+function _mapProgress(){
+ try{
+  if(typeof GM==='undefined' || !GM.mapZone || typeof MAP_ZONES==='undefined') return null;
+  const zone=GM.mapZone, lvl=zone.level;
+  const same=MAP_ZONES.filter(z=>z.level===lvl);
+  const zi=same.findIndex(z=>z.id===zone.id);
+  if(zi<0) return null;
+  const sN=(zone.steps&&zone.steps.length)?zone.steps.length:1;
+  const si=(GM.mapStep && typeof GM.mapStep.idx==='number')?GM.mapStep.idx:0;
+  const stepFrac=sN>1 ? Math.min(1, si/(sN-1)) : 0;
+  return Math.max(0, Math.min(1, (zi + stepFrac) / same.length));
+ }catch(e){ return null; }
+}
+function _mapPhase(){ const m=_mapProgress(); return m==null ? null : _phaseFromVal(m); }
+
+// Facteur 0..1 et phase 1/2/3 effectifs pour le niveau courant
+function _progFactor(level){
+ if(typeof GM!=='undefined' && GM.mapZone){ const m=_mapProgress(); if(m!=null) return m; }
+ if(!_YEAR_LEVELS.includes(level)) return 1;   // collège, etc. : pas de jauge → plage complète
+ return _progGet(level);
+}
+function _progPhase(level){
+ if(typeof GM!=='undefined' && GM.mapZone){ const p=_mapPhase(); if(p) return p; }
+ if(!_YEAR_LEVELS.includes(level)) return 3;    // niveaux hors jauge : tous les types
+ return _phaseFromVal(_progGet(level));
+}
+// Resserre une plage de nombres selon la phase (début = petits nombres, fin = plage complète)
+function _progScaleRange(min,max){
+ try{
+  if(typeof GM==='undefined' || !GM.level) return [min,max];
+  const f=_progFactor(GM.level);
+  if(f>=0.999 || max<=min) return [min,max];
+  const M=Math.round(min + (max-min)*(0.4 + 0.6*f));
+  return [min, Math.max(min, M)];
+ }catch(e){ return [min,max]; }
+}
+
+// P9 : rubrique « Progression d'année » pour le bilan parent
+function _progBilanHtml(d){
+ try{
+  const yp=(d&&d.yearProgress)||{};
+  const order=['PS','MS','GS','CP','CE1','CE2','CM1','CM2'];
+  const rows=order.filter(l=>typeof yp[l]==='number' && yp[l]>0.001);
+  if(!rows.length) return '';
+  const lab=v=> v<0.34?"Début d'année":(v<0.67?"Milieu d'année":"Fin d'année");
+  const col=v=> v<0.34?'#1d9e75':(v<0.67?'#ba7517':'#d85a30');
+  let html='<div style="margin-top:10px;padding:8px;background:rgba(255,255,255,.06);border-radius:8px;"><div style="font-weight:800;margin-bottom:6px;">📈 Progression d\'année</div>';
+  for(const l of rows){
+   const v=Math.max(0,Math.min(1,yp[l]));
+   html+=`<div style="margin:5px 0;"><div style="display:flex;justify-content:space-between;font-size:.82em;"><span>${l}</span><span style="color:${col(v)}">${lab(v)}</span></div><div style="height:7px;background:rgba(255,255,255,.12);border-radius:4px;overflow:hidden;margin-top:2px;"><div style="height:100%;width:${Math.round(v*100)}%;background:${col(v)};"></div></div></div>`;
+  }
+  html+='<div style="font-size:.72em;opacity:.7;margin-top:4px;">La barre monte avec les réussites, redescend un peu en cas d\'erreurs.</div></div>';
+  return html;
+ }catch(e){ return ''; }
+}

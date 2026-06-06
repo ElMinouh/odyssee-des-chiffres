@@ -174,7 +174,10 @@ const _MAT_POOL = {
 };
 function _matGen(level){
  const pool = _MAT_POOL[level] || _MAT_POOL.PS;
- return pool[ri(0, pool.length-1)](level);
+ const phase = (typeof _progPhase==='function') ? _progPhase(level) : 3;
+ let avail = pool.filter(f => ((f && f.ph) || 1) <= phase);
+ if(!avail.length) avail = pool;
+ return avail[ri(0, avail.length-1)](level);
 }
 function genQ_PS(){ return _matGen('PS'); }
 function genQ_MS(){ return _matGen('MS'); }
@@ -447,3 +450,15 @@ function _matSpeakAnim(text){
  clearTimeout(_matSpeakT);
  _matSpeakT = setTimeout(()=>{ ma.classList.remove('mat-speaking'); }, dur);
 }
+
+// ── P9 : phase pédagogique de chaque exercice maternelle (1=début, 2=milieu, 3=fin) ──
+(function(){
+ const PH={
+  _matCombien:1,_matDie:1,_matDoigts:1,_matPareil:1,_matPlusGrand:1,_matPlusPetit:1,
+  _matForme:1,_matGrandeur:1,_matChiffre:1,
+  _matSuite:2,_matIntrus:2,_matDonne:2,_matTenFrame:2,_matDomino:2,_matFlash:2,
+  _matAssocie:2,_matRanger:2,_matChiffreColl:2,_matApres:2,_matAddition:2,_matNombreManque:2,
+  _matDecompose:3,_matComplement:3,_matRetrait:3,_matProbleme:3,_matPartage:3
+ };
+ for(const name in PH){ try{ const f=eval(name); if(typeof f==='function') f.ph=PH[name]; }catch(e){} }
+})();

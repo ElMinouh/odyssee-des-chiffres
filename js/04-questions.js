@@ -6,11 +6,10 @@
 // ── Générateurs de questions ──
 // Helper Chantier C1 : ri() adaptatif selon l'historique du joueur
 function _ari(min, max, opKey){
- if(typeof adaptRange === 'function'){
-  const [m, M] = adaptRange(min, max, opKey);
-  return ri(m, M);
- }
- return ri(min, max);
+ let m=min, M=max;
+ if(typeof adaptRange === 'function'){ const r=adaptRange(min, max, opKey); m=r[0]; M=r[1]; }
+ if(typeof _progScaleRange === 'function'){ const r=_progScaleRange(m, M); m=r[0]; M=r[1]; }
+ return ri(m, M);
 }
 function genQ_CP(boss,_d=0){
  if(_d>12)return{a:2,b:3,op:'+',res:5,type:'normal',opKey:'+',display:'2 + 3',img:''};

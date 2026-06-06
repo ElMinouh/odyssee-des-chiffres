@@ -2537,6 +2537,7 @@ function validate(ans){
   const fb=$('feedback'); if(fb){ fb.style.color='#e67e22'; fb.innerText='Presque ! Essaie encore 💛'; }
   if(typeof speak==='function') speak('Essaie encore');
   GS.matFirstTry=false;
+  if(typeof _progUpdate==='function') _progUpdate(GM.level, false);
   GS.answering=false;
   return;
  }
@@ -2561,6 +2562,7 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
   const pw=powers[P.name];if(pw?.dbl){pts*=2;pw.dbl=false;toast('⚡ Double !');}
   GS.score+=pts;
   const opK=q.opKey||'+';P.opStats[opK]=P.opStats[opK]||{ok:0,fail:0};P.opStats[opK].ok++;
+  if(typeof _progUpdate==="function") _progUpdate(GM.level, true);
   // Chantier 1.2 : si c'était une question de révision et que l'enfant a réussi → on réduit sa présence
   if(q.isRevision && typeof clearErrorFromLog==='function' && q.display && q.res!==undefined) clearErrorFromLog(q.display, q.res);
   if(q.type==='fraction')GS.fracOk++;
@@ -2649,6 +2651,7 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
  }else{
 GS.errInGame++;GS.combo=0;GS.opCombo=0;GS.lastOpKey=null;$('gc').classList.remove('combo-breaker');
   const opK=q.opKey||'+';P.opStats[opK]=P.opStats[opK]||{ok:0,fail:0};P.opStats[opK].fail++;
+  if(typeof _progUpdate==="function") _progUpdate(GM.level, false);
   if(q.display&&q.res!==undefined)P.errors=([...(P.errors||[])]).concat(`${q.a||'?'}${q.op||'?'}${q.b||'?'}=${q.res}`).slice(-60);
   // Chantier 1.2 : log dans le registre de révision espacée
   if(typeof logError==='function' && q.display && q.res!==undefined) logError(q.display, q.res);

@@ -496,12 +496,34 @@ const _PRIM_POOL = {
 // Rotation par « sac » mélangé : chaque type sort à tour de rôle avant de se répéter
 // → variété garantie et plus d'oublis de certains exercices.
 const _primBags = {};
+const _primBagPhase = {};
 function _primEnrich(level){
  const pool = _PRIM_POOL[level];
  if(!pool || !pool.length) return null;
+ const phase = (typeof _progPhase==='function') ? _progPhase(level) : 3;
+ if(_primBagPhase[level]!==phase){ _primBags[level]=null; _primBagPhase[level]=phase; }
  let bag = _primBags[level];
- if(!bag || !bag.length){ bag = _primBags[level] = (typeof shuffle==='function' ? shuffle(pool.slice()) : pool.slice()); }
+ if(!bag || !bag.length){
+  let avail = pool.filter(f => ((f && f.ph) || 1) <= phase);
+  if(!avail.length) avail = pool.slice();
+  bag = _primBags[level] = (typeof shuffle==='function' ? shuffle(avail.slice()) : avail.slice());
+ }
  const fn = bag.pop();
  try{ return fn(level); }
  catch(e){ return null; }
 }
+
+// ── P9 : phase pédagogique de chaque type (1=début, 2=milieu, 3=fin d'année) ──
+(function(){
+ const PH={
+  _primSuite:1,_primRangListe:1,_primComparer:1,_primValeurPosition:1,_primDouble:1,
+  _primComplement:1,_primFamilleAdd:1,_primDroiteLire:1,_primFigureReco:1,_primDizaines:1,
+  _primCotes:1,_primMonnaieTotal:1,_primEgalite:1,_primProblemeTout:1,
+  _primMoitie:2,_primPartage:2,_primDroitePlacer:2,_primFractionBar:2,_primHeure:2,
+  _primFamilleMul:2,_primCommut:2,_primPerimetre:2,_primSymetrie:2,_primGraphique:2,
+  _primRendreMonnaie:2,_primDuree:2,_primProblemePartie:2,_primProblemeCompareDiff:2,_primProblemeComparePlus:2,
+  _primStrategie:3,_primArrondi:3,_primFracCompare:3,_primAire:3,_primCartesien:3,
+  _primFracDecimal:3,_primDecimalFrac:3,_primFracEquiv:3,_primAngle:3,_primProportion:3,_primProblemeFois:3
+ };
+ for(const name in PH){ try{ const f=eval(name); if(typeof f==='function') f.ph=PH[name]; }catch(e){} }
+})();
