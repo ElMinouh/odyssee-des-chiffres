@@ -200,7 +200,7 @@ function renderReport(){
   </div>
   ${weak.length?`<div style="margin-top:8px;padding:7px;background:rgba(231,76,60,.2);border-radius:8px;">⚠️ Points faibles : ${weak.join(', ')}</div>`:'<div style="margin-top:8px;padding:7px;background:rgba(46,204,113,.2);border-radius:8px;">✅ Aucun point faible !</div>'}
   ${typeof _matBilanHtml==='function'?_matBilanHtml(d):''}
-  ${typeof _progBilanHtml==='function'?_progBilanHtml(d):''}
+  ${typeof _progPanelHtml==='function'?_progPanelHtml(d):''}
   ${h.slice(-7).map(x=>`<div style="display:flex;justify-content:space-between;font-size:.78em;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span>${x.date} · ${x.level||'?'} · ${x.mode||'?'}</span><span style="color:${x.won?'#2ecc71':'#e74c3c'}">${x.won?'✅':'❌'} ${x.score}⭐</span></div>`).join('')}
  </div>`;
 }

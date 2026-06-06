@@ -102,6 +102,8 @@ function validateProfile(raw, defaultName){
   },
   // M (bilan parent) : réussites par monde maternelle { PS:{ok,total}, MS:..., GS:... }
   matStats: (raw.matStats && typeof raw.matStats === 'object') ? raw.matStats : {},
+  // P9.1 : stats par classe et par type d'exercice { CE2:{'+':{ok,fail},'frac':{ok,fail}}, ... }
+  classStats: (raw.classStats && typeof raw.classStats === 'object') ? raw.classStats : {},
   // P9 : progression intra-année par classe (valeur 0..1 par niveau)
   yearProgress: (function(){ const o={}, src=(raw.yearProgress&&typeof raw.yearProgress==='object')?raw.yearProgress:{}; for(const k in src){ const v=+src[k]; if(isFinite(v)) o[k]=Math.max(0,Math.min(1,v)); } return o; })(),
   mapBossBeaten: _safeArr(raw.mapBossBeaten).filter(b => typeof b === 'string'),

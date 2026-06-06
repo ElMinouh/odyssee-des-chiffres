@@ -2563,6 +2563,7 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
   GS.score+=pts;
   const opK=q.opKey||'+';P.opStats[opK]=P.opStats[opK]||{ok:0,fail:0};P.opStats[opK].ok++;
   if(typeof _progUpdate==="function") _progUpdate(GM.level, true);
+  if(typeof _classStatUpdate==="function") _classStatUpdate(GM.level, q.opKey, true);
   // Chantier 1.2 : si c'était une question de révision et que l'enfant a réussi → on réduit sa présence
   if(q.isRevision && typeof clearErrorFromLog==='function' && q.display && q.res!==undefined) clearErrorFromLog(q.display, q.res);
   if(q.type==='fraction')GS.fracOk++;
@@ -2652,6 +2653,7 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
 GS.errInGame++;GS.combo=0;GS.opCombo=0;GS.lastOpKey=null;$('gc').classList.remove('combo-breaker');
   const opK=q.opKey||'+';P.opStats[opK]=P.opStats[opK]||{ok:0,fail:0};P.opStats[opK].fail++;
   if(typeof _progUpdate==="function") _progUpdate(GM.level, false);
+  if(typeof _classStatUpdate==="function") _classStatUpdate(GM.level, q.opKey, false);
   if(q.display&&q.res!==undefined)P.errors=([...(P.errors||[])]).concat(`${q.a||'?'}${q.op||'?'}${q.b||'?'}=${q.res}`).slice(-60);
   // Chantier 1.2 : log dans le registre de révision espacée
   if(typeof logError==='function' && q.display && q.res!==undefined) logError(q.display, q.res);

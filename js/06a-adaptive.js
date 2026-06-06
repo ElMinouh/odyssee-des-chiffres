@@ -562,3 +562,85 @@ function _progBilanHtml(d){
   return html;
  }catch(e){ return ''; }
 }
+
+// ═══════════════════════════════════════════════════════
+// P9.1 : stats par classe + vue parent + AUTO-CONTRÔLE de la progression
+// RÈGLE À RESPECTER À CHAQUE AJOUT D'EXERCICE OU DE MODULE :
+//  1) ajouter le générateur dans son pool (_PRIM_POOL / _MAT_POOL / _COL_POOL…)
+//  2) lui attribuer une PHASE .ph (1=début, 2=milieu, 3=fin) dans le bloc de phases du module
+//  3) ouvrir la console : _progSelfCheck() ne doit signaler AUCUN générateur sans phase
+//  4) vérifier le gating (variété en phase 1 < phase 3) avant livraison
+// ═══════════════════════════════════════════════════════
+function _classStatUpdate(level, opKey, correct){
+ if(typeof P==='undefined' || !level || !opKey) return;
+ if(!P.classStats || typeof P.classStats!=='object') P.classStats={};
+ if(!P.classStats[level]) P.classStats[level]={};
+ if(!P.classStats[level][opKey]) P.classStats[level][opKey]={ok:0,fail:0};
+ if(correct) P.classStats[level][opKey].ok++; else P.classStats[level][opKey].fail++;
+}
+const _PROG_OPLABEL = {
+ '+':'Additions','-':'Soustractions','x':'Multiplications','/':'Divisions',
+ 'frac':'Fractions','dec':'Nombres décimaux','mes':'Grandeurs & mesures','geo':'Géométrie','num':'Numération',
+ 'rel':'Nombres relatifs','alg':'Calcul littéral','pow':'Puissances','prop':'Proportionnalité',
+ 'pyth':'Th. de Pythagore','thal':'Th. de Thalès','trig':'Trigonométrie','fct':'Fonctions',
+ 'stat':'Statistiques','prob':'Probabilités','equ':'Équations','vol':'Volumes & aires'
+};
+function _progWeakType(level){
+ const cs = (typeof P!=='undefined' && P.classStats && P.classStats[level]) || null;
+ if(!cs) return null;
+ let worst=null;
+ for(const k in cs){ const s=cs[k]; const n=(s.ok||0)+(s.fail||0); if(n<4) continue; const rate=(s.fail||0)/n;
+  if(!worst || rate>worst.rate || (rate===worst.rate && (s.fail||0)>worst.fail)) worst={key:k, rate, fail:s.fail||0, n}; }
+ return worst;
+}
+let _progSelClass = null;
+function _progSelectClass(l){ _progSelClass=l; if(typeof renderReport==='function') renderReport(); }
+function _progPanelHtml(d){
+ try{
+  const yp=(d&&d.yearProgress)||{};
+  const order=['PS','MS','GS','CP','CE1','CE2','CM1','CM2','6E','5E','4E','3E'];
+  const played=order.filter(l=>typeof yp[l]==='number' && yp[l]>0.001);
+  if(!played.length) return '';
+  const sel=(_progSelClass && played.includes(_progSelClass)) ? _progSelClass : played[played.length-1];
+  const btns=played.map(l=>`<button onclick="_progSelectClass('${l}')" style="border:none;border-radius:8px;padding:5px 11px;margin:2px;font-weight:800;cursor:pointer;background:${l===sel?'#534ab7':'rgba(255,255,255,.14)'};color:#fff;">${l}</button>`).join('');
+  const v=Math.max(0,Math.min(1,yp[sel]||0));
+  const lab=v<0.34?"Début d'année":(v<0.67?"Milieu d'année":"Fin d'année");
+  const col=v<0.34?'#1d9e75':(v<0.67?'#ba7517':'#d85a30');
+  const gauge=`<div style="position:relative;height:24px;border-radius:12px;overflow:hidden;display:flex;margin:8px 0 2px;">
+     <div style="flex:1;background:#1d9e75;"></div><div style="flex:1;background:#ba7517;"></div><div style="flex:1;background:#d85a30;"></div>
+     <div style="position:absolute;top:50%;transform:translate(-50%,-50%);left:${(v*100).toFixed(1)}%;width:4px;height:32px;background:#fff;border-radius:2px;box-shadow:0 0 4px rgba(0,0,0,.6);"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:.68em;opacity:.85;"><span>Début</span><span>Milieu</span><span>Fin</span></div>
+    <div style="text-align:center;font-weight:800;color:${col};margin-top:5px;">${sel} — ${lab} · ${Math.round(v*100)}%</div>`;
+  const w=_progWeakType(sel);
+  const weakBox = w
+   ? `<div style="margin-top:10px;padding:10px;border:2px solid #e74c3c;border-radius:10px;background:rgba(231,76,60,.13);">
+        <div style="font-weight:800;color:#ff6b6b;">⚠️ Point faible n°1 en ${sel}</div>
+        <div style="margin-top:3px;">${_PROG_OPLABEL[w.key]||w.key} — ${Math.round(w.rate*100)}% d'erreurs (${w.fail} sur ${w.n})</div>
+      </div>`
+   : `<div style="margin-top:10px;padding:10px;border:2px dashed rgba(255,255,255,.25);border-radius:10px;font-size:.85em;opacity:.8;">Pas encore assez de réponses en ${sel} pour repérer un point faible.</div>`;
+  return `<div style="margin-top:10px;padding:10px;background:rgba(255,255,255,.06);border-radius:10px;">
+     <div style="font-weight:800;margin-bottom:6px;">📈 Progression d'année <span style="font-weight:400;opacity:.7;font-size:.8em;">(choisis une classe)</span></div>
+     <div style="margin-bottom:2px;">${btns}</div>
+     ${gauge}
+     ${weakBox}
+    </div>`;
+ }catch(e){ return ''; }
+}
+// Auto-contrôle : signale tout générateur de pool sans phase (.ph)
+function _progSelfCheck(opts){
+ const verbose=!opts||opts.verbose!==false;
+ const rep={missing:[], total:0, tagged:0};
+ const scan=(pool,label)=>{ if(!pool) return; const seen=new Set();
+  for(const lvl in pool){ for(const f of pool[lvl]){ if(seen.has(f))continue; seen.add(f); rep.total++;
+   if(f && f.ph) rep.tagged++; else rep.missing.push(label+':'+((f&&f.name)||'?')); } } };
+ try{ scan(typeof _PRIM_POOL!=='undefined'?_PRIM_POOL:null,'primaire'); }catch(e){}
+ try{ scan(typeof _MAT_POOL!=='undefined'?_MAT_POOL:null,'maternelle'); }catch(e){}
+ try{ scan(typeof _COL_POOL!=='undefined'?_COL_POOL:null,'college'); }catch(e){}
+ if(verbose && typeof console!=='undefined'){
+  if(rep.missing.length) console.warn('⚠️ [Progression] générateurs SANS phase .ph :', rep.missing);
+  else console.log('✅ [Progression] '+rep.tagged+' générateurs, tous avec une phase.');
+ }
+ return rep;
+}
+if(typeof window!=='undefined'){ try{ setTimeout(function(){ try{ _progSelfCheck(); }catch(e){} }, 4000); }catch(e){} }
