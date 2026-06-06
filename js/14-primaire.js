@@ -264,7 +264,7 @@ const _PB_NAMES = ['Léa','Tom','Jade','Hugo','Manon','Noé','Lila','Sami'];
 const _PB_NOUNS = ['billes','cartes','images','jetons','perles','bonbons','autocollants'];
 function _pbRange(level){ return {CP:[2,9], CE1:[3,25], CE2:[10,60], CM1:[20,120], CM2:[30,200]}[level] || [5,30]; }
 function _pbTwo(arr){ const a=_primPick(arr); let b=_primPick(arr),t=0; while(b===a&&t++<6) b=_primPick(arr); return [a,b]; }
-function _pbDe(noun){ return (/^[aeiouhéàâ]/i.test(noun) ? "d'" : 'de ') + noun; }
+function _pbDe(noun){ return (/^[aeiouhéàâœ]/i.test(noun) ? "d'" : 'de ') + noun; }
 // Barre partie-tout (segments proportionnels + accolade du tout)
 function _primBarModel(segs, totalLabel){
  const segHtml = segs.map(s=>`<div class="pb-seg ${s.cls||''}" style="flex:${s.v}">${s.label}</div>`).join('');
@@ -437,21 +437,59 @@ function _primSymetrie(level){
  return { display:`La ligne rouge est-elle un axe de symétrie ?`, visualHtml:visual, choices:opts.map((c,i)=>({val:i, label:c.label})), res:opts.findIndex(c=>c.y===yes), type:'normal', opKey:'geo', img:'' };
 }
 
+// ════════════════ Chantier P8 : Proportionnalité & données ════════════════
+// Tableau de proportionnalité (CM1→CM2)
+function _primProportion(level){
+ const k=ri(2,5), a=ri(2,5); let zz=ri(2,6), t=0; while(zz===a&&t++<6) zz=ri(2,6);
+ const items=_primPick([['gâteaux','bonbons'],['sachets','billes'],['paquets','images'],['boîtes','perles']]);
+ const b=a*k;
+ const table=`<table class="prim-table"><tr><td>${items[0]}</td><td>${a}</td><td>${zz}</td></tr><tr><td>${items[1]}</td><td>${b}</td><td>?</td></tr></table>`;
+ return { display:`Tableau de proportionnalité : combien ${_pbDe(items[1])} pour ${zz} ${items[0]} ?`, visualHtml:table, res:zz*k, type:'normal', opKey:'num', img:'' };
+}
+// Lecture de graphique en barres (CE2→CM2)
+function _primBarChartHtml(cats, vals){
+ const maxScale=Math.max(...vals)+1, H=120;
+ let grid=''; for(let i=0;i<=maxScale;i++){ grid+=`<div class="pc-line" style="bottom:${(i/maxScale*H).toFixed(1)}px"><span class="pc-ytick">${i}</span></div>`; }
+ const cols=cats.map((c,i)=>`<div class="pc-col"><div class="pc-bar" style="height:${(vals[i]/maxScale*H).toFixed(1)}px"></div><div class="pc-cat">${c}</div></div>`).join('');
+ return `<div class="prim-chart"><div class="pc-plot" style="height:${H}px">${grid}<div class="pc-cols">${cols}</div></div></div>`;
+}
+function _primGraphique(level){
+ const cats=_primPick([['Lun','Mar','Mer','Jeu'],['Léa','Tom','Jade','Hugo'],['Rouge','Bleu','Vert','Jaune']]);
+ const cap=level==='CE2'?6:9; const vals=cats.map(()=>ri(1,cap));
+ const idx=ri(0,cats.length-1);
+ return { display:`D'après le graphique, quelle est la valeur de « ${cats[idx]} » ?`, visualHtml:_primBarChartHtml(cats,vals), res:vals[idx], type:'normal', opKey:'num', img:'' };
+}
+// Produits cartésiens / combinatoire (CE2→CM2)
+function _primCartesien(level){
+ const a=ri(2,4), b=ri(2,4);
+ const ctx=_primPick([['tee-shirts','pantalons'],['parfums de glace','sortes de cornet'],['types de pain','garnitures'],['stylos','cahiers']]);
+ return { display:`Avec ${a} ${ctx[0]} et ${b} ${ctx[1]}, combien de combinaisons différentes peut-on faire ?`, res:a*b, type:'normal', opKey:'x', img:'' };
+}
+// Égalité (équivalence, pas « ça donne ») (CE1→CM2)
+function _primEgalite(level){
+ if(level==='CE1' || level==='CE2'){
+  const a=ri(1,9), c=ri(a+1, a+9);
+  return { display:`Complète : ${a} + ? = ${c}`, res:c-a, type:'normal', opKey:'+', img:'' };
+ }
+ const a=ri(2,9), b=ri(2,9), d=ri(1, a+b-1);
+ return { display:`Complète l'égalité : ${a} + ${b} = ? + ${d}`, res:a+b-d, type:'normal', opKey:'+', img:'' };
+}
+
 // ── Pools par niveau ──────────────────────────────────────────────────
 const _PRIM_POOL = {
  CP:  [_primSuite, _primRangListe, _primComparer, _primValeurPosition,
        _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primStrategie, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primMonnaieTotal, _primRendreMonnaie, _primDuree, _primFigureReco],
  CE1: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines,
-       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primStrategie, _primFractionBar, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus, _primMonnaieTotal, _primRendreMonnaie, _primDuree, _primHeure, _primFigureReco, _primCotes],
+       _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primStrategie, _primFractionBar, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus, _primMonnaieTotal, _primRendreMonnaie, _primDuree, _primHeure, _primFigureReco, _primCotes, _primEgalite],
  CE2: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines, _primArrondi,
        _primDouble, _primMoitie, _primComplement, _primFamilleAdd, _primFamilleMul, _primCommut, _primStrategie,
-       _primFractionBar, _primFracCompare, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus, _primProblemeFois, _primMonnaieTotal, _primRendreMonnaie, _primDuree, _primHeure, _primPerimetre, _primAire, _primFigureReco, _primCotes, _primSymetrie],
+       _primFractionBar, _primFracCompare, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus, _primProblemeFois, _primMonnaieTotal, _primRendreMonnaie, _primDuree, _primHeure, _primPerimetre, _primAire, _primFigureReco, _primCotes, _primSymetrie, _primEgalite, _primCartesien, _primGraphique],
  CM1: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines, _primArrondi,
        _primDouble, _primMoitie, _primComplement, _primFamilleMul, _primCommut, _primStrategie,
-       _primFractionBar, _primFracCompare, _primFracDecimal, _primDecimalFrac, _primFracEquiv, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus, _primProblemeFois, _primMonnaieTotal, _primRendreMonnaie, _primDuree, _primHeure, _primPerimetre, _primAire, _primFigureReco, _primCotes, _primSymetrie, _primAngle],
+       _primFractionBar, _primFracCompare, _primFracDecimal, _primDecimalFrac, _primFracEquiv, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus, _primProblemeFois, _primMonnaieTotal, _primRendreMonnaie, _primDuree, _primHeure, _primPerimetre, _primAire, _primFigureReco, _primCotes, _primSymetrie, _primAngle, _primEgalite, _primCartesien, _primGraphique, _primProportion],
  CM2: [_primSuite, _primRangListe, _primComparer, _primValeurPosition, _primDizaines, _primArrondi,
        _primDouble, _primMoitie, _primComplement, _primFamilleMul, _primCommut, _primStrategie,
-       _primFractionBar, _primFracCompare, _primFracDecimal, _primDecimalFrac, _primFracEquiv, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus, _primProblemeFois, _primMonnaieTotal, _primRendreMonnaie, _primDuree, _primHeure, _primPerimetre, _primAire, _primFigureReco, _primCotes, _primSymetrie, _primAngle],
+       _primFractionBar, _primFracCompare, _primFracDecimal, _primDecimalFrac, _primFracEquiv, _primPartage, _primDroiteLire, _primDroitePlacer, _primProblemeTout, _primProblemePartie, _primProblemeCompareDiff, _primProblemeComparePlus, _primProblemeFois, _primMonnaieTotal, _primRendreMonnaie, _primDuree, _primHeure, _primPerimetre, _primAire, _primFigureReco, _primCotes, _primSymetrie, _primAngle, _primEgalite, _primCartesien, _primGraphique, _primProportion],
 };
 
 // Renvoie une question d'enrichissement pour le niveau, ou null.

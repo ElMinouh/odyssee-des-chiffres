@@ -4925,3 +4925,16 @@ body.mat-mode #v-game{
 .prim-shape{ width:96px; height:96px; display:block; margin:6px auto; filter:drop-shadow(0 3px 8px rgba(0,0,0,.4)); }
 .qcm-btn.prim-choice .prim-shape{ width:58px; height:58px; margin:0; filter:none; }
 .prim-angle{ width:120px; height:104px; display:block; margin:6px auto; filter:drop-shadow(0 3px 8px rgba(0,0,0,.4)); }
+
+/* ═══════ v9.3.9 (P8) : proportionnalité & données ═══════ */
+.prim-table{ border-collapse:collapse; margin:10px auto; color:#fff; }
+.prim-table td{ border:2px solid rgba(255,255,255,.6); padding:6px 16px; font-weight:800; text-align:center; min-width:34px; }
+.prim-table tr:first-child td{ background:rgba(255,255,255,.14); }
+.prim-chart{ width:min(92%,320px); margin:14px auto 8px; padding-left:16px; }
+.pc-plot{ position:relative; border-left:2px solid #fff; border-bottom:2px solid #fff; }
+.pc-line{ position:absolute; left:0; right:0; height:1px; background:rgba(255,255,255,.16); }
+.pc-ytick{ position:absolute; left:-14px; top:-7px; font-size:.66em; color:#fff; }
+.pc-cols{ position:absolute; left:0; right:0; bottom:0; top:0; display:flex; align-items:flex-end; justify-content:space-around; }
+.pc-col{ position:relative; height:100%; display:flex; align-items:flex-end; }
+.pc-bar{ width:28px; background:#f1c40f; border-radius:4px 4px 0 0; }
+.pc-cat{ position:absolute; bottom:-19px; left:50%; transform:translateX(-50%); font-size:.72em; color:#fff; white-space:nowrap; }
