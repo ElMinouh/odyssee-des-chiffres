@@ -4998,3 +4998,20 @@ body.mat-mode #v-game{
 .coll-geo .gt-angl{fill:#ffd54a;}
 .coll-geo .gt-par{stroke:#9bb4e8;stroke-width:2.4;}
 .coll-geo .gt-sec{stroke:#ffd54a;stroke-width:2;}
+
+/* ── Narration du livre (mode Odyssée) : boutons conteur ── */
+.story-narrate{display:flex;justify-content:center;gap:14px;margin:10px 0 4px;}
+.story-audio-btn{width:46px;height:46px;border-radius:50%;border:2px solid #b8860b;
+  background:radial-gradient(circle at 30% 30%,#fff7e0,#f0d99b);color:#7a5a10;
+  font-size:1.15em;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 6px rgba(120,80,0,.35),inset 0 1px 2px rgba(255,255,255,.7);
+  transition:transform .12s ease,box-shadow .12s ease;}
+.story-audio-btn:hover{transform:translateY(-1px) scale(1.05);}
+.story-audio-btn:active{transform:scale(.94);box-shadow:0 1px 3px rgba(120,80,0,.4);}
+.story-audio-btn.snarr-play{background:radial-gradient(circle at 30% 30%,#dff7df,#a8e0a8);border-color:#3a8a3a;color:#1f5a1f;}
+.story-audio-btn.snarr-stop{background:radial-gradient(circle at 30% 30%,#ffe0e0,#f0b0b0);border-color:#b03a3a;color:#7a1f1f;}
+
+/* ── Collège C6 : programme par blocs (algorithmique) ── */
+.coll-blocks{max-width:240px;margin:12px auto 16px;font-family:ui-monospace,Menlo,Consolas,monospace;}
+.coll-blocks .cb-line{background:rgba(91,141,239,.18);border-left:4px solid #5b8def;border-radius:6px;
+  padding:7px 10px;margin:5px 0;color:#eaf1ff;font-weight:700;font-size:.92em;white-space:pre;}

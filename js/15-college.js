@@ -390,6 +390,53 @@ function _colProba(level){
  return { display:`Un sac contient ${r} boules rouges et ${b} boules bleues. Probabilité de tirer une rouge ?`, choices, res, type:'normal', opKey:'stat', img:'' };
 }
 
+// ════════════════ Chantier C6 : Puissances, arithmétique & algorithmique (5e→3e) ════════════════
+function _sup(n){ const M={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'}; return String(n).split('').map(c=>M[c]||c).join(''); }
+function _colBlocksHtml(lines){ return `<div class="coll-blocks">` + lines.map(l=>`<div class="cb-line">${l}</div>`).join('') + `</div>`; }
+
+function _colPuissance(level){
+ const a = ri(2,5), n = ri(2,4); const ans = Math.pow(a,n);
+ const { choices, res } = _colChoices(ans, [a*n, a+n, ans+a, Math.pow(a,n-1)]);
+ return { display:`Combien vaut ${a}${_sup(n)} ?`, choices, res, type:'normal', opKey:'arith', img:'' };
+}
+function _colPuissance10(level){
+ const n = ri(2,6); const ans = Math.pow(10,n);
+ const { choices, res } = _colChoices(ans, [10*n, Math.pow(10,n-1), Math.pow(10,n+1), ans+10]);
+ return { display:`Combien vaut 10${_sup(n)} ?`, choices, res, type:'normal', opKey:'arith', img:'' };
+}
+function _colNotationSci(level){
+ const a = ri(2,9), n = ri(2,5); const ans = a*Math.pow(10,n);
+ const { choices, res } = _colChoices(ans, [a*Math.pow(10,n-1), a*Math.pow(10,n+1), a*10*n, ans+a]);
+ return { display:`Combien vaut ${a} × 10${_sup(n)} ?`, choices, res, type:'normal', opKey:'arith', img:'' };
+}
+function _colPGCD(level){
+ const g = (a,b) => b ? g(b, a%b) : a;
+ const k = ri(2,9); const a = k*ri(2,6), b = k*ri(2,6); const ans = g(a,b);
+ const { choices, res } = _colChoices(ans, [k, Math.min(a,b), Math.abs(a-b), ans+1]);
+ return { display:`Quel est le PGCD de ${a} et ${b} ?`, choices, res, type:'normal', opKey:'arith', img:'' };
+}
+function _colPremier(level){
+ const isP = n => { if(n < 2) return false; for(let i=2; i*i<=n; i++) if(n%i===0) return false; return true; };
+ const primes = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47];
+ const comps = [4,6,8,9,10,12,14,15,16,18,20,21,22,24,25,27,33,35,49];
+ const n = (ri(0,1) === 1) ? _colPick(primes) : _colPick(comps);
+ const opts = ['Vrai','Faux']; const correct = isP(n) ? 'Vrai' : 'Faux';
+ return { display:`Le nombre ${n} est-il un nombre premier ?`, choices:opts.map((v,i)=>({val:i, label:v})), res:opts.indexOf(correct), type:'normal', opKey:'arith', img:'' };
+}
+function _colAlgoVar(level){
+ const x0 = ri(1,6), add = ri(2,8), mul = ri(2,3); let val, steps;
+ if(ri(0,1)){ val = (x0 + add)*mul; steps = [`x = ${x0}`, `x = x + ${add}`, `x = x × ${mul}`]; }
+ else { val = x0*mul + add; steps = [`x = ${x0}`, `x = x × ${mul}`, `x = x + ${add}`]; }
+ const { choices, res } = _colChoices(val, [x0 + add + mul, val + add, val - mul, x0*add]);
+ return { display:`Programme : ${steps.join(' ; ')}. Que vaut x à la fin ?`, visualHtml:_colBlocksHtml(steps), choices, res, type:'normal', opKey:'algo', img:'' };
+}
+function _colAlgoBoucle(level){
+ const times = ri(3,6), step = ri(2,6), start = ri(0,4); const val = start + times*step;
+ const { choices, res } = _colChoices(val, [times*step, times + step, start + step, val - step]);
+ const steps = [`x = ${start}`, `Répéter ${times} fois :`, `\u00A0\u00A0\u00A0x = x + ${step}`];
+ return { display:`Programme : x = ${start}, puis répéter ${times} fois « x = x + ${step} ». Que vaut x à la fin ?`, visualHtml:_colBlocksHtml(steps), choices, res, type:'normal', opKey:'algo', img:'' };
+}
+
 // ── Phases (.ph) : 1 = début d'année, 2 = milieu, 3 = fin ──────────────
 const _COL_PH = {
  _colRelComparer:1, _colRelDroite:1,
@@ -407,6 +454,9 @@ const _COL_PH = {
  _colAireRect:1, _colMoyenne:1,
  _colAireTriangle:2, _colAireDisque:2, _colVolPave:2, _colEtendue:2, _colProba:2,
  _colVolCylindre:3, _colMediane:3,
+ _colPuissance:1,
+ _colPuissance10:2, _colPGCD:2, _colPremier:2, _colAlgoVar:2,
+ _colNotationSci:3, _colAlgoBoucle:3,
 };
 for(const name in _COL_PH){ try{ const f = eval(name); if(typeof f === 'function') f.ph = _COL_PH[name]; }catch(e){} }
 
@@ -417,17 +467,20 @@ const _COL_POOL = {
         _colLitSubstituer, _colLitEgalite, _colLitReduire, _colLitDevelopper, _colLitProgramme,
         _colRepere, _colPropCoef, _colPropQuatrieme,
         _colAnglesTriangle, _colAnglesParallel, _colTransfoSym,
-        _colAireRect, _colAireTriangle, _colAireDisque, _colVolPave, _colProba],
+        _colAireRect, _colAireTriangle, _colAireDisque, _colVolPave, _colProba,
+        _colPuissance, _colAlgoVar, _colAlgoBoucle],
  '4E': [_colRelComparer, _colRelDroite, _colRelAddSous, _colRelDeplacement, _colRelMul, _colRelDiv,
         _colLitSubstituer, _colLitEgalite, _colLitReduire, _colLitDevelopper, _colLitProgramme, _colLitFactoriser, _colLitEquation,
         _colPropCoef, _colPropQuatrieme, _colPourcentage, _colPourcentEvol,
         _colAnglesTriangle, _colAnglesParallel, _colPythHyp, _colPythCote, _colPythReciproque, _colTransfoSym,
-        _colAireRect, _colAireTriangle, _colVolPave, _colMoyenne, _colEtendue, _colProba],
+        _colAireRect, _colAireTriangle, _colVolPave, _colMoyenne, _colEtendue, _colProba,
+        _colPuissance, _colPuissance10, _colNotationSci, _colAlgoVar, _colAlgoBoucle],
  '3E': [_colRelComparer, _colRelAddSous, _colRelDeplacement, _colRelMul, _colRelDiv,
         _colLitReduire, _colLitDevelopper, _colLitFactoriser, _colLitEquation, _colLitProgramme,
         _colPropQuatrieme, _colPourcentage, _colPourcentEvol, _colRepere, _colFoncImage, _colFoncCalc, _colFoncLinAff,
         _colAnglesTriangle, _colPythHyp, _colPythCote, _colThales, _colTrigoRatio,
-        _colAireDisque, _colVolPave, _colVolCylindre, _colMoyenne, _colMediane, _colEtendue, _colProba],
+        _colAireDisque, _colVolPave, _colVolCylindre, _colMoyenne, _colMediane, _colEtendue, _colProba,
+        _colPuissance, _colPuissance10, _colNotationSci, _colPGCD, _colPremier],
 };
 
 // ── Tirage : sac sans remise, filtré par la phase d'année du niveau ──────

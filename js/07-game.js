@@ -4007,12 +4007,56 @@ const _STORY = {
  },
 };
 // Affiche une scène narrative (parchemin paginé). onDone() appelé à la fermeture.
+// ── Narration chaleureuse du livre (mode Odyssée) ──────────────────────
+// Voix de conteur : lente, posée, en privilégiant une voix française
+// naturelle/expressive (féminine de préférence).
+let _storyUtter = null;
+function _pickNarratorVoice(){
+ try{
+  const vs = (window.speechSynthesis.getVoices && window.speechSynthesis.getVoices()) || [];
+  const fr = vs.filter(v => /fr(-|_)?/i.test(v.lang||''));
+  if(!fr.length) return null;
+  const prefs = [
+   /google.*fran/i,                                   // "Google français" (très naturelle)
+   /amélie|amelie|audrey|aurélie|aurelie|virginie|charlotte|léa|lea|marie/i, // conteuses
+   /natural|enhanced|premium|neural|siri|eloquence/i, // voix améliorées
+   /thomas|nicolas|paul|daniel/i,
+  ];
+  for(const p of prefs){ const f = fr.find(v => p.test(v.name||'')); if(f) return f; }
+  return fr[0];
+ }catch(e){ return null; }
+}
+function _narrateStop(){ try{ window.speechSynthesis.cancel(); }catch(e){} _storyUtter = null; }
+function _narratePause(){ try{ if(window.speechSynthesis.speaking && !window.speechSynthesis.paused) window.speechSynthesis.pause(); }catch(e){} }
+function _narrateStory(rawHtml){
+ if(!window.speechSynthesis) return;
+ try{
+  // Si une lecture est en pause, on reprend simplement.
+  if(window.speechSynthesis.paused){ window.speechSynthesis.resume(); return; }
+  window.speechSynthesis.cancel();
+  // Extraire le texte brut (sans balises) de la page
+  const tmp = document.createElement('div'); tmp.innerHTML = _storyText(rawHtml);
+  let plain = (tmp.textContent || tmp.innerText || '').replace(/\s+/g, ' ').trim();
+  if(!plain) return;
+  const hum = (typeof _humanizeForSpeech === 'function') ? _humanizeForSpeech(plain) : plain;
+  const u = new SpeechSynthesisUtterance(hum);
+  u.lang = 'fr-FR';
+  u.rate = 0.84;   // posé, comme un conteur
+  u.pitch = 1.05;  // chaleureux
+  u.volume = 1;
+  const v = _pickNarratorVoice(); if(v) u.voice = v;
+  _storyUtter = u;
+  window.speechSynthesis.speak(u);
+ }catch(e){}
+}
+
 function _showStoryModal(chapter, onDone){
  if(!chapter || !Array.isArray(chapter.pages) || !chapter.pages.length){ if(onDone) onDone(); return; }
  let page = 0;
  const overlay = document.createElement('div');
  overlay.className = 'story-overlay';
  function close(){
+  _narrateStop();
   overlay.classList.add('story-out');
   setTimeout(()=>{ try{ overlay.remove(); }catch(e){} if(onDone) onDone(); }, 300);
  }
@@ -4024,6 +4068,11 @@ function _showStoryModal(chapter, onDone){
     <div class="story-title">${chapter.title||''}</div>
     <div class="story-emoji">${p.emoji||'📖'}</div>
     <div class="story-text">${_storyText(p.text)}</div>
+    <div class="story-narrate">
+     <button class="story-audio-btn snarr-play" title="Écouter l'histoire" aria-label="Lecture">▶</button>
+     <button class="story-audio-btn snarr-pause" title="Mettre en pause" aria-label="Pause">⏸</button>
+     <button class="story-audio-btn snarr-stop" title="Arrêter la lecture" aria-label="Stop">⏹</button>
+    </div>
     <div class="story-nav">
      ${page>0?`<button class="story-btn story-prev">‹</button>`:`<span class="story-spacer"></span>`}
      <div class="story-dots">${chapter.pages.map((_,i)=>`<span class="story-dot${i===page?' on':''}"></span>`).join('')}</div>
@@ -4032,11 +4081,14 @@ function _showStoryModal(chapter, onDone){
     ${!last?`<button class="story-skip">Passer l'histoire</button>`:''}
    </div>`;
   const nx = overlay.querySelector('.story-next');
-  if(nx) nx.onclick = ()=>{ if(!last){ page++; render(); } else close(); };
+  if(nx) nx.onclick = ()=>{ _narrateStop(); if(!last){ page++; render(); } else close(); };
   const pv = overlay.querySelector('.story-prev');
-  if(pv) pv.onclick = ()=>{ if(page>0){ page--; render(); } };
+  if(pv) pv.onclick = ()=>{ _narrateStop(); if(page>0){ page--; render(); } };
   const sk = overlay.querySelector('.story-skip');
   if(sk) sk.onclick = close;
+  const _pl = overlay.querySelector('.snarr-play');  if(_pl) _pl.onclick = ()=>_narrateStory(p.text);
+  const _pa = overlay.querySelector('.snarr-pause'); if(_pa) _pa.onclick = _narratePause;
+  const _st = overlay.querySelector('.snarr-stop');  if(_st) _st.onclick = _narrateStop;
   if(typeof beep==='function'){ try{ beep(520,'sine',.12,.05); }catch(e){} }
  }
  render();
