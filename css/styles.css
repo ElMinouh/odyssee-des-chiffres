@@ -4938,3 +4938,18 @@ body.mat-mode #v-game{
 .pc-col{ position:relative; height:100%; display:flex; align-items:flex-end; }
 .pc-bar{ width:28px; background:#f1c40f; border-radius:4px 4px 0 0; }
 .pc-cat{ position:absolute; bottom:-19px; left:50%; transform:translateX(-50%); font-size:.72em; color:#fff; white-space:nowrap; }
+
+/* ── Collège C1 : droite graduée des nombres relatifs ── */
+.coll-line{position:relative;height:64px;margin:18px 6px 26px;}
+.coll-line .cl-axis{position:absolute;left:0;right:0;top:34px;height:3px;border-radius:3px;
+  background:linear-gradient(90deg,#5b8def,#9b7ff0);}
+.coll-line .cl-tick{position:absolute;top:28px;width:2px;height:14px;background:rgba(255,255,255,.55);
+  transform:translateX(-50%);}
+.coll-line .cl-tick.cl-zero{height:22px;top:24px;width:3px;background:#fff;box-shadow:0 0 6px rgba(255,255,255,.8);}
+.coll-line .cl-lab{position:absolute;top:18px;left:50%;transform:translateX(-50%);
+  font-size:.74em;font-weight:700;color:#dfe7ff;white-space:nowrap;}
+.coll-line .cl-tick.cl-zero .cl-lab{color:#fff;font-size:.82em;}
+.coll-line .cl-mark{position:absolute;top:-4px;transform:translateX(-50%);text-align:center;color:#ffd54a;}
+.coll-line .cl-mark-lab{display:block;font-size:.92em;font-weight:800;}
+.coll-line .cl-arrow{display:block;font-size:.8em;line-height:1;margin-top:1px;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));}

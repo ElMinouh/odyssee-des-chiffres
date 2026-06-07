@@ -9,7 +9,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v9.4.1';
+const CACHE_VERSION = 'v9.4.2';
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources critiques précachées au premier chargement.
@@ -35,6 +35,7 @@ const CRITICAL_URLS = [
   './js/12-cloud.js',
   './js/13-maternelle.js',
   './js/14-primaire.js',
+  './js/15-college.js',
 ];
 
 // Ressources optionnelles (un 404 ne casse pas l'installation).

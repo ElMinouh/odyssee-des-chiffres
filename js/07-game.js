@@ -2456,6 +2456,10 @@ function generateQ(){
  if(GM.mode2==='normal' && !GS.isBoss && !(typeof _isMaternelle==='function'&&_isMaternelle(GM.level)) && typeof _primEnrich==='function' && typeof _PRIM_LEVELS!=='undefined' && _PRIM_LEVELS.includes(GM.level) && Math.random()<0.33){
   const pe=_primEnrich(GM.level); if(pe) return pe;
  }
+ // C : exercices d'enrichissement collège (relatifs, etc.) en mode normal hors boss
+ if(GM.mode2==='normal' && !GS.isBoss && typeof _collEnrich==='function' && typeof _COL_LEVELS!=='undefined' && _COL_LEVELS.includes(GM.level) && Math.random()<0.33){
+  const ce=_collEnrich(GM.level); if(ce) return ce;
+ }
  const fn=GEN[GM.level]||GEN.CP;let q=fn(GS.isBoss);
  if(GS.activeEvent?.effect==='next_golden'){GS.isGolden=true;GS.activeEvent=null;}
  return q;

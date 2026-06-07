@@ -485,7 +485,7 @@ function showHeroEvolution(stage){
 // questions + plages de nombres qui s'élargissent. Régression douce sur erreur.
 // En Odyssée, la phase vient de la position dans l'îlot (pas de la jauge).
 // ═══════════════════════════════════════════════════════
-const _YEAR_LEVELS = ['PS','MS','GS','CP','CE1','CE2','CM1','CM2'];
+const _YEAR_LEVELS = ['PS','MS','GS','CP','CE1','CE2','CM1','CM2','6E','5E','4E','3E'];
 const PROG_UP   = 0.025;   // gain par bonne réponse (montée rapide : ~40 réussites = début→fin)
 const PROG_DOWN = 0.015;   // perte par erreur (régression douce)
 
@@ -548,7 +548,7 @@ function _progScaleRange(min,max){
 function _progBilanHtml(d){
  try{
   const yp=(d&&d.yearProgress)||{};
-  const order=['PS','MS','GS','CP','CE1','CE2','CM1','CM2'];
+  const order=['PS','MS','GS','CP','CE1','CE2','CM1','CM2','6E','5E','4E','3E'];
   const rows=order.filter(l=>typeof yp[l]==='number' && yp[l]>0.001);
   if(!rows.length) return '';
   const lab=v=> v<0.34?"Début d'année":(v<0.67?"Milieu d'année":"Fin d'année");
