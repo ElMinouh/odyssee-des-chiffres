@@ -3360,6 +3360,15 @@ const _BOSS_ENRAGE_LINES = [
  "Impossible… tu es plus fort que prévu. Mais je ne céderai pas !",
  "Ma colère décuple mes forces ! Prépare-toi !",
 ];
+// Répliques d'enrage adaptées au collège (ton plus mûr, adversaire respecté)
+const _BOSS_ENRAGE_LINES_COL = [
+ "Tu raisonnes mieux que je ne le pensais. Je cesse de te ménager.",
+ "Assez d'échauffement. Montre-moi vraiment de quoi tu es capable.",
+ "Chaque réponse juste fissure ma certitude. Soit : passons aux choses sérieuses.",
+ "Tu refuses de plier ? Alors je relève la difficulté.",
+ "Un esprit qui ne renonce pas… voyons jusqu'où il tient.",
+ "Tu as forcé mon respect. Tu auras donc ma pleine puissance.",
+];
 function _triggerBossEnrage(){
  const ma = document.getElementById('monster-area');
  // Effet visuel sur le monstre : classe enragée (rouge + grossissement pulsant)
@@ -3383,7 +3392,8 @@ function _triggerBossEnrage(){
  setTimeout(() => banner.classList.add('boss-enrage-banner-out'), 1400);
  setTimeout(() => banner.remove(), 1900);
  // Dialogue menaçant (via le système de voix du monstre si dispo)
- const line = _BOSS_ENRAGE_LINES[Math.floor(Math.random() * _BOSS_ENRAGE_LINES.length)];
+ const _enPool = (typeof _COL_LEVELS!=='undefined' && typeof GM!=='undefined' && _COL_LEVELS.includes(GM.level)) ? _BOSS_ENRAGE_LINES_COL : _BOSS_ENRAGE_LINES;
+ const line = _enPool[Math.floor(Math.random() * _enPool.length)];
  if(typeof monsterSpeak === 'function'){
   try{ monsterSpeak(line, 2600); }catch(e){}
  }
@@ -3650,6 +3660,14 @@ const _BOSS_FURY_LINES = [
  "Si je tombe, je t'emporte avec moi !",
  "AAARGH ! Mes forces ultimes se déchaînent !",
 ];
+// Répliques de furie adaptées au collège
+const _BOSS_FURY_LINES_COL = [
+ "Impossible… ma logique se brise. Je n'ai plus rien à perdre !",
+ "Tu es à un théorème de me vaincre. Je ne te le concéderai pas !",
+ "Mes dernières équations, je les lance toutes contre toi !",
+ "Si je dois tomber, que ce soit face à un adversaire digne. Prouve-le encore.",
+ "Tout mon savoir condensé en un ultime défi. Relève-le, si tu l'oses.",
+];
 function _triggerBossFury(){
  const ma = document.getElementById('monster-area');
  if(ma){
@@ -3673,7 +3691,8 @@ function _triggerBossFury(){
  setTimeout(() => banner.classList.add('boss-fury-banner-out'), 1600);
  setTimeout(() => banner.remove(), 2100);
  // Dialogue désespéré
- const line = _BOSS_FURY_LINES[Math.floor(Math.random() * _BOSS_FURY_LINES.length)];
+ const _fuPool = (typeof _COL_LEVELS!=='undefined' && typeof GM!=='undefined' && _COL_LEVELS.includes(GM.level)) ? _BOSS_FURY_LINES_COL : _BOSS_FURY_LINES;
+ const line = _fuPool[Math.floor(Math.random() * _fuPool.length)];
  if(typeof monsterSpeak === 'function'){ try{ monsterSpeak(line, 2800); }catch(e){} }
  // v9.2.4 : plus de son de furie (trop proche du bip d'erreur). Réplique parlée
  // (_BOSS_FURY_LINES) + effets visuels suffisent à exprimer la rage.

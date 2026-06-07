@@ -257,6 +257,91 @@ function _colFoncLinAff(level){
   choices:opts.map((v,i)=>({val:i, label:v})), res:opts.indexOf(correct), type:'normal', opKey:'fonc', img:'' };
 }
 
+// ════════════════ Chantier C4 : Géométrie du raisonnement (5e→3e) ════════════════
+// Les valeurs figurent dans l'énoncé (vérifiables) ; la figure illustre. opKey 'geo'.
+function _colRightTriSvg(o){
+ const T = (x,y,t,c) => `<text x="${x}" y="${y}" class="gt-lab ${c||''}">${t}</text>`;
+ let m = '';
+ if(o.bottom) m += T(104,170,o.bottom);
+ if(o.left)   m += T(10,96,o.left);
+ if(o.hyp)    m += T(120,86,o.hyp);
+ let ang = '';
+ if(o.angleAt === 'B'){ ang = '<path d="M168,150 A24,24 0 0 0 176,132" class="gt-ang"/>' + T(150,144, o.angleName||'?', 'gt-angl'); }
+ return `<div class="coll-geo"><svg viewBox="0 0 220 180"><polygon points="28,150 192,150 28,28" class="gt-fill"/><path d="M44,150 L44,134 L28,134" class="gt-sq"/>${ang}${m}</svg></div>`;
+}
+function _colTriAngSvg(a,b){
+ const T = (x,y,t) => `<text x="${x}" y="${y}" class="gt-lab">${t}</text>`;
+ return `<div class="coll-geo"><svg viewBox="0 0 220 180"><polygon points="30,150 190,150 120,30" class="gt-fill"/>${T(46,142,a+'°')}${T(168,142,b+'°')}${T(118,54,'?')}</svg></div>`;
+}
+function _colParallelSvg(x){
+ const T = (xx,yy,t) => `<text x="${xx}" y="${yy}" class="gt-lab">${t}</text>`;
+ return `<div class="coll-geo"><svg viewBox="0 0 220 160"><line x1="10" y1="52" x2="210" y2="52" class="gt-par"/><line x1="10" y1="112" x2="210" y2="112" class="gt-par"/><line x1="64" y1="18" x2="168" y2="146" class="gt-sec"/>${T(98,46,x+'°')}${T(120,130,'?')}</svg></div>`;
+}
+function _colThalesSvg(){
+ const T = (x,y,t) => `<text x="${x}" y="${y}" class="gt-lab">${t}</text>`;
+ return `<div class="coll-geo"><svg viewBox="0 0 220 180"><polygon points="110,20 30,160 190,160" class="gt-fill"/><line x1="70" y1="90" x2="150" y2="90" class="gt-par"/>${T(110,14,'A')}${T(22,172,'B')}${T(198,172,'C')}${T(58,86,'M')}${T(160,86,'N')}</svg></div>`;
+}
+
+const _PYTH_TRIPLES = [[3,4,5],[6,8,10],[5,12,13],[8,15,17],[9,12,15],[7,24,25],[20,21,29]];
+// Pythagore : longueur de l'hypoténuse
+function _colPythHyp(level){
+ const t = _colPick(_PYTH_TRIPLES); const ans = t[2];
+ const { choices, res } = _colChoices(ans, [t[0] + t[1], ans + 1, ans - 1, t[1] + 1]);
+ return { display:`Triangle rectangle, côtés de l'angle droit : ${t[0]} et ${t[1]}. Longueur de l'hypoténuse ?`,
+  visualHtml:_colRightTriSvg({bottom:''+t[0], left:''+t[1], hyp:'?'}), choices, res, type:'normal', opKey:'geo', img:'' };
+}
+// Pythagore : longueur d'un côté de l'angle droit
+function _colPythCote(level){
+ const t = _colPick(_PYTH_TRIPLES); const ans = t[0];
+ const { choices, res } = _colChoices(ans, [t[2] - t[1], ans + 1, ans - 1, t[2] - t[0]]);
+ return { display:`Triangle rectangle : hypoténuse ${t[2]}, un côté ${t[1]}. Combien mesure l'autre côté ?`,
+  visualHtml:_colRightTriSvg({bottom:'?', left:''+t[1], hyp:''+t[2]}), choices, res, type:'normal', opKey:'geo', img:'' };
+}
+// Réciproque : le triangle est-il rectangle ?
+function _colPythReciproque(level){
+ const t = _colPick(_PYTH_TRIPLES); const rect = ri(0,1) === 1; let c = t[2];
+ if(!rect){ c = t[2] + _colPick([-2,-1,1,2]); }
+ const opts = ['Vrai','Faux']; const correct = rect ? 'Vrai' : 'Faux';
+ return { display:`Un triangle a pour côtés ${t[0]}, ${t[1]} et ${c}. Est-il rectangle ?`,
+  choices:opts.map((v,i)=>({val:i, label:v})), res:opts.indexOf(correct), type:'normal', opKey:'geo', img:'' };
+}
+// Somme des angles d'un triangle
+function _colAnglesTriangle(level){
+ let A = ri(30,80), B = ri(30,80); while(A + B > 165){ B = ri(20,70); } const ans = 180 - A - B;
+ const { choices, res } = _colChoices(ans, [180 - A, A + B, ans + 10, ans - 10]);
+ return { display:`Dans un triangle, deux angles mesurent ${A}° et ${B}°. Combien mesure le troisième ?`,
+  visualHtml:_colTriAngSvg(A, B), choices, res, type:'normal', opKey:'geo', img:'' };
+}
+// Angles et parallèles (alternes-internes / correspondants = égaux)
+function _colAnglesParallel(level){
+ const x = ri(35,75); const kind = _colPick(['alterne-interne','correspondant']);
+ const { choices, res } = _colChoices(x, [180 - x, x + 10, x - 10, 90]);
+ return { display:`Deux droites parallèles sont coupées par une sécante. Un angle vaut ${x}°. Combien mesure son angle ${kind} ?`,
+  visualHtml:_colParallelSvg(x), choices, res, type:'normal', opKey:'geo', img:'' };
+}
+// Théorème de Thalès : calculer une longueur
+function _colThales(level){
+ const k = ri(2,4); const am = ri(2,5); const ab = am*k; const an = ri(2,5); const ac = an*k;
+ const { choices, res } = _colChoices(ac, [an + (ab - am), an*k + k, ac + k, ac - k]);
+ return { display:`(MN) est parallèle à (BC). AM = ${am}, AB = ${ab}, AN = ${an}. Combien vaut AC ?`,
+  visualHtml:_colThalesSvg(), choices, res, type:'normal', opKey:'geo', img:'' };
+}
+// Trigonométrie : identifier le rapport (SOH-CAH-TOA)
+function _colTrigoRatio(level){
+ const f = _colPick([['cosinus','côté adjacent / hypoténuse'], ['sinus','côté opposé / hypoténuse'], ['tangente','côté opposé / côté adjacent']]);
+ const opts = shuffle(['côté adjacent / hypoténuse','côté opposé / hypoténuse','côté opposé / côté adjacent']);
+ return { display:`Dans un triangle rectangle, le ${f[0]} d'un angle aigu est égal à :`,
+  visualHtml:_colRightTriSvg({angleAt:'B', angleName:'?'}),
+  choices:opts.map((v,i)=>({val:i, label:v})), res:opts.indexOf(f[1]), type:'normal', opKey:'geo', img:'' };
+}
+// Transformation : symétrie de centre O (image d'un point)
+function _colTransfoSym(level){
+ const x = ri(-4,4) || 2, y = ri(-4,4) || 3; const ans = `(${_colFmt(-x)} ; ${_colFmt(-y)})`;
+ const { choices, res } = _colChoicesTxt(ans, [`(${_colFmt(x)} ; ${_colFmt(y)})`, `(${_colFmt(-x)} ; ${_colFmt(y)})`, `(${_colFmt(x)} ; ${_colFmt(-y)})`]);
+ return { display:`Quelle est l'image du point (${_colFmt(x)} ; ${_colFmt(y)}) par la symétrie de centre O ?`,
+  visualHtml:_colRepereSvg([{x, y, label:'M'}], 5), choices, res, type:'normal', opKey:'geo', img:'' };
+}
+
 // ── Phases (.ph) : 1 = début d'année, 2 = milieu, 3 = fin ──────────────
 const _COL_PH = {
  _colRelComparer:1, _colRelDroite:1,
@@ -268,6 +353,9 @@ const _COL_PH = {
  _colPropCoef:1, _colRepere:1,
  _colPropQuatrieme:2, _colPourcentage:2, _colFoncImage:2, _colFoncCalc:2,
  _colPourcentEvol:3, _colFoncLinAff:3,
+ _colAnglesTriangle:1,
+ _colAnglesParallel:2, _colPythHyp:2, _colTrigoRatio:2, _colTransfoSym:2,
+ _colPythCote:3, _colPythReciproque:3, _colThales:3,
 };
 for(const name in _COL_PH){ try{ const f = eval(name); if(typeof f === 'function') f.ph = _COL_PH[name]; }catch(e){} }
 
@@ -276,13 +364,16 @@ const _COL_POOL = {
  '6E': [],
  '5E': [_colRelComparer, _colRelDroite, _colRelAddSous, _colRelDeplacement,
         _colLitSubstituer, _colLitEgalite, _colLitReduire, _colLitDevelopper, _colLitProgramme,
-        _colRepere, _colPropCoef, _colPropQuatrieme],
+        _colRepere, _colPropCoef, _colPropQuatrieme,
+        _colAnglesTriangle, _colAnglesParallel, _colTransfoSym],
  '4E': [_colRelComparer, _colRelDroite, _colRelAddSous, _colRelDeplacement, _colRelMul, _colRelDiv,
         _colLitSubstituer, _colLitEgalite, _colLitReduire, _colLitDevelopper, _colLitProgramme, _colLitFactoriser, _colLitEquation,
-        _colPropCoef, _colPropQuatrieme, _colPourcentage, _colPourcentEvol],
+        _colPropCoef, _colPropQuatrieme, _colPourcentage, _colPourcentEvol,
+        _colAnglesTriangle, _colAnglesParallel, _colPythHyp, _colPythCote, _colPythReciproque, _colTransfoSym],
  '3E': [_colRelComparer, _colRelAddSous, _colRelDeplacement, _colRelMul, _colRelDiv,
         _colLitReduire, _colLitDevelopper, _colLitFactoriser, _colLitEquation, _colLitProgramme,
-        _colPropQuatrieme, _colPourcentage, _colPourcentEvol, _colRepere, _colFoncImage, _colFoncCalc, _colFoncLinAff],
+        _colPropQuatrieme, _colPourcentage, _colPourcentEvol, _colRepere, _colFoncImage, _colFoncCalc, _colFoncLinAff,
+        _colAnglesTriangle, _colPythHyp, _colPythCote, _colThales, _colTrigoRatio],
 };
 
 // ── Tirage : sac sans remise, filtré par la phase d'année du niveau ──────

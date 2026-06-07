@@ -475,6 +475,11 @@ const BOSS_ROSTER={
  CE2: {emoji:'🦖',name:'Dino-Tables',title:'Boss Titanesque',intro:'Je suis là depuis des millions d\'années. Tes tables… je les connais toutes.',anim:'pulse',col:'#f39c12'},
  CM1: {emoji:'🤖',name:'Méga-Calculateur',title:'Boss Cybernétique',intro:'Mes circuits traitent des milliards de calculs par seconde. Toi ?',anim:'freeze',col:'#3498db'},
  CM2: {emoji:'👑',name:'Roi des Maths',title:'Boss Ultime',intro:'Tu as osé venir jusqu\'à moi. Tu vas le regretter.',anim:'glow',col:'#f1c40f'},
+ // ── Boss COLLÈGE (6e→3e) : ton plus mûr, thèmes du cycle 4 ──
+ '6E': {emoji:'🗿',name:'le Sphinx Sans Réponse',title:'Gardien du Seuil',intro:'Tu quittes l\'enfance des nombres. Ici, on ne récite plus : on raisonne. À toi de le prouver.',anim:'shake2',col:'#6b7a8f'},
+ '5E': {emoji:'🌑',name:'Abyssos, Seigneur du Négatif',title:'Maître des Profondeurs',intro:'Sous le zéro s\'ouvre mon royaume. Beaucoup s\'y égarent. Sauras-tu en revenir ?',anim:'freeze',col:'#34495e'},
+ '4E': {emoji:'⚖️',name:'l\'Équateur, Maître de l\'Inconnue',title:'Juge des Équilibres',intro:'Tout doit s\'équilibrer. Une faute d\'un côté, et la balance te condamne. Résous… ou romps.',anim:'pulse',col:'#8e44ad'},
+ '3E': {emoji:'🌌',name:'Sigma, Seigneur des Fonctions',title:'l\'Ultime Théorème',intro:'Avant le Brevet, il y a moi. Je suis chaque démonstration que tu n\'as pas terminée. Achève-la.',anim:'glow',col:'#2c3e50'},
 };
 const WRONG_TAUNTS=[
  'AH AH ! Tu m\'as raté !','Erreur ! C\'est trop facile de te battre.','Encore raté… déçu.','HA ! Les maths, c\'est dur, hein ?','Pathétique. Recommence.','Tu trembles ? C\'est bien.',
