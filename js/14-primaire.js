@@ -413,7 +413,8 @@ function _primCotes(level){
 function _primAngleSvg(deg){
  const cx=22, cy=82, len=66, a=-deg*Math.PI/180;
  const sq = deg===90 ? `<rect x="${cx}" y="${cy-12}" width="12" height="12" fill="none" stroke="#fff" stroke-width="2"/>` : '';
- return `<svg viewBox="0 0 110 100" class="prim-angle"><line x1="${cx}" y1="${cy}" x2="${cx+len}" y2="${cy}" stroke="#f1c40f" stroke-width="4" stroke-linecap="round"/><line x1="${cx}" y1="${cy}" x2="${(cx+len*Math.cos(a)).toFixed(1)}" y2="${(cy+len*Math.sin(a)).toFixed(1)}" stroke="#f1c40f" stroke-width="4" stroke-linecap="round"/>${sq}<circle cx="${cx}" cy="${cy}" r="3" fill="#fff"/></svg>`;
+ let arc=''; if(deg!==90){ const R=22,N=12; let p=''; for(let i=0;i<=N;i++){ const aa=(-deg*i/N)*Math.PI/180; p+=`${(cx+R*Math.cos(aa)).toFixed(1)},${(cy+R*Math.sin(aa)).toFixed(1)} `; } arc=`<polyline points="${p.trim()}" fill="none" stroke="#fff" stroke-width="2"/>`; }
+ return `<svg viewBox="0 0 110 100" class="prim-angle"><line x1="${cx}" y1="${cy}" x2="${cx+len}" y2="${cy}" stroke="#f1c40f" stroke-width="4" stroke-linecap="round"/><line x1="${cx}" y1="${cy}" x2="${(cx+len*Math.cos(a)).toFixed(1)}" y2="${(cy+len*Math.sin(a)).toFixed(1)}" stroke="#f1c40f" stroke-width="4" stroke-linecap="round"/>${arc}${sq}<circle cx="${cx}" cy="${cy}" r="3" fill="#fff"/></svg>`;
 }
 function _primAngle(level){
  const deg = _primPick([30,40,45,60,90,120,135,150]);
@@ -421,18 +422,22 @@ function _primAngle(level){
  const res = deg<90 ? 0 : deg===90 ? 1 : 2;
  return { display:`Cet angle est…`, visualHtml:_primAngleSvg(deg), choices:labels.map((l,i)=>({val:i,label:l})), res, type:'normal', opKey:'geo', img:'' };
 }
-// Axe de symétrie : oui / non (CE2→CM2)
+// Axe de symétrie : oui / non sur différentes figures (CE2→CM2)
 function _primSymetrie(level){
- const kind = _primPick(['v','h','d1','d2']);
- const yes = (kind==='v' || kind==='h');
- const rect = '<rect x="18" y="32" width="64" height="40" fill="#7fb2e8" stroke="#2c3e50" stroke-width="3"/>';
- const lines = {
-  v:'<line x1="50" y1="22" x2="50" y2="82" stroke="#e74c3c" stroke-width="3" stroke-dasharray="5 4"/>',
-  h:'<line x1="8" y1="52" x2="92" y2="52" stroke="#e74c3c" stroke-width="3" stroke-dasharray="5 4"/>',
-  d1:'<line x1="18" y1="32" x2="82" y2="72" stroke="#e74c3c" stroke-width="3" stroke-dasharray="5 4"/>',
-  d2:'<line x1="82" y1="32" x2="18" y2="72" stroke="#e74c3c" stroke-width="3" stroke-dasharray="5 4"/>'
+ const shapes=[
+  {bbox:[16,34,68,36], svg:'<rect x="16" y="34" width="68" height="36" fill="#7fb2e8" stroke="#2c3e50" stroke-width="3"/>', axes:{v:true,h:true,d1:false,d2:false}},
+  {bbox:[26,28,48,48], svg:'<rect x="26" y="28" width="48" height="48" fill="#7fb2e8" stroke="#2c3e50" stroke-width="3"/>', axes:{v:true,h:true,d1:true,d2:true}},
+  {bbox:[18,18,64,66], svg:'<polygon points="50,18 82,84 18,84" fill="#7fb2e8" stroke="#2c3e50" stroke-width="3"/>', axes:{v:true,h:false,d1:false,d2:false}}
+ ];
+ const sh=_primPick(shapes); const bx=sh.bbox[0], by=sh.bbox[1], bw=sh.bbox[2], bh=sh.bbox[3]; const cx=bx+bw/2, cy=by+bh/2;
+ const kind=_primPick(['v','h','d1','d2']); const yes=sh.axes[kind];
+ const L={
+  v:`<line x1="${cx}" y1="${by-6}" x2="${cx}" y2="${by+bh+6}" stroke="#e74c3c" stroke-width="3" stroke-dasharray="5 4"/>`,
+  h:`<line x1="${bx-6}" y1="${cy}" x2="${bx+bw+6}" y2="${cy}" stroke="#e74c3c" stroke-width="3" stroke-dasharray="5 4"/>`,
+  d1:`<line x1="${bx}" y1="${by}" x2="${bx+bw}" y2="${by+bh}" stroke="#e74c3c" stroke-width="3" stroke-dasharray="5 4"/>`,
+  d2:`<line x1="${bx+bw}" y1="${by}" x2="${bx}" y2="${by+bh}" stroke="#e74c3c" stroke-width="3" stroke-dasharray="5 4"/>`
  };
- const visual = `<svg viewBox="0 0 100 100" class="prim-shape">${rect}${lines[kind]}</svg>`;
+ const visual = `<svg viewBox="0 0 100 100" class="prim-shape">${sh.svg}${L[kind]}</svg>`;
  const opts = shuffle([{label:'Oui', y:true}, {label:'Non', y:false}]);
  return { display:`La ligne rouge est-elle un axe de symétrie ?`, visualHtml:visual, choices:opts.map((c,i)=>({val:i, label:c.label})), res:opts.findIndex(c=>c.y===yes), type:'normal', opKey:'geo', img:'' };
 }
@@ -460,10 +465,17 @@ function _primGraphique(level){
  return { display:`D'après le graphique, quelle est la valeur de « ${cats[idx]} » ?`, visualHtml:_primBarChartHtml(cats,vals), res:vals[idx], type:'normal', opKey:'num', img:'' };
 }
 // Produits cartésiens / combinatoire (CE2→CM2)
+function _primComboHtml(a, b){
+ let h = '<span class="pcombo-corner"></span>';
+ for(let i=0;i<a;i++) h += '<span class="pcombo-chip pcombo-a"></span>';
+ let body = '';
+ for(let r=0;r<b;r++){ body += '<span class="pcombo-chip pcombo-b"></span>'; for(let c=0;c<a;c++) body += '<span class="pcombo-cell"></span>'; }
+ return `<div class="prim-combo" style="grid-template-columns:22px repeat(${a},26px)">${h}${body}</div>`;
+}
 function _primCartesien(level){
  const a=ri(2,4), b=ri(2,4);
  const ctx=_primPick([['tee-shirts','pantalons'],['parfums de glace','sortes de cornet'],['types de pain','garnitures'],['stylos','cahiers']]);
- return { display:`Avec ${a} ${ctx[0]} et ${b} ${ctx[1]}, combien de combinaisons différentes peut-on faire ?`, res:a*b, type:'normal', opKey:'x', img:'' };
+ return { display:`Avec ${a} ${ctx[0]} et ${b} ${ctx[1]}, combien de combinaisons différentes peut-on faire ?`, visualHtml:_primComboHtml(a,b), res:a*b, type:'normal', opKey:'x', img:'' };
 }
 // Égalité (équivalence, pas « ça donne ») (CE1→CM2)
 function _primEgalite(level){
