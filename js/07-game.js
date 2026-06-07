@@ -4013,6 +4013,8 @@ const _STORY = {
 let _storyUtter = null;
 function _pickNarratorVoice(){
  try{
+  // Respecte le choix explicite de l'utilisateur (sélecteur de voix)
+  if(typeof _frVoice!=='undefined' && _frVoice) return _frVoice;
   const vs = (window.speechSynthesis.getVoices && window.speechSynthesis.getVoices()) || [];
   const fr = vs.filter(v => /fr(-|_)?/i.test(v.lang||''));
   if(!fr.length) return null;

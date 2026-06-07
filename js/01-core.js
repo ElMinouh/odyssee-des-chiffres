@@ -237,6 +237,54 @@ function loadVoice(){
  // v8.7.2 : activé par défaut (lecture des questions ET voix des monstres),
  // désactivé seulement si l'utilisateur l'a explicitement coupé ('0').
  t.checked=localStorage.getItem(VOICE_KEY)!=='0';
+ if(typeof initVoicePicker==='function') initVoicePicker();
+}
+// ── Sélecteur de voix (v9.4.8) : choix d'une voix appliquée partout
+//    (questions, monstres, narration du livre). Mémorisé via VOICE_URI_KEY. ──
+const VOICE_URI_KEY='odyssee_voice_uri';
+let _voicePickerHooked=false;
+function _allVoices(){ try{ return (window.speechSynthesis&&window.speechSynthesis.getVoices())||[]; }catch(e){ return []; } }
+function applySavedVoice(){
+ try{
+  const uri=localStorage.getItem(VOICE_URI_KEY)||'';
+  const vs=_allVoices();
+  if(uri){ const v=vs.find(x=>x.voiceURI===uri); _frVoice = v || _pickFrenchVoice(); }
+  else { _frVoice = _pickFrenchVoice(); }
+ }catch(e){}
+}
+function populateVoiceSelect(){
+ const sel=$('voiceSelect'); if(!sel) return;
+ const vs=_allVoices(); if(!vs.length) return; // sera rappelé via 'voiceschanged'
+ const fr=vs.filter(v=>/^fr/i.test(v.lang||''));
+ const others=vs.filter(v=>!/^fr/i.test(v.lang||''));
+ const saved=localStorage.getItem(VOICE_URI_KEY)||'';
+ const opt=v=>`<option value="${v.voiceURI}"${v.voiceURI===saved?' selected':''}>${v.name} (${v.lang})</option>`;
+ sel.innerHTML=`<option value=""${saved===''?' selected':''}>Voix automatique</option>`
+  +(fr.length?`<optgroup label="Français">${fr.map(opt).join('')}</optgroup>`:'')
+  +(others.length?`<optgroup label="Autres langues">${others.map(opt).join('')}</optgroup>`:'');
+}
+function onVoiceSelectChange(){
+ const sel=$('voiceSelect'); if(!sel) return;
+ localStorage.setItem(VOICE_URI_KEY, sel.value||'');
+ applySavedVoice();
+ // Échantillon chaleureux de conteur pour tester la voix choisie
+ try{
+  if(window.speechSynthesis){
+   window.speechSynthesis.cancel();
+   const u=new SpeechSynthesisUtterance('Il était une fois, dans le royaume de Calcultopia, un héros prêt à relever tous les défis.');
+   u.lang='fr-FR'; u.rate=0.86; u.pitch=1.05; if(_frVoice) u.voice=_frVoice;
+   window.speechSynthesis.speak(u);
+  }
+ }catch(e){}
+}
+function initVoicePicker(){
+ populateVoiceSelect();
+ applySavedVoice();
+ if(window.speechSynthesis && !_voicePickerHooked){
+  _voicePickerHooked=true;
+  // addEventListener (et non onvoiceschanged=) pour ne pas écraser d'autres écouteurs
+  try{ window.speechSynthesis.addEventListener('voiceschanged', ()=>{ populateVoiceSelect(); applySavedVoice(); }); }catch(e){}
+ }
 }
 // Répéter la dernière question à la demande de l'utilisateur
 function repeatQuestion(){
