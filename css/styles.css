@@ -4977,3 +4977,13 @@ body.mat-mode #v-game{
 .coll-balance .cb-val{font-weight:800;font-size:1.05em;color:#fff;}
 .coll-balance .cb-x{color:#ffd54a;font-style:italic;}
 .coll-balance .cb-pivot{align-self:flex-start;font-size:1.3em;margin-top:-6px;}
+
+/* ── Collège C3 : plan repère (proportionnalité & fonctions) ── */
+.coll-plane{max-width:240px;margin:14px auto 18px;}
+.coll-plane svg{width:100%;height:auto;display:block;}
+.coll-plane .cg-grid{stroke:rgba(255,255,255,.10);stroke-width:1;}
+.coll-plane .cg-axis{stroke:rgba(255,255,255,.55);stroke-width:1.6;}
+.coll-plane .cg-line{stroke:#5b8def;stroke-width:2.6;fill:none;}
+.coll-plane .cg-read{stroke:#ffd54a;stroke-width:1.4;stroke-dasharray:4 3;fill:none;}
+.coll-plane .cg-pt{fill:#ffd54a;stroke:#7a5b00;stroke-width:1;}
+.coll-plane .cg-ptlab{fill:#fff;font-size:13px;font-weight:800;}

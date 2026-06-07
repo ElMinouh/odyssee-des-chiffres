@@ -174,6 +174,89 @@ function _colLitEquation(level){
  return { display:`Résous : ${_affine(a,b)} = ${c}   (trouve x)`, visualHtml:_colBalanceHtml(a, b, c), choices, res, type:'normal', opKey:'litt', img:'' };
 }
 
+// ════════════════ Chantier C3 : Proportionnalité & fonctions (5e→3e) ════════════════
+// Plan repère SVG (clip automatique au viewBox). opKey 'prop' / 'fonc'.
+function _colXY(x, y, R){ const W = 220, pad = 20, u = (W - 2*pad) / (2*R); return [ (pad + (x + R)*u).toFixed(1), (W - (pad + (y + R)*u)).toFixed(1) ]; }
+function _colGridSvg(R){
+ const W = 220, pad = 20; let g = '';
+ for(let i = -R; i <= R; i++){ const vx = _colXY(i,0,R)[0], hy = _colXY(0,i,R)[1];
+  g += `<line x1="${vx}" y1="${pad}" x2="${vx}" y2="${W-pad}" class="cg-grid"/>`;
+  g += `<line x1="${pad}" y1="${hy}" x2="${W-pad}" y2="${hy}" class="cg-grid"/>`; }
+ const o = _colXY(0,0,R);
+ g += `<line x1="${pad}" y1="${o[1]}" x2="${W-pad}" y2="${o[1]}" class="cg-axis"/>`;
+ g += `<line x1="${o[0]}" y1="${pad}" x2="${o[0]}" y2="${W-pad}" class="cg-axis"/>`;
+ return g;
+}
+function _colRepereSvg(pts, R){
+ let m = '';
+ for(const p of pts){ const c = _colXY(p.x, p.y, R); m += `<circle cx="${c[0]}" cy="${c[1]}" r="4.5" class="cg-pt"/><text x="${+c[0]+7}" y="${+c[1]-6}" class="cg-ptlab">${p.label}</text>`; }
+ return `<div class="coll-plane"><svg viewBox="0 0 220 220">${_colGridSvg(R)}${m}</svg></div>`;
+}
+function _colFoncSvg(a, b, R, rx){
+ const p = _colXY(-R, a*(-R)+b, R), q = _colXY(R, a*R+b, R);
+ const img = a*rx + b; const pt = _colXY(rx, img, R); const oX = _colXY(0,0,R)[0]; const ax0 = _colXY(0,0,R)[1];
+ const read = `<line x1="${pt[0]}" y1="${ax0}" x2="${pt[0]}" y2="${pt[1]}" class="cg-read"/>`
+  + `<line x1="${oX}" y1="${pt[1]}" x2="${pt[0]}" y2="${pt[1]}" class="cg-read"/>`
+  + `<circle cx="${pt[0]}" cy="${pt[1]}" r="4" class="cg-pt"/>`;
+ return `<div class="coll-plane"><svg viewBox="0 0 220 220">${_colGridSvg(R)}<line x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}" class="cg-line"/>${read}</svg></div>`;
+}
+
+// Proportionnalité : prix unitaire (tableau implicite)
+function _colPropCoef(level){
+ const u = ri(2,6), k = ri(2,6); let n = ri(2,9); if(n === u) n++; const price = u*k; const ans = n*k;
+ const ctx = _colPick([`${u} stylos coûtent ${price} €. Combien coûtent ${n} stylos ?`,
+                       `${u} kg de pommes coûtent ${price} €. Prix de ${n} kg ?`]);
+ const { choices, res } = _colChoices(ans, [price + (n - u), n*u, ans + k, ans - k]);
+ return { display:ctx, choices, res, type:'normal', opKey:'prop', img:'' };
+}
+// Quatrième proportionnelle (tableau)
+function _colPropQuatrieme(level){
+ const k = ri(2,5), a = ri(2,6); let c = ri(2,9); if(c === a) c++; const b = a*k, d = c*k;
+ const { choices, res } = _colChoices(d, [c + (b - a), b + (c - a), d + k, d - k]);
+ return { display:`Tableau proportionnel : ${a} → ${b} ; ${c} → ?`, choices, res, type:'normal', opKey:'prop', img:'' };
+}
+// Pourcentage d'une quantité
+function _colPourcentage(level){
+ const p = _colPick([5,10,20,25,50,75]); const base = ri(1,10)*20; const ans = Math.round(base*p/100);
+ const { choices, res } = _colChoices(ans, [base - ans, Math.round(base*p/10), ans + p, base - p]);
+ return { display:`Combien font ${p} % de ${base} ?`, choices, res, type:'normal', opKey:'prop', img:'' };
+}
+// Évolution en pourcentage (hausse / baisse)
+function _colPourcentEvol(level){
+ const p = _colPick([10,20,25,50]); const base = ri(2,10)*20; const up = ri(0,1) === 1;
+ const delta = Math.round(base*p/100); const ans = up ? base + delta : base - delta;
+ const { choices, res } = _colChoices(ans, [up ? base - delta : base + delta, delta, base + (up ? p : -p), base]);
+ return { display:`Un article à ${base} € ${up?'augmente':'baisse'} de ${p} %. Nouveau prix ?`, choices, res, type:'normal', opKey:'prop', img:'' };
+}
+// Repérage dans le plan : identifier un point
+function _colRepere(level){
+ const R = 5; const used = new Set(); const pts = []; const L = ['A','B','C'];
+ while(pts.length < 3){ const x = ri(-R+1, R-1), y = ri(-R+1, R-1); const key = x+','+y; if(used.has(key)) continue; used.add(key); pts.push({x, y, label:L[pts.length]}); }
+ const ti = ri(0,2); const t = pts[ti];
+ return { display:`Quel point a pour coordonnées (${_colFmt(t.x)} ; ${_colFmt(t.y)}) ?`,
+  visualHtml:_colRepereSvg(pts, R), choices:L.map((l,i)=>({val:i, label:l})), res:ti, type:'normal', opKey:'fonc', img:'' };
+}
+// Lire l'image d'un nombre sur le graphique d'une fonction
+function _colFoncImage(level){
+ const a = _colPick([1,2,-1,-2]); const b = ri(-2,2); const R = 6; const rx = ri(-2,2); const ans = a*rx + b;
+ const { choices, res } = _colChoices(ans, [a*rx - b, rx, -ans, ans + 1]);
+ return { display:`Sur le graphique, quelle est l'image de ${_colFmt(rx)} ?`,
+  visualHtml:_colFoncSvg(a, b, R, rx), choices, res, type:'normal', opKey:'fonc', img:'' };
+}
+// Calculer une image f(x) = ax + b (notation fonction)
+function _colFoncCalc(level){
+ const a = ri(2,5), b = ri(-6,6), x = ri(1,6); const ans = a*x + b;
+ const { choices, res } = _colChoices(ans, [a + x + b, a*x - b, a*(x + b), -ans]);
+ return { display:`f(x) = ${_affine(a,b)}. Combien vaut f(${x}) ?`, choices, res, type:'normal', opKey:'fonc', img:'' };
+}
+// Reconnaître fonction linéaire (passe par l'origine) vs affine
+function _colFoncLinAff(level){
+ const a = _colPick([2,3,-2,1]); const lin = ri(0,1) === 1; const b = lin ? 0 : _colPick([1,2,3,-2]);
+ const opts = ['Linéaire','Affine']; const correct = lin ? 'Linéaire' : 'Affine';
+ return { display:`La fonction f(x) = ${_affine(a,b)} est-elle linéaire ou affine ?`,
+  choices:opts.map((v,i)=>({val:i, label:v})), res:opts.indexOf(correct), type:'normal', opKey:'fonc', img:'' };
+}
+
 // ── Phases (.ph) : 1 = début d'année, 2 = milieu, 3 = fin ──────────────
 const _COL_PH = {
  _colRelComparer:1, _colRelDroite:1,
@@ -182,6 +265,9 @@ const _COL_PH = {
  _colLitSubstituer:1, _colLitEgalite:1,
  _colLitReduire:2, _colLitDevelopper:2, _colLitProgramme:2,
  _colLitFactoriser:3, _colLitEquation:3,
+ _colPropCoef:1, _colRepere:1,
+ _colPropQuatrieme:2, _colPourcentage:2, _colFoncImage:2, _colFoncCalc:2,
+ _colPourcentEvol:3, _colFoncLinAff:3,
 };
 for(const name in _COL_PH){ try{ const f = eval(name); if(typeof f === 'function') f.ph = _COL_PH[name]; }catch(e){} }
 
@@ -189,11 +275,14 @@ for(const name in _COL_PH){ try{ const f = eval(name); if(typeof f === 'function
 const _COL_POOL = {
  '6E': [],
  '5E': [_colRelComparer, _colRelDroite, _colRelAddSous, _colRelDeplacement,
-        _colLitSubstituer, _colLitEgalite, _colLitReduire, _colLitDevelopper, _colLitProgramme],
+        _colLitSubstituer, _colLitEgalite, _colLitReduire, _colLitDevelopper, _colLitProgramme,
+        _colRepere, _colPropCoef, _colPropQuatrieme],
  '4E': [_colRelComparer, _colRelDroite, _colRelAddSous, _colRelDeplacement, _colRelMul, _colRelDiv,
-        _colLitSubstituer, _colLitEgalite, _colLitReduire, _colLitDevelopper, _colLitProgramme, _colLitFactoriser, _colLitEquation],
+        _colLitSubstituer, _colLitEgalite, _colLitReduire, _colLitDevelopper, _colLitProgramme, _colLitFactoriser, _colLitEquation,
+        _colPropCoef, _colPropQuatrieme, _colPourcentage, _colPourcentEvol],
  '3E': [_colRelComparer, _colRelAddSous, _colRelDeplacement, _colRelMul, _colRelDiv,
-        _colLitReduire, _colLitDevelopper, _colLitFactoriser, _colLitEquation, _colLitProgramme],
+        _colLitReduire, _colLitDevelopper, _colLitFactoriser, _colLitEquation, _colLitProgramme,
+        _colPropQuatrieme, _colPourcentage, _colPourcentEvol, _colRepere, _colFoncImage, _colFoncCalc, _colFoncLinAff],
 };
 
 // ── Tirage : sac sans remise, filtré par la phase d'année du niveau ──────
