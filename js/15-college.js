@@ -342,6 +342,54 @@ function _colTransfoSym(level){
   visualHtml:_colRepereSvg([{x, y, label:'M'}], 5), choices, res, type:'normal', opKey:'geo', img:'' };
 }
 
+// ════════════════ Chantier C5 : Aires, volumes, stats & probabilités (5e→3e) ════════════════
+function _colAireRect(level){
+ const L = ri(3,12), l = ri(2,9); const ans = L*l;
+ const { choices, res } = _colChoices(ans, [2*(L+l), L+l, ans+L, ans-l]);
+ return { display:`Aire d'un rectangle de longueur ${L} et largeur ${l} ?`, choices, res, type:'normal', opKey:'geo', img:'' };
+}
+function _colAireTriangle(level){
+ let b = ri(3,12), h = ri(2,10); if((b*h) % 2) h++; const ans = b*h/2;
+ const { choices, res } = _colChoices(ans, [b*h, b+h, ans+b, ans-h > 0 ? ans-h : ans+1]);
+ return { display:`Aire d'un triangle de base ${b} et hauteur ${h} ?`, choices, res, type:'normal', opKey:'geo', img:'' };
+}
+function _colAireDisque(level){
+ const r = ri(2,9); const ans = `${r*r}π`;
+ const { choices, res } = _colChoicesTxt(ans, [`${2*r}π`, `${r}π`, `${r*r*2}π`]);
+ return { display:`Aire d'un disque de rayon ${r} ? (valeur exacte)`, choices, res, type:'normal', opKey:'geo', img:'' };
+}
+function _colVolPave(level){
+ const L = ri(2,8), l = ri(2,6), h = ri(2,6); const ans = L*l*h;
+ const { choices, res } = _colChoices(ans, [L+l+h, L*l, 2*(L*l + L*h + l*h), ans+L]);
+ return { display:`Volume d'un pavé droit ${L} × ${l} × ${h} ?`, choices, res, type:'normal', opKey:'geo', img:'' };
+}
+function _colVolCylindre(level){
+ const r = ri(2,6), h = ri(2,8); const ans = `${r*r*h}π`;
+ const { choices, res } = _colChoicesTxt(ans, [`${2*r*h}π`, `${r*h}π`, `${r*r}π`]);
+ return { display:`Volume d'un cylindre de rayon ${r} et hauteur ${h} ? (valeur exacte)`, choices, res, type:'normal', opKey:'geo', img:'' };
+}
+function _colMoyenne(level){
+ const m = ri(4,12); let a = ri(1, m+4), b = ri(1, m+4); let c = m*3 - a - b; if(c < 1){ a = m; b = m; c = m; }
+ const { choices, res } = _colChoices(m, [a+b+c, Math.max(a,b,c), Math.round((a+b)/2), m+1]);
+ return { display:`Quelle est la moyenne de ${a}, ${b} et ${c} ?`, choices, res, type:'normal', opKey:'stat', img:'' };
+}
+function _colMediane(level){
+ const set = new Set(); while(set.size < 5) set.add(ri(1,20)); const v = [...set]; const s = [...v].sort((x,y)=>x-y); const ans = s[2];
+ const { choices, res } = _colChoices(ans, [Math.round(v.reduce((t,x)=>t+x,0)/5), s[0], s[4], ans+1]);
+ return { display:`Quelle est la médiane de ${v.join(', ')} ?`, choices, res, type:'normal', opKey:'stat', img:'' };
+}
+function _colEtendue(level){
+ const set = new Set(); while(set.size < 4) set.add(ri(1,30)); const v = [...set]; const ans = Math.max(...v) - Math.min(...v);
+ const { choices, res } = _colChoices(ans, [Math.max(...v), Math.min(...v), ans+2, ans-2 > 0 ? ans-2 : ans+1]);
+ return { display:`Quelle est l'étendue de la série ${v.join(', ')} ?`, choices, res, type:'normal', opKey:'stat', img:'' };
+}
+function _colProba(level){
+ const pgcd = (a,b) => b ? pgcd(b, a%b) : a;
+ const r = ri(1,5), b = ri(1,5); const tot = r + b; const g = pgcd(r, tot); const gb = pgcd(b, tot); const ans = `${r/g}/${tot/g}`;
+ const { choices, res } = _colChoicesTxt(ans, [`${b/gb}/${tot/gb}`, `${r}/${b}`, `${tot}/${r}`]);
+ return { display:`Un sac contient ${r} boules rouges et ${b} boules bleues. Probabilité de tirer une rouge ?`, choices, res, type:'normal', opKey:'stat', img:'' };
+}
+
 // ── Phases (.ph) : 1 = début d'année, 2 = milieu, 3 = fin ──────────────
 const _COL_PH = {
  _colRelComparer:1, _colRelDroite:1,
@@ -356,6 +404,9 @@ const _COL_PH = {
  _colAnglesTriangle:1,
  _colAnglesParallel:2, _colPythHyp:2, _colTrigoRatio:2, _colTransfoSym:2,
  _colPythCote:3, _colPythReciproque:3, _colThales:3,
+ _colAireRect:1, _colMoyenne:1,
+ _colAireTriangle:2, _colAireDisque:2, _colVolPave:2, _colEtendue:2, _colProba:2,
+ _colVolCylindre:3, _colMediane:3,
 };
 for(const name in _COL_PH){ try{ const f = eval(name); if(typeof f === 'function') f.ph = _COL_PH[name]; }catch(e){} }
 
@@ -365,15 +416,18 @@ const _COL_POOL = {
  '5E': [_colRelComparer, _colRelDroite, _colRelAddSous, _colRelDeplacement,
         _colLitSubstituer, _colLitEgalite, _colLitReduire, _colLitDevelopper, _colLitProgramme,
         _colRepere, _colPropCoef, _colPropQuatrieme,
-        _colAnglesTriangle, _colAnglesParallel, _colTransfoSym],
+        _colAnglesTriangle, _colAnglesParallel, _colTransfoSym,
+        _colAireRect, _colAireTriangle, _colAireDisque, _colVolPave, _colProba],
  '4E': [_colRelComparer, _colRelDroite, _colRelAddSous, _colRelDeplacement, _colRelMul, _colRelDiv,
         _colLitSubstituer, _colLitEgalite, _colLitReduire, _colLitDevelopper, _colLitProgramme, _colLitFactoriser, _colLitEquation,
         _colPropCoef, _colPropQuatrieme, _colPourcentage, _colPourcentEvol,
-        _colAnglesTriangle, _colAnglesParallel, _colPythHyp, _colPythCote, _colPythReciproque, _colTransfoSym],
+        _colAnglesTriangle, _colAnglesParallel, _colPythHyp, _colPythCote, _colPythReciproque, _colTransfoSym,
+        _colAireRect, _colAireTriangle, _colVolPave, _colMoyenne, _colEtendue, _colProba],
  '3E': [_colRelComparer, _colRelAddSous, _colRelDeplacement, _colRelMul, _colRelDiv,
         _colLitReduire, _colLitDevelopper, _colLitFactoriser, _colLitEquation, _colLitProgramme,
         _colPropQuatrieme, _colPourcentage, _colPourcentEvol, _colRepere, _colFoncImage, _colFoncCalc, _colFoncLinAff,
-        _colAnglesTriangle, _colPythHyp, _colPythCote, _colThales, _colTrigoRatio],
+        _colAnglesTriangle, _colPythHyp, _colPythCote, _colThales, _colTrigoRatio,
+        _colAireDisque, _colVolPave, _colVolCylindre, _colMoyenne, _colMediane, _colEtendue, _colProba],
 };
 
 // ── Tirage : sac sans remise, filtré par la phase d'année du niveau ──────

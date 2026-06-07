@@ -2632,7 +2632,7 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
   // Chantier A4 : taunt aléatoire en milieu de combat (HP bas)
   if(typeof maybeMidCombatTaunt==='function') maybeMidCombatTaunt();
   if(GS.activeEvent){GS.eventLeft--;if(GS.eventLeft<=0)GS.activeEvent=null;}
-  if(GS.monsterHP>0){$('feedback').innerText=_shieldHeld?`🛡️ Le bouclier résiste ! Frappe encore !`:`✅ TOUCHÉ ! ❤️${GS.monsterHP}/${GS.monsterMaxHP}`;GS.q=generateQ();const _wait=Math.min(4800,Math.max(950,((window._monsterSpeakEnd||0)-Date.now())+350));safeTimeout(()=>{renderQ();},_wait);}
+  if(GS.monsterHP>0){$('feedback').innerText=_shieldHeld?`🛡️ Le bouclier résiste ! Frappe encore !`:`✅ TOUCHÉ ! ❤️${GS.monsterHP}/${GS.monsterMaxHP}`;GS.q=generateQ();const _wait=Math.min(9000,Math.max(950,((window._monsterSpeakEnd||0)-Date.now())+350));safeTimeout(()=>{renderQ();},_wait);}
   else{$('feedback').innerText='✅ BRAVO !';ma.classList.add('monster-die');clearMonsterSpeech();if(GS.isBoss){vibrate(VIBE.boss);
    // Chantier 2.2 : débloquer la figurine exclusive du boss saisonnier
    if(GS.isSeasonalBoss && GS.seasonalFigId && typeof unlockSeasonalFigurine==='function'){
@@ -3369,6 +3369,13 @@ const _BOSS_ENRAGE_LINES_COL = [
  "Un esprit qui ne renonce pas… voyons jusqu'où il tient.",
  "Tu as forcé mon respect. Tu auras donc ma pleine puissance.",
 ];
+// Répliques d'enrage maternelle : douces et encourageantes (jamais effrayantes)
+const _BOSS_ENRAGE_LINES_MAT = [
+ "Oh là là, tu es trop fort ! Bravo !",
+ "Waouh ! Tu comptes super bien ! On continue à jouer ?",
+ "Tu y arrives très bien ! Encore un petit peu !",
+ "Youpi ! Quel champion ! Je suis tout content !",
+];
 function _triggerBossEnrage(){
  const ma = document.getElementById('monster-area');
  // Effet visuel sur le monstre : classe enragée (rouge + grossissement pulsant)
@@ -3392,7 +3399,9 @@ function _triggerBossEnrage(){
  setTimeout(() => banner.classList.add('boss-enrage-banner-out'), 1400);
  setTimeout(() => banner.remove(), 1900);
  // Dialogue menaçant (via le système de voix du monstre si dispo)
- const _enPool = (typeof _COL_LEVELS!=='undefined' && typeof GM!=='undefined' && _COL_LEVELS.includes(GM.level)) ? _BOSS_ENRAGE_LINES_COL : _BOSS_ENRAGE_LINES;
+ const _mat = (typeof _isMaternelle==='function' && typeof GM!=='undefined' && _isMaternelle(GM.level));
+ const _col = (typeof _COL_LEVELS!=='undefined' && typeof GM!=='undefined' && _COL_LEVELS.includes(GM.level));
+ const _enPool = _mat ? _BOSS_ENRAGE_LINES_MAT : (_col ? _BOSS_ENRAGE_LINES_COL : _BOSS_ENRAGE_LINES);
  const line = _enPool[Math.floor(Math.random() * _enPool.length)];
  if(typeof monsterSpeak === 'function'){
   try{ monsterSpeak(line, 2600); }catch(e){}
@@ -3668,6 +3677,12 @@ const _BOSS_FURY_LINES_COL = [
  "Si je dois tomber, que ce soit face à un adversaire digne. Prouve-le encore.",
  "Tout mon savoir condensé en un ultime défi. Relève-le, si tu l'oses.",
 ];
+// Répliques de furie maternelle : tout en douceur
+const _BOSS_FURY_LINES_MAT = [
+ "Tu as presque gagné, c'est génial !",
+ "Bravo bravo bravo ! Encore une petite question !",
+ "Tu es le plus courageux des petits champions !",
+];
 function _triggerBossFury(){
  const ma = document.getElementById('monster-area');
  if(ma){
@@ -3691,7 +3706,9 @@ function _triggerBossFury(){
  setTimeout(() => banner.classList.add('boss-fury-banner-out'), 1600);
  setTimeout(() => banner.remove(), 2100);
  // Dialogue désespéré
- const _fuPool = (typeof _COL_LEVELS!=='undefined' && typeof GM!=='undefined' && _COL_LEVELS.includes(GM.level)) ? _BOSS_FURY_LINES_COL : _BOSS_FURY_LINES;
+ const _matF = (typeof _isMaternelle==='function' && typeof GM!=='undefined' && _isMaternelle(GM.level));
+ const _colF = (typeof _COL_LEVELS!=='undefined' && typeof GM!=='undefined' && _COL_LEVELS.includes(GM.level));
+ const _fuPool = _matF ? _BOSS_FURY_LINES_MAT : (_colF ? _BOSS_FURY_LINES_COL : _BOSS_FURY_LINES);
  const line = _fuPool[Math.floor(Math.random() * _fuPool.length)];
  if(typeof monsterSpeak === 'function'){ try{ monsterSpeak(line, 2800); }catch(e){} }
  // v9.2.4 : plus de son de furie (trop proche du bip d'erreur). Réplique parlée

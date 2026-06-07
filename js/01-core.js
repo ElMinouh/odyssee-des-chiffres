@@ -170,6 +170,7 @@ function speak(t){
 // Profils : pitch (0=très grave, 2=très aigu), rate (vitesse)
 function _voiceProfileFor(monster){
  if(!monster) return { pitch:1, rate:0.95 };
+ if(monster.voice) return monster.voice;
  const e = monster.emoji || '';
  const anim = monster.anim || '';
  const name = (monster.name||'').toLowerCase();
@@ -470,6 +471,10 @@ const MONSTER_ROSTER={
  ],
 };
 const BOSS_ROSTER={
+ // ── Boss MATERNELLE (PS/MS/GS) : doux, rassurants, voix tendre ──
+ PS: {emoji:'🦄',name:'Étoile la Licorne',title:'Amie des Petits',intro:'Coucou petit champion ! Tu veux jouer avec les nombres ? On va bien s\'amuser tous les deux !',anim:'float',col:'#ff9ec7',voice:{pitch:1.5,rate:0.9}},
+ MS: {emoji:'🐼',name:'Panpan le Panda',title:'Gros Câlin Rigolo',intro:'Bonjour ! Je suis un panda tout doux et tout rond. Montre-moi comme tu sais bien compter !',anim:'bounce',col:'#8fd3a8',voice:{pitch:1.25,rate:0.9}},
+ GS: {emoji:'🦕',name:'Dino le Gentil Géant',title:'Grand Ami Tranquille',intro:'Bravo d\'être arrivé jusqu\'ici ! Un petit défi tout gentil ? Je crois très fort en toi !',anim:'pulse',col:'#7ec8e3',voice:{pitch:1.15,rate:0.9}},
  CP:  {emoji:'🐲',name:'Drakon l\'Ancien',title:'Boss Légendaire',intro:'Tu as survécu jusqu\'ici… Impressionnant. Mais moi, je suis INVINCIBLE.',anim:'glow',col:'#e74c3c'},
  CE1: {emoji:'🧟',name:'Zombie Matheux',title:'Boss Redouté',intro:'Je mange les cerveaux… surtout ceux qui ne savent pas calculer.',anim:'shake2',col:'#27ae60'},
  CE2: {emoji:'🦖',name:'Dino-Tables',title:'Boss Titanesque',intro:'Je suis là depuis des millions d\'années. Tes tables… je les connais toutes.',anim:'pulse',col:'#f39c12'},
@@ -542,7 +547,7 @@ function showMonsterIntro(monster,cb){
   try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
   cb();
  };
- const _introTimer = setTimeout(_finishIntro, 5700);
+ const _introTimer = setTimeout(_finishIntro, Math.max(5700, _speechMs(monster.intro) + 700));
  trans.addEventListener('click', _finishIntro);
 }
 
@@ -552,13 +557,21 @@ function applyMonsterAnim(el,monster){
  if(monster&&monster.anim&&monster.anim!=='none')el.className='anim-'+monster.anim;
 }
 
+// Estime la durée de lecture vocale (ms) d'un texte, à la vitesse réelle (~0.9).
+// Sert à NE PAS couper les longues répliques (intro + taunts).
+function _speechMs(text){
+ try{ const t=(typeof _humanizeForSpeech==='function'?_humanizeForSpeech(text):text)||''; return Math.min(14000, Math.max(1400, Math.round(t.length*78))); }catch(e){ return 4000; }
+}
+
 function monsterSpeak(text,duration=5300){
  const wrap=$('monster-wrap');if(!wrap)return;
  clearMonsterSpeech();
  // v8.7.0 : le monstre prononce son taunt avec sa voix propre
  if(typeof speakAs==='function') speakAs(text, _currentMonster);
+ // v9.4.6 : la bulle ET la fenêtre de non-interruption durent au moins le temps de lecture
+ const _dur = Math.max(duration||0, _speechMs(text));
  // Durée estimée de la phrase parlée (sert à différer la question suivante)
- try{ const _t=(typeof _humanizeForSpeech==='function'?_humanizeForSpeech(text):text)||''; window._monsterSpeakEnd = Date.now() + Math.min(4200, Math.max(1200, _t.length*68)); }catch(e){}
+ window._monsterSpeakEnd = Date.now() + _dur;
  const b=document.createElement('div');
  b.id='monster-speech';b.textContent=text;
  wrap.appendChild(b);
@@ -568,7 +581,7 @@ function monsterSpeak(text,duration=5300){
    _speechBubble.style.animation='speechFade .32s ease forwards';
    setTimeout(()=>{if(_speechBubble){_speechBubble.remove();_speechBubble=null;}},330);
   }
- },duration);
+ },_dur);
 }
 
 function clearMonsterSpeech(){
