@@ -259,28 +259,99 @@ function _colFoncLinAff(level){
 
 // ════════════════ Chantier C4 : Géométrie du raisonnement (5e→3e) ════════════════
 // Les valeurs figurent dans l'énoncé (vérifiables) ; la figure illustre. opKey 'geo'.
+// Helpers de tracé : étiquette texte + arc d'angle (polyline) exact
+function _gT(x,y,t,c){ return `<text x="${(+x).toFixed(1)}" y="${(+y).toFixed(1)}" class="gt-lab ${c||''}">${t}</text>`; }
+function _gArc(vx,vy,th1,th2,R){
+ let d=th2-th1; while(d>Math.PI)d-=2*Math.PI; while(d<-Math.PI)d+=2*Math.PI;
+ const N=16,pts=[]; for(let i=0;i<=N;i++){ const a=th1+d*i/N; pts.push((vx+R*Math.cos(a)).toFixed(1)+','+(vy+R*Math.sin(a)).toFixed(1)); }
+ return { line:`<polyline points="${pts.join(' ')}" class="gt-ang"/>`, mid:th1+d/2 };
+}
+
+// Triangle rectangle (Pythagore / trigonométrie), côtés proportionnels
 function _colRightTriSvg(o){
- const T = (x,y,t,c) => `<text x="${x}" y="${y}" class="gt-lab ${c||''}">${t}</text>`;
- let m = '';
- if(o.bottom) m += T(104,170,o.bottom);
- if(o.left)   m += T(10,96,o.left);
- if(o.hyp)    m += T(120,86,o.hyp);
- let ang = '';
- if(o.angleAt === 'B'){ ang = '<path d="M168,150 A24,24 0 0 0 176,132" class="gt-ang"/>' + T(150,144, o.angleName||'?', 'gt-angl'); }
- return `<div class="coll-geo"><svg viewBox="0 0 220 180"><polygon points="28,150 192,150 28,28" class="gt-fill"/><path d="M44,150 L44,134 L28,134" class="gt-sq"/>${ang}${m}</svg></div>`;
+ const ax=36, baseY=128;
+ if(o.trig){
+  const sc=30, A=[ax,baseY], B=[ax+4*sc,baseY], C=[ax,baseY-3*sc];
+  const arc=_gArc(B[0],B[1],Math.atan2(A[1]-B[1],A[0]-B[0]),Math.atan2(C[1]-B[1],C[0]-B[0]),26);
+  let m=`<polygon points="${A[0]},${A[1]} ${B[0]},${B[1]} ${C[0]},${C[1]}" class="gt-fill"/>`;
+  m+=`<path d="M${ax+16},${baseY} L${ax+16},${baseY-16} L${ax},${baseY-16}" class="gt-sq"/>`;
+  m+=`<line x1="${B[0]}" y1="${B[1]}" x2="${C[0]}" y2="${C[1]}" class="gt-hyp"/>${arc.line}`;
+  m+=_gT((A[0]+C[0])/2-14,(A[1]+C[1])/2,'opp','gt-side')+_gT((A[0]+B[0])/2,baseY+16,'adj','gt-side')+_gT((B[0]+C[0])/2+12,(B[1]+C[1])/2-4,'hyp','gt-side');
+  return `<div class="coll-geo"><svg viewBox="0 0 200 150">${m}</svg></div>`;
+ }
+ const scale=78/Math.max(o.a,o.b), A=[ax,baseY], B=[ax+o.a*scale,baseY], C=[ax,baseY-o.b*scale];
+ const pill=(x,y)=>`<g class="gt-q"><rect x="${(x-13).toFixed(1)}" y="${(y-14).toFixed(1)}" width="26" height="20" rx="10"/><text x="${(+x).toFixed(1)}" y="${(y+1).toFixed(1)}" class="gt-qt">?</text></g>`;
+ let m=`<polygon points="${A[0]},${A[1]} ${B[0].toFixed(1)},${B[1]} ${C[0]},${C[1].toFixed(1)}" class="gt-fill"/>`;
+ m+=`<path d="M${ax+16},${baseY} L${ax+16},${baseY-16} L${ax},${baseY-16}" class="gt-sq"/>`;
+ m+=`<line x1="${B[0].toFixed(1)}" y1="${B[1]}" x2="${C[0]}" y2="${C[1].toFixed(1)}" class="gt-hyp"/>`;
+ const mbx=(A[0]+B[0])/2, lby=(A[1]+C[1])/2, hx=(B[0]+C[0])/2+12, hy=(B[1]+C[1])/2-4;
+ m+=(o.unknown==='a')?pill(mbx,baseY+16):_gT(mbx,baseY+18,o.a);
+ m+=(o.unknown==='b')?pill(ax-16,lby):_gT(ax-16,lby+4,o.b);
+ m+=(o.unknown==='hyp')?pill(hx,hy):_gT(hx,hy,o.hyp);
+ return `<div class="coll-geo"><svg viewBox="0 0 200 150">${m}</svg></div>`;
 }
+// Triangle quelconque construit à partir de ses angles de base (arcs exacts)
 function _colTriAngSvg(a,b){
- const T = (x,y,t) => `<text x="${x}" y="${y}" class="gt-lab">${t}</text>`;
- return `<div class="coll-geo"><svg viewBox="0 0 220 180"><polygon points="30,150 190,150 120,30" class="gt-fill"/>${T(46,142,a+'°')}${T(168,142,b+'°')}${T(118,54,'?')}</svg></div>`;
+ const rad=Math.PI/180, ta=Math.tan(a*rad), tb=Math.tan(b*rad);
+ const ux=tb/(ta+tb), uy=ux*ta, scale=Math.min(150,86/uy), x0=33, baseY=128;
+ const B=[x0,baseY], C=[x0+scale,baseY], A=[x0+ux*scale,baseY-uy*scale];
+ const arcAt=(V,P,Q,R,lab,cls)=>{ const w=_gArc(V[0],V[1],Math.atan2(P[1]-V[1],P[0]-V[0]),Math.atan2(Q[1]-V[1],Q[0]-V[0]),R); return w.line+_gT(V[0]+(R+11)*Math.cos(w.mid),V[1]+(R+11)*Math.sin(w.mid)+4,lab,cls); };
+ let m=`<polygon points="${B[0]},${B[1]} ${C[0].toFixed(1)},${C[1]} ${A[0].toFixed(1)},${A[1].toFixed(1)}" class="gt-fill"/>`;
+ m+=arcAt(B,C,A,22,a+'°')+arcAt(C,B,A,22,b+'°')+arcAt(A,B,C,17,'?','gt-angl2');
+ return `<div class="coll-geo"><svg viewBox="0 0 216 150">${m}</svg></div>`;
 }
-function _colParallelSvg(x){
- const T = (xx,yy,t) => `<text x="${xx}" y="${yy}" class="gt-lab">${t}</text>`;
- return `<div class="coll-geo"><svg viewBox="0 0 220 160"><line x1="10" y1="52" x2="210" y2="52" class="gt-par"/><line x1="10" y1="112" x2="210" y2="112" class="gt-par"/><line x1="64" y1="18" x2="168" y2="146" class="gt-sec"/>${T(98,46,x+'°')}${T(120,130,'?')}</svg></div>`;
+// Deux parallèles + sécante : angle donné et angle cherché placés selon le type
+function _colParallelSvg(x,kind){
+ const topY=46, botY=104, sx=66, sy1=16, ex=150, ey2=134, dirx=ex-sx, diry=ey2-sy1;
+ const at=yy=>[sx+dirx*((yy-sy1)/diry),yy]; const Pt=at(topY), Pb=at(botY);
+ let m=`<line x1="22" y1="${topY}" x2="194" y2="${topY}" class="gt-par"/><line x1="22" y1="${botY}" x2="194" y2="${botY}" class="gt-par"/>`;
+ m+=`<path d="M40,${topY-5} l7,5 l-7,5" class="gt-tick"/><path d="M40,${botY-5} l7,5 l-7,5" class="gt-tick"/>`;
+ m+=`<line x1="${sx}" y1="${sy1}" x2="${ex}" y2="${ey2}" class="gt-sec"/>`;
+ const gA=_gArc(Pt[0],Pt[1],0,Math.atan2(diry,dirx),16);
+ m+=gA.line+_gT(Pt[0]+22*Math.cos(gA.mid),Pt[1]+22*Math.sin(gA.mid)+4,x+'°','gt-angl');
+ const qA=(kind==='correspondant')?_gArc(Pb[0],Pb[1],0,Math.atan2(diry,dirx),16):_gArc(Pb[0],Pb[1],Math.PI,Math.atan2(-diry,-dirx),16);
+ m+=qA.line+_gT(Pb[0]+22*Math.cos(qA.mid),Pb[1]+22*Math.sin(qA.mid)+4,'?','gt-angl2');
+ return `<div class="coll-geo"><svg viewBox="0 0 210 150">${m}</svg></div>`;
 }
-function _colThalesSvg(){
- const T = (x,y,t) => `<text x="${x}" y="${y}" class="gt-lab">${t}</text>`;
- return `<div class="coll-geo"><svg viewBox="0 0 220 180"><polygon points="110,20 30,160 190,160" class="gt-fill"/><line x1="70" y1="90" x2="150" y2="90" class="gt-par"/>${T(110,14,'A')}${T(22,172,'B')}${T(198,172,'C')}${T(58,86,'M')}${T(160,86,'N')}</svg></div>`;
+// Thalès : M et N placés proportionnellement (AM/AB = AN/AC)
+function _colThalesSvg(am,ab,an){
+ const A=[108,26], B=[34,150], C=[182,150], r=am/ab;
+ const M=[A[0]+r*(B[0]-A[0]),A[1]+r*(B[1]-A[1])], N=[A[0]+r*(C[0]-A[0]),A[1]+r*(C[1]-A[1])];
+ const mid=(P,Q)=>[(P[0]+Q[0])/2,(P[1]+Q[1])/2]; const AM=mid(A,M),MB=mid(M,B),AN=mid(A,N),NC=mid(N,C);
+ let m=`<polygon points="${A[0]},${A[1]} ${B[0]},${B[1]} ${C[0]},${C[1]}" class="gt-fill"/>`;
+ m+=`<line x1="${M[0].toFixed(1)}" y1="${M[1].toFixed(1)}" x2="${N[0].toFixed(1)}" y2="${N[1].toFixed(1)}" class="gt-hyp"/>`;
+ m+=`<path d="M${((M[0]+N[0])/2-2).toFixed(1)},${((M[1]+N[1])/2-5).toFixed(1)} l5,5 l-5,5" class="gt-tick"/><path d="M106,145 l5,5 l-5,5" class="gt-tick"/>`;
+ m+=_gT(A[0],A[1]-8,'A')+_gT(B[0]-10,B[1]+4,'B')+_gT(C[0]+10,C[1]+4,'C');
+ m+=_gT(AM[0]-17,AM[1],'AM='+am,'gt-side')+_gT(MB[0]-17,MB[1],'AB='+ab,'gt-side')+_gT(AN[0]+19,AN[1],'AN='+an,'gt-side')+_gT(NC[0]+21,NC[1],'AC=?','gt-q2');
+ return `<div class="coll-geo"><svg viewBox="0 0 220 172">${m}</svg></div>`;
 }
+// ── Figures C5 (aires, volumes, stats, probas) ──
+function _colRectSvg(L,l){ const s=Math.min(140/L,66/l), w=L*s, h=l*s, x=(200-w)/2, y=18;
+ return `<div class="coll-geo"><svg viewBox="0 0 200 ${(y+h+34).toFixed(0)}"><rect x="${x.toFixed(1)}" y="${y}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" class="gt-fill"/>${_gT(100,y+h+18,'L = '+L)}${_gT(x-16,y+h/2+4,'l = '+l,'gt-side')}</svg></div>`; }
+function _colTriBaseHSvg(b,h){ const s=Math.min(150/b,66/h), bw=b*s, hh=h*s, x0=(200-bw)/2, baseY=18+hh, apx=x0+bw*0.42;
+ return `<div class="coll-geo"><svg viewBox="0 0 200 ${(baseY+30).toFixed(0)}"><polygon points="${x0.toFixed(1)},${baseY.toFixed(1)} ${(x0+bw).toFixed(1)},${baseY.toFixed(1)} ${apx.toFixed(1)},18" class="gt-fill"/><line x1="${apx.toFixed(1)}" y1="18" x2="${apx.toFixed(1)}" y2="${baseY.toFixed(1)}" class="gt-h"/>${_gT(x0+bw/2,baseY+18,'base = '+b)}${_gT(apx+18,(18+baseY)/2,'h = '+h,'gt-side')}</svg></div>`; }
+function _colDiskSvg(r){ const R=Math.min(48,16+r*4), cx=100, cy=R+16;
+ return `<div class="coll-geo"><svg viewBox="0 0 200 ${(cy+R+22).toFixed(0)}"><circle cx="${cx}" cy="${cy.toFixed(1)}" r="${R.toFixed(1)}" class="gt-fill"/><line x1="${cx}" y1="${cy.toFixed(1)}" x2="${(cx+R).toFixed(1)}" y2="${cy.toFixed(1)}" class="gt-hyp"/>${_gT(cx+R/2,cy-6,'r = '+r,'gt-angl')}</svg></div>`; }
+function _colPaveSvg(L,l,h){ const x=58,y=44,w=82,ht=52,dx=26,dy=18;
+ let m=`<polygon points="${x},${y} ${x+dx},${y-dy} ${x+w+dx},${y-dy} ${x+w},${y}" class="gt-face2"/>`;
+ m+=`<polygon points="${x+w},${y} ${x+w+dx},${y-dy} ${x+w+dx},${y+ht-dy} ${x+w},${y+ht}" class="gt-face3"/>`;
+ m+=`<rect x="${x}" y="${y}" width="${w}" height="${ht}" class="gt-fill"/>`;
+ m+=_gT(x+w/2,y+ht+18,'L = '+L)+_gT(x-14,y+ht/2+4,'l = '+l,'gt-side')+_gT(x+w+dx+16,y+ht/2-dy/2,'h = '+h,'gt-side');
+ return `<div class="coll-geo"><svg viewBox="0 0 220 ${y+ht+30}">${m}</svg></div>`; }
+function _colCylSvg(r,h){ const cx=100, rx=Math.min(34,12+r*4), ry=Math.round(rx*0.34), top=24, bh=Math.min(78,28+h*5), bot=top+bh;
+ let m=`<rect x="${cx-rx}" y="${top}" width="${rx*2}" height="${bh}" class="gt-fill"/>`;
+ m+=`<ellipse cx="${cx}" cy="${bot}" rx="${rx}" ry="${ry}" class="gt-face3"/><ellipse cx="${cx}" cy="${top}" rx="${rx}" ry="${ry}" class="gt-face2"/>`;
+ m+=`<line x1="${cx}" y1="${top}" x2="${cx+rx}" y2="${top}" class="gt-hyp"/>${_gT(cx+rx/2,top-6,'r = '+r,'gt-angl')}`;
+ m+=`<line x1="${cx-rx-12}" y1="${top}" x2="${cx-rx-12}" y2="${bot}" class="gt-h"/>${_gT(cx-rx-26,(top+bot)/2,'h = '+h,'gt-side')}`;
+ return `<div class="coll-geo"><svg viewBox="0 0 200 ${bot+ry+22}">${m}</svg></div>`; }
+function _colBarChartSvg(vals){ const max=Math.max(...vals,1), n=vals.length, bw=22, gap=12, x0=24, baseY=104, W=x0*2+n*bw+(n-1)*gap;
+ let m=`<line x1="14" y1="${baseY}" x2="${W-8}" y2="${baseY}" class="gt-par"/>`;
+ vals.forEach((v,i)=>{ const hh=Math.round(v/max*70)+4, x=x0+i*(bw+gap); m+=`<rect x="${x}" y="${baseY-hh}" width="${bw}" height="${hh}" class="gt-bar"/>`+_gT(x+bw/2,baseY+16,v); });
+ return `<div class="coll-geo"><svg viewBox="0 0 ${W} ${baseY+26}">${m}</svg></div>`; }
+function _colBallsSvg(r,b){ const per=20,x0=22,y=42,tot=r+b,W=Math.max(120,x0*2+(tot-1)*per+16); let m=`<rect x="8" y="18" width="${W-16}" height="46" rx="12" class="gt-sac"/>`; let i=0;
+ for(let k=0;k<r;k++,i++) m+=`<circle cx="${x0+i*per}" cy="${y}" r="9" class="gt-red"/>`;
+ for(let k=0;k<b;k++,i++) m+=`<circle cx="${x0+i*per}" cy="${y}" r="9" class="gt-blue"/>`;
+ return `<div class="coll-geo"><svg viewBox="0 0 ${W} 78">${m}</svg></div>`; }
 
 const _PYTH_TRIPLES = [[3,4,5],[6,8,10],[5,12,13],[8,15,17],[9,12,15],[7,24,25],[20,21,29]];
 // Pythagore : longueur de l'hypoténuse
@@ -288,14 +359,14 @@ function _colPythHyp(level){
  const t = _colPick(_PYTH_TRIPLES); const ans = t[2];
  const { choices, res } = _colChoices(ans, [t[0] + t[1], ans + 1, ans - 1, t[1] + 1]);
  return { display:`Triangle rectangle, côtés de l'angle droit : ${t[0]} et ${t[1]}. Longueur de l'hypoténuse ?`,
-  visualHtml:_colRightTriSvg({bottom:''+t[0], left:''+t[1], hyp:'?'}), choices, res, type:'normal', opKey:'geo', img:'' };
+  visualHtml:_colRightTriSvg({a:t[0], b:t[1], hyp:t[2], unknown:'hyp'}), choices, res, type:'normal', opKey:'geo', img:'' };
 }
 // Pythagore : longueur d'un côté de l'angle droit
 function _colPythCote(level){
  const t = _colPick(_PYTH_TRIPLES); const ans = t[0];
  const { choices, res } = _colChoices(ans, [t[2] - t[1], ans + 1, ans - 1, t[2] - t[0]]);
  return { display:`Triangle rectangle : hypoténuse ${t[2]}, un côté ${t[1]}. Combien mesure l'autre côté ?`,
-  visualHtml:_colRightTriSvg({bottom:'?', left:''+t[1], hyp:''+t[2]}), choices, res, type:'normal', opKey:'geo', img:'' };
+  visualHtml:_colRightTriSvg({a:t[0], b:t[1], hyp:t[2], unknown:'a'}), choices, res, type:'normal', opKey:'geo', img:'' };
 }
 // Réciproque : le triangle est-il rectangle ?
 function _colPythReciproque(level){
@@ -317,21 +388,21 @@ function _colAnglesParallel(level){
  const x = ri(35,75); const kind = _colPick(['alterne-interne','correspondant']);
  const { choices, res } = _colChoices(x, [180 - x, x + 10, x - 10, 90]);
  return { display:`Deux droites parallèles sont coupées par une sécante. Un angle vaut ${x}°. Combien mesure son angle ${kind} ?`,
-  visualHtml:_colParallelSvg(x), choices, res, type:'normal', opKey:'geo', img:'' };
+  visualHtml:_colParallelSvg(x, kind), choices, res, type:'normal', opKey:'geo', img:'' };
 }
 // Théorème de Thalès : calculer une longueur
 function _colThales(level){
  const k = ri(2,4); const am = ri(2,5); const ab = am*k; const an = ri(2,5); const ac = an*k;
  const { choices, res } = _colChoices(ac, [an + (ab - am), an*k + k, ac + k, ac - k]);
  return { display:`(MN) est parallèle à (BC). AM = ${am}, AB = ${ab}, AN = ${an}. Combien vaut AC ?`,
-  visualHtml:_colThalesSvg(), choices, res, type:'normal', opKey:'geo', img:'' };
+  visualHtml:_colThalesSvg(am, ab, an), choices, res, type:'normal', opKey:'geo', img:'' };
 }
 // Trigonométrie : identifier le rapport (SOH-CAH-TOA)
 function _colTrigoRatio(level){
  const f = _colPick([['cosinus','côté adjacent / hypoténuse'], ['sinus','côté opposé / hypoténuse'], ['tangente','côté opposé / côté adjacent']]);
  const opts = shuffle(['côté adjacent / hypoténuse','côté opposé / hypoténuse','côté opposé / côté adjacent']);
  return { display:`Dans un triangle rectangle, le ${f[0]} d'un angle aigu est égal à :`,
-  visualHtml:_colRightTriSvg({angleAt:'B', angleName:'?'}),
+  visualHtml:_colRightTriSvg({trig:true}),
   choices:opts.map((v,i)=>({val:i, label:v})), res:opts.indexOf(f[1]), type:'normal', opKey:'geo', img:'' };
 }
 // Transformation : symétrie de centre O (image d'un point)
@@ -346,48 +417,48 @@ function _colTransfoSym(level){
 function _colAireRect(level){
  const L = ri(3,12), l = ri(2,9); const ans = L*l;
  const { choices, res } = _colChoices(ans, [2*(L+l), L+l, ans+L, ans-l]);
- return { display:`Aire d'un rectangle de longueur ${L} et largeur ${l} ?`, choices, res, type:'normal', opKey:'geo', img:'' };
+ return { display:`Aire d'un rectangle de longueur ${L} et largeur ${l} ?`, visualHtml:_colRectSvg(L,l), choices, res, type:'normal', opKey:'geo', img:'' };
 }
 function _colAireTriangle(level){
  let b = ri(3,12), h = ri(2,10); if((b*h) % 2) h++; const ans = b*h/2;
  const { choices, res } = _colChoices(ans, [b*h, b+h, ans+b, ans-h > 0 ? ans-h : ans+1]);
- return { display:`Aire d'un triangle de base ${b} et hauteur ${h} ?`, choices, res, type:'normal', opKey:'geo', img:'' };
+ return { display:`Aire d'un triangle de base ${b} et hauteur ${h} ?`, visualHtml:_colTriBaseHSvg(b,h), choices, res, type:'normal', opKey:'geo', img:'' };
 }
 function _colAireDisque(level){
  const r = ri(2,9); const ans = `${r*r}π`;
  const { choices, res } = _colChoicesTxt(ans, [`${2*r}π`, `${r}π`, `${r*r*2}π`]);
- return { display:`Aire d'un disque de rayon ${r} ? (valeur exacte)`, choices, res, type:'normal', opKey:'geo', img:'' };
+ return { display:`Aire d'un disque de rayon ${r} ? (valeur exacte)`, visualHtml:_colDiskSvg(r), choices, res, type:'normal', opKey:'geo', img:'' };
 }
 function _colVolPave(level){
  const L = ri(2,8), l = ri(2,6), h = ri(2,6); const ans = L*l*h;
  const { choices, res } = _colChoices(ans, [L+l+h, L*l, 2*(L*l + L*h + l*h), ans+L]);
- return { display:`Volume d'un pavé droit ${L} × ${l} × ${h} ?`, choices, res, type:'normal', opKey:'geo', img:'' };
+ return { display:`Volume d'un pavé droit ${L} × ${l} × ${h} ?`, visualHtml:_colPaveSvg(L,l,h), choices, res, type:'normal', opKey:'geo', img:'' };
 }
 function _colVolCylindre(level){
  const r = ri(2,6), h = ri(2,8); const ans = `${r*r*h}π`;
  const { choices, res } = _colChoicesTxt(ans, [`${2*r*h}π`, `${r*h}π`, `${r*r}π`]);
- return { display:`Volume d'un cylindre de rayon ${r} et hauteur ${h} ? (valeur exacte)`, choices, res, type:'normal', opKey:'geo', img:'' };
+ return { display:`Volume d'un cylindre de rayon ${r} et hauteur ${h} ? (valeur exacte)`, visualHtml:_colCylSvg(r,h), choices, res, type:'normal', opKey:'geo', img:'' };
 }
 function _colMoyenne(level){
  const m = ri(4,12); let a = ri(1, m+4), b = ri(1, m+4); let c = m*3 - a - b; if(c < 1){ a = m; b = m; c = m; }
  const { choices, res } = _colChoices(m, [a+b+c, Math.max(a,b,c), Math.round((a+b)/2), m+1]);
- return { display:`Quelle est la moyenne de ${a}, ${b} et ${c} ?`, choices, res, type:'normal', opKey:'stat', img:'' };
+ return { display:`Quelle est la moyenne de ${a}, ${b} et ${c} ?`, visualHtml:_colBarChartSvg([a,b,c]), choices, res, type:'normal', opKey:'stat', img:'' };
 }
 function _colMediane(level){
  const set = new Set(); while(set.size < 5) set.add(ri(1,20)); const v = [...set]; const s = [...v].sort((x,y)=>x-y); const ans = s[2];
  const { choices, res } = _colChoices(ans, [Math.round(v.reduce((t,x)=>t+x,0)/5), s[0], s[4], ans+1]);
- return { display:`Quelle est la médiane de ${v.join(', ')} ?`, choices, res, type:'normal', opKey:'stat', img:'' };
+ return { display:`Quelle est la médiane de ${v.join(', ')} ?`, visualHtml:_colBarChartSvg(v), choices, res, type:'normal', opKey:'stat', img:'' };
 }
 function _colEtendue(level){
  const set = new Set(); while(set.size < 4) set.add(ri(1,30)); const v = [...set]; const ans = Math.max(...v) - Math.min(...v);
  const { choices, res } = _colChoices(ans, [Math.max(...v), Math.min(...v), ans+2, ans-2 > 0 ? ans-2 : ans+1]);
- return { display:`Quelle est l'étendue de la série ${v.join(', ')} ?`, choices, res, type:'normal', opKey:'stat', img:'' };
+ return { display:`Quelle est l'étendue de la série ${v.join(', ')} ?`, visualHtml:_colBarChartSvg(v), choices, res, type:'normal', opKey:'stat', img:'' };
 }
 function _colProba(level){
  const pgcd = (a,b) => b ? pgcd(b, a%b) : a;
  const r = ri(1,5), b = ri(1,5); const tot = r + b; const g = pgcd(r, tot); const gb = pgcd(b, tot); const ans = `${r/g}/${tot/g}`;
  const { choices, res } = _colChoicesTxt(ans, [`${b/gb}/${tot/gb}`, `${r}/${b}`, `${tot}/${r}`]);
- return { display:`Un sac contient ${r} boules rouges et ${b} boules bleues. Probabilité de tirer une rouge ?`, choices, res, type:'normal', opKey:'stat', img:'' };
+ return { display:`Un sac contient ${r} boules rouges et ${b} boules bleues. Probabilité de tirer une rouge ?`, visualHtml:_colBallsSvg(r,b), choices, res, type:'normal', opKey:'stat', img:'' };
 }
 
 // ════════════════ Chantier C6 : Puissances, arithmétique & algorithmique (5e→3e) ════════════════
