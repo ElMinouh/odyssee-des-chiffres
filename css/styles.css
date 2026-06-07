@@ -4953,3 +4953,27 @@ body.mat-mode #v-game{
 .coll-line .cl-mark-lab{display:block;font-size:.92em;font-weight:800;}
 .coll-line .cl-arrow{display:block;font-size:.8em;line-height:1;margin-top:1px;
   filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));}
+
+/* ── Collège C2 : modèle d'aire (développer/factoriser) ── */
+.coll-area{margin:16px auto 22px;max-width:300px;font-weight:700;}
+.coll-area .ca-top{display:flex;gap:4px;margin-bottom:3px;}
+.coll-area .ca-top span{text-align:center;font-size:.8em;color:#dfe7ff;}
+.coll-area .ca-row{display:flex;align-items:stretch;gap:6px;}
+.coll-area .ca-side{display:flex;align-items:center;justify-content:center;min-width:24px;
+  font-size:.95em;color:#ffd54a;}
+.coll-area .ca-cells{display:flex;gap:4px;flex:1;}
+.coll-area .ca-cell{display:flex;align-items:center;justify-content:center;height:48px;border-radius:8px;
+  font-size:.9em;color:#fff;box-shadow:inset 0 0 0 2px rgba(255,255,255,.25);}
+.coll-area .ca-x{background:rgba(91,141,239,.45);}
+.coll-area .ca-b{background:rgba(155,127,240,.45);}
+
+/* ── Collège C2 : balance d'équation ── */
+.coll-balance{position:relative;margin:14px auto 20px;max-width:300px;}
+.coll-balance .cb-beam{height:4px;border-radius:3px;background:linear-gradient(90deg,#5b8def,#9b7ff0);margin:0 18px;}
+.coll-balance .cb-pans{display:flex;align-items:flex-start;justify-content:space-between;margin-top:-2px;}
+.coll-balance .cb-pan{flex:1;margin:0 8px;min-height:46px;border-radius:0 0 40px 40px;
+  background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 2px rgba(255,255,255,.18);
+  display:flex;align-items:center;justify-content:center;padding:8px 6px;}
+.coll-balance .cb-val{font-weight:800;font-size:1.05em;color:#fff;}
+.coll-balance .cb-x{color:#ffd54a;font-style:italic;}
+.coll-balance .cb-pivot{align-self:flex-start;font-size:1.3em;margin-top:-6px;}
