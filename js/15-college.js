@@ -508,8 +508,103 @@ function _colAlgoBoucle(level){
  return { display:`Programme : x = ${start}, puis répéter ${times} fois « x = x + ${step} ». Que vaut x à la fin ?`, visualHtml:_colBlocksHtml(steps), choices, res, type:'normal', opKey:'algo', img:'' };
 }
 
+// ════════════════ Chantier 6e : consolidation cycle 3 ════════════════
+function _dec(n){ return String(n).replace('.', ','); }
+function _colFracBarHtml(num, den){
+ let cells = '';
+ for(let i=0;i<den;i++) cells += `<span style="flex:1;border:2px solid #2c3e50;border-radius:3px;background:${i<num?'#5b8def':'rgba(255,255,255,.08)'};"></span>`;
+ return `<div class="coll-fracbar" style="display:flex;gap:3px;max-width:240px;height:34px;margin:10px auto;">${cells}</div>`;
+}
+function _colAngleCmpSvg(deg){
+ const cx=80, cy=92, len=70, a=-deg*Math.PI/180;
+ const x2=(cx+len*Math.cos(a)).toFixed(1), y2=(cy+len*Math.sin(a)).toFixed(1);
+ const arc=_gArc(cx,cy,0,a,24);
+ const ref=`<line x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy-len}" stroke="#9bb4e8" stroke-width="2" stroke-dasharray="4 3"/>`;
+ return `<div class="coll-geo"><svg viewBox="0 0 160 110"><line x1="${cx}" y1="${cy}" x2="${cx+len}" y2="${cy}" class="gt-hyp"/><line x1="${cx}" y1="${cy}" x2="${x2}" y2="${y2}" class="gt-hyp"/>${ref}${arc.line}<circle cx="${cx}" cy="${cy}" r="3" fill="#fff"/></svg></div>`;
+}
+// ph1 (début) : décimaux, fraction sur barre
+function _colDecimalPosition(level){
+ const ent=ri(1,99), d1=ri(0,9), d2=ri(1,9); const numStr=`${ent},${d1}${d2}`;
+ const pick=_colPick([['dixièmes',d1],['centièmes',d2]]);
+ const { choices, res } = _colChoices(pick[1], [d1, d2, (pick[1]+1)%10, (pick[1]+2)%10]);
+ return { display:`Dans le nombre ${numStr}, quel est le chiffre des ${pick[0]} ?`, choices, res, type:'normal', opKey:'num', img:'' };
+}
+function _colDecimalCompare(level){
+ const ent=ri(1,9); const A=Math.round((ent+ri(1,9)/10)*100)/100; let B=Math.round((ent+ri(10,99)/100)*100)/100; let t=0; while(B===A && t++<8) B=Math.round((ent+ri(10,99)/100)*100)/100;
+ const big=ri(0,1)===1; const correct=big?Math.max(A,B):Math.min(A,B);
+ const opts=shuffle([A,B]);
+ return { display:`Quel est le plus ${big?'grand':'petit'} : ${_dec(A)} ou ${_dec(B)} ?`, choices:opts.map((v,i)=>({val:i, label:_dec(v)})), res:opts.indexOf(correct), type:'normal', opKey:'num', img:'' };
+}
+function _colFracBarRead(level){
+ const den=_colPick([2,3,4,5,6,8]); const num=ri(1,den-1);
+ const { choices, res } = _colChoicesTxt(`${num}/${den}`, [`${num+1>den-1?num-1:num+1}/${den}`, `${num}/${den+1}`, `${den-num}/${den}`]);
+ return { display:`Quelle fraction de la barre est coloriée ?`, visualHtml:_colFracBarHtml(num,den), choices, res, type:'normal', opKey:'frac', img:'' };
+}
+// ph2 (milieu) : fraction d'une quantité, proportionnalité, périmètre, symétrie
+function _colFractionQuantite(level){
+ const den=_colPick([2,3,4,5]); const num=ri(1,den-1); const q=den*ri(2,6); const correct=num*q/den;
+ const { choices, res } = _colChoices(correct, [q/den, q-correct, correct+den, num*q]);
+ return { display:`Combien font les ${num}/${den} de ${q} ?`, choices, res, type:'normal', opKey:'frac', img:'' };
+}
+function _colPropSimple6(level){
+ const unit=ri(2,5), qty1=ri(2,3), price1=unit*qty1, qty2=qty1*ri(2,4); const correct=unit*qty2;
+ const ctx=_colPick([['stylos','€'],['bonbons','€'],['cahiers','€'],['pommes','€']]);
+ const { choices, res } = _colChoices(correct, [price1+qty2, correct+unit, qty2*qty1, correct-unit]);
+ return { display:`${qty1} ${ctx[0]} coûtent ${price1} ${ctx[1]}. Combien coûtent ${qty2} ${ctx[0]} ?`, choices, res, type:'normal', opKey:'prop', img:'' };
+}
+function _colPerimRect6(level){
+ const L=ri(3,9), l=ri(2,Math.max(2,L-1)); const correct=2*(L+l);
+ const { choices, res } = _colChoices(correct, [L+l, L*l, 2*L+l, correct+2]);
+ return { display:`Quel est le périmètre d'un rectangle de longueur ${L} et largeur ${l} (en cm) ?`, visualHtml:_colRectSvg(L,l), choices, res, type:'normal', opKey:'geo', img:'' };
+}
+function _colSymetrie6(level){
+ const shapes=[
+  {bb:[28,40,84,40], svg:'<rect x="28" y="40" width="84" height="40" class="gt-fill"/>', ax:{v:1,h:1,d1:0,d2:0}},
+  {bb:[40,30,60,60], svg:'<rect x="40" y="30" width="60" height="60" class="gt-fill"/>', ax:{v:1,h:1,d1:1,d2:1}},
+  {bb:[30,22,80,76], svg:'<polygon points="70,22 110,98 30,98" class="gt-fill"/>', ax:{v:1,h:0,d1:0,d2:0}}
+ ];
+ const s=_colPick(shapes); const x=s.bb[0],y=s.bb[1],w=s.bb[2],h=s.bb[3]; const cx=x+w/2, cy=y+h/2;
+ const k=_colPick(['v','h','d1','d2']); const yes=!!s.ax[k];
+ const ln={
+  v:`<line x1="${cx}" y1="${y-6}" x2="${cx}" y2="${y+h+6}" stroke="#e74c3c" stroke-width="3" stroke-dasharray="5 4"/>`,
+  h:`<line x1="${x-6}" y1="${cy}" x2="${x+w+6}" y2="${cy}" stroke="#e74c3c" stroke-width="3" stroke-dasharray="5 4"/>`,
+  d1:`<line x1="${x}" y1="${y}" x2="${x+w}" y2="${y+h}" stroke="#e74c3c" stroke-width="3" stroke-dasharray="5 4"/>`,
+  d2:`<line x1="${x+w}" y1="${y}" x2="${x}" y2="${y+h}" stroke="#e74c3c" stroke-width="3" stroke-dasharray="5 4"/>`
+ };
+ const arr=shuffle([{l:'Oui', y:true}, {l:'Non', y:false}]);
+ return { display:`La ligne rouge est-elle un axe de symétrie ?`, visualHtml:`<div class="coll-geo"><svg viewBox="0 0 140 110">${s.svg}${ln[k]}</svg></div>`, choices:arr.map((c,i)=>({val:i, label:c.l})), res:arr.findIndex(c=>c.y===yes), type:'normal', opKey:'geo', img:'' };
+}
+// ph3 (fin) : arrondi, pourcentage, angle vs droit, durées
+function _colArrondiDecimal(level){
+ const ent=ri(1,9), d1=ri(1,9); const num=Math.round((ent+d1/10)*10)/10; const correct=Math.round(num);
+ const { choices, res } = _colChoices(correct, [ent, ent+1, Math.floor(num), Math.ceil(num)]);
+ return { display:`Arrondir ${_dec(num)} à l'unité ?`, choices, res, type:'normal', opKey:'num', img:'' };
+}
+function _colPourcentSimple(level){
+ const p=_colPick([50,25,10]); const base = p===50 ? 2*ri(3,25) : (p===25 ? 4*ri(2,15) : 10*ri(2,15)); const correct=base*p/100;
+ const { choices, res } = _colChoices(correct, [base/2, base-correct, correct+(p===50?5:2), base*p/10]);
+ return { display:`Combien font ${p} % de ${base} ?`, choices, res, type:'normal', opKey:'prop', img:'' };
+}
+function _colAngleDroit6(level){
+ const cases=[[ri(25,75),"plus petit qu'un angle droit"],[90,"égal à un angle droit"],[ri(105,160),"plus grand qu'un angle droit"]];
+ const c=_colPick(cases);
+ const arr=shuffle(["plus petit qu'un angle droit","égal à un angle droit","plus grand qu'un angle droit"]);
+ return { display:`Cet angle est… (comparé à l'angle droit, en pointillés)`, visualHtml:_colAngleCmpSvg(c[0]), choices:arr.map((v,i)=>({val:i, label:v})), res:arr.indexOf(c[1]), type:'normal', opKey:'geo', img:'' };
+}
+function _colDuree6(level){
+ const h1=ri(1,2), m1=_colPick([0,15,30,45]), addM=_colPick([15,30,45,60,75,90]);
+ const tot=h1*60+m1+addM, H=Math.floor(tot/60), M=tot%60;
+ const fmt=(hh,mm)=>`${hh} h ${String(mm).padStart(2,'0')}`;
+ const { choices, res } = _colChoicesTxt(fmt(H,M), [fmt(H+1,M), fmt(H,(M+15)%60), fmt(H,(M+30)%60)]);
+ return { display:`${fmt(h1,m1)} + ${addM} min = ?`, choices, res, type:'normal', opKey:'mes', img:'' };
+}
+
 // ── Phases (.ph) : 1 = début d'année, 2 = milieu, 3 = fin ──────────────
 const _COL_PH = {
+ _colDecimalPosition:1, _colDecimalCompare:1, _colFracBarRead:1,
+ _colFractionQuantite:2, _colPropSimple6:2, _colPerimRect6:2, _colSymetrie6:2,
+ _colArrondiDecimal:3, _colPourcentSimple:3, _colAngleDroit6:3, _colDuree6:3,
+
  _colRelComparer:1, _colRelDroite:1,
  _colRelAddSous:2, _colRelDeplacement:2,
  _colRelMul:3, _colRelDiv:3,
@@ -533,7 +628,9 @@ for(const name in _COL_PH){ try{ const f = eval(name); if(typeof f === 'function
 
 // ── Pools par niveau (6e = cycle 3, pas de relatifs → rempli plus tard) ──
 const _COL_POOL = {
- '6E': [],
+ '6E': [_colDecimalPosition, _colDecimalCompare, _colFracBarRead,
+        _colFractionQuantite, _colPropSimple6, _colPerimRect6, _colSymetrie6,
+        _colArrondiDecimal, _colPourcentSimple, _colAngleDroit6, _colDuree6],
  '5E': [_colRelComparer, _colRelDroite, _colRelAddSous, _colRelDeplacement,
         _colLitSubstituer, _colLitEgalite, _colLitReduire, _colLitDevelopper, _colLitProgramme,
         _colRepere, _colPropCoef, _colPropQuatrieme,

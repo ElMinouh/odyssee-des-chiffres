@@ -183,7 +183,7 @@ function renderReport(){
  const h=d.history,total=h.length,wins=h.filter(x=>x.won).length;
  const avg=total?Math.round(h.reduce((a,b)=>a+b.score,0)/total):0;
  const best=total?Math.max(...h.map(x=>x.score)):0;
- const ops=d.opStats||{};const opN={'+':"Addition",'-':"Soustraction",'x':"Multiplication",'/':'Division','geo':'Géométrie','rel':'Nombres relatifs','litt':'Calcul littéral','prop':'Proportionnalité','fonc':'Fonctions / repérage','stat':'Statistiques & probabilités','arith':'Puissances & arithmétique','algo':'Algorithmique'};
+ const ops=d.opStats||{};const opN={'+':"Addition",'-':"Soustraction",'x':"Multiplication",'/':'Division','geo':'Géométrie','rel':'Nombres relatifs','litt':'Calcul littéral','prop':'Proportionnalité','fonc':'Fonctions / repérage','stat':'Statistiques & probabilités','arith':'Puissances & arithmétique','algo':'Algorithmique','num':'Nombres & décimaux','frac':'Fractions','mes':'Grandeurs & mesures'};
  const weak=Object.entries(ops).filter(([op,s])=>{const t=s.ok+s.fail;return t>2&&s.ok/t<.7;}).map(([op])=>opN[op]||op);
  const lvl=levelFromXP(d.xp||0);
  el.innerHTML=`<div style="background:rgba(255,255,255,.05);border-radius:10px;padding:10px;margin:6px 0;">
@@ -427,7 +427,7 @@ function _weeklyAdvice(now, prev, opStats, topErrors){
   return `🌅 <strong>Régularité :</strong> seulement ${now.activeDays} jour(s) actifs. Mieux vaut 2 sessions de 10 min plutôt qu'une longue.`;
  }
  // Priorité 3 : opération faible
- const opN = {'+':"l'addition", '-':"la soustraction", 'x':"la multiplication", '/':"la division", 'geo':"la géométrie", 'rel':"les nombres relatifs", 'litt':"le calcul littéral", 'prop':"la proportionnalité", 'fonc':"les fonctions", 'stat':"les statistiques", 'arith':"les puissances et l'arithmétique", 'algo':"l'algorithmique"};
+ const opN = {'+':"l'addition", '-':"la soustraction", 'x':"la multiplication", '/':"la division", 'geo':"la géométrie", 'rel':"les nombres relatifs", 'litt':"le calcul littéral", 'prop':"la proportionnalité", 'fonc':"les fonctions", 'stat':"les statistiques", 'arith':"les puissances et l'arithmétique", 'algo':"l'algorithmique", 'num':"les nombres décimaux", 'frac':"les fractions", 'mes':"les grandeurs et mesures"};
  const weak = Object.entries(opStats||{}).filter(([,s])=>{const t=s.ok+s.fail;return t>5 && s.ok/t<.6;}).map(([op])=>op);
  if(weak.length){
   return `📚 <strong>Renforcer ${opN[weak[0]]||weak[0]} :</strong> moins de 60% de réussite — privilégier les exercices ciblés.`;
