@@ -24,6 +24,7 @@ pre { white-space:pre-wrap; font-size:12px; margin:4px 0; }
 <div id="results">Diagnostic en cours...</div>
 
 <button class="btn" onclick="resetAll()">🧹 Tout nettoyer + recharger</button>
+<button class="btn" style="background:#34495e;" onclick="dbgSkipWaiting()">⏭️ Activer le SW en attente (skipWaiting)</button>
 
 <script>
 const log = [];
@@ -133,8 +134,120 @@ async function diagnose() {
     out('<div class="box"><span class="fail">❌ Manifest illisible</span> : ' + e.message + '</div>');
   }
 
+  out('<h2>6. Profil &amp; état adaptatif</h2>');
+  renderAdaptiveState();
+
+  out('<h2>7. Forcer la phase d\'année</h2>');
+  renderPhaseControls();
+
+  out('<h2>8. Forcer l\'enrage boss</h2>');
+  renderEnrageControl();
+
   out('<h2>✅ Diagnostic terminé</h2>');
   out('<div class="box">Capture cette page entière en screenshot et envoie-la à Claude.</div>');
+}
+
+// ── v10.0.0 (Chantier 3) : outils de debug avancés ────────────────
+const YEAR_LEVELS = ['PS','MS','GS','CP','CE1','CE2','CM1','CM2','6E','5E','4E','3E'];
+const OP_LABELS = {'+':'+','-':'−','x':'×','×':'×','/':'÷','÷':'÷','frac':'frac','num':'déc','geo':'géo','mes':'mes','prop':'prop','rel':'rel','litt':'litt','fonc':'fonc','stat':'stat','arith':'arith','algo':'algo'};
+
+function dbgProfileName(){
+  try{ return localStorage.getItem('lastPlayer') || ''; }catch(e){ return ''; }
+}
+function dbgLoadProfile(name){
+  try{ return JSON.parse(localStorage.getItem('user_'+name) || 'null'); }catch(e){ return null; }
+}
+function dbgSaveProfile(name, P){
+  try{ localStorage.setItem('user_'+name, JSON.stringify(P)); return true; }catch(e){ return false; }
+}
+function phaseOf(v){ v = (typeof v==='number'&&isFinite(v))?v:0; return v<0.34?1:(v<0.67?2:3); }
+function phaseColor(p){ return p===1?'#e74c3c':p===2?'#f39c12':'#2ecc71'; }
+function phaseLabel(p){ return p===1?'début (P1)':p===2?'milieu (P2)':'fin (P3)'; }
+
+function renderAdaptiveState(){
+  const name = dbgProfileName();
+  if(!name){ out('<div class="box"><span class="warn">Aucun joueur récent (clé lastPlayer absente).</span></div>'); return; }
+  const P = dbgLoadProfile(name);
+  if(!P){ out('<div class="box"><span class="fail">Profil user_'+name+' introuvable.</span></div>'); return; }
+  out('<div class="box">Joueur : <strong>'+name+'</strong> · XP '+(P.xp||0)+' · ⭐'+(P.stars||0)+'</div>');
+  // Jauge d'année par niveau
+  const yp = P.yearProgress || {};
+  let rows = '<div class="box"><div style="margin-bottom:6px;color:#888;">Jauge d\'année (phase pilotant l\'enrichissement) :</div>';
+  let any = false;
+  for(const lvl of YEAR_LEVELS){
+    if(typeof yp[lvl] !== 'number') continue;
+    any = true;
+    const v = yp[lvl]; const p = phaseOf(v); const c = phaseColor(p);
+    rows += '<div style="display:flex;align-items:center;gap:8px;padding:2px 0;">'
+      + '<span style="width:36px;">'+lvl+'</span>'
+      + '<span style="flex:1;height:8px;background:#2c3e50;border-radius:4px;position:relative;">'
+      + '<span style="position:absolute;left:0;top:0;height:8px;width:'+Math.round(v*100)+'%;background:'+c+';border-radius:4px;"></span></span>'
+      + '<span style="color:'+c+';width:80px;text-align:right;">'+phaseLabel(p)+'</span></div>';
+  }
+  if(!any) rows += '<span class="warn">Aucune progression d\'année enregistrée (jauges à 0).</span>';
+  rows += '</div>';
+  out(rows);
+  // Stats par opération
+  const os = P.opStats || {};
+  const parts = Object.keys(os).map(k=>{
+    const s = os[k]||{}; const lab = OP_LABELS[k]||k;
+    return lab+' '+(s.ok||0)+'/'+(s.fail||0);
+  });
+  out('<div class="box">Stats (ok/fail) : '+(parts.length?parts.join(' · '):'<span class="warn">aucune</span>')+'</div>');
+  // Journal de révision espacée
+  const el = Array.isArray(P.errorLog) ? P.errorLog.length : 0;
+  out('<div class="box">Révision espacée : <span class="'+(el?'warn':'ok')+'">'+el+' erreur(s) en attente</span></div>');
+}
+
+function renderPhaseControls(){
+  const name = dbgProfileName();
+  if(!name || !dbgLoadProfile(name)){ out('<div class="box"><span class="warn">Pas de profil à modifier.</span></div>'); return; }
+  let sel = '<select id="dbg-level" style="width:100%;background:#0d1117;color:#fff;border:1px solid #2c3e50;border-radius:6px;padding:7px;font-family:monospace;margin-bottom:7px;">';
+  for(const lvl of YEAR_LEVELS) sel += '<option value="'+lvl+'">'+lvl+'</option>';
+  sel += '</select>';
+  out('<div class="box">'+sel
+    + '<div style="display:flex;gap:6px;">'
+    + '<button onclick="dbgSetPhase(0.10)" style="flex:1;background:#e74c3c;color:#fff;border:none;border-radius:6px;padding:9px;font-family:monospace;font-weight:700;">Début</button>'
+    + '<button onclick="dbgSetPhase(0.50)" style="flex:1;background:#f39c12;color:#fff;border:none;border-radius:6px;padding:9px;font-family:monospace;font-weight:700;">Milieu</button>'
+    + '<button onclick="dbgSetPhase(0.90)" style="flex:1;background:#2ecc71;color:#fff;border:none;border-radius:6px;padding:9px;font-family:monospace;font-weight:700;">Fin</button>'
+    + '</div><div id="dbg-phase-msg" style="margin-top:6px;font-size:12px;"></div></div>');
+}
+function dbgSetPhase(val){
+  const name = dbgProfileName();
+  const P = dbgLoadProfile(name);
+  if(!P){ return; }
+  const lvl = document.getElementById('dbg-level').value;
+  if(!P.yearProgress || typeof P.yearProgress!=='object') P.yearProgress = {};
+  P.yearProgress[lvl] = val;
+  const ok = dbgSaveProfile(name, P);
+  const p = phaseOf(val);
+  document.getElementById('dbg-phase-msg').innerHTML = ok
+    ? '<span class="ok">✅ '+lvl+' → '+phaseLabel(p)+'. Relance une partie pour l\'appliquer.</span>'
+    : '<span class="fail">❌ Échec d\'écriture.</span>';
+}
+
+function renderEnrageControl(){
+  let on = false;
+  try{ on = localStorage.getItem('odyssee_dbg_enrage')==='1'; }catch(e){}
+  out('<div class="box"><button id="dbg-enrage-btn" onclick="dbgToggleEnrage()" style="width:100%;background:'+(on?'#8e44ad':'#34495e')+';color:#fff;border:none;border-radius:6px;padding:10px;font-family:monospace;font-weight:700;">🔥 Enrage auto : '+(on?'ACTIVÉ':'désactivé')+'</button>'
+    + '<div style="font-size:11px;color:#888;margin-top:4px;">Si activé, le prochain boss entre en colère dès son apparition.</div></div>');
+}
+function dbgToggleEnrage(){
+  let on = false;
+  try{ on = localStorage.getItem('odyssee_dbg_enrage')==='1'; localStorage.setItem('odyssee_dbg_enrage', on?'0':'1'); }catch(e){}
+  const btn = document.getElementById('dbg-enrage-btn');
+  const now = !on;
+  btn.style.background = now ? '#8e44ad' : '#34495e';
+  btn.textContent = '🔥 Enrage auto : ' + (now ? 'ACTIVÉ' : 'désactivé');
+}
+
+async function dbgSkipWaiting(){
+  try{
+    const reg = await navigator.serviceWorker.getRegistration();
+    const target = (reg && (reg.waiting || reg.active)) || navigator.serviceWorker.controller;
+    if(target){ target.postMessage('skipWaiting'); alert('Message skipWaiting envoyé au SW.'); }
+    else alert('Aucun SW à activer.');
+  }catch(e){ alert('Erreur : '+e.message); }
 }
 
 async function resetAll() {

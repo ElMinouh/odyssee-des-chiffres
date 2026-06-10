@@ -11,13 +11,13 @@ const GM={level:'CP',mode:'keyboard',mode2:'normal',mapZone:null};
 const GS={
  pv:3,score:0,combo:0,maxCombo:0,qCount:0,q:null,answering:false,
  isBoss:false,isGolden:false,errInGame:0,fracOk:0,missingOk:0,combatWon:false,mapBossWon:false,
- sessionStart:0,frozen:false,monsterHP:1,monsterMaxHP:1,activeEvent:null,eventLeft:0
+ sessionStart:0,frozen:false,monsterHP:1,monsterMaxHP:1,activeEvent:null,eventLeft:0,errList:[]
 };
 function resetGS(){
  Object.assign(GS,{pv:3+(P.skills.shield||0),score:0,combo:0,maxCombo:0,qCount:0,q:null,answering:false,
   isBoss:false,isGolden:false,errInGame:0,fracOk:0,missingOk:0,combatWon:false,mapBossWon:false,
   sessionStart:Date.now(),frozen:false,monsterHP:1,monsterMaxHP:1,activeEvent:null,eventLeft:0,
-  recentQ:[],bossTypeQ:{}});
+  recentQ:[],bossTypeQ:{},errList:[]});
 }
 // Enregistre une question dans l'historique et évite les répétitions
 function _trackQ(q){

@@ -2524,8 +2524,17 @@ function renderQ(){
  }else{const ai=$('answer-input');ai.value='';if(!_numpadIsTouch())setTimeout(()=>ai.focus(),100);}
  renderPowerBar();
  if(GM.mode2!=='chrono')startTimer();
+ // v10.0.0 (C3 debug) : forçage immédiat de l'enrage si le drapeau debug est posé
+ if(GS.isBoss && !GS.bossEnraged && _dbgForceEnrage()){
+  GS.bossEnraged=true;
+  if(typeof _triggerBossEnrage==='function') _triggerBossEnrage();
+ }
  // v8.7.52 (O4.2) : en phase enragée, le boss peut lancer une attaque spéciale
  if(GS.isBoss && GS.bossEnraged && typeof _maybeBossAttack==='function') _maybeBossAttack();
+}
+// v10.0.0 (C3) : lecture du drapeau debug « forcer l'enrage » (posé par debug.html)
+function _dbgForceEnrage(){
+ try{ return localStorage.getItem('odyssee_dbg_enrage')==='1'; }catch(e){ return false; }
 }
 function submitAns(){const raw=($('answer-input').value||'').replace(',','.').trim();const v=parseFloat(raw);validate((raw===''||isNaN(v))?null:v);}
 function validate(ans){
@@ -2661,6 +2670,14 @@ GS.errInGame++;GS.combo=0;GS.opCombo=0;GS.lastOpKey=null;$('gc').classList.remov
   if(q.display&&q.res!==undefined)P.errors=([...(P.errors||[])]).concat(`${q.a||'?'}${q.op||'?'}${q.b||'?'}=${q.res}`).slice(-60);
   // Chantier 1.2 : log dans le registre de révision espacée
   if(typeof logError==="function" && q.display && q.res!==undefined) logError(q.display, q.res, q);
+  // v10.0.0 (C2) : liste de session propre pour le récap de fin de partie
+  if(q.res!==undefined){
+   const _disp = q.display || (q.a!==undefined&&q.b!==undefined ? `${q.a} ${q.op||'='} ${q.b}` : String(q.res));
+   GS.errList = Array.isArray(GS.errList) ? GS.errList : [];
+   if(!GS.errList.some(e=>e.display===_disp && e.res===q.res)){
+    GS.errList.push({display:_disp, res:q.res, opKey:q.opKey||q.op||'+', type:q.type||'normal'});
+   }
+  }
   // Monster taunts on wrong answer
   monsterSpeak(WRONG_TAUNTS[ri(0,WRONG_TAUNTS.length-1)],2200);
   showCorr(q);if(GM.mode==='qcm'||(q&&q.choices&&q.choices.length))markQCM(ans,false,q.res);hitPlayer('💥 FAUX !');
@@ -3087,12 +3104,71 @@ if(typeof checkMilestones==='function') checkMilestones();
  $('end-enc').innerText=won?msgs[ri(0,msgs.length-1)]:'';
  renderEndStars(computeStars(GS.score,won));
  $('end-badges').innerHTML=newBadges.length?'<p style="color:#f1c40f;margin:3px 0;">🏅 '+newBadges.map(b=>b.e+' '+b.l).join(', ')+'</p>':'';
- const errs=(P.errors||[]).slice(-GS.errInGame);
- $('end-correction').innerHTML=errs.length?'<strong style="color:#e74c3c">❌ Erreurs :</strong><br>'+[...new Set(errs)].map(e=>{const m=e.match(/^(.+?)([+\-x×\/÷])(.+?)=(\d+)$/);return m?`• ${m[1]} ${m[2]} ${m[3]} = <strong>${m[4]}</strong>`:' • '+e;}).join('<br>'):(won?'<span style="color:#2ecc71">✅ Parfait !</span>':'');
+ _renderEndRecap(won);
  if(won)startConfetti();
  // v8.7.10 : NE PAS reset GM.mapZone ici. Le contexte doit être préservé
  // pour que le bouton "Retour à la carte" sache où retourner.
  // Le reset est désormais fait dans returnMenu/endReplayAction au clic.
+}
+// ═══════════════════════════════════════════════════════
+// v10.0.0 (Chantier 2) : récap des erreurs côté enfant
+// Regroupe les erreurs de la session par domaine (opKey) avec
+// un libellé lisible, la bonne réponse en vert, et un ton encourageant.
+// ═══════════════════════════════════════════════════════
+const _RECAP_DOMAINS={
+ '+':{e:'➕',l:'Addition'}, '-':{e:'➖',l:'Soustraction'},
+ 'x':{e:'✖️',l:'Multiplication'}, '×':{e:'✖️',l:'Multiplication'},
+ '/':{e:'➗',l:'Division'}, '÷':{e:'➗',l:'Division'},
+ 'frac':{e:'½',l:'Fractions'}, 'num':{e:'🔢',l:'Nombres décimaux'},
+ 'geo':{e:'📐',l:'Géométrie'}, 'mes':{e:'📏',l:'Grandeurs et mesures'},
+ 'prop':{e:'⚖️',l:'Proportionnalité'}, 'rel':{e:'±',l:'Nombres relatifs'},
+ 'litt':{e:'🔤',l:'Calcul littéral'}, 'fonc':{e:'📈',l:'Fonctions'},
+ 'stat':{e:'📊',l:'Statistiques'}, 'arith':{e:'🔟',l:'Puissances et arithmétique'},
+ 'algo':{e:'🤖',l:'Algorithmique'}
+};
+const _RECAP_MAX_LINES=8;
+const _RECAP_ENCOURAGE=[
+ 'Pas grave, ce sont tes pistes d’entraînement. Tu vas y arriver !',
+ 'Ces petites erreurs, on les retravaille et hop, elles disparaissent !',
+ 'Chaque erreur t’apprend quelque chose. Bravo d’avoir essayé !',
+ 'On revoit ça ensemble la prochaine fois — tu progresses !'
+];
+function _renderEndRecap(won){
+ const el=$('end-correction'); if(!el) return;
+ const btn=$('btn-end-revision');
+ const list=Array.isArray(GS.errList)?GS.errList:[];
+ if(!list.length){
+  el.innerHTML = won ? '<span style="color:#2ecc71;font-weight:700;">✅ Sans faute, bravo !</span>' : '';
+  if(btn) btn.classList.add('hidden');
+  return;
+ }
+ // Regroupe par domaine en préservant l'ordre d'apparition
+ const groups=[]; const byKey={};
+ for(const it of list){
+  const key=it.opKey||'+';
+  if(!byKey[key]){ byKey[key]={key, items:[]}; groups.push(byKey[key]); }
+  byKey[key].items.push(it);
+ }
+ let lines=0, html='<strong style="color:#f6b93b;">📒 Ce que tu peux revoir</strong>';
+ for(const g of groups){
+  if(lines>=_RECAP_MAX_LINES) break;
+  const d=_RECAP_DOMAINS[g.key]||{e:'📝',l:'À revoir'};
+  html+=`<div style="color:#86b8e6;margin:7px 0 2px;font-weight:700;font-size:.92em;">${d.e} ${d.l}</div>`;
+  for(const it of g.items){
+   if(lines>=_RECAP_MAX_LINES) break;
+   html+=`<div style="padding:1px 0;">${esc(String(it.display))} = <strong style="color:#2ecc71;">${esc(String(it.res))}</strong></div>`;
+   lines++;
+  }
+ }
+ const remaining=list.length-lines;
+ if(remaining>0) html+=`<div style="color:#bdc3c7;margin-top:4px;font-size:.9em;">… et ${remaining} autre${remaining>1?'s':''}.</div>`;
+ html+=`<div style="color:#9fd3a0;margin-top:9px;font-style:italic;font-size:.95em;">${_RECAP_ENCOURAGE[ri(0,_RECAP_ENCOURAGE.length-1)]}</div>`;
+ el.innerHTML=html;
+ // Bouton « Rejouer mes erreurs » : seulement si des erreurs arithmétiques sont rejouables
+ if(btn){
+  const replayable=(P.errors||[]).some(e=>/^\d/.test(e));
+  btn.classList.toggle('hidden', !replayable);
+ }
 }
 function playCongrats(){
  playVS();const h=GIFS[ri(0,GIFS.length-1)];
