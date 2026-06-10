@@ -2660,7 +2660,7 @@ GS.errInGame++;GS.combo=0;GS.opCombo=0;GS.lastOpKey=null;$('gc').classList.remov
   if(typeof _classStatUpdate==="function") _classStatUpdate(GM.level, q.opKey, false);
   if(q.display&&q.res!==undefined)P.errors=([...(P.errors||[])]).concat(`${q.a||'?'}${q.op||'?'}${q.b||'?'}=${q.res}`).slice(-60);
   // Chantier 1.2 : log dans le registre de révision espacée
-  if(typeof logError==='function' && q.display && q.res!==undefined) logError(q.display, q.res);
+  if(typeof logError==="function" && q.display && q.res!==undefined) logError(q.display, q.res, q);
   // Monster taunts on wrong answer
   monsterSpeak(WRONG_TAUNTS[ri(0,WRONG_TAUNTS.length-1)],2200);
   showCorr(q);if(GM.mode==='qcm'||(q&&q.choices&&q.choices.length))markQCM(ans,false,q.res);hitPlayer('💥 FAUX !');

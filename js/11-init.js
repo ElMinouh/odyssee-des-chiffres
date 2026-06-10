@@ -52,7 +52,45 @@ adjustGameLogoSize();
  setTimeout(() => { splash.classList.add('skipped'); }, 11800);
 })();
 
+// ═══════════════════════════════════════════════════════
+// v9.4.16 : garde-fou de chargement des modules.
+// Si un fichier JS manque au déploiement (copie oubliée, cache SW partiel),
+// l'écran cassait silencieusement. Ici : détection + message clair.
+// ═══════════════════════════════════════════════════════
+function _bootSanityCheck(){
+ const required = {
+  '01-core': ['$','esc','toast','navTo','pickMonster'],
+  '02-data': ['SKINS','BOSS_ROSTER'],
+  '04-questions': ['GEN'],
+  '05-profile': ['loadProfile'],
+  '06a-adaptive': ['_progPhase','logError','getRevisionErrorToAsk'],
+  '07-game': ['generateQ','renderQ','validate'],
+  '13-maternelle': ['_matGen'],
+  '14-primaire': ['_primEnrich'],
+  '15-college': ['_collEnrich'],
+ };
+ const missing = [];
+ for(const mod in required){
+  for(const sym of required[mod]){
+   try{ if(typeof window[sym] === 'undefined' && typeof eval(sym) === 'undefined') missing.push(mod+'.'+sym); }
+   catch(e){ missing.push(mod+'.'+sym); }
+  }
+ }
+ if(missing.length){
+  console.error('[Odyssée] Modules incomplets au boot :', missing);
+  try{
+   const d = document.createElement('div');
+   d.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#c0392b;color:#fff;font-size:14px;padding:10px 14px;text-align:center;';
+   d.innerHTML = '⚠️ Chargement incomplet (' + esc(missing.slice(0,3).join(', ')) + (missing.length>3?'…':'') + '). Recharge la page ; si ça persiste, vide le cache.';
+   document.body.appendChild(d);
+   setTimeout(()=>d.remove(), 12000);
+  }catch(e){}
+ }
+ return missing.length === 0;
+}
+
 window.onload=()=>{
+ try{ _bootSanityCheck(); }catch(e){}
  // OPT-1+2 : init des références DOM cachées et du canvas particules
  _initCachedDOM();
  // Force l'affichage correct : seul v-menu visible au démarrage

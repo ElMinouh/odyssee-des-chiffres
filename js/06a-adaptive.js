@@ -55,7 +55,7 @@ function adaptRange(min, max, opKey){
  * Enregistre une erreur dans le log avec timestamp.
  * Format : {q:'3+4=7', t: Date.now(), tries: 1}
  */
-function logError(qDisplay, res){
+function logError(qDisplay, res, q){
  if(!P)return;
  P.errorLog = Array.isArray(P.errorLog) ? P.errorLog : [];
  const key = String(qDisplay).replace(/\s+/g,'')+'='+res;
@@ -65,7 +65,18 @@ function logError(qDisplay, res){
   existing.t = Date.now();
   existing.tries = (existing.tries||0) + 1;
  } else {
-  P.errorLog.push({q:key, t:Date.now(), tries:1});
+  const item = {q:key, t:Date.now(), tries:1};
+  // v9.4.16 : les questions QCM (exercices enrichis primaire/collège) sont
+  // stockées avec un instantané rejouable — sinon elles encombraient le log
+  // sans jamais être reposées. Cap de taille pour préserver localStorage.
+  if(q && Array.isArray(q.choices) && q.choices.length){
+   try{
+    const snap = {display:q.display, choices:q.choices, res:q.res, opKey:q.opKey||'', type:'normal', img:''};
+    if(q.visualHtml) snap.visualHtml = q.visualHtml;
+    if(JSON.stringify(snap).length <= 6000) item.payload = snap;
+   }catch(e){}
+  }
+  P.errorLog.push(item);
  }
  // Cap : on garde les 30 plus récentes
  if(P.errorLog.length > SPACED_MAX_LOG){
@@ -125,6 +136,13 @@ function getRevisionErrorToAsk(){
  for(const {e, w} of weighted){
   r -= w;
   if(r <= 0){
+   // v9.4.16 : question QCM enregistrée avec son instantané → rejouée telle quelle
+   if(e.payload && Array.isArray(e.payload.choices)){
+    _lastRevisedKey = e.q;
+    const out = Object.assign({}, e.payload);
+    out.isRevision = true;
+    return out;
+   }
    const m = e.q.match(/^(.+?)([+\-x×\/÷])(.+?)=(\d+)$/);
    if(!m)continue;
    _lastRevisedKey = e.q;

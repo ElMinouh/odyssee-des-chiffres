@@ -944,20 +944,24 @@ function renderCloudPanel(){
  const lastSyncStr = lastSync
   ? new Date(lastSync).toLocaleString('fr-FR')
   : (isActive ? 'en attente…' : '—');
+ // v9.4.16 : nom échappé pour le HTML (esc) et pour les onclick (apostrophes) —
+ // un prénom comme « L'éa » cassait les boutons cloud.
+ const _nH = esc(prof.name);
+ const _nJ = String(prof.name).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
  container.innerHTML = `
   <div style="background:rgba(52,152,219,.08);border:1px solid rgba(52,152,219,.3);border-radius:8px;padding:10px;margin-top:6px;">
-   <p style="font-size:.78em;color:#bdc3c7;margin:0 0 4px;">Code de sauvegarde de <strong style="color:#fff;">${prof.name}</strong> :</p>
+   <p style="font-size:.78em;color:#bdc3c7;margin:0 0 4px;">Code de sauvegarde de <strong style="color:#fff;">${_nH}</strong> :</p>
    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
     <code style="font-size:1.05em;color:#3498db;font-weight:700;background:rgba(0,0,0,.25);padding:6px 10px;border-radius:6px;letter-spacing:1px;font-family:monospace;">${code}</code>
-    <button onclick="doCloudCopyFor('${prof.name}')" style="font-size:.78em;padding:5px 10px;background:#34495e;">📋 Copier</button>
+    <button onclick="doCloudCopyFor('${_nJ}')" style="font-size:.78em;padding:5px 10px;background:#34495e;">📋 Copier</button>
    </div>
    <p style="font-size:.72em;color:#bdc3c7;margin:8px 0 4px;">Statut : <strong style="color:${isActive?'#2ecc71':'#e67e22'};">${isActive?'☁️ Activé':'⏸ Désactivé'}</strong></p>
-   ${isActive ? `<p style="font-size:.72em;color:#bdc3c7;margin:4px 0;">Dernière sync : ${lastSyncStr}</p>` : `<p style="font-size:.74em;color:#e67e22;margin:6px 0;background:rgba(230,126,34,.12);border-radius:6px;padding:6px 8px;">⚠️ <b>Sauvegarde non activée</b> : tant que ce bouton n'est pas activé, la progression de ${prof.name} n'est <b>pas envoyée au cloud</b> et ne peut pas être récupérée sur un autre appareil. Active-la ci-dessous.</p>`}
+   ${isActive ? `<p style="font-size:.72em;color:#bdc3c7;margin:4px 0;">Dernière sync : ${lastSyncStr}</p>` : `<p style="font-size:.74em;color:#e67e22;margin:6px 0;background:rgba(230,126,34,.12);border-radius:6px;padding:6px 8px;">⚠️ <b>Sauvegarde non activée</b> : tant que ce bouton n'est pas activé, la progression de ${_nH} n'est <b>pas envoyée au cloud</b> et ne peut pas être récupérée sur un autre appareil. Active-la ci-dessous.</p>`}
    <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
     ${isActive
-     ? `<button onclick="doCloudSyncNow('${prof.name}')" style="background:#3498db;font-size:.82em;">🔄 Synchroniser maintenant</button>
-        <button onclick="doCloudDisable('${prof.name}')" style="background:#7f8c8d;font-size:.82em;">⏸ Désactiver</button>`
-     : `<button onclick="doCloudEnable('${prof.name}')" style="background:#27ae60;font-size:.82em;">☁️ Activer la sauvegarde cloud</button>`
+     ? `<button onclick="doCloudSyncNow('${_nJ}')" style="background:#3498db;font-size:.82em;">🔄 Synchroniser maintenant</button>
+        <button onclick="doCloudDisable('${_nJ}')" style="background:#7f8c8d;font-size:.82em;">⏸ Désactiver</button>`
+     : `<button onclick="doCloudEnable('${_nJ}')" style="background:#27ae60;font-size:.82em;">☁️ Activer la sauvegarde cloud</button>`
     }
    </div>
   </div>
