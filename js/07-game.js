@@ -3435,7 +3435,8 @@ function _maybeBossAttack(){
  const proba = GS.bossFury ? 0.80 : 0.55;
  if(Math.random() > proba) return;
  const attacks = [_atkRoar, _atkLightning, _atkLureRain, _atkWobble, _atkFireflies,
-                  _atkFreeze, _atkScramble, _atkWords, _atkShield, _atkRegen];
+                  _atkFreeze, _atkScramble, _atkWords, _atkShield, _atkRegen,
+                  _atkFog, _atkInk, _atkFlip, _atkQuake, _atkEclipse, _atkFrost];
  const atk = attacks[Math.floor(Math.random() * attacks.length)];
  try{ atk(); }catch(e){ console.warn('boss attack failed', e); }
 }
@@ -3506,6 +3507,59 @@ function _atkFireflies(){
 // Gel temporaire, pavé mélangé, chiffres en lettres.
 // ═══════════════════════════════════════════════════════
 // Nettoyage des effets d'attaque entre deux questions (appelé en début de renderQ)
+// ── v9.4.15 : 6 nouveaux malus de colère. Le timer est mis en pause pendant
+//    l'effet (GS.frozen) — donc non punitif ; sans effet en maternelle (pas de chrono).
+function _atkFog(){
+ const host = document.getElementById('v-game') || document.body;
+ GS.frozen = true;
+ const layer = document.createElement('div'); layer.className = 'boss-fog-layer';
+ host.appendChild(layer);
+ if(typeof monsterSpeak === 'function'){ try{ monsterSpeak("Brouillard épais !", 1400); }catch(e){} }
+ setTimeout(()=>{ layer.remove(); GS.frozen = false; }, 3000);
+}
+function _atkInk(){
+ const host = document.getElementById('v-game') || document.body;
+ GS.frozen = true;
+ const layer = document.createElement('div'); layer.className = 'boss-ink-layer';
+ let html = '';
+ for(let i=0;i<6;i++){ const left=8+Math.random()*78, top=12+Math.random()*64, sz=58+Math.random()*70, delay=(Math.random()*0.3).toFixed(2);
+  html += `<span class="boss-ink" style="left:${left}%;top:${top}%;width:${sz}px;height:${sz}px;animation-delay:${delay}s;"></span>`; }
+ layer.innerHTML = html; host.appendChild(layer);
+ if(typeof monsterSpeak === 'function'){ try{ monsterSpeak("Tache d'encre !", 1300); }catch(e){} }
+ setTimeout(()=>{ layer.remove(); GS.frozen = false; }, 2600);
+}
+function _atkFlip(){
+ const q = document.getElementById('question');
+ GS.frozen = true;
+ if(q) q.classList.add('boss-upside');
+ if(typeof monsterSpeak === 'function'){ try{ monsterSpeak("Sens dessus dessous !", 1500); }catch(e){} }
+ setTimeout(()=>{ if(q) q.classList.remove('boss-upside'); GS.frozen = false; }, 2200);
+}
+function _atkQuake(){
+ const gv = document.getElementById('v-game');
+ GS.frozen = true;
+ if(gv) gv.classList.add('boss-quake');
+ if(typeof vibrate === 'function') vibrate([30,40,30,40,30]);
+ if(typeof monsterSpeak === 'function'){ try{ monsterSpeak("Tremblement de terre !", 1300); }catch(e){} }
+ setTimeout(()=>{ if(gv) gv.classList.remove('boss-quake'); GS.frozen = false; }, 1600);
+}
+function _atkEclipse(){
+ const host = document.getElementById('v-game') || document.body;
+ GS.frozen = true;
+ const layer = document.createElement('div'); layer.className = 'boss-eclipse-layer';
+ host.appendChild(layer);
+ if(typeof monsterSpeak === 'function'){ try{ monsterSpeak("Éclipse !", 1400); }catch(e){} }
+ setTimeout(()=>{ layer.remove(); GS.frozen = false; }, 2200);
+}
+function _atkFrost(){
+ const host = document.getElementById('v-game') || document.body;
+ GS.frozen = true;
+ const layer = document.createElement('div'); layer.className = 'boss-frost-layer';
+ host.appendChild(layer);
+ if(typeof beep === 'function'){ try{ beep(1200,'sine',.18,.05); }catch(e){} }
+ if(typeof monsterSpeak === 'function'){ try{ monsterSpeak("Givre rampant !", 1300); }catch(e){} }
+ setTimeout(()=>{ layer.remove(); GS.frozen = false; }, 3000);
+}
 function _resetBossAttackEffects(){
  const numpad = document.getElementById('numpad');
  if(numpad){
@@ -3515,7 +3569,11 @@ function _resetBossAttackEffects(){
  const ai = document.getElementById('answer-input');
  if(ai){ ai.classList.remove('input-frozen'); ai.disabled = false; }
  const qEl = document.getElementById('question');
- if(qEl) qEl.classList.remove('boss-words-q');
+ if(qEl) qEl.classList.remove('boss-words-q','boss-upside');
+ const gv = document.getElementById('v-game');
+ if(gv) gv.classList.remove('boss-quake');
+ document.querySelectorAll('.boss-fog-layer,.boss-ink-layer,.boss-eclipse-layer,.boss-frost-layer').forEach(el=>el.remove());
+ if(typeof GS !== 'undefined') GS.frozen = false;
 }
 // Restaure l'ordre canonique 1..9 des touches chiffres du pavé
 function _restoreNumpadOrder(){
