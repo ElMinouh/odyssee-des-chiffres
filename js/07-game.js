@@ -3359,6 +3359,16 @@ const _BOSS_ENRAGE_LINES = [
  "Tu crois m'avoir ? La vraie bataille commence MAINTENANT !",
  "Impossible… tu es plus fort que prévu. Mais je ne céderai pas !",
  "Ma colère décuple mes forces ! Prépare-toi !",
+ "Tu as réveillé ma fureur… tant pis pour toi !",
+ "Chaque bonne réponse m'enrage un peu plus !",
+ "Tu ne souris plus pour longtemps ! À mon tour de jouer !",
+ "Mes calculs vont devenir IMPITOYABLES !",
+ "Je gronde, je tremble, je RUGIS de colère !",
+ "Tu m'as poussé à bout… voici ma forme déchaînée !",
+ "Personne ne m'avait résisté aussi longtemps. ÇA SUFFIT !",
+ "Sens ma rage monter : les nombres vont pleuvoir !",
+ "Tu as gratté ma fierté… et ça, JAMAIS !",
+ "Mes yeux rougeoient ! Plus aucune pitié pour tes neurones !",
 ];
 // Répliques d'enrage adaptées au collège (ton plus mûr, adversaire respecté)
 const _BOSS_ENRAGE_LINES_COL = [
@@ -3531,7 +3541,11 @@ function _atkFreeze(){
  setTimeout(() => {
   GS.frozen = false;
   if(numpad) numpad.classList.remove('numpad-frozen');
-  if(ai){ ai.classList.remove('input-frozen'); ai.disabled = false; }
+  if(ai){ ai.classList.remove('input-frozen'); ai.disabled = false;
+   // PC/clavier : redonner le focus au champ (sinon il faut recliquer). Pas sur
+   // tactile, pour ne pas faire surgir le clavier par-dessus le pavé.
+   if(typeof _numpadIsTouch !== 'function' || !_numpadIsTouch()){ try{ ai.focus(); }catch(e){} }
+  }
  }, 2000);
 }
 // 🔀 Pavé mélangé : les touches 1..9 changent de place (la valeur reste correcte)
