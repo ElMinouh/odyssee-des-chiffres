@@ -653,6 +653,9 @@ const _COL_POOL = {
 
 // ── Tirage : sac sans remise, filtré par la phase d'année du niveau ──────
 const _colBags = {}; const _colBagPhase = {};
+const _COL_PH_BY_LEVEL = {
+ '5E': { _colLitDevelopper:3, _colPropQuatrieme:3, _colVolPave:3, _colTransfoSym:3 },
+};
 function _collEnrich(level){
  const pool = _COL_POOL[level];
  if(!pool || !pool.length) return null;
@@ -660,7 +663,8 @@ function _collEnrich(level){
  if(_colBagPhase[level] !== phase){ _colBags[level] = null; _colBagPhase[level] = phase; }
  let bag = _colBags[level];
  if(!bag || !bag.length){
-  let avail = pool.filter(f => ((f && f.ph) || 1) <= phase);
+  const _ov = _COL_PH_BY_LEVEL[level] || {};
+  let avail = pool.filter(f => (_ov[f.name] || (f && f.ph) || 1) <= phase);
   if(!avail.length) avail = pool.slice();
   bag = _colBags[level] = (typeof shuffle === 'function' ? shuffle(avail.slice()) : avail.slice());
  }

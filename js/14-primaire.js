@@ -509,6 +509,10 @@ const _PRIM_POOL = {
 // → variété garantie et plus d'oublis de certains exercices.
 const _primBags = {};
 const _primBagPhase = {};
+const _PRIM_PH_BY_LEVEL = {
+ CP:  { _primProblemeCompareDiff:3, _primDuree:3, _primRendreMonnaie:3 },
+ CE1: { _primHeure:3, _primDuree:3, _primProblemeComparePlus:3 },
+};
 function _primEnrich(level){
  const pool = _PRIM_POOL[level];
  if(!pool || !pool.length) return null;
@@ -516,7 +520,8 @@ function _primEnrich(level){
  if(_primBagPhase[level]!==phase){ _primBags[level]=null; _primBagPhase[level]=phase; }
  let bag = _primBags[level];
  if(!bag || !bag.length){
-  let avail = pool.filter(f => ((f && f.ph) || 1) <= phase);
+  const _ov = _PRIM_PH_BY_LEVEL[level] || {};
+  let avail = pool.filter(f => (_ov[f.name] || (f && f.ph) || 1) <= phase);
   if(!avail.length) avail = pool.slice();
   bag = _primBags[level] = (typeof shuffle==='function' ? shuffle(avail.slice()) : avail.slice());
  }

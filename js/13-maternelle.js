@@ -172,10 +172,17 @@ const _MAT_POOL = {
  MS: [_matCombien, _matDie, _matDoigts, _matTenFrame, _matDomino, _matFlash, _matDecompose, _matAssocie, _matPlusGrand, _matPlusPetit, _matDonne, _matForme, _matGrandeur, _matIntrus, _matSuite, _matNombreManque, _matRanger, _matChiffre, _matChiffreColl],
  GS: [_matCombien, _matDie, _matTenFrame, _matDomino, _matComplement, _matAddition, _matRetrait, _matApres, _matAssocie, _matSuite, _matIntrus, _matProbleme, _matForme, _matGrandeur, _matNombreManque, _matRanger, _matChiffre, _matChiffreColl, _matPartage],
 };
+// Override de phase par niveau : un exercice peut être "fin d'année" à un niveau
+// et "milieu" à un autre. Complète .ph (global) sans le modifier.
+const _MAT_PH_BY_LEVEL = {
+ PS: { _matDonne:3, _matIntrus:3, _matSuite:3 },
+ MS: { _matRanger:3, _matNombreManque:3 },
+};
 function _matGen(level){
  const pool = _MAT_POOL[level] || _MAT_POOL.PS;
  const phase = (typeof _progPhase==='function') ? _progPhase(level) : 3;
- let avail = pool.filter(f => ((f && f.ph) || 1) <= phase);
+ const _ov = _MAT_PH_BY_LEVEL[level] || {};
+ let avail = pool.filter(f => (_ov[f.name] || (f && f.ph) || 1) <= phase);
  if(!avail.length) avail = pool;
  return avail[ri(0, avail.length-1)](level);
 }
