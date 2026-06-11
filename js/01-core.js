@@ -316,7 +316,7 @@ let pinAttempts=0,pinLockUntil=0;
 
 let _monsterCenter={x:0,y:0}; // position précalculée du monstre (OPT-5)
 // ═══════════════════════════════════════════════════════
-const VIEWS=['v-menu','v-menu2','v-params','v-mode-config','v-settings','v-game','v-end','v-mult','v-parent','v-map','v-zone'];
+const VIEWS=['v-menu','v-menu2','v-params','v-mode-config','v-settings','v-game','v-end','v-mult','v-parent','v-odyssey-select','v-map','v-zone'];
 function showView(id){VIEWS.forEach(v=>$(v).classList.toggle('hidden',v!==id));const si=document.querySelector('.settings-icon');if(si)si.classList.toggle('si-hidden',id!=='v-menu');}
 // ═══════════════════════════════════════════════════════
 // PILE DE NAVIGATION (v8.7.3)
@@ -942,7 +942,8 @@ function syncParamToggle(which, val){
 
 // Lance directement l'Odyssée (la carte d'exploration)
 function startOdyssee(){
- if(typeof openMap==='function') openMap();
+ if(typeof openOdysseeSelect==='function') openOdysseeSelect();
+ else if(typeof openMap==='function') openMap();
 }
 
 // ═══════════════════════════════════════════════════════

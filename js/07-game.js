@@ -30,6 +30,32 @@ function closeMap(){
 }
 
 // ═══════════════════════════════════════════════════════
+// v10.1.0 — Trois aventures : permutation des globals actifs
+// (zones, régions, histoire, antagoniste, royaume) puis ouverture
+// de la carte. Le primaire est l'aventure par défaut.
+// ═══════════════════════════════════════════════════════
+function startAdventure(advId){
+ GM.adventure = advId;
+ if(advId==='mat'){
+  MAP_ZONES=MAT_ZONES; _ARCH_REGIONS=_MAT_REGIONS; _STORY=_MAT_STORY;
+  STORY_VILLAIN=_MAT_VILLAIN; STORY_KINGDOM=_MAT_KINGDOM;
+ } else if(advId==='col'){
+  MAP_ZONES=COL_ZONES; _ARCH_REGIONS=_COL_REGIONS; _STORY=_COL_STORY;
+  STORY_VILLAIN=_COL_VILLAIN; STORY_KINGDOM=_COL_KINGDOM;
+ } else {
+  GM.adventure='prim';
+  MAP_ZONES=PRIM_ZONES; _ARCH_REGIONS=_PRIM_REGIONS; _STORY=_PRIM_STORY;
+  STORY_VILLAIN='Comte Zéro de Cafouillac'; STORY_KINGDOM='Calcultopia';
+ }
+ if(typeof P==='object' && P) P.lastAdventure = GM.adventure;
+ openMap();
+}
+// Ouvre l'écran de choix des trois aventures
+function openOdysseeSelect(){
+ if(typeof navTo==='function') navTo('v-odyssey-select'); else showView('v-odyssey-select');
+}
+
+// ═══════════════════════════════════════════════════════
 // O1 — CARTE DE ZONE (sous-niveaux v8.7.8)
 // Affiche les 5 étapes d'une zone, gère la progression
 // ═══════════════════════════════════════════════════════
@@ -186,6 +212,13 @@ function startMapStep(zoneId, stepIdx){
  GM.level = zone.level;
  GM.mode2 = 'normal';
  GM.mode = P.prefs.mode || 'keyboard';
+ // v10.1.0 : en aventure maternelle, mêmes réglages que le mode solo
+ // (rendu 100% visuel via qcm, ambiance douce). Le chrono est déjà neutralisé
+ // par le retour anticipé de renderQ sur les questions maternelle.
+ if(typeof _isMaternelle==='function' && _isMaternelle(GM.level)){
+  GM.mode = 'qcm';
+  if(typeof _matApplyAmbiance==='function') _matApplyAmbiance(GM.level);
+ }
  applyTheme(zone.theme);
  // Construire le monstre/boss à partir de la définition de l'étape
  const isBoss = (step.type === 'boss');
@@ -281,7 +314,7 @@ function returnToModule(){
 // ═══════════════════════════════════════════════════════
 
 // Métadonnées des 5 régions + Sanctuaire (titres calligraphiés)
-const _ARCH_REGIONS = [
+const _PRIM_REGIONS = [
  { id:'cp',    label:'Région des Débuts',     levels:['CP'],  shape:'colline' },
  { id:'ce1',   label:'Bois et Plages',         levels:['CE1'], shape:'feuille' },
  { id:'ce2',   label:'Terres d\'Aventure',     levels:['CE2'], shape:'dune' },
@@ -289,6 +322,25 @@ const _ARCH_REGIONS = [
  { id:'cm2',   label:'Au-delà des Étoiles',    levels:['CM2'], shape:'nebuleuse' },
  { id:'final', label:'Sanctuaire Final',       levels:['FINAL'], shape:'mandala' },
 ];
+// v10.1.0 — Régions des nouvelles aventures (mêmes 6 ids → thème réutilisé,
+// labels propres à chaque aventure). Le groupement se fait par z.region.
+const _MAT_REGIONS = [
+ { id:'cp',    label:'La Plaine Tendre',       levels:['PS'], shape:'colline' },
+ { id:'ce1',   label:'Le Verger Sucré',        levels:['PS'], shape:'feuille' },
+ { id:'ce2',   label:'Les Bois Doux',          levels:['MS'], shape:'dune' },
+ { id:'cm1',   label:'Le Lagon Bleu',          levels:['MS'], shape:'citadelle' },
+ { id:'cm2',   label:'Les Champs Dorés',       levels:['GS'], shape:'nebuleuse' },
+ { id:'final', label:'Le Château des Nuages',  levels:['GS'], shape:'mandala' },
+];
+const _COL_REGIONS = [
+ { id:'cp',    label:'Le Port des Décimales',      levels:['6E'], shape:'colline' },
+ { id:'ce1',   label:'Les Cavernes Fractionnaires',levels:['6E'], shape:'feuille' },
+ { id:'ce2',   label:'Le Plateau des Relatifs',    levels:['5E'], shape:'dune' },
+ { id:'cm1',   label:'La Citadelle Algébrique',    levels:['4E'], shape:'citadelle' },
+ { id:'cm2',   label:'Les Gorges de Pythagore',    levels:['4E'], shape:'nebuleuse' },
+ { id:'final', label:'L\'Observatoire des Fonctions',levels:['3E'], shape:'mandala' },
+];
+let _ARCH_REGIONS = _PRIM_REGIONS;
 
 // v8.7.35 (O3-B.3) : Transports thématiques par région.
 // Sur la carte mondiale uniquement (jamais dans la modale zoom), pendant l'animation
@@ -644,7 +696,8 @@ function _computeArchipelLayout(){
  const xMaxPct = 78;
  _ARCH_REGIONS.forEach((region, rIdx)=>{
   const zonesInRegion = MAP_ZONES.map((z,i)=>({z,i})).filter(({z})=>{
-   if(region.id==='final') return z.id==='sanctuaire';
+   if(z.region) return z.region===region.id;                 // nouvelles aventures
+   if(region.id==='final') return z.id==='sanctuaire';        // primaire (inchangé)
    return region.levels.includes(z.level) && z.id!=='sanctuaire';
   });
   if(zonesInRegion.length === 0) return;
@@ -1938,6 +1991,7 @@ function _updateParallaxTransforms(){
 function startMapBoss(zoneId){
  const zone=MAP_ZONES.find(z=>z.id===zoneId);if(!zone)return;
  GM.mapZone=zone;GM.level=zone.level;GM.mode2='normal';GM.mode=P.prefs.mode||'keyboard';
+ if(typeof _isMaternelle==='function' && _isMaternelle(GM.level)){ GM.mode='qcm'; if(typeof _matApplyAmbiance==='function') _matApplyAmbiance(GM.level); }
  applyTheme(zone.theme);
  const bossMonster={emoji:zone.boss,name:zone.bossName,title:`Gardien de : ${zone.label}`,
   // v8.7.28 : tirage diversifié (boss legacy entry point, 1 seul boss → withinKindIdx=0)
@@ -4017,8 +4071,8 @@ function _buildZoomSceneHtml(zoneId, zone, stepPositions, containerW, sceneH){
 // il suffit d'ajouter une région à _ARCH_REGIONS et un chapitre à _STORY.chapters.
 // Le nombre de Cristaux et les déclencheurs s'adaptent automatiquement.
 // ═══════════════════════════════════════════════════════
-const STORY_VILLAIN = 'Comte Zéro de Cafouillac';
-const STORY_KINGDOM = 'Calcultopia';
+let STORY_VILLAIN = 'Comte Zéro de Cafouillac';
+let STORY_KINGDOM = 'Calcultopia';
 // Nombre de Cristaux régionaux = nombre de régions de jeu (hors Sanctuaire final).
 function _storyCrystalCount(){
  try{ return _ARCH_REGIONS.filter(r => r.id !== 'final').length; }catch(e){ return 5; }
@@ -4032,7 +4086,7 @@ function _storyText(s){
   .replace(/\{kingdom\}/g, STORY_KINGDOM)
   .replace(/\{crystals\}/g, _storyCrystalCount());
 }
-const _STORY = {
+const _PRIM_STORY = {
  intro: {
   id:'intro',
   title:'Prologue — L\'Ombre sur Calcultopia',
@@ -4154,6 +4208,72 @@ const _STORY = {
   ],
  },
 };
+
+// v10.1.0 — _STORY est un pointeur permutable vers l'histoire de l'aventure active.
+let _STORY = _PRIM_STORY;
+
+// ─── Histoire MATERNELLE (provisoire, courte — sera remplacée au Lot 2) ───
+const _MAT_VILLAIN = 'Nuage Grognon';
+const _MAT_KINGDOM = 'Pays Tout-Doux';
+const _MAT_STORY = {
+ intro: { id:'mat_intro', title:'Le Pays Tout-Doux', pages:[
+  { emoji:'🌈', text:"Au {kingdom}, tout était joli et coloré. Les fleurs riaient, les nuages étaient blancs comme du coton." },
+  { emoji:'☁️', text:"Mais un jour, le <b>{villain}</b> est passé et a emporté toutes les jolies couleurs ! Tout est devenu un peu gris…" },
+  { emoji:'🧒', text:"Heureusement, te voilà, {hero} ! En réussissant les jeux, tu vas rapporter les couleurs, une par une. En route !" },
+ ]},
+ chapters: {
+  cp:    { id:'mat_c_cp',  title:'La Plaine Tendre',      crystal:'couleur verte', pages:[ { emoji:'🌱', text:"Bienvenue dans la <b>Plaine Tendre</b>, {hero} ! De gentils animaux t'attendent pour jouer." } ]},
+  ce1:   { id:'mat_c_ce1', title:'Le Verger Sucré',       crystal:'couleur rouge', pages:[ { emoji:'🍎', text:"Hmm, ça sent bon les fruits dans le <b>Verger Sucré</b> ! Compte avec les animaux pour les aider." } ]},
+  ce2:   { id:'mat_c_ce2', title:'Les Bois Doux',          crystal:'couleur jaune', pages:[ { emoji:'🌳', text:"Les <b>Bois Doux</b> sont pleins de surprises. N'aie pas peur, tout le monde est gentil ici !" } ]},
+  cm1:   { id:'mat_c_cm1', title:'Le Lagon Bleu',          crystal:'couleur bleue', pages:[ { emoji:'🌊', text:"Plouf ! Le <b>Lagon Bleu</b> scintille. Les petits poissons veulent jouer avec toi." } ]},
+  cm2:   { id:'mat_c_cm2', title:'Les Champs Dorés',       crystal:'couleur orange', pages:[ { emoji:'🌻', text:"Les <b>Champs Dorés</b> brillent au soleil. Encore quelques couleurs à rapporter !" } ]},
+  final: { id:'mat_c_final', title:'Le Château des Nuages', crystal:'', pages:[ { emoji:'🏰', text:"Tout en haut, le <b>Château des Nuages</b> ! C'est là que se cache le {villain}. Allez {hero}, courage !" } ]},
+ },
+ victories: {
+  cp:  { id:'mat_w_cp',  title:'Couleur verte retrouvée !',  crystal:'couleur verte',  pages:[ { emoji:'💚', text:"Bravo {hero} ! La couleur verte est revenue ! Les prés sont tout beaux." } ]},
+  ce1: { id:'mat_w_ce1', title:'Couleur rouge retrouvée !',  crystal:'couleur rouge',  pages:[ { emoji:'❤️', text:"Youpi ! Le rouge des fraises est de retour ! Bien joué !" } ]},
+  ce2: { id:'mat_w_ce2', title:'Couleur jaune retrouvée !',  crystal:'couleur jaune',  pages:[ { emoji:'💛', text:"Le soleil brille à nouveau en jaune ! Tu es un champion, {hero} !" } ]},
+  cm1: { id:'mat_w_cm1', title:'Couleur bleue retrouvée !',  crystal:'couleur bleue',  pages:[ { emoji:'💙', text:"Le bleu du lagon pétille de joie ! Encore bravo !" } ]},
+  cm2: { id:'mat_w_cm2', title:'Couleur orange retrouvée !', crystal:'couleur orange', pages:[ { emoji:'🧡', text:"L'orange des fleurs illumine tout ! Il ne reste que le château…" } ]},
+ },
+ epilogue: { id:'mat_epilogue', title:'Toutes les couleurs !', pages:[
+  { emoji:'🌈', text:"Le {villain} voit toutes les belles couleurs revenir… et il se met à sourire ! « Comme c'est joli ! » dit-il, tout content." },
+  { emoji:'🎉', text:"Le {kingdom} est sauvé, et c'est grâce à toi, {hero} ! Tout le monde t'applaudit. <b>BRAVO petit héros !</b>" },
+ ]},
+};
+
+// ─── Histoire COLLÈGE (placeholder « mini-roman », étoffé au Lot 2) ───
+const _COL_VILLAIN = 'l\'Effaceur';
+const _COL_KINGDOM = 'Numeria';
+const _COL_STORY = {
+ intro: { id:'col_intro', title:'Numeria : la Dernière Équation', pages:[
+  { emoji:'🌌', text:"<b>{kingdom}</b> était un monde où chaque loi de l'univers s'écrivait en équations parfaites. Puis vint <b>{villain}</b>, une entité née d'une démonstration impossible." },
+  { emoji:'🕳️', text:"Là où il passe, les nombres se dissolvent et les théorèmes s'effacent. Six grandes régions du savoir vacillent déjà au bord du néant." },
+  { emoji:'🎓', text:"Une seule personne peut encore inverser l'effacement : un·e jeune esprit assez vif pour reconstruire ce qui fut perdu. {hero}, ce défi t'attend. Restaure {kingdom}." },
+ ]},
+ chapters: {
+  cp:    { id:'col_c_cp',  title:'Le Port des Décimales',       crystal:'Sceau des Décimales', pages:[ { emoji:'⚓', text:"Le <b>Port des Décimales</b> sombre dans le brouillard : les virgules dérivent, les prix n'ont plus de sens. Remets de l'ordre, {hero}." } ]},
+  ce1:   { id:'col_c_ce1', title:'Les Cavernes Fractionnaires', crystal:'Sceau des Fractions', pages:[ { emoji:'🍰', text:"Dans les <b>Cavernes Fractionnaires</b>, les parts ne s'additionnent plus. {villain} y a brisé l'art du partage." } ]},
+  ce2:   { id:'col_c_ce2', title:'Le Plateau des Relatifs',     crystal:'Sceau des Signes', pages:[ { emoji:'🌡️', text:"Sur le <b>Plateau des Relatifs</b>, le froid efface la frontière entre le positif et le négatif. Rétablis l'axe, {hero}." } ]},
+  cm1:   { id:'col_c_cm1', title:'La Citadelle Algébrique',     crystal:'Sceau des Inconnues', pages:[ { emoji:'🏰', text:"La <b>Citadelle Algébrique</b> garde le secret des lettres qui remplacent les nombres. Ses gardiens ne cèdent qu'aux esprits rigoureux." } ]},
+  cm2:   { id:'col_c_cm2', title:'Les Gorges de Pythagore',     crystal:'Sceau du Triangle', pages:[ { emoji:'📐', text:"Aux <b>Gorges de Pythagore</b>, les distances mentent et les angles trichent. Seule la vérité du triangle rectangle peut percer l'illusion." } ]},
+  final: { id:'col_c_final', title:'L\'Observatoire des Fonctions', crystal:'', pages:[ { emoji:'🔭', text:"Tout converge vers l'<b>Observatoire des Fonctions</b>, dernier refuge de {villain}. Là, les courbes décident du destin de {kingdom}. C'est l'heure, {hero}." } ]},
+ },
+ victories: {
+  cp:  { id:'col_w_cp',  title:'Sceau des Décimales restauré !',  crystal:'Sceau des Décimales', pages:[ { emoji:'⚓', text:"Le port s'illumine de nouveau, les nombres à virgule reprennent leur place exacte. Premier sceau restauré, {hero}." } ]},
+  ce1: { id:'col_w_ce1', title:'Sceau des Fractions restauré !',  crystal:'Sceau des Fractions', pages:[ { emoji:'🍰', text:"Les parts se rassemblent et s'additionnent à nouveau. L'art du partage est sauvé." } ]},
+  ce2: { id:'col_w_ce2', title:'Sceau des Signes restauré !',     crystal:'Sceau des Signes', pages:[ { emoji:'🌡️', text:"L'axe des relatifs se redresse, positif et négatif retrouvent leur juste distance au zéro." } ]},
+  cm1: { id:'col_w_cm1', title:'Sceau des Inconnues restauré !',  crystal:'Sceau des Inconnues', pages:[ { emoji:'🏰', text:"Les inconnues révèlent leurs valeurs. La citadelle te reconnaît comme un véritable algébriste." } ]},
+  cm2: { id:'col_w_cm2', title:'Sceau du Triangle restauré !',    crystal:'Sceau du Triangle', pages:[ { emoji:'📐', text:"L'hypoténuse retrouve sa loi. Les distances ne mentent plus. Il ne reste que l'Observatoire…" } ]},
+ },
+ epilogue: { id:'col_epilogue', title:'La Constante Retrouvée', pages:[
+  { emoji:'🔭', text:"Au sommet de l'Observatoire, {villain} vacille. « Tu as tout reconstruit… mais comprends-tu seulement pourquoi j'effaçais ? » murmure-t-il." },
+  { emoji:'💡', text:"Tu réponds : « Une erreur n'efface rien — elle ouvre une nouvelle démonstration. » {villain} se fige, puis s'apaise enfin." },
+  { emoji:'🌟', text:"{kingdom} renaît, plus lumineux qu'avant. Ton nom, {hero}, est gravé parmi les grandes constantes de l'univers. <b>Félicitations.</b>" },
+ ]},
+};
+
+
 // Affiche une scène narrative (parchemin paginé). onDone() appelé à la fermeture.
 // ── Narration chaleureuse du livre (mode Odyssée) ──────────────────────
 // Voix de conteur : lente, posée, en privilégiant une voix française
