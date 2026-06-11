@@ -3416,7 +3416,7 @@ function _advCollectionHtml(){
   const adv = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
   if(adv==='mat') return _advRainbowHtml();
   if(adv==='col') return _advArmorHtml();
-  return '';
+  return _advTalismanHtml();
  }catch(e){ return ''; }
 }
 // ── Carnet maternelle : Mon Arc-en-ciel ─────────────────────────────
@@ -3622,6 +3622,91 @@ function _advArmorHtml(){
    </svg>
    <div class="advcol-powers">${powers}</div>
    ${ult}
+  </div>`;
+}
+
+// ── Carnet primaire : le Talisman de Calcultopia ────────────────────
+const _ADV_PRIM_CRYSTALS = [
+ { rid:'cp',  name:"Cristal de l'Unité",     color:'rouge',  grad:'tlRed', dot:'radial-gradient(circle at 35% 30%,#ff6b6b,#7a0016)' },
+ { rid:'ce1', name:"Cristal de l'Élan",      color:'orange', grad:'tlOra', dot:'radial-gradient(circle at 35% 30%,#ffa94d,#7a3a00)' },
+ { rid:'ce2', name:"Cristal du Voyage",      color:'vert',   grad:'tlGrn', dot:'radial-gradient(circle at 35% 30%,#51d88a,#0a5a2a)' },
+ { rid:'cm1', name:"Cristal de la Bravoure", color:'bleu',   grad:'tlBlu', dot:'radial-gradient(circle at 35% 30%,#4dabf7,#0a2f7a)' },
+ { rid:'cm2', name:"Cristal de l'Infini",    color:'violet', grad:'tlVio', dot:'radial-gradient(circle at 35% 30%,#b06cff,#3a0a7a)' },
+];
+function _advTalismanHtml(){
+ const CX=150, CY=150, R=104;
+ const gemAng=[-90,-18,54,126,198], innerAng=[-54,18,90,162,234];
+ const pt=(d,r)=>{ const a=d*Math.PI/180; return [CX+r*Math.cos(a), CY+r*Math.sin(a)]; };
+ const fx=v=>v.toFixed(1);
+ const got = _ADV_PRIM_CRYSTALS.map(c=>_regionConquered(c.rid));
+ const count = got.filter(Boolean).length;
+ const done = count>=5;
+ // monture étoile 3D + rivets
+ const sp=[]; for(let i=0;i<5;i++){ sp.push(pt(gemAng[i],100)); sp.push(pt(innerAng[i],46)); }
+ const P = sp.map(q=>fx(q[0])+','+fx(q[1])).join(' ');
+ let rivets=''; for(let i=0;i<5;i++){ const o=pt(gemAng[i],100), ii=pt(innerAng[i],46);
+  rivets+=`<circle cx="${fx(o[0])}" cy="${fx(o[1])}" r="2.1" fill="url(#tlRivet)"/><circle cx="${fx(ii[0])}" cy="${fx(ii[1])}" r="1.6" fill="url(#tlRivet)"/>`; }
+ const mount = `
+  <polygon points="${P}" fill="none" stroke="#0a1228" stroke-width="12" stroke-linejoin="round" transform="translate(0 1.5)"/>
+  <polygon points="${P}" fill="none" stroke="url(#tlMetalV)" stroke-width="10" stroke-linejoin="round"/>
+  <polygon points="${P}" fill="none" stroke="#eef5ff" stroke-width="3" stroke-linejoin="round" opacity=".45" transform="translate(0 -1.2)"/>
+  <polygon points="${P}" fill="none" stroke="#1a2748" stroke-width=".8" stroke-linejoin="round"/>${rivets}`;
+ // sertissures
+ let bez=''; for(let i=0;i<5;i++){ const c=pt(gemAng[i],R);
+  bez+=`<circle cx="${fx(c[0])}" cy="${fx(c[1])}" r="15" fill="url(#tlBezel)" stroke="#1a2748" stroke-width="1"/><circle cx="${fx(c[0])}" cy="${fx(c[1])}" r="15" fill="none" stroke="#eef5ff" stroke-width="1" opacity=".4"/><circle cx="${fx(c[0])}" cy="${fx(c[1])}" r="11.5" fill="#0c1530"/>`; }
+ // cristaux facettés (seulement ceux libérés)
+ const poly=p=>p.map(q=>fx(q[0])+','+fx(q[1])).join(' ');
+ let gems=''; for(let i=0;i<5;i++){ if(!got[i]) continue;
+  const [cx,cy]=pt(gemAng[i],R); const r=12.5, tr=r*0.46; const oct=[],tab=[];
+  for(let k=0;k<8;k++){ const a=(k*45-90)*Math.PI/180; oct.push([cx+r*Math.cos(a),cy+r*Math.sin(a)]); tab.push([cx+tr*Math.cos(a),cy+tr*Math.sin(a)]); }
+  let fac=''; for(let k=0;k<8;k++) fac+=`<line x1="${fx(oct[k][0])}" y1="${fx(oct[k][1])}" x2="${fx(tab[k][0])}" y2="${fx(tab[k][1])}" stroke="#fff" stroke-width=".5" opacity=".4"/>`;
+  gems+=`<g class="advtal-slot">`
+   +`<polygon points="${poly(oct)}" fill="url(#${_ADV_PRIM_CRYSTALS[i].grad})" stroke="#fff" stroke-width=".7"/>`
+   +fac
+   +`<polygon points="${poly(tab)}" fill="#fff" opacity=".22"/><polygon points="${poly(tab)}" fill="none" stroke="#fff" stroke-width=".6" opacity=".5"/>`
+   +`<polygon points="${poly([oct[5],oct[6],tab[6],tab[5]])}" fill="#fff" opacity=".5"/>`
+   +`<path class="advtal-gleam" transform="translate(${fx(cx-4)} ${fx(cy-5)})" d="M4 0 l1 3 3 1 -3 1 -1 3 -1 -3 -3 -1 3 -1 Z" fill="#fff"/>`
+   +`</g>`;
+ }
+ const center = done
+  ? `<g class="advtal-burst" stroke="#ffe07a" stroke-width="2.5" stroke-linecap="round">
+      <line x1="150" y1="92" x2="150" y2="72"/><line x1="150" y1="208" x2="150" y2="228"/><line x1="92" y1="150" x2="72" y2="150"/><line x1="208" y1="150" x2="228" y2="150"/>
+      <line x1="112" y1="112" x2="98" y2="98"/><line x1="188" y1="112" x2="202" y2="98"/><line x1="112" y1="188" x2="98" y2="202"/><line x1="188" y1="188" x2="202" y2="202"/></g>
+     <circle cx="150" cy="150" r="24" fill="url(#tlBezel)" stroke="#1a2748" stroke-width="1.5"/><circle cx="150" cy="150" r="24" fill="none" stroke="#eef5ff" stroke-width="1.4" opacity=".4"/>
+     <circle cx="150" cy="150" r="19" fill="url(#tlCore)" stroke="#fff6d6" stroke-width="1.2"/>
+     <path d="M150 134 l4.5 11.5 12.5 0 -10 8 4 12.5 -11 -7 -11 7 4 -12.5 -10 -8 12.5 0 Z" fill="#fffef2"/>
+     <g fill="#fff3b0"><circle class="advtal-spark" cx="150" cy="68" r="2.4"/><circle class="advtal-spark" cx="234" cy="150" r="2.4"/><circle class="advtal-spark" cx="150" cy="232" r="2.4"/><circle class="advtal-spark" cx="66" cy="150" r="2.4"/></g>`
+  : `<circle cx="150" cy="150" r="24" fill="url(#tlBezel)" stroke="#1a2748" stroke-width="1.5"/><circle cx="150" cy="150" r="24" fill="none" stroke="#eef5ff" stroke-width="1.4" opacity=".4"/>
+     <circle cx="150" cy="150" r="19" fill="url(#tlCore)" stroke="#fff6d6" stroke-width="1.2" opacity="${(0.3+count*0.1).toFixed(2)}"/>`;
+ const legend = _ADV_PRIM_CRYSTALS.map((c,i)=>
+  `<div class="advtal-lg ${got[i]?'on':''}"><span class="advtal-dot" style="background:${c.dot}"></span><b>${c.name}</b> <span style="opacity:.85">(${c.color})</span></div>`).join('');
+ const msg = done ? 'Talisman complet — Calcultopia est sauvée ! ✨'
+  : count>0 ? `${count} Cristal${count>1?'aux':''} libéré${count>1?'s':''} — continue !`
+  : 'Libère les Cristaux pour reformer le Talisman !';
+ return `
+  <div class="advlog-section-title">💎 Talisman de Calcultopia <span class="advcol-count">${count} / 5 cristaux</span></div>
+  <div class="advcol-box advtal-box">
+   <svg viewBox="0 0 300 300" class="advcol-svg" aria-label="Talisman : ${count} cristaux sur 5">
+    <defs>
+     <radialGradient id="tlHalo" cx="50%" cy="50%" r="55%"><stop offset="0%" stop-color="#9fd0ff" stop-opacity=".5"/><stop offset="55%" stop-color="#3f6ad0" stop-opacity=".14"/><stop offset="100%" stop-color="#3f6ad0" stop-opacity="0"/></radialGradient>
+     <linearGradient id="tlMetalV" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e6eeff"/><stop offset="42%" stop-color="#8ea4d4"/><stop offset="78%" stop-color="#4a5e92"/><stop offset="100%" stop-color="#26345e"/></linearGradient>
+     <radialGradient id="tlBezel" cx="38%" cy="30%" r="80%"><stop offset="0%" stop-color="#f2f7ff"/><stop offset="45%" stop-color="#8ea4d4"/><stop offset="100%" stop-color="#26345e"/></radialGradient>
+     <linearGradient id="tlRivet" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f2f7ff"/><stop offset="100%" stop-color="#26345e"/></linearGradient>
+     <radialGradient id="tlCore" cx="42%" cy="34%" r="72%"><stop offset="0%" stop-color="#fffef2"/><stop offset="45%" stop-color="#ffe07a"/><stop offset="100%" stop-color="#b9760f"/></radialGradient>
+     <radialGradient id="tlRed" cx="38%" cy="28%" r="78%"><stop offset="0%" stop-color="#fff0f0"/><stop offset="35%" stop-color="#ff6b6b"/><stop offset="100%" stop-color="#7a0016"/></radialGradient>
+     <radialGradient id="tlOra" cx="38%" cy="28%" r="78%"><stop offset="0%" stop-color="#fff3e0"/><stop offset="35%" stop-color="#ffa94d"/><stop offset="100%" stop-color="#7a3a00"/></radialGradient>
+     <radialGradient id="tlGrn" cx="38%" cy="28%" r="78%"><stop offset="0%" stop-color="#eafff2"/><stop offset="35%" stop-color="#51d88a"/><stop offset="100%" stop-color="#0a5a2a"/></radialGradient>
+     <radialGradient id="tlBlu" cx="38%" cy="28%" r="78%"><stop offset="0%" stop-color="#eaf6ff"/><stop offset="35%" stop-color="#4dabf7"/><stop offset="100%" stop-color="#0a2f7a"/></radialGradient>
+     <radialGradient id="tlVio" cx="38%" cy="28%" r="78%"><stop offset="0%" stop-color="#f6ecff"/><stop offset="35%" stop-color="#b06cff"/><stop offset="100%" stop-color="#3a0a7a"/></radialGradient>
+    </defs>
+    <circle cx="150" cy="150" r="122" fill="url(#tlHalo)" opacity="${(0.25+count*0.12).toFixed(2)}"/>
+    <g class="advtal-rays" opacity=".4" stroke="#3f6ad0" stroke-width="1">
+     <line x1="150" y1="150" x2="150" y2="30"/><line x1="150" y1="150" x2="264" y2="113"/><line x1="150" y1="150" x2="220" y2="252"/><line x1="150" y1="150" x2="80" y2="252"/><line x1="150" y1="150" x2="36" y2="113"/>
+    </g>
+    ${mount}${bez}${gems}${center}
+   </svg>
+   <div class="advcol-caption">${msg}</div>
+   <div class="advtal-legend">${legend}</div>
   </div>`;
 }
 
@@ -4432,23 +4517,23 @@ const _PRIM_STORY = {
  // Scènes de VICTOIRE : jouées quand un Cristal est récupéré (région conquise)
  victories: {
   cp: { id:'win_cp', title:'Cristal de l\'Unité libéré !', crystal:'Cristal de l\'Unité', pages:[
-   { emoji:'💎', text:"Le Loup des Plaines pousse un dernier grognement... puis la magie noire se dissipe ! Ses yeux redeviennent doux comme avant. De son pelage jaillit le <b>Cristal de l'Unité</b>, scintillant de mille feux !" },
+   { emoji:'💎', text:"Le Loup des Plaines pousse un dernier grognement... puis la magie noire se dissipe ! Ses yeux redeviennent doux comme avant. De son pelage jaillit le <b>Cristal de l'Unité</b>, d'un <b>rouge</b> rubis éclatant, scintillant de mille feux !" },
    { emoji:'🌅', text:"La toute première lueur revient sur Calcultopia ! Le brouillard recule. Lumo danse de joie : « Bravo {hero} ! » Et Maître Comptin sourit : « Je savais que tu en étais capable. La quête ne fait que commencer. »" },
   ]},
   ce1: { id:'win_ce1', title:'Cristal de l\'Élan libéré !', crystal:'Cristal de l\'Élan', pages:[
-   { emoji:'💎', text:"Le Cerf Spectral incline sa noble ramure et s'évapore en une pluie d'étincelles dorées. Le <b>Cristal de l'Élan</b> est à toi ! Les bois retrouvent leurs couleurs et les vagues se remettent à compter leurs rouleaux." },
+   { emoji:'💎', text:"Le Cerf Spectral incline sa noble ramure et s'évapore en une pluie d'étincelles dorées. Le <b>Cristal de l'Élan</b>, d'un <b>orange</b> flamboyant, est à toi ! Les bois retrouvent leurs couleurs et les vagues se remettent à compter leurs rouleaux." },
    { emoji:'✨', text:"« Un Cristal de plus, {hero} ! » s'émerveille Lumo. Au loin, le {villain} grince des dents : « Comment ose-t-il me défier ainsi... » Ta légende grandit dans tout le royaume." },
   ]},
   ce2: { id:'win_ce2', title:'Cristal du Voyage libéré !', crystal:'Cristal du Voyage', pages:[
-   { emoji:'💎', text:"Le Sphinx des Sables s'incline avec respect : « Tes réponses sont justes, jeune sage. Le Cristal t'appartient. » Le <b>Cristal du Voyage</b> s'élève des sables anciens dans un tourbillon de lumière." },
+   { emoji:'💎', text:"Le Sphinx des Sables s'incline avec respect : « Tes réponses sont justes, jeune sage. Le Cristal t'appartient. » Le <b>Cristal du Voyage</b>, d'un <b>vert</b> émeraude profond, s'élève des sables anciens dans un tourbillon de lumière." },
    { emoji:'🏜️', text:"Vaincu et humilié, le Sergent Virgule déguerpit pour de bon ! Maître Comptin pose la main sur ton épaule : « Te voilà à mi-chemin. Le plus dur reste à venir... mais regarde comme tu as grandi. »" },
   ]},
   cm1: { id:'win_cm1', title:'Cristal de la Bravoure libéré !', crystal:'Cristal de la Bravoure', pages:[
-   { emoji:'💎', text:"Dans un fracas titanesque, le Dragon des Remparts s'effondre, enfin libéré de la corruption ! La tour de glace se fissure et explose — <b>Maître Comptin est libre</b> ! Le <b>Cristal de la Bravoure</b> brille entre tes mains." },
+   { emoji:'💎', text:"Dans un fracas titanesque, le Dragon des Remparts s'effondre, enfin libéré de la corruption ! La tour de glace se fissure et explose — <b>Maître Comptin est libre</b> ! Le <b>Cristal de la Bravoure</b>, d'un <b>bleu</b> saphir intense, brille entre tes mains." },
    { emoji:'🤝', text:"« Tu es venu... pour moi, » murmure le vieux sage, les yeux humides. « Toujours, » réponds-tu simplement. Lumo essuie une larme de lumière. Un Cristal de plus, et surtout : un ami sauvé." },
   ]},
   cm2: { id:'win_cm2', title:'Cristal de l\'Infini libéré !', crystal:'Cristal de l\'Infini', pages:[
-   { emoji:'💎', text:"Le Colosse Stellaire s'agenouille, et toutes les étoiles applaudissent en scintillant ! Le <b>Cristal de l'Infini</b> rejoint les autres et, ensemble, ils tournoient autour de toi en une couronne de lumière pure." },
+   { emoji:'💎', text:"Le Colosse Stellaire s'agenouille, et toutes les étoiles applaudissent en scintillant ! Le <b>Cristal de l'Infini</b>, d'un <b>violet</b> améthyste, rejoint les autres et, ensemble, ils tournoient autour de toi en une couronne de lumière pure." },
    { emoji:'🌌', text:"« Tu as réuni tous les Cristaux, {hero} ! » s'écrie Lumo, éblouie. Il ne reste plus qu'une chose à faire : marcher vers le Sanctuaire, et affronter le {villain} en personne. Le moment de vérité est venu." },
   ]},
  },
