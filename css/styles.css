@@ -4486,6 +4486,11 @@ body.mat-mode #v-game{
 .mat-domino-bar{ width:3px; height:58px; background:#2c3e50; border-radius:2px; }
 /* Formes */
 .mat-shape{ display:inline-block; width:60px; height:60px; }
+/* v10.1.1 : formes rond/carré/triangle (étaient référencées sans style → invisibles).
+   Même couleur (accent du monde) : l'enfant reconnaît par la FORME, pas la couleur. */
+.mat-shape-rond{ border-radius:50%; background:var(--mat-accent,#3aa0ff); box-shadow:0 4px 10px rgba(0,0,0,.22); }
+.mat-shape-carre{ border-radius:12px; background:var(--mat-accent,#3aa0ff); box-shadow:0 4px 10px rgba(0,0,0,.22); }
+.mat-shape-triangle{ background:var(--mat-accent,#3aa0ff); -webkit-clip-path:polygon(50% 4%,96% 96%,4% 96%); clip-path:polygon(50% 4%,96% 96%,4% 96%); filter:drop-shadow(0 4px 8px rgba(0,0,0,.22)); }
 /* Suites à motifs */
 .mat-suite-row{ display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; }
 .mat-suite-item{ font-size:2.2em; }
