@@ -325,12 +325,12 @@ const _PRIM_REGIONS = [
 // v10.1.0 — Régions des nouvelles aventures (mêmes 6 ids → thème réutilisé,
 // labels propres à chaque aventure). Le groupement se fait par z.region.
 const _MAT_REGIONS = [
- { id:'cp',    label:'La Plaine Tendre',       levels:['PS'], shape:'colline' },
- { id:'ce1',   label:'Le Verger Sucré',        levels:['PS'], shape:'feuille' },
- { id:'ce2',   label:'Les Bois Doux',          levels:['MS'], shape:'dune' },
- { id:'cm1',   label:'Le Lagon Bleu',          levels:['MS'], shape:'citadelle' },
- { id:'cm2',   label:'Les Champs Dorés',       levels:['GS'], shape:'nebuleuse' },
- { id:'final', label:'Le Château des Nuages',  levels:['GS'], shape:'mandala' },
+ { id:'cp',    label:'La Plaine des Coquelicots', levels:['PS'], shape:'colline' },
+ { id:'ce1',   label:'Le Verger des Oranges',     levels:['PS'], shape:'feuille' },
+ { id:'ce2',   label:'Les Bois Dorés',            levels:['MS'], shape:'dune' },
+ { id:'cm1',   label:'Le Lagon aux Tortues',      levels:['MS'], shape:'citadelle' },
+ { id:'cm2',   label:'La Colline des Bleuets',    levels:['GS'], shape:'nebuleuse' },
+ { id:'final', label:'Le Château du Soir',        levels:['GS'], shape:'mandala' },
 ];
 const _COL_REGIONS = [
  { id:'cp',    label:'Le Port des Décimales',      levels:['6E'], shape:'colline' },
@@ -339,6 +339,7 @@ const _COL_REGIONS = [
  { id:'cm1',   label:'La Citadelle Algébrique',    levels:['4E'], shape:'citadelle' },
  { id:'cm2',   label:'Les Gorges de Pythagore',    levels:['4E'], shape:'nebuleuse' },
  { id:'final', label:'L\'Observatoire des Fonctions',levels:['3E'], shape:'mandala' },
+ { id:'titan', label:'L\'Antre du Titan',          levels:['3E'], shape:'citadelle' },
 ];
 let _ARCH_REGIONS = _PRIM_REGIONS;
 
@@ -1260,7 +1261,7 @@ function renderMap(){
  try{
   const avatarZone = MAP_ZONES.find(z => z.id === avatarZoneId);
   if(avatarZone){
-   const avatarRegion = _ARCH_REGIONS.find(r => r.levels.includes(avatarZone.level));
+   const avatarRegion = (typeof _regionOfZone==='function') ? _regionOfZone(avatarZone) : _ARCH_REGIONS.find(r => r.levels.includes(avatarZone.level));
    if(avatarRegion){
     // v8.7.59 (O3-C.6.2) : rafraîchir la mini-map (région active + position réelle de l'avatar)
     if(typeof _refreshMiniMap === 'function'){
@@ -3037,12 +3038,8 @@ if(typeof checkMilestones==='function') checkMilestones();
    // Si toutes les zones de la région sont battues, on enchaîne avec playIslandVictory.
    let _conqueredRegionId = null;
    try{
-    const _zoneRegion = _ARCH_REGIONS.find(r => r.levels.includes(_zone.level));
-    if(_zoneRegion){
-     const _zonesOfRegion = MAP_ZONES.filter(z => _zoneRegion.levels.includes(z.level));
-     const _allBeaten = _zonesOfRegion.every(z => (P.mapBossBeaten || []).includes(z.id));
-     if(_allBeaten) _conqueredRegionId = _zoneRegion.id;
-    }
+    const _zoneRegion = (typeof _regionOfZone==='function') ? _regionOfZone(_zone) : null;
+    if(_zoneRegion && _regionConquered(_zoneRegion.id)) _conqueredRegionId = _zoneRegion.id;
    }catch(e){ console.warn('Island conquest detection failed', e); }
    setTimeout(()=>{
     if(typeof playZoneVictory==='function'){
@@ -3369,12 +3366,242 @@ function maybeRefereeComment(){
 // Modale visuelle accessible depuis la carte. Montre la progression par région
 // (barres colorées), la galerie des boss vaincus (médaillons), et les stats clés.
 // ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// v10.2.0 — CARNET DE COLLECTION (section en tête du carnet d'aventure)
+// Maternelle : l'arc-en-ciel se complète (6 couleurs d'îlots + violet offert).
+// Collège : l'Armure Solaire se forge pièce par pièce (+ Lame d'Aurore).
+// État dérivé de _regionConquered / P.storySeen — aucun nouveau stockage.
+// ═══════════════════════════════════════════════════════
+const _ADV_MAT_ORDER = ['cp','ce1','ce2','cm1','cm2','final']; // rouge→indigo
+const _ADV_COL_ORDER = ['cp','ce1','ce2','cm1','cm2','final']; // jambes→casque
+const _ADV_COL_PIECES = [
+ { key:'legL',  name:'Jambière gauche', power:'Aplomb',       eff:'stabilité',        gem:'radial-gradient(circle at 35% 30%,#ff5a6e,#7a0016)' },
+ { key:'legR',  name:'Jambière droite', power:'Élan',         eff:'combo',            gem:'radial-gradient(circle at 35% 30%,#4da3ff,#0a2f7a)' },
+ { key:'armL',  name:'Brassard gauche', power:'Égide',        eff:'défense',          gem:'radial-gradient(circle at 35% 30%,#3ddc84,#0a5a2a)' },
+ { key:'armR',  name:'Brassard droit',  power:'Frappe',       eff:'puissance',        gem:'radial-gradient(circle at 35% 30%,#b06cff,#3a0a7a)' },
+ { key:'torso', name:'Cuirasse',        power:'Cœur d\'Or',   eff:'vitalité',         gem:'radial-gradient(circle at 35% 30%,#ffb13d,#7a4400)' },
+ { key:'helm',  name:'Heaume',          power:'Clairvoyance', eff:'lit les attaques', gem:'radial-gradient(circle at 35% 30%,#bfe9ff,#4f86b0)' },
+];
+function _advCollectionHtml(){
+ try{
+  const adv = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
+  if(adv==='mat') return _advRainbowHtml();
+  if(adv==='col') return _advArmorHtml();
+  return '';
+ }catch(e){ return ''; }
+}
+// ── Carnet maternelle : Mon Arc-en-ciel ─────────────────────────────
+function _advRainbowHtml(){
+ const seen = (P && P.storySeen) || [];
+ const got = _ADV_MAT_ORDER.map(rid => _regionConquered(rid));
+ const violet = seen.includes('mat_epilogue');
+ const n = got.filter(Boolean).length + (violet?1:0);
+ const happy = got.slice(0,6).every(Boolean);
+ const BANDS = [ // [d, couleur, largeur] — rouge extérieur → violet intérieur
+  ['M40 210 A110 110 0 0 1 260 210','#ff6b6b',13],
+  ['M55 210 A95 95 0 0 1 245 210','#ffa94d',12],
+  ['M70 210 A80 80 0 0 1 230 210','#ffd43b',12],
+  ['M85 210 A65 65 0 0 1 215 210','#69db7c',11],
+  ['M100 210 A50 50 0 0 1 200 210','#4dabf7',11],
+  ['M115 210 A35 35 0 0 1 185 210','#7c8cf8',10],
+  ['M130 210 A20 20 0 0 1 170 210','#c08cf8',10],
+ ];
+ const on = [...got, violet]; // 7 états dans l'ordre des bandes
+ const bands = BANDS.map((b,i)=> on[i]
+  ? `<path d="${b[0]}" fill="none" stroke="${b[1]}" stroke-width="${b[2]}" stroke-linecap="round" class="advcol-band-on"/>`
+  : `<path d="${b[0]}" fill="none" stroke="#d9d4e8" stroke-width="${Math.max(4,b[2]-6)}" stroke-linecap="round" stroke-dasharray="2 9" opacity=".55"/>`
+ ).join('');
+ const cloudFill = happy ? '#ffffff' : '#cfd6e6';
+ const mouth = happy ? 'M-11 13 q11 12 22 0' : 'M-9 16 q9 -2 18 0';
+ const sparks = (violet)
+  ? `<g fill="#fff3b0" stroke="#ffd84d" stroke-width="1" class="advcol-spark">
+      <path d="M150 30 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2 Z"/>
+      <path d="M196 52 l1.5 4 4 1.5 -4 1.5 -1.5 4 -1.5 -4 -4 -1.5 4 -1.5 Z"/>
+      <path d="M104 52 l1.5 4 4 1.5 -4 1.5 -1.5 4 -1.5 -4 -4 -1.5 4 -1.5 Z"/></g>` : '';
+ const msg = violet ? 'Arc-en-ciel complet ! Le nuage t\'a offert le violet 💜'
+  : happy ? 'Six couleurs ! Le nuage sourit… une surprise t\'attend ✨'
+  : n>0 ? `${n} couleur${n>1?'s':''} retrouvée${n>1?'s':''} — continue !`
+  : 'Rapporte les couleurs, île après île !';
+ return `
+  <div class="advlog-section-title">🌈 Mon Arc-en-ciel</div>
+  <div class="advcol-box advcol-mat">
+   <svg viewBox="0 0 300 226" class="advcol-svg" aria-label="Arc-en-ciel : ${n} couleurs sur 7">
+    ${bands}
+    <path d="M-10 212 q60 -26 120 0 t140 0 t80 0 V230 H-10 Z" fill="#b5e3b0"/>
+    <path d="M-10 218 q80 -16 160 0 t160 0 V230 H-10 Z" fill="#9bd69a"/>
+    <g transform="translate(150 78)">
+     <g fill="${cloudFill}" ${happy?'filter="drop-shadow(0 3px 8px rgba(255,210,120,.5))"':''}>
+      <circle cx="-26" cy="6" r="20"/><circle cx="0" cy="-6" r="26"/><circle cx="28" cy="6" r="20"/>
+      <rect x="-44" y="2" width="88" height="22" rx="11"/>
+     </g>
+     <circle cx="-12" cy="2" r="3.2" fill="#5a5570"/><circle cx="12" cy="2" r="3.2" fill="#5a5570"/>
+     <path d="${mouth}" fill="none" stroke="#5a5570" stroke-width="2.4" stroke-linecap="round"/>
+    </g>
+    ${sparks}
+   </svg>
+   <div class="advcol-caption">${msg} <b>${n} / 7</b></div>
+  </div>`;
+}
+// ── Carnet collège : l'Armure Solaire ───────────────────────────────
+function _advArmorHtml(){
+ const got = {}; _ADV_COL_ORDER.forEach((rid,i)=>{ got[_ADV_COL_PIECES[i].key] = _regionConquered(rid); });
+ const count = Object.values(got).filter(Boolean).length;
+ const sword = count>=6;
+ const v = k => got[k] ? '' : 'style="display:none"';   // pièce
+ const l = k => got[k] ? 'style="display:none"' : '';   // verrou
+ const powers = _ADV_COL_PIECES.map(p=>`
+   <div class="advcol-power ${got[p.key]?'on':''}">
+    <span class="advcol-gem" style="background:${p.gem}"></span> ${p.power}
+    <span class="advcol-eff">· ${got[p.key]?p.eff:'verrouillé'}</span>
+   </div>`).join('');
+ const ult = sword
+  ? `<div class="advcol-ult on">⚔️ <b>Lame d'Aurore</b> — puissance à son paroxysme. Prêt pour le Titan.</div>`
+  : `<div class="advcol-ult">⚔️ <b>Lame d'Aurore</b> — apparaît quand l'armure est complète.</div>`;
+ return `
+  <div class="advlog-section-title">🛡️ Armure Solaire <span class="advcol-count">${count} / 6 pièces</span></div>
+  <div class="advcol-box advcol-col">
+   <svg viewBox="0 0 300 340" class="advcol-svg" aria-label="Armure Solaire : ${count} pièces sur 6">
+    <defs>
+     <radialGradient id="acAura" cx="50%" cy="38%" r="60%"><stop offset="0%" stop-color="#ffe89a" stop-opacity=".62"/><stop offset="45%" stop-color="#d4a017" stop-opacity=".18"/><stop offset="100%" stop-color="#d4a017" stop-opacity="0"/></radialGradient>
+     <linearGradient id="acGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fffbe6"/><stop offset="20%" stop-color="#ffe89a"/><stop offset="52%" stop-color="#f0c44a"/><stop offset="80%" stop-color="#a96f0c"/><stop offset="100%" stop-color="#5e3a00"/></linearGradient>
+     <radialGradient id="acDome" cx="36%" cy="28%" r="85%"><stop offset="0%" stop-color="#fffdf0"/><stop offset="32%" stop-color="#ffe89a"/><stop offset="68%" stop-color="#e0a82a"/><stop offset="90%" stop-color="#9a6606"/><stop offset="100%" stop-color="#5e3a00"/></radialGradient>
+     <linearGradient id="acGoldH" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fffbe6"/><stop offset="50%" stop-color="#f3cf63"/><stop offset="100%" stop-color="#8a5d06"/></linearGradient>
+     <radialGradient id="acRuby" cx="38%" cy="30%" r="75%"><stop offset="0%" stop-color="#fff0f0"/><stop offset="35%" stop-color="#ff5a6e"/><stop offset="100%" stop-color="#7a0016"/></radialGradient>
+     <radialGradient id="acSaph" cx="38%" cy="30%" r="75%"><stop offset="0%" stop-color="#eaf6ff"/><stop offset="35%" stop-color="#4da3ff"/><stop offset="100%" stop-color="#0a2f7a"/></radialGradient>
+     <radialGradient id="acEmer" cx="38%" cy="30%" r="75%"><stop offset="0%" stop-color="#eafff2"/><stop offset="35%" stop-color="#3ddc84"/><stop offset="100%" stop-color="#0a5a2a"/></radialGradient>
+     <radialGradient id="acAmet" cx="38%" cy="30%" r="75%"><stop offset="0%" stop-color="#f6ecff"/><stop offset="35%" stop-color="#b06cff"/><stop offset="100%" stop-color="#3a0a7a"/></radialGradient>
+     <radialGradient id="acTopz" cx="38%" cy="30%" r="75%"><stop offset="0%" stop-color="#fff6d6"/><stop offset="35%" stop-color="#ffb13d"/><stop offset="100%" stop-color="#7a4400"/></radialGradient>
+     <radialGradient id="acDiam" cx="38%" cy="30%" r="75%"><stop offset="0%" stop-color="#ffffff"/><stop offset="40%" stop-color="#bfe9ff"/><stop offset="100%" stop-color="#4f86b0"/></radialGradient>
+     <linearGradient id="acBlade" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffffff"/><stop offset="45%" stop-color="#ffe89a"/><stop offset="100%" stop-color="#ff8a3d"/></linearGradient>
+     <linearGradient id="acRivet" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fffbe6"/><stop offset="100%" stop-color="#8a5e10"/></linearGradient>
+    </defs>
+    <ellipse cx="150" cy="168" rx="128" ry="160" fill="url(#acAura)" opacity="${(0.15+count*0.14).toFixed(2)}"/>
+    <g fill="#2a3450" stroke="#3a4670" stroke-width="1.4">
+     <circle cx="150" cy="52" r="25"/>
+     <path d="M118 92 Q150 84 182 92 L188 168 Q150 186 112 168 Z"/>
+     <rect x="86" y="98" width="20" height="78" rx="10"/><rect x="194" y="98" width="20" height="78" rx="10"/>
+     <path d="M122 168 q14 8 28 0 l-2 130 q-13 8 -25 0 Z"/><path d="M150 168 q14 8 28 0 l-2 130 q-13 8 -25 0 Z"/>
+    </g>
+    <g ${l('legL')}><path d="M122 168 q14 8 28 0 l-2 132 q-13 8 -25 0 Z" fill="none" stroke="#caa64e" stroke-width="1.4" stroke-dasharray="4 4"/></g>
+    <g ${l('legR')}><path d="M150 168 q14 8 28 0 l-2 132 q-13 8 -25 0 Z" fill="none" stroke="#caa64e" stroke-width="1.4" stroke-dasharray="4 4"/></g>
+    <g ${l('armL')}><path d="M104 90 l-22 6 -2 86 24 2 Z" fill="none" stroke="#caa64e" stroke-width="1.4" stroke-dasharray="4 4"/></g>
+    <g ${l('armR')}><path d="M196 90 l22 6 2 86 -24 2 Z" fill="none" stroke="#caa64e" stroke-width="1.4" stroke-dasharray="4 4"/></g>
+    <g ${l('torso')}><path d="M114 86 Q150 78 186 86 L192 170 Q150 190 108 170 Z" fill="none" stroke="#caa64e" stroke-width="1.5" stroke-dasharray="5 4"/></g>
+    <g ${l('helm')}><path d="M120 56 a30 30 0 0 1 60 0 q0 18 -10 26 l-40 0 q-10 -8 -10 -26 Z" fill="none" stroke="#caa64e" stroke-width="1.6" stroke-dasharray="5 4"/></g>
+    <g ${v('legL')} class="advcol-piece">
+     <path d="M120 166 q15 9 30 0 l-3 52 q-12 6 -24 0 Z" fill="url(#acDome)" stroke="#fff6cc" stroke-width="1.3"/>
+     <path d="M122 168 q14 7 27 0 l-1 6 q-13 6 -25 0 Z" fill="#fffdf0" opacity=".4"/>
+     <path d="M121 212 q14 6 28 0 l-1 6 q-13 6 -26 0 Z" fill="#3a2600" opacity=".3"/>
+     <g stroke="#fff6cc" stroke-width="1.4" stroke-linecap="round" opacity=".85"><line x1="135" y1="205" x2="135" y2="210"/><line x1="135" y1="226" x2="135" y2="231"/><line x1="124" y1="218" x2="129" y2="218"/><line x1="141" y1="218" x2="146" y2="218"/></g>
+     <circle cx="135" cy="218" r="8.5" fill="url(#acDome)" stroke="#7a5200" stroke-width="1.2"/><circle cx="135" cy="218" r="4" fill="url(#acRuby)" stroke="#5a0010" stroke-width=".7"/><circle cx="133.5" cy="216.5" r="1.2" fill="#fff" opacity=".8"/>
+     <path d="M124 230 q11 5 22 0 l-3 66 q-9 5 -16 0 Z" fill="url(#acGold)" stroke="#fff6cc" stroke-width="1.2"/>
+     <path d="M133 232 l-2 64" stroke="#fffdf0" stroke-width="1.4" opacity=".5"/>
+     <g stroke="#5e3a00" stroke-width="1" opacity=".5"><line x1="129" y1="240" x2="128" y2="292"/><line x1="139" y1="240" x2="140" y2="292"/></g>
+     <circle cx="135" cy="290" r="1.4" fill="url(#acRivet)"/>
+    </g>
+    <g ${v('legR')} class="advcol-piece">
+     <path d="M150 166 q15 9 30 0 l-3 52 q-12 6 -24 0 Z" fill="url(#acDome)" stroke="#fff6cc" stroke-width="1.3"/>
+     <path d="M152 168 q14 7 27 0 l-1 6 q-13 6 -25 0 Z" fill="#fffdf0" opacity=".4"/>
+     <path d="M151 212 q14 6 28 0 l-1 6 q-13 6 -26 0 Z" fill="#3a2600" opacity=".3"/>
+     <g stroke="#fff6cc" stroke-width="1.4" stroke-linecap="round" opacity=".85"><line x1="165" y1="205" x2="165" y2="210"/><line x1="165" y1="226" x2="165" y2="231"/><line x1="154" y1="218" x2="159" y2="218"/><line x1="171" y1="218" x2="176" y2="218"/></g>
+     <circle cx="165" cy="218" r="8.5" fill="url(#acDome)" stroke="#7a5200" stroke-width="1.2"/><circle cx="165" cy="218" r="4" fill="url(#acSaph)" stroke="#08245e" stroke-width=".7"/><circle cx="163.5" cy="216.5" r="1.2" fill="#fff" opacity=".8"/>
+     <path d="M154 230 q11 5 22 0 l-3 66 q-9 5 -16 0 Z" fill="url(#acGold)" stroke="#fff6cc" stroke-width="1.2"/>
+     <path d="M163 232 l-2 64" stroke="#fffdf0" stroke-width="1.4" opacity=".5"/>
+     <g stroke="#5e3a00" stroke-width="1" opacity=".5"><line x1="159" y1="240" x2="158" y2="292"/><line x1="169" y1="240" x2="170" y2="292"/></g>
+     <circle cx="165" cy="290" r="1.4" fill="url(#acRivet)"/>
+    </g>
+    <g ${v('armL')} class="advcol-piece">
+     <path d="M114 84 Q88 80 74 94 Q69 103 72 112 Q88 109 110 102 Z" fill="url(#acDome)" stroke="#fff6cc" stroke-width="1.3"/>
+     <path d="M114 86 Q92 83 80 93" fill="none" stroke="#fffdf0" stroke-width="1.6" opacity=".5"/>
+     <path d="M76 90 Q66 94 63 102 L73 105 Z" fill="url(#acGold)" stroke="#fff6cc" stroke-width="1"/>
+     <circle cx="95" cy="94" r="3.4" fill="url(#acDome)" stroke="#7a5200" stroke-width="1"/><circle cx="95" cy="94" r="2" fill="url(#acEmer)"/>
+     <path d="M84 118 l22 -4 -3 56 -20 -3 Z" fill="url(#acGold)" stroke="#fff6cc" stroke-width="1.1"/>
+     <path d="M93 116 l-1 56" stroke="#fffdf0" stroke-width="1.3" opacity=".45"/>
+     <g stroke="#5e3a00" stroke-width=".9" opacity=".5"><line x1="89" y1="122" x2="88" y2="166"/><line x1="99" y1="122" x2="99" y2="166"/></g>
+     <circle cx="94" cy="164" r="1.3" fill="url(#acRivet)"/>
+    </g>
+    <g ${v('armR')} class="advcol-piece">
+     <path d="M186 84 Q212 80 226 94 Q231 103 228 112 Q212 109 190 102 Z" fill="url(#acDome)" stroke="#fff6cc" stroke-width="1.3"/>
+     <path d="M186 86 Q208 83 220 93" fill="none" stroke="#fffdf0" stroke-width="1.6" opacity=".5"/>
+     <path d="M224 90 Q234 94 237 102 L227 105 Z" fill="url(#acGold)" stroke="#fff6cc" stroke-width="1"/>
+     <circle cx="205" cy="94" r="3.4" fill="url(#acDome)" stroke="#7a5200" stroke-width="1"/><circle cx="205" cy="94" r="2" fill="url(#acAmet)"/>
+     <path d="M216 118 l-22 -4 3 56 20 -3 Z" fill="url(#acGold)" stroke="#fff6cc" stroke-width="1.1"/>
+     <path d="M207 116 l1 56" stroke="#fffdf0" stroke-width="1.3" opacity=".45"/>
+     <g stroke="#5e3a00" stroke-width=".9" opacity=".5"><line x1="211" y1="122" x2="212" y2="166"/><line x1="201" y1="122" x2="201" y2="166"/></g>
+     <circle cx="206" cy="164" r="1.3" fill="url(#acRivet)"/>
+    </g>
+    <g ${v('torso')} class="advcol-piece">
+     <path d="M132 80 q18 -7 36 0 l-3 12 q-15 -5 -30 0 Z" fill="url(#acGoldH)" stroke="#fff6cc" stroke-width="1.1"/>
+     <circle cx="140" cy="84" r="1.3" fill="url(#acRivet)"/><circle cx="160" cy="84" r="1.3" fill="url(#acRivet)"/>
+     <path d="M114 90 Q150 80 186 90 L190 150 Q150 166 110 150 Z" fill="url(#acDome)" stroke="#fff6cc" stroke-width="1.5"/>
+     <path d="M114 90 Q150 80 186 90 L184 96 Q150 87 116 96 Z" fill="#fffdf0" opacity=".45"/>
+     <path d="M112 142 Q150 158 188 142 L190 150 Q150 166 110 150 Z" fill="#3a2600" opacity=".32"/>
+     <path d="M118 94 Q150 85 182 94 L185 146 Q150 160 115 146 Z" fill="none" stroke="#8a5e10" stroke-width="1" opacity=".5"/>
+     <g fill="url(#acRivet)"><circle cx="120" cy="98" r="1.4"/><circle cx="180" cy="98" r="1.4"/><circle cx="116" cy="130" r="1.4"/><circle cx="184" cy="130" r="1.4"/></g>
+     <path d="M126 96 Q140 91 147 97 Q147 116 138 126 Q128 122 124 108 Z" fill="#fffdf0" opacity=".26"/>
+     <path d="M174 96 Q160 91 153 97 Q153 116 162 126 Q172 122 176 108 Z" fill="#3a2600" opacity=".26"/>
+     <path d="M122 104 q8 14 4 34" fill="none" stroke="#8a5e10" stroke-width="1" opacity=".5"/>
+     <path d="M178 104 q-8 14 -4 34" fill="none" stroke="#8a5e10" stroke-width="1" opacity=".5"/>
+     <g stroke="#fff6cc" stroke-width="2" stroke-linecap="round">
+      <line x1="150" y1="100" x2="150" y2="108"/><line x1="150" y1="140" x2="150" y2="148"/><line x1="126" y1="124" x2="134" y2="124"/><line x1="166" y1="124" x2="174" y2="124"/>
+      <line x1="134" y1="108" x2="139" y2="113"/><line x1="166" y1="108" x2="161" y2="113"/><line x1="134" y1="140" x2="139" y2="135"/><line x1="166" y1="140" x2="161" y2="135"/>
+     </g>
+     <circle cx="150" cy="124" r="11" fill="url(#acDome)" stroke="#7a5200" stroke-width="1.4"/>
+     <circle cx="150" cy="124" r="5.5" fill="url(#acTopz)" stroke="#5a3a00" stroke-width=".8"/><circle cx="148.5" cy="122.5" r="1.3" fill="#fff" opacity=".8"/>
+     <g fill="url(#acGold)" stroke="#fff6cc" stroke-width="1">
+      <path d="M120 150 Q150 162 180 150 L178 158 Q150 168 122 158 Z"/>
+      <path d="M124 160 Q150 170 176 160 L174 167 Q150 176 126 167 Z" opacity=".96"/>
+     </g>
+    </g>
+    <g ${v('helm')} class="advcol-piece">
+     <g fill="url(#acGoldH)" stroke="#fff6cc" stroke-width="1">
+      <path d="M122 54 q-9 -2 -17 3 q7 1 10 4 q-6 0 -10 4 q8 0 12 -2 q-2 4 -5 6 q9 -4 13 -9 Z"/>
+      <path d="M178 54 q9 -2 17 3 q-7 1 -10 4 q6 0 10 4 q-8 0 -12 -2 q2 4 5 6 q-9 -4 -13 -9 Z"/>
+     </g>
+     <path d="M122 58 a28 30 0 0 1 56 0 q0 8 -3 14 l-50 0 q-3 -6 -3 -14 Z" fill="url(#acDome)" stroke="#fff6cc" stroke-width="1.5"/>
+     <path d="M125 56 a25 26 0 0 1 50 0" fill="none" stroke="#fffdf0" stroke-width="1.6" opacity=".5"/>
+     <path d="M127 70 l46 0 q-3 4 -8 6 l-30 0 q-5 -2 -8 -6 Z" fill="#3a2600" opacity=".25"/>
+     <path d="M132 44 q18 -10 36 0" fill="none" stroke="#8a5e10" stroke-width="1" opacity=".55"/>
+     <g fill="#8a5e10" opacity=".5"><path d="M134 46 l3 -4 1 4 Z"/><path d="M142 42 l3 -4 1 4 Z"/><path d="M158 42 l-3 -4 -1 4 Z"/><path d="M166 46 l-3 -4 -1 4 Z"/></g>
+     <g fill="url(#acRivet)"><circle cx="128" cy="66" r="1.3"/><circle cx="172" cy="66" r="1.3"/></g>
+     <path d="M150 14 q6 2 6 11 l-2 24 q-4 4 -8 0 l-2 -24 q0 -9 6 -11 Z" fill="url(#acDome)" stroke="#fff6cc" stroke-width="1"/>
+     <path d="M150 18 q8 9 6 28 q10 -6 12 -17 q-2 -9 -18 -11 Z" fill="url(#acGold)" stroke="#fff6cc" stroke-width=".8" opacity=".9"/>
+     <line x1="150" y1="22" x2="150" y2="44" stroke="#fffdf0" stroke-width=".8" opacity=".7"/>
+     <path d="M150 55 l7 8 -7 10 -7 -10 Z" fill="url(#acDiam)" stroke="#fff6cc" stroke-width="1"/>
+     <path d="M150 57 l3 5 -3 4 -3 -4 Z" fill="#ffffff" opacity=".85"/>
+     <path d="M126 72 l8 0 2 26 -8 6 -4 -10 Z" fill="url(#acGold)" stroke="#fff6cc" stroke-width="1"/>
+     <path d="M174 72 l-8 0 -2 26 8 6 4 -10 Z" fill="url(#acGold)" stroke="#fff6cc" stroke-width="1"/>
+     <circle cx="130" cy="78" r="1.2" fill="url(#acRivet)"/><circle cx="170" cy="78" r="1.2" fill="url(#acRivet)"/>
+     <rect x="147" y="74" width="6" height="26" rx="2" fill="url(#acGoldH)" stroke="#fff6cc" stroke-width=".8"/>
+     <path d="M134 76 q16 -5 32 0 l-2 12 q-14 -4 -28 0 Z" fill="#0a0e1c" opacity=".85"/>
+     <g fill="#bfe9ff"><circle cx="143" cy="84" r="1.6"/><circle cx="157" cy="84" r="1.6"/></g>
+    </g>
+    <g ${sword?'':'style="display:none"'} class="advcol-piece">
+     <g transform="rotate(20 236 220)">
+      <polygon points="236,108 241,124 231,124" fill="#fffbe6"/>
+      <rect x="231" y="120" width="10" height="124" rx="3" fill="url(#acBlade)" stroke="#fff" stroke-width=".6"/>
+      <line x1="236" y1="124" x2="236" y2="242" stroke="#fff" stroke-width="1" opacity=".7"/>
+      <path d="M214 244 q22 8 44 0 l-3 8 q-19 6 -38 0 Z" fill="url(#acDome)" stroke="#fff6cc" stroke-width="1"/>
+      <rect x="232" y="250" width="8" height="22" rx="3" fill="url(#acGold)" stroke="#fff6cc" stroke-width=".8"/>
+      <circle cx="236" cy="276" r="7" fill="url(#acTopz)" stroke="#fff6cc" stroke-width="1.2"/>
+     </g>
+    </g>
+    <g fill="#fffef2">
+     <path class="advcol-glint" d="M150 116 l1.4 4 4 1.4 -4 1.4 -1.4 4 -1.4 -4 -4 -1.4 4 -1.4 Z"/>
+     <path class="advcol-glint" style="animation-delay:1.2s" d="M150 40 l1.2 3.5 3.5 1.2 -3.5 1.2 -1.2 3.5 -1.2 -3.5 -3.5 -1.2 3.5 -1.2 Z"/>
+    </g>
+   </svg>
+   <div class="advcol-powers">${powers}</div>
+   ${ult}
+  </div>`;
+}
+
 function openAdventureLog(){
  if(typeof P === 'undefined' || !P) return;
  const beaten = P.mapBossBeaten || [];
  // Couleurs accent par région (réutilise la palette des cinématiques d'îlot)
  const regionAccent = {
-  cp:'#a8e6a2', ce1:'#5fb95a', ce2:'#f6cb8b', cm1:'#b6c8d4', cm2:'#cbb1ee', final:'#fff4c0',
+  cp:'#a8e6a2', ce1:'#5fb95a', ce2:'#f6cb8b', cm1:'#b6c8d4', cm2:'#cbb1ee', final:'#fff4c0', titan:'#ff9a5a',
  };
  // Progression globale
  const totalZones = MAP_ZONES.length;
@@ -3382,7 +3609,7 @@ function openAdventureLog(){
  const globalPct = totalZones > 0 ? Math.round((totalBeaten / totalZones) * 100) : 0;
  // Progression par région
  const regionRows = _ARCH_REGIONS.map(r => {
-  const zonesOfRegion = MAP_ZONES.filter(z => r.levels.includes(z.level));
+  const zonesOfRegion = (typeof _zonesOfRegion==='function') ? _zonesOfRegion(r.id) : MAP_ZONES.filter(z => r.levels.includes(z.level));
   if(zonesOfRegion.length === 0) return '';
   const done = zonesOfRegion.filter(z => beaten.includes(z.id)).length;
   const pct = Math.round((done / zonesOfRegion.length) * 100);
@@ -3438,6 +3665,7 @@ function openAdventureLog(){
     <div class="advlog-stat"><span class="advlog-stat-ico">🎭</span><span class="advlog-stat-val">${figs}</span><span class="advlog-stat-lbl">figurines</span></div>
     <div class="advlog-stat"><span class="advlog-stat-ico">⚡</span><span class="advlog-stat-val">${xp}</span><span class="advlog-stat-lbl">XP</span></div>
    </div>
+   ${(typeof _advCollectionHtml==='function')?_advCollectionHtml():''}
    <div class="advlog-section-title">🗺️ Progression par région</div>
    <div class="advlog-regions">${regionRows}</div>
    <div class="advlog-section-title">🏆 Boss vaincus (${totalBeaten})</div>
@@ -4075,7 +4303,7 @@ let STORY_VILLAIN = 'Comte Zéro de Cafouillac';
 let STORY_KINGDOM = 'Calcultopia';
 // Nombre de Cristaux régionaux = nombre de régions de jeu (hors Sanctuaire final).
 function _storyCrystalCount(){
- try{ return _ARCH_REGIONS.filter(r => r.id !== 'final').length; }catch(e){ return 5; }
+ try{ return _ARCH_REGIONS.filter(r => r.id !== _lastRegionId()).length; }catch(e){ return 5; }
 }
 // Interpolation des textes : {hero}, {villain}, {kingdom}, {crystals}
 function _storyText(s){
@@ -4212,67 +4440,147 @@ const _PRIM_STORY = {
 // v10.1.0 — _STORY est un pointeur permutable vers l'histoire de l'aventure active.
 let _STORY = _PRIM_STORY;
 
-// ─── Histoire MATERNELLE (provisoire, courte — sera remplacée au Lot 2) ───
+// ─── Histoire MATERNELLE : « Le Pays des Couleurs » (v10.2.0, finale) ───
 const _MAT_VILLAIN = 'Nuage Grognon';
-const _MAT_KINGDOM = 'Pays Tout-Doux';
+const _MAT_KINGDOM = 'le Pays des Couleurs';
 const _MAT_STORY = {
- intro: { id:'mat_intro', title:'Le Pays Tout-Doux', pages:[
-  { emoji:'🌈', text:"Au {kingdom}, tout était joli et coloré. Les fleurs riaient, les nuages étaient blancs comme du coton." },
-  { emoji:'☁️', text:"Mais un jour, le <b>{villain}</b> est passé et a emporté toutes les jolies couleurs ! Tout est devenu un peu gris…" },
-  { emoji:'🧒', text:"Heureusement, te voilà, {hero} ! En réussissant les jeux, tu vas rapporter les couleurs, une par une. En route !" },
+ intro: { id:'mat_intro', title:'Le Pays des Couleurs', pages:[
+  { emoji:'🌈', text:"Il était une fois un pays magnifique : <b>{kingdom}</b>. Les coquelicots étaient rouges, les oranges bien orange, et le ciel tout bleu." },
+  { emoji:'☁️', text:"Mais un matin, un gros nuage tout gris est arrivé : le <b>{villain}</b>. Il était si triste qu'il a aspiré toutes les couleurs ! Tout est devenu gris…" },
+  { emoji:'🧒', text:"Les animaux ont besoin de toi, {hero} ! Sur chaque île, joue avec eux pour retrouver une couleur. En route, petit héros !" },
  ]},
  chapters: {
-  cp:    { id:'mat_c_cp',  title:'La Plaine Tendre',      crystal:'couleur verte', pages:[ { emoji:'🌱', text:"Bienvenue dans la <b>Plaine Tendre</b>, {hero} ! De gentils animaux t'attendent pour jouer." } ]},
-  ce1:   { id:'mat_c_ce1', title:'Le Verger Sucré',       crystal:'couleur rouge', pages:[ { emoji:'🍎', text:"Hmm, ça sent bon les fruits dans le <b>Verger Sucré</b> ! Compte avec les animaux pour les aider." } ]},
-  ce2:   { id:'mat_c_ce2', title:'Les Bois Doux',          crystal:'couleur jaune', pages:[ { emoji:'🌳', text:"Les <b>Bois Doux</b> sont pleins de surprises. N'aie pas peur, tout le monde est gentil ici !" } ]},
-  cm1:   { id:'mat_c_cm1', title:'Le Lagon Bleu',          crystal:'couleur bleue', pages:[ { emoji:'🌊', text:"Plouf ! Le <b>Lagon Bleu</b> scintille. Les petits poissons veulent jouer avec toi." } ]},
-  cm2:   { id:'mat_c_cm2', title:'Les Champs Dorés',       crystal:'couleur orange', pages:[ { emoji:'🌻', text:"Les <b>Champs Dorés</b> brillent au soleil. Encore quelques couleurs à rapporter !" } ]},
-  final: { id:'mat_c_final', title:'Le Château des Nuages', crystal:'', pages:[ { emoji:'🏰', text:"Tout en haut, le <b>Château des Nuages</b> ! C'est là que se cache le {villain}. Allez {hero}, courage !" } ]},
+  cp:    { id:'mat_c_cp',  title:'La Plaine des Coquelicots', crystal:'le Rouge', pages:[
+   { emoji:'🌱', text:"Te voilà dans la <b>Plaine des Coquelicots</b>. Les fleurs sont toutes grises et ça rend le petit lapin très triste." },
+   { emoji:'🐰', text:"« {hero}, aide-nous ! » dit le lapin. « Si tu joues avec nous, le <b>rouge</b> reviendra ! »" },
+  ]},
+  ce1:   { id:'mat_c_ce1', title:'Le Verger des Oranges', crystal:'l\'Orange', pages:[
+   { emoji:'🍊', text:"Dans le <b>Verger des Oranges</b>, les fruits sont gris comme des cailloux. L'ourson n'a plus envie de goûter !" },
+   { emoji:'🐻', text:"« Mmm… aide-nous à retrouver la couleur <b>orange</b>, {hero}, et le verger sentira bon à nouveau ! »" },
+  ]},
+  ce2:   { id:'mat_c_ce2', title:'Les Bois Dorés', crystal:'le Jaune', pages:[
+   { emoji:'🍂', text:"Chut… voici les <b>Bois Dorés</b>. D'habitude, les feuilles brillent comme des petits soleils. Mais tout est gris." },
+   { emoji:'🦉', text:"« Hou hou ! » fait le hibou. « Le <b>jaune</b> se cache par ici. Joue avec nous pour le retrouver, {hero} ! »" },
+  ]},
+  cm1:   { id:'mat_c_cm1', title:'Le Lagon aux Tortues', crystal:'le Vert', pages:[
+   { emoji:'🐢', text:"Plouf ! Bienvenue au <b>Lagon aux Tortues</b>. Les palmiers et les tortues ont perdu leur joli <b>vert</b>." },
+   { emoji:'🌊', text:"« Viens jouer dans l'eau, {hero} ! » disent les poissons. « Ensemble, on va rendre le lagon tout vert ! »" },
+  ]},
+  cm2:   { id:'mat_c_cm2', title:'La Colline des Bleuets', crystal:'le Bleu', pages:[
+   { emoji:'🪁', text:"Sur la <b>Colline des Bleuets</b>, le vent fait danser les cerfs-volants. Mais le ciel et les fleurs ont perdu leur <b>bleu</b>." },
+   { emoji:'🐦', text:"« Encore un effort, {hero} ! » chante l'oiseau. « Quand le bleu reviendra, le ciel sera magnifique ! »" },
+  ]},
+  final: { id:'mat_c_final', title:'Le Château du Soir', crystal:'l\'Indigo', pages:[
+   { emoji:'🏰', text:"Tout là-haut, voici le <b>Château du Soir</b>. C'est ici que dort le {villain}, dans le ciel couleur de nuit." },
+   { emoji:'🌙', text:"Il garde la couleur <b>indigo</b>, celle du soir qui tombe. N'aie pas peur, {hero} : il a surtout besoin d'un ami." },
+  ]},
  },
  victories: {
-  cp:  { id:'mat_w_cp',  title:'Couleur verte retrouvée !',  crystal:'couleur verte',  pages:[ { emoji:'💚', text:"Bravo {hero} ! La couleur verte est revenue ! Les prés sont tout beaux." } ]},
-  ce1: { id:'mat_w_ce1', title:'Couleur rouge retrouvée !',  crystal:'couleur rouge',  pages:[ { emoji:'❤️', text:"Youpi ! Le rouge des fraises est de retour ! Bien joué !" } ]},
-  ce2: { id:'mat_w_ce2', title:'Couleur jaune retrouvée !',  crystal:'couleur jaune',  pages:[ { emoji:'💛', text:"Le soleil brille à nouveau en jaune ! Tu es un champion, {hero} !" } ]},
-  cm1: { id:'mat_w_cm1', title:'Couleur bleue retrouvée !',  crystal:'couleur bleue',  pages:[ { emoji:'💙', text:"Le bleu du lagon pétille de joie ! Encore bravo !" } ]},
-  cm2: { id:'mat_w_cm2', title:'Couleur orange retrouvée !', crystal:'couleur orange', pages:[ { emoji:'🧡', text:"L'orange des fleurs illumine tout ! Il ne reste que le château…" } ]},
+  cp:  { id:'mat_w_cp',  title:'Le Rouge est revenu !',  crystal:'le Rouge',  pages:[
+   { emoji:'❤️', text:"Hourra ! Les coquelicots redeviennent <b>rouges</b>, un par un, comme des petites flammes ! Le lapin saute de joie." },
+   { emoji:'🌈', text:"Regarde ton carnet, {hero} : la première couleur de l'arc-en-ciel brille déjà !" },
+  ]},
+  ce1: { id:'mat_w_ce1', title:'L\'Orange est revenue !',  crystal:'l\'Orange',  pages:[
+   { emoji:'🧡', text:"Les oranges redeviennent <b>orange</b> et toutes brillantes ! L'ourson croque dedans : « Merci {hero} ! »" },
+   { emoji:'🌈', text:"Deux couleurs dans ton arc-en-ciel ! Tu es un vrai petit magicien des couleurs." },
+  ]},
+  ce2: { id:'mat_w_ce2', title:'Le Jaune est revenu !',     crystal:'le Jaune',  pages:[
+   { emoji:'💛', text:"Les feuilles des bois redeviennent <b>jaunes</b> et dorées. Tout scintille ! Le hibou fait « hou hou » de bonheur." },
+   { emoji:'🌈', text:"Trois couleurs déjà ! L'arc-en-ciel de ton carnet devient de plus en plus joli." },
+  ]},
+  cm1: { id:'mat_w_cm1', title:'Le Vert est revenu !',  crystal:'le Vert',  pages:[
+   { emoji:'💚', text:"Le <b>vert</b> coule sur les palmiers et les carapaces des tortues ! Le lagon est redevenu tout beau." },
+   { emoji:'🌈', text:"Quatre couleurs, {hero} ! Plus que deux îles et le {villain} verra quelque chose de magnifique…" },
+  ]},
+  cm2: { id:'mat_w_cm2', title:'Le Bleu est revenu !', crystal:'le Bleu', pages:[
+   { emoji:'💙', text:"Le ciel redevient <b>bleu</b>, et les bleuets aussi ! Les cerfs-volants dansent de joie dans le vent." },
+   { emoji:'🌈', text:"Cinq couleurs ! Il ne manque plus que celle du soir. Direction le château, petit héros !" },
+  ]},
  },
- epilogue: { id:'mat_epilogue', title:'Toutes les couleurs !', pages:[
-  { emoji:'🌈', text:"Le {villain} voit toutes les belles couleurs revenir… et il se met à sourire ! « Comme c'est joli ! » dit-il, tout content." },
-  { emoji:'🎉', text:"Le {kingdom} est sauvé, et c'est grâce à toi, {hero} ! Tout le monde t'applaudit. <b>BRAVO petit héros !</b>" },
+ epilogue: { id:'mat_epilogue', title:'L\'Arc-en-ciel complet', pages:[
+  { emoji:'🌌', text:"Bravo {hero} ! L'<b>indigo</b> du soir est revenu. Et là… le {villain} ouvre grand les yeux : tout le pays brille de mille couleurs !" },
+  { emoji:'☁️', text:"« Comme c'est beau… » murmure le nuage. Et pour la première fois, il <b>sourit</b> ! Il n'est plus gris du tout." },
+  { emoji:'💜', text:"Alors, pour te dire merci, il souffle une couleur rien que pour toi : le <b>violet</b> ! La septième couleur, celle qui manquait." },
+  { emoji:'🌈', text:"Regarde ton carnet : l'arc-en-ciel est <b>complet</b> ! {kingdom} est sauvé, et c'est grâce à toi. <b>BRAVO, petit héros des couleurs !</b>" },
  ]},
 };
 
-// ─── Histoire COLLÈGE (placeholder « mini-roman », étoffé au Lot 2) ───
-const _COL_VILLAIN = 'l\'Effaceur';
-const _COL_KINGDOM = 'Numeria';
+// ─── Histoire COLLÈGE : « Le Forgeron des Étoiles » (v10.2.0, mini-roman) ───
+const _COL_VILLAIN = 'Léthéas, le Titan de l\'Oubli';
+const _COL_KINGDOM = 'Sidéris';
 const _COL_STORY = {
- intro: { id:'col_intro', title:'Numeria : la Dernière Équation', pages:[
-  { emoji:'🌌', text:"<b>{kingdom}</b> était un monde où chaque loi de l'univers s'écrivait en équations parfaites. Puis vint <b>{villain}</b>, une entité née d'une démonstration impossible." },
-  { emoji:'🕳️', text:"Là où il passe, les nombres se dissolvent et les théorèmes s'effacent. Six grandes régions du savoir vacillent déjà au bord du néant." },
-  { emoji:'🎓', text:"Une seule personne peut encore inverser l'effacement : un·e jeune esprit assez vif pour reconstruire ce qui fut perdu. {hero}, ce défi t'attend. Restaure {kingdom}." },
+ intro: { id:'col_intro', title:'Le Forgeron des Étoiles', pages:[
+  { emoji:'🌌', text:"Au commencement, il n'y avait que la nuit. Puis vinrent les forgerons d'étoiles, qui martelaient la lumière comme d'autres martèlent le fer. De leurs forges naquit <b>{kingdom}</b>, un royaume suspendu entre les constellations, où chaque vérité mathématique faisait briller une étoile." },
+  { emoji:'⚒️', text:"Le plus grand d'entre eux s'appelle <b>Maître Alaric Forgétoile</b>. C'est lui qui forgea jadis l'<b>Armure Solaire</b> : six pièces d'or stellaire, trempées dans le cœur d'un soleil, capables de résister à l'oubli lui-même." },
+  { emoji:'🌑', text:"Car l'oubli a un nom : <b>Léthéas</b>. Le Titan. Là où passe son ombre, les nombres se taisent, les théorèmes s'effacent, les étoiles s'éteignent une à une. Nul ne sait d'où il vient. Alaric, lui, détourne les yeux quand on pose la question." },
+  { emoji:'💥', text:"Une nuit, Léthéas frappa la forge céleste. L'Armure Solaire vola en éclats, et ses six pièces tombèrent du ciel, dispersées sur les îles de {kingdom}. Depuis, l'ombre gagne. Île après île. Étoile après étoile." },
+  { emoji:'🎓', text:"C'est alors qu'Alaric t'a trouvé, {hero}. « L'or stellaire ne répond ni à la force, ni à la magie », dit-il en posant son marteau. « Il répond à l'esprit. Résous, comprends, progresse — et chaque pièce reconnaîtra son porteur. » Ton odyssée commence." },
  ]},
  chapters: {
-  cp:    { id:'col_c_cp',  title:'Le Port des Décimales',       crystal:'Sceau des Décimales', pages:[ { emoji:'⚓', text:"Le <b>Port des Décimales</b> sombre dans le brouillard : les virgules dérivent, les prix n'ont plus de sens. Remets de l'ordre, {hero}." } ]},
-  ce1:   { id:'col_c_ce1', title:'Les Cavernes Fractionnaires', crystal:'Sceau des Fractions', pages:[ { emoji:'🍰', text:"Dans les <b>Cavernes Fractionnaires</b>, les parts ne s'additionnent plus. {villain} y a brisé l'art du partage." } ]},
-  ce2:   { id:'col_c_ce2', title:'Le Plateau des Relatifs',     crystal:'Sceau des Signes', pages:[ { emoji:'🌡️', text:"Sur le <b>Plateau des Relatifs</b>, le froid efface la frontière entre le positif et le négatif. Rétablis l'axe, {hero}." } ]},
-  cm1:   { id:'col_c_cm1', title:'La Citadelle Algébrique',     crystal:'Sceau des Inconnues', pages:[ { emoji:'🏰', text:"La <b>Citadelle Algébrique</b> garde le secret des lettres qui remplacent les nombres. Ses gardiens ne cèdent qu'aux esprits rigoureux." } ]},
-  cm2:   { id:'col_c_cm2', title:'Les Gorges de Pythagore',     crystal:'Sceau du Triangle', pages:[ { emoji:'📐', text:"Aux <b>Gorges de Pythagore</b>, les distances mentent et les angles trichent. Seule la vérité du triangle rectangle peut percer l'illusion." } ]},
-  final: { id:'col_c_final', title:'L\'Observatoire des Fonctions', crystal:'', pages:[ { emoji:'🔭', text:"Tout converge vers l'<b>Observatoire des Fonctions</b>, dernier refuge de {villain}. Là, les courbes décident du destin de {kingdom}. C'est l'heure, {hero}." } ]},
+  cp:    { id:'col_c_cp',  title:'Le Port des Décimales', crystal:'la Jambière Gauche', pages:[
+   { emoji:'⚓', text:"Le <b>Port des Décimales</b> fut le premier touché. Le brouillard de Léthéas y a tout déréglé : les virgules dérivent comme des bateaux sans amarres, les balances mentent, les marchands ne savent plus compter leur monnaie." },
+   { emoji:'🗺️', text:"« La <b>Jambière Gauche</b> est tombée quelque part dans ces docks », t'écrit Alaric. « C'est la pièce de l'<b>Aplomb</b> : celui qui la porte ne vacille jamais. Commence par remettre de l'ordre dans les nombres — l'or t'observera. »" },
+  ]},
+  ce1:   { id:'col_c_ce1', title:'Les Cavernes Fractionnaires', crystal:'la Jambière Droite', pages:[
+   { emoji:'🍰', text:"Sous la forêt, les <b>Cavernes Fractionnaires</b> résonnent d'un silence étrange. Ici, jadis, on apprenait l'art du partage : tout se divisait en parts justes. Léthéas a brisé cette harmonie — les parts ne s'assemblent plus." },
+   { emoji:'⚒️', text:"« La <b>Jambière Droite</b> gît au plus profond des galeries », dit Alaric. « C'est la pièce de l'<b>Élan</b> : la vitesse de celui qui enchaîne sans trébucher. Méfie-toi des dénominateurs, petit forgeron. Ils ne pardonnent rien. »" },
+  ]},
+  ce2:   { id:'col_c_ce2', title:'Le Plateau des Relatifs', crystal:'le Brassard Gauche', pages:[
+   { emoji:'🌡️', text:"Le froid mord, sur le <b>Plateau des Relatifs</b>. Au-dessus de zéro, en dessous de zéro… la frontière s'est effacée avec le reste. Les nombres positifs et négatifs errent, mélangés, sans plus savoir de quel côté de l'axe ils vivent." },
+   { emoji:'🛡️', text:"« Le <b>Brassard Gauche</b> est pris dans les glaces », annonce Alaric. « C'est la pièce de l'<b>Égide</b>, le bouclier de l'esprit. Pour la libérer, redonne à chaque nombre sa place exacte. Le signe d'abord. Toujours le signe d'abord. »" },
+  ]},
+  cm1:   { id:'col_c_cm1', title:'La Citadelle Algébrique', crystal:'le Brassard Droit', pages:[
+   { emoji:'🏰', text:"La <b>Citadelle Algébrique</b> se dresse, intacte en apparence. Mais à l'intérieur, ses gardiens de pierre sont devenus fous : ils ont oublié ce que valent leurs propres lettres. x, y… des inconnues, partout, qui hurlent qu'on les résolve." },
+   { emoji:'✊', text:"« Le <b>Brassard Droit</b> est enfermé dans la salle du trésor », murmure Alaric. « C'est la pièce de la <b>Frappe</b> : la puissance pure du raisonnement. Les gardiens ne s'inclinent que devant celui qui réduit, développe et résout sans trembler. »" },
+  ]},
+  cm2:   { id:'col_c_cm2', title:'Les Gorges de Pythagore', crystal:'la Cuirasse', pages:[
+   { emoji:'📐', text:"Dans les <b>Gorges de Pythagore</b>, la lave a tout déformé. Les distances mentent, les angles trichent, les ponts s'effondrent sous ceux qui les mesurent mal. Une seule loi tient encore debout : celle du triangle rectangle." },
+   { emoji:'☀️', text:"« La <b>Cuirasse</b> est au cœur du volcan », dit Alaric, et sa voix tremble un peu. « C'est la pièce maîtresse : le <b>Cœur d'Or</b>, la vitalité même de l'Armure. Hypoténuse, carrés, racines… prouve chaque pas, ou les gorges te dévoreront. »" },
+  ]},
+  final: { id:'col_c_final', title:'L\'Observatoire des Fonctions', crystal:'le Heaume', pages:[
+   { emoji:'🔭', text:"Au sommet du monde, l'<b>Observatoire des Fonctions</b> scrute un ciel presque éteint. Ici, chaque courbe racontait l'avenir d'une étoile. Léthéas a déchiré les graphiques — les images ont perdu leurs antécédents, les droites leur pente." },
+   { emoji:'👁️', text:"« Le <b>Heaume</b> t'attend là-haut », dit Alaric. « C'est la pièce de la <b>Clairvoyance</b> : porter ce casque, c'est lire les attaques avant qu'elles ne frappent. Lis les courbes, {hero}. Elles disent toujours la vérité à qui sait les interroger. »" },
+   { emoji:'🌑', text:"Au loin, par-delà l'Observatoire, une île noire fume à l'horizon. L'<b>Antre du Titan</b>. Alaric la fixe longuement, sans un mot. Tu comprends que la fin approche." },
+  ]},
+  titan: { id:'col_c_titan', title:'L\'Antre du Titan', crystal:'', pages:[
+   { emoji:'⚒️', text:"L'Armure Solaire est complète. Alors, dans la forge d'Alaric, un phénomène que nul n'avait revu depuis cent ans : les six pièces se mettent à chanter. Et de leur lumière unie naît une lame. La <b>Lame d'Aurore</b>." },
+   { emoji:'⚔️', text:"« Elle ne coupe pas la chair », dit Alaric en te la tendant. « Elle tranche l'oubli. » Puis il pose la main sur ton épaule, et pour la première fois, son regard fuit : « {hero}… quand tu verras le Titan, regarde son visage. Promets-le-moi. »" },
+   { emoji:'🌋', text:"L'<b>Antre du Titan</b> t'attend : un seuil de cendres, une galerie d'étoiles mortes, et tout au fond, un trône. Ta puissance est à son paroxysme. La dernière marche commence." },
+  ]},
  },
  victories: {
-  cp:  { id:'col_w_cp',  title:'Sceau des Décimales restauré !',  crystal:'Sceau des Décimales', pages:[ { emoji:'⚓', text:"Le port s'illumine de nouveau, les nombres à virgule reprennent leur place exacte. Premier sceau restauré, {hero}." } ]},
-  ce1: { id:'col_w_ce1', title:'Sceau des Fractions restauré !',  crystal:'Sceau des Fractions', pages:[ { emoji:'🍰', text:"Les parts se rassemblent et s'additionnent à nouveau. L'art du partage est sauvé." } ]},
-  ce2: { id:'col_w_ce2', title:'Sceau des Signes restauré !',     crystal:'Sceau des Signes', pages:[ { emoji:'🌡️', text:"L'axe des relatifs se redresse, positif et négatif retrouvent leur juste distance au zéro." } ]},
-  cm1: { id:'col_w_cm1', title:'Sceau des Inconnues restauré !',  crystal:'Sceau des Inconnues', pages:[ { emoji:'🏰', text:"Les inconnues révèlent leurs valeurs. La citadelle te reconnaît comme un véritable algébriste." } ]},
-  cm2: { id:'col_w_cm2', title:'Sceau du Triangle restauré !',    crystal:'Sceau du Triangle', pages:[ { emoji:'📐', text:"L'hypoténuse retrouve sa loi. Les distances ne mentent plus. Il ne reste que l'Observatoire…" } ]},
+  cp:  { id:'col_w_cp',  title:'La Jambière Gauche reforgée', crystal:'la Jambière Gauche', pages:[
+   { emoji:'🦵', text:"Au dernier calcul juste, l'or s'embrase. La <b>Jambière Gauche</b> s'élève des docks, se reforge sous tes yeux et vient s'ajuster à ta jambe comme si elle t'avait toujours attendu. Le pouvoir d'<b>Aplomb</b> coule en toi : tes pas ne vacilleront plus." },
+   { emoji:'⚓', text:"Au port, les virgules regagnent leur place et les balances disent à nouveau la vérité. « Une », compte Alaric dans la forge lointaine, et son marteau frappe l'enclume comme une cloche de fête." },
+  ]},
+  ce1: { id:'col_w_ce1', title:'La Jambière Droite reforgée', crystal:'la Jambière Droite', pages:[
+   { emoji:'🦿', text:"La <b>Jambière Droite</b> jaillit des profondeurs dans une pluie d'étincelles. À l'instant où elle se verrouille, l'<b>Élan</b> t'envahit : tu sens que tu pourrais enchaîner mille calculs sans reprendre ton souffle." },
+   { emoji:'🍰', text:"Dans les cavernes, les parts se rassemblent enfin : les fractions s'additionnent, se simplifient, s'accordent. L'art du partage est sauvé. « Deux », sourit Alaric. « Tu marches déjà comme un forgeron d'étoiles. »" },
+  ]},
+  ce2: { id:'col_w_ce2', title:'Le Brassard Gauche reforgé', crystal:'le Brassard Gauche', pages:[
+   { emoji:'🛡️', text:"La glace cède. Le <b>Brassard Gauche</b> se libère et s'enroule autour de ton avant-bras, encore tiède de forge. L'<b>Égide</b> t'enveloppe : une assurance tranquille, le bouclier de ceux qui connaissent la règle des signes." },
+   { emoji:'🌡️', text:"Sur le plateau, l'axe des nombres se redresse : les positifs à droite, les négatifs à gauche, le zéro en sentinelle. « Trois », dit Alaric. « La moitié du chemin. L'ombre de Léthéas recule — il l'a senti, crois-moi. »" },
+  ]},
+  cm1: { id:'col_w_cm1', title:'Le Brassard Droit reforgé', crystal:'le Brassard Droit', pages:[
+   { emoji:'✊', text:"Les gardiens de pierre s'inclinent. Le <b>Brassard Droit</b> est à toi, et avec lui la <b>Frappe</b> : la puissance de celui qui résout. Tu serres le poing — l'or répond par un éclat bref, comme un salut." },
+   { emoji:'🏰', text:"Dans la Citadelle, les inconnues retrouvent leurs valeurs et les équations s'équilibrent dans un grand soupir de soulagement. « Quatre », compte Alaric. « Les bras et les jambes. Reste le cœur… et la tête. »" },
+  ]},
+  cm2: { id:'col_w_cm2', title:'La Cuirasse reforgée', crystal:'la Cuirasse', pages:[
+   { emoji:'☀️', text:"Le volcan rugit une dernière fois, puis s'apaise. La <b>Cuirasse</b> émerge de la lave, intacte, son soleil d'or rayonnant sur le plastron. Quand elle épouse ta poitrine, le <b>Cœur d'Or</b> bat avec le tien : une vitalité immense, ancienne, chaude." },
+   { emoji:'📐', text:"Les gorges retrouvent leurs justes mesures : les distances disent vrai, les angles aussi. « Cinq », souffle Alaric — puis, plus bas, comme pour lui-même : « Il portait la même, autrefois… » Tu n'oses pas demander qui." },
+  ]},
+  final: { id:'col_w_final', title:'Le Heaume reforgé', crystal:'le Heaume', pages:[
+   { emoji:'👁️', text:"Sous la coupole de l'Observatoire, le <b>Heaume</b> descend sur ta tête comme une couronne. La <b>Clairvoyance</b> s'ouvre en toi : les courbes te parlent, les attaques se lisent, l'avenir des étoiles redevient déchiffrable." },
+   { emoji:'⚔️', text:"Six pièces. L'<b>Armure Solaire</b> est complète — et au loin, dans la forge, quelque chose s'éveille. Alaric lève son marteau : « Viens, {hero}. Il est temps de forger la <b>Lame d'Aurore</b>. Et il est temps… que je te dise la vérité. »" },
+  ]},
  },
- epilogue: { id:'col_epilogue', title:'La Constante Retrouvée', pages:[
-  { emoji:'🔭', text:"Au sommet de l'Observatoire, {villain} vacille. « Tu as tout reconstruit… mais comprends-tu seulement pourquoi j'effaçais ? » murmure-t-il." },
-  { emoji:'💡', text:"Tu réponds : « Une erreur n'efface rien — elle ouvre une nouvelle démonstration. » {villain} se fige, puis s'apaise enfin." },
-  { emoji:'🌟', text:"{kingdom} renaît, plus lumineux qu'avant. Ton nom, {hero}, est gravé parmi les grandes constantes de l'univers. <b>Félicitations.</b>" },
+ epilogue: { id:'col_epilogue', title:'Le Frère de Forge', pages:[
+  { emoji:'🌑', text:"La Lame d'Aurore traverse l'ombre — et le Titan tombe à genoux. Tu t'avances pour le coup final… puis tu te souviens de la promesse. Tu regardes son visage. Et sous la cendre, tu vois : des yeux d'or. Les mêmes que ceux d'Alaric." },
+  { emoji:'⚒️', text:"« Son nom était <b>Théos</b> », dit une voix derrière toi. Alaric est là, son marteau à la main, les larmes aux yeux. « Mon frère de forge. Le plus doué de nous deux. Il a voulu forger une étoile à lui seul… et l'étoile l'a dévoré. L'oubli a pris le reste. »" },
+  { emoji:'💛', text:"Alors tu comprends pourquoi la Lame ne coupe pas la chair. Tu la poses sur l'épaule du Titan — et elle tranche l'oubli. La cendre s'effrite. Les souvenirs reviennent un à un : la forge, les rires, les théorèmes appris ensemble. « Alaric… ? » murmure Théos." },
+  { emoji:'🌟', text:"Cette nuit-là, au-dessus de {kingdom}, les étoiles se rallument toutes en même temps — on dit que deux forgerons réconciliés frappaient l'enclume ensemble. Quant à toi, {hero}, ton nom est gravé dans l'or stellaire, sur la garde de la Lame d'Aurore : <b>premier Chevalier de l'Armure Solaire</b>. Félicitations." },
  ]},
 };
-
 
 // Affiche une scène narrative (parchemin paginé). onDone() appelé à la fermeture.
 // ── Narration chaleureuse du livre (mode Odyssée) ──────────────────────
@@ -4374,11 +4682,32 @@ function _markStorySeen(id){
 }
 // Une région est « conquise » quand toutes ses zones sont battues (cohérent avec
 // la détection de conquête d'îlot du moteur). Extensible via _ARCH_REGIONS/MAP_ZONES.
+// v10.2.0 — Helpers génériques zone↔région (compatibles 3 aventures).
+// Les zones des nouvelles aventures portent z.region ; le primaire se résout
+// par niveau (+ cas sanctuaire). Toute logique de région DOIT passer par ici.
+function _regionOfZone(zone){
+ if(!zone) return null;
+ if(zone.region) return _ARCH_REGIONS.find(r => r.id === zone.region) || null;
+ if(zone.id === 'sanctuaire') return _ARCH_REGIONS.find(r => r.id === 'final') || null;
+ return _ARCH_REGIONS.find(r => r.levels.includes(zone.level) && r.id !== 'final') || null;
+}
+function _zonesOfRegion(regionId){
+ const reg = _ARCH_REGIONS.find(r => r.id === regionId);
+ if(!reg) return [];
+ return MAP_ZONES.filter(z => {
+  if(z.region) return z.region === reg.id;
+  if(reg.id === 'final') return z.id === 'sanctuaire';
+  return reg.levels.includes(z.level) && z.id !== 'sanctuaire';
+ });
+}
+// Dernière région de l'aventure active (porte l'épilogue)
+function _lastRegionId(){
+ try{ return _ARCH_REGIONS[_ARCH_REGIONS.length-1].id; }catch(e){ return 'final'; }
+}
+
 function _regionConquered(regionId){
  try{
-  const reg = _ARCH_REGIONS.find(r => r.id === regionId);
-  if(!reg) return false;
-  const zones = MAP_ZONES.filter(z => reg.levels.includes(z.level));
+  const zones = _zonesOfRegion(regionId);
   if(!zones.length) return false;
   const beaten = (typeof P!=='undefined' && P && P.mapBossBeaten) ? P.mapBossBeaten : [];
   return zones.every(z => beaten.includes(z.id));
@@ -4389,15 +4718,16 @@ function _maybeShowStory(){
  if(typeof P==='undefined' || !P) return;
  P.storySeen = P.storySeen || [];
  // 1) Prologue, une seule fois, au tout début
- if(!P.storySeen.includes('intro')){
-  _markStorySeen('intro');
+ const _introId = (_STORY.intro && _STORY.intro.id) || 'intro';
+ if(!P.storySeen.includes(_introId)){
+  _markStorySeen(_introId);
   _showStoryModal(_STORY.intro, null);
   return;
  }
  // 2) Scène de victoire : une région vient d'être conquise et son Cristal n'a pas été célébré
  try{
   for(const r of _ARCH_REGIONS){
-   if(r.id === 'final') continue;                 // le Sanctuaire → épilogue, géré plus bas
+   if(r.id === _lastRegionId()) continue;         // la dernière région → épilogue, géré plus bas
    const win = _STORY.victories && _STORY.victories[r.id];
    if(win && !P.storySeen.includes(win.id) && _regionConquered(r.id)){
     _markStorySeen(win.id);
@@ -4408,7 +4738,7 @@ function _maybeShowStory(){
  }catch(e){}
  // 3) Épilogue : le Sanctuaire Final est conquis
  try{
-  if(_STORY.epilogue && !P.storySeen.includes(_STORY.epilogue.id) && _regionConquered('final')){
+  if(_STORY.epilogue && !P.storySeen.includes(_STORY.epilogue.id) && _regionConquered(_lastRegionId())){
    _markStorySeen(_STORY.epilogue.id);
    _showStoryModal(_STORY.epilogue, null);
    return;
@@ -4418,7 +4748,7 @@ function _maybeShowStory(){
  try{
   const avZone = MAP_ZONES.find(z => z.id === (P.mapAvatarZone||'plaine'));
   if(!avZone) return;
-  const reg = _ARCH_REGIONS.find(r => r.levels.includes(avZone.level));
+  const reg = (typeof _regionOfZone==='function') ? _regionOfZone(avZone) : _ARCH_REGIONS.find(r => r.levels.includes(avZone.level));
   if(!reg) return;
   const chap = _STORY.chapters[reg.id];
   if(chap && !P.storySeen.includes(chap.id)){

@@ -424,7 +424,7 @@ const MAT_ZONES = [
    {type:'minibss', emoji:'🐺', name:'Louveteau', questions:4, difficulty:'hard'},
    {type:'boss', emoji:'🦊', name:'Renard Argenté', questions:4, difficulty:'hard', dropRare:true},
   ]},
- {id:'mat_cm1_1', region:'cm1', label:'Plage Dorée', bg:'linear-gradient(135deg,#a0e7e5,#b4f8c8)', emoji:'🏖️', boss:'🦀', bossName:'Crabe Câlin', level:'MS', starsReq:750, theme:'ocean',
+ {id:'mat_cm1_1', region:'cm1', label:'Plage des Palmiers', bg:'linear-gradient(135deg,#a0e7e5,#b4f8c8)', emoji:'🏖️', boss:'🦀', bossName:'Crabe Câlin', level:'MS', starsReq:750, theme:'ocean',
   parallax:{sky:['#b4f8c8','#a0e7e5','#8ad5ff'], mountains:['#3a8fa0','#1f5c6e'], decor:['🐚','🐠','🫧'], astro:'☀️'},
   steps:[
    {type:'monster', emoji:'🐠', name:'Poisson', questions:2, difficulty:'easy'},
@@ -433,7 +433,7 @@ const MAT_ZONES = [
    {type:'minibss', emoji:'🦭', name:'Phoque', questions:4, difficulty:'medium'},
    {type:'boss', emoji:'🦀', name:'Crabe Câlin', questions:4, difficulty:'hard', dropRare:true},
   ]},
- {id:'mat_cm1_2', region:'cm1', label:'Lagon Bleu', bg:'linear-gradient(135deg,#a0e7e5,#b4f8c8)', emoji:'🌊', boss:'🐢', bossName:'Tortue Sage', level:'MS', starsReq:795, theme:'ocean',
+ {id:'mat_cm1_2', region:'cm1', label:'Lagon Émeraude', bg:'linear-gradient(135deg,#a0e7e5,#b4f8c8)', emoji:'🌊', boss:'🐢', bossName:'Tortue Sage', level:'MS', starsReq:795, theme:'ocean',
   parallax:{sky:['#b4f8c8','#a0e7e5','#8ad5ff'], mountains:['#3a8fa0','#1f5c6e'], decor:['🐚','🐠','🫧'], astro:'☀️'},
   steps:[
    {type:'monster', emoji:'🐙', name:'Pieuvre', questions:2, difficulty:'easy'},
@@ -460,7 +460,7 @@ const MAT_ZONES = [
    {type:'minibss', emoji:'🦭', name:'Phoque', questions:4, difficulty:'hard'},
    {type:'boss', emoji:'🐬', name:'Dauphin Rieur', questions:4, difficulty:'hard', dropRare:true},
   ]},
- {id:'mat_cm1_5', region:'cm1', label:'Île aux Étoiles', bg:'linear-gradient(135deg,#a0e7e5,#b4f8c8)', emoji:'⭐', boss:'🐳', bossName:'Baleineau', level:'MS', starsReq:930, theme:'ocean',
+ {id:'mat_cm1_5', region:'cm1', label:'Île aux Tortues', bg:'linear-gradient(135deg,#a0e7e5,#b4f8c8)', emoji:'⭐', boss:'🐳', bossName:'Baleineau', level:'MS', starsReq:930, theme:'ocean',
   parallax:{sky:['#b4f8c8','#a0e7e5','#8ad5ff'], mountains:['#3a8fa0','#1f5c6e'], decor:['🐚','🐠','🫧'], astro:'☀️'},
   steps:[
    {type:'monster', emoji:'🐠', name:'Poisson', questions:2, difficulty:'easy'},
@@ -469,7 +469,7 @@ const MAT_ZONES = [
    {type:'minibss', emoji:'🐬', name:'Dauphin', questions:4, difficulty:'hard'},
    {type:'boss', emoji:'🐳', name:'Baleineau', questions:4, difficulty:'hard', dropRare:true},
   ]},
- {id:'mat_cm2_1', region:'cm2', label:'Champ de Tournesols', bg:'linear-gradient(135deg,#ffd166,#ffe5b4)', emoji:'🌻', boss:'🐝', bossName:'Bourdon Doux', level:'GS', starsReq:1000, theme:'standard',
+ {id:'mat_cm2_1', region:'cm2', label:'Champ de Bleuets', bg:'linear-gradient(135deg,#ffd166,#ffe5b4)', emoji:'🌻', boss:'🐝', bossName:'Bourdon Doux', level:'GS', starsReq:1000, theme:'standard',
   parallax:{sky:['#fff5d6','#ffd166','#ffb347'], mountains:['#b8862f','#7a5a1f'], decor:['🌻','🐝','🦋'], astro:'☀️'},
   steps:[
    {type:'monster', emoji:'🐝', name:'Abeille', questions:2, difficulty:'easy'},
@@ -478,7 +478,7 @@ const MAT_ZONES = [
    {type:'minibss', emoji:'🐓', name:'Coq', questions:4, difficulty:'medium'},
    {type:'boss', emoji:'🐝', name:'Bourdon Doux', questions:4, difficulty:'hard', dropRare:true},
   ]},
- {id:'mat_cm2_2', region:'cm2', label:'Le Grand Verger', bg:'linear-gradient(135deg,#ffd166,#ffe5b4)', emoji:'🍏', boss:'🦔', bossName:'Hérisson Roi', level:'GS', starsReq:1045, theme:'standard',
+ {id:'mat_cm2_2', region:'cm2', label:'Le Grand Cerf-Volant', bg:'linear-gradient(135deg,#ffd166,#ffe5b4)', emoji:'🍏', boss:'🦔', bossName:'Hérisson Roi', level:'GS', starsReq:1045, theme:'standard',
   parallax:{sky:['#fff5d6','#ffd166','#ffb347'], mountains:['#b8862f','#7a5a1f'], decor:['🌻','🐝','🦋'], astro:'☀️'},
   steps:[
    {type:'monster', emoji:'🐞', name:'Coccinelle', questions:2, difficulty:'easy'},
@@ -487,7 +487,7 @@ const MAT_ZONES = [
    {type:'minibss', emoji:'🦃', name:'Dindon', questions:4, difficulty:'medium'},
    {type:'boss', emoji:'🦔', name:'Hérisson Roi', questions:4, difficulty:'hard', dropRare:true},
   ]},
- {id:'mat_cm2_3', region:'cm2', label:'Prairie Dorée', bg:'linear-gradient(135deg,#ffd166,#ffe5b4)', emoji:'🌾', boss:'🐏', bossName:'Bélier Gentil', level:'GS', starsReq:1090, theme:'standard',
+ {id:'mat_cm2_3', region:'cm2', label:'Prairie du Ciel', bg:'linear-gradient(135deg,#ffd166,#ffe5b4)', emoji:'🌾', boss:'🐏', bossName:'Bélier Gentil', level:'GS', starsReq:1090, theme:'standard',
   parallax:{sky:['#fff5d6','#ffd166','#ffb347'], mountains:['#b8862f','#7a5a1f'], decor:['🌻','🐝','🦋'], astro:'☀️'},
   steps:[
    {type:'monster', emoji:'🐜', name:'Fourmi', questions:2, difficulty:'easy'},
@@ -496,7 +496,7 @@ const MAT_ZONES = [
    {type:'minibss', emoji:'🦚', name:'Paon', questions:4, difficulty:'medium'},
    {type:'boss', emoji:'🐏', name:'Bélier Gentil', questions:4, difficulty:'hard', dropRare:true},
   ]},
- {id:'mat_cm2_4', region:'cm2', label:'Moulin Joyeux', bg:'linear-gradient(135deg,#ffd166,#ffe5b4)', emoji:'🌾', boss:'🦆', bossName:'Oie Blanche', level:'GS', starsReq:1135, theme:'standard',
+ {id:'mat_cm2_4', region:'cm2', label:'Moulin des Vents', bg:'linear-gradient(135deg,#ffd166,#ffe5b4)', emoji:'🌾', boss:'🦆', bossName:'Oie Blanche', level:'GS', starsReq:1135, theme:'standard',
   parallax:{sky:['#fff5d6','#ffd166','#ffb347'], mountains:['#b8862f','#7a5a1f'], decor:['🌻','🐝','🦋'], astro:'☀️'},
   steps:[
    {type:'monster', emoji:'🐛', name:'Chenille', questions:2, difficulty:'easy'},
@@ -505,7 +505,7 @@ const MAT_ZONES = [
    {type:'minibss', emoji:'🐓', name:'Coq', questions:4, difficulty:'hard'},
    {type:'boss', emoji:'🦆', name:'Oie Blanche', questions:4, difficulty:'hard', dropRare:true},
   ]},
- {id:'mat_cm2_5', region:'cm2', label:'Colline du Soleil', bg:'linear-gradient(135deg,#ffd166,#ffe5b4)', emoji:'🌞', boss:'🐉', bossName:'Gentil Dragonnet', level:'GS', starsReq:1180, theme:'standard',
+ {id:'mat_cm2_5', region:'cm2', label:'Colline de l\'Horizon', bg:'linear-gradient(135deg,#ffd166,#ffe5b4)', emoji:'🌞', boss:'🐉', bossName:'Gentil Dragonnet', level:'GS', starsReq:1180, theme:'standard',
   parallax:{sky:['#fff5d6','#ffd166','#ffb347'], mountains:['#b8862f','#7a5a1f'], decor:['🌻','🐝','🦋'], astro:'☀️'},
   steps:[
    {type:'monster', emoji:'🐝', name:'Abeille', questions:2, difficulty:'easy'},
@@ -831,6 +831,34 @@ const COL_ZONES = [
    {type:'monster', emoji:'🌌', name:'Spectre cosmique', questions:5, difficulty:'medium'},
    {type:'minibss', emoji:'🗿', name:'Colosse galactique', questions:5, difficulty:'hard'},
    {type:'boss', emoji:'🐉', name:'Souverain des Fonctions', questions:6, difficulty:'hard', dropRare:true},
+  ]},
+ // ── v10.2.0 : L'ANTRE DU TITAN (7e îlot, climax du Forgeron des Étoiles) ──
+ {id:'col_titan_1', region:'titan', label:'Le Seuil de Cendres', bg:'linear-gradient(135deg,#1a0a05,#4a1505)', emoji:'🌑', boss:'🗿', bossName:'Veilleur de l\'Oubli', level:'3E', starsReq:1475, theme:'volcan',
+  parallax:{sky:['#4a1505','#1a0a05','#0a0400'], mountains:['#120500','#000000'], decor:['🔥','⚒️','✨'], astro:'🌑'},
+  steps:[
+   {type:'monster', emoji:'👤', name:'Ombre sans nom', questions:4, difficulty:'medium'},
+   {type:'puzzle', emoji:'⚒️', name:'Énigme de la Forge', questions:5, difficulty:'medium'},
+   {type:'monster', emoji:'🌫️', name:'Brume dévorante', questions:5, difficulty:'hard'},
+   {type:'minibss', emoji:'🛡️', name:'Champion oublié', questions:6, difficulty:'hard'},
+   {type:'boss', emoji:'🗿', name:'Veilleur de l\'Oubli', questions:6, difficulty:'hard', dropRare:true},
+  ]},
+ {id:'col_titan_2', region:'titan', label:'La Galerie des Étoiles Mortes', bg:'linear-gradient(135deg,#1a0a05,#4a1505)', emoji:'💫', boss:'🦅', bossName:'Phénix de Cendre', level:'3E', starsReq:1520, theme:'volcan',
+  parallax:{sky:['#4a1505','#1a0a05','#0a0400'], mountains:['#120500','#000000'], decor:['🔥','⚒️','✨'], astro:'🌑'},
+  steps:[
+   {type:'monster', emoji:'⭐', name:'Étoile éteinte', questions:4, difficulty:'medium'},
+   {type:'puzzle', emoji:'🔭', name:'Carte du ciel effacée', questions:5, difficulty:'hard'},
+   {type:'monster', emoji:'☄️', name:'Météore furieux', questions:5, difficulty:'hard'},
+   {type:'minibss', emoji:'🌪️', name:'Tourmente de l\'Oubli', questions:6, difficulty:'hard'},
+   {type:'boss', emoji:'🦅', name:'Phénix de Cendre', questions:6, difficulty:'hard', dropRare:true},
+  ]},
+ {id:'col_titan_3', region:'titan', label:'Le Trône de l\'Oubli', bg:'linear-gradient(135deg,#0a0400,#4a1505)', emoji:'👑', boss:'🌑', bossName:'Léthéas, Titan de l\'Oubli', level:'3E', starsReq:1565, theme:'volcan',
+  parallax:{sky:['#4a1505','#1a0a05','#0a0400'], mountains:['#120500','#000000'], decor:['🔥','⚒️','✨'], astro:'🌑'},
+  steps:[
+   {type:'monster', emoji:'🌫️', name:'Garde du Trône', questions:5, difficulty:'hard'},
+   {type:'puzzle', emoji:'⚖️', name:'Dernière Épreuve d\'Alaric', questions:5, difficulty:'hard'},
+   {type:'monster', emoji:'👁️', name:'Regard du Néant', questions:6, difficulty:'hard'},
+   {type:'minibss', emoji:'🗡️', name:'Bras Droit du Titan', questions:6, difficulty:'hard'},
+   {type:'boss', emoji:'🌑', name:'Léthéas, Titan de l\'Oubli', questions:8, difficulty:'hard', dropRare:true},
   ]},
 ];
 
