@@ -50,6 +50,30 @@ function startAdventure(advId){
  if(typeof P==='object' && P) P.lastAdventure = GM.adventure;
  openMap();
 }
+
+// v10.2.1 — Zone-avatar PAR AVENTURE (corrige le mélange entre primaire / maternelle /
+// collège). Avant, un seul champ P.mapAvatarZone était partagé : en changeant
+// d'aventure, la zone restait celle de l'autre niveau (et la recherche échouait,
+// ce qui sautait le rafraîchissement de la mini-carte et du livre).
+function _avAdvKey(){ return (typeof GM!=='undefined' && GM && GM.adventure) || 'prim'; }
+function _firstZoneId(){ try{ return (MAP_ZONES[0] && MAP_ZONES[0].id) || 'plaine'; }catch(e){ return 'plaine'; } }
+function _getAvatarZone(){
+ if(typeof P==='undefined' || !P) return _firstZoneId();
+ P.mapAvatarZoneByAdv = P.mapAvatarZoneByAdv || {};
+ const k = _avAdvKey();
+ // migration : ancien champ unique → primaire
+ if(P.mapAvatarZone && !P.mapAvatarZoneByAdv.prim) P.mapAvatarZoneByAdv.prim = P.mapAvatarZone;
+ let z = P.mapAvatarZoneByAdv[k];
+ if(!z || !MAP_ZONES.find(x => x.id === z)) z = _firstZoneId();
+ P.mapAvatarZoneByAdv[k] = z;
+ return z;
+}
+function _setAvatarZone(id){
+ if(typeof P==='undefined' || !P) return;
+ P.mapAvatarZoneByAdv = P.mapAvatarZoneByAdv || {};
+ P.mapAvatarZoneByAdv[_avAdvKey()] = id;
+ P.mapAvatarZone = id; // compat héritée
+}
 // Ouvre l'écran de choix des trois aventures
 function openOdysseeSelect(){
  if(typeof navTo==='function') navTo('v-odyssey-select'); else showView('v-odyssey-select');
@@ -991,7 +1015,7 @@ function requestZoneOpen(zoneId){
  if(_mapAvatarAnimRunning) return; // ignore les clics pendant une anim en cours
  const targetZone = MAP_ZONES.find(z => z.id === zoneId);
  if(!targetZone) return;
- const currentZoneId = P.mapAvatarZone || 'plaine';
+ const currentZoneId = _getAvatarZone();
  if(currentZoneId === zoneId){
   // Déjà sur place, ouvrir directement
   openArchipelZoom(zoneId);
@@ -1013,7 +1037,7 @@ function requestZoneOpen(zoneId){
   seqPositions.push(positions[i]);
  }
  // Save destination immédiatement (cohérence si app fermée pendant l'anim)
- P.mapAvatarZone = zoneId;
+ _setAvatarZone(zoneId);
  if(typeof saveProfileNow === 'function') saveProfileNow();
  const avatarEl = document.querySelector('.archipel-avatar');
  if(!avatarEl){
@@ -1064,8 +1088,7 @@ function renderMap(){
  const beaten = P.mapBossBeaten || [];
  const starsTotal = P.stars || 0;
  // Vérifier que l'avatar pointe vers une zone existante
- let avatarZoneId = P.mapAvatarZone || 'plaine';
- if(!MAP_ZONES.find(z=>z.id===avatarZoneId)){ avatarZoneId = 'plaine'; P.mapAvatarZone = 'plaine'; }
+ let avatarZoneId = _getAvatarZone();
  // Calculer le layout
  const layout = _computeArchipelLayout();
  const { positions, totalHeight, W } = layout;
@@ -1260,24 +1283,30 @@ function renderMap(){
  // ouvre/ferme rapidement la carte.
  try{
   const avatarZone = MAP_ZONES.find(z => z.id === avatarZoneId);
-  if(avatarZone){
-   const avatarRegion = (typeof _regionOfZone==='function') ? _regionOfZone(avatarZone) : _ARCH_REGIONS.find(r => r.levels.includes(avatarZone.level));
-   if(avatarRegion){
-    // v8.7.59 (O3-C.6.2) : rafraîchir la mini-map (région active + position réelle de l'avatar)
-    if(typeof _refreshMiniMap === 'function'){
-     const ry = (avatarPos && totalHeight) ? (avatarPos.y / totalHeight) : null;
-     _refreshMiniMap(avatarRegion.id, _islandFogged, ry, (P&&P.avatar)||'🧙');
-    }
-    if(typeof _refreshQuestJournal === 'function') _refreshQuestJournal(_islandFogged);
-    const now = Date.now();
-    if(!_lastRegionSignatureTime || (now - _lastRegionSignatureTime) > 30000){
-     _lastRegionSignatureTime = now;
-     setTimeout(() => _playRegionSignature(avatarRegion.id), 350);
-    }
-   } else if(typeof _refreshMiniMap === 'function'){ _refreshMiniMap(null, _islandFogged); }
+  const avatarRegion = avatarZone
+   ? ((typeof _regionOfZone==='function') ? _regionOfZone(avatarZone) : _ARCH_REGIONS.find(r => r.levels.includes(avatarZone.level)))
+   : null;
+  // v10.2.1 : la mini-carte et le livre se rafraîchissent TOUJOURS depuis l'état
+  // courant (aventure active), même si l'avatar n'est pas localisé. Avant, ce
+  // rafraîchissement était sauté → tiroirs figés sur l'ancienne aventure.
+  _lastFog = _islandFogged;
+  _lastActiveRegionId = avatarRegion ? avatarRegion.id : null;
+  if(typeof _refreshMiniMap === 'function'){
+   const ry = (avatarPos && totalHeight) ? (avatarPos.y / totalHeight) : null;
+   _refreshMiniMap(_lastActiveRegionId, _islandFogged, ry, (P&&P.avatar)||'🧙');
+  }
+  if(typeof _refreshQuestJournal === 'function') _refreshQuestJournal(_islandFogged);
+  if(avatarRegion){
+   const now = Date.now();
+   if(!_lastRegionSignatureTime || (now - _lastRegionSignatureTime) > 30000){
+    _lastRegionSignatureTime = now;
+    setTimeout(() => _playRegionSignature(avatarRegion.id), 350);
+   }
   }
  }catch(e){}
 }
+let _lastFog = {};
+let _lastActiveRegionId = null;
 let _lastRegionSignatureTime = 0;
 
 // Ouvre la vue zoomée d'une sous-zone (modale qui montre les 5 étapes)
@@ -4746,7 +4775,7 @@ function _maybeShowStory(){
  }catch(e){}
  // 4) Chapitre d'entrée de la région où se trouve l'avatar (si pas encore vu)
  try{
-  const avZone = MAP_ZONES.find(z => z.id === (P.mapAvatarZone||'plaine'));
+  const avZone = MAP_ZONES.find(z => z.id === _getAvatarZone());
   if(!avZone) return;
   const reg = (typeof _regionOfZone==='function') ? _regionOfZone(avZone) : _ARCH_REGIONS.find(r => r.levels.includes(avZone.level));
   if(!reg) return;
@@ -4823,6 +4852,13 @@ function _toggleDrawer(name){
  if(!el) return;
  const open = el.classList.toggle('open');
  if(btn) btn.classList.toggle('drawer-open', open);
+ // v10.2.1 : à l'ouverture, reconstruire le contenu depuis l'aventure courante
+ if(open){
+  try{
+   if(name==='minimap' && typeof _refreshMiniMap==='function') _refreshMiniMap(_lastActiveRegionId, _lastFog, null, (typeof P!=='undefined'&&P&&P.avatar)||'🧙');
+   if(name==='quest' && typeof _refreshQuestJournal==='function') _refreshQuestJournal(_lastFog);
+  }catch(e){}
+ }
  if(typeof beep==='function'){ try{ beep(open?520:320,'sine',.08,.04); }catch(e){} }
 }
 // Retrouve un chapitre par son id (intro, chap_xxx, win_xxx, epilogue)
