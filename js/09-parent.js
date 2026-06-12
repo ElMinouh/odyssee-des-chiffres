@@ -34,6 +34,7 @@ function ptab(name){
  document.querySelectorAll('#v-parent .tab').forEach((b,i)=>b.classList.toggle('active',['rapport','objectifs','controles','options','figurines'][i]===name));
  if(name==='rapport'){renderReport();renderReportView();}
  if(name==='controles'){loadBlockSettings();loadFilterSettings();}
+ if(name==='objectifs'){ if(typeof onHwLevelChange==='function') onHwLevelChange(); if(typeof loadHomework==='function') loadHomework(); }
  if(name==='options'){setTimeout(renderResetZone,60); setTimeout(renderCloudPanel,80);}
  if(name==='figurines'){
   const sel=$('pfig-player');if(!sel)return;
@@ -745,43 +746,126 @@ function doImport(){
 }
 
 // OPT-15 : jsPDF chargé dynamiquement à la demande (évite 300 Ko au démarrage)
-async function exportPDF(){
- const player=$('parent-player')?.value||'Soren';
- let d=null;try{d=JSON.parse(localStorage.getItem('user_'+player)||'null');}catch(e){}
- if(!d){toast('Aucune donnée !');return;}
- if(!window.jspdf){
-  await new Promise((res,rej)=>{
-   const s=document.createElement('script');
-   s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-   s.onload=res;s.onerror=()=>rej(new Error('jsPDF non chargé'));
-   document.head.appendChild(s);
-  }).catch(()=>{toast('❌ Impossible de charger jsPDF (hors-ligne ?)');return;});
-  if(!window.jspdf)return;
- }
- const {jsPDF}=window.jspdf;
- const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
- const W=210,pH=297;let y=22;
- doc.setFillColor(44,62,80);doc.rect(0,0,W,40,'F');
- doc.setTextColor(241,196,15);doc.setFontSize(18);doc.setFont('helvetica','bold');
- doc.text("L'Odyssée des Chiffres",W/2,16,{align:'center'});
- doc.setFontSize(11);doc.setTextColor(255,255,255);
- doc.text(`Rapport de : ${player}  |  ${new Date().toLocaleDateString('fr-FR')}`,W/2,26,{align:'center'});
- y=52;doc.setTextColor(44,62,80);doc.setFontSize(12);doc.setFont('helvetica','normal');
- const h=d.history||[];const total=h.length,wins=h.filter(x=>x.won).length;
- const avg=total?Math.round(h.reduce((a,b)=>a+b.score,0)/total):0;
- const best=total?Math.max(...h.map(x=>x.score)):0;
- const lvl=levelFromXP(d.xp||0);
- const rows=[['Niveau XP','Niv.'+lvl+' ('+d.xp+' XP)'],['Parties jouées',total],['Victoires',`${wins} (${total?Math.round(wins/total*100):0}%)`],['Score moyen',avg],['Meilleur score',best],['Temps de jeu',`${d.sessionMinutes||0} min`],['Trésor (étoiles)',d.stars||0],['Boss battus',`${(d.mapBossBeaten||[]).length}/${MAP_ZONES.length}`]];
- rows.forEach(([k,v])=>{doc.setFont('helvetica','bold');doc.text(k+' :',20,y);doc.setFont('helvetica','normal');doc.text(String(v),110,y);y+=9;});
- y+=4;doc.setFontSize(13);doc.setFont('helvetica','bold');doc.text('10 dernières parties',20,y);y+=8;doc.setFontSize(10);doc.setFont('helvetica','normal');
- h.slice(-10).reverse().forEach(x=>{doc.text(`${x.date}  Niv.${x.level||'?'}  ${x.mode||'?'}  ${x.won?'Victoire':'Défaite'}  ${x.score}pts`,20,y);y+=7;if(y>260){doc.addPage();y=20;}});
- doc.setFillColor(44,62,80);doc.rect(0,pH-12,W,12,'F');doc.setTextColor(189,195,199);doc.setFontSize(8);
- doc.text("L'Odyssée des Chiffres – Rapport automatique",W/2,pH-5,{align:'center'});
- doc.save(`Rapport_${player}.pdf`);
+// v10.2.3 — Export PDF robuste & HORS-LIGNE.
+// L'ancienne version dépendait de jsPDF via CDN (échec hors-ligne / interception
+// service-worker → page blanche). On imprime désormais un rapport HTML mis en page
+// dans une iframe cachée → l'utilisateur choisit « Enregistrer en PDF ».
+function _reportLevel(xp){ try{ return (typeof levelFromXP==='function') ? levelFromXP(xp||0) : '?'; }catch(e){ return '?'; } }
+function _esc(s){ return String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function _buildReportHTML(player, d){
+ const h = d.history || [];
+ const total = h.length, wins = h.filter(x=>x.won).length;
+ const winPct = total ? Math.round(wins/total*100) : 0;
+ const avg = total ? Math.round(h.reduce((a,b)=>a+(b.score||0),0)/total) : 0;
+ const best = total ? Math.max(...h.map(x=>x.score||0)) : 0;
+ const lvl = _reportLevel(d.xp||0);
+ const bossTot = (typeof MAP_ZONES!=='undefined' && MAP_ZONES) ? MAP_ZONES.length : 0;
+ const boss = (d.mapBossBeaten||[]).length;
+ // Récap "hebdomadaire" : les 7 derniers jours d'activité présents dans l'historique
+ const byDate = {};
+ h.forEach(x=>{ const k = x.date || '—'; (byDate[k]=byDate[k]||[]).push(x); });
+ const last7 = Object.keys(byDate).slice(-7);
+ const weekRows = last7.map(dt=>{ const g=byDate[dt]; const w=g.filter(x=>x.won).length;
+  const av = Math.round(g.reduce((a,b)=>a+(b.score||0),0)/g.length);
+  return `<tr><td>${_esc(dt)}</td><td>${g.length}</td><td>${w}</td><td>${av}</td></tr>`; }).join('')
+  || `<tr><td colspan="4" style="text-align:center;color:#888;">Aucune partie enregistrée cette période.</td></tr>`;
+ const stat = (k,v)=>`<tr><td class="k">${k}</td><td class="v">${_esc(v)}</td></tr>`;
+ const statRows = [
+  stat('Niveau XP', 'Niv. '+lvl+' ('+(d.xp||0)+' XP)'),
+  stat('Parties jouées', total),
+  stat('Victoires', wins+' ('+winPct+'%)'),
+  stat('Score moyen', avg),
+  stat('Meilleur score', best),
+  stat('Temps de jeu', (d.sessionMinutes||0)+' min'),
+  stat('Trésor (étoiles)', d.stars||0),
+  stat('Boss vaincus', boss+(bossTot?(' / '+bossTot):'')),
+ ].join('');
+ const gameRows = h.slice(-10).reverse().map(x=>
+  `<tr><td>${_esc(x.date||'?')}</td><td>${_esc(x.level||'?')}</td><td>${_esc(x.mode||'?')}</td><td>${x.won?'✔ Victoire':'✘ Défaite'}</td><td>${x.score||0} pts</td></tr>`
+ ).join('') || `<tr><td colspan="5" style="text-align:center;color:#888;">Aucune partie.</td></tr>`;
+ const today = new Date().toLocaleDateString('fr-FR');
+ return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Rapport — ${_esc(player)}</title>
+ <style>
+  @page{ size:A4; margin:14mm; }
+  *{ box-sizing:border-box; }
+  body{ font-family:'Segoe UI',Arial,sans-serif; color:#1f2d3d; margin:0; }
+  .band{ background:#2c3e50; color:#fff; padding:16px 20px; border-radius:8px; text-align:center; }
+  .band h1{ margin:0; font-size:20px; color:#f1c40f; letter-spacing:.5px; }
+  .band p{ margin:4px 0 0; font-size:12px; }
+  h2{ font-size:14px; color:#2c3e50; border-bottom:2px solid #f1c40f; padding-bottom:3px; margin:20px 0 8px; }
+  table{ width:100%; border-collapse:collapse; font-size:12px; }
+  td,th{ padding:6px 8px; border-bottom:1px solid #e3e8ee; text-align:left; }
+  th{ background:#f4f6f9; color:#2c3e50; font-weight:700; }
+  td.k{ font-weight:700; width:45%; }
+  td.v{ color:#34495e; }
+  .foot{ margin-top:24px; text-align:center; font-size:10px; color:#9aa7b4; }
+ </style></head><body>
+  <div class="band"><h1>L'Odyssée des Chiffres</h1><p>Rapport de <b>${_esc(player)}</b> &nbsp;•&nbsp; ${today}</p></div>
+  <h2>Synthèse</h2><table>${statRows}</table>
+  <h2>Rapport hebdomadaire (7 derniers jours d'activité)</h2>
+  <table><thead><tr><th>Jour</th><th>Parties</th><th>Victoires</th><th>Score moyen</th></tr></thead><tbody>${weekRows}</tbody></table>
+  <h2>10 dernières parties</h2>
+  <table><thead><tr><th>Date</th><th>Niveau</th><th>Mode</th><th>Résultat</th><th>Score</th></tr></thead><tbody>${gameRows}</tbody></table>
+  <div class="foot">L'Odyssée des Chiffres — rapport généré le ${today}</div>
+ </body></html>`;
+}
+function exportPDF(){
+ const player = $('parent-player')?.value;
+ if(!player){ toast('⚠️ Sélectionne un joueur.'); return; }
+ let d=null; try{ d=JSON.parse(localStorage.getItem('user_'+player)||'null'); }catch(e){}
+ if(!d){ toast('⚠️ Aucune donnée pour ce joueur !'); return; }
+ let html;
+ try{ html = _buildReportHTML(player, d); }
+ catch(e){ console.error('[exportPDF] build', e); toast('❌ Erreur génération du rapport.'); return; }
+ try{
+  const ifr = document.createElement('iframe');
+  ifr.setAttribute('aria-hidden','true');
+  ifr.style.cssText = 'position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0;pointer-events:none;';
+  document.body.appendChild(ifr);
+  const doc = ifr.contentWindow.document;
+  doc.open(); doc.write(html); doc.close();
+  let done=false;
+  const go = ()=>{ if(done) return; done=true;
+   try{ ifr.contentWindow.focus(); ifr.contentWindow.print(); }
+   catch(e){ console.error('[exportPDF] print', e); toast('❌ Impression indisponible sur cet appareil.'); }
+   setTimeout(()=>{ try{ ifr.remove(); }catch(e){} }, 1500);
+  };
+  ifr.onload = ()=> setTimeout(go, 300);
+  setTimeout(go, 900); // filet de sécurité si onload ne se déclenche pas
+  toast('🖨️ Choisis « Enregistrer au format PDF » dans la fenêtre d\'impression.', 4500);
+ }catch(e){ console.error('[exportPDF]', e); toast('❌ Erreur lors de l\'impression.'); }
 }
 // ═══════════════════════════════════════════════════════
 // Chantier C3 : Mode "Devoirs" parents
 // ═══════════════════════════════════════════════════════
+
+/**
+ * v10.2.3 — Adapte la liste des types de devoir au cycle du niveau choisi
+ * (maternelle : activités globales ; primaire : opérations + tables ; collège : opérations).
+ */
+function _hwCycle(level){
+ if(['PS','MS','GS'].includes(level)) return 'mat';
+ if(['6E','5E','4E','3E'].includes(level)) return 'col';
+ return 'prim';
+}
+function onHwLevelChange(){
+ const lvlSel = $('hw-level'), typeSel = $('hw-type');
+ if(!lvlSel || !typeSel) return;
+ const cycle = _hwCycle(lvlSel.value);
+ const prev = typeSel.value;
+ let opts;
+ if(cycle === 'mat'){
+  opts = [['any','Toutes les activités']];
+ } else if(cycle === 'col'){
+  opts = [['any','Toutes les opérations'],['add','Additions'],['sub','Soustractions'],['mult','Multiplications'],['div','Divisions']];
+ } else {
+  opts = [['any','Toutes opérations'],['add','Additions'],['sub','Soustractions'],['mult','Multiplications'],['div','Divisions'],
+   ['table_2','Table de 2'],['table_3','Table de 3'],['table_4','Table de 4'],['table_5','Table de 5'],['table_6','Table de 6'],
+   ['table_7','Table de 7'],['table_8','Table de 8'],['table_9','Table de 9'],['table_10','Table de 10']];
+ }
+ typeSel.innerHTML = opts.map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
+ if(opts.some(o=>o[0]===prev)) typeSel.value = prev;
+}
 
 /**
  * Charge dans la vue parent le devoir actuel du joueur sélectionné.
@@ -799,9 +883,10 @@ function loadHomework(){
    if(status)status.innerHTML = '<span style="color:#bdc3c7;">Aucun devoir actif.</span>';
    return;
   }
-  // Préremplir le formulaire
-  if($('hw-type'))$('hw-type').value = hw.type || 'any';
+  // Préremplir le formulaire (niveau d'abord → adapte la liste des types au cycle)
   if($('hw-level'))$('hw-level').value = hw.level || 'CE2';
+  if(typeof onHwLevelChange === 'function') onHwLevelChange();
+  if($('hw-type'))$('hw-type').value = hw.type || 'any';
   if($('hw-count'))$('hw-count').value = String(hw.count || 10);
   if($('hw-reward'))$('hw-reward').value = String(hw.reward || 50);
   if(status){

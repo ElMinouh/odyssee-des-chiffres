@@ -4881,7 +4881,16 @@ function _maybeShowStory(){
 let _questUnlockedCache = {};
 // Liste ordonnée des entrées du journal : prologue, puis pour chaque région son
 // chapitre d'arrivée ET sa victoire de Cristal, enfin l'épilogue. Extensible.
+// v10.2.3 — Vocabulaire du livre de quête PAR AVENTURE (les libellés "Cristal",
+// "Région" venaient du primaire et s'affichaient aussi en maternelle/collège).
+function _questVocab(){
+ const adv = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
+ if(adv==='mat') return { icon:'🌈', lockCollect:'🌈 Couleur à retrouver', collected:'Couleur retrouvée', region:'Île à atteindre', end:'Arc-en-ciel à compléter' };
+ if(adv==='col') return { icon:'🛡️', lockCollect:'🛡️ Pièce à forger',     collected:'Pièce forgée',    region:'Îlot à atteindre',  end:'Forge finale à débloquer' };
+ return { icon:'💎', lockCollect:'💎 Cristal à libérer', collected:'Cristal libéré', region:'Région à atteindre', end:'Fin à débloquer' };
+}
 function _questEntries(){
+ const vocab = _questVocab();
  const entries = [{ id:'intro', kind:'intro', label:'📜', regionId:null, color:'#c9a86a' }];
  const roman = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
  let i = 0;
@@ -4892,7 +4901,7 @@ function _questEntries(){
   const col = meta.accent || '#888';
   entries.push({ id:chap.id, kind:'chapter', label:(roman[i]||String(i+1)), regionId:r.id, color:col });
   const win = _STORY.victories && _STORY.victories[r.id];
-  if(win) entries.push({ id:win.id, kind:'victory', label:'💎', regionId:r.id, color:col });
+  if(win) entries.push({ id:win.id, kind:'victory', label:vocab.icon, regionId:r.id, color:col });
   i++;
  });
  if(_STORY.epilogue) entries.push({ id:_STORY.epilogue.id, kind:'epilogue', label:'🏆', regionId:'final', color:'#ffd700' });
@@ -4911,15 +4920,16 @@ function _refreshQuestJournal(foggedMap){
  const q = document.getElementById('quest-body');
  if(!q) return;
  _questUnlockedCache = {};
+ const _qv = _questVocab();
  const rows = _questEntries().map(e => {
   const unlocked = _chapterUnlocked(e, foggedMap);
   _questUnlockedCache[e.id] = unlocked;
   const chap = _findChapter(e.id);
   let label;
   if(unlocked && chap) label = chap.title;
-  else if(e.kind === 'victory') label = '💎 Cristal à libérer';
-  else if(e.kind === 'chapter') label = 'Région à atteindre';
-  else if(e.kind === 'epilogue') label = 'Fin à débloquer';
+  else if(e.kind === 'victory') label = _qv.lockCollect;
+  else if(e.kind === 'chapter') label = _qv.region;
+  else if(e.kind === 'epilogue') label = _qv.end;
   else label = 'Verrouillé';
   return `<div class="drawer-row${unlocked?'':' locked'}" style="--row-c:${e.color};" `
        + (unlocked?`onclick="_replayChapter('${e.id}')"`:'') + ` role="button" `
@@ -4966,6 +4976,7 @@ function _replayChapter(id){
 // v8.7.69 (O5) : HTML de la section « Journal de quête » dans le carnet d'aventure
 function _questJournalCarnetHtml(){
  const entries = _questEntries();
+ const _qv = _questVocab();
  const seen = (typeof P!=='undefined' && P && Array.isArray(P.storySeen)) ? P.storySeen : [];
  const items = entries.map(e => {
   const cached = _questUnlockedCache[e.id];
@@ -4975,12 +4986,12 @@ function _questJournalCarnetHtml(){
   let sub = '';
   if(e.kind === 'intro') sub = "Le commencement de l'odyssée";
   else if(e.kind === 'chapter'){ const reg = _ARCH_REGIONS.find(r => r.id === e.regionId); sub = 'Arrivée' + (reg ? (' — ' + reg.label) : ''); }
-  else if(e.kind === 'victory') sub = (chap && chap.crystal) ? ('💎 ' + chap.crystal) : 'Cristal libéré';
+  else if(e.kind === 'victory') sub = (chap && chap.crystal) ? (_qv.icon + ' ' + chap.crystal) : _qv.collected;
   else if(e.kind === 'epilogue') sub = "Le dénouement de l'aventure";
   let lockedLabel = 'Chapitre verrouillé';
-  if(e.kind === 'victory') lockedLabel = '💎 Cristal à libérer';
-  else if(e.kind === 'chapter') lockedLabel = 'Région à atteindre';
-  else if(e.kind === 'epilogue') lockedLabel = 'Fin à débloquer';
+  if(e.kind === 'victory') lockedLabel = _qv.lockCollect;
+  else if(e.kind === 'chapter') lockedLabel = _qv.region;
+  else if(e.kind === 'epilogue') lockedLabel = _qv.end;
   return `<div class="advlog-quest-item${unlocked?'':' locked'}" `
        + (unlocked?`onclick="closeAdventureLog();setTimeout(()=>_replayChapter('${e.id}'),320);"`:'')
        + `>`

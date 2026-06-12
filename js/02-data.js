@@ -1005,8 +1005,17 @@ const OP_FILTERS=[
  {key:'mult', label:'Multiplications (×)', affects:['CE2','CM1','CM2']},
  {key:'div',  label:'Divisions (÷)',       affects:['CM2']},
  {key:'miss', label:'Nombres manquants',   affects:['CE1','CE2','CM1']},
- {key:'frac', label:'Fractions',           affects:['CM2']},
+ {key:'frac', label:'Fractions',           affects:['CM2','6e']},
  {key:'geo',  label:'Géométrie',           affects:['CM1','CM2']},
+ // ── Collège (cycle 4) — filtres déjà honorés par les générateurs 6e→3e ──
+ {key:'dec',  label:'Décimaux (×/÷ 10…)',  affects:['6e']},
+ {key:'conv', label:'Conversions d\'unités',affects:['6e']},
+ {key:'rel',  label:'Nombres relatifs (±)',affects:['5e','4e']},
+ {key:'pct',  label:'Pourcentages',        affects:['5e','3e']},
+ {key:'pow',  label:'Puissances',          affects:['4e','3e']},
+ {key:'lit',  label:'Calcul littéral',     affects:['4e','3e']},
+ {key:'pgcd', label:'PGCD / nombres premiers', affects:['3e']},
+ {key:'sqrt', label:'Racines carrées',     affects:['3e']},
 ];
 
 // ── Générateurs de questions ──
