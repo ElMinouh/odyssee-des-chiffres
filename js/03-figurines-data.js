@@ -650,6 +650,142 @@ const FIG_PAGES = {
   "Au fil du temps, elle se rapproche des défenseurs de la Terre, épouse Krilin et devient une mère aimante, sans rien perdre de son calme ni de sa redoutable efficacité au combat. Élégante et indépendante, elle est l'une des combattantes les plus marquantes de la saga.",
  ],
 };
+// ─── LOT : Marvel ───
+Object.assign(FIG_PAGES, {
+ mv01: [
+  "Spider-Man est le héros de Peter Parker, un adolescent de New York mordu par une araignée modifiée lors d'une démonstration scientifique. Il acquiert une force et une agilité hors normes, la faculté de grimper aux murs et un « sens d'araignée » qui le prévient du danger.",
+  "Brillant en sciences, il met au point des lance-toiles qu'il porte aux poignets pour se balancer entre les gratte-ciel. Après la mort de son oncle Ben, il comprend qu'une grande puissance s'accompagne d'un grand devoir, et choisit de protéger les innocents.",
+  "Tiraillé entre sa vie de lycéen et ses responsabilités de héros, il affronte de nombreux ennemis dans les rues de New York. Courageux et plein d'humour, Spider-Man est l'un des super-héros les plus populaires au monde.",
+ ],
+ mv02: [
+  "Iron Man est l'armure de Tony Stark, génial inventeur et milliardaire à la tête d'une grande entreprise de technologie. Grièvement blessé et retenu captif, il conçoit une première armure pour s'échapper, alimentée par un réacteur qui maintient aussi son cœur en vie.",
+  "De retour libre, il perfectionne sans cesse ses armures : vol supersonique, rayons répulseurs, intelligence artificielle embarquée. Membre fondateur des Avengers, Tony Stark met son génie au service de la défense de la Terre, avec panache et ironie.",
+ ],
+ mv03: [
+  "Captain America est Steve Rogers, un jeune homme frêle mais courageux, refusé par l'armée pendant la Seconde Guerre mondiale. Volontaire pour une expérience, il reçoit un sérum de super-soldat qui décuple sa force, sa vitesse et son endurance.",
+  "Il combat avec un bouclier en vibranium, métal quasi indestructible qu'il lance et rattrape. Pris dans les glaces durant des décennies puis ranimé à notre époque, il devient le chef moral des Avengers, symbole de loyauté, de justice et de don de soi.",
+ ],
+ mv04: [
+  "Thor est le dieu du tonnerre d'Asgard, fils du roi Odin. Guerrier puissant, il maîtrise la foudre et les tempêtes et vit parmi les héros d'une cité céleste reliée à la Terre par un pont arc-en-ciel.",
+  "Il manie Mjolnir, un marteau enchanté que seuls les êtres « dignes » peuvent soulever et qui revient toujours dans sa main. D'abord orgueilleux, Thor apprend l'humilité et défend la Terre aux côtés des Avengers, souvent face aux ruses de son frère adoptif Loki.",
+ ],
+ mv05: [
+  "Hulk est l'autre visage de Bruce Banner, un scientifique spécialiste des rayons gamma. Exposé à une dose massive de radiations lors d'un accident, il se transforme, sous l'effet de la colère, en un colosse vert à la force démesurée.",
+  "Plus Hulk s'énerve, plus il devient puissant : il peut soulever des immeubles et bondir sur des kilomètres. Banner cherche sans cesse à maîtriser cette part de lui-même, partagé entre l'intelligence du savant et la rage du géant.",
+ ],
+ mv06: [
+  "La Veuve Noire est Natasha Romanoff, espionne d'élite formée dès l'enfance dans un programme secret. Sans super-pouvoirs, elle compte sur un entraînement extrême au combat rapproché, à l'acrobatie et à l'infiltration.",
+  "Agente du S.H.I.E.L.D. puis membre des Avengers, elle manie aussi bien les armes que la ruse. Déterminée à racheter son passé, elle se révèle l'une des combattantes les plus efficaces et loyales de l'équipe.",
+ ],
+ mv07: [
+  "Thanos est un seigneur de guerre venu du monde de Titan, doté d'une force colossale et d'une intelligence redoutable. Convaincu que l'univers manque de ressources, il poursuit un projet terrifiant : rééquilibrer la vie à sa façon.",
+  "Pour cela, il cherche à réunir les Pierres d'Infinité, gemmes d'une puissance cosmique, qu'il sertit dans un gantelet. Patient et impitoyable, Thanos est l'un des adversaires les plus dangereux que les héros aient jamais affrontés.",
+ ],
+ mv08: [
+  "La Panthère Noire est T'Challa, roi du Wakanda, une nation africaine secrète bien plus avancée que le reste du monde grâce au vibranium qu'elle protège. Le titre de Panthère se transmet aux souverains du pays.",
+  "Une herbe sacrée renforce ses sens, sa force et ses réflexes ; sa combinaison en vibranium absorbe les chocs. À la fois roi sage et guerrier agile, T'Challa veille sur son peuple tout en aidant les héros de la Terre.",
+ ],
+ mv09: [
+  "Wolverine est Logan, un mutant au tempérament solitaire et bourru. Son pouvoir principal est un facteur de guérison qui referme ses blessures presque instantanément et ralentit son vieillissement, lui donnant une vie très longue.",
+  "Des griffes rétractables jaillissent du dos de ses mains ; son squelette est recouvert d'adamantium, un métal indestructible. Membre des X-Men, Wolverine cache, derrière sa rudesse, un sens profond de la loyauté et de la protection.",
+ ],
+ mv10: [
+  "Le Docteur Strange est Stephen Strange, un chirurgien brillant mais arrogant dont les mains sont abîmées dans un accident. En quête de guérison, il découvre les arts mystiques auprès d'un maître et change radicalement de voie.",
+  "Devenu Sorcier Suprême, il protège notre dimension des menaces magiques. Il s'appuie sur des sortilèges, une cape de lévitation et l'Œil d'Agamotto. Son savoir des forces occultes en fait l'un des défenseurs les plus singuliers de la Terre.",
+ ],
+ mv11: [
+  "La Sorcière Rouge est Wanda Maximoff, dotée d'une magie parmi les plus puissantes de l'univers Marvel. Elle peut altérer la réalité, projeter des ondes d'énergie et manipuler la matière par la seule force de sa volonté.",
+  "Marquée par un passé douloureux, elle apprend à maîtriser un don aussi prodigieux que dangereux. Tantôt alliée des Avengers, tantôt débordée par sa propre puissance, Wanda est un personnage intense et profondément humain.",
+ ],
+ mv12: [
+  "Loki est le dieu de la malice d'Asgard, fils adoptif d'Odin et frère de Thor. Maître de l'illusion et du changement d'apparence, il avance toujours par la ruse plutôt que par la force brute.",
+  "Tour à tour ennemi et allié ambigu, il rêve de reconnaissance et de pouvoir. Manipulateur charmeur, Loki reste imprévisible : on ne sait jamais vraiment de quel côté il penchera, ce qui en fait l'un des personnages les plus fascinants de la saga.",
+ ],
+ mv13: [
+  "War Machine est l'armure de James « Rhodey » Rhodes, officier de l'armée et ami fidèle de Tony Stark. Sa version de l'armure Iron Man est plus massive et surtout hérissée d'armement lourd : mitrailleuses, missiles et canons.",
+  "Discipliné et loyal, Rhodey allie la rigueur militaire à la haute technologie de Stark. Il combat aux côtés des Avengers, fiable comme un roc dans les situations les plus périlleuses.",
+ ],
+ mv14: [
+  "Venom naît de l'union d'un symbiote, une créature extraterrestre vivante, et d'un hôte humain, le plus souvent Eddie Brock. Le symbiote enveloppe son porteur d'une matière noire qui décuple sa force et lui donne des crocs et des tentacules.",
+  "À la fois ennemi et parfois allié de Spider-Man, Venom oscille entre instinct prédateur et désir de protéger les innocents. Cette double nature, monstrueuse et touchante, en fait un antihéros à part.",
+ ],
+ mv15: [
+  "Vision est un être synthétique, un androïde animé par une intelligence avancée et par la puissance d'une Pierre d'Infinité sertie sur son front. Il peut voler, traverser la matière et modifier sa densité pour devenir intangible ou dur comme le diamant.",
+  "Doté d'une logique implacable mais aussi d'une grande sensibilité, Vision s'interroge sur sa propre nature et sur la valeur de la vie. Allié précieux des Avengers, il incarne la rencontre entre la machine et la conscience.",
+ ],
+ mv16: [
+  "Captain Marvel est Carol Danvers, ancienne pilote de chasse devenue l'une des héroïnes les plus puissantes de l'univers. Après avoir été exposée à une énergie cosmique, elle gagne le vol, une force colossale et la capacité de projeter de l'énergie.",
+  "Capable de voyager dans l'espace et de résister à des chocs énormes, elle veille sur la Terre comme sur des mondes lointains. Courageuse et déterminée, Carol ne renonce jamais, quelles que soient les épreuves.",
+ ],
+ mv17: [
+  "Hawkeye est Clint Barton, archer de génie sans le moindre super-pouvoir. Sa force réside dans une précision presque infaillible et un sang-froid à toute épreuve.",
+  "Son carquois regorge de flèches spéciales : explosives, électriques, à grappin ou à filet. Agent et membre des Avengers, Hawkeye prouve qu'un humain entraîné et courageux a toute sa place parmi les plus grands héros.",
+ ],
+ mv18: [
+  "Ant-Man est Scott Lang, un ancien cambrioleur repenti qui hérite d'une combinaison scientifique exceptionnelle. Grâce à des particules spéciales, il peut rétrécir jusqu'à la taille d'une fourmi tout en gardant sa force, ou au contraire devenir géant.",
+  "Un casque lui permet de commander de véritables armées de fourmis. Maladroit mais plein de cœur, Scott met ses talents au service du bien et devient un allié inattendu mais précieux des héros.",
+ ],
+ mv19: [
+  "La Guêpe porte une combinaison cousine de celle d'Ant-Man : elle peut rétrécir à volonté, mais aussi déployer des ailes pour voler et lancer de petites décharges d'énergie, ses « dards ».",
+  "Vive, agile et redoutable en vol, elle frappe là où l'adversaire ne l'attend pas. Aux côtés d'Ant-Man, la Guêpe forme un duo complémentaire, mêlant finesse, courage et technologie de pointe.",
+ ],
+ mv20: [
+  "Miss Marvel est Kamala Khan, une adolescente passionnée de super-héros qui découvre un jour ses propres pouvoirs. Elle peut étirer et agrandir son corps, allonger ses membres ou grossir son poing pour frapper.",
+  "Enthousiaste et pleine d'idéaux, elle apprend à concilier sa vie de collégienne, sa famille et ses responsabilités de justicière. Kamala incarne une nouvelle génération de héros, proche des jeunes lecteurs.",
+ ],
+ mv21: [
+  "Le Docteur Octopus est Otto Octavius, un savant de haut vol dont les expériences tournent au drame. Quatre bras mécaniques surpuissants, conçus pour son travail, se retrouvent soudés à son corps et à son esprit.",
+  "Avec ces tentacules d'acier qu'il commande par la pensée, il grimpe, frappe et manipule tout objet. Génie devenu dangereux, « Doc Ock » est l'un des adversaires les plus redoutables de Spider-Man.",
+ ],
+ mv22: [
+  "L'Homme-Sable est Flint Marko, un malfrat transformé après un accident en une créature de sable vivant. Il peut changer tout ou partie de son corps en sable et reprendre forme à volonté.",
+  "Poing géant, mur de sable, silhouette qui se disperse pour éviter les coups : ses pouvoirs le rendent très difficile à arrêter. Ennemi récurrent de Spider-Man, il n'est pas toujours méchant jusqu'au bout, et cherche parfois à se racheter.",
+ ],
+ mv23: [
+  "Rhino est un colosse engoncé dans une armure ultra-résistante imitant la peau d'un rhinocéros, dont il porte aussi la corne. Cette carapace lui confère une force brute et une endurance impressionnantes.",
+  "Sa tactique favorite est la charge : il fonce tête baissée et renverse tout sur son passage. Peu subtil mais d'une puissance redoutable, Rhino est un adversaire de poids pour Spider-Man.",
+ ],
+ mv24: [
+  "Electro est Max Dillon, un homme transformé par un accident électrique en une créature capable de produire et de commander l'électricité. Il emmagasine d'énormes charges et les libère en éclairs dévastateurs.",
+  "Il peut surcharger les machines, voler porté par des arcs électriques et frapper à distance. Lumineux et imprévisible, Electro compte parmi les ennemis les plus spectaculaires de Spider-Man.",
+ ],
+ mv25: [
+  "Le Bouffon vert est Norman Osborn, riche industriel rendu fou par un sérum expérimental qui décuple sa force au prix de sa raison. Il se déplace sur un planeur et lance des bombes en forme de citrouille.",
+  "Rusé, cruel et personnel dans sa haine, il est considéré comme l'ennemi juré de Spider-Man. Derrière son rire et son masque grimaçant se cache l'un des adversaires les plus dangereux du héros.",
+ ],
+ mv26: [
+  "Le Lézard est le docteur Curt Connors, un scientifique amputé d'un bras qui met au point un sérum inspiré de la capacité des reptiles à régénérer leurs membres. L'expérience le métamorphose en un énorme homme-lézard.",
+  "Doté d'une force animale, d'une queue puissante et d'un instinct sauvage, il lutte pour ne pas perdre son humanité. Tragique plus que cruel, le Lézard est un ennemi que Spider-Man cherche autant à arrêter qu'à sauver.",
+ ],
+ mv27: [
+  "Le Vautour est Adrian Toomes, un ingénieur âgé mais ingénieux qui se fabrique un harnais ailé lui permettant de voler avec aisance. Le vol lui confère aussi une force étonnante pour son apparence.",
+  "Piquant du ciel comme un rapace, il fond sur ses cibles avant qu'elles ne l'aient vu venir. Rusé et expérimenté, le Vautour est l'un des plus anciens adversaires de Spider-Man.",
+ ],
+ mv28: [
+  "Nick Fury est un maître-espion et le directeur du S.H.I.E.L.D., une agence mondiale de renseignement et de défense. Reconnaissable à son bandeau sur l'œil, il a passé sa vie dans l'ombre à déjouer les plus grandes menaces.",
+  "Stratège hors pair, c'est lui qui a l'idée de rassembler des héros aux pouvoirs extraordinaires pour former les Avengers. Méfiant par métier mais profondément loyal, Fury tire les ficelles dans les coulisses.",
+ ],
+ mv29: [
+  "Star-Lord est Peter Quill, un Terrien enlevé enfant et élevé dans l'espace parmi des pillards. Sans super-pouvoir majeur, il s'appuie sur son audace, ses blasters et son équipement high-tech.",
+  "Charmeur et débrouillard, il prend la tête des Gardiens de la Galaxie, une bande d'aventuriers hauts en couleur. Sous ses airs désinvoltes, Quill cache un grand cœur et un sens du sacrifice.",
+ ],
+ mv30: [
+  "Drax est un guerrier d'une force immense, animé par une quête de vengeance après la perte de sa famille. Sa peau couverte de marques et sa carrure imposante en font un combattant redoutable au corps à corps.",
+  "D'une franchise désarmante, il prend tout au pied de la lettre, ce qui donne lieu à des situations comiques. Loyal envers les Gardiens de la Galaxie, Drax est un allié aussi fidèle que brutal.",
+ ],
+ mv31: [
+  "Gamora est une combattante d'élite, élevée de force par Thanos qui en a fait une assassine parmi les plus dangereuses de la galaxie. Agile et entraînée au maniement des lames, elle est d'une efficacité redoutable.",
+  "Refusant le destin que son tortionnaire lui imposait, elle se range du côté des héros et rejoint les Gardiens de la Galaxie. Courageuse et tourmentée, Gamora se bat pour racheter le passé qu'on lui a imposé.",
+ ],
+ mv32: [
+  "Rocket Raccoon est le fruit d'expériences qui ont transformé un raton laveur en un être intelligent, qui parle et marche debout. Petit mais explosif, c'est un génie de la mécanique et des armes lourdes.",
+  "Pilote casse-cou et stratège imprévisible, il compense sa taille par un sacré caractère. Au sein des Gardiens de la Galaxie, Rocket est inséparable de son ami Groot, qu'il protège à sa manière bourrue.",
+ ],
+ mv33: [
+  "Groot est une créature végétale, semblable à un arbre vivant, doté d'une force colossale. Il peut allonger ses branches, durcir son écorce et faire pousser son corps à volonté.",
+  "Même réduit à un simple éclat de bois, il est capable de repousser entièrement, ce qui le rend presque impossible à détruire. Doux et profondément loyal, Groot veille sur ses compagnons Gardiens, en particulier Rocket.",
+ ],
+});
 try{
  if(typeof FIGURINES !== 'undefined' && Array.isArray(FIGURINES)){
   FIGURINES.forEach(f => { if(FIG_PAGES[f.id]) f.pages = FIG_PAGES[f.id]; });
