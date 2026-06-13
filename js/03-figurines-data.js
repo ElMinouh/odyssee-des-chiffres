@@ -786,6 +786,248 @@ Object.assign(FIG_PAGES, {
   "Même réduit à un simple éclat de bois, il est capable de repousser entièrement, ce qui le rend presque impossible à détruire. Doux et profondément loyal, Groot veille sur ses compagnons Gardiens, en particulier Rocket.",
  ],
 });
+// ─── LOT : Chevaliers du Zodiaque ───
+Object.assign(FIG_PAGES, {
+ cz01: [
+  "Seiya est le Chevalier de bronze de Pégase, héros principal de la saga. Orphelin, il s'entraîne durement en Grèce pour conquérir son armure et revenir au Japon retrouver sa sœur disparue.",
+  "Fidèle à la déesse Athéna, il se bat pour protéger la Terre et la justice. Sa technique emblématique enchaîne une rafale de coups à la vitesse de la lumière. Têtu et généreux, Seiya se relève toujours, porté par sa volonté de protéger ses amis.",
+ ],
+ cz02: [
+  "Shiryu est le Chevalier de bronze du Dragon, formé en Chine au pied des Cinq Pics auprès d'un vieux maître. Calme, réfléchi et profondément loyal, il incarne l'honneur du groupe.",
+  "Son armure protège son bras d'un bouclier presque indestructible et arme son poing d'une force capable de fendre la roche. Prêt à tout sacrifier pour ses compagnons, Shiryu est l'un des chevaliers les plus courageux et les plus sages.",
+ ],
+ cz03: [
+  "Hyoga est le Chevalier de bronze du Cygne, originaire de Sibérie. Hanté par le souvenir de sa mère reposant au fond des eaux glacées, il maîtrise le froid et la glace.",
+  "Ses attaques gèlent l'adversaire et brisent ses mouvements ; il peut abaisser la température jusqu'au zéro absolu. Mélancolique mais fidèle, Hyoga apprend à dompter ses émotions pour devenir un combattant redoutable.",
+ ],
+ cz04: [
+  "Shun est le Chevalier de bronze d'Andromède, le plus doux et le plus pacifique du groupe. Il déteste la violence et ne se bat que lorsqu'il y est contraint, pour défendre les autres.",
+  "Son arme est une longue chaîne qu'il manie avec une précision étonnante, autant pour attaquer que pour se protéger. Frère cadet d'Ikki, Shun cache, sous sa gentillesse, un cœur d'une bravoure exceptionnelle.",
+ ],
+ cz05: [
+  "Ikki est le Chevalier de bronze du Phénix, frère aîné de Shun. Endurci par un entraînement terrible sur une île hostile, c'est un combattant solitaire et imprévisible.",
+  "À l'image de l'oiseau légendaire, il renaît toujours de ses cendres, plus fort après chaque défaite. Sa technique plonge l'adversaire dans de puissantes illusions. Distant en apparence, Ikki veille pourtant sur son frère et ses compagnons.",
+ ],
+ cz06: [
+  "Saori Kido est la réincarnation d'Athéna, déesse de la sagesse et de la guerre juste. D'abord jeune fille gâtée, elle prend conscience de sa mission : protéger la Terre et l'humanité.",
+  "Elle guide les Chevaliers de bronze dans leurs combats et n'hésite pas à risquer sa propre vie pour les sauver. Bienveillante et courageuse, Athéna est le cœur autour duquel se rassemblent tous les héros.",
+ ],
+ cz07: [
+  "Mû est le Chevalier d'or du Bélier, gardien du premier temple du Sanctuaire. Maître des armures, il sait réparer les protections les plus endommagées grâce à un savoir rare.",
+  "Doté de pouvoirs psychiques, il déplace les objets par la pensée et dresse des murs d'énergie. Calme et profondément sage, Mû observe longtemps avant d'agir, mais sa puissance est à la hauteur de sa réputation.",
+ ],
+ cz08: [
+  "Aldébaran est le Chevalier d'or du Taureau, gardien du deuxième temple. Géant au grand cœur, il impressionne par sa carrure et sa force colossale.",
+  "Sa charge, semblable à celle d'un taureau lancé au galop, balaie tout sur son passage. Loyal et chaleureux malgré son allure imposante, Aldébaran est un protecteur fidèle du Sanctuaire.",
+ ],
+ cz09: [
+  "Saga est le Chevalier d'or des Gémeaux, l'un des plus puissants de tous. Mais il est partagé entre deux personnalités opposées, l'une noble et juste, l'autre dévorée par l'ambition.",
+  "Sa part sombre le pousse à s'emparer du Sanctuaire en se dissimulant derrière le masque du Grand Pope. Capable d'attaques d'une force cosmique dévastatrice, Saga est un adversaire aussi tragique que redoutable.",
+ ],
+ cz10: [
+  "Le Masque de Mort est le Chevalier d'or du Cancer, gardien du quatrième temple. Cruel et sans pitié, il se distingue des autres chevaliers d'or par son mépris de la vie.",
+  "Sa technique projette l'âme de ses victimes vers le royaume des morts. Arrogant et violent, il a tourné le dos aux valeurs de justice que les Chevaliers sont censés défendre.",
+ ],
+ cz11: [
+  "Aioria est le Chevalier d'or du Lion, gardien du cinquième temple. Fier et ardent, il est le frère cadet d'Aiolos, longtemps considéré injustement comme un traître.",
+  "Sa technique fulgurante frappe l'adversaire d'une nuée d'éclairs à la vitesse de la lumière. Loyal envers Athéna, Aioria cherche à laver l'honneur de sa famille et se révèle l'un des combattants les plus puissants du Sanctuaire.",
+ ],
+ cz12: [
+  "Shaka est le Chevalier d'or de la Vierge, réputé être « l'homme le plus proche des dieux ». Maître de méditation, il combat le plus souvent les yeux fermés pour mieux concentrer sa puissance.",
+  "Il peut priver son adversaire de ses cinq sens, un à un. D'une sérénité et d'une force spirituelle exceptionnelles, Shaka est considéré comme le plus puissant des Chevaliers d'or.",
+ ],
+ cz13: [
+  "Dohko est le Chevalier d'or de la Balance, gardien du septième temple. Vétéran d'une grande guerre sainte d'autrefois, il a vécu plus de deux siècles pour veiller sur le monde.",
+  "Son armure de la Balance renferme un arsenal complet, fait pour armer ceux qui en ont besoin. Sage parmi les sages, Dohko unit l'expérience des anciens à la puissance des chevaliers d'or.",
+ ],
+ cz14: [
+  "Milo est le Chevalier d'or du Scorpion, gardien du huitième temple. Fier et droit, il applique sans faiblir les règles du Sanctuaire, quitte à se montrer impitoyable.",
+  "Son attaque frappe en une série de piqûres aussi précises que le dard d'un scorpion, chacune affaiblissant un peu plus l'adversaire. Sous sa rigueur se cache un profond sens de l'honneur.",
+ ],
+ cz15: [
+  "Aiolos est le Chevalier d'or du Sagittaire. Il y a des années, il a sauvé la déesse Athéna nouveau-née d'un complot, au prix de sa propre vie, et fut injustement accusé de trahison.",
+  "Son geste héroïque a protégé l'avenir du monde. Symbole de loyauté et de sacrifice, Aiolos demeure une figure exemplaire dont l'armure d'or continue de veiller sur les héros.",
+ ],
+ cz16: [
+  "Shura est le Chevalier d'or du Capricorne, gardien du dixième temple, dévoué corps et âme à Athéna. On dit que son bras tranche comme la plus légendaire des épées.",
+  "Capable de couper presque n'importe quelle matière d'un seul geste, il est l'un des chevaliers les plus dangereux au combat rapproché. Sa fidélité, d'abord mal dirigée, le conduit finalement à se racheter.",
+ ],
+ cz17: [
+  "Camus est le Chevalier d'or du Verseau, maître absolu de la glace et du froid. Calme, distant et rigoureux, il fut le mentor de Hyoga, à qui il a transmis l'art de geler ses adversaires.",
+  "Ses attaques peuvent atteindre le zéro absolu, immobilisant toute chose. Derrière sa froideur apparente, Camus est un enseignant exigeant qui veut pousser ses élèves vers le dépassement de soi.",
+ ],
+ cz18: [
+  "Aphrodite est le Chevalier d'or des Poissons, gardien du douzième et dernier temple. Obsédé par la beauté, il combat à l'aide de roses aussi splendides que mortelles.",
+  "Ses fleurs empoisonnées et tranchantes désorientent l'adversaire avant de frapper. Élégant mais sans pitié, Aphrodite est le dernier rempart à franchir avant le palais du Grand Pope.",
+ ],
+ cz19: [
+  "Marine est un Chevalier d'argent de l'Aigle et l'instructrice de Seiya. Le visage masqué, comme le veut la règle des femmes chevaliers, elle lui a transmis discipline et technique.",
+  "Habile et bienveillante, elle veille sur son élève de loin tout au long de ses combats. Marine cache aussi sa propre quête personnelle, qui la lie au destin des héros.",
+ ],
+ cz20: [
+  "Shaina est un Chevalier d'argent du Serpentaire, fière et redoutable guerrière. D'abord adversaire des Chevaliers de bronze, elle se montre aussi impitoyable que déterminée.",
+  "Son masque dissimule son visage, selon la loi des femmes chevaliers. Au fil des combats, son hostilité envers Seiya laisse place à des sentiments plus complexes, et elle finit par défendre la cause d'Athéna.",
+ ],
+ cz21: [
+  "Kiki est le jeune disciple de Mû, le Chevalier d'or du Bélier. Encore enfant, il possède déjà des pouvoirs psychiques et peut déplacer les objets par la pensée.",
+  "Espiègle et curieux, il accompagne et aide les Chevaliers de bronze, transportant parfois leurs armures. Kiki représente la relève, la promesse des chevaliers de demain.",
+ ],
+ cz22: [
+  "Jabu est le Chevalier de bronze de la Licorne, l'un des jeunes guerriers formés en même temps que Seiya. Fier et un brin orgueilleux, il rêve de prouver sa valeur.",
+  "Sa technique s'appuie sur la puissance de ses coups de pied, à l'image de la ruade d'une monture. Malgré ses rivalités, Jabu se range aux côtés des héros pour défendre Athéna.",
+ ],
+ cz23: [
+  "Cassios est un colosse au service du Sanctuaire, rival acharné de Seiya durant leur entraînement en Grèce. Sa force physique brute en fait un adversaire impressionnant.",
+  "Leur affrontement pour conquérir l'armure de Pégase fut féroce. Brutal en apparence, Cassios révèle pourtant, à sa manière, un véritable sens du courage et du sacrifice.",
+ ],
+ cz24: [
+  "Docrate est un puissant guerrier ennemi que les Chevaliers de bronze affrontent au début de leur quête. De grande taille et d'une force peu commune, il cherche à s'emparer d'une armure d'or.",
+  "Son gabarit et sa résistance en font un obstacle redoutable pour les jeunes héros encore inexpérimentés. Il met à l'épreuve leur solidarité naissante.",
+ ],
+ cz25: [
+  "Misty est un Chevalier d'argent du Lézard, élégant et terriblement vaniteux, persuadé d'être d'une beauté parfaite. Il fait partie des chevaliers envoyés pour récupérer une armure d'or.",
+  "Rapide et précis, il sous-estime toutefois la détermination de Seiya. Son orgueil démesuré finit par le desservir face à un adversaire qui refuse d'abandonner.",
+ ],
+ cz26: [
+  "Sous les traits du Vieux Maître des Cinq Pics se cache en réalité Dohko de la Balance, qui a traversé les siècles pour surveiller le scellement d'anciens ennemis.",
+  "Maître de Shiryu, il lui enseigne la voie du Dragon et la sagesse du combat. Patient et énigmatique, il observe le monde depuis sa cascade, prêt à reprendre sa pleine puissance le jour venu.",
+ ],
+ cz27: [
+  "Guilty fut l'impitoyable maître d'Ikki sur une île hostile où l'entraînement tournait à l'épreuve de survie. Sa dureté extrême a forgé le caractère solitaire et indomptable du Phénix.",
+  "Cette éducation brutale a fait d'Ikki un guerrier capable de renaître de ses souffrances. La figure de Guilty hante longtemps le parcours du Chevalier du Phénix.",
+ ],
+ cz28: [
+  "Le Chevalier de Cristal est le maître qui a initié Hyoga à l'art de la glace, dans le grand froid de Sibérie. Calme et lumineux, il lui a transmis les bases de ses techniques glaciales.",
+  "Sous son influence, Hyoga apprend à canaliser le froid pour en faire une arme. Le lien entre le disciple et son mentor marque profondément le parcours du Chevalier du Cygne.",
+ ],
+ cz29: [
+  "Albior est le maître qui a formé Shun sur l'île d'Andromède. Sage et bienveillant, il a enseigné au jeune garçon la maîtrise de la chaîne et le respect de la vie.",
+  "Chevalier expérimenté, il incarne la transmission et la droiture. Son enseignement a façonné la douceur courageuse qui caractérise Shun.",
+ ],
+ cz30: [
+  "Argol est un Chevalier d'argent de Persée. Son arme la plus redoutable est un bouclier orné d'un visage terrifiant, capable de pétrifier quiconque ose le regarder.",
+  "Face à ce pouvoir, les héros doivent ruser et combattre les yeux fermés. Argol représente l'un des premiers grands défis des Chevaliers de bronze sur le chemin du Sanctuaire.",
+ ],
+ cz31: [
+  "Le Grand Pope est la plus haute autorité du Sanctuaire, censé diriger les Chevaliers au nom d'Athéna. Le visage caché sous un masque, il commande depuis le palais qui domine les douze temples.",
+  "Mais le siège a été usurpé, et derrière le masque se dissimule une volonté de pouvoir qui trahit la déesse. Démasquer l'imposteur est l'ultime enjeu de la quête des Chevaliers de bronze.",
+ ],
+});
+// ─── LOT : DC Comics ───
+Object.assign(FIG_PAGES, {
+ dc01: [
+  "Batman est le justicier de Gotham City, sous le masque se cache Bruce Wayne, milliardaire orphelin. Enfant, il a vu ses parents assassinés sous ses yeux et a juré de combattre le crime.",
+  "Sans le moindre super-pouvoir, il s'appuie sur une intelligence hors norme, un entraînement physique extrême et un arsenal de gadgets. Détective de génie et stratège, Batman protège sa ville dans l'ombre, par la peur qu'il inspire aux criminels.",
+ ],
+ dc02: [
+  "Robin est le jeune partenaire de Batman, son fidèle acolyte dans la lutte contre le crime à Gotham. Acrobate accompli, il combine agilité, courage et sens de la repartie.",
+  "Formé par le Chevalier Noir, il apprend les arts du combat et de l'enquête. Robin apporte une énergie plus lumineuse au duo, et plusieurs jeunes héros ont porté ce nom au fil du temps.",
+ ],
+ dc03: [
+  "Le Joker est l'ennemi juré de Batman, criminel au visage blafard et au rictus permanent. Imprévisible et profondément chaotique, il sème la terreur sans logique apparente.",
+  "Armé de gadgets piégés et d'un humour macabre, il représente le pur désordre face à l'ordre que défend Batman. Son affrontement sans fin avec le Chevalier Noir est l'un des plus célèbres de la bande dessinée.",
+ ],
+ dc04: [
+  "Le Pingouin est Oswald Cobblepot, parrain du crime à Gotham, reconnaissable à son haut-de-forme, son monocle et son embonpoint. Rusé et cupide, il dirige ses affaires depuis les bas-fonds.",
+  "Ses parapluies dissimulent toutes sortes de gadgets : armes, lames ou hélices pour s'envoler. Plus manipulateur que combattant, le Pingouin est un adversaire retors de Batman.",
+ ],
+ dc05: [
+  "Double-Face est Harvey Dent, autrefois procureur intègre de Gotham, dont la moitié du visage a été défigurée. Le drame a brisé son esprit et fait surgir une seconde personnalité, criminelle.",
+  "Obsédé par la dualité, il confie chacune de ses décisions au lancer d'une pièce abîmée d'un côté. Tragique plus que purement mauvais, il symbolise la frontière fragile entre le bien et le mal.",
+ ],
+ dc06: [
+  "Catwoman est Selina Kyle, cambrioleuse insaisissable de Gotham, aussi agile qu'un chat. Vêtue de cuir et armée d'un fouet, elle se faufile là où personne ne l'attend.",
+  "Tantôt adversaire, tantôt alliée de Batman, elle suit son propre code et brouille la limite entre voleuse et héroïne. Indépendante et maligne, Catwoman est l'une des figures les plus ambiguës de Gotham.",
+ ],
+ dc07: [
+  "Poison Ivy est Pamela Isley, scientifique transformée en une femme au pouvoir sur les plantes. Elle commande la végétation, manie des poisons et des toxines, et résiste aux substances les plus dangereuses.",
+  "Convaincue que la nature passe avant l'humanité, elle mène un combat extrême pour la défendre. Séduisante et redoutable, Poison Ivy est l'une des adversaires les plus singulières de Batman.",
+ ],
+ dc08: [
+  "L'Homme-Mystère est Edward Nigma, criminel obsédé par les énigmes et les casse-tête. Reconnaissable à son costume vert parsemé de points d'interrogation, il laisse toujours des indices à résoudre.",
+  "Persuadé d'être plus intelligent que tout le monde, il défie Batman sur le terrain de la réflexion. Son orgueil le pousse à semer des devinettes qui finissent par trahir ses propres plans.",
+ ],
+ dc09: [
+  "L'Épouvantail est Jonathan Crane, un ancien spécialiste de la psychologie devenu maître de la peur. Il a mis au point un gaz qui plonge ses victimes dans leurs pires cauchemars.",
+  "Vêtu comme un épouvantail effrayant, il étudie froidement la terreur qu'il provoque. Pour le vaincre, Batman doit affronter non seulement le criminel, mais aussi ses propres angoisses.",
+ ],
+ dc10: [
+  "Mister Freeze est Victor Fries, un savant condamné à vivre dans le froid après un accident de laboratoire. Sans une combinaison réfrigérée, il ne peut plus survivre à température normale.",
+  "Son canon glaçant fige instantanément ce qu'il touche. Derrière le criminel se cache un drame : il cherche désespérément à sauver son épouse malade, ce qui rend ce personnage profondément tragique.",
+ ],
+ dc11: [
+  "Alfred Pennyworth est le majordome dévoué de la famille Wayne et le plus fidèle allié de Batman. Bien plus qu'un domestique, il est un confident, un soutien et une figure paternelle pour Bruce.",
+  "Fort d'un passé au service et de connaissances en médecine, il soigne les blessures du héros et veille sur la Bat-Cave. Sans le calme et la loyauté d'Alfred, Batman ne pourrait pas mener son combat.",
+ ],
+ dc12: [
+  "Superman est l'un des plus grands héros du monde, né Kal-El sur la planète Krypton et envoyé sur Terre avant la destruction de son monde. Élevé par une famille de fermiers, il grandit avec des valeurs de bonté et de justice.",
+  "Sous le soleil de notre planète, il acquiert le vol, une force colossale, une vision capable de percer la matière et un souffle glacial. Sa seule grande faiblesse est la kryptonite. Sous l'identité de Clark Kent, il mène une vie discrète de journaliste.",
+ ],
+ dc13: [
+  "Supergirl est Kara Zor-El, cousine de Superman et elle aussi originaire de Krypton. Arrivée sur Terre plus tard, elle partage les mêmes pouvoirs extraordinaires : vol, force surhumaine et vision puissante.",
+  "Plus jeune et impétueuse, elle apprend à maîtriser ses capacités tout en trouvant sa propre voie de héroïne. Courageuse et déterminée, Supergirl défend la Terre avec la même générosité que son célèbre cousin.",
+ ],
+ dc14: [
+  "Wonder Woman est la princesse Diana, guerrière issue d'un peuple d'Amazones vivant sur une île protégée. Dotée d'une force et d'une agilité exceptionnelles, elle quitte son monde pour défendre la paix parmi les humains.",
+  "Elle manie un lasso magique qui contraint à dire la vérité et des bracelets capables de dévier les attaques. Ambassadrice de la justice et de la compassion, Wonder Woman est l'une des plus grandes héroïnes de tous les temps.",
+ ],
+ dc15: [
+  "Green Lantern est Hal Jordan, pilote d'essai choisi pour porter un anneau de pouvoir d'une grande corporation de gardiens de l'univers. Cet anneau matérialise tout ce que son porteur imagine.",
+  "Alimenté par la volonté et le courage, il crée des boucliers, des armes ou des outils de pure énergie verte. Membre d'un corps de héros qui veille sur l'espace, Green Lantern protège la Terre comme des galaxies entières.",
+ ],
+ dc16: [
+  "Flash est Barry Allen, un scientifique de la police devenu l'homme le plus rapide du monde après un accident. Il puise sa vitesse dans une mystérieuse force qui l'entoure.",
+  "Il court plus vite que l'éclair, traverse les murs en faisant vibrer son corps et réagit en une fraction de seconde. Sous ses allures de héros bon vivant, Flash protège sa ville avec un sens aigu du devoir.",
+ ],
+ dc17: [
+  "Hawkgirl est une héroïne ailée, capable de voler grâce à de grandes ailes et à un métal extraordinaire qui défie la gravité. Elle combat à l'aide d'une masse d'armes redoutable.",
+  "Combative et directe, elle fonce au cœur de l'action sans hésiter. Son histoire est liée à d'anciennes vies et à un lointain héritage guerrier, qui font d'elle une combattante hors du commun.",
+ ],
+ dc18: [
+  "Martian Manhunter est J'onn J'onzz, le dernier survivant de Mars. Doté de pouvoirs immenses, il peut changer de forme, lire les pensées, devenir invisible et voler avec une grande force.",
+  "Solitaire et mélancolique, il se mêle aux humains pour mieux les comprendre et les protéger. Sa principale faiblesse est le feu. Sage et puissant, il est l'un des piliers les plus discrets des grands héros.",
+ ],
+ dc19: [
+  "Shazam est Billy Batson, un jeune garçon au grand cœur choisi par un ancien magicien. En prononçant un mot magique, il se transforme en un héros adulte doté de la puissance de plusieurs dieux.",
+  "La foudre lui donne force, vitesse et résistance hors du commun. Derrière le héros demeure pourtant un enfant, ce qui rend Shazam aussi attachant que puissant.",
+ ],
+ dc20: [
+  "Green Arrow est Oliver Queen, un milliardaire devenu archer justicier après avoir été abandonné sur une île déserte. Sans super-pouvoir, il s'appuie sur une adresse au tir quasi infaillible.",
+  "Son carquois regorge de flèches truquées : explosives, à grappin ou à filet. À la manière d'un héros au grand cœur qui défend les plus faibles, Green Arrow met sa fortune et ses talents au service de la justice.",
+ ],
+ dc21: [
+  "Aquaman est Arthur Curry, roi des mers et souverain du royaume englouti d'Atlantide. Né d'un humain et d'une reine des océans, il évolue aussi bien sur terre que dans les profondeurs.",
+  "Il nage à très grande vitesse, possède une force surhumaine et communique par la pensée avec les créatures marines. Armé de son trident, Aquaman protège à la fois la surface et les mystères des océans.",
+ ],
+ dc22: [
+  "Power Girl est une héroïne aux origines kryptoniennes, cousine d'un grand héros venu d'un autre monde. Elle partage des pouvoirs comparables : vol, force colossale et grande résistance.",
+  "Assurée et au fort caractère, elle ne se laisse jamais intimider. Power Girl met sa puissance au service du bien avec une indépendance et une énergie qui la rendent unique.",
+ ],
+ dc23: [
+  "Black Adam est un champion de l'Antiquité, doté des mêmes pouvoirs divins que Shazam, mais avec une vision bien plus impitoyable de la justice. La foudre lui confère une force et une puissance immenses.",
+  "Ni tout à fait héros, ni simple vilain, il applique ses propres règles, parfois cruelles. Cet antihéros au passé tragique est l'un des personnages les plus puissants et les plus ambigus de l'univers DC.",
+ ],
+ dc24: [
+  "Captain Atom est un héros dont le corps est enveloppé d'une enveloppe métallique née d'un accident lié à une énergie nucléaire. Il manipule d'énormes quantités d'énergie qu'il projette ou utilise pour voler.",
+  "Capable de relâcher une puissance dévastatrice, il doit aussi apprendre à la contrôler pour ne pas devenir un danger. Soldat dans l'âme, Captain Atom mêle discipline militaire et pouvoirs quasi illimités.",
+ ],
+ dc25: [
+  "Cyborg est Victor Stone, un jeune homme grièvement blessé puis reconstruit avec des prothèses technologiques avancées. Mi-humain, mi-machine, il porte en lui une puissance de calcul et d'armement impressionnante.",
+  "Il se connecte aux ordinateurs et aux réseaux, déploie des canons d'énergie et encaisse des coups énormes. Au-delà de ses circuits, Cyborg lutte pour préserver son humanité, ce qui fait de lui un héros profondément touchant.",
+ ],
+ dc26: [
+  "Doomsday est une créature monstrueuse d'une force destructrice presque sans limite, née pour détruire. Sa peau est hérissée de pointes osseuses et son corps résiste aux assauts les plus violents.",
+  "Sa particularité la plus redoutable : après chaque défaite, il revient plus résistant, immunisé contre ce qui l'a abattu. Doomsday est l'un des rares adversaires à avoir poussé Superman dans ses derniers retranchements.",
+ ],
+ dc27: [
+  "Brainiac est une intelligence extraterrestre, à la fois machine et esprit, obsédée par l'accumulation de tout le savoir de l'univers. Reconnaissable à sa peau verdâtre, il est d'une froideur implacable.",
+  "Il miniaturise et emprisonne des villes entières pour les collectionner, effaçant des civilisations au passage. Génie sans pitié, Brainiac compte parmi les ennemis les plus dangereux de Superman.",
+ ],
+ dc28: [
+  "Darkseid est un tyran cosmique, seigneur d'un monde sombre et hostile, qui rêve d'asservir l'univers tout entier. Sa puissance est telle qu'il est considéré comme l'un des êtres les plus redoutables de l'univers DC.",
+  "De ses yeux jaillissent des rayons capables de poursuivre leur cible sans jamais la manquer. Implacable et calculateur, Darkseid cherche une formule qui lui donnerait le contrôle sur toute volonté vivante.",
+ ],
+});
 try{
  if(typeof FIGURINES !== 'undefined' && Array.isArray(FIGURINES)){
   FIGURINES.forEach(f => { if(FIG_PAGES[f.id]) f.pages = FIG_PAGES[f.id]; });
