@@ -353,10 +353,22 @@ function _fvRenderBackPage(){
  const pv = $('fv-bprev'); if(pv) pv.disabled = _fvPageIdx <= 0;
  const nx = $('fv-bnext'); if(nx) nx.disabled = _fvPageIdx >= _fvPages.length - 1;
 }
+// Fige la carte sur sa face arrière (texte) : stoppe la rotation et présente le dos,
+// par le demi-tour le plus proche pour éviter un saut visuel. Indispensable sur
+// tactile, où l'on ne peut pas viser un bouton sur une carte qui tourne.
+function _figFaceBack(){
+ try{
+  _fvAuto = false;
+  _fvRotY = Math.round((_fvRotY - 180) / 360) * 360 + 180;
+  const c = $('fig-card3d'); if(c) c.style.transform = `rotateY(${_fvRotY}deg)`;
+  const sb = $('fig-spin-btn'); if(sb) sb.textContent = '▶ Auto';
+ }catch(e){}
+}
 function figBackPage(dir){
  const n = _fvPageIdx + dir;
  if(n < 0 || n >= _fvPages.length) return;
  figReadStop();                                                 // tout changement manuel coupe la lecture auto
+ _figFaceBack();                                                // montre la face texte
  _fvPageIdx = n;
  _fvRenderBackPage();
  try{ if(typeof beep === 'function') beep(460,'sine',.05,.03); }catch(e){}
@@ -385,19 +397,17 @@ function _figSpeakFrom(idx){
  try{ window.speechSynthesis.speak(u); }catch(e){ _figReadActive=false; _figSetPlaying(false); }
 }
 function figReadPlay(){
- if(!window.speechSynthesis) return;
- // Dos à plat pendant la lecture : on stoppe la rotation auto et on présente la
- // face arrière (demi-tour le plus proche pour éviter un saut visuel).
- try{
-  _fvAuto = false;
-  _fvRotY = Math.round((_fvRotY - 180) / 360) * 360 + 180;
-  const c = $('fig-card3d'); if(c) c.style.transform = `rotateY(${_fvRotY}deg)`;
-  const sb = $('fig-spin-btn'); if(sb) sb.textContent = '▶ Auto';
- }catch(e){}
- try{ if(window.speechSynthesis.paused){ window.speechSynthesis.resume(); _figSetPlaying(true); return; } }catch(e){}
- try{ window.speechSynthesis.cancel(); }catch(e){}
+ if(!window.speechSynthesis){ try{ if(typeof toast==='function') toast('🔇 Lecture vocale non disponible sur cet appareil.'); }catch(e){} return; }
+ _figFaceBack();                                                // dos à plat pendant la lecture
+ // Reprise si en pause
+ try{ if(window.speechSynthesis.paused && window.speechSynthesis.speaking){ window.speechSynthesis.resume(); _figSetPlaying(true); return; } }catch(e){}
  _figReadActive = true; _figSetPlaying(true);
- _figSpeakFrom(_fvPageIdx);                                     // démarre à la page affichée, puis enchaîne
+ // Android : cancel() suivi d'un speak() immédiat annule la nouvelle lecture.
+ // On démarre directement si rien ne parle, sinon on annule puis on diffère.
+ const startNow = ()=>{ _figSpeakFrom(_fvPageIdx); };
+ let speaking=false; try{ speaking = !!window.speechSynthesis.speaking; }catch(e){}
+ if(speaking){ try{ window.speechSynthesis.cancel(); }catch(e){} setTimeout(startNow, 160); }
+ else { startNow(); }
 }
 function figReadPause(){
  try{ if(window.speechSynthesis.speaking && !window.speechSynthesis.paused){ window.speechSynthesis.pause(); _figSetPlaying(false); } }catch(e){}

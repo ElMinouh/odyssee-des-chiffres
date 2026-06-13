@@ -4754,14 +4754,50 @@ body.mat-mode #v-game{
 .advtal-dot{ width:11px; height:11px; border-radius:50%; flex:0 0 auto; box-shadow:inset 0 1px 2px rgba(255,255,255,.5),inset 0 -1px 2px rgba(0,0,0,.5); }
 @media (prefers-reduced-motion: reduce){ .advtal-slot,.advtal-gleam,.advtal-rays,.advtal-burst,.advtal-spark{ animation:none!important; opacity:1!important; } }
 
-/* ═══════ v10.3.1 : fiche figurine — lecteur SUR la carte + texte défilable ═══════ */
+/* ═══════ v10.3.7 : fiche figurine — barre de lecture PLATE (tactile) + responsive ═══════ */
 .fvbname{ font-weight:800; font-size:1.05em; color:#fff; text-align:center; margin:2px 0 6px; letter-spacing:.3px; }
 .fvbdesc{ max-height:300px; overflow-y:auto; padding:0 4px; }
-#fig-vread{ display:flex; flex-direction:column; align-items:center; gap:6px; margin-top:10px; }
-.fvbread-nav, .fvbread-play{ display:flex; align-items:center; gap:7px; }
-.fvbread-page{ font-size:.8em; color:#dfe7f5; min-width:40px; text-align:center; font-weight:700; }
-.fvbread-btn{ min-width:34px; height:30px; padding:0 9px; font-size:.95em; line-height:1; color:#fff;
-  background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.32); border-radius:9px; cursor:pointer; transition:background .15s; }
+/* Barre de lecture désormais dans le pied (hors carte 3D) → toujours tappable */
+#fig-vread{ display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:10px 16px; margin-bottom:8px; }
+.fvbread-nav, .fvbread-play{ display:flex; align-items:center; gap:8px; }
+.fvbread-lbl{ font-size:1.05em; }
+.fvbread-page{ font-size:.82em; color:#dfe7f5; min-width:42px; text-align:center; font-weight:700; }
+.fvbread-btn{ min-width:44px; height:40px; padding:0 12px; font-size:1.05em; line-height:1; color:#fff;
+  background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.34); border-radius:11px;
+  cursor:pointer; transition:background .15s; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
 .fvbread-btn:hover{ background:rgba(255,255,255,.26); }
+.fvbread-btn:active{ background:rgba(255,255,255,.34); }
 .fvbread-btn:disabled{ opacity:.32; cursor:default; }
-.fvbread-btn.reading{ background:rgba(46,204,113,.55); border-color:#2ecc71; box-shadow:0 0 10px rgba(46,204,113,.6); }
+.fvbread-btn.reading{ background:rgba(46,204,113,.6); border-color:#2ecc71; box-shadow:0 0 12px rgba(46,204,113,.65); }
+.fv-ctrl-btn{ touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
+
+/* ── Responsive du visualiseur : tout doit tenir à l'écran, pied compris ── */
+/* Hauteur dynamique (évite que le pied passe sous la barre d'adresse mobile) */
+#fig-viewer{ height:100vh; height:100dvh; padding-bottom:max(18px, env(safe-area-inset-bottom)); }
+/* La scène peut rétrécir et rogne le débordement de la carte au lieu de pousser le pied */
+#fig-vstage{ min-height:0; overflow:hidden; }
+#fig-vftr{ flex:none; }
+/* Mise à l'échelle de la carte selon la largeur (la carte fait 420×590) */
+@media (max-width: 700px){
+ #fig-perspective{ transform: scale(.78); transform-origin:center center; }
+ #fig-pbase{ width:280px; }
+}
+@media (max-width: 480px){
+ #fig-viewer{ padding:8px 8px max(12px, env(safe-area-inset-bottom)); }
+ #fig-perspective{ transform: scale(.62); }
+ #fig-pbase{ width:230px; }
+ #fig-vhint{ display:none; }
+ .fv-ctrl-btn{ padding:8px 12px; }
+ #fig-vread{ gap:8px 12px; margin-bottom:6px; }
+}
+@media (max-width: 360px){
+ #fig-perspective{ transform: scale(.54); }
+}
+/* Écrans bas : on réduit encore pour garder le pied visible */
+@media (max-height: 680px){
+ #fig-perspective{ transform: scale(.6); }
+ #fig-vhint{ display:none; }
+}
+@media (max-height: 560px){
+ #fig-perspective{ transform: scale(.48); }
+}
