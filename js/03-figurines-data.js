@@ -599,6 +599,64 @@ const FIGURINES=[
 {id:'sx_anniv_maman',name:'Gâteau de Maman',      uni:'Saisonnier',uk:'sx',em:'🎂',em2:'🎈',color:'#e67e22',gc:'#fab1a0',desc:'Le gâteau ambré offert à Maman chaque 11 avril. Sa lumière chaleureuse illumine toute la famille. Souvenir précieux d\'une journée d\'amour.',r:'exclusif',p:0}
 ];
 
+// ═══════════════════════════════════════════════════════
+// v10.3.0 — FICHES DÉTAILLÉES (dos de carte), multi-pages.
+// Fusionnées dans FIGURINES.pages au chargement. Une figurine sans entrée ici
+// garde son ancien `desc` (affiché sur une seule page). Textes factuels rédigés
+// en propres mots (notices encyclopédiques), pensés aussi pour la lecture vocale.
+// ─── LOT RÉFÉRENCE : Dragon Ball ───
+// ═══════════════════════════════════════════════════════
+const FIG_PAGES = {
+ db01: [
+  "Son Goku est un Saiyan né sous le nom de Kakarot sur la planète Vegeta. Bébé, il est envoyé sur Terre juste avant la destruction de son monde. Une chute sur la tête efface ses instincts guerriers : recueilli par le vieux Son Gohan, il grandit le cœur pur, curieux et insatiable de progrès.",
+  "Élevé dans les montagnes, il devient le plus grand artiste martial de la Terre et son protecteur. De Piccolo à Freezer, de Cell à Majin Buu, il affronte les menaces les plus terribles. Son attaque emblématique, le Kaméhaméha, concentre l'énergie entre les paumes en un rayon bleu.",
+  "Goku ne cherche pas la gloire, mais le dépassement de soi : il se relève toujours plus fort. Ses transformations en Super Saiyan, aux cheveux dorés, marquent des paliers de puissance légendaires. Généreux et bon vivant, il incarne la joie de devenir meilleur jour après jour.",
+ ],
+ db02: [
+  "Végéta est le prince des Saiyans, héritier d'un peuple de guerriers presque entièrement disparu. Fier, orgueilleux et obsédé par sa lignée royale, il débarque sur Terre en ennemi redoutable, déterminé à prouver sa supériorité sur tous, et d'abord sur Goku.",
+  "Au fil de ses combats, il choisit peu à peu le camp du bien sans jamais renier sa fierté. Il fonde une famille avec Bulma et devient le père de Trunks. Son Final Flash, déflagration d'énergie concentrée, est l'une de ses attaques les plus dévastatrices.",
+  "Rival éternel de Goku, tour à tour adversaire et allié, Végéta est l'un des personnages les plus complexes de la saga : un guerrier d'élite qui apprend, à force d'épreuves, la valeur de la loyauté et de l'amour des siens.",
+ ],
+ db03: [
+  "Gohan est le fils aîné de Goku et de Chi-Chi. Plus studieux que guerrier, il rêve d'études plus que de combats — mais il abrite un potentiel qui dépasse celui de son père, prêt à se libérer dans les moments de grand danger.",
+  "Enfant, il atteint le stade de Super Saiyan de niveau 2, parcouru d'éclairs, et terrasse Cell lors des Cell Games. Doux et réfléchi au quotidien, il devient terrible lorsqu'on menace ceux qu'il aime. Il représente l'espoir d'une nouvelle génération de défenseurs de la Terre.",
+ ],
+ db04: [
+  "Piccolo est un guerrier de l'espèce Namek. Né de l'héritage du Roi Démon Piccolo, il commence en ennemi juré de Goku, froid et solitaire, avant de devenir le mentor le plus dévoué du jeune Gohan.",
+  "Il peut étirer ses membres, régénérer son corps et lire les intentions de l'adversaire. Son Special Beam Cannon, rayon perforant en spirale, exige une longue concentration mais traverse presque tout. Sage et profondément honorable, Piccolo incarne la rédemption par l'amitié et le sacrifice.",
+ ],
+ db05: [
+  "Freezer est un tyran galactique qui régna par la terreur sur d'innombrables planètes. C'est lui qui détruisit la planète Vegeta, redoutant la légende du Super Saiyan. Élégant, raffiné et d'une cruauté absolue, il se croit le plus puissant de l'univers.",
+  "Capable de plusieurs transformations, il dévoile dans sa forme finale, étonnamment sobre, une puissance terrifiante. Son Death Beam transperce ses cibles avec une précision chirurgicale. Vaincu sur Namek, il reviendra plus fort encore, symbole du mal orgueilleux qui refuse de disparaître.",
+ ],
+ db06: [
+  "Cell est un être bio-mécanique conçu à partir des cellules des plus grands combattants, fruit des recherches du Dr Gero. Venu d'un futur alternatif, il a pour but d'atteindre la « perfection » absolue.",
+  "En absorbant les cyborgs C-17 et C-18, il accède à sa forme parfaite et peut alors utiliser les techniques de tous les guerriers dont il porte l'héritage. Il organise les Cell Games, un tournoi pour défier la Terre — avant d'être finalement vaincu par Gohan.",
+ ],
+ db07: [
+  "Majin Buu est une créature magique très ancienne, réveillée par les sorciers Bibidi puis Babidi. Le « M » sur son front trahit cette magie. D'abord enfantin et joueur sous sa forme rose et potelée, il peut changer ses ennemis en bonbons.",
+  "Sa nature cache une puissance de destruction colossale. Sa forme la plus dangereuse, Kid Buu, est une entité de chaos pur, dotée d'une régénération quasi sans limite. Il faudra l'union des plus grands guerriers pour en venir à bout.",
+ ],
+ db08: [
+  "Trunks du futur est le fils de Végéta et de Bulma, venu d'un avenir ravagé par les cyborgs. Dans son époque, la Terre est en ruines ; il remonte le temps pour avertir les héros et changer le cours de l'histoire.",
+  "Combattant solitaire et mélancolique, il manie l'épée avec une maîtrise rare et n'hésite pas à se sacrifier pour les siens. Courageux et déterminé, il incarne l'espoir d'un futur que l'on peut encore sauver.",
+ ],
+ db09: [
+  "Krilin est le meilleur ami de Goku depuis l'enfance, formé avec lui auprès du maître Tortue Géniale. Petit, chauve, marqué de six points sur le front et dépourvu de nez, il est l'être humain le plus fort du monde de Dragon Ball.",
+  "Son Kienzan, disque d'énergie tranchant comme un rasoir, peut découper presque n'importe quoi. Courageux malgré ses limites, il épouse C-18 et fonde une famille. Krilin prouve que le cœur et l'amitié comptent autant que la puissance brute.",
+ ],
+ db10: [
+  "C-18 est une cyborg créée par le Dr Gero à partir d'une jeune femme. Dotée d'une force surhumaine et d'une énergie inépuisable, elle apparaît d'abord froide et insaisissable, aux côtés de son frère jumeau C-17.",
+  "Au fil du temps, elle se rapproche des défenseurs de la Terre, épouse Krilin et devient une mère aimante, sans rien perdre de son calme ni de sa redoutable efficacité au combat. Élégante et indépendante, elle est l'une des combattantes les plus marquantes de la saga.",
+ ],
+};
+try{
+ if(typeof FIGURINES !== 'undefined' && Array.isArray(FIGURINES)){
+  FIGURINES.forEach(f => { if(FIG_PAGES[f.id]) f.pages = FIG_PAGES[f.id]; });
+ }
+}catch(e){ console.warn('FIG_PAGES merge', e); }
+
+
 // ── Boutique figurines ──────────────────────────────────
 // Lazy-load par défaut : 'none' = aucune licence sélectionnée → pas de grille
 let _figFilter='none';

@@ -316,9 +316,14 @@ function _renderFigViewer(fig,id){
  $('fv-nm').style.textShadow=`0 0 14px ${fig.gc}`;
  $('fv-rar').textContent=RARITY_STARS[fig.r]+' '+fig.r;
  $('fv-rar').style.cssText=`background:${RARITY_COL[fig.r]}33;color:${RARITY_COL[fig.r]};border:1px solid ${RARITY_COL[fig.r]};font-size:.62em;margin-top:6px;padding:3px 12px;border-radius:12px;font-weight:700;`;
- // Face arrière
+ // Face arrière (v10.3.0 : pagination multi-pages + lecture vocale pour non-lecteurs)
  $('fv-buni').textContent=UNI_ICON[fig.uk]||''; // face arrière
- $('fv-bdesc').textContent=fig.desc;
+ if($('fv-bname')) $('fv-bname').textContent = fig.name;
+ _fvPages = (Array.isArray(fig.pages) && fig.pages.length) ? fig.pages.slice() : [fig.desc||''];
+ _fvPageIdx = 0;
+ _fvRenderBackPage();
+ if(typeof _narrateStop==='function') _narrateStop();           // couper toute voix résiduelle
+ const _readBar=$('fig-vread'); if(_readBar) _readBar.style.display='flex';
  // Bouton état
  $('fig-spin-btn').textContent='⏸ Pause';
  // Générer les étoiles de fond
@@ -338,7 +343,31 @@ function _renderFigViewer(fig,id){
  document.addEventListener('keydown',$('fig-viewer')._escHandler);
 }
 
+// ── v10.3.0 : fiche multi-pages + lecture vocale (réutilise la narration globale) ──
+let _fvPages = [''];
+let _fvPageIdx = 0;
+function _fvRenderBackPage(){
+ const d = $('fv-bdesc'); if(d) d.textContent = _fvPages[_fvPageIdx] || '';
+ const multi = _fvPages.length > 1;
+ const navw = $('fv-bnavwrap'); if(navw) navw.style.visibility = multi ? 'visible' : 'hidden';
+ const pg = $('fv-bpage'); if(pg) pg.textContent = (_fvPageIdx + 1) + ' / ' + _fvPages.length;
+ const pv = $('fv-bprev'); if(pv) pv.disabled = _fvPageIdx <= 0;
+ const nx = $('fv-bnext'); if(nx) nx.disabled = _fvPageIdx >= _fvPages.length - 1;
+}
+function figBackPage(dir){
+ const n = _fvPageIdx + dir;
+ if(n < 0 || n >= _fvPages.length) return;
+ _fvPageIdx = n;
+ if(typeof _narrateStop === 'function') _narrateStop();          // une page = une lecture
+ _fvRenderBackPage();
+ try{ if(typeof beep === 'function') beep(460,'sine',.05,.03); }catch(e){}
+}
+function figReadPlay(){ if(typeof _narrateStory === 'function') _narrateStory(_fvPages[_fvPageIdx] || ''); }
+function figReadPause(){ if(typeof _narratePause === 'function') _narratePause(); }
+function figReadStop(){ if(typeof _narrateStop === 'function') _narrateStop(); }
+
 function closeFigViewer(){
+ if(typeof _narrateStop==='function') _narrateStop();           // couper la voix en fermant
  $('fig-viewer').classList.add('hidden');
  if(_fvRaf){cancelAnimationFrame(_fvRaf);_fvRaf=null;}
  clearTimeout(_fvResumeT);

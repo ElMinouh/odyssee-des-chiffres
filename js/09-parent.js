@@ -817,23 +817,21 @@ function exportPDF(){
  let html;
  try{ html = _buildReportHTML(player, d); }
  catch(e){ console.error('[exportPDF] build', e); toast('❌ Erreur génération du rapport.'); return; }
+ // Téléchargement direct (hors-ligne, sans CDN ni fenêtre d'impression) :
+ // un fichier HTML autonome, ouvrable et imprimable en PDF si besoin.
  try{
-  const ifr = document.createElement('iframe');
-  ifr.setAttribute('aria-hidden','true');
-  ifr.style.cssText = 'position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0;pointer-events:none;';
-  document.body.appendChild(ifr);
-  const doc = ifr.contentWindow.document;
-  doc.open(); doc.write(html); doc.close();
-  let done=false;
-  const go = ()=>{ if(done) return; done=true;
-   try{ ifr.contentWindow.focus(); ifr.contentWindow.print(); }
-   catch(e){ console.error('[exportPDF] print', e); toast('❌ Impression indisponible sur cet appareil.'); }
-   setTimeout(()=>{ try{ ifr.remove(); }catch(e){} }, 1500);
-  };
-  ifr.onload = ()=> setTimeout(go, 300);
-  setTimeout(go, 900); // filet de sécurité si onload ne se déclenche pas
-  toast('🖨️ Choisis « Enregistrer au format PDF » dans la fenêtre d\'impression.', 4500);
- }catch(e){ console.error('[exportPDF]', e); toast('❌ Erreur lors de l\'impression.'); }
+  const stamp = new Date().toISOString().slice(0,10);
+  const safe = String(player).replace(/[^\w\-]+/g,'_');
+  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `Rapport_${safe}_${stamp}.html`;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{ try{ URL.revokeObjectURL(url); a.remove(); }catch(e){} }, 1500);
+  toast('📄 Rapport téléchargé. Ouvre-le pour le lire ou l\'imprimer en PDF.', 4500);
+ }catch(e){ console.error('[exportPDF] download', e); toast('❌ Téléchargement impossible sur cet appareil.'); }
 }
 // ═══════════════════════════════════════════════════════
 // Chantier C3 : Mode "Devoirs" parents
