@@ -1028,6 +1028,184 @@ Object.assign(FIG_PAGES, {
   "De ses yeux jaillissent des rayons capables de poursuivre leur cible sans jamais la manquer. Implacable et calculateur, Darkseid cherche une formule qui lui donnerait le contrôle sur toute volonté vivante.",
  ],
 });
+// ─── LOT : Dragon Ball (suite db11-db36) ───
+Object.assign(FIG_PAGES, {
+ db11: [
+  "Broly est un Saiyan d'une puissance hors du commun, surnommé le Super Saiyan légendaire. Sa force semble ne connaître aucune limite et augmente sans cesse au fil du combat.",
+  "Longtemps incontrôlable, emporté par une rage dévastatrice, il est capable de tenir tête à plusieurs guerriers d'élite à la fois. Broly incarne la puissance brute des Saiyans poussée à son paroxysme.",
+ ],
+ db12: [
+  "L'Ultra Instinct est l'un des états les plus avancés que Goku ait atteints. Dans cette forme, son corps réagit et esquive tout seul, sans réflexion, libéré de l'hésitation.",
+  "Sa chevelure et son aura prennent une teinte argentée. Cette maîtrise extrême, longtemps réservée à des divinités, représente l'aboutissement de toute une vie d'entraînement et de dépassement de soi.",
+ ],
+ db13: [
+  "Hercule, aussi appelé Mr Satan, est le « champion du monde » autoproclamé des arts martiaux. En réalité dépourvu de véritables pouvoirs, il doit surtout sa gloire à sa mise en scène et à un immense coup de chance.",
+  "Vantard et froussard, il s'est attribué la victoire contre de redoutables ennemis vaincus en secret par les vrais héros. Pourtant, derrière le bluff, Hercule a parfois un courage et une bonté sincères. C'est le père de Videl.",
+ ],
+ db14: [
+  "C-17 est un cyborg créé par le Dr Gero, frère jumeau de C-18. Doté d'une énergie inépuisable, il n'a pas besoin de se reposer et peut combattre sans fin.",
+  "D'abord froid et insouciant, il choisit plus tard une vie paisible de garde forestier, protecteur de la nature et des animaux. Calme et indépendant, C-17 cache une puissance considérable.",
+ ],
+ db15: [
+  "La Tortue Géniale, ou Maître Roshi, est un vieux maître d'arts martiaux à la longévité extraordinaire. C'est lui qui a formé Goku et Krilin et inventé la célèbre vague d'énergie qu'ils utilisent.",
+  "Souvent comique et farfelu, il cache derrière son grand âge une sagesse réelle et une puissance qui peut encore surprendre. La Tortue Géniale est l'un des piliers de la formation des héros.",
+ ],
+ db16: [
+  "Chichi est l'épouse de Goku et la fille du Roi Gyumao. Élevée comme une jeune combattante, elle est devenue une mère exigeante qui rêve d'un avenir brillant pour ses fils.",
+  "Elle insiste pour que Gohan et Goten étudient autant qu'ils s'entraînent. Au caractère bien trempé, Chichi veille farouchement sur sa famille et ne se laisse jamais marcher sur les pieds.",
+ ],
+ db17: [
+  "Son Goten est le second fils de Goku, qu'il n'a longtemps pas connu. Son visage et sa coiffure rappellent étonnamment ceux de son père enfant.",
+  "Très doué malgré son jeune âge, il accède très tôt à la transformation en Super Saiyan. Avec son meilleur ami Trunks, il apprend une technique de fusion qui combine leurs forces en un seul guerrier surpuissant.",
+ ],
+ db18: [
+  "Trunks enfant est le fils de Végéta et de Bulma, espiègle et plein d'énergie. Fier comme son père, il rivalise volontiers avec son ami Goten.",
+  "Très tôt capable de devenir Super Saiyan, il forme avec Goten un duo inséparable. Ensemble, grâce à une danse de fusion, ils donnent naissance à un combattant fusionné d'une puissance impressionnante.",
+ ],
+ db19: [
+  "Bulma est une scientifique de génie, héritière de la firme Capsule Corp, célèbre pour ses inventions qui rangent des objets entiers dans de minuscules capsules. C'est elle qui, au tout début, entraîne Goku à la recherche des Dragon Balls.",
+  "Curieuse, débrouillarde et au sacré caractère, elle conçoit véhicules, radars et machines en tout genre. Amie de toujours des héros et épouse de Végéta, Bulma est le cerveau technique du groupe.",
+ ],
+ db20: [
+  "Videl est la fille d'Hercule, une jeune fille intrépide qui aide à faire régner l'ordre dans sa ville. Décidée à progresser, elle apprend les arts martiaux puis, auprès de Gohan, la technique du vol.",
+  "Courageuse et franche, elle s'attache à Gohan et finit par fonder une famille avec lui. Videl montre qu'avec de la volonté, on peut s'élever bien au-delà de ses débuts.",
+ ],
+ db21: [
+  "Yamcha est un ancien bandit du désert devenu l'un des compagnons fidèles de Goku. Reconverti, il devient aussi un joueur de baseball réputé.",
+  "Son style de combat imite les assauts vifs d'un loup. S'il n'est pas le plus puissant du groupe, Yamcha reste un allié courageux, présent dans les grandes batailles aux côtés des héros.",
+ ],
+ db22: [
+  "Tenshinhan est un artiste martial reconnaissable à son troisième œil. D'abord adversaire de Goku, il devient un allié discipliné et droit, attaché au dépassement de soi.",
+  "Sa technique la plus redoutable concentre toute son énergie en un tir dévastateur, au prix d'un grand effort. Sérieux et loyal, Tenshinhan est l'un des plus solides combattants humains.",
+ ],
+ db23: [
+  "Chaozu est un petit guerrier au teint pâle, doté de pouvoirs psychiques. Il peut immobiliser ses adversaires par la pensée et déplacer des objets à distance.",
+  "Inséparable de son ami Tenshinhan, il fait preuve d'une loyauté absolue, prêt à tous les sacrifices pour les siens. Malgré sa petite taille, Chaozu ne manque pas de courage.",
+ ],
+ db24: [
+  "Yajirobé est un combattant bourru qui manie le sabre, plus malin que téméraire. Souvent peureux, il rend pourtant de grands services aux héros aux moments décisifs.",
+  "C'est notamment lui qui apporte les haricots magiques capables de soigner instantanément les blessures. Derrière son apparente lâcheté, Yajirobé se révèle parfois étonnamment utile et courageux.",
+ ],
+ db25: [
+  "C-16 est un cyborg de grande taille créé par le Dr Gero. Contrairement à ses semblables, c'est un être profondément doux, qui aime la nature et déteste la violence.",
+  "Malgré une force colossale, il refuse de se battre sans raison et protège les animaux. Pacifiste au grand cœur, C-16 émeut par le contraste entre sa puissance et sa bonté.",
+ ],
+ db26: [
+  "Mr Popo est le gardien mystérieux du Palais céleste, qui veille sur les lieux depuis des temps immémoriaux. Calme et énigmatique, il assiste le Tout-Puissant qui protège la Terre.",
+  "Il aide aussi les héros à s'entraîner et à progresser, leur ouvrant l'accès à des épreuves particulières. Discret mais essentiel, Mr Popo est une figure tutélaire de l'univers de Dragon Ball.",
+ ],
+ db27: [
+  "Kaio Shin est une divinité chargée de veiller sur l'univers et l'équilibre du monde. Bien plus sage que puissant au combat, il guide les héros face aux plus grandes menaces.",
+  "C'est lui qui les met en garde contre le réveil d'un être de destruction redoutable. Son rôle est de préserver la vie et de transmettre le savoir des dieux aux défenseurs de la Terre.",
+ ],
+ db28: [
+  "Shenron est le dragon sacré qui apparaît lorsque les sept Dragon Balls sont réunies. Immense, serpentin et majestueux, il s'élève dans le ciel pour exaucer un vœu.",
+  "Il peut accomplir des prodiges, jusqu'à ramener des êtres à la vie, selon des règles précises. Une fois le souhait réalisé, les boules de cristal se dispersent à travers le monde, et la quête peut recommencer.",
+ ],
+ db29: [
+  "Le Guerrier intergalactique est un combattant venu d'au-delà des étoiles, comme on en croise dans les grands tournois d'arts martiaux qui rassemblent des champions de tout l'univers.",
+  "Mesurant sa force à celle des héros de la Terre, il représente les innombrables adversaires que Goku et ses amis affrontent pour progresser. Ces duels sont l'occasion de repousser sans cesse leurs limites.",
+ ],
+ db30: [
+  "Bardock est un Saiyan de basse caste, soldat aguerri, et le père biologique de Goku. Au sein de son monde guerrier, il combat au service d'un maître tyrannique avant de se dresser contre lui.",
+  "Frappé de visions de l'avenir, il pressent le destin tragique de son peuple. Courageux jusqu'au bout, Bardock incarne la fierté et la combativité saiyanes dont héritera son fils.",
+ ],
+ db31: [
+  "Tao Pai Pai est un assassin redouté, tueur à gages aussi arrogant que dangereux. Sûr de lui à l'excès, il méprise ses adversaires qu'il croit largement inférieurs.",
+  "Vaincu une première fois, il revient transformé en partie en cyborg, avide de vengeance. Cruel et vaniteux, Tao Pai Pai est l'un des premiers grands ennemis croisés par Goku.",
+ ],
+ db32: [
+  "Les Saibaman sont de petites créatures verdâtres que les Saiyans font pousser à partir de graines spéciales. Utilisés comme combattants jetables, ils surgissent en groupe pour submerger l'ennemi.",
+  "Vifs et imprévisibles, ils peuvent se cramponner à leur cible et se sacrifier dans une explosion. Faibles individuellement, ils deviennent dangereux par le nombre et la surprise.",
+ ],
+ db33: [
+  "Nappa est un Saiyan massif et brutal, compagnon d'armes de Végéta lors de leur invasion de la Terre. Sa force physique et sa résistance en font un adversaire écrasant pour les héros.",
+  "Sans pitié et imbu de sa puissance, il sous-estime toutefois la détermination de ses ennemis. Nappa marque l'une des premières grandes épreuves affrontées par les défenseurs de la Terre.",
+ ],
+ db34: [
+  "Le Capitaine Ginyu est le chef du commando d'élite au service du tyran Freezer. Son pouvoir le plus déroutant lui permet d'échanger son corps avec celui d'un adversaire.",
+  "Avec son équipe, il a pour habitude d'enchaîner des poses théâtrales avant le combat. Rusé et puissant, Ginyu compte sur sa technique d'échange de corps pour s'approprier la force de plus fort que lui.",
+ ],
+ db35: [
+  "Dabra est un roi des démons d'une grande puissance, serviteur dévoué d'un sorcier maléfique. Son apparence imposante et ses pouvoirs en font un ennemi de premier plan.",
+  "Sa capacité la plus redoutable transforme en pierre quiconque est touché par son crachat. Fier et impitoyable, Dabra est l'un des derniers remparts avant le réveil d'une menace encore plus terrible.",
+ ],
+ db36: [
+  "Freezer Doré est l'évolution ultime du tyran Freezer, une forme éclatante obtenue à force d'entraînement, lui qui comptait jusque-là uniquement sur son talent naturel.",
+  "Dans cet état doré, sa puissance dépasse de loin tout ce qu'il avait montré auparavant. Toujours aussi cruel et orgueilleux, un Freezer enfin discipliné devient une menace d'une dangerosité inédite.",
+ ],
+});
+// ─── LOT : Star Wars ───
+Object.assign(FIG_PAGES, {
+ sw01: [
+  "Luke Skywalker est un jeune fermier d'une planète désertique qui rêve d'aventure. En découvrant qu'il est sensible à la Force, cette énergie mystérieuse qui relie toute chose, il s'engage dans la lutte contre un empire tyrannique.",
+  "Formé par de grands maîtres, il apprend à manier le sabre laser et devient un chevalier Jedi. Courageux et plein d'espoir, Luke joue un rôle décisif dans la chute de l'Empire et la restauration de la paix.",
+ ],
+ sw02: [
+  "Dark Vador est l'un des plus célèbres méchants de la saga, vêtu d'une armure noire et au souffle reconnaissable entre tous. Autrefois un Jedi prometteur, il a basculé du côté obscur de la Force.",
+  "Devenu le bras armé de l'Empire, il inspire la terreur dans toute la galaxie. Pourtant, une étincelle de bonté subsiste en lui : au terme de son histoire, il retrouve la lumière dans un ultime geste de rédemption.",
+ ],
+ sw03: [
+  "Maître Yoda est un Jedi minuscule mais d'une sagesse et d'une puissance immenses, âgé de plusieurs siècles. Sa manière de parler, en inversant ses phrases, est aussi célèbre que ses enseignements.",
+  "Maître parmi les maîtres, il guide des générations de Jedi et perçoit la Force comme peu d'êtres en sont capables. Malgré sa petite taille, Yoda est un combattant et un mentor redoutable.",
+ ],
+ sw04: [
+  "La princesse Leia est une dirigeante courageuse de la rébellion contre l'Empire. Diplomate habile et combattante déterminée, elle n'hésite jamais à monter au front pour défendre la liberté.",
+  "Forte et lucide, elle est aussi la sœur jumelle de Luke, elle aussi sensible à la Force. Leia incarne le commandement, l'espoir et la résistance face à l'oppression.",
+ ],
+ sw05: [
+  "Han Solo est un contrebandier débrouillard, pilote d'un vaisseau légendaire, le Faucon Millenium. Roublard et indépendant, il ne pense d'abord qu'à ses propres affaires.",
+  "Mais au contact des héros, il met son talent de pilote et son courage au service de la rébellion. Sous ses airs cyniques, Han cache un cœur fidèle et un sens de l'amitié à toute épreuve.",
+ ],
+ sw06: [
+  "Chewbacca est un Wookiee, une grande créature au pelage fourni, fidèle compagnon et copilote de Han Solo. Sa force est colossale et sa loyauté sans faille.",
+  "Il s'exprime par des grognements que ses amis comprennent parfaitement. Malgré son allure impressionnante, Chewbacca est un cœur tendre, toujours prêt à protéger les siens.",
+ ],
+ sw07: [
+  "R2-D2 est un petit droïde astromécano, infatigable et plein de ressources. Capable de réparer les vaisseaux et de pirater les systèmes, il s'exprime par une série de sifflements et de bips.",
+  "Brave et malin, il transporte souvent des informations cruciales pour la rébellion. Compagnon inséparable de C-3PO, R2-D2 sauve la mise aux héros plus souvent qu'à son tour.",
+ ],
+ sw08: [
+  "C-3PO est un droïde de protocole doré, conçu pour la communication et la traduction de millions de langues. Maniéré et anxieux, il s'inquiète à la moindre difficulté.",
+  "Toujours accompagné de R2-D2, il forme avec lui un duo comique et attachant. Sous ses airs craintifs, C-3PO se rend précieux en aidant les héros à se comprendre à travers la galaxie.",
+ ],
+ sw09: [
+  "Grogu est un petit être de la même espèce mystérieuse que le maître Yoda, sensible à la Force malgré son très jeune âge. Ses grands yeux et son air innocent l'ont rendu immédiatement célèbre.",
+  "Curieux et attachant, il manifeste déjà des pouvoirs étonnants. Recueilli et protégé par un guerrier solitaire, Grogu est au cœur d'une histoire d'adoption et de tendresse.",
+ ],
+ sw10: [
+  "Le Mandalorien est un chasseur de primes solitaire, protégé par une armure de métal précieux. Fidèle à un code d'honneur strict, il ne retire jamais son casque devant les autres.",
+  "D'abord intéressé par les récompenses, il change de vie en prenant sous son aile le petit Grogu. Taciturne mais loyal, le Mandalorien devient un protecteur prêt à tout pour son jeune compagnon.",
+ ],
+ sw11: [
+  "Obi-Wan Kenobi est un maître Jedi sage et mesuré, célèbre pour son talent au sabre laser et sa maîtrise de la Force. Il a formé plusieurs élèves au fil de sa vie.",
+  "Mentor de Luke à ses débuts, il lui transmet les premiers secrets des Jedi. Gardien des valeurs de l'Ordre, Obi-Wan demeure une figure de droiture et de courage face à la montée du côté obscur.",
+ ],
+ sw12: [
+  "Les Stormtroopers sont les soldats de l'Empire, vêtus d'une armure blanche reconnaissable entre toutes. Déployés en grand nombre, ils maintiennent l'ordre par la force et la peur.",
+  "Armés de blasters, ils interviennent en rangs serrés sur tous les fronts de la galaxie. Anonymes sous leur casque, ils symbolisent la puissance écrasante mais impersonnelle de l'Empire.",
+ ],
+ sw13: [
+  "Boba Fett est l'un des chasseurs de primes les plus redoutés de la galaxie, vêtu d'une armure mandalorienne usée par les combats. Son équipement comprend un jet-pack et tout un arsenal.",
+  "Silencieux et efficace, il traque ses cibles avec une froide détermination. Sa réputation de traqueur implacable en fait une légende parmi les hors-la-loi.",
+ ],
+ sw14: [
+  "Rey est une jeune femme débrouillarde, livrée à elle-même sur une planète reculée, qui découvre peu à peu sa puissante sensibilité à la Force. Son destin la propulse au cœur d'un grand conflit.",
+  "Formée aux voies des Jedi, elle apprend à manier le sabre laser et à maîtriser ses dons. Courageuse et indépendante, Rey représente une nouvelle génération de héros porteurs d'espoir.",
+ ],
+ sw15: [
+  "Kylo Ren est un guerrier du côté obscur, au tempérament tourmenté, reconnaissable à son masque et à son sabre laser à la garde en forme de croix. Il est habité par un conflit intérieur permanent.",
+  "Tiraillé entre l'attrait des ténèbres et l'appel de la lumière, il lutte contre son propre héritage. Cette dualité fait de Kylo Ren l'un des personnages les plus complexes de la saga récente.",
+ ],
+ sw16: [
+  "L'Empereur Palpatine est le maître caché de l'Empire, un seigneur du côté obscur d'une ruse redoutable. Pendant des années, il manipule la galaxie dans l'ombre avant de saisir le pouvoir absolu.",
+  "Il foudroie ses ennemis d'éclairs jaillissant de ses mains et corrompt les âmes par la tentation. Patient et impitoyable, Palpatine est l'incarnation même du mal qui ronge la galaxie.",
+ ],
+ sw17: [
+  "Dark Maul est un apprenti du côté obscur, au visage rouge et noir orné de cornes, à l'allure aussi inquiétante que spectaculaire. Acrobate et combattant féroce, il se déplace avec une agilité bestiale.",
+  "Son arme distinctive est un sabre laser à double lame, qu'il fait tournoyer pour frapper de tous les côtés. Silencieux et brutal, Dark Maul est l'un des adversaires les plus impressionnants des Jedi.",
+ ],
+});
 try{
  if(typeof FIGURINES !== 'undefined' && Array.isArray(FIGURINES)){
   FIGURINES.forEach(f => { if(FIG_PAGES[f.id]) f.pages = FIG_PAGES[f.id]; });
