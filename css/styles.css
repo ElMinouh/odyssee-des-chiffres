@@ -4667,6 +4667,7 @@ body.mat-mode #v-game{
 .story-audio-btn:hover{transform:translateY(-1px) scale(1.05);}
 .story-audio-btn:active{transform:scale(.94);box-shadow:0 1px 3px rgba(120,80,0,.4);}
 .story-audio-btn.snarr-play{background:radial-gradient(circle at 30% 30%,#dff7df,#a8e0a8);border-color:#3a8a3a;color:#1f5a1f;}
+.story-audio-btn.snarr-play.reading{background:radial-gradient(circle at 30% 30%,#bff5bf,#5fd35f);border-color:#2ecc71;box-shadow:0 0 14px rgba(46,204,113,.7);}
 .story-audio-btn.snarr-stop{background:radial-gradient(circle at 30% 30%,#ffe0e0,#f0b0b0);border-color:#b03a3a;color:#7a1f1f;}
 
 /* ── Collège C6 : programme par blocs (algorithmique) ── */

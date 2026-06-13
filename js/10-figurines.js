@@ -386,6 +386,14 @@ function _figSpeakFrom(idx){
 }
 function figReadPlay(){
  if(!window.speechSynthesis) return;
+ // Dos à plat pendant la lecture : on stoppe la rotation auto et on présente la
+ // face arrière (demi-tour le plus proche pour éviter un saut visuel).
+ try{
+  _fvAuto = false;
+  _fvRotY = Math.round((_fvRotY - 180) / 360) * 360 + 180;
+  const c = $('fig-card3d'); if(c) c.style.transform = `rotateY(${_fvRotY}deg)`;
+  const sb = $('fig-spin-btn'); if(sb) sb.textContent = '▶ Auto';
+ }catch(e){}
  try{ if(window.speechSynthesis.paused){ window.speechSynthesis.resume(); _figSetPlaying(true); return; } }catch(e){}
  try{ window.speechSynthesis.cancel(); }catch(e){}
  _figReadActive = true; _figSetPlaying(true);

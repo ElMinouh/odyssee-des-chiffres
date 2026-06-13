@@ -4747,8 +4747,35 @@ function _showStoryModal(chapter, onDone){
  let page = 0;
  const overlay = document.createElement('div');
  overlay.className = 'story-overlay';
+ // v10.3.2 — Lecture enchaînée du chapitre : lit page après page en faisant
+ // défiler l'affichage, sans s'arrêter à chaque page (3 niveaux concernés).
+ let _readActive = false, _readUtter = null;
+ function _bSyncPlay(){ const pl = overlay.querySelector('.snarr-play'); if(pl) pl.classList.toggle('reading', !!_readActive); }
+ function _bSpeak(idx){
+  if(!window.speechSynthesis){ _readActive=false; return; }
+  if(idx >= chapter.pages.length){ _readActive=false; _bSyncPlay(); return; }
+  page = idx; render();                                   // défilement visuel synchronisé
+  const tmp = document.createElement('div'); tmp.innerHTML = _storyText(chapter.pages[idx].text || '');
+  const plain = (tmp.textContent || tmp.innerText || '').replace(/\s+/g,' ').trim();
+  if(!plain){ _bSpeak(idx+1); return; }
+  const hum = (typeof _humanizeForSpeech==='function') ? _humanizeForSpeech(plain) : plain;
+  const u = new SpeechSynthesisUtterance(hum);
+  u.lang='fr-FR'; u.rate=0.84; u.pitch=1.05; u.volume=1;
+  try{ const v=_pickNarratorVoice(); if(v) u.voice=v; }catch(e){}
+  u.onend = ()=>{ if(_readActive && _readUtter===u) _bSpeak(idx+1); };   // enchaîne la page suivante
+  _readUtter = u; _storyUtter = u;
+  try{ window.speechSynthesis.speak(u); }catch(e){ _readActive=false; }
+ }
+ function _bPlay(){
+  if(!window.speechSynthesis) return;
+  try{ if(window.speechSynthesis.paused){ window.speechSynthesis.resume(); _bSyncPlay(); return; } }catch(e){}
+  try{ window.speechSynthesis.cancel(); }catch(e){}
+  _readActive = true; _bSpeak(page); _bSyncPlay();         // démarre à la page courante puis enchaîne
+ }
+ function _bPause(){ try{ if(window.speechSynthesis.speaking && !window.speechSynthesis.paused){ window.speechSynthesis.pause(); _bSyncPlay(); } }catch(e){} }
+ function _bStop(){ _readActive=false; _readUtter=null; try{ window.speechSynthesis.cancel(); }catch(e){} _bSyncPlay(); }
  function close(){
-  _narrateStop();
+  _bStop();
   overlay.classList.add('story-out');
   setTimeout(()=>{ try{ overlay.remove(); }catch(e){} if(onDone) onDone(); }, 300);
  }
@@ -4773,15 +4800,15 @@ function _showStoryModal(chapter, onDone){
     ${!last?`<button class="story-skip">Passer l'histoire</button>`:''}
    </div>`;
   const nx = overlay.querySelector('.story-next');
-  if(nx) nx.onclick = ()=>{ _narrateStop(); if(!last){ page++; render(); } else close(); };
+  if(nx) nx.onclick = ()=>{ _bStop(); if(!last){ page++; render(); } else close(); };
   const pv = overlay.querySelector('.story-prev');
-  if(pv) pv.onclick = ()=>{ _narrateStop(); if(page>0){ page--; render(); } };
+  if(pv) pv.onclick = ()=>{ _bStop(); if(page>0){ page--; render(); } };
   const sk = overlay.querySelector('.story-skip');
   if(sk) sk.onclick = close;
-  const _pl = overlay.querySelector('.snarr-play');  if(_pl) _pl.onclick = ()=>_narrateStory(p.text);
-  const _pa = overlay.querySelector('.snarr-pause'); if(_pa) _pa.onclick = _narratePause;
-  const _st = overlay.querySelector('.snarr-stop');  if(_st) _st.onclick = _narrateStop;
-  if(typeof beep==='function'){ try{ beep(520,'sine',.12,.05); }catch(e){} }
+  const _pl = overlay.querySelector('.snarr-play');  if(_pl){ _pl.onclick = _bPlay; if(_readActive) _pl.classList.add('reading'); }
+  const _pa = overlay.querySelector('.snarr-pause'); if(_pa) _pa.onclick = _bPause;
+  const _st = overlay.querySelector('.snarr-stop');  if(_st) _st.onclick = _bStop;
+  if(!_readActive && typeof beep==='function'){ try{ beep(520,'sine',.12,.05); }catch(e){} }
  }
  render();
  document.body.appendChild(overlay);
