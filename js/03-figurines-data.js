@@ -1206,6 +1206,263 @@ Object.assign(FIG_PAGES, {
   "Son arme distinctive est un sabre laser à double lame, qu'il fait tournoyer pour frapper de tous les côtés. Silencieux et brutal, Dark Maul est l'un des adversaires les plus impressionnants des Jedi.",
  ],
 });
+// ─── LOT : Pokémon ───
+Object.assign(FIG_PAGES, {
+ pk01: [
+  "Pikachu est sans doute le Pokémon le plus célèbre au monde. Petit rongeur jaune aux longues oreilles pointues et à la queue en forme d'éclair, il stocke de l'électricité dans les poches rouges de ses joues.",
+  "De type Électrik, il libère des décharges plus ou moins puissantes selon son humeur. Vif, attachant et fidèle, Pikachu est le partenaire inséparable du dresseur Sacha dans ses aventures.",
+ ],
+ pk02: [
+  "Raichu est l'évolution de Pikachu, obtenue grâce à une Pierre Foudre. Plus grand et plus robuste, il dégage une électricité bien plus intense.",
+  "Sa longue queue se termine par une pointe qui lui sert à se décharger dans le sol pour ne pas être paralysé par sa propre énergie. Raichu est un Pokémon Électrik puissant et impressionnant.",
+ ],
+ pk03: [
+  "Salamèche est un petit Pokémon de type Feu, semblable à un lézard, reconnaissable à la flamme qui brûle au bout de sa queue. Cette flamme reflète sa santé et son humeur.",
+  "Si elle vacille, c'est que Salamèche est fatigué ; si elle flambe haut, c'est qu'il est en pleine forme. Curieux et joueur, c'est l'un des tout premiers compagnons que choisissent de nombreux dresseurs.",
+ ],
+ pk04: [
+  "Reptincel est l'évolution de Salamèche. Plus grand, plus sûr de lui et plus combatif, il se montre nettement plus agressif au combat.",
+  "La flamme de sa queue brûle plus fort, signe de sa puissance grandissante. Reptincel est une étape vers une évolution finale spectaculaire.",
+ ],
+ pk05: [
+  "Dracaufeu est l'évolution finale de Salamèche, un Pokémon majestueux ressemblant à un dragon ailé, de type Feu et Vol. Il peut s'élever très haut dans le ciel.",
+  "Ses flammes atteignent des températures extrêmes, capables de faire fondre presque n'importe quoi. Fier et puissant, Dracaufeu est l'un des Pokémon les plus appréciés des dresseurs.",
+ ],
+ pk06: [
+  "Bulbizarre est un Pokémon de type Plante et Poison, qui porte sur son dos un bulbe végétal. Ce bulbe puise l'énergie du soleil pour grandir avec lui.",
+  "Docile et facile à élever, c'est l'un des premiers Pokémon que choisissent les nouveaux dresseurs. Bulbizarre se sert de lianes et de spores pour combattre.",
+ ],
+ pk07: [
+  "Herbizarre est l'évolution de Bulbizarre. Le bulbe de son dos s'est transformé en un bouton de fleur prêt à éclore.",
+  "Plus il prend le soleil, plus ce bouton se développe. Herbizarre gagne en force et en assurance, annonçant une évolution finale florissante.",
+ ],
+ pk08: [
+  "Florizarre est l'évolution finale de Bulbizarre : une grande fleur épanouie s'ouvre désormais sur son dos. De type Plante et Poison, c'est un Pokémon robuste et imposant.",
+  "Sa fleur dégage un parfum apaisant et capte la lumière du soleil pour lui donner de l'énergie. Florizarre est un combattant solide et endurant.",
+ ],
+ pk09: [
+  "Mew est un Pokémon mythique extrêmement rare, de petite taille et de couleur rose. On raconte qu'il renferme le patrimoine génétique de tous les Pokémon.",
+  "Joueur et insaisissable, il maîtrise des pouvoirs psychiques et peut apprendre une grande variété de techniques. Sa simple existence relève presque de la légende.",
+ ],
+ pk10: [
+  "Mewtwo est un Pokémon de type Psy né d'expériences scientifiques menées à partir du patrimoine de Mew. Doté d'une intelligence et d'une puissance hors du commun, il est l'un des Pokémon les plus redoutables.",
+  "Ses pouvoirs psychiques lui permettent de soulever des objets, de créer des barrières et de frapper à distance. Marqué par ses origines, Mewtwo s'interroge sur sa propre existence.",
+ ],
+ pk11: [
+  "Carapuce est un petit Pokémon de type Eau, semblable à une tortue, qui se réfugie dans sa carapace en cas de danger. Il projette de l'eau par la bouche avec précision.",
+  "Sympathique et facile à dresser, c'est l'un des Pokémon de départ les plus populaires. Carapuce est le premier maillon d'une évolution puissante.",
+ ],
+ pk12: [
+  "Carabaffe est l'évolution de Carapuce. Sa queue touffue et ses oreilles fournies lui donnent une allure plus mûre et plus solide.",
+  "Bon nageur, il se déplace avec aisance dans l'eau et gagne en puissance. Carabaffe annonce une évolution finale particulièrement impressionnante.",
+ ],
+ pk13: [
+  "Tortank est l'évolution finale de Carapuce. Cette grande tortue de type Eau porte sur sa carapace deux puissants canons capables de projeter de l'eau à très grande force.",
+  "Ces jets sont assez précis et puissants pour transpercer des obstacles. Massif et résistant, Tortank est un défenseur redoutable.",
+ ],
+ pk14: [
+  "Miaouss est un Pokémon de type Normal ressemblant à un chat, reconnaissable à la pièce dorée incrustée sur son front. Il est attiré par tout ce qui brille.",
+  "Dans les aventures de Sacha, un Miaouss particulier a la capacité rare de parler comme un humain. Malin et farceur, il accompagne une célèbre équipe de malfaiteurs.",
+ ],
+ pk15: [
+  "Évoli est un petit Pokémon de type Normal au pelage brun et à la collerette duveteuse. Sa particularité unique est de pouvoir évoluer de nombreuses façons différentes.",
+  "Selon les circonstances, il peut se transformer en un Pokémon d'eau, de feu, de foudre et bien d'autres encore. Adorable et adaptable, Évoli est très apprécié des dresseurs.",
+ ],
+ pk16: [
+  "Psykokwak est un Pokémon de type Eau ressemblant à un canard, qui se tient souvent la tête, accablé par un mal de crâne permanent.",
+  "Curieusement, c'est lorsque cette migraine devient insupportable qu'il déclenche, sans le vouloir, de puissants pouvoirs psychiques. Maladroit et déroutant, Psykokwak surprend par ses capacités cachées.",
+ ],
+ pk17: [
+  "Rondoudou est un Pokémon tout rond, rose et duveteux, de type Normal et Fée. Son grand talent est le chant.",
+  "Lorsqu'il entonne sa berceuse, tous ceux qui l'entendent s'endorment irrésistiblement. Vexé que son public s'assoupisse, il a l'habitude de gribouiller sur le visage des dormeurs.",
+ ],
+ pk18: [
+  "Fantominus est un Pokémon de type Spectre et Poison, fait presque entièrement de gaz. Il flotte dans l'obscurité et peut envelopper ses proies d'un nuage toxique.",
+  "Difficile à toucher car immatériel, il aime surgir là où on ne l'attend pas. Fantominus est le premier maillon d'une évolution spectrale.",
+ ],
+ pk19: [
+  "Ectoplasma est l'évolution finale de Fantominus, un Pokémon de type Spectre et Poison au sourire moqueur. Il se cache dans les ombres pour surprendre ses adversaires.",
+  "Farceur et inquiétant, il aime jouer des tours en se fondant dans l'obscurité. Ectoplasma compte parmi les Pokémon fantômes les plus connus.",
+ ],
+ pk20: [
+  "Lucario est un Pokémon de type Combat et Acier à l'allure de canidé dressé sur ses pattes. Sa faculté la plus remarquable est de percevoir l'aura, l'énergie qui émane de tous les êtres vivants.",
+  "Grâce à elle, il devine les émotions et anticipe les mouvements de son adversaire. Noble et discipliné, Lucario est un combattant respecté et puissant.",
+ ],
+ pk21: [
+  "Ronflex est un Pokémon de type Normal d'une taille et d'un poids impressionnants. Il passe l'essentiel de son temps à manger et à dormir.",
+  "Si paisible soit-il, son corps massif peut bloquer une route entière, et il faut souvent un moyen particulier pour le réveiller. Sous sa nonchalance se cache une force considérable.",
+ ],
+ pk22: [
+  "Sacha est un jeune dresseur passionné qui rêve de devenir un grand Maître Pokémon. Plein d'enthousiasme et de détermination, il parcourt les régions pour relever les défis des arènes.",
+  "Son compagnon de toujours est Pikachu, avec qui il partage une amitié inébranlable. Généreux et obstiné, Sacha n'abandonne jamais, même face aux plus grands obstacles.",
+ ],
+ pk23: [
+  "Ondine est une dresseuse spécialisée dans les Pokémon de type Eau et l'une des responsables d'une arène. Au caractère bien trempé, elle accompagne Sacha dans une partie de ses voyages.",
+  "Courageuse et franche, elle n'hésite pas à dire ce qu'elle pense. Son lien avec ses Pokémon aquatiques et son énergie en font une compagne précieuse.",
+ ],
+ pk24: [
+  "Pierre est un dresseur expert des Pokémon de type Roche et l'un des responsables d'une arène. Calme et posé, il voyage longtemps aux côtés de Sacha.",
+  "Véritable cuisinier et soigneur du groupe, il veille sur ses compagnons humains comme sur les Pokémon. Fiable et bienveillant, Pierre est le pilier tranquille de l'équipe.",
+ ],
+ pk25: [
+  "Jessie est un membre d'une célèbre équipe de malfaiteurs qui cherche sans cesse à s'emparer des Pokémon des autres, et surtout du Pikachu de Sacha.",
+  "Avec ses complices, elle multiplie les plans farfelus qui échouent presque toujours. Théâtrale et orgueilleuse, Jessie apporte une touche comique récurrente aux aventures.",
+ ],
+ pk26: [
+  "James fait équipe avec Jessie au sein de la même bande de malfaiteurs maladroits. Sous ses airs sûrs de lui, c'est un personnage sensible et un brin froussard.",
+  "Leurs tentatives pour voler Pikachu se soldent immanquablement par un échec spectaculaire. James est l'un des trublions récurrents de la série.",
+ ],
+ pk27: [
+  "Giovanni est le chef de la puissante organisation criminelle qui sème le trouble dans la série. Élégant et impitoyable, il dirige ses troupes d'une main de fer.",
+  "Également responsable d'une arène, c'est un adversaire calculateur, bien plus dangereux que ses sous-fifres maladroits. Giovanni incarne la véritable menace qui plane sur le monde des Pokémon.",
+ ],
+});
+// ─── LOT : Olive & Tom ───
+Object.assign(FIG_PAGES, {
+ ot01: [
+  "Olivier Atton est le héros de la série, un jeune footballeur d'un talent exceptionnel qui adore le ballon plus que tout. Milieu offensif créatif, il dribble, passe et frappe avec une aisance déconcertante.",
+  "Animé par un rêve immense — devenir champion et briller sur la scène mondiale —, il ne renonce jamais. Travailleur acharné et fin technicien, Olivier entraîne toute son équipe vers les sommets.",
+ ],
+ ot02: [
+  "Thomas Price est un gardien de but au talent rare, à la fois agile, puissant et d'un sang-froid impressionnant dans les cages. Il fut d'abord un rival d'Olivier avant de devenir un allié.",
+  "Capable d'arrêts spectaculaires, il décourage les attaquants les plus redoutables. Sérieux et exigeant, Thomas est l'un des meilleurs gardiens de tout l'univers de la série.",
+ ],
+ ot03: [
+  "Mark Landers est un attaquant surpuissant, grand rival d'Olivier, à la frappe d'une violence redoutable. Fier et combatif, il s'entraîne avec une intensité hors du commun.",
+  "Sa puissance de tir fait trembler les défenses et les gardiens adverses. Sous sa rivalité acharnée avec Olivier se cache un profond respect, qui les pousse tous deux à se dépasser.",
+ ],
+ ot04: [
+  "Ben Becker est un gardien de but au style très particulier, qui s'inspire des arts martiaux pour ses arrêts spectaculaires. Souple et explosif, il bondit dans tous les coins de sa cage.",
+  "Coéquipier de Mark Landers, il défend les buts avec une énergie débordante. Ben fait partie des gardiens les plus marquants de la série.",
+ ],
+ ot05: [
+  "Bruce Harper est un joueur courageux et infatigable, prêt à tous les sacrifices pour son équipe. Plus volontaire que techniquement brillant, il compense par un cœur énorme.",
+  "Souvent comique, il se jette dans les duels sans jamais reculer. Bruce incarne l'esprit d'équipe et la combativité.",
+ ],
+ ot06: [
+  "Ed Warner est un milieu de terrain élégant, doté d'une technique remarquable et d'une grande vision du jeu. Sa complicité avec Olivier est légendaire.",
+  "Ensemble, ils forment un duo si complémentaire qu'on les surnomme les partenaires en or. Discret mais décisif, Ed est l'un des joueurs les plus raffinés de la série.",
+ ],
+ ot07: [
+  "Les frères Derrick sont des jumeaux acrobates au style de jeu aérien et spectaculaire. Inséparables, ils enchaînent sauts et combinaisons synchronisées qui déstabilisent les défenses.",
+  "Leur entente parfaite leur permet d'inventer des actions impossibles à un seul joueur. Les frères Derrick apportent fantaisie et acrobatie au sein de l'équipe.",
+ ],
+ ot08: [
+  "Julian Ross est un joueur d'un immense talent, à la technique presque parfaite. Mais une santé fragile, liée à son cœur, l'oblige à de grandes précautions.",
+  "Sa passion pour le football est telle qu'il continue de jouer malgré les risques. Courageux et déterminé, Julian touche par sa fragilité autant qu'il impressionne par son don.",
+ ],
+ ot09: [
+  "Phillip Callahan est un footballeur talentueux de l'univers d'Olive & Tom, qui croise la route du héros sur les terrains. Appliqué et combatif, il défend fièrement les couleurs de son équipe.",
+  "Comme tous les jeunes joueurs de la série, il met un point d'honneur à se dépasser match après match, porté par l'amour du jeu et l'envie de gagner.",
+ ],
+ ot10: [
+  "Danny Mellow est l'un des coéquipiers sur lesquels Olivier peut compter. Joueur sérieux et appliqué, il apporte sa pierre à l'édifice collectif.",
+  "Toujours prêt à se battre pour l'équipe, il incarne l'esprit de solidarité qui anime les héros de la série tout au long de leurs rencontres.",
+ ],
+ ot11: [
+  "Clifford Hume est un défenseur solide de l'univers d'Olive & Tom, qui veille à protéger ses buts avec rigueur. Robuste dans les duels, il s'oppose aux attaquants adverses.",
+  "Sa combativité et son sens du placement en font un rempart fiable pour son équipe lors des grandes confrontations.",
+ ],
+ ot12: [
+  "Sandy Winter est un joueur dynamique qui apporte de l'énergie et de la vitesse à son équipe. Endurant, il multiplie les courses pour soutenir l'attaque comme la défense.",
+  "Au sein de la série, il fait partie de ces footballeurs déterminés qui se donnent à fond pour atteindre la victoire.",
+ ],
+ ot13: [
+  "Ralph Peterson est un footballeur de l'univers d'Olive & Tom, engagé et travailleur. Sur le terrain, il met sa volonté au service du collectif.",
+  "Comme ses camarades, il rêve de progresser et de remporter de grands tournois, dans la pure tradition sportive de la série.",
+ ],
+ ot14: [
+  "Karl Heinz Schneider est l'un des plus grands attaquants de la série, un buteur d'origine allemande au tir d'une puissance phénoménale. On le surnomme parfois l'« empereur » du terrain.",
+  "Star incontestée de son équipe nationale, il représente l'un des adversaires les plus redoutables qu'Olivier ait affrontés sur la scène internationale. Sa rivalité avec le héros est l'une des plus marquantes.",
+ ],
+ ot15: [
+  "Deuter Muller est un défenseur allemand de grande qualité, partenaire de Karl Heinz Schneider. Solide, intelligent et déterminé, il verrouille l'arrière de son équipe.",
+  "Rigoureux dans les duels, il sait aussi se projeter vers l'avant pour soutenir les attaques. Deuter est l'un des piliers de l'une des meilleures équipes de la série.",
+ ],
+ ot16: [
+  "Elcide Pierre est un footballeur français élégant, à la technique fine et au jeu intelligent. Il défend les couleurs de son pays sur la scène internationale.",
+  "Sa classe balle au pied et son sens du jeu en font un joueur respecté. Pierre incarne le style raffiné du football français dans l'univers de la série.",
+ ],
+ ot17: [
+  "Louis Napoleon est un joueur français de l'univers d'Olive & Tom, déterminé à briller aux côtés de ses compatriotes. Volontaire et appliqué, il se bat sur chaque ballon.",
+  "Aux grands tournois internationaux, il défend fièrement son équipe et cherche à se mesurer aux meilleurs, dont Olivier.",
+ ],
+ ot18: [
+  "Zino Hernandez est un footballeur talentueux que l'on rencontre dans les compétitions internationales de la série. Habile et combatif, il représente une nation rivale sur le terrain.",
+  "Son adresse et sa détermination en font un adversaire à ne pas sous-estimer pour Olivier et ses coéquipiers.",
+ ],
+ ot19: [
+  "Salvatore Gentile est un joueur italien réputé pour sa rigueur et son intelligence tactique. Fidèle à la tradition défensive de son pays, il excelle dans l'art de neutraliser les attaquants.",
+  "Discipliné et tenace, il offre une résistance farouche aux meilleurs buteurs. Salvatore incarne le football italien dans l'univers de la série.",
+ ],
+ ot20: [
+  "Natureza est un attaquant brésilien d'un talent prodigieux, considéré comme l'un des plus grands espoirs du football mondial dans la série. Son jeu allie technique, créativité et puissance.",
+  "Vif et imprévisible, il enchaîne les gestes spectaculaires balle au pied. Natureza représente la magie du football brésilien et un défi de taille pour Olivier.",
+ ],
+ ot21: [
+  "Juan Diaz est un attaquant argentin redoutable, rapide et opportuniste devant le but. Sûr de ses qualités, il porte haut les couleurs de son équipe nationale.",
+  "Sa rivalité avec les grands attaquants de la série donne lieu à des affrontements intenses. Juan est l'un des adversaires marquants des compétitions internationales.",
+ ],
+ ot22: [
+  "Patty est une fervente supportrice et une amie proche d'Olivier, toujours présente pour encourager l'équipe. Son soutien indéfectible compte autant que les exploits sur le terrain.",
+  "Attentive et bienveillante, elle suit avec passion le parcours des héros. Patty incarne le rôle essentiel de ceux qui, en dehors du jeu, portent les joueurs vers la victoire.",
+ ],
+ ot23: [
+  "Roberto Sedinho est un ancien grand footballeur brésilien devenu le mentor d'Olivier. C'est lui qui transmet au jeune héros les secrets du jeu et l'amour du beau football.",
+  "Bienveillant et expérimenté, il croit en Olivier et l'aide à révéler tout son potentiel. Roberto joue un rôle décisif dans la formation du héros.",
+ ],
+});
+// ─── LOT : Harry Potter ───
+Object.assign(FIG_PAGES, {
+ hp01: [
+  "Harry Potter est un jeune sorcier célèbre dans tout le monde magique pour avoir survivé, bébé, à l'attaque d'un puissant mage noir, ce qui lui a laissé une cicatrice en forme d'éclair sur le front.",
+  "Élevé sans rien savoir de ses origines, il découvre à onze ans qu'il est sorcier et entre dans une grande école de magie. Courageux, loyal et obstiné, Harry y vit d'extraordinaires aventures aux côtés de ses amis.",
+ ],
+ hp02: [
+  "Hermione Granger est une sorcière d'une intelligence remarquable, première de sa classe et passionnée de lecture. Issue d'une famille non magique, elle compense par un travail acharné.",
+  "Toujours prête à aider ses amis, elle résout d'innombrables énigmes grâce à son savoir. Brillante, courageuse et fidèle, Hermione est l'une des meilleures amies de Harry.",
+ ],
+ hp03: [
+  "Ron Weasley est le meilleur ami de Harry, issu d'une grande famille de sorciers au cœur d'or mais aux moyens modestes. Drôle et chaleureux, il est d'une loyauté à toute épreuve.",
+  "Malgré ses doutes et sa tendance à se sous-estimer, il fait preuve d'un vrai courage dans les moments décisifs. Ron est aussi un redoutable joueur d'échecs version sorciers.",
+ ],
+ hp04: [
+  "Albus Dumbledore est le directeur de la grande école de magie, considéré comme l'un des sorciers les plus puissants et les plus sages de son temps. Sa longue barbe blanche et son regard bienveillant sont célèbres.",
+  "Protecteur de Harry, il guide les jeunes sorciers avec calme et profondeur. Derrière sa douceur se cache une volonté inflexible de défendre le bien.",
+ ],
+ hp05: [
+  "Voldemort est le plus redouté des mages noirs, un sorcier qui a sacrifié son humanité dans sa quête d'immortalité et de pouvoir absolu. Son visage pâle, dépourvu de nez, inspire la terreur.",
+  "Beaucoup craignent même de prononcer son nom. Cruel et impitoyable, il est l'ennemi juré de Harry, lié à lui par un destin tragique remontant à l'enfance du héros.",
+ ],
+ hp06: [
+  "Severus Rogue est un professeur sévère et énigmatique, maître dans l'art des potions. Froid et cassant, il semble nourrir une antipathie tenace envers Harry.",
+  "Mais ses véritables intentions restent longtemps mystérieuses, oscillant entre menace et protection. Rogue est l'un des personnages les plus complexes et les plus ambigus de l'histoire.",
+ ],
+ hp07: [
+  "Rubeus Hagrid est le garde-chasse de l'école de magie, un demi-géant au cœur immense. Sa taille impressionnante contraste avec sa grande douceur.",
+  "Passionné par les créatures magiques, même les plus dangereuses, il les défend avec tendresse. Ami fidèle de Harry, Hagrid est l'un des premiers à lui ouvrir les portes du monde des sorciers.",
+ ],
+ hp08: [
+  "Drago Malefoy est un élève issu d'une riche famille de sorciers, arrogant et méprisant. Rival déclaré de Harry, il appartient à la maison réputée pour son ambition.",
+  "Hautain et provocateur, il cherche sans cesse à humilier le héros et ses amis. Derrière sa morgue se devine pourtant un jeune homme tiraillé par les choix de sa famille.",
+ ],
+ hp09: [
+  "Sirius Black est le parrain de Harry, un sorcier injustement emprisonné pour un crime qu'il n'avait pas commis. Après son évasion, il devient un allié précieux du héros.",
+  "Doté d'un pouvoir rare, il peut se transformer à volonté en un grand chien noir. Courageux et profondément attaché à Harry, Sirius représente pour lui la figure d'une famille retrouvée.",
+ ],
+ hp10: [
+  "Dobby est un elfe de maison, petite créature dévouée au service des sorciers. Contrairement à beaucoup des siens, il rêve de liberté et n'hésite pas à désobéir pour protéger Harry.",
+  "Maladroit mais d'une fidélité touchante, il se met souvent en danger pour aider le héros. Dobby est l'un des personnages les plus émouvants de l'histoire.",
+ ],
+ hp11: [
+  "Luna Lovegood est une jeune sorcière rêveuse et excentrique, au regard décalé sur le monde. Souvent moquée pour son étrangeté, elle assume sans complexe sa différence.",
+  "Derrière ses idées farfelues se cachent une grande sagesse et une vraie gentillesse. Loyale et courageuse, Luna devient une amie précieuse et originale de Harry.",
+ ],
+ hp12: [
+  "Bellatrix Lestrange est une sorcière redoutable, fanatiquement dévouée au mage noir Voldemort. Cruelle et imprévisible, elle prend un plaisir glaçant à semer le chaos.",
+  "Maîtresse de la magie noire, elle compte parmi les ennemies les plus dangereuses du héros et de ses amis. Bellatrix incarne la folie au service des ténèbres.",
+ ],
+});
 try{
  if(typeof FIGURINES !== 'undefined' && Array.isArray(FIGURINES)){
   FIGURINES.forEach(f => { if(FIG_PAGES[f.id]) f.pages = FIG_PAGES[f.id]; });
