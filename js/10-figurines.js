@@ -321,9 +321,8 @@ function _renderFigViewer(fig,id){
  if($('fv-bname')) $('fv-bname').textContent = fig.name;
  _fvPages = (Array.isArray(fig.pages) && fig.pages.length) ? fig.pages.slice() : [fig.desc||''];
  _fvPageIdx = 0;
+ if(typeof figReadStop==='function') figReadStop();             // couper toute lecture en cours
  _fvRenderBackPage();
- if(typeof _narrateStop==='function') _narrateStop();           // couper toute voix résiduelle
- const _readBar=$('fig-vread'); if(_readBar) _readBar.style.display='flex';
  // Bouton état
  $('fig-spin-btn').textContent='⏸ Pause';
  // Générer les étoiles de fond
@@ -347,7 +346,7 @@ function _renderFigViewer(fig,id){
 let _fvPages = [''];
 let _fvPageIdx = 0;
 function _fvRenderBackPage(){
- const d = $('fv-bdesc'); if(d) d.textContent = _fvPages[_fvPageIdx] || '';
+ const d = $('fv-bdesc'); if(d){ d.textContent = _fvPages[_fvPageIdx] || ''; try{ d.scrollTop = 0; }catch(e){} }
  const multi = _fvPages.length > 1;
  const navw = $('fv-bnavwrap'); if(navw) navw.style.visibility = multi ? 'visible' : 'hidden';
  const pg = $('fv-bpage'); if(pg) pg.textContent = (_fvPageIdx + 1) + ' / ' + _fvPages.length;
@@ -357,17 +356,52 @@ function _fvRenderBackPage(){
 function figBackPage(dir){
  const n = _fvPageIdx + dir;
  if(n < 0 || n >= _fvPages.length) return;
+ figReadStop();                                                 // tout changement manuel coupe la lecture auto
  _fvPageIdx = n;
- if(typeof _narrateStop === 'function') _narrateStop();          // une page = une lecture
  _fvRenderBackPage();
  try{ if(typeof beep === 'function') beep(460,'sine',.05,.03); }catch(e){}
 }
-function figReadPlay(){ if(typeof _narrateStory === 'function') _narrateStory(_fvPages[_fvPageIdx] || ''); }
-function figReadPause(){ if(typeof _narratePause === 'function') _narratePause(); }
-function figReadStop(){ if(typeof _narrateStop === 'function') _narrateStop(); }
+// Lecture audio enchaînée : lit la page courante, puis passe automatiquement à la
+// suivante (et fait défiler l'affichage) jusqu'à la dernière page.
+let _figReadActive = false;
+let _figUtter = null;
+function _figSetPlaying(on){
+ const b = $('fv-bplay'); if(b) b.classList.toggle('reading', !!on);
+}
+function _figSpeakFrom(idx){
+ if(!window.speechSynthesis){ _figReadActive=false; _figSetPlaying(false); return; }
+ if(idx >= _fvPages.length){ _figReadActive=false; _figSetPlaying(false); return; }
+ _fvPageIdx = idx;
+ _fvRenderBackPage();                                           // défilement visuel synchronisé
+ const raw = _fvPages[idx] || '';
+ const plain = String(raw).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+ if(!plain){ _figSpeakFrom(idx+1); return; }
+ const hum = (typeof _humanizeForSpeech === 'function') ? _humanizeForSpeech(plain) : plain;
+ const u = new SpeechSynthesisUtterance(hum);
+ u.lang='fr-FR'; u.rate=0.84; u.pitch=1.05; u.volume=1;
+ try{ const v = (typeof _pickNarratorVoice==='function') ? _pickNarratorVoice() : null; if(v) u.voice=v; }catch(e){}
+ u.onend = ()=>{ if(_figReadActive && _figUtter===u) _figSpeakFrom(idx+1); };  // enchaîne la page suivante
+ _figUtter = u;
+ try{ window.speechSynthesis.speak(u); }catch(e){ _figReadActive=false; _figSetPlaying(false); }
+}
+function figReadPlay(){
+ if(!window.speechSynthesis) return;
+ try{ if(window.speechSynthesis.paused){ window.speechSynthesis.resume(); _figSetPlaying(true); return; } }catch(e){}
+ try{ window.speechSynthesis.cancel(); }catch(e){}
+ _figReadActive = true; _figSetPlaying(true);
+ _figSpeakFrom(_fvPageIdx);                                     // démarre à la page affichée, puis enchaîne
+}
+function figReadPause(){
+ try{ if(window.speechSynthesis.speaking && !window.speechSynthesis.paused){ window.speechSynthesis.pause(); _figSetPlaying(false); } }catch(e){}
+}
+function figReadStop(){
+ _figReadActive = false; _figUtter = null;
+ try{ window.speechSynthesis.cancel(); }catch(e){}
+ _figSetPlaying(false);
+}
 
 function closeFigViewer(){
- if(typeof _narrateStop==='function') _narrateStop();           // couper la voix en fermant
+ if(typeof figReadStop==='function') figReadStop();             // couper la lecture en fermant
  $('fig-viewer').classList.add('hidden');
  if(_fvRaf){cancelAnimationFrame(_fvRaf);_fvRaf=null;}
  clearTimeout(_fvResumeT);
