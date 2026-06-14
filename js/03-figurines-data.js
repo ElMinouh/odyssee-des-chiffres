@@ -1819,6 +1819,389 @@ Object.assign(FIG_PAGES, {
   "Malgré sa taille et sa ruse, ses mauvais plans finissent souvent par échouer face à l'ingéniosité de Mickey. Pat Hibulaire est l'adversaire classique de la joyeuse bande.",
  ],
 });
+// ─── LOT : Mario Bros ───
+Object.assign(FIG_PAGES, {
+ mr01: [
+  "Mario est un plombier moustachu en salopette, devenu le héros le plus célèbre du jeu vidéo. Toujours coiffé de sa casquette rouge marquée d'un M, il enchaîne les sauts avec une énergie inépuisable.",
+  "Au Royaume Champignon, il part sans cesse au secours de la Princesse Peach, enlevée par le terrible Bowser. Courageux et bondissant, Mario triomphe des pièges grâce à son agilité et à quelques champignons magiques.",
+ ],
+ mr02: [
+  "Luigi est le grand frère élancé de Mario, vêtu de vert. Plus timide et un brin peureux, il n'en est pas moins courageux quand il s'agit d'aider son frère.",
+  "Il saute encore plus haut que Mario et se distingue dans ses propres aventures, parfois face aux fantômes. Fidèle et attachant, Luigi est l'inséparable complice du plombier rouge.",
+ ],
+ mr03: [
+  "La Princesse Peach règne avec douceur sur le Royaume Champignon. Reconnaissable à sa longue robe rose et à sa couronne, elle est régulièrement enlevée par Bowser.",
+  "Mais elle n'est pas qu'une princesse à secourir : elle se montre parfois courageuse et débrouillarde, prenant elle-même part à l'aventure. Peach incarne la grâce et la bienveillance du royaume.",
+ ],
+ mr04: [
+  "Bowser est le roi des Koopas, une énorme tortue à carapace hérissée de pics, capable de cracher du feu. C'est le grand ennemi de Mario.",
+  "Sans cesse, il enlève la Princesse Peach et dresse des pièges pour empêcher le plombier de la délivrer. Puissant et obstiné, Bowser finit pourtant toujours par être vaincu par l'agilité de Mario.",
+ ],
+ mr05: [
+  "Yoshi est un adorable petit dinosaure au grand cœur, fidèle monture de Mario. Avec sa longue langue, il gobe les ennemis et peut les recracher ou les transformer en œufs.",
+  "Rapide et sympathique, il aide le plombier à franchir les passages les plus périlleux. Yoshi est l'un des compagnons les plus appréciés de l'univers de Mario.",
+ ],
+ mr06: [
+  "Toad est un petit habitant du Royaume Champignon, coiffé d'un grand chapeau en forme de champignon. Serviteur loyal de la Princesse Peach, il est toujours prêt à rendre service.",
+  "Vif et courageux malgré sa petite taille, il guide souvent Mario dans ses quêtes. Toad est la mascotte joyeuse et fidèle du royaume.",
+ ],
+ mr07: [
+  "Wario est le double grossier et cupide de Mario, vêtu de jaune et de violet, avec une moustache en zigzag. Avide d'or et de richesses, il ne pense qu'à son propre intérêt.",
+  "Doté d'une grande force, il n'hésite pas à tricher pour parvenir à ses fins. Wario est un rival turbulent et comique du célèbre plombier.",
+ ],
+ mr08: [
+  "Waluigi est le complice de Wario, grand et maigre, rival déclaré de Luigi. Sournois et un brin cabotin, il aime semer la pagaille.",
+  "On le retrouve surtout dans les compétitions sportives et les jeux de fête, où il joue volontiers les trouble-fête. Waluigi forme avec Wario un duo de chenapans hauts en couleur.",
+ ],
+});
+// ─── LOT : Cobra ───
+Object.assign(FIG_PAGES, {
+ co01: [
+  "Cobra est un aventurier de l'espace au sourire éternel, ancien pirate au grand cœur. Sous son bras gauche se cache une arme redoutable, un canon à énergie psychique, le célèbre Psychogun.",
+  "Insouciant, blagueur et invincible, il parcourt la galaxie en quête de liberté et de trésors, traqué par une puissante guilde de pirates. Cobra mêle bravoure, humour et panache à chaque aventure.",
+ ],
+ co02: [
+  "Armanoïde est une androïde au corps métallique brillant, fidèle alliée et garde du corps de Cobra. D'une loyauté absolue, elle veille sur lui en toutes circonstances.",
+  "Capable de transformer son corps en armes ou en boucliers, elle est aussi élégante que redoutable. Armanoïde est la compagne de route indispensable du héros à travers l'espace.",
+ ],
+ co03: [
+  "Jane est une belle et intrépide aventurière dont le destin se mêle à celui de Cobra. Courageuse et déterminée, elle n'a pas froid aux yeux face au danger.",
+  "Elle porte un mystérieux tatouage qui, réuni à ceux de ses sœurs, dessine la carte d'un fabuleux trésor. Jane est une alliée précieuse et un personnage clé des aventures de Cobra.",
+ ],
+ co04: [
+  "L'Homme de Cristal est un redoutable ennemi de Cobra, au corps fait d'une matière proche du miroir. Cette particularité lui permet de renvoyer les tirs qu'on lui adresse.",
+  "Lieutenant de la guilde des pirates, froid et impitoyable, il représente un adversaire particulièrement coriace. Pour le vaincre, Cobra doit redoubler de ruse.",
+ ],
+ co05: [
+  "Salamandar est le chef redouté de la guilde des pirates de l'espace, le grand ennemi de Cobra. Cruel et puissant, il règne par la terreur sur les bas-fonds de la galaxie.",
+  "Obsédé par l'idée d'éliminer Cobra, il lance contre lui ses meilleurs tueurs. Salamandar incarne la menace suprême qui plane sur le héros.",
+ ],
+ co06: [
+  "Tarbeige est l'un des dangereux adversaires que Cobra croise dans ses pérégrinations spatiales. Au service des forces hostiles, il complique les plans du héros.",
+  "Comme tous les ennemis de la guilde, il sous-estime la débrouillardise et la chance insolente de Cobra. Tarbeige fait partie des obstacles que l'aventurier doit déjouer.",
+ ],
+ co07: [
+  "Le Pirate de l'espace est un membre de la redoutable guilde qui écume la galaxie. Armé et sans scrupules, il traque les aventuriers et les trésors.",
+  "Au service de chefs impitoyables, il représente la menace constante qui pèse sur Cobra. Ces pirates anonymes pimentent les aventures du héros à chaque coin de l'espace.",
+ ],
+ co08: [
+  "Sous le nom de Cobra Rugball, le héros se distingue dans un sport spatial aussi spectaculaire que violent. Sur le terrain, il fait preuve de la même audace que dans ses aventures.",
+  "Rapide, malin et imprévisible, il déjoue les pièges de ses adversaires avec panache. Cette facette montre Cobra en champion intrépide d'un jeu où tous les coups sont permis.",
+ ],
+});
+// ─── LOT : Albator ───
+Object.assign(FIG_PAGES, {
+ al01: [
+  "Albator est un célèbre pirate de l'espace, reconnaissable à son cache-œil, sa longue cape noire et la cicatrice qui barre son visage. À bord de son vaisseau, il sillonne les étoiles en homme libre.",
+  "Refusant la tyrannie et l'indifférence des puissants, il combat les envahisseurs pour défendre la Terre et la liberté. Noble et mélancolique, Albator est une figure légendaire du pirate au grand cœur.",
+ ],
+ al02: [
+  "Alfred est un jeune garçon que le destin conduit à bord du vaisseau d'Albator. Plein d'admiration pour le pirate, il découvre à ses côtés la vie d'aventurier des étoiles.",
+  "Courageux malgré son jeune âge, il trouve une place au sein de l'équipage. Alfred porte le regard de l'innocence et de l'apprentissage dans l'univers d'Albator.",
+ ],
+ al03: [
+  "Nausicaa est une figure féminine forte de l'équipage d'Albator, dévouée à la cause du pirate. Loyale et déterminée, elle partage les dangers de la vie à bord.",
+  "Aux côtés d'Albator, elle affronte les ennemis qui menacent la liberté. Nausicaa incarne le courage et la fidélité de ceux qui suivent le célèbre pirate.",
+ ],
+ al04: [
+  "Tochirô est le meilleur ami d'Albator, un génie de la mécanique qui a conçu son extraordinaire vaisseau. Leur amitié indéfectible est au cœur de la légende du pirate.",
+  "On dit que l'âme de Tochirô veille encore sur le navire et son capitaine. Discret mais essentiel, Tochirô est le compagnon de toujours d'Albator.",
+ ],
+ al05: [
+  "Esmeralda est une fière pirate de l'espace qui sillonne les étoiles à bord de son propre vaisseau. Indépendante et redoutable, elle partage avec Albator l'amour de la liberté.",
+  "Alliée du célèbre pirate, elle se montre aussi courageuse que mystérieuse. Esmeralda est l'une des grandes figures féminines de l'univers d'Albator.",
+ ],
+ al06: [
+  "L'Atlantis est le légendaire vaisseau pirate d'Albator, orné d'une tête de mort, qui file à travers l'espace. Puissant et insaisissable, il est le refuge et la forteresse du capitaine et de son équipage.",
+  "Conçu par le génie de Tochirô, il semble presque vivant tant il est lié à son maître. L'Atlantis est le symbole même de la liberté que défend Albator.",
+ ],
+ al07: [
+  "Mima est une mystérieuse passagère du vaisseau d'Albator, venue d'un peuple des étoiles. Discrète et énigmatique, elle accompagne souvent les moments de calme de sa musique envoûtante.",
+  "Amie fidèle de l'équipage, elle apporte douceur et sérénité au cœur des batailles. Mima est une présence apaisante et poétique aux côtés du pirate.",
+ ],
+ al08: [
+  "Le Professeur Zon est un personnage savant de l'univers d'Albator, dont les connaissances jouent un rôle dans les péripéties du pirate. Esprit cultivé, il est mêlé aux enjeux qui agitent l'espace.",
+  "Tour à tour utile ou inquiétant, il illustre la part de science et de mystère qui traverse les aventures. Le Professeur Zon enrichit le monde foisonnant d'Albator.",
+ ],
+});
+// ─── LOT : Tortues Ninja ───
+Object.assign(FIG_PAGES, {
+ tu01: [
+  "Leonardo est le chef des Tortues Ninja, reconnaissable à son bandeau bleu. Discipliné et réfléchi, il manie deux sabres katanas avec une grande maîtrise.",
+  "Sérieux et loyal, il veille sur ses frères et fait régner l'ordre dans l'équipe. Leonardo incarne le sens du devoir et le respect des enseignements de leur maître.",
+ ],
+ tu02: [
+  "Raphael est la tortue au bandeau rouge, la plus impétueuse et la plus bagarreuse de l'équipe. Son arme de prédilection est une paire de saïs.",
+  "Au caractère explosif, il fonce parfois sans réfléchir, mais son courage et sa force sont sans égal. Sous sa carapace bourrue, Raphael cache un grand attachement à ses frères.",
+ ],
+ tu03: [
+  "Donatello est la tortue au bandeau violet, le cerveau scientifique de l'équipe. Génie de la mécanique et de l'informatique, il invente gadgets et machines en tout genre.",
+  "Il combat à l'aide d'un long bâton, le bô. Calme et ingénieux, Donatello résout les problèmes les plus complexes et arme ses frères de ses inventions.",
+ ],
+ tu04: [
+  "Michelangelo est la tortue au bandeau orange, la plus joyeuse et la plus farceuse du groupe. Toujours de bonne humeur, il adore plaisanter et se régaler de pizzas.",
+  "Il manie avec agilité une paire de nunchakus. Drôle et bondissant, Michelangelo apporte légèreté et bonne humeur à l'équipe des Tortues Ninja.",
+ ],
+ tu05: [
+  "Splinter est le maître et le père adoptif des Tortues Ninja, un rat mutant devenu sage et expert en arts martiaux. C'est lui qui leur a tout appris.",
+  "Patient et profond, il transmet à ses élèves la discipline, l'honneur et l'esprit du ninjutsu. Splinter est le guide vénéré qui veille sur ses quatre fils.",
+ ],
+ tu06: [
+  "April O'Neil est une journaliste courageuse et la fidèle amie humaine des Tortues Ninja. Curieuse et débrouillarde, elle les aide dans leurs enquêtes et leurs combats.",
+  "Toujours prête à se rendre utile, elle fait le lien entre les tortues et le monde de la surface. April est une alliée précieuse et une amie loyale.",
+ ],
+ tu07: [
+  "Shredder est l'ennemi juré des Tortues Ninja, un terrible chef de clan vêtu d'une armure hérissée de lames. Cruel et ambitieux, il rêve de pouvoir et de domination.",
+  "À la tête d'une armée de ninjas, il traque sans relâche les tortues et leur maître. Shredder est l'adversaire le plus dangereux et le plus redouté de la série.",
+ ],
+});
+// ─── LOT : La Reine des Neiges ───
+Object.assign(FIG_PAGES, {
+ fr01: [
+  "Elsa est une princesse devenue reine, dotée d'un pouvoir extraordinaire : elle peut créer la glace et la neige d'un simple geste. Longtemps, elle a caché ce don de peur de blesser ceux qu'elle aime.",
+  "Au fil de son histoire, elle apprend à accepter sa magie et à la maîtriser, transformant sa peur en force et en liberté. Elsa incarne le courage de devenir soi-même.",
+ ],
+ fr02: [
+  "Anna est la sœur cadette d'Elsa, pleine d'optimisme, d'énergie et d'amour. Intrépide et chaleureuse, elle ne recule devant rien pour retrouver et protéger sa sœur.",
+  "Son cœur généreux et sa détermination la mènent à travers de grandes aventures. Anna incarne la force de l'amour fraternel et la joie de vivre.",
+ ],
+ fr03: [
+  "Olaf est un adorable bonhomme de neige plein de vie, né de la magie d'Elsa. Naïf et joyeux, il rêve paradoxalement de connaître la chaleur de l'été.",
+  "Toujours de bonne humeur, il apporte rire et tendresse à ses amis. Olaf est le compagnon comique et attachant des sœurs dans leurs aventures.",
+ ],
+ fr04: [
+  "Kristoff est un solide montagnard qui récolte la glace pour vivre, accompagné de son fidèle renne. Bourru au premier abord, il cache un cœur généreux.",
+  "Il aide Anna dans sa quête à travers les montagnes enneigées. Honnête et courageux, Kristoff devient un compagnon précieux et un véritable ami.",
+ ],
+ fr05: [
+  "Sven est le renne fidèle de Kristoff, un compagnon robuste et affectueux. Bien qu'il ne parle pas, il se comporte presque comme un véritable ami.",
+  "Toujours prêt à aider, il transporte ses amis à travers la neige et les défend en cas de danger. Sven est une présence tendre et fidèle de l'aventure.",
+ ],
+ fr06: [
+  "Marshmallow est un gigantesque bonhomme de neige créé par Elsa pour protéger sa solitude. Impressionnant et puissant, il monte la garde devant son palais de glace.",
+  "Sous son apparence redoutable, il n'est au fond qu'un gardien attaché à sa créatrice. Marshmallow veille sur Elsa avec une fidélité de colosse.",
+ ],
+ fr07: [
+  "Hans est un prince à l'allure charmante et aux belles manières, qui dissimule de sombres intentions. Derrière son sourire avenant se cache un cœur calculateur.",
+  "Sa trahison surprend Anna et Elsa, qui l'avaient cru sincère. Hans est l'antagoniste séduisant mais perfide de l'histoire.",
+ ],
+});
+// ─── LOT : Pyjamasques ───
+Object.assign(FIG_PAGES, {
+ pj01: [
+  "Gluglu, alias Gekko, est l'un des trois Pyjamasques, le héros vert aux pouvoirs du gecko. Capable de coller aux murs et de se camoufler, il fait aussi preuve d'une grande force.",
+  "Un peu timide mais très courageux, il aide ses amis à déjouer les plans des méchants la nuit venue. Gluglu est le pilier discret et solide de l'équipe.",
+ ],
+ pj02: [
+  "Yoyo, alias Catboy, est le héros bleu des Pyjamasques, doté des pouvoirs du chat. Rapide, agile et bondissant, il possède aussi une ouïe très fine.",
+  "Souvent le meneur du trio, il fonce parfois un peu vite mais ne manque jamais de bravoure. Yoyo entraîne ses amis dans leurs missions nocturnes.",
+ ],
+ pj03: [
+  "Bibou, alias Owlette, est l'héroïne rouge des Pyjamasques, aux pouvoirs de la chouette. Elle peut voler et possède un regard perçant qui voit au loin.",
+  "Réfléchie et attentionnée, elle apporte sagesse et hauteur de vue à l'équipe. Bibou veille sur ses amis depuis les airs lors de leurs aventures.",
+ ],
+ pj04: [
+  "Sorceline est une espiègle adversaire des Pyjamasques, qui commande de petits papillons grâce à un aimant lunaire. La nuit, elle aime semer la pagaille.",
+  "Maligne et capricieuse, elle cherche surtout à s'amuser à leurs dépens. Sorceline est l'une des trublionnes récurrentes des nuits des héros.",
+ ],
+ pj05: [
+  "Roméo est un jeune savant farfelu et fanfaron, accompagné de son robot. Rêvant de dominer la ville pendant que tout le monde dort, il invente des machines biscornues.",
+  "Heureusement, ses plans échouent toujours face à l'ingéniosité des Pyjamasques. Roméo est l'un des grands méchants comiques de la série.",
+ ],
+ pj06: [
+  "Les Farfeloups sont un groupe de petits trublions facétieux qui aiment jouer des tours et provoquer le désordre. En bande, ils donnent du fil à retordre aux Pyjamasques.",
+  "Turbulents et imprévisibles, ils transforment chaque nuit en joyeuse pagaille. Les Farfeloups apportent action et rebondissements aux aventures des héros.",
+ ],
+ pj07: [
+  "Tatouro'Tom, alias Night Ninja, est un adversaire furtif des Pyjamasques, vêtu comme un ninja. Il lance de petites projections collantes et commande une bande de petits acolytes.",
+  "Discret et rusé, il tend des pièges aux héros au cœur de la nuit. Night Ninja est l'un des antagonistes les plus malins de la série.",
+ ],
+});
+// ─── LOT : Miraculous ───
+Object.assign(FIG_PAGES, {
+ mi01: [
+  "Marinette est une lycéenne créative et maladroite qui rêve de devenir styliste. Grâce à un bijou magique, ses boucles d'oreilles, elle se transforme en la super-héroïne Ladybug.",
+  "Vêtue de rouge à pois noirs, elle manie un yo-yo et fait appel à un pouvoir porte-bonheur pour déjouer les plans des méchants. Courageuse et déterminée, Ladybug protège Paris.",
+ ],
+ mi02: [
+  "Adrien est un lycéen et mannequin au grand cœur, qui mène une vie un peu solitaire. Grâce à une bague magique, il devient le super-héros Chat Noir.",
+  "Agile et plein d'humour, il manie un bâton et possède un pouvoir de destruction, le Cataclysme. Aux côtés de Ladybug, dont il ignore l'identité, il défend la ville.",
+ ],
+ mi03: [
+  "Gabriel est un grand couturier au caractère froid et distant, qui cache un terrible secret : c'est lui le Papillon, l'ennemi de Ladybug et Chat Noir.",
+  "Grâce à un bijou maléfique, il transforme les personnes accablées par leurs émotions en super-vilains. Manipulateur et déterminé, le Papillon est l'antagoniste principal de la série.",
+ ],
+ mi04: [
+  "Alya Césaire est la meilleure amie de Marinette, journaliste en herbe pleine d'énergie. Passionnée par les super-héros, elle anime un blog consacré à Ladybug.",
+  "Curieuse et intrépide, elle se retrouve souvent au cœur de l'action. Alya est une amie fidèle et une alliée précieuse des héros.",
+ ],
+ mi05: [
+  "Plagg est le kwami de Chat Noir, une minuscule créature magique noire qui lui confère ses pouvoirs. Gourmand et farceur, il raffole par-dessus tout du fromage.",
+  "Paresseux en apparence, il reste un compagnon essentiel et plein d'esprit pour Adrien. Plagg apporte une bonne dose d'humour à la série.",
+ ],
+ mi06: [
+  "Tikki est le kwami de Ladybug, une petite créature magique rouge à pois qui lui donne ses pouvoirs. Sage et bienveillante, elle guide et rassure Marinette.",
+  "Douce et pleine de sagesse, elle est une amie et une conseillère précieuse pour l'héroïne. Tikki veille avec tendresse sur sa porteuse.",
+ ],
+});
+// ─── LOT : Bluey ───
+Object.assign(FIG_PAGES, {
+ bl01: [
+  "Bluey est une petite chienne pleine d'imagination et d'énergie, héroïne de joyeuses aventures du quotidien. Avec son pelage bleu, elle adore inventer des jeux et entraîner toute sa famille.",
+  "Curieuse et débordante d'idées, elle transforme la moindre journée en grande aventure. Bluey incarne la magie du jeu et de l'enfance.",
+ ],
+ bl02: [
+  "Bingo est la petite sœur de Bluey, plus douce et un peu plus réservée. Tout aussi imaginative, elle participe avec joie aux jeux inventés par sa grande sœur.",
+  "Tendre et attachante, elle apprend à s'affirmer au fil des aventures. Bingo apporte douceur et sensibilité à la joyeuse famille.",
+ ],
+ bl03: [
+  "Bandit est le papa de Bluey et Bingo, un père joueur et plein d'énergie. Toujours partant pour entrer dans les jeux de ses filles, il se prête à toutes leurs inventions.",
+  "Patient et complice, il sait aussi transmettre de jolies leçons en s'amusant. Bandit est le papa rêvé pour de grandes aventures imaginaires.",
+ ],
+ bl04: [
+  "Chilly est la maman de Bluey et Bingo, attentionnée et pleine de tendresse. Elle veille sur sa famille avec douceur tout en partageant volontiers les jeux.",
+  "Bienveillante et patiente, elle apporte équilibre et chaleur au foyer. Chilly est une maman aimante au cœur des aventures de la famille.",
+ ],
+ bl05: [
+  "Rusty est l'un des meilleurs amis de Bluey, un chiot énergique et sportif. Toujours prêt à courir et à jouer, il déborde d'enthousiasme.",
+  "Imaginatif et bon camarade, il participe avec entrain aux jeux du groupe. Rusty est un compagnon de jeu fidèle et plein de vie.",
+ ],
+ bl06: [
+  "Honey est une amie de Bluey, une petite chienne douce et un peu timide. Gentille et discrète, elle prend part avec plaisir aux aventures de la bande.",
+  "Sa douceur en fait une camarade attachante et appréciée. Honey illustre la tendresse de l'amitié entre les enfants.",
+ ],
+});
+// ─── LOT : Totally Spies ───
+Object.assign(FIG_PAGES, {
+ sp01: [
+  "Clover est l'une des trois espionnes de la série, passionnée de mode et de shopping. Sous ses airs frivoles, c'est une agente courageuse et débrouillarde.",
+  "En mission, elle fait équipe avec ses amies pour déjouer les plans des méchants. Pétillante et déterminée, Clover prouve qu'on peut être à la fois coquette et héroïne.",
+ ],
+ sp02: [
+  "Sam est l'espionne la plus réfléchie et la plus posée du trio, souvent à la tête des plans. Intelligente et organisée, elle garde la tête froide dans les situations les plus tendues.",
+  "Sa logique et son sang-froid sont précieux lors des missions. Sam est le cerveau de l'équipe des trois espionnes.",
+ ],
+ sp03: [
+  "Alex est la plus sportive et la plus spontanée des trois espionnes. Pleine d'énergie et de bonne humeur, elle se distingue par son agilité et son cœur généreux.",
+  "Toujours prête à passer à l'action, elle apporte dynamisme et chaleur au groupe. Alex est l'amie fidèle et énergique du trio.",
+ ],
+ sp04: [
+  "Jerry est le directeur de l'agence secrète qui envoie les trois espionnes en mission. Élégant et British, il les équipe de gadgets ingénieux et les guide depuis son quartier général.",
+  "Mentor exigeant mais bienveillant, il veille sur ses agentes. Jerry est la figure tutélaire qui orchestre les aventures des espionnes.",
+ ],
+ sp05: [
+  "Mandy est la camarade de classe capricieuse et prétentieuse des espionnes, qui adore se mettre en avant. Vaniteuse et rivale, elle cherche sans cesse à les rabaisser.",
+  "Sans savoir qu'elles sont espionnes, elle leur complique surtout la vie au quotidien. Mandy est la peste récurrente et comique de la série.",
+ ],
+});
+// ─── LOT : Sailor Moon ───
+Object.assign(FIG_PAGES, {
+ sm01: [
+  "Sailor Moon est l'héroïne d'une jeune fille maladroite mais au cœur immense, qui se transforme en guerrière au nom de la Lune. Désignée pour protéger la Terre, elle mène un groupe de combattantes magiques.",
+  "Grâce à ses pouvoirs lunaires, elle affronte les forces du mal pour défendre l'amour et la justice. Derrière ses larmes et ses doutes, Sailor Moon révèle un courage hors du commun.",
+ ],
+ sm02: [
+  "Sailor Mars est une guerrière au tempérament de feu, à la fois fière et déterminée. Elle puise sa puissance dans l'élément du feu, qu'elle déchaîne contre ses ennemis.",
+  "Dotée d'un sens spirituel développé, elle perçoit parfois le danger avant les autres. Sailor Mars est une combattante ardente et loyale du groupe.",
+ ],
+ sm03: [
+  "Sailor Venus est la guerrière de l'amour, énergique et pleine d'assurance. Première des combattantes à se révéler, elle joue un rôle de meneuse au sein de l'équipe.",
+  "Ses attaques s'inspirent de la lumière et de la force du sentiment. Sailor Venus apporte dynamisme et confiance au groupe des guerrières.",
+ ],
+ sm04: [
+  "Sailor Mercury est la plus brillante et la plus posée des guerrières, première de la classe et fine stratège. Elle maîtrise les pouvoirs de l'eau et de la glace.",
+  "Calme et réfléchie, elle analyse les situations pour aider ses amies à triompher. Sailor Mercury est l'intelligence tranquille de l'équipe.",
+ ],
+ sm05: [
+  "Sailor Jupiter est la plus grande et la plus robuste des guerrières, à la force physique impressionnante. Elle commande la foudre et la nature pour foudroyer ses adversaires.",
+  "Au grand cœur sous ses airs de dure, elle protège ses amies avec une loyauté sans faille. Sailor Jupiter est la combattante courageuse et protectrice du groupe.",
+ ],
+});
+// ═══════════════════════════════════════════════════════
+// ─── LOT : Saisonnier (figurines thématiques originales du projet) ───
+// ═══════════════════════════════════════════════════════
+Object.assign(FIG_PAGES, {
+ sx_epiphanie: [
+  "Le Roi de la Galette est la figurine de l'Épiphanie, la fête où l'on partage la fameuse galette des rois. Couronné d'or, il règne le temps d'une journée sur les gourmands.",
+  "Celui qui trouve la fève cachée dans sa part devient roi ou reine à son tour. Joyeux et bon vivant, le Roi de la Galette célèbre le plaisir de partager en famille.",
+ ],
+ sx_valentin: [
+  "Le Cœur Piégé est la figurine de la Saint-Valentin, la fête des amoureux. Ce cœur espiègle, traversé de flèches, joue à faire battre les cœurs.",
+  "Mi-tendre, mi-malicieux, il rappelle avec humour que l'amour réserve parfois quelques surprises. Le Cœur Piégé est le clin d'œil rieur de la fête des amoureux.",
+ ],
+ sx_printemps: [
+  "L'Esprit du Printemps est la figurine de la belle saison qui voit la nature renaître. Couronné de fleurs, il réveille les bourgeons et fait éclore les couleurs.",
+  "Léger et joyeux, il apporte avec lui le retour des oiseaux et la douceur des beaux jours. L'Esprit du Printemps célèbre le renouveau de la vie.",
+ ],
+ sx_avril1: [
+  "Le Poisson d'Avril est la figurine farceuse du 1er avril, jour des blagues et des canulars. Malicieux à souhait, il adore accrocher discrètement son fameux poisson de papier dans le dos des distraits.",
+  "Roi des facéties, il transforme la journée en concours de bonnes blagues. Le Poisson d'Avril est l'esprit espiègle de la fête des farces.",
+ ],
+ sx_paques: [
+  "Le Lapin de l'Ombre est la figurine mystérieuse de Pâques. La nuit, il file en secret cacher des œufs colorés dans les jardins et les recoins de la maison.",
+  "Discret et rapide, il met les enfants au défi de retrouver ses cachettes au petit matin. Le Lapin de l'Ombre est le farceur gourmand de la chasse aux œufs.",
+ ],
+ sx_mardigras: [
+  "Le Masque Trompeur est la figurine de Mardi Gras et du carnaval. Derrière son masque coloré, on ne sait jamais qui se cache, ce qui fait tout le sel de la fête.",
+  "Costumes, confettis et déguisements sont à l'honneur. Le Masque Trompeur incarne la joie et le mystère du carnaval, où chacun devient quelqu'un d'autre.",
+ ],
+ sx_cny: [
+  "Le Dragon de Jade est la figurine du Nouvel An chinois. Long, ondulant et majestueux, il danse dans les rues au son des tambours pour chasser la malchance.",
+  "Symbole de force et de prospérité, il apporte bonheur et bonne fortune pour l'année qui commence. Le Dragon de Jade est l'éclat de cette grande fête colorée.",
+ ],
+ sx_ete: [
+  "Le Soleil de Feu est la figurine de l'été, saison de la chaleur et des vacances. Rayonnant et éclatant, il fait briller les longues journées ensoleillées.",
+  "Plages, baignades et jeux en plein air sont à l'honneur sous son regard ardent. Le Soleil de Feu incarne l'énergie et la joie de la belle saison.",
+ ],
+ sx_14juillet: [
+  "La Fureur Tricolore est la figurine du 14 juillet, la fête nationale française. Parée de bleu, de blanc et de rouge, elle illumine le ciel de mille feux d'artifice.",
+  "Défilés, lampions et bals populaires rythment cette journée festive. La Fureur Tricolore célèbre dans la joie et les couleurs cette grande fête de l'été.",
+ ],
+ sx_rentree: [
+  "Le Cancre Insolent est la figurine espiègle de la rentrée des classes. Cartable de travers et air malicieux, il préférerait nettement prolonger les vacances.",
+  "Derrière ses pitreries, il rappelle avec humour le retour à l'école, aux cahiers et aux nouveaux copains. Le Cancre Insolent est le clin d'œil rieur de la rentrée.",
+ ],
+ sx_automne: [
+  "L'Esprit d'Automne est la figurine de la saison des feuilles qui tombent. Vêtu de roux et d'or, il fait virevolter les feuilles et mûrir les fruits de saison.",
+  "Avec lui viennent les balades croquantes sous les arbres et la douceur des journées plus fraîches. L'Esprit d'Automne célèbre la beauté flamboyante de la saison.",
+ ],
+ sx_halloween: [
+  "La Citrouille Maudite est la figurine d'Halloween, la nuit des frissons et des bonbons. Avec son sourire grimaçant éclairé de l'intérieur, elle veille sur les rues costumées.",
+  "Déguisements, maisons hantées et chasses aux friandises sont au programme. La Citrouille Maudite incarne, pour rire, le côté délicieusement effrayant de la fête.",
+ ],
+ sx_hiver: [
+  "L'Esprit d'Hiver est la figurine de la saison froide, maître du givre et de la neige. D'un souffle, il couvre le paysage d'un blanc manteau scintillant.",
+  "Avec lui viennent les batailles de boules de neige, les bonshommes de neige et les chocolats chauds. L'Esprit d'Hiver célèbre la magie feutrée de la saison froide.",
+ ],
+ sx_noel: [
+  "Le Père Fouettard est une figurine issue des traditions de Noël. Dans le folklore, il accompagne le distributeur de cadeaux et rappelle aux enfants l'importance d'être sages.",
+  "Personnage espiègle plus que méchant, il fait partie du décor des fêtes de fin d'année. Le Père Fouettard ajoute une note malicieuse à la magie de Noël.",
+ ],
+ sx_nouvelan: [
+  "L'Horloge Infernale est la figurine du Nouvel An, qui égrène les dernières secondes avant minuit. Quand ses aiguilles se rejoignent, une nouvelle année commence dans la joie.",
+  "Compte à rebours, vœux et feux d'artifice marquent ce passage. L'Horloge Infernale symbolise l'excitation du moment où tout recommence.",
+ ],
+ sx_anniv_soren: [
+  "Le Gâteau de Soren est une figurine spéciale d'anniversaire, créée pour fêter Soren. Couronné de bougies, il célèbre une année de plus et tous les vœux à souffler.",
+  "Cadeaux, surprises et bonne humeur sont au rendez-vous. Le Gâteau de Soren est un clin d'œil tendre pour un jour pas comme les autres.",
+ ],
+ sx_anniv_peyo: [
+  "Le Gâteau de Peyo est une figurine d'anniversaire dédiée à Peyo. Avec ses bougies allumées, il marque la fête d'un jour bien particulier.",
+  "Entre rires, cadeaux et part de gâteau, c'est la joie de souffler une bougie de plus. Le Gâteau de Peyo célèbre ce moment unique avec tendresse.",
+ ],
+ sx_anniv_tomi: [
+  "Le Gâteau de Tomi est une figurine d'anniversaire à l'effigie de la fête de Tomi. Surmonté de ses bougies, il invite à faire un vœu et à le garder secret.",
+  "Famille réunie, surprises et gourmandises sont au programme. Le Gâteau de Tomi est un joli clin d'œil pour célébrer ce jour spécial.",
+ ],
+ sx_anniv_papa: [
+  "Le Gâteau de Papa est une figurine d'anniversaire pour fêter Papa. Garni de bougies, il célèbre dans la bonne humeur le jour de son anniversaire.",
+  "C'est l'occasion de lui dire combien on l'aime, entre câlins et cadeaux. Le Gâteau de Papa est un hommage tendre et festif.",
+ ],
+ sx_anniv_maman: [
+  "Le Gâteau de Maman est une figurine d'anniversaire pour célébrer Maman. Couronné de bougies scintillantes, il marque sa journée spéciale.",
+  "Entre tendresse, surprises et gourmandises, c'est un moment de bonheur partagé. Le Gâteau de Maman est un clin d'œil plein d'amour.",
+ ],
+});
 try{
  if(typeof FIGURINES !== 'undefined' && Array.isArray(FIGURINES)){
   FIGURINES.forEach(f => { if(FIG_PAGES[f.id]) f.pages = FIG_PAGES[f.id]; });
