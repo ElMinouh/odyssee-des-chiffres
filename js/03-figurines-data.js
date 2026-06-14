@@ -1463,6 +1463,163 @@ Object.assign(FIG_PAGES, {
   "Maîtresse de la magie noire, elle compte parmi les ennemies les plus dangereuses du héros et de ses amis. Bellatrix incarne la folie au service des ténèbres.",
  ],
 });
+// ─── LOT : Ninjago ───
+Object.assign(FIG_PAGES, {
+ nj01: [
+  "Lloyd est le Ninja Vert, le héros central de Ninjago. Désigné par une ancienne prophétie comme l'élu appelé à affronter les plus grandes menaces, il porte sur ses épaules un destin hors du commun.",
+  "Fils d'un puissant seigneur du mal qu'il devra parfois combattre, Lloyd grandit en maîtrisant une énergie verte unique. Courageux et déterminé, il devient le chef de l'équipe des ninjas et un symbole d'espoir.",
+ ],
+ nj02: [
+  "Kai est le ninja du Feu, fougueux et impétueux comme l'élément qu'il maîtrise. Ancien forgeron, il rejoint l'équipe pour protéger les siens et notamment sa sœur Nya.",
+  "Vif et téméraire, il fonce parfois tête baissée mais ne manque jamais de courage. Le feu qu'il commande en fait un combattant ardent et redoutable au sein des ninjas.",
+ ],
+ nj03: [
+  "Zane est le ninja de la Glace, mais il cache un secret : c'est en réalité un être mécanique, un Nindroid doté d'une intelligence et d'un cœur. Logique et calme, il analyse chaque situation.",
+  "Sa maîtrise du froid et sa résistance en font un allié précieux. Derrière sa nature de machine, Zane développe de vraies émotions et un sens de l'amitié profond qui touchent toute l'équipe.",
+ ],
+ nj04: [
+  "Cole est le ninja de la Terre, le plus solide et le plus posé du groupe. Sa force physique et son sens des responsabilités en font un pilier de l'équipe.",
+  "Maître de l'élément Terre, il peut faire trembler le sol et soulever d'énormes charges. Fiable et déterminé, Cole est aussi connu pour sa gourmandise, en particulier pour le gâteau.",
+ ],
+ nj05: [
+  "Jay est le ninja de la Foudre, blagueur et inventif. Toujours prêt à plaisanter, il détend l'atmosphère même dans les moments les plus tendus.",
+  "Rapide comme l'éclair, il manie l'électricité avec une énergie débordante. Bricoleur de génie, Jay imagine toutes sortes de gadgets, et son cœur bat pour Nya.",
+ ],
+ nj06: [
+  "Nya est la maîtresse de l'Eau, sœur de Kai et combattante accomplie. Longtemps guerrière sans pouvoir élémentaire, sous le nom de Samouraï, elle révèle ensuite sa maîtrise de l'élément aquatique.",
+  "Habile, intelligente et indépendante, elle n'a rien à envier aux autres ninjas. Nya prouve qu'elle a toute sa place parmi les héros, par son courage autant que par ses talents.",
+ ],
+ nj07: [
+  "Maître Wu est le sage qui a formé les ninjas et les guide dans leur quête. Vieux maître à la longue barbe blanche, il enseigne autant la sagesse que les arts martiaux.",
+  "Frère d'un puissant seigneur du mal, il veille à maintenir l'équilibre du monde de Ninjago. Patient et profond, Wu transmet à ses élèves les valeurs de courage, de discipline et d'unité.",
+ ],
+ nj08: [
+  "Le Seigneur Garmadon est longtemps le grand adversaire des ninjas. Frère de Maître Wu et père de Lloyd, il a été corrompu par une force maléfique qui a empoisonné son cœur.",
+  "Avide de pouvoir, il cherche à dominer Ninjago. Mais son histoire est aussi celle d'une rédemption possible : le lien avec son fils Lloyd finira par rappeler à la lumière une part de lui-même.",
+ ],
+ nj09: [
+  "Garmadon Quatre Bras est la forme la plus puissante du seigneur du mal, dotée de quatre bras qui décuplent sa force au combat. Sous cette apparence, il devient un adversaire particulièrement redoutable.",
+  "Capable de manier plusieurs armes à la fois, il met les ninjas à rude épreuve. Cette version de Garmadon incarne le sommet de sa puissance maléfique.",
+ ],
+ nj10: [
+  "Pythor est un rusé chef d'un peuple de serpents, ennemi récurrent des ninjas. À la longue silhouette violette, il avance par la ruse et la manipulation plutôt que par la force brute.",
+  "Malin et opportuniste, il échafaude des plans pour réveiller d'anciennes menaces. Pythor compte parmi les adversaires les plus retors que les ninjas aient affrontés.",
+ ],
+ nj11: [
+  "Morro est le maître du Vent, ancien élève de Maître Wu devenu un esprit vengeur. Persuadé d'avoir été le véritable Ninja Vert, il en veut au destin qui l'a écarté.",
+  "Sous forme de fantôme, il commande les bourrasques et cherche à se venger. Morro est un adversaire tragique, rongé par l'amertume d'un rêve brisé.",
+ ],
+ nj12: [
+  "Skylor possède un pouvoir rare : l'Ambre, qui lui permet d'absorber et de reproduire les capacités des autres maîtres élémentaires. Cela en fait une combattante imprévisible.",
+  "Fille d'un dangereux adversaire, elle choisit pourtant sa propre voie et se lie d'amitié avec les ninjas, en particulier avec Kai. Skylor est une alliée aussi précieuse que surprenante.",
+ ],
+ nj13: [
+  "Ronin est un mercenaire et un voleur habile, prêt à travailler pour qui le paie le mieux. Opportuniste, il navigue entre les camps au gré de ses intérêts.",
+  "Fin combattant et débrouillard, il dispose de nombreux gadgets. Malgré son côté intéressé, Ronin se range parfois du côté des ninjas, ce qui en fait un personnage ambigu et imprévisible.",
+ ],
+});
+// ─── LOT : Dragons ───
+Object.assign(FIG_PAGES, {
+ dr01: [
+  "Harold est un jeune Viking malingre mais ingénieux, qui préfère réfléchir et inventer plutôt que combattre par la force. Dans un village où l'on chasse les dragons, il choisit une autre voie.",
+  "En se liant d'amitié avec un dragon redouté, il change le regard de tout son peuple sur ces créatures. Courageux et bon, Harold devient un meneur respecté et un trait d'union entre les Vikings et les dragons.",
+ ],
+ dr02: [
+  "Krokmou est un dragon rare et puissant, au corps noir et aux grands yeux expressifs. Blessé à la queue, il ne peut plus voler seul : c'est l'ingéniosité de Harold qui lui rend les airs grâce à une prothèse.",
+  "Entre eux naît une amitié inséparable, faite de confiance et de complicité. Capable de tirs d'énergie dévastateurs, Krokmou est aussi joueur et affectueux qu'un grand chat.",
+ ],
+ dr03: [
+  "Astrid est une jeune Viking déterminée et redoutable au combat, parmi les plus douées de son âge. Courageuse et exigeante, elle ne recule devant aucun défi.",
+  "Aux côtés de Harold, elle apprend à monter les dragons et chevauche fidèlement sa Tempête. Forte et loyale, Astrid est une combattante d'exception et une alliée précieuse.",
+ ],
+ dr04: [
+  "Stoïck est le chef du village viking et le père de Harold. Colosse à la force impressionnante, il incarne d'abord la tradition guerrière qui voit les dragons comme des ennemis.",
+  "Fier et inquiet pour son fils si différent de lui, il finit par comprendre et soutenir sa vision. Stoïck est un chef respecté, au cœur plus tendre que ne le laisse paraître sa carrure.",
+ ],
+ dr05: [
+  "Rustik est un jeune Viking vantard et sûr de lui, toujours prompt à se mettre en avant. Sous ses fanfaronnades se cache un combattant qui veut prouver sa valeur.",
+  "Il chevauche un dragon au caractère bien trempé, le bouillant Crochefer. Malgré son arrogance, Rustik finit par jouer son rôle au sein de la bande des dragonniers.",
+ ],
+ dr06: [
+  "Kognedur est l'une des jumelles turbulentes du groupe, inséparable de son frère Kranedur. Farceuse et casse-cou, elle adore le chaos et les bagarres.",
+  "Avec son frère, elle partage la garde d'un dragon à deux têtes, ce qui donne lieu à des disputes aussi comiques que spectaculaires. Kognedur apporte fantaisie et désordre à l'équipe.",
+ ],
+ dr07: [
+  "Kranedur est le frère jumeau de Kognedur, aussi turbulent et farceur qu'elle. Les deux passent leur temps à se chamailler, pour le plus grand amusement de tous.",
+  "Ensemble, ils dirigent tant bien que mal leur dragon à deux têtes, chacun commandant une tête. Maladroit mais attachant, Kranedur ne manque jamais une occasion de faire des bêtises.",
+ ],
+ dr08: [
+  "Gueulfor est le forgeron du village et le vieil ami de Stoïck. Ayant perdu une main et une jambe lors d'anciens combats, il les remplace par divers outils astucieux.",
+  "Bon vivant et plein d'humour, il forme les jeunes Vikings et fabrique armes et prothèses. Gueulfor est un mentor chaleureux, à la fois bricoleur et conteur des légendes du village.",
+ ],
+ dr09: [
+  "Varek est un jeune Viking doux et un peu froussard, mais véritable encyclopédie vivante sur les dragons. Il connaît leurs espèces, leurs forces et leurs faiblesses sur le bout des doigts.",
+  "Son savoir rend de grands services à l'équipe. Il chevauche un dragon placide et affectueux, Bouledogre. Gentil et fidèle, Varek prouve que la connaissance vaut autant que la bravoure.",
+ ],
+ dr10: [
+  "Tempête est le dragon d'Astrid, une créature élégante et rapide hérissée de pointes. Vive et fière, elle file dans les airs avec agilité.",
+  "Elle peut projeter les piquants acérés de sa queue comme autant de projectiles. Loyale envers Astrid, Tempête forme avec elle un duo aussi gracieux qu'efficace.",
+ ],
+ dr11: [
+  "Bouledogre est le dragon de Varek, un compagnon trapu et pataud au grand cœur. Plus lent que les autres, il compense par sa robustesse et sa tendresse.",
+  "Il crache des boulets de lave brûlante et adore les câlins de son dresseur. Affectueux et placide, Bouledogre est l'un des dragons les plus attachants de la bande.",
+ ],
+ dr12: [
+  "Pète et Prout est un dragon singulier à deux têtes, confié aux jumeaux turbulents. L'une des têtes répand un gaz inflammable, l'autre produit l'étincelle qui l'enflamme.",
+  "Pour fonctionner, les deux têtes doivent coopérer, à l'image des jumeaux qui les commandent. Ce dragon comique et explosif est aussi imprévisible que ses deux dresseurs.",
+ ],
+ dr13: [
+  "Crochefer est le dragon de Rustik, une créature fière et au tempérament de feu. Capable d'embraser son propre corps, il devient une véritable torche vivante au combat.",
+  "Têtu et indépendant, il n'obéit qu'à contrecœur, ce qui donne lieu à de nombreuses prises de bec avec son cavalier. Sous ses airs rebelles, Crochefer reste un allié redoutable.",
+ ],
+});
+// ─── LOT : Goldorak ───
+Object.assign(FIG_PAGES, {
+ gd01: [
+  "Actarus est le héros de Goldorak, un prince venu de la planète Euphor, détruite par un empire conquérant. Réfugié sur Terre, il y mène une vie discrète dans un ranch, sous une fausse identité.",
+  "Lorsque la menace surgit, il pilote le puissant robot Goldorak pour défendre sa terre d'accueil. Noble et courageux, Actarus porte en lui la douleur de son monde perdu et la volonté de protéger le nôtre.",
+ ],
+ gd02: [
+  "Alcor est un jeune pilote intrépide et fidèle ami d'Actarus. Au tempérament bouillant, il fonce souvent au combat à bord de sa soucoupe sans craindre le danger.",
+  "Toujours prêt à prêter main-forte, il appuie Goldorak dans ses batailles contre les envahisseurs. Loyal et énergique, Alcor est un compagnon d'armes indispensable.",
+ ],
+ gd03: [
+  "Vénusia est une jeune femme courageuse, fille du propriétaire du ranch qui a recueilli Actarus. Attachée à lui, elle s'inquiète pour ce héros mystérieux dont elle ignore d'abord le secret.",
+  "Pleine de cœur et de bravoure, elle n'hésite pas à se rendre utile face au danger. Vénusia incarne l'attachement à la Terre et aux êtres que les héros défendent.",
+ ],
+ gd04: [
+  "Phénicia est la sœur d'Actarus, elle aussi rescapée de la planète Euphor. Longtemps séparée de lui, elle le retrouve pour combattre à ses côtés.",
+  "Guerrière déterminée, elle partage le devoir de protéger la Terre contre l'envahisseur. Phénicia apporte à Actarus le réconfort d'un lien familial retrouvé et le renfort d'une alliée vaillante.",
+ ],
+ gd05: [
+  "Le Grand Stratéguerre est le maître tyrannique de l'empire ennemi, responsable de la destruction d'Euphor. Depuis son trône, il ordonne l'invasion de la Terre.",
+  "Impitoyable et avide de conquête, il envoie sans relâche ses redoutables engins de guerre contre Goldorak. Le Grand Stratéguerre incarne la menace implacable qui pèse sur le monde.",
+ ],
+ gd06: [
+  "Minas est l'un des commandants au service de l'empire ennemi, chargé de mener l'assaut contre la Terre. Orgueilleux et cruel, il rivalise avec les autres généraux pour s'attirer les faveurs de son maître.",
+  "Il lance contre Goldorak des monstres mécaniques toujours plus dangereux. Minas fait partie des adversaires acharnés qu'Actarus doit affronter bataille après bataille.",
+ ],
+ gd07: [
+  "Hydargos est un général de l'empire envahisseur, redouté pour sa férocité. À la tête des forces ennemies, il conçoit des plans pour détruire Goldorak et soumettre la Terre.",
+  "Impitoyable, il n'hésite devant aucune ruse ni aucune cruauté pour parvenir à ses fins. Hydargos est l'un des chefs de guerre les plus menaçants de la série.",
+ ],
+ gd08: [
+  "Horos est un autre commandant au service du tyran, lui aussi lancé à la conquête de la Terre. Stratège ambitieux, il dirige les attaques contre les défenseurs de notre planète.",
+  "Il déploie d'effrayantes machines de guerre pour tenter de venir à bout de Goldorak. Horos incarne la pression constante que l'empire fait peser sur Actarus et ses alliés.",
+ ],
+ gd09: [
+  "Rigel est le bon propriétaire du ranch qui a accueilli Actarus et lui a offert un refuge sur Terre. Chaleureux et bourru, il dirige son domaine avec énergie.",
+  "Père de Vénusia, il ignore longtemps la véritable nature de son employé devenu héros. Rigel représente l'humanité simple et généreuse que Goldorak protège.",
+ ],
+ gd10: [
+  "Goldorak est le gigantesque robot piloté par Actarus, fleuron technologique de la planète Euphor. Doté d'une armure puissante et d'un arsenal impressionnant, il est le rempart de la Terre.",
+  "Ses armes spectaculaires lui permettent d'affronter les monstres mécaniques de l'empire ennemi. Symbole de courage et de résistance, Goldorak est l'un des robots géants les plus célèbres de l'histoire de l'animation.",
+ ],
+ gd11: [
+  "Pour rejoindre le combat, Goldorak s'unit à une soucoupe volante qui décuple sa mobilité dans les airs comme dans l'espace. Ensemble, ils forment un ensemble redoutable.",
+  "Cette combinaison permet au robot de surgir là où on l'attend le moins et de surprendre l'ennemi. La soucoupe est le fidèle vaisseau qui porte Goldorak au cœur de la bataille.",
+ ],
+});
 try{
  if(typeof FIGURINES !== 'undefined' && Array.isArray(FIGURINES)){
   FIGURINES.forEach(f => { if(FIG_PAGES[f.id]) f.pages = FIG_PAGES[f.id]; });
