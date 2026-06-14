@@ -1620,6 +1620,205 @@ Object.assign(FIG_PAGES, {
   "Cette combinaison permet au robot de surgir là où on l'attend le moins et de surprendre l'ennemi. La soucoupe est le fidèle vaisseau qui porte Goldorak au cœur de la bataille.",
  ],
 });
+// ─── LOT : Les Mystérieuses Cités d'Or ───
+Object.assign(FIG_PAGES, {
+ mc01: [
+  "Esteban est un jeune garçon élevé dans un monastère, surnommé l'« enfant du soleil » car la légende dit qu'il peut faire apparaître l'astre du jour. Il porte un mystérieux médaillon d'or, seul indice de ses origines.",
+  "Parti à la recherche de son père et des fabuleuses Cités d'Or, il traverse l'océan jusqu'au Nouveau Monde. Courageux et généreux, Esteban est le cœur de cette grande aventure de découverte.",
+ ],
+ mc02: [
+  "Zia est une jeune fille d'origine inca, élevée loin de son peuple, qui possède elle aussi un médaillon d'or semblable à celui d'Esteban. Douce et déterminée, elle connaît des secrets sur les anciennes civilisations.",
+  "Son médaillon est l'une des clés permettant d'ouvrir le chemin des Cités d'Or. Aux côtés d'Esteban et de Tao, Zia partage les dangers et les merveilles du voyage.",
+ ],
+ mc03: [
+  "Tao est le dernier descendant d'une civilisation disparue, engloutie sous les flots. Petit savant accompagné de son perroquet, il détient un précieux savoir scientifique hérité de son peuple.",
+  "Malin et débrouillard, il aide ses amis à résoudre les énigmes du voyage grâce à ses inventions et à ses connaissances anciennes. Tao apporte au trio l'intelligence et la mémoire des temps oubliés.",
+ ],
+ mc04: [
+  "Mendoza est un navigateur espagnol rusé et ambitieux, attiré par l'or des Cités légendaires. Aventurier sans scrupules apparents, il accompagne les enfants en pensant d'abord à son propre intérêt.",
+  "Mais au fil du périple, un véritable attachement le lie à Esteban et à ses compagnons. Mendoza est un personnage ambigu, à la fois opportuniste et protecteur.",
+ ],
+ mc05: [
+  "Pedro est l'un des deux marins qui accompagnent Mendoza dans ses aventures. Peureux et un brin profiteur, il rêve surtout de richesse et de tranquillité.",
+  "Avec son compère Sancho, il forme un duo comique dont les maladresses détendent les moments les plus tendus. Pedro apporte une touche d'humour au long voyage.",
+ ],
+ mc06: [
+  "Sancho est le second marin du tandem au service de Mendoza, inséparable de Pedro. Gourmand et fanfaron, il se retrouve souvent embarqué dans des situations cocasses.",
+  "Lui aussi attiré par l'or, il n'est pas le plus courageux, mais reste fidèle au groupe. Sancho et Pedro sont les trublions sympathiques de l'expédition.",
+ ],
+ mc07: [
+  "Pichu est un jeune garçon rencontré au cours du voyage, qui se joint aux héros dans leur quête. Vif et plein d'entrain, il apporte sa connaissance du pays et de ses dangers.",
+  "Courageux malgré son jeune âge, il devient un compagnon précieux pour Esteban, Zia et Tao. Pichu illustre les amitiés nouées tout au long de la grande aventure.",
+ ],
+ mc08: [
+  "Gaspard est un soldat lancé aux trousses des enfants, au service de ceux qui convoitent l'or des Cités. Rude et tenace, il représente la menace qui plane sur le voyage des héros.",
+  "Déterminé à accomplir sa mission, il poursuit le trio à travers les terres du Nouveau Monde. Gaspard fait partie des adversaires que les enfants doivent sans cesse déjouer.",
+ ],
+ mc09: [
+  "Laguerra est une adversaire redoutable, prête à tout pour mettre la main sur les trésors des Cités d'Or. Habile et impitoyable, elle suit la trace des enfants et de leurs médaillons.",
+  "Son ambition et sa ruse en font une ennemie dangereuse pour Esteban et ses compagnons. Laguerra incarne la cupidité qui menace la quête des héros.",
+ ],
+ mc10: [
+  "Ambrosius est un personnage inquiétant et calculateur, attiré par les secrets et les richesses des anciennes civilisations. Manœuvrier de l'ombre, il complote pour s'emparer du pouvoir des Cités.",
+  "Sa soif de connaissance et d'or le rend particulièrement dangereux. Ambrosius compte parmi les figures menaçantes qui se dressent sur la route des enfants.",
+ ],
+ mc11: [
+  "Zarès est un adversaire au service des ennemis des héros, chargé de les traquer et de contrecarrer leur quête. Déterminé et sans pitié, il met les enfants à rude épreuve.",
+  "Rouage des complots qui visent les Cités d'Or, il représente un obstacle de plus sur leur long chemin. Zarès illustre les périls qui jalonnent cette aventure légendaire.",
+ ],
+});
+// ─── LOT : Les Trois Mousquetaires ───
+Object.assign(FIG_PAGES, {
+ tm01: [
+  "D'Artagnan est un jeune Gascon fougueux qui monte à Paris avec le rêve de devenir mousquetaire du roi. Brave, fier et redoutable à l'épée, il se fait vite remarquer par son audace.",
+  "Il se lie d'amitié avec trois mousquetaires aguerris et partage leurs aventures au service du roi. Loyal et téméraire, D'Artagnan incarne le courage et l'esprit chevaleresque.",
+ ],
+ tm02: [
+  "Athos est le plus noble et le plus mystérieux des trois mousquetaires. Distingué et mélancolique, il cache un passé douloureux derrière son allure digne et réservée.",
+  "Fin bretteur et homme d'honneur, il guide souvent ses compagnons par sa sagesse. Athos est l'âme grave et respectée du célèbre trio.",
+ ],
+ tm03: [
+  "Porthos est un mousquetaire colossal, fort comme un bœuf et amateur de bonne chère, de beaux habits et de belles paroles. Vantard mais généreux, il aime se mettre en avant.",
+  "Sa force et son entrain en font un compagnon précieux dans les bagarres. Jovial et haut en couleur, Porthos apporte sa truculence au groupe des mousquetaires.",
+ ],
+ tm04: [
+  "Aramis est le plus raffiné et le plus subtil des mousquetaires. Élégant et galant, il hésite entre la carrière des armes et la vocation religieuse.",
+  "Habile à l'épée comme en diplomatie, il manie aussi bien la lame que les belles manières. Aramis ajoute finesse et mystère au quatuor de héros.",
+ ],
+ tm05: [
+  "Le Cardinal de Richelieu est le puissant ministre du roi, fin stratège et maître de l'intrigue. Habile politique, il tisse sa toile pour servir, à sa manière, les intérêts du royaume.",
+  "Souvent opposé aux mousquetaires, il dispose de ses propres gardes et d'agents secrets. Calculateur redoutable, Richelieu est l'adversaire le plus rusé de D'Artagnan et de ses amis.",
+ ],
+ tm06: [
+  "Milady est une espionne aussi belle que dangereuse, au service des intérêts du Cardinal. Manipulatrice hors pair, elle use de son charme et de sa ruse pour parvenir à ses fins.",
+  "Insaisissable et impitoyable, elle se révèle l'une des adversaires les plus marquantes de l'histoire. Milady incarne la séduction au service du complot.",
+ ],
+ tm07: [
+  "Constance est une jeune femme de confiance au service de la reine, douce et courageuse. Elle joue un rôle clé dans les intrigues de la cour.",
+  "Éprise de D'Artagnan, elle l'aide dans ses missions au péril de sa propre sécurité. Constance incarne la fidélité et le dévouement au cœur des aventures des mousquetaires.",
+ ],
+ tm08: [
+  "Rochefort est un agent au service du Cardinal, ennemi déclaré de D'Artagnan dès leur première rencontre. Froid et déterminé, il exécute les missions les plus délicates.",
+  "Redoutable bretteur, il croise le fer à plusieurs reprises avec le jeune Gascon. Rochefort est l'un des adversaires récurrents qui pimentent les aventures des héros.",
+ ],
+ tm09: [
+  "Le roi Louis XIII règne sur la France à l'époque des mousquetaires. Soucieux de son autorité, il s'appuie sur ses fidèles soldats tout en composant avec son puissant ministre.",
+  "Les mousquetaires servent fièrement sa couronne et défendent son honneur. Le roi est la figure autour de laquelle se nouent les loyautés et les intrigues du récit.",
+ ],
+ tm10: [
+  "Jussac est l'un des gardes du Cardinal, fine lame au service du ministre. Adversaire des mousquetaires, il se mesure à eux dans plusieurs affrontements à l'épée.",
+  "Habile et combatif, il représente l'opposition entre les hommes du roi et ceux du Cardinal. Jussac est un duelliste de valeur que D'Artagnan et ses amis doivent affronter.",
+ ],
+});
+// ─── LOT : Astérix ───
+Object.assign(FIG_PAGES, {
+ ax01: [
+  "Astérix est un petit guerrier gaulois rusé et intrépide, le héros d'un village qui résiste encore et toujours à l'envahisseur romain. Sa malice est sa plus grande arme.",
+  "Grâce à une potion magique préparée par le druide, il obtient une force surhumaine le temps de quelques bagarres mémorables. Astérix, futé et courageux, mène la résistance de son village avec panache.",
+ ],
+ ax02: [
+  "Obélix est le meilleur ami d'Astérix, un colosse au grand cœur qui livre des menhirs pour gagner sa vie. Tombé dans la marmite de potion magique lorsqu'il était bébé, il possède une force prodigieuse en permanence.",
+  "Gourmand et susceptible — surtout si on le traite de gros —, il raffole des sangliers rôtis. Naïf mais d'une fidélité sans faille, Obélix accompagne Astérix dans toutes ses aventures.",
+ ],
+ ax03: [
+  "Idéfix est le petit chien d'Obélix, fidèle compagnon au flair infaillible. Minuscule mais courageux, il suit son maître partout.",
+  "Très attaché à la nature, il ne supporte pas de voir un arbre abattu et le fait savoir bruyamment. Idéfix est la mascotte attendrissante des aventures gauloises.",
+ ],
+ ax04: [
+  "Panoramix est le druide du village, vénérable sage à la longue barbe blanche. Il détient le secret de la fameuse potion magique qui donne une force surhumaine.",
+  "Cueilleur de gui et gardien des traditions, il veille sur les siens grâce à son savoir. Panoramix est le pilier discret mais essentiel de la résistance gauloise.",
+ ],
+ ax05: [
+  "Assurancetourix est le barde du village, persuadé d'avoir un immense talent de chanteur. Hélas, sa voix est si épouvantable que tous redoutent ses prestations.",
+  "À chaque banquet, on l'attache et on le bâillonne pour qu'il se taise, ce qui ne le décourage jamais. Assurancetourix apporte une bonne dose de comique au village.",
+ ],
+ ax06: [
+  "Jules César est le puissant chef des armées romaines, ambitieux et sûr de lui. Maître d'un immense empire, il enrage de ne pouvoir soumettre un seul petit village gaulois.",
+  "Fin politique et grand stratège, il est pourtant régulièrement déjoué par la ruse d'Astérix. Jules César est l'adversaire récurrent et grandiose des irréductibles Gaulois.",
+ ],
+ ax07: [
+  "Le légionnaire romain est le soldat de base de l'immense armée de César, casque sur la tête et bouclier au bras. Discipliné mais souvent peu motivé, il redoute par-dessus tout les Gaulois.",
+  "Envoyé contre le village rebelle, il finit presque toujours par voler dans les airs après un bon coup de poing dopé à la potion magique. Le légionnaire est la victime comique récurrente des aventures.",
+ ],
+ ax08: [
+  "Abraracourcix est le chef du village gaulois, fier et autoritaire. Toujours porté sur un bouclier par deux solides porteurs, il commande ses guerriers avec assurance.",
+  "Courageux mais un peu soupe au lait, il ne craint qu'une chose : que le ciel lui tombe sur la tête. Abraracourcix incarne avec fierté l'esprit indomptable de son village.",
+ ],
+ ax09: [
+  "Barbe-Rouge est le capitaine d'un équipage de pirates qui croise régulièrement la route d'Astérix et Obélix. À chaque rencontre, son navire connaît un sort funeste.",
+  "Malgré sa malchance légendaire, il reprend la mer encore et encore. Barbe-Rouge et ses pirates sont l'une des grandes sources de gags des aventures gauloises.",
+ ],
+});
+// ─── LOT : Tintin ───
+Object.assign(FIG_PAGES, {
+ tn01: [
+  "Tintin est un jeune reporter au courage et à la curiosité sans limites. Toujours accompagné de son fidèle chien, il parcourt le monde pour résoudre des mystères et défendre la justice.",
+  "Débrouillard, honnête et plein de sang-froid, il se sort des situations les plus périlleuses par son intelligence. Tintin est l'un des héros d'aventure les plus célèbres de la bande dessinée.",
+ ],
+ tn02: [
+  "Le Capitaine Haddock est un vieux loup de mer au caractère bien trempé, devenu l'ami le plus fidèle de Tintin. Bourru et soupe au lait, il est célèbre pour ses colères et ses jurons hauts en couleur.",
+  "Sous ses grognements se cache un cœur d'or et un courage à toute épreuve. Le capitaine accompagne Tintin dans ses aventures, pour le meilleur et pour le pire.",
+ ],
+ tn03: [
+  "Milou est le petit chien blanc de Tintin, intelligent et courageux. Fidèle entre tous, il suit son maître partout et lui sauve souvent la mise.",
+  "Vif et débrouillard, il a son petit caractère et n'hésite pas à donner son avis. Milou est le compagnon inséparable et attendrissant du jeune reporter.",
+ ],
+ tn04: [
+  "Le Professeur Tournesol est un savant génial mais très dur d'oreille, ce qui provoque d'innombrables quiproquos. Distrait et obstiné, il invente des machines extraordinaires.",
+  "Derrière ses airs lunaires se cache un esprit brillant dont les inventions jouent un grand rôle dans les aventures. Tournesol apporte science et comique au groupe des héros.",
+ ],
+ tn05: [
+  "Dupond et Dupont sont deux détectives presque identiques, reconnaissables à leur chapeau melon et à leur canne. Maladroits et un peu balourds, ils enchaînent les gaffes avec un sérieux imperturbable.",
+  "Persuadés de leur efficacité, ils se trompent pourtant à tout bout de champ. Ce duo comique apporte de nombreux fous rires aux aventures de Tintin.",
+ ],
+ tn06: [
+  "La Castafiore est une célèbre cantatrice à la voix puissante et au tempérament exubérant. Sa présence tonitruante et ses vocalises mettent à rude épreuve les oreilles du Capitaine Haddock.",
+  "Charmante mais envahissante, elle confond sans cesse le nom du capitaine. La Castafiore est l'une des figures les plus pittoresques et drôles de la série.",
+ ],
+ tn07: [
+  "Rastapopoulos est l'un des ennemis les plus retors de Tintin, un homme d'affaires véreux à la tête de sombres trafics. Manipulateur et sans scrupules, il complote dans l'ombre.",
+  "Il revient à plusieurs reprises pour contrarier les plans du jeune reporter. Rastapopoulos est le grand adversaire récurrent des aventures de Tintin.",
+ ],
+ tn08: [
+  "Boris Jorgen est un personnage menaçant et déterminé, mêlé à de dangereux complots qui croisent la route de Tintin. Froid et résolu, il sert des intérêts hostiles.",
+  "Adversaire coriace, il met le reporter et ses amis en difficulté. Boris Jorgen fait partie des ennemis que Tintin doit déjouer au fil de ses aventures.",
+ ],
+});
+// ─── LOT : Mickey & Amis ───
+Object.assign(FIG_PAGES, {
+ mk01: [
+  "Mickey Mouse est la célèbre petite souris au grand cœur, optimiste et débrouillarde. Toujours de bonne humeur, il entraîne ses amis dans mille aventures.",
+  "Reconnaissable à ses grandes oreilles rondes et à son sourire, il est l'un des personnages les plus connus au monde. Courageux et bienveillant, Mickey ne se laisse jamais abattre.",
+ ],
+ mk02: [
+  "Minnie Mouse est la douce et élégante amoureuse de Mickey, reconnaissable à son joli nœud sur la tête. Gentille et pleine d'entrain, elle partage ses aventures.",
+  "Coquette et déterminée, elle a son caractère et sait ce qu'elle veut. Minnie est une figure incontournable et attachante de la grande famille de Mickey.",
+ ],
+ mk03: [
+  "Donald Duck est un canard au caractère explosif, célèbre pour ses colères et son langage difficile à comprendre. Malchanceux et susceptible, il se met sans cesse dans des situations cocasses.",
+  "Malgré son fichu caractère, il reste attachant et plein de bonne volonté. Donald, en marin grognon, est l'un des personnages les plus drôles de l'univers de Mickey.",
+ ],
+ mk04: [
+  "Daisy Duck est l'élégante et charmante amoureuse de Donald. Raffinée et au tempérament affirmé, elle ne se laisse pas faire face au caractère bouillant de son canard préféré.",
+  "Coquette et pleine d'esprit, elle apporte douceur et fantaisie. Daisy est l'amie fidèle de Minnie et une figure pétillante de la bande.",
+ ],
+ mk05: [
+  "Dingo est un grand personnage longiligne, maladroit et terriblement gentil. Toujours de bonne humeur, il enchaîne les bêtises avec une insouciance désarmante.",
+  "Sa naïveté et sa bonne volonté provoquent une foule de situations comiques. Ami fidèle de Mickey, Dingo est l'incarnation de la gaffe joyeuse et bon enfant.",
+ ],
+ mk06: [
+  "Pluto est le chien fidèle de Mickey, joueur et plein d'énergie. Contrairement à d'autres personnages, il se comporte comme un véritable animal de compagnie.",
+  "Curieux et affectueux, il suit Mickey dans ses aventures et lui témoigne un attachement sans faille. Pluto est le compagnon à quatre pattes le plus dévoué de la bande.",
+ ],
+ mk07: [
+  "Tic et Tac sont deux petits écureuils espiègles et inséparables, reconnaissables à leur vivacité et à leurs facéties. Malins et bricoleurs, ils ont plus d'un tour dans leur sac.",
+  "Ensemble, ils provoquent de joyeuses pagailles, souvent aux dépens de Donald. Tic et Tac forment un duo comique adoré des petits comme des grands.",
+ ],
+ mk08: [
+  "Pat Hibulaire est le grand méchant récurrent de l'univers de Mickey, une force de la nature à l'allure de gros matou. Brutal et roublard, il cherche toujours à nuire aux héros.",
+  "Malgré sa taille et sa ruse, ses mauvais plans finissent souvent par échouer face à l'ingéniosité de Mickey. Pat Hibulaire est l'adversaire classique de la joyeuse bande.",
+ ],
+});
 try{
  if(typeof FIGURINES !== 'undefined' && Array.isArray(FIGURINES)){
   FIGURINES.forEach(f => { if(FIG_PAGES[f.id]) f.pages = FIG_PAGES[f.id]; });
