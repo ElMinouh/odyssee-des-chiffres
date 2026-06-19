@@ -4801,3 +4801,23 @@ body.mat-mode #v-game{
 @media (max-height: 560px){
  #fig-perspective{ transform: scale(.48); }
 }
+
+/* ═══════ v10.5.0 : écran « Choisis ta matière » (app multi-matières) ═══════ */
+.subj-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; max-width:440px; margin:16px auto 0; }
+.subj-tile{ position:relative; margin:0; border:1px solid rgba(255,255,255,.14); border-radius:18px; padding:16px 10px 14px;
+  background:linear-gradient(150deg,var(--g1,#444),var(--g2,#222)); color:#fff; text-align:center; overflow:hidden;
+  cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; transition:transform .12s; }
+.subj-tile:hover{ filter:brightness(1.08); }
+.subj-tile:active{ transform:scale(.96); }
+.subj-tile.subj-on{ border:2px solid #f7d774; box-shadow:0 0 18px rgba(247,215,116,.45); }
+.subj-em{ font-size:2.3em; line-height:1; filter:drop-shadow(0 2px 4px rgba(0,0,0,.4)); }
+.subj-nm{ font-weight:800; font-size:1.02em; margin-top:6px; }
+.subj-sub{ font-size:.7em; color:rgba(255,255,255,.82); margin-top:2px; }
+.subj-badge{ position:absolute; top:8px; right:8px; font-size:.62em; font-weight:800; background:rgba(0,0,0,.35);
+  color:#fff; padding:3px 7px; border-radius:20px; }
+.subj-badge-go{ background:#f1c40f; color:#3a2c00; }
+.subj-deco{ position:absolute; bottom:-10px; right:-6px; font-size:2.6em; opacity:.16; pointer-events:none; }
+.subj-wide{ grid-column:span 2; }
+.subj-wide-row{ display:flex; align-items:center; justify-content:center; gap:12px; }
+.subj-wide .subj-deco{ right:8px; }
+@media (max-width:380px){ .subj-em{ font-size:2em; } .subj-nm{ font-size:.95em; } }

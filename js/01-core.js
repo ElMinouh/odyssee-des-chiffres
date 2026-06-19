@@ -7,7 +7,7 @@
 // ÉTAT
 // ═══════════════════════════════════════════════════════
 let P={};
-const GM={level:'CP',mode:'keyboard',mode2:'normal',mapZone:null};
+const GM={level:'CP',mode:'keyboard',mode2:'normal',mapZone:null,subject:'math'};
 const GS={
  pv:3,score:0,combo:0,maxCombo:0,qCount:0,q:null,answering:false,
  isBoss:false,isGolden:false,errInGame:0,fracOk:0,missingOk:0,combatWon:false,mapBossWon:false,
@@ -316,7 +316,7 @@ let pinAttempts=0,pinLockUntil=0;
 
 let _monsterCenter={x:0,y:0}; // position précalculée du monstre (OPT-5)
 // ═══════════════════════════════════════════════════════
-const VIEWS=['v-menu','v-menu2','v-params','v-mode-config','v-settings','v-game','v-end','v-mult','v-parent','v-odyssey-select','v-map','v-zone'];
+const VIEWS=['v-menu','v-subjects','v-menu2','v-params','v-mode-config','v-settings','v-game','v-end','v-mult','v-parent','v-odyssey-select','v-map','v-zone'];
 function showView(id){VIEWS.forEach(v=>$(v).classList.toggle('hidden',v!==id));const si=document.querySelector('.settings-icon');if(si)si.classList.toggle('si-hidden',id!=='v-menu');}
 // ═══════════════════════════════════════════════════════
 // PILE DE NAVIGATION (v8.7.3)
@@ -915,6 +915,24 @@ function gotoMenu2(){
  if(typeof savePrefs==='function') savePrefs();
  refreshMenu2();
  navTo('v-menu2');
+}
+// Écran 1 → Écran « Choisis ta matière » (v10.5.0 : app multi-matières)
+function gotoSubjects(){
+ if(typeof savePrefs==='function') savePrefs();
+ try{ const nm=$('subj-player'); if(nm) nm.textContent=(P&&P.name)||'Joueur'; }catch(e){}
+ navTo('v-subjects');
+}
+// Choix d'une matière. Maths → flux actuel (modes). Autres → bientôt disponibles.
+const SUBJECT_LABELS={ math:'Mathématiques', fr:'Français', hist:'Histoire', geo:'Géographie', en:'Anglais', svt:'SVT', pc:'Physique-Chimie' };
+function chooseSubject(key){
+ if(key==='math'){
+  GM.subject='math';
+  try{ if(typeof beep==='function') beep(660,'sine',.12); }catch(e){}
+  gotoMenu2();
+ }else{
+  if(typeof toast==='function') toast('🔒 '+(SUBJECT_LABELS[key]||'Cette matière')+' — bientôt disponible !');
+  try{ if(typeof beep==='function') beep(220,'sine',.12); }catch(e){}
+ }
 }
 // Écran 2 → Écran 1 (bouton Retour de l'écran 2)
 function backToMenu1(){

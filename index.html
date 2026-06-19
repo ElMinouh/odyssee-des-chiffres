@@ -16,7 +16,7 @@
 <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="stylesheet" href="assets/fonts/google-fonts.css">
-<link rel="stylesheet" href="css/styles.css?v=975">
+<link rel="stylesheet" href="css/styles.css?v=976">
 </head>
 <body id="BODY">
 <!-- ═══ SPLASH SCREEN (Chantier v8.5.1 — durée 10s narrative) ═══
@@ -40,9 +40,9 @@
        donc parfaitement adaptés quel que soit l'écran (PC large ou Android portrait). -->
   <div id="splash-stage">
    <!-- 1. La carte parchemin (fond de la scène) -->
-   <img src="assets/logo-main.webp?v=975" alt="L'Odyssée des Chiffres" id="splash-logo">
+   <img src="assets/logo-main.webp?v=976" alt="L'Odyssée des Chiffres" id="splash-logo">
    <!-- 2. La boussole : grosse au centre écran puis converge vers sa place sur la carte -->
-   <img src="assets/icon-512.png?v=975" alt="" id="splash-compass" aria-hidden="true">
+   <img src="assets/icon-512.png?v=976" alt="" id="splash-compass" aria-hidden="true">
    <!-- 3. Chiffres et symboles math qui volent en chaotique -->
    <div id="splash-orbits" aria-hidden="true">
     <span class="splash-item splash-num" style="--i:0">3</span>
@@ -149,7 +149,7 @@
  <!-- ═══ MENU ═══ -->
  <!-- ═══ ÉCRAN 1 : QUI JOUE ? ═══ -->
  <div id="v-menu">
-  <img src="assets/logo-main.webp?v=975" alt="L'Odyssée des Chiffres" class="game-logo" id="game-logo-menu" loading="eager" decoding="async" style="max-width:min(110px,34%);width:100%;height:auto;display:block;margin:0 auto 10px;">
+  <img src="assets/logo-main.webp?v=976" alt="L'Odyssée des Chiffres" class="game-logo" id="game-logo-menu" loading="eager" decoding="async" style="max-width:min(110px,34%);width:100%;height:auto;display:block;margin:0 auto 10px;">
 
   <!-- Aperçu du joueur sélectionné -->
   <div id="menu1-playercard" style="background:linear-gradient(135deg,rgba(241,196,15,.12),rgba(241,196,15,.03));border:1px solid rgba(241,196,15,.35);border-radius:16px;padding:16px;margin:0 auto 14px;max-width:420px;">
@@ -205,7 +205,7 @@
   </div>
 
   <!-- Grand bouton Continuer -->
-  <button onclick="gotoMenu2()" style="margin-top:14px;width:90%;max-width:420px;font-size:1.2em;padding:16px;" class="pulse">&#9654;&#65039; CONTINUER</button>
+  <button onclick="gotoSubjects()" style="margin-top:14px;width:90%;max-width:420px;font-size:1.2em;padding:16px;" class="pulse">&#9654;&#65039; CONTINUER</button>
 
   <!-- Bas : Vue Parent centré -->
   <div style="display:flex;justify-content:center;align-items:center;width:100%;max-width:420px;margin:12px auto 0;">
@@ -231,10 +231,76 @@
   </div>
  </div>
 
+ <!-- ═══ ÉCRAN « CHOISIS TA MATIÈRE » (multi-matières) ═══ -->
+ <div id="v-subjects" class="hidden">
+  <div class="back-top-bar"><button class="back-top-btn" onclick="navBack()">&#8592; Retour</button></div>
+  <div style="text-align:center;margin:4px 0 2px;">
+   <div style="font-size:.72em;letter-spacing:3px;color:#8aa0c8;text-transform:uppercase;">Joueur : <span id="subj-player">Joueur</span></div>
+   <div style="font-size:1.5em;font-weight:800;color:#f1c40f;margin-top:4px;">Choisis ta matière</div>
+   <div style="font-size:.8em;color:#aebbd4;margin-top:2px;">Sélectionne un univers pour commencer</div>
+  </div>
+  <div class="subj-grid">
+   <button class="subj-tile subj-on" style="--g1:#2c3e9e;--g2:#1b2a6b;" onclick="chooseSubject('math')">
+    <div class="subj-em">&#128290;</div>
+    <div class="subj-nm">Mathématiques</div>
+    <div class="subj-sub">Nombres, calcul, logique</div>
+    <div class="subj-badge subj-badge-go">&#9654; JOUER</div>
+    <div class="subj-deco">&#10135;</div>
+   </button>
+   <button class="subj-tile" style="--g1:#c0392b;--g2:#7d1f17;" onclick="chooseSubject('fr')">
+    <div class="subj-em">&#128214;</div>
+    <div class="subj-nm">Français</div>
+    <div class="subj-sub">Lire, écrire, conjuguer</div>
+    <div class="subj-badge">&#128274; Bientôt</div>
+    <div class="subj-deco">&#9999;&#65039;</div>
+   </button>
+   <button class="subj-tile" style="--g1:#b9772e;--g2:#7a4a16;" onclick="chooseSubject('hist')">
+    <div class="subj-em">&#127963;&#65039;</div>
+    <div class="subj-nm">Histoire</div>
+    <div class="subj-sub">Frises, civilisations</div>
+    <div class="subj-badge">&#128274; Bientôt</div>
+    <div class="subj-deco">&#9203;</div>
+   </button>
+   <button class="subj-tile" style="--g1:#16a085;--g2:#0c6e5b;" onclick="chooseSubject('geo')">
+    <div class="subj-em">&#127757;</div>
+    <div class="subj-nm">Géographie</div>
+    <div class="subj-sub">Cartes, pays, reliefs</div>
+    <div class="subj-badge">&#128274; Bientôt</div>
+    <div class="subj-deco">&#129517;</div>
+   </button>
+   <button class="subj-tile" style="--g1:#2e64c9;--g2:#16357a;" onclick="chooseSubject('en')">
+    <div class="subj-em">&#127468;&#127463;</div>
+    <div class="subj-nm">Anglais</div>
+    <div class="subj-sub">Hello, words, fun!</div>
+    <div class="subj-badge">&#128274; Bientôt</div>
+    <div class="subj-deco" style="font-weight:900;">A</div>
+   </button>
+   <button class="subj-tile" style="--g1:#5aa730;--g2:#356016;" onclick="chooseSubject('svt')">
+    <div class="subj-em">&#129516;</div>
+    <div class="subj-nm">SVT</div>
+    <div class="subj-sub">Vivant, corps, Terre</div>
+    <div class="subj-badge">&#128274; Bientôt</div>
+    <div class="subj-deco">&#127807;</div>
+   </button>
+   <button class="subj-tile subj-wide" style="--g1:#7d4ec2;--g2:#4a2a86;" onclick="chooseSubject('pc')">
+    <div class="subj-wide-row">
+     <div class="subj-em">&#9879;&#65039;</div>
+     <div>
+      <div class="subj-nm">Physique-Chimie</div>
+      <div class="subj-sub">Atomes, énergie, expériences</div>
+     </div>
+    </div>
+    <div class="subj-badge">&#128274; Bientôt</div>
+    <div class="subj-deco">&#9883;&#65039;</div>
+   </button>
+  </div>
+  <div style="text-align:center;margin-top:14px;font-size:.72em;color:#7e8db0;">Les autres matières arriveront progressivement.</div>
+ </div>
+
  <!-- ═══ ÉCRAN 2 : CHOISIS TON AVENTURE ═══ -->
  <div id="v-menu2" class="hidden">
   <!-- Logo tout en haut, plus gros -->
-  <img src="assets/logo-main.webp?v=975" alt="L'Odyssée des Chiffres" class="game-logo" loading="eager" decoding="async" style="max-width:min(150px,42%);width:100%;height:auto;display:block;margin:6px auto 14px;">
+  <img src="assets/logo-main.webp?v=976" alt="L'Odyssée des Chiffres" class="game-logo" loading="eager" decoding="async" style="max-width:min(150px,42%);width:100%;height:auto;display:block;margin:6px auto 14px;">
 
   <!-- Barre : joueur (gauche, plus bas) · tableau de bord + étoiles (droite) -->
   <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;width:100%;max-width:560px;margin:8px auto 14px;flex-wrap:wrap;">
@@ -372,7 +438,7 @@
  <!-- ═══ CHOIX DE L'AVENTURE (3 niveaux) — v10.1.0 ═══ -->
  <div id="v-odyssey-select" class="hidden">
   <div class="back-top-bar"><button class="back-top-btn" onclick="navBack()">&#8592; Retour</button></div>
-  <img src="assets/logo-main.webp?v=975" alt="L'Odyssée des Chiffres" class="game-logo" loading="eager" decoding="async" style="max-width:min(140px,40%);width:100%;height:auto;display:block;margin:6px auto 6px;">
+  <img src="assets/logo-main.webp?v=976" alt="L'Odyssée des Chiffres" class="game-logo" loading="eager" decoding="async" style="max-width:min(140px,40%);width:100%;height:auto;display:block;margin:6px auto 6px;">
   <h2 style="margin:2px 0 2px;">L'Odyssée : l'aventure mathématique</h2>
   <p style="color:#bdc3c7;font-size:.9em;margin:0 0 14px;">Choisis ton aventure</p>
 
@@ -462,7 +528,7 @@
    <button class="back-top-btn" onclick="goHome()" style="background:#16a085;">&#127968; Accueil</button>
   </div>
   
-  <img src="assets/logo-circle.webp?v=975" alt="" class="page-logo-circle" aria-hidden="true">
+  <img src="assets/logo-circle.webp?v=976" alt="" class="page-logo-circle" aria-hidden="true">
   <h3>&#128202; Tableau de Bord &mdash; <span id="dash-player-name" style="color:#f1c40f;"></span></h3>
   <div class="tabs" id="stabs">
    <button class="tab active" onclick="stab('hero')"><span class="tab-wrap"><span>&#129464;</span><span class="tab-lbl">Héros</span></span></button>
@@ -644,7 +710,7 @@
  <div id="v-parent" class="hidden">
   <div class="back-top-bar" style="display:flex;justify-content:space-between;align-items:center;"><button class="back-top-btn" onclick="navBack()">&#8592; Retour</button><button class="back-top-btn" onclick="goHome()" style="background:#16a085;">&#127968; Accueil</button></div>
   
-  <img src="assets/logo-circle.webp?v=975" alt="" class="page-logo-circle" aria-hidden="true">
+  <img src="assets/logo-circle.webp?v=976" alt="" class="page-logo-circle" aria-hidden="true">
   <h2>&#128106; Vue Parent</h2>
   <div id="parent-lock">
    <p style="font-size:.9em;margin:4px 0;">Code parent :</p>
@@ -871,7 +937,7 @@
 <script src="js/13-maternelle.js"></script>
 <script src="js/14-primaire.js"></script>
   <script src="js/15-college.js"></script>
-<script src="js/11-init.js?v=975"></script>
+<script src="js/11-init.js?v=976"></script>
 
 <!-- Enregistrement du Service Worker (mode hors-ligne + installation PWA) -->
 <script>
