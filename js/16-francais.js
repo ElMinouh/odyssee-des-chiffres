@@ -558,5 +558,77 @@ function genFR_6E(boss,_d){
  return q;
 }
 
-// Table des générateurs français (CP→CM2 + 6e). 5e/4e/3e : à venir → repli 6e provisoire.
-const GEN_FR = { CP: genFR_CP, CE1: genFR_CE1, CE2: genFR_CE2, CM1: genFR_CM1, CM2: genFR_CM1, '6E': genFR_6E, '5E': genFR_6E, '4E': genFR_6E, '3E': genFR_6E };
+// ═══════════════════════════════════════════════════════
+// 5e — entrée en cycle 4 : COI/attribut, subordonnée relative, passé simple/
+//   conditionnel/impératif/subjonctif, valeurs des temps, accord PP avec être,
+//   figures enrichies, niveaux de langue, homophones avancés.
+// ═══════════════════════════════════════════════════════
+const FR5_FONC = [
+ {ph:'Je parle à Marie.', grp:'à Marie', f:'COI', bad:['COD','attribut du sujet']},
+ {ph:'Il pense à ses vacances.', grp:'à ses vacances', f:'COI', bad:['COD','sujet']},
+ {ph:'Le ciel est bleu.', grp:'bleu', f:'attribut du sujet', bad:['COD','COI']},
+ {ph:'Elle mange une pomme.', grp:'une pomme', f:'COD', bad:['COI','attribut du sujet']},
+ {ph:'Cette fille semble heureuse.', grp:'heureuse', f:'attribut du sujet', bad:['COD','COI']},
+ {ph:'Je me souviens de toi.', grp:'de toi', f:'COI', bad:['COD','attribut du sujet']}
+];
+const FR5_REL = [
+ {ph:'Le livre que je lis est passionnant.', ok:'que', bad:['qui','dont']},
+ {ph:'La fille qui chante est ma sœur.', ok:'qui', bad:['que','où']},
+ {ph:'La ville où je vis est belle.', ok:'où', bad:['qui','dont']},
+ {ph:'L\u2019ami dont je parle arrive.', ok:'dont', bad:['que','où']}
+];
+const FR5_MODE = [
+ {ph:'il chanta', ok:'passé simple', bad:['imparfait','présent']},
+ {ph:'je chanterais', ok:'conditionnel présent', bad:['futur','imparfait']},
+ {ph:'que je chante', ok:'subjonctif présent', bad:['présent','impératif']},
+ {ph:'chante !', ok:'impératif', bad:['présent','subjonctif']},
+ {ph:'il finit (hier)', ok:'passé simple', bad:['présent','futur']},
+ {ph:'nous irions', ok:'conditionnel présent', bad:['futur','imparfait']}
+];
+const FR5_VAL = [
+ {ph:'La Terre tourne autour du Soleil.', ok:'vérité générale', bad:['action passée','futur proche'], rule:'présent de vérité générale'},
+ {ph:'Tous les matins, il courait.', ok:'habitude', bad:['action unique','ordre'], rule:'imparfait d\u2019habitude'},
+ {ph:'Soudain, il bondit.', ok:'action brève', bad:['description','habitude'], rule:'passé simple : action soudaine'}
+];
+const FR5_FIG = [
+ {ph:'Je te l\u2019ai dit mille fois !', ok:'hyperbole', bad:['comparaison','énumération'], rule:'exagération'},
+ {ph:'Il achète des pommes, des poires, des cerises, des fraises.', ok:'énumération', bad:['métaphore','hyperbole'], rule:'liste d\u2019éléments'},
+ {ph:'Cet homme est un lion.', ok:'métaphore', bad:['comparaison','énumération'], rule:'image sans « comme »'},
+ {ph:'Le vent murmure.', ok:'personnification', bad:['hyperbole','comparaison'], rule:'un objet agit comme une personne'},
+ {ph:'Fort comme un bœuf.', ok:'comparaison', bad:['métaphore','hyperbole'], rule:'« comme »'}
+];
+const FR5_REG = [
+ {w:'bagnole', ok:'familier', bad:['courant','soutenu']},
+ {w:'voiture', ok:'courant', bad:['familier','soutenu']},
+ {w:'automobile', ok:'soutenu', bad:['familier','courant']},
+ {w:'bouquin', ok:'familier', bad:['courant','soutenu']},
+ {w:'demeure', ok:'soutenu', bad:['familier','courant']}
+];
+const FR5_HOMO = [
+ {ph:'___ heure est-il ?', ok:'Quelle', bad:["Qu'elle"], rule:'Quelle = déterminant interrogatif (+ nom)'},
+ {ph:'Je crois ___ viendra.', ok:"qu'elle", bad:['quelle'], rule:"qu'elle = que + elle"},
+ {ph:'Il ___ lave les mains.', ok:'se', bad:['ce'], rule:'se = pronom (verbe pronominal)'},
+ {ph:'___ livre est à moi.', ok:'Ce', bad:['Se'], rule:'ce = déterminant démonstratif (+ nom)'}
+];
+function _fr5_fonc(){ const x=_frRnd(FR5_FONC); return _frQ(`« ${x.ph} » Quelle est la fonction de « ${x.grp} » ?`, x.f, x.bad, 'fr5-fonc', `« ${x.grp} » → ${x.f}`); }
+function _fr5_rel(){ const r=_frRnd(FR5_REL); return _frQ(`« ${r.ph} » Quel est le pronom relatif ?`, r.ok, r.bad, 'fr5-rel', `pronom relatif : ${r.ok}`); }
+function _fr5_mode(){ const m=_frRnd(FR5_MODE); return _frQ(`Quel temps ou mode ? « ${m.ph} »`, m.ok, m.bad, 'fr5-mode', `« ${m.ph} » → ${m.ok}`); }
+function _fr5_val(){ const v=_frRnd(FR5_VAL); return _frQ(`« ${v.ph} » Le verbe exprime… ?`, v.ok, v.bad, 'fr5-val', v.rule); }
+function _fr5_fig(){ const f=_frRnd(FR5_FIG); return _frQ(`Quelle figure de style ? « ${f.ph} »`, f.ok, f.bad, 'fr5-fig', f.rule); }
+function _fr5_reg(){ const r=_frRnd(FR5_REG); return _frQ(`Quel niveau de langue : « ${r.w} » ?`, r.ok, r.bad, 'fr5-reg', `« ${r.w} » → ${r.ok}`); }
+function _fr5_homo(){ const h=_frRnd(FR5_HOMO); return _frQ(h.ph, h.ok, h.bad, 'fr5-homo', h.rule); }
+
+function genFR_5E(boss,_d){
+ _d=_d||0;
+ const phase=(typeof _progPhase==='function')?_progPhase('5E'):1;
+ let pool;
+ if(phase<=1)       pool=[_fr5_fonc,_fr5_rel,_fr5_mode,_fr5_homo,_fr6_phrase,_frCE1_syn,_fr5_reg];
+ else if(phase===2) pool=[_fr5_fonc,_fr5_rel,_fr5_val,_frCE1_conjSaisie,_frCE2_conj2,_frCM_pp,_fr5_reg,_fr5_fig,_fr5_mode,_frCE1_oppSaisie];
+ else               pool=[_fr5_fonc,_fr5_rel,_fr5_mode,_fr5_fig,_fr5_val,_fr6_etym,_frCE2_comp,_frCE1_conjSaisie,_frCM_homo3,_fr5_homo];
+ const q=_frUnique(_frRnd(pool)());
+ if(!q){ if(_d>14) return _fr5_fonc(); return genFR_5E(boss,_d+1); }
+ return q;
+}
+
+// Table des générateurs français (CP→6e + 5e). 4e/3e : à venir → repli 5e provisoire.
+const GEN_FR = { CP: genFR_CP, CE1: genFR_CE1, CE2: genFR_CE2, CM1: genFR_CM1, CM2: genFR_CM1, '6E': genFR_6E, '5E': genFR_5E, '4E': genFR_5E, '3E': genFR_5E };
