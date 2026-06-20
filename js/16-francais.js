@@ -479,5 +479,84 @@ function genFR_CM1(boss,_d){
  return q;
 }
 
-// Table des générateurs français par niveau (CP → CM2 couverts).
-const GEN_FR = { CP: genFR_CP, CE1: genFR_CE1, CE2: genFR_CE2, CM1: genFR_CM1, CM2: genFR_CM1 };
+// ═══════════════════════════════════════════════════════
+// 6e — fin de cycle 3 : natures & fonctions, temps de l'indicatif,
+//   phrase simple/complexe, figures, étymologie, homophones, compréhension.
+//   Davantage de saisie qu'au primaire.
+// ═══════════════════════════════════════════════════════
+const FR6_NAT = [
+ {w:'chat', nat:'nom', bad:['verbe','adjectif']},
+ {w:'maison', nat:'nom', bad:['adjectif','adverbe']},
+ {w:'manger', nat:'verbe', bad:['nom','adverbe']},
+ {w:'courir', nat:'verbe', bad:['nom','adjectif']},
+ {w:'rouge', nat:'adjectif', bad:['nom','adverbe']},
+ {w:'grand', nat:'adjectif', bad:['nom','verbe']},
+ {w:'il', nat:'pronom', bad:['déterminant','nom']},
+ {w:'elle', nat:'pronom', bad:['déterminant','adjectif']},
+ {w:'vite', nat:'adverbe', bad:['adjectif','verbe']},
+ {w:'souvent', nat:'adverbe', bad:['adjectif','préposition']},
+ {w:'dans', nat:'préposition', bad:['conjonction','adverbe']},
+ {w:'sur', nat:'préposition', bad:['adverbe','pronom']},
+ {w:'et', nat:'conjonction', bad:['préposition','adverbe']},
+ {w:'mais', nat:'conjonction', bad:['préposition','pronom']},
+ {w:'trois', nat:'déterminant', bad:['nom','adjectif']},
+ {w:'cette', nat:'déterminant', bad:['pronom','adjectif']}
+];
+const FR6_FONC = [
+ {ph:'Le chien dort.', grp:'Le chien', f:'sujet', bad:['COD','complément circonstanciel']},
+ {ph:'Léa mange une pomme.', grp:'une pomme', f:'COD', bad:['sujet','complément circonstanciel']},
+ {ph:'Il part demain.', grp:'demain', f:'complément circonstanciel', bad:['sujet','COD']},
+ {ph:'Les oiseaux chantent.', grp:'Les oiseaux', f:'sujet', bad:['COD','complément circonstanciel']},
+ {ph:'Tom lit un livre.', grp:'un livre', f:'COD', bad:['sujet','complément circonstanciel']},
+ {ph:'Nous jouons dans la cour.', grp:'dans la cour', f:'complément circonstanciel', bad:['sujet','COD']}
+];
+const FR6_TEMPS = [
+ {ph:'je mange', ok:'présent', bad:['imparfait','futur']},
+ {ph:'je mangeais', ok:'imparfait', bad:['présent','futur']},
+ {ph:'je mangerai', ok:'futur', bad:['imparfait','présent']},
+ {ph:'tu finissais', ok:'imparfait', bad:['présent','futur']},
+ {ph:'nous irons', ok:'futur', bad:['imparfait','présent']},
+ {ph:'elle chante', ok:'présent', bad:['imparfait','futur']}
+];
+const FR6_PHRASE = [
+ {ph:'Le chat dort.', ok:'simple', bad:['complexe'], rule:'1 seul verbe conjugué'},
+ {ph:'Il prend un crayon et trace un trait.', ok:'complexe', bad:['simple'], rule:'plusieurs verbes conjugués'},
+ {ph:'Marie lit un livre.', ok:'simple', bad:['complexe'], rule:'1 verbe conjugué'},
+ {ph:'Quand il pleut, je reste à la maison.', ok:'complexe', bad:['simple'], rule:'2 verbes conjugués'},
+ {ph:'Les enfants courent dans le parc.', ok:'simple', bad:['complexe'], rule:'1 verbe conjugué'}
+];
+const FR6_FIG = [
+ {ph:'Il est fort comme un lion.', ok:'comparaison', bad:['métaphore','personnification'], rule:'« comme » → comparaison'},
+ {ph:'Cet homme est un lion.', ok:'métaphore', bad:['comparaison','personnification'], rule:'image sans « comme »'},
+ {ph:'Le vent murmure dans les arbres.', ok:'personnification', bad:['comparaison','métaphore'], rule:'le vent agit comme une personne'},
+ {ph:'Ses yeux brillent comme des étoiles.', ok:'comparaison', bad:['métaphore','personnification'], rule:'« comme » → comparaison'},
+ {ph:'La lune sourit dans le ciel.', ok:'personnification', bad:['comparaison','métaphore'], rule:'la lune agit comme une personne'}
+];
+const FR6_ETYM = [
+ {pre:'télé-', ok:'à distance', bad:['sous','autour'], ex:'télévision, téléphone'},
+ {pre:'aqua-', ok:'l\u2019eau', bad:['l\u2019air','le feu'], ex:'aquarium, aquatique'},
+ {pre:'bio-', ok:'la vie', bad:['la terre','le temps'], ex:'biologie'},
+ {pre:'géo-', ok:'la Terre', bad:['l\u2019eau','le ciel'], ex:'géographie'},
+ {pre:'multi-', ok:'plusieurs', bad:['un seul','la moitié'], ex:'multicolore'}
+];
+function _fr6_nat(){ const n=_frRnd(FR6_NAT); return _frQ(`Quelle est la nature du mot « ${n.w} » ?`, n.nat, n.bad, 'fr6-nat', `« ${n.w} » → ${n.nat}`); }
+function _fr6_fonc(){ const x=_frRnd(FR6_FONC); return _frQ(`« ${x.ph} » Quelle est la fonction de « ${x.grp} » ?`, x.f, x.bad, 'fr6-fonc', `« ${x.grp} » → ${x.f}`); }
+function _fr6_temps(){ const t=_frRnd(FR6_TEMPS); return _frQ(`Quel temps ? « ${t.ph} »`, t.ok, t.bad, 'fr6-temps', `« ${t.ph} » → ${t.ok}`); }
+function _fr6_phrase(){ const p=_frRnd(FR6_PHRASE); return _frQ(`« ${p.ph} » Cette phrase est… ?`, p.ok, p.bad, 'fr6-phrase', p.rule); }
+function _fr6_fig(){ const f=_frRnd(FR6_FIG); return _frQ(`Quelle figure de style ? « ${f.ph} »`, f.ok, f.bad, 'fr6-fig', f.rule); }
+function _fr6_etym(){ const e=_frRnd(FR6_ETYM); return _frQ(`Que veut dire la racine « ${e.pre} » ? (ex. ${e.ex})`, e.ok, e.bad, 'fr6-etym', `${e.pre} = ${e.ok}`); }
+
+function genFR_6E(boss,_d){
+ _d=_d||0;
+ const phase=(typeof _progPhase==='function')?_progPhase('6E'):1;
+ let pool;
+ if(phase<=1)       pool=[_fr6_nat,_fr6_fonc,_fr6_temps,_frCE2_homo,_fr6_phrase,_frCE1_syn,_fr6_etym];
+ else if(phase===2) pool=[_fr6_nat,_fr6_fonc,_frCM_cod,_frCE1_conjSaisie,_frCE2_conj2,_frCE2_pref,_frCM_sens,_frCE1_oppSaisie,_fr6_phrase,_fr6_temps];
+ else               pool=[_fr6_nat,_fr6_fonc,_frCM_cod,_fr6_fig,_frCM_homo3,_fr6_etym,_frCE2_comp,_frCE1_conjSaisie,_frCM_sens,_fr6_phrase];
+ const q=_frUnique(_frRnd(pool)());
+ if(!q){ if(_d>14) return _fr6_nat(); return genFR_6E(boss,_d+1); }
+ return q;
+}
+
+// Table des générateurs français (CP→CM2 + 6e). 5e/4e/3e : à venir → repli 6e provisoire.
+const GEN_FR = { CP: genFR_CP, CE1: genFR_CE1, CE2: genFR_CE2, CM1: genFR_CM1, CM2: genFR_CM1, '6E': genFR_6E, '5E': genFR_6E, '4E': genFR_6E, '3E': genFR_6E };
