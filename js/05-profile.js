@@ -214,6 +214,15 @@ function loadProfile(){
   if(typeof _diagLog==='function')_diagLog('LOAD-PROFILE: profil trouvé '+name+' xp='+saved.xp+' cloudCode='+saved.cloudCode+' cloudEnabled='+saved.cloudEnabled);
   // 1. Migration : si format ancien, on le met à jour.
   saved = migrateProfile(saved);
+  // 1bis. Purge définitive des erreurs NON rejouables du journal espacé
+  // (questions-texte mal reconstruites, ex. « Combien de dizaines… »). On ne garde
+  // que les QCM (instantané) et les calculs purement numériques.
+  if(saved && Array.isArray(saved.errorLog)){
+   saved.errorLog = saved.errorLog.filter(e=> e && (
+     (e.payload && Array.isArray(e.payload.choices) && e.payload.choices.length) ||
+     /^[\d().,+\-x×\/÷\s]+=\d+$/.test(String(e.q||''))
+   ));
+  }
   // 2. Validation : on garantit que toutes les valeurs sont bien typées et bornées.
   const validated = validateProfile(saved, name);
   if(validated){

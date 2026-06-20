@@ -849,6 +849,8 @@ function _hwCycle(level){
 function onHwLevelChange(){
  const lvlSel = $('hw-level'), typeSel = $('hw-type');
  if(!lvlSel || !typeSel) return;
+ const subj = $('hw-subject')?.value || 'math';
+ if(subj !== 'math'){ typeSel.innerHTML = '<option value="any">Tout le français</option>'; return; }
  const cycle = _hwCycle(lvlSel.value);
  const prev = typeSel.value;
  let opts;
@@ -863,6 +865,18 @@ function onHwLevelChange(){
  }
  typeSel.innerHTML = opts.map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
  if(opts.some(o=>o[0]===prev)) typeSel.value = prev;
+}
+// Matière du devoir : adapte la liste des types (français = « tout le français »).
+function onHwSubjectChange(){
+ if(typeof onHwLevelChange === 'function') onHwLevelChange();
+}
+// Filtres (Contrôles) : bascule entre filtres maths et note français.
+function onFilterSubjectChange(){
+ const subj = $('filter-subject')?.value || 'math';
+ const isFr = subj !== 'math';
+ const note = $('filter-fr-note'), ops = $('op-filters');
+ if(note) note.classList.toggle('hidden', !isFr);
+ if(ops) ops.classList.toggle('hidden', isFr);
 }
 
 /**
@@ -881,7 +895,8 @@ function loadHomework(){
    if(status)status.innerHTML = '<span style="color:#bdc3c7;">Aucun devoir actif.</span>';
    return;
   }
-  // Préremplir le formulaire (niveau d'abord → adapte la liste des types au cycle)
+  // Préremplir le formulaire (matière + niveau → adapte la liste des types)
+  if($('hw-subject'))$('hw-subject').value = hw.subject || 'math';
   if($('hw-level'))$('hw-level').value = hw.level || 'CE2';
   if(typeof onHwLevelChange === 'function') onHwLevelChange();
   if($('hw-type'))$('hw-type').value = hw.type || 'any';
@@ -906,13 +921,14 @@ function saveHomework(){
  if(!sel){toast('⚠️ Sélectionnez un joueur'); return;}
  const type = $('hw-type').value;
  const level = $('hw-level').value;
+ const subject = $('hw-subject')?.value || 'math';
  const count = parseInt($('hw-count').value, 10) || 10;
  const reward = parseInt($('hw-reward').value, 10) || 50;
  try{
   const raw = localStorage.getItem('user_'+sel);
   if(!raw){toast('⚠️ Profil introuvable.', 3000); return;}
   const data = JSON.parse(raw);
-  data.homework = { type, level, count, reward, progress: 0, done: false, createdAt: Date.now() };
+  data.homework = { type, level, subject, count, reward, progress: 0, done: false, createdAt: Date.now() };
   localStorage.setItem('user_'+sel, JSON.stringify(data));
   const status = $('hw-status');
   if(status) status.innerHTML = `<span style="color:#2ecc71;">✅ Devoir donné à ${sel} !</span>`;

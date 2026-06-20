@@ -3343,7 +3343,8 @@ function renderHomework(){
 function startHomework(){
  if(!P?.homework || P.homework.done){ toast('⚠️ Aucun devoir actif.'); return; }
  const hw = P.homework;
- // Force le niveau et le mode
+ // Force la matière, le niveau et le mode
+ GM.subject = hw.subject || 'math';
  GM.level = hw.level || 'CE2';
  GM.mode = $('modeSelect').value || 'keyboard';
  GM.mode2 = 'normal';
@@ -3361,6 +3362,9 @@ function _matchesHomework(q){
  if(!GM.homework || !GM.homeworkConfig) return false;
  const type = GM.homeworkConfig.type;
  if(type === 'any') return true;
+ // Devoir d'une matière non-maths : seules les questions de cette matière comptent,
+ // et seul le type « tout » est proposé → tout le reste ne compte pas.
+ if(GM.homeworkConfig.subject && GM.homeworkConfig.subject !== 'math') return false;
  if(type === 'add') return q.opKey === '+';
  if(type === 'sub') return q.opKey === '-';
  if(type === 'mult') return q.opKey === 'x' || q.opKey === '×';

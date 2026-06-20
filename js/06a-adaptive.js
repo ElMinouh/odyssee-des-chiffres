@@ -59,6 +59,12 @@ function logError(qDisplay, res, q){
  if(!P)return;
  P.errorLog = Array.isArray(P.errorLog) ? P.errorLog : [];
  const key = String(qDisplay).replace(/\s+/g,'')+'='+res;
+ // On n'enregistre que des erreurs REJOUABLES : soit un QCM (instantané rejouable),
+ // soit un calcul purement numérique. Les questions-texte (ex. « Combien de dizaines… »)
+ // sont exclues : leur tiret « a-t-il » était pris pour un « moins » et reconstruisait
+ // une question incompréhensible rejouée en boucle.
+ const _replayable = (q && Array.isArray(q.choices) && q.choices.length) || /^[\d().,+\-x×\/÷\s]+=\d+$/.test(key);
+ if(!_replayable) return;
  // Si l'erreur existe déjà, on met à jour le timestamp et tries
  const existing = P.errorLog.find(e=>e.q===key);
  const _subj = (typeof GM!=='undefined' && GM.subject) || 'math';
@@ -148,12 +154,12 @@ function getRevisionErrorToAsk(){
     out.isRevision = true;
     return out;
    }
-   const m = e.q.match(/^(.+?)([+\-x×\/÷])(.+?)=(\d+)$/);
+   const m = e.q.match(/^(\d+)\s*([+\-x×\/÷])\s*(\d+)\s*=\s*(\d+)$/);
    if(!m)continue;
    _lastRevisedKey = e.q;
    return {
-    a: isNaN(+m[1])?null:+m[1],
-    b: isNaN(+m[3])?null:+m[3],
+    a: +m[1],
+    b: +m[3],
     op: m[2],
     res: +m[4],
     display: `${m[1]} ${m[2]} ${m[3]}`,
