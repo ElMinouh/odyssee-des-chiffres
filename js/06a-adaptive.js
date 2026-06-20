@@ -624,32 +624,48 @@ function _progWeakType(level){
 }
 let _progSelClass = null;
 function _progSelectClass(l){ _progSelClass=l; if(typeof renderReport==='function') renderReport(); }
+let _progSelSubject = null;
+function _progSelectSubject(s){ _progSelSubject=s; _progSelClass=null; if(typeof renderReport==='function') renderReport(); }
+const _PROG_SUBJ_LABEL = {math:'🔢 Maths', fr:'📖 Français', hist:'🏛️ Histoire', geo:'🌍 Géo', en:'🇬🇧 Anglais', svt:'🧬 SVT', pc:'⚗️ Phys-Chimie'};
 function _progPanelHtml(d){
  try{
   const yp=(d&&d.yearProgress)||{};
   const order=['PS','MS','GS','CP','CE1','CE2','CM1','CM2','6E','5E','4E','3E'];
-  const played=order.filter(l=>typeof yp[l]==='number' && yp[l]>0.001);
+  const SUBJ=['math','fr','hist','geo','en','svt','pc'];
+  const keyOf=(s,l)=> s==='math' ? l : (s+'|'+l);
+  // Matières ayant au moins une progression enregistrée
+  const subj=SUBJ.filter(s=>order.some(l=>typeof yp[keyOf(s,l)]==='number' && yp[keyOf(s,l)]>0.001));
+  if(!subj.length) return '';
+  let curSubj=(_progSelSubject && subj.includes(_progSelSubject)) ? _progSelSubject : subj[0];
+  const played=order.filter(l=>typeof yp[keyOf(curSubj,l)]==='number' && yp[keyOf(curSubj,l)]>0.001);
   if(!played.length) return '';
   const sel=(_progSelClass && played.includes(_progSelClass)) ? _progSelClass : played[played.length-1];
-  const btns=played.map(l=>`<button onclick="_progSelectClass('${l}')" style="border:none;border-radius:8px;padding:5px 11px;margin:2px;font-weight:800;cursor:pointer;background:${l===sel?'#534ab7':'rgba(255,255,255,.14)'};color:#fff;">${l}</button>`).join('');
-  const v=Math.max(0,Math.min(1,yp[sel]||0));
+  const v=Math.max(0,Math.min(1,yp[keyOf(curSubj,sel)]||0));
   const lab=v<0.34?"Début d'année":(v<0.67?"Milieu d'année":"Fin d'année");
   const col=v<0.34?'#1d9e75':(v<0.67?'#ba7517':'#d85a30');
+  // Sélecteur de matière (seulement si plusieurs matières jouées)
+  const subjBtns = subj.length>1 ? `<div style="margin-bottom:8px;">`+subj.map(s=>`<button onclick="_progSelectSubject('${s}')" style="border:none;border-radius:8px;padding:5px 10px;margin:2px;font-weight:800;cursor:pointer;background:${s===curSubj?'#c0392b':'rgba(255,255,255,.14)'};color:#fff;">${_PROG_SUBJ_LABEL[s]||s}</button>`).join('')+`</div>` : '';
+  const btns=played.map(l=>`<button onclick="_progSelectClass('${l}')" style="border:none;border-radius:8px;padding:5px 11px;margin:2px;font-weight:800;cursor:pointer;background:${l===sel?'#534ab7':'rgba(255,255,255,.14)'};color:#fff;">${l}</button>`).join('');
   const gauge=`<div style="position:relative;height:24px;border-radius:12px;overflow:hidden;display:flex;margin:8px 0 2px;">
      <div style="flex:1;background:#1d9e75;"></div><div style="flex:1;background:#ba7517;"></div><div style="flex:1;background:#d85a30;"></div>
      <div style="position:absolute;top:50%;transform:translate(-50%,-50%);left:${(v*100).toFixed(1)}%;width:4px;height:32px;background:#fff;border-radius:2px;box-shadow:0 0 4px rgba(0,0,0,.6);"></div>
     </div>
     <div style="display:flex;justify-content:space-between;font-size:.68em;opacity:.85;"><span>Début</span><span>Milieu</span><span>Fin</span></div>
     <div style="text-align:center;font-weight:800;color:${col};margin-top:5px;">${sel} — ${lab} · ${Math.round(v*100)}%</div>`;
-  const w=_progWeakType(sel);
-  const weakBox = w
-   ? `<div style="margin-top:10px;padding:10px;border:2px solid #e74c3c;border-radius:10px;background:rgba(231,76,60,.13);">
-        <div style="font-weight:800;color:#ff6b6b;">⚠️ Point faible n°1 en ${sel}</div>
-        <div style="margin-top:3px;">${_PROG_OPLABEL[w.key]||w.key} — ${Math.round(w.rate*100)}% d'erreurs (${w.fail} sur ${w.n})</div>
-      </div>`
-   : `<div style="margin-top:10px;padding:10px;border:2px dashed rgba(255,255,255,.25);border-radius:10px;font-size:.85em;opacity:.8;">Pas encore assez de réponses en ${sel} pour repérer un point faible.</div>`;
+  // Point faible : suivi par notion disponible pour les maths
+  let weakBox='';
+  if(curSubj==='math'){
+   const w=_progWeakType(sel);
+   weakBox = w
+    ? `<div style="margin-top:10px;padding:10px;border:2px solid #e74c3c;border-radius:10px;background:rgba(231,76,60,.13);">
+         <div style="font-weight:800;color:#ff6b6b;">⚠️ Point faible n°1 en ${sel}</div>
+         <div style="margin-top:3px;">${_PROG_OPLABEL[w.key]||w.key} — ${Math.round(w.rate*100)}% d'erreurs (${w.fail} sur ${w.n})</div>
+       </div>`
+    : `<div style="margin-top:10px;padding:10px;border:2px dashed rgba(255,255,255,.25);border-radius:10px;font-size:.85em;opacity:.8;">Pas encore assez de réponses en ${sel} pour repérer un point faible.</div>`;
+  }
   return `<div style="margin-top:10px;padding:10px;background:rgba(255,255,255,.06);border-radius:10px;">
-     <div style="font-weight:800;margin-bottom:6px;">📈 Progression d'année <span style="font-weight:400;opacity:.7;font-size:.8em;">(choisis une classe)</span></div>
+     <div style="font-weight:800;margin-bottom:6px;">📈 Progression d'année <span style="font-weight:400;opacity:.7;font-size:.8em;">(matière puis classe)</span></div>
+     ${subjBtns}
      <div style="margin-bottom:2px;">${btns}</div>
      ${gauge}
      ${weakBox}

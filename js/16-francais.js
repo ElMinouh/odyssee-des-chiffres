@@ -176,11 +176,13 @@ function _frD_spell(){
  const wrong=_FR_MISSPELL[k];
  return _frQ(`${w.e} Quel mot est bien écrit ?`, `<b>${k}</b>`, wrong.map(x=>x), 'fr-orth');
 }
-// B : lecture éclair (phase 3 — lecture)
+// B : reconnaissance image → mot (phase 3 — lecture). Grande image dans #problem-image.
 function _frB_flash(){
  const w=_frRnd(FR_WORDS.filter(x=>x.syl<=2));
  const near=_frSample(FR_WORDS,2,[w.v]);
- return _frQ(`⚡ Quel mot as-tu vu ? ${w.e}`, `<b>${w.w}</b>`, near.map(x=>`${x.w}`), 'fr-flash');
+ const q=_frQ('Quel mot correspond à l\u2019image ?', `<b>${w.w}</b>`, near.map(x=>`${x.w}`), 'fr-flash', `C\u2019est « ${w.w} »`);
+ q.visualHtml=`<span style="font-size:3.6em;line-height:1">${w.e}</span>`;
+ return q;
 }
 
 // ── Sélecteur CP : pioche un type selon la phase d'année ──
@@ -190,7 +192,7 @@ function genFR_CP(boss, _d){
  let pool;
  if(phase<=1)       pool=[_frA_sound,_frC_intrus,_frC_cat,_frG_listen];
  else if(phase===2) pool=[_frA_sound,_frA_syll,_frC_intrus,_frC_cat,_frC_opp,_frG_listen];
- else               pool=[_frA_sound,_frA_syll,_frC_opp,_frC_cat,_frG_listen,_frD_genre,_frD_spell,_frB_flash];
+ else               pool=[_frA_sound,_frA_syll,_frC_opp,_frC_cat,_frG_listen,_frD_genre,_frB_flash];
  const q=_frUnique(_frRnd(pool)());
  if(!q){ if(_d>14) return _frA_sound()||_frC_cat(); return genFR_CP(boss,_d+1); }
  return q;
@@ -219,13 +221,13 @@ const FR_OPP_TXT = [
 ];
 const FR_GRAPH = [
  {word:'bateau',son:'o',ok:'eau',bad:['o','au']},
- {word:'auto',son:'o',ok:'au',bad:['o','eau']},
- {word:'moto',son:'o',ok:'o',bad:['au','eau']},
+ {word:'jaune',son:'o',ok:'au',bad:['o','eau']},
+ {word:'vélo',son:'o',ok:'o',bad:['au','eau']},
  {word:'lapin',son:'in',ok:'in',bad:['ain','ein']},
  {word:'pain',son:'in',ok:'ain',bad:['in','ein']},
  {word:'frein',son:'in',ok:'ein',bad:['in','ain']},
  {word:'classe',son:'s',ok:'ss',bad:['s','c']},
- {word:'cerise',son:'s',ok:'c',bad:['s','ss']},
+ {word:'citron',son:'s',ok:'c',bad:['s','ss']},
  {word:'sac',son:'s',ok:'s',bad:['ss','c']},
  {word:'photo',son:'f',ok:'ph',bad:['f','v']}
 ];
