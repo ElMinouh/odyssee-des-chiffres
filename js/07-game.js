@@ -2537,11 +2537,11 @@ function generateQ(){
   if(rev) return rev;
  }
  // P1 : exercices d'enrichissement numération (primaire, en mode normal hors boss)
- if(GM.mode2==='normal' && !GS.isBoss && !(typeof _isMaternelle==='function'&&_isMaternelle(GM.level)) && typeof _primEnrich==='function' && typeof _PRIM_LEVELS!=='undefined' && _PRIM_LEVELS.includes(GM.level) && Math.random()<0.33){
+ if((GM.subject==='math'||!GM.subject) && GM.mode2==='normal' && !GS.isBoss && !(typeof _isMaternelle==='function'&&_isMaternelle(GM.level)) && typeof _primEnrich==='function' && typeof _PRIM_LEVELS!=='undefined' && _PRIM_LEVELS.includes(GM.level) && Math.random()<0.33){
   const pe=_primEnrich(GM.level); if(pe) return pe;
  }
  // C : exercices d'enrichissement collège (relatifs, etc.) en mode normal hors boss
- if(GM.mode2==='normal' && !GS.isBoss && typeof _collEnrich==='function' && typeof _COL_LEVELS!=='undefined' && _COL_LEVELS.includes(GM.level) && Math.random()<0.33){
+ if((GM.subject==='math'||!GM.subject) && GM.mode2==='normal' && !GS.isBoss && typeof _collEnrich==='function' && typeof _COL_LEVELS!=='undefined' && _COL_LEVELS.includes(GM.level) && Math.random()<0.33){
   const ce=_collEnrich(GM.level); if(ce) return ce;
  }
  const _GS=(typeof GM!=='undefined'&&GM.subject==='fr'&&typeof GEN_FR!=='undefined')?GEN_FR:GEN;
