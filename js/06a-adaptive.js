@@ -507,16 +507,23 @@ const _YEAR_LEVELS = ['PS','MS','GS','CP','CE1','CE2','CM1','CM2','6E','5E','4E'
 const PROG_UP   = 0.025;   // gain par bonne réponse (montée rapide : ~40 réussites = début→fin)
 const PROG_DOWN = 0.015;   // perte par erreur (régression douce)
 
+// Clé de progression scopée par matière. Maths conserve la clé « niveau » nue
+// (rétro-compatibilité totale des sauvegardes), les autres matières utilisent
+// « matière|niveau » → jauge d'année indépendante par matière.
+function _progKey(level){
+ try{ return (typeof GM!=='undefined' && GM.subject && GM.subject!=='math') ? (GM.subject+'|'+level) : level; }
+ catch(e){ return level; }
+}
 function _progGet(level){
  if(typeof P==='undefined') return 0;
  if(!P.yearProgress || typeof P.yearProgress!=='object') P.yearProgress={};
- const v=P.yearProgress[level];
+ const v=P.yearProgress[_progKey(level)];
  return (typeof v==='number' && isFinite(v)) ? v : 0;
 }
 function _progSet(level,v){
  if(typeof P==='undefined') return;
  if(!P.yearProgress || typeof P.yearProgress!=='object') P.yearProgress={};
- P.yearProgress[level]=Math.max(0, Math.min(1, v));
+ P.yearProgress[_progKey(level)]=Math.max(0, Math.min(1, v));
 }
 function _progUpdate(level, correct){
  if(!_YEAR_LEVELS.includes(level)) return;

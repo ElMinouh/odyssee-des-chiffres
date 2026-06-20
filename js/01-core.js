@@ -924,9 +924,10 @@ function gotoSubjects(){
 }
 // Choix d'une matière. Maths → flux actuel (modes). Autres → bientôt disponibles.
 const SUBJECT_LABELS={ math:'Mathématiques', fr:'Français', hist:'Histoire', geo:'Géographie', en:'Anglais', svt:'SVT', pc:'Physique-Chimie' };
+const SUBJECTS_ACTIVE=['math','fr'];
 function chooseSubject(key){
- if(key==='math'){
-  GM.subject='math';
+ if(SUBJECTS_ACTIVE.indexOf(key)>=0){
+  GM.subject=key;
   try{ if(typeof beep==='function') beep(660,'sine',.12); }catch(e){}
   gotoMenu2();
  }else{

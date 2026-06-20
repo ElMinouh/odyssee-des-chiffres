@@ -9,7 +9,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v10.5.0';
+const CACHE_VERSION = 'v10.6.0';
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources critiques précachées au premier chargement.
@@ -22,6 +22,7 @@ const CRITICAL_URLS = [
   './js/02-data.js',
   './js/03-figurines-data.js',
   './js/04-questions.js',
+  './js/16-francais.js',
   './js/05-profile.js',
   './js/06a-adaptive.js',
   './js/06b-time-block.js',

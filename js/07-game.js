@@ -2544,7 +2544,8 @@ function generateQ(){
  if(GM.mode2==='normal' && !GS.isBoss && typeof _collEnrich==='function' && typeof _COL_LEVELS!=='undefined' && _COL_LEVELS.includes(GM.level) && Math.random()<0.33){
   const ce=_collEnrich(GM.level); if(ce) return ce;
  }
- const fn=GEN[GM.level]||GEN.CP;let q=fn(GS.isBoss);
+ const _GS=(typeof GM!=='undefined'&&GM.subject==='fr'&&typeof GEN_FR!=='undefined')?GEN_FR:GEN;
+ const fn=_GS[GM.level]||_GS.CP||GEN.CP;let q=fn(GS.isBoss);
  if(GS.activeEvent?.effect==='next_golden'){GS.isGolden=true;GS.activeEvent=null;}
  return q;
 }
@@ -2898,7 +2899,7 @@ function nextCombat(){
  GS.qCount++;GS.isGolden=Math.random()<.15;GS.frozen=false;
  GM.level=combatPlayers[combatIdx].level;
  GS.monsterMaxHP=HP_LVL[GM.level]||1;GS.monsterHP=GS.monsterMaxHP;
- GS.q=GEN[GM.level](false);$('correction').classList.add('hidden');renderQ();
+ GS.q=((typeof GM!=='undefined'&&GM.subject==='fr'&&typeof GEN_FR!=='undefined'?GEN_FR:GEN)[GM.level]||GEN.CP)(false);$('correction').classList.add('hidden');renderQ();
  const cp = combatPlayers[combatIdx];
  $('quest-title').innerHTML=`⚔️ Tour de <strong>${cp.avatar||'🧙'} ${esc(cp.name)}</strong> <span class="mode-badge m-combat">combat</span>`;
  // Chantier A2 v1 : annonce du tour avec toast + son distinctif
