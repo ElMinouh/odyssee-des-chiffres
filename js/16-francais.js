@@ -630,5 +630,71 @@ function genFR_5E(boss,_d){
  return q;
 }
 
-// Table des générateurs français (CP→6e + 5e). 4e/3e : à venir → repli 5e provisoire.
-const GEN_FR = { CP: genFR_CP, CE1: genFR_CE1, CE2: genFR_CE2, CM1: genFR_CM1, CM2: genFR_CM1, '6E': genFR_6E, '5E': genFR_5E, '4E': genFR_5E, '3E': genFR_5E };
+// ═══════════════════════════════════════════════════════
+// 4e — voix passive & complément d'agent, attribut du COD, types de
+//   subordonnées, accord PP avec avoir (COD antéposé), connecteurs logiques,
+//   figures avancées. Exemples originaux (aucune citation d'œuvre).
+// ═══════════════════════════════════════════════════════
+const FR4_VOIX = [
+ {ph:'La souris est mangée par le chat.', ok:'passive', bad:['active'], rule:'le sujet subit l\u2019action'},
+ {ph:'Le chat mange la souris.', ok:'active', bad:['passive'], rule:'le sujet fait l\u2019action'},
+ {ph:'Le voleur a été arrêté par la police.', ok:'passive', bad:['active'], rule:'« être » + participe + par'},
+ {ph:'Marie écrit une lettre.', ok:'active', bad:['passive'], rule:'le sujet fait l\u2019action'}
+];
+const FR4_AGENT = [
+ {ph:'La pomme est mangée par Marie.', grp:'par Marie', ok:"complément d'agent", bad:['sujet','COD']},
+ {ph:'Le ballon a été lancé par Tom.', grp:'par Tom', ok:"complément d'agent", bad:['COI','sujet']},
+ {ph:'La maison fut construite par les ouvriers.', grp:'par les ouvriers', ok:"complément d'agent", bad:['sujet','COD']}
+];
+const FR4_ATCOD = [
+ {ph:'Je trouve cette histoire passionnante.', grp:'passionnante', ok:'attribut du COD', bad:['épithète','attribut du sujet'], rule:'caractérise le COD « cette histoire »'},
+ {ph:'On l\u2019a élu président.', grp:'président', ok:'attribut du COD', bad:['COD','sujet'], rule:'caractérise le COD'},
+ {ph:'Je le crois sincère.', grp:'sincère', ok:'attribut du COD', bad:['attribut du sujet','épithète'], rule:'caractérise le COD « le »'}
+];
+const FR4_SUB = [
+ {ph:'Le livre que je lis est bien.', ok:'relative', bad:['conjonctive','circonstancielle'], rule:'pronom relatif « que »'},
+ {ph:'Je pense que tu as raison.', ok:'conjonctive', bad:['relative','circonstancielle'], rule:'« que » conjonction, COD du verbe'},
+ {ph:'Je viendrai quand tu voudras.', ok:'circonstancielle', bad:['relative','conjonctive'], rule:'exprime le temps'},
+ {ph:'La fille qui chante est là.', ok:'relative', bad:['conjonctive','circonstancielle'], rule:'pronom relatif « qui »'},
+ {ph:'Il reste parce qu\u2019il fait froid.', ok:'circonstancielle', bad:['relative','conjonctive'], rule:'exprime la cause'}
+];
+const FR4_PP = [
+ {ph:'Les fleurs que j\u2019ai ___ (cueillir).', ok:'cueillies', bad:['cueilli','cueillis'], rule:'avoir + COD avant (les fleurs, f.pl.) → ies'},
+ {ph:'La lettre qu\u2019il a ___ (écrire).', ok:'écrite', bad:['écrit','écrits'], rule:'COD « la lettre » avant → e'},
+ {ph:'J\u2019ai ___ une pomme (manger).', ok:'mangé', bad:['mangée','mangés'], rule:'COD après → pas d\u2019accord'},
+ {ph:'Les gâteaux que tu as ___ (faire).', ok:'faits', bad:['fait','faites'], rule:'COD « les gâteaux » avant (m.pl.) → s'}
+];
+const FR4_CONN = [
+ {ph:'Il pleut, ___ je prends un parapluie.', ok:'donc', bad:['cependant','car'], rule:'conséquence'},
+ {ph:'Il est petit, ___ très fort.', ok:'mais', bad:['donc','car'], rule:'opposition'},
+ {ph:'Je reste, ___ il fait froid.', ok:'car', bad:['donc','mais'], rule:'cause'},
+ {ph:'D\u2019abord on lit, ___ on répond.', ok:'ensuite', bad:['car','mais'], rule:'succession'}
+];
+const FR4_FIG = [
+ {ph:'un silence assourdissant', ok:'oxymore', bad:['antithèse','litote'], rule:'deux mots de sens opposés côte à côte'},
+ {ph:'Certains rient, d\u2019autres pleurent.', ok:'antithèse', bad:['oxymore','gradation'], rule:'deux idées opposées'},
+ {ph:'Il marche, il court, il vole.', ok:'gradation', bad:['énumération','litote'], rule:'progression d\u2019intensité'},
+ {ph:'Ce n\u2019est pas mauvais.', ok:'litote', bad:['hyperbole','oxymore'], rule:'dire peu pour suggérer beaucoup'}
+];
+function _fr4_voix(){ const v=_frRnd(FR4_VOIX); return _frQ(`« ${v.ph} » Cette phrase est à la voix… ?`, v.ok, v.bad, 'fr4-voix', v.rule); }
+function _fr4_agent(){ const a=_frRnd(FR4_AGENT); return _frQ(`« ${a.ph} » Quelle est la fonction de « ${a.grp} » ?`, a.ok, a.bad, 'fr4-agent', `« ${a.grp} » → complément d\u2019agent`); }
+function _fr4_atcod(){ const a=_frRnd(FR4_ATCOD); return _frQ(`« ${a.ph} » Quelle est la fonction de « ${a.grp} » ?`, a.ok, a.bad, 'fr4-atcod', a.rule); }
+function _fr4_sub(){ const s=_frRnd(FR4_SUB); return _frQ(`« ${s.ph} » La proposition subordonnée est… ?`, s.ok, s.bad, 'fr4-sub', s.rule); }
+function _fr4_pp(){ const p=_frRnd(FR4_PP); return _frQ(p.ph, p.ok, p.bad, 'fr4-pp', p.rule); }
+function _fr4_conn(){ const c=_frRnd(FR4_CONN); return _frQ(`Complète : « ${c.ph} »`, c.ok, c.bad, 'fr4-conn', `${c.ok} → ${c.rule}`); }
+function _fr4_fig(){ const f=_frRnd(FR4_FIG); return _frQ(`Quelle figure de style ? « ${f.ph} »`, f.ok, f.bad, 'fr4-fig', f.rule); }
+
+function genFR_4E(boss,_d){
+ _d=_d||0;
+ const phase=(typeof _progPhase==='function')?_progPhase('4E'):1;
+ let pool;
+ if(phase<=1)       pool=[_fr4_voix,_fr4_agent,_fr4_sub,_fr4_conn,_fr5_fonc,_fr5_mode,_fr5_rel];
+ else if(phase===2) pool=[_fr4_voix,_fr4_atcod,_fr4_pp,_frCE2_pc,_fr4_fig,_fr4_sub,_frCE1_conjSaisie,_fr5_reg,_fr4_conn,_fr4_agent];
+ else               pool=[_fr4_voix,_fr4_atcod,_fr4_pp,_fr4_sub,_fr4_fig,_fr4_conn,_fr6_etym,_frCE2_comp,_fr5_mode,_frCM_homo3];
+ const q=_frUnique(_frRnd(pool)());
+ if(!q){ if(_d>14) return _fr4_voix(); return genFR_4E(boss,_d+1); }
+ return q;
+}
+
+// Table des générateurs français (CP→5e + 4e). 3e : à venir → repli 4e provisoire.
+const GEN_FR = { CP: genFR_CP, CE1: genFR_CE1, CE2: genFR_CE2, CM1: genFR_CM1, CM2: genFR_CM1, '6E': genFR_6E, '5E': genFR_5E, '4E': genFR_4E, '3E': genFR_4E };
