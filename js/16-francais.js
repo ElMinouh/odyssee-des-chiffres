@@ -696,5 +696,54 @@ function genFR_4E(boss,_d){
  return q;
 }
 
-// Table des générateurs français (CP→5e + 4e). 3e : à venir → repli 4e provisoire.
-const GEN_FR = { CP: genFR_CP, CE1: genFR_CE1, CE2: genFR_CE2, CM1: genFR_CM1, CM2: genFR_CM1, '6E': genFR_6E, '5E': genFR_5E, '4E': genFR_4E, '3E': genFR_4E };
+// ═══════════════════════════════════════════════════════
+// 3e — fonctions des subordonnées, liens entre propositions, tous temps/modes,
+//   homophones pièges. Phase finale : interleaving « brevet » (toutes notions).
+// ═══════════════════════════════════════════════════════
+const FR3_SUBF = [
+ {ph:'Je sais que tu viendras.', ok:'COD', bad:['sujet','CC'], rule:'conjonctive « que » → COD de « sais »'},
+ {ph:'Le livre que tu lis est à moi.', ok:'complément de l\u2019antécédent', bad:['COD','CC'], rule:'relative → complète « le livre »'},
+ {ph:'Je viendrai quand il arrivera.', ok:'complément circonstanciel', bad:['COD','sujet'], rule:'circonstancielle de temps'},
+ {ph:'Je me demande s\u2019il viendra.', ok:'COD', bad:['CC','sujet'], rule:'interrogative indirecte → COD'}
+];
+const FR3_LIEN = [
+ {ph:'Il pleut, je rentre.', ok:'juxtaposition', bad:['coordination','subordination'], rule:'reliées par une virgule'},
+ {ph:'Il pleut et je rentre.', ok:'coordination', bad:['juxtaposition','subordination'], rule:'reliées par « et »'},
+ {ph:'Je rentre parce qu\u2019il pleut.', ok:'subordination', bad:['juxtaposition','coordination'], rule:'une proposition dépend de l\u2019autre'},
+ {ph:'Il lit, elle écrit, ils travaillent.', ok:'juxtaposition', bad:['coordination','subordination'], rule:'séparées par des virgules'}
+];
+const FR3_TEMPS = [
+ {ph:'j\u2019avais mangé', ok:'plus-que-parfait', bad:['passé composé','imparfait']},
+ {ph:'j\u2019ai mangé', ok:'passé composé', bad:['plus-que-parfait','présent']},
+ {ph:'que je finisse', ok:'subjonctif présent', bad:['présent','conditionnel']},
+ {ph:'je finirais', ok:'conditionnel présent', bad:['futur','imparfait']},
+ {ph:'il eut fini', ok:'passé antérieur', bad:['plus-que-parfait','passé simple']}
+];
+const FR3_HOMO = [
+ {ph:'Il est ___ à partir.', ok:'prêt', bad:['près'], rule:'prêt = préparé'},
+ {ph:'Assieds-toi ___ de moi.', ok:'près', bad:['prêt'], rule:'près = à proximité'},
+ {ph:'Arrive ___ que tard.', ok:'plutôt', bad:['plus tôt'], rule:'plutôt = de préférence'},
+ {ph:'Lève-toi ___ demain matin.', ok:'plus tôt', bad:['plutôt'], rule:'plus tôt = moins tard'},
+ {ph:'___ ne m\u2019intéresse pas.', ok:'Ça', bad:['Sa'], rule:'ça = cela'},
+ {ph:'Il prend ___ veste.', ok:'sa', bad:['ça'], rule:'sa = possessif (+ nom)'},
+ {ph:'___ il pleuve, je sors.', ok:"Quoiqu'", bad:['Quoi qu\u2019'], rule:'quoique = bien que'}
+];
+function _fr3_subf(){ const s=_frRnd(FR3_SUBF); return _frQ(`« ${s.ph} » Quelle est la fonction de la subordonnée ?`, s.ok, s.bad, 'fr3-subf', s.rule); }
+function _fr3_lien(){ const l=_frRnd(FR3_LIEN); return _frQ(`« ${l.ph} » Comment les propositions sont-elles reliées ?`, l.ok, l.bad, 'fr3-lien', l.rule); }
+function _fr3_temps(){ const t=_frRnd(FR3_TEMPS); return _frQ(`Quel temps ? « ${t.ph} »`, t.ok, t.bad, 'fr3-temps', `« ${t.ph} » → ${t.ok}`); }
+function _fr3_homo(){ const h=_frRnd(FR3_HOMO); return _frQ(h.ph, h.ok, h.bad, 'fr3-homo', h.rule); }
+
+function genFR_3E(boss,_d){
+ _d=_d||0;
+ const phase=(typeof _progPhase==='function')?_progPhase('3E'):1;
+ let pool;
+ if(phase<=1)       pool=[_fr3_subf,_fr3_lien,_fr3_temps,_fr3_homo,_fr4_voix,_fr5_fonc,_fr4_sub];
+ else if(phase===2) pool=[_fr3_subf,_fr3_lien,_fr3_temps,_fr4_atcod,_fr4_pp,_fr4_fig,_fr4_conn,_frCE1_conjSaisie,_fr4_agent,_fr3_homo];
+ else /* Défi Brevet : interleaving large */ pool=[_fr3_subf,_fr3_lien,_fr3_temps,_fr3_homo,_fr4_voix,_fr4_atcod,_fr4_pp,_fr4_fig,_frCE2_comp,_fr6_etym];
+ const q=_frUnique(_frRnd(pool)());
+ if(!q){ if(_d>14) return _fr3_subf(); return genFR_3E(boss,_d+1); }
+ return q;
+}
+
+// Table des générateurs français — COMPLET : primaire CP→CM2 + collège 6e→3e.
+const GEN_FR = { CP: genFR_CP, CE1: genFR_CE1, CE2: genFR_CE2, CM1: genFR_CM1, CM2: genFR_CM1, '6E': genFR_6E, '5E': genFR_5E, '4E': genFR_4E, '3E': genFR_3E };
