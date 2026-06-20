@@ -11,7 +11,7 @@ var _pfigSearch = '';
 function openParent(){
  $('parent-lock').classList.remove('hidden');$('parent-content').classList.add('hidden');$('pin-input').value='';
  const opts=KNOWN.map(n=>`<option>${n}</option>`).join('');
-['parent-player','obj-player','block-player','filter-player','hw-player'].forEach(id=>{const e=$(id);if(e)e.innerHTML=opts;});
+['parent-player','obj-player','block-player','filter-player','hw-player','bsubj-player'].forEach(id=>{const e=$(id);if(e)e.innerHTML=opts;});
  $('cloud-player').innerHTML='<option value="ALL">Tous les joueurs</option>'+opts;
  if(typeof navTo==='function') navTo('v-parent'); else showView('v-parent');
 }
@@ -33,7 +33,7 @@ function ptab(name){
  ['rapport','objectifs','controles','options','figurines'].forEach(t=>$('ptab-'+t).classList.toggle('hidden',t!==name));
  document.querySelectorAll('#v-parent .tab').forEach((b,i)=>b.classList.toggle('active',['rapport','objectifs','controles','options','figurines'][i]===name));
  if(name==='rapport'){renderReport();renderReportView();}
- if(name==='controles'){loadBlockSettings();loadFilterSettings();}
+ if(name==='controles'){loadBlockSettings();loadFilterSettings();if(typeof onFilterSubjectChange==='function')onFilterSubjectChange();if(typeof loadBlockedSubjects==='function')loadBlockedSubjects();}
  if(name==='objectifs'){ if(typeof onHwLevelChange==='function') onHwLevelChange(); if(typeof loadHomework==='function') loadHomework(); }
  if(name==='options'){setTimeout(renderResetZone,60); setTimeout(renderCloudPanel,80);}
  if(name==='figurines'){
@@ -877,6 +877,26 @@ function onFilterSubjectChange(){
  const note = $('filter-fr-note'), ops = $('op-filters');
  if(note) note.classList.toggle('hidden', !isFr);
  if(ops) ops.classList.toggle('hidden', isFr);
+}
+// ── Blocage de matières entières (par joueur) ──
+const _BSUBJ_LIST = [['math','🔢 Mathématiques'],['fr','📖 Français'],['hist','🏛️ Histoire'],['geo','🌍 Géographie'],['en','🇬🇧 Anglais'],['svt','🧬 SVT'],['pc','⚗️ Physique-Chimie']];
+function loadBlockedSubjects(){
+ const sel=$('bsubj-player')?.value; const list=$('bsubj-list'); if(!sel||!list) return;
+ let blocked=[];
+ try{ const raw=localStorage.getItem('user_'+sel); if(raw){ const d=JSON.parse(raw); blocked=Array.isArray(d.blockedSubjects)?d.blockedSubjects:[]; } }catch(e){}
+ list.innerHTML=_BSUBJ_LIST.map(([k,l])=>`<label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:.9em;"><input type="checkbox" class="bsubj-cb" value="${k}" ${blocked.indexOf(k)>=0?'checked':''}> ${l}</label>`).join('');
+ const st=$('bsubj-status'); if(st) st.innerText='';
+}
+function saveBlockedSubjects(){
+ const sel=$('bsubj-player')?.value; if(!sel){if(typeof toast==='function')toast('⚠️ Sélectionnez un joueur');return;}
+ const blocked=[].slice.call(document.querySelectorAll('.bsubj-cb:checked')).map(c=>c.value);
+ try{
+  const raw=localStorage.getItem('user_'+sel); if(!raw){if(typeof toast==='function')toast('⚠️ Profil introuvable.',3000);return;}
+  const d=JSON.parse(raw); d.blockedSubjects=blocked; localStorage.setItem('user_'+sel,JSON.stringify(d));
+  if(typeof P!=='undefined' && P && P.name===sel) P.blockedSubjects=blocked;
+  const st=$('bsubj-status'); if(st) st.innerHTML=blocked.length?`<span style="color:#2ecc71;">✅ ${blocked.length} matière(s) bloquée(s) pour ${sel}.</span>`:`<span style="color:#2ecc71;">✅ Aucune matière bloquée.</span>`;
+  if(typeof toast==='function')toast('🔒 Blocage enregistré pour '+sel,2200); try{beep(700,'sine',.3);}catch(e){}
+ }catch(e){ console.error('[bsubj] save error:',e); if(typeof toast==='function')toast('❌ Erreur',3000); }
 }
 
 /**

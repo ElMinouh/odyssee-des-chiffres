@@ -315,5 +315,89 @@ function genFR_CE1(boss,_d){
  return q;
 }
 
-// Table des générateurs français par niveau (CE2+ : à venir → repli CE1)
-const GEN_FR = { CP: genFR_CP, CE1: genFR_CE1, CE2: genFR_CE1 };
+// ═══════════════════════════════════════════════════════
+// CE2 — homophones, imparfait/futur/passé composé, vocabulaire enrichi,
+//   dictées de phrases. Davantage de saisie.
+// ═══════════════════════════════════════════════════════
+const FR_HOMO = [
+ {ph:'Il ___ un beau chien.', ok:'a', bad:['à'], rule:'a = verbe avoir (« avait »)'},
+ {ph:'Nous allons ___ la mer.', ok:'à', bad:['a'], rule:'à = petit mot invariable'},
+ {ph:'Le ciel ___ bleu.', ok:'est', bad:['et'], rule:'est = verbe être (« était »)'},
+ {ph:'Léa ___ Tom jouent.', ok:'et', bad:['est'], rule:'et = « et puis »'},
+ {ph:'Ils ___ deux vélos.', ok:'ont', bad:['on'], rule:'ont = verbe avoir (« avaient »)'},
+ {ph:'___ mange à midi.', ok:'on', bad:['ont'], rule:'on = il / elle'},
+ {ph:'Les gâteaux ___ chauds.', ok:'sont', bad:['son'], rule:'sont = « étaient »'},
+ {ph:'Marie a perdu ___ stylo.', ok:'son', bad:['sont'], rule:'son = « mon / ton »'},
+ {ph:'Tu veux du lait ___ du jus ?', ok:'ou', bad:['où'], rule:'ou = « ou bien »'},
+ {ph:'___ est ta maison ?', ok:'où', bad:['ou'], rule:'où = un lieu'}
+];
+const FR_CONJ2 = [
+ {p:'je', inf:'chanter', t:'imparfait', ok:'chantais', bad:['chante','chanterai']},
+ {p:'il', inf:'être', t:'imparfait', ok:'était', bad:['est','sera']},
+ {p:'nous', inf:'avoir', t:'imparfait', ok:'avions', bad:['avons','aurons']},
+ {p:'tu', inf:'jouer', t:'futur', ok:'joueras', bad:['joues','jouais']},
+ {p:'je', inf:'aller', t:'futur', ok:'irai', bad:['vais','allais']},
+ {p:'ils', inf:'finir', t:'futur', ok:'finiront', bad:['finissent','finiraient']}
+];
+const FR_PC = [
+ {ph:'Hier, j\u2019___ mangé une pomme.', ok:'ai', bad:['est','a'], rule:'avoir : j\u2019ai mangé'},
+ {ph:'Tu ___ fini ton travail.', ok:'as', bad:['a','es'], rule:'avoir : tu as fini'},
+ {ph:'Nous ___ joué au foot.', ok:'avons', bad:['sommes','ont'], rule:'avoir : nous avons joué'},
+ {ph:'Il ___ tombé dans l\u2019eau.', ok:'est', bad:['a','as'], rule:'être : il est tombé'}
+];
+const FR_TEMPS2 = [
+ {ph:'je chantais', ok:'imparfait', bad:['présent','futur']},
+ {ph:'je chanterai', ok:'futur', bad:['imparfait','présent']},
+ {ph:'je chante', ok:'présent', bad:['imparfait','futur']},
+ {ph:'j\u2019ai chanté', ok:'passé composé', bad:['présent','futur']}
+];
+const FR_PREF = [
+ {w:'heureux', ok:'malheureux', bad:['superheureux','reheureux'], hint:'préfixe mal-'},
+ {w:'possible', ok:'impossible', bad:['despossible','nonpossible'], hint:'préfixe im-'},
+ {w:'content', ok:'mécontent', bad:['recontent','incontent'], hint:'préfixe mé-'},
+ {w:'connu', ok:'inconnu', bad:['déconnu','préconnu'], hint:'préfixe in-'}
+];
+const FR_FAM = [
+ {rad:'dent', ok:'dentiste', bad:['pompier','jardin']},
+ {rad:'terre', ok:'terrain', bad:['bateau','soleil']},
+ {rad:'fleur', ok:'fleuriste', bad:['boulanger','docteur']},
+ {rad:'lait', ok:'laitier', bad:['fermier','berger']}
+];
+const FR_MBP = [
+ {w:'co_bien', ok:'m', bad:['n'], full:'combien'},
+ {w:'ta_bour', ok:'m', bad:['n'], full:'tambour'},
+ {w:'e_porter', ok:'m', bad:['n'], full:'emporter'},
+ {w:'to_ber', ok:'m', bad:['n'], full:'tomber'},
+ {w:'mo_ter', ok:'n', bad:['m'], full:'monter'}
+];
+const FR_DICTEE2 = ['le petit chat dort','papa lit un livre','les oiseaux chantent','je mange une pomme rouge','nous jouons dans la cour','la fille ferme la porte'];
+const FR_COMP2 = [
+ {t:'Lucas a oublié son parapluie. Quand il sort, il est tout mouillé.', q:'Pourquoi Lucas est-il mouillé ?', ok:'il pleut', bad:['il a chaud','il a soif']},
+ {t:'Emma range ses affaires et éteint la lumière.', q:'Que va faire Emma ?', ok:'dormir', bad:['jouer','manger']},
+ {t:'Le marchand pèse les pommes et annonce le prix.', q:'Où se passe la scène ?', ok:'au marché', bad:['à l\u2019école','à la piscine']}
+];
+
+function _frCE2_homo(){ const h=_frRnd(FR_HOMO); return _frQ(h.ph, h.ok, h.bad, 'fr-homo', h.rule); }
+function _frCE2_conj2(){ const c=_frRnd(FR_CONJ2); const tp=c.t==='imparfait'?"à l'imparfait":"au futur"; return _frQ(`Conjugue « ${c.inf} » ${tp} : ${c.p} ___`, c.ok, c.bad, 'fr-conj2', `${c.p} ${c.ok} (${c.t})`); }
+function _frCE2_pc(){ const c=_frRnd(FR_PC); return _frQ(c.ph, c.ok, c.bad, 'fr-pc', c.rule); }
+function _frCE2_temps(){ const t=_frRnd(FR_TEMPS2); return _frQ(`Quel temps ? « ${t.ph} »`, t.ok, t.bad, 'fr-temps2', `« ${t.ph} » → ${t.ok}`); }
+function _frCE2_pref(){ const p=_frRnd(FR_PREF); return _frQ(`Le contraire de « ${p.w} » (avec un préfixe) ?`, p.ok, p.bad, 'fr-pref', p.hint); }
+function _frCE2_fam(){ const f=_frRnd(FR_FAM); return _frQ(`Quel mot est de la famille de « ${f.rad} » ?`, f.ok, f.bad, 'fr-fam', `${f.ok} vient de « ${f.rad} »`); }
+function _frCE2_mbp(){ const m=_frRnd(FR_MBP); return _frQ(`Complète : « ${m.w.replace('_','…')} » → m ou n ?`, m.ok, m.bad, 'fr-mbp', `On écrit « ${m.full} » (devant m, b, p → on met m).`); }
+function _frCE2_dictee(){ const grp=_frRnd(FR_DICTEE2); const q=_frText('🔊 Écris la phrase que tu entends.', grp, 'fr-dictee2', `On écrit : « ${grp} »`); q.speakText=grp; return q; }
+function _frCE2_comp(){ const c=_frRnd(FR_COMP2); return _frQ(`« ${c.t} » ${c.q}`, c.ok, c.bad, 'fr-comp2', c.ok); }
+
+function genFR_CE2(boss,_d){
+ _d=_d||0;
+ const phase=(typeof _progPhase==='function')?_progPhase('CE2'):1;
+ let pool;
+ if(phase<=1)       pool=[_frCE2_homo,_frCE2_conj2,_frCE1_nature,_frCE1_syn,_frCE1_graph,_frCE2_temps,_frCE2_dictee];
+ else if(phase===2) pool=[_frCE2_homo,_frCE2_conj2,_frCE1_accord,_frCE1_conjSaisie,_frCE1_oppSaisie,_frCE2_pref,_frCE2_mbp,_frCE2_temps,_frCE1_ptype,_frCE2_dictee];
+ else               pool=[_frCE2_homo,_frCE2_pc,_frCE2_conj2,_frCE2_temps,_frCE2_fam,_frCE1_conjSaisie,_frCE2_mbp,_frCE2_comp,_frCE1_oppSaisie,_frCE2_dictee];
+ const q=_frUnique(_frRnd(pool)());
+ if(!q){ if(_d>14) return _frCE2_homo(); return genFR_CE2(boss,_d+1); }
+ return q;
+}
+
+// Table des générateurs français par niveau (CM1+ : à venir → repli CE2)
+const GEN_FR = { CP: genFR_CP, CE1: genFR_CE1, CE2: genFR_CE2, CM1: genFR_CE2, CM2: genFR_CE2 };

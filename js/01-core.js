@@ -926,6 +926,14 @@ function gotoSubjects(){
 const SUBJECT_LABELS={ math:'Mathématiques', fr:'Français', hist:'Histoire', geo:'Géographie', en:'Anglais', svt:'SVT', pc:'Physique-Chimie' };
 const SUBJECTS_ACTIVE=['math','fr'];
 function chooseSubject(key){
+ // Blocage parental : matière interdite pour ce joueur
+ try{
+  if(typeof P!=='undefined' && P && Array.isArray(P.blockedSubjects) && P.blockedSubjects.indexOf(key)>=0){
+   if(typeof toast==='function') toast('🔒 '+(SUBJECT_LABELS[key]||'Cette matière')+' est bloquée par le parent.');
+   try{ if(typeof beep==='function') beep(180,'sine',.15); }catch(e){}
+   return;
+  }
+ }catch(e){}
  if(SUBJECTS_ACTIVE.indexOf(key)>=0){
   GM.subject=key;
   try{ if(typeof beep==='function') beep(660,'sine',.12); }catch(e){}
