@@ -2428,13 +2428,13 @@ function startGame(){
  }
  showView('v-game');
  $('hud-name').innerText=(P.avatar||'👤')+' '+P.name;
- $('hud-chrono').classList.toggle('hidden',GM.mode2!=='chrono');
+ $('hud-chrono').classList.toggle('hidden',GM.mode2!=='chrono' || !(GM.subject==='math'||!GM.subject));
  $('hud-combo').classList.add('hidden');
  $('qcm-options').classList.toggle('hidden',GM.mode!=='qcm');
  $('input-zone').classList.toggle('hidden',GM.mode==='qcm');
   toggleNumpadForMode(GM.mode);
  $('BODY').classList.remove('body-alert');
- if(GM.mode2==='chrono')startChrono();else stopChrono();
+ if(GM.mode2==='chrono' && (GM.subject==='math'||!GM.subject))startChrono();else stopChrono();
  nextTurn();
 }
 function startRevision(){
@@ -2586,7 +2586,7 @@ function renderQ(){
  else if(isRevision)ttl='📖 Révision';
  else ttl=`👾 ${GS.qCount}/6`;
  $('quest-title').innerHTML=`${ttl} <span class="mode-badge m-${GM.mapZone?'map':GM.mode2}">${GM.mapZone?'carte':GM.mode2}</span>`;
- $('feedback').innerText='';speak(q.speakText||txt);
+ $('feedback').innerText='';speak(_ttsClean(q.speakText||txt));
  const _hasChoices = q.choices && q.choices.length;
  const _txt = !!q.textInput;
  // Visibilité pavé/choix : saisie texte (français) > choix visuels > mode
@@ -2619,7 +2619,8 @@ function renderQ(){
   if(!_numpadIsTouch())setTimeout(()=>ai.focus(),100);
  }
  renderPowerBar();
- if(GM.mode2!=='chrono')startTimer();
+ if((GM.subject==='math'||!GM.subject)){ if(GM.mode2!=='chrono')startTimer(); }
+ else { if(typeof stopTimer==='function')stopTimer(); const _tb=(typeof _timerBarEl!=='undefined'&&_timerBarEl)||$('timer-bar'); if(_tb){_tb.style.width='0%';_tb.className='';} $('BODY').classList.remove('body-alert','urgency-bg'); }
  // v10.0.0 (C3 debug) : forçage immédiat de l'enrage si le drapeau debug est posé
  if(GS.isBoss && !GS.bossEnraged && _dbgForceEnrage()){
   GS.bossEnraged=true;
@@ -2633,6 +2634,15 @@ function _dbgForceEnrage(){
  try{ return localStorage.getItem('odyssee_dbg_enrage')==='1'; }catch(e){ return false; }
 }
 function _frNorm(s){ return (s||'').toString().trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' '); }
+// Nettoie le texte AVANT lecture vocale : retire les emojis (sinon « 🔊 » est lu
+// « volume ») et remplace les blancs « ___ » (sinon lus « tiret bas »).
+function _ttsClean(s){
+ return String(s||'')
+  .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{2190}-\u{21FF}\u{2300}-\u{23FF}\u{25A0}-\u{25FF}\u{FE00}-\u{FE0F}\u{1F1E6}-\u{1F1FF}\u{200D}\u{20E3}\u{2122}\u{2139}]/gu,' ')
+  .replace(/_+/g,' ')
+  .replace(/\s+/g,' ')
+  .trim();
+}
 function submitAns(){
  const q=GS.q;
  if(q && q.textInput){

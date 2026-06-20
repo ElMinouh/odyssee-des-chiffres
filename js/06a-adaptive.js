@@ -61,11 +61,13 @@ function logError(qDisplay, res, q){
  const key = String(qDisplay).replace(/\s+/g,'')+'='+res;
  // Si l'erreur existe déjà, on met à jour le timestamp et tries
  const existing = P.errorLog.find(e=>e.q===key);
+ const _subj = (typeof GM!=='undefined' && GM.subject) || 'math';
  if(existing){
   existing.t = Date.now();
   existing.tries = (existing.tries||0) + 1;
+  existing.subj = _subj;
  } else {
-  const item = {q:key, t:Date.now(), tries:1};
+  const item = {q:key, t:Date.now(), tries:1, subj:_subj};
   // v9.4.16 : les questions QCM (exercices enrichis primaire/collège) sont
   // stockées avec un instantané rejouable — sinon elles encombraient le log
   // sans jamais être reposées. Cap de taille pour préserver localStorage.
@@ -127,7 +129,9 @@ function getRevisionErrorToAsk(){
  // Trigger global : on ne déclenche la tentative que dans 22% des cas
  if(Math.random() > SPACED_BASE_PROBA)return null;
  // Pour chaque erreur, calcul de la proba pondérée par sa "fraîcheur"
- const candidates = P.errorLog.filter(e=>e.q!==_lastRevisedKey);
+ // Scope par matière : on ne repose que des erreurs de la matière en cours
+ const _subj = (typeof GM!=='undefined' && GM.subject) || 'math';
+ const candidates = P.errorLog.filter(e=>e.q!==_lastRevisedKey && (e.subj||'math')===_subj);
  if(!candidates.length)return null;
  // Pondération : plus la proba individuelle est forte, plus on la prend
  const weighted = candidates.map(e=>({e, w:_spacedProba(e)}));
