@@ -75,6 +75,7 @@ function logError(qDisplay, res, q){
    try{
     const snap = {display:q.display, choices:q.choices, res:q.res, opKey:q.opKey||'', type:'normal', img:''};
     if(q.visualHtml) snap.visualHtml = q.visualHtml;
+    if(q.visualChoices) snap.visualChoices = true;
     if(JSON.stringify(snap).length <= 6000) item.payload = snap;
    }catch(e){}
   }
@@ -508,8 +509,8 @@ function showHeroEvolution(stage){
 // En Odyssée, la phase vient de la position dans l'îlot (pas de la jauge).
 // ═══════════════════════════════════════════════════════
 const _YEAR_LEVELS = ['PS','MS','GS','CP','CE1','CE2','CM1','CM2','6E','5E','4E','3E'];
-const PROG_UP   = 0.025;   // gain par bonne réponse (montée rapide : ~40 réussites = début→fin)
-const PROG_DOWN = 0.015;   // perte par erreur (régression douce)
+const PROG_UP   = 0.010;   // gain par bonne réponse (montée lente : ~100 réussites nettes = début→fin, soit ~33 par phase → tout le programme de la phase est vu et répété)
+const PROG_DOWN = 0.014;   // perte par erreur : la montée n'est nette qu'au-dessus de ~58% de réussite → il faut réussir régulièrement pour progresser
 
 // Clé de progression scopée par matière. Maths conserve la clé « niveau » nue
 // (rétro-compatibilité totale des sauvegardes), les autres matières utilisent

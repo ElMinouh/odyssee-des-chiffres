@@ -278,7 +278,9 @@ const FR_COMP=[
  {t:'Le ciel est gris et sombre.', q:'Quel temps va-t-il faire ?', ok:'de la pluie', bad:['du soleil','de la neige']}
 ];
 
-function _frCE1_graph(set){ const g=_frRnd(set||FR_GRAPH); return _frQ(`Dans « ${g.word} », le son [${g.son}] s\u2019écrit comment ?`, g.ok, g.bad, 'fr-graph', `${g.word} → « ${g.ok} »`); }
+// Prononciation correcte du phonème pour la synthèse vocale (sinon « [in] » est lu « ine »).
+const FR_SOUND_SAY = { o:'o', in:'un', s:'ssse', f:'fffe' };
+function _frCE1_graph(set){ const g=_frRnd(set||FR_GRAPH); const q=_frQ(`Dans « ${g.word} », le son [${g.son}] s\u2019écrit comment ?`, g.ok, g.bad, 'fr-graph', `${g.word} → « ${g.ok} »`); q.speakText=`Dans le mot ${g.word}, comment écrit-on le son ${FR_SOUND_SAY[g.son]||g.son} ?`; return q; }
 function _frCE1_syn(){ const s=_frRnd(FR_SYN); return _frQ(`Synonyme de « ${s.w} » ?`, s.ok, s.bad, 'fr-syn', `${s.w} ≈ ${s.ok}`); }
 function _frCE1_oppSaisie(){ const p=_frRnd(FR_OPP_TXT); const side=Math.random()<0.5; const cue=side?p.w:p.ok, ans=side?p.ok:p.w; return _frText(`Écris le contraire de « ${cue} ».`, ans, 'fr-oppw', `Le contraire de « ${cue} » : ${ans}`); }
 function _frCE1_nature(){ const n=_frRnd(FR_NAT); return _frQ(`Nature de « ${n.mot} » dans « ${n.ph} » ?`, n.ok, n.bad, 'fr-nature', `« ${n.mot} » → ${n.ok}`); }

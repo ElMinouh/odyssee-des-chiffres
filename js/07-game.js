@@ -2438,10 +2438,19 @@ function startGame(){
  nextTurn();
 }
 function startRevision(){
- loadProfile();const unique=[...new Set(P.errors||[])].filter(e=>/^\d/.test(e));
- if(!unique.length){alert('Aucune erreur à réviser !');return;}
+ loadProfile();
+ const _subj=(typeof GM!=='undefined'&&GM.subject)||'math';
+ let queue=[];
+ if(_subj==='math'){
+  const unique=[...new Set(P.errors||[])].filter(e=>/^\d/.test(e));
+  queue=[...unique,...unique];
+ }else{
+  const objs=(P.errorLog||[]).filter(e=>(e.subj||'math')===_subj && e.payload && Array.isArray(e.payload.choices)).map(e=>Object.assign({},e.payload));
+  queue=[...objs,...objs];
+ }
+ if(!queue.length){alert('Aucune erreur à réviser !');return;}
  gameActive=true;clearPendingTimers();
- revQueue=[...unique,...unique];isRevision=true;
+ revQueue=queue;isRevision=true;
  GM.mode=$('modeSelect').value;GM.mode2='revision';GM.level=$('levelSelect').value;
  resetGS();
  $('combat-bar').classList.add('hidden');
@@ -2528,7 +2537,9 @@ function nextTurn(){
 }
 function generateQ(){
  if(isRevision&&revQueue.length>0){
-  const e=revQueue.shift();const m=e.match(/^(\d+)([+\-x×\/÷])(\d+)=(\d+)$/);
+  const e=revQueue.shift();
+  if(e && typeof e==='object'){ const out=Object.assign({},e); out.isRevision=true; return out; }
+  const m=String(e).match(/^(\d+)([+\-x×\/÷])(\d+)=(\d+)$/);
   if(m)return{a:+m[1],b:+m[3],op:m[2],res:+m[4],type:'normal',opKey:m[2],display:`${m[1]} ${m[2]} ${m[3]}`,img:''};
  }
  // Chantier 1.2 : révision espacée en mode normal (pas en boss ni en combat/révision)
@@ -3278,7 +3289,10 @@ function _renderEndRecap(won){
  el.innerHTML=html;
  // Bouton « Rejouer mes erreurs » : seulement si des erreurs arithmétiques sont rejouables
  if(btn){
-  const replayable=(P.errors||[]).some(e=>/^\d/.test(e));
+  const _subj=(typeof GM!=='undefined'&&GM.subject)||'math';
+  const replayable = _subj==='math'
+   ? (P.errors||[]).some(e=>/^\d/.test(e))
+   : (P.errorLog||[]).some(e=>(e.subj||'math')===_subj && e.payload && Array.isArray(e.payload.choices));
   btn.classList.toggle('hidden', !replayable);
  }
 }
