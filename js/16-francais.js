@@ -280,7 +280,15 @@ const FR_COMP=[
 
 // Prononciation correcte du phonème pour la synthèse vocale (sinon « [in] » est lu « ine »).
 const FR_SOUND_SAY = { o:'o', in:'un', s:'ssse', f:'fffe' };
-function _frCE1_graph(set){ const g=_frRnd(set||FR_GRAPH); const q=_frQ(`Dans « ${g.word} », le son [${g.son}] s\u2019écrit comment ?`, g.ok, g.bad, 'fr-graph', `${g.word} → « ${g.ok} »`); q.speakText=`Dans le mot ${g.word}, comment écrit-on le son ${FR_SOUND_SAY[g.son]||g.son} ?`; return q; }
+// Mot à trou : on masque le graphème cible (la réponse n'est donc plus écrite à l'écran),
+// la voix prononce le mot entier, l'enfant choisit l'écriture du son manquant.
+function _frCE1_graph(set){
+ const g=_frRnd(set||FR_GRAPH);
+ const blanked=g.word.replace(g.ok,'…');
+ const q=_frQ(`Complète le mot que tu entends : « ${blanked} »`, g.ok, g.bad, 'fr-graph', `${g.word} → « ${g.ok} »`);
+ q.speakText=g.word;
+ return q;
+}
 function _frCE1_syn(){ const s=_frRnd(FR_SYN); return _frQ(`Synonyme de « ${s.w} » ?`, s.ok, s.bad, 'fr-syn', `${s.w} ≈ ${s.ok}`); }
 function _frCE1_oppSaisie(){ const p=_frRnd(FR_OPP_TXT); const side=Math.random()<0.5; const cue=side?p.w:p.ok, ans=side?p.ok:p.w; return _frText(`Écris le contraire de « ${cue} ».`, ans, 'fr-oppw', `Le contraire de « ${cue} » : ${ans}`); }
 function _frCE1_nature(){ const n=_frRnd(FR_NAT); return _frQ(`Nature de « ${n.mot} » dans « ${n.ph} » ?`, n.ok, n.bad, 'fr-nature', `« ${n.mot} » → ${n.ok}`); }
@@ -399,5 +407,77 @@ function genFR_CE2(boss,_d){
  return q;
 }
 
-// Table des générateurs français par niveau (CM1+ : à venir → repli CE2)
-const GEN_FR = { CP: genFR_CP, CE1: genFR_CE1, CE2: genFR_CE2, CM1: genFR_CE2, CM2: genFR_CE2 };
+// ═══════════════════════════════════════════════════════
+// CM1 / CM2 — cycle 3 : homophones étendus, participe passé, pluriels
+//   particuliers, verbes irréguliers, COD, sens propre/figuré.
+// ═══════════════════════════════════════════════════════
+const FR_HOMO3 = [
+ {ph:'J\u2019aime ___ chaussures-ci.', ok:'ces', bad:['ses'], rule:'ces = celles-ci (on montre)'},
+ {ph:'Il met ___ gants à lui.', ok:'ses', bad:['ces'], rule:'ses = les siens (à lui)'},
+ {ph:'___ une belle journée.', ok:"c'est", bad:["s'est"], rule:"c'est = cela est"},
+ {ph:'Il ___ lavé les mains.', ok:"s'est", bad:["c'est"], rule:"s'est = verbe pronominal"},
+ {ph:'Pose le livre ___ .', ok:'là', bad:['la'], rule:'là = un lieu (ici)'},
+ {ph:'Je prends ___ pomme.', ok:'la', bad:['là'], rule:'la = déterminant'},
+ {ph:'Les enfants rangent ___ chambre.', ok:'leur', bad:['leurs'], rule:'leur + nom singulier'},
+ {ph:'Ils ont perdu ___ clés.', ok:'leurs', bad:['leur'], rule:'leurs + nom pluriel'},
+ {ph:'Il mange ___ de pain.', ok:'peu', bad:['peut'], rule:'peu = pas beaucoup'},
+ {ph:'Elle ___ courir vite.', ok:'peut', bad:['peu'], rule:'peut = verbe pouvoir'}
+];
+const FR_PP = [
+ {ph:'Elle est ___ (partir).', ok:'partie', bad:['parti','partis'], rule:'avec être → accord avec le sujet (elle → e)'},
+ {ph:'Ils sont ___ (tomber).', ok:'tombés', bad:['tombé','tombée'], rule:'ils → és'},
+ {ph:'Les filles sont ___ (arriver).', ok:'arrivées', bad:['arrivé','arrivés'], rule:'elles → ées'},
+ {ph:'Il est ___ (rester).', ok:'resté', bad:['restée','restés'], rule:'il → é'}
+];
+const FR_PLUR = [
+ {w:'un cheval', ok:'des chevaux', bad:['des chevals','des chevaus'], rule:'-al → -aux'},
+ {w:'un bijou', ok:'des bijoux', bad:['des bijous','des bijoues'], rule:'bijou prend un -x'},
+ {w:'un gâteau', ok:'des gâteaux', bad:['des gâteaus','des gâteauxs'], rule:'-eau → -eaux'},
+ {w:'un jeu', ok:'des jeux', bad:['des jeus','des jeuxs'], rule:'-eu → -eux'},
+ {w:'un journal', ok:'des journaux', bad:['des journals','des journeaux'], rule:'-al → -aux'}
+];
+const FR_SENS = [
+ {ph:'Il dévore son livre.', ok:'figuré', bad:['propre'], rule:'il lit avec passion (pas avec la bouche)'},
+ {ph:'Le lion dévore sa proie.', ok:'propre', bad:['figuré'], rule:'il mange vraiment'},
+ {ph:'Tu as un cœur d\u2019or.', ok:'figuré', bad:['propre'], rule:'tu es généreux (pas en métal)'},
+ {ph:'La branche de l\u2019arbre casse.', ok:'propre', bad:['figuré'], rule:'une vraie branche'}
+];
+const FR_CONJ3 = [
+ {p:'je', inf:'faire', t:'présent', ok:'fais', bad:['fait','faisons']},
+ {p:'vous', inf:'faire', t:'présent', ok:'faites', bad:['faisez','faitez']},
+ {p:'il', inf:'dire', t:'présent', ok:'dit', bad:['dis','disent']},
+ {p:'nous', inf:'venir', t:'présent', ok:'venons', bad:['venez','viennons']},
+ {p:'je', inf:'prendre', t:'présent', ok:'prends', bad:['prend','prener']},
+ {p:'ils', inf:'voir', t:'présent', ok:'voient', bad:['voyent','voivent']},
+ {p:'je', inf:'pouvoir', t:'présent', ok:'peux', bad:['peut','pouve']}
+];
+const FR_COD = [
+ {ph:'Le chat mange la souris.', ok:'la souris', bad:['le chat','mange']},
+ {ph:'Léa lit un livre.', ok:'un livre', bad:['Léa','lit']},
+ {ph:'Papa conduit la voiture.', ok:'la voiture', bad:['Papa','conduit']}
+];
+const FR_DICTEE3 = ['les enfants jouent dans le grand jardin','ma sœur lit une belle histoire','nous mangeons des fruits au goûter','le maître écrit la leçon au tableau'];
+
+function _frCM_homo3(){ const h=_frRnd(FR_HOMO3); return _frQ(h.ph, h.ok, h.bad, 'fr-homo3', h.rule); }
+function _frCM_pp(){ const p=_frRnd(FR_PP); return _frQ(p.ph, p.ok, p.bad, 'fr-pp', p.rule); }
+function _frCM_plur(){ const p=_frRnd(FR_PLUR); return _frQ(`Quel est le pluriel de « ${p.w} » ?`, p.ok, p.bad, 'fr-plur', p.rule); }
+function _frCM_sens(){ const s=_frRnd(FR_SENS); return _frQ(`« ${s.ph} » Ce sens est… ?`, s.ok, s.bad, 'fr-sens', s.rule); }
+function _frCM_conj3(){ const c=_frRnd(FR_CONJ3); return _frQ(`Conjugue « ${c.inf} » au présent : ${c.p} ___`, c.ok, c.bad, 'fr-conj3', `${c.p} ${c.ok}`); }
+function _frCM_cod(){ const c=_frRnd(FR_COD); return _frQ(`« ${c.ph} » Quel est le complément d\u2019objet (COD) ?`, c.ok, c.bad, 'fr-cod', `COD = « ${c.ok} »`); }
+function _frCM_dictee(){ const grp=_frRnd(FR_DICTEE3); const q=_frText('🔊 Écris la phrase que tu entends.', grp, 'fr-dictee3', `On écrit : « ${grp} »`); q.speakText=grp; return q; }
+
+function genFR_CM1(boss,_d){
+ _d=_d||0;
+ const lvl=(typeof GM!=='undefined'&&GM.level)||'CM1';
+ const phase=(typeof _progPhase==='function')?_progPhase(lvl):1;
+ let pool;
+ if(phase<=1)       pool=[_frCM_homo3,_frCE2_homo,_frCM_conj3,_frCE2_conj2,_frCM_cod,_frCE1_syn,_frCM_dictee];
+ else if(phase===2) pool=[_frCM_homo3,_frCM_pp,_frCM_conj3,_frCE2_conj2,_frCE2_pc,_frCM_plur,_frCM_sens,_frCE1_conjSaisie,_frCM_cod,_frCM_dictee];
+ else               pool=[_frCM_homo3,_frCM_pp,_frCM_plur,_frCM_sens,_frCE2_temps,_frCM_conj3,_frCE1_conjSaisie,_frCE2_comp,_frCM_cod,_frCM_dictee];
+ const q=_frUnique(_frRnd(pool)());
+ if(!q){ if(_d>14) return _frCM_homo3(); return genFR_CM1(boss,_d+1); }
+ return q;
+}
+
+// Table des générateurs français par niveau (CP → CM2 couverts).
+const GEN_FR = { CP: genFR_CP, CE1: genFR_CE1, CE2: genFR_CE2, CM1: genFR_CM1, CM2: genFR_CM1 };

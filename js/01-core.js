@@ -289,7 +289,8 @@ function initVoicePicker(){
 // Répéter la dernière question à la demande de l'utilisateur
 function repeatQuestion(){
  const q=typeof GS!=='undefined'?GS.q:null;if(!q)return;
- const txt=q.maternelle?(q.consigne||''):(q.display||(q.a!==undefined&&q.b!==undefined?`${q.a} ${q.op||'='} ${q.b}`:String(q.res)));
+ let txt=q.speakText||(q.maternelle?(q.consigne||''):(q.display||(q.a!==undefined&&q.b!==undefined?`${q.a} ${q.op||'='} ${q.b}`:String(q.res))));
+ if(typeof _ttsClean==='function') txt=_ttsClean(txt);
  // Forcer la lecture même si voix non activée : user a explicitement demandé
  if(!window.speechSynthesis)return;
  window.speechSynthesis.cancel();
@@ -920,6 +921,17 @@ function gotoMenu2(){
 function gotoSubjects(){
  if(typeof savePrefs==='function') savePrefs();
  try{ const nm=$('subj-player'); if(nm) nm.textContent=(P&&P.name)||'Joueur'; }catch(e){}
+ try{
+  const blocked=(typeof P!=='undefined'&&P&&Array.isArray(P.blockedSubjects))?P.blockedSubjects:[];
+  document.querySelectorAll('#v-subjects .subj-tile').forEach(t=>{
+   const m=(t.getAttribute('onclick')||'').match(/chooseSubject\('(\w+)'\)/);
+   if(!m)return;
+   const isB=blocked.indexOf(m[1])>=0;
+   t.classList.toggle('subj-blocked', isB);
+   const badge=t.querySelector('.subj-badge');
+   if(badge){ if(!badge.dataset.orig) badge.dataset.orig=badge.innerHTML; badge.innerHTML = isB ? '🔒 Bloqué' : badge.dataset.orig; }
+  });
+ }catch(e){}
  navTo('v-subjects');
 }
 // Choix d'une matière. Maths → flux actuel (modes). Autres → bientôt disponibles.

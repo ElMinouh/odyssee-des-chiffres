@@ -4821,3 +4821,7 @@ body.mat-mode #v-game{
 .subj-wide-row{ display:flex; align-items:center; justify-content:center; gap:12px; }
 .subj-wide .subj-deco{ right:8px; }
 @media (max-width:380px){ .subj-em{ font-size:2em; } .subj-nm{ font-size:.95em; } }
+
+/* v10.8.1 : tuile de matière bloquée par le parent */
+.subj-tile.subj-blocked{ opacity:.5; filter:grayscale(.6); }
+.subj-tile.subj-blocked .subj-badge{ background:#7f1d1d !important; color:#fff !important; }
