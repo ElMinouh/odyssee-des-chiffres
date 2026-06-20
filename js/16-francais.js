@@ -86,11 +86,12 @@ function _frSample(arr,n,excludeIds){
  return _frShuffle(pool).slice(0,n);
 }
 // Construit l'objet QCM : choix [{val,label,html}], res=val du bon choix.
-function _frQ(display, correctHtml, distractorHtmls, opKey){
+function _frStrip(h){ return String(h).replace(/<br\s*\/?>/gi,' ').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim(); }
+function _frQ(display, correctHtml, distractorHtmls, opKey, hint){
  const items=_frShuffle([{html:correctHtml,ok:true}].concat(distractorHtmls.map(h=>({html:h,ok:false}))));
  let res=1;
  const choices=items.map((it,i)=>{ const val=i+1; if(it.ok)res=val; return {val, label:String(val), html:it.html}; });
- return {display, img:'', choices, visualChoices:true, res, opKey:opKey||'fr', type:'normal', subj:'fr'};
+ return {display, img:'', choices, visualChoices:true, res, opKey:opKey||'fr', type:'normal', subj:'fr', hint:hint||('Réponse : '+_frStrip(correctHtml))};
 }
 const _frHtmlWord = o => `<span style="font-size:1.7em">${o.e}</span><br>${o.w}`;     // emoji + mot
 const _frHtmlEmoji = o => `<span style="font-size:2em">${o.e}</span>`;                  // emoji seul
@@ -118,7 +119,7 @@ function _frA_syll(){
  const nums=_frShuffle(Array.from(set));
  const items=nums.map((n,i)=>({val:i+1,label:String(i+1),html:`<span style="font-size:1.6em">${n}</span>`,n}));
  let res=1; items.forEach(it=>{ if(it.n===w.syl)res=it.val; });
- return {display:`Combien de syllabes ? ${w.e} ${w.w}`, img:'', choices:items.map(({val,label,html})=>({val,label,html})), visualChoices:true, res, opKey:'fr-syll', type:'normal', subj:'fr'};
+ return {display:`Combien de syllabes ? ${w.e} ${w.w}`, img:'', choices:items.map(({val,label,html})=>({val,label,html})), visualChoices:true, res, opKey:'fr-syll', type:'normal', subj:'fr', hint:`${w.w} = ${w.syl} syllabe${w.syl>1?'s':''}`};
 }
 // C1 : contraires (réponses = images + mot)
 function _frC_opp(){
@@ -195,5 +196,120 @@ function genFR_CP(boss, _d){
  return q;
 }
 
-// Table des générateurs français par niveau (CE1+ : à venir → repli CP pour l'instant)
-const GEN_FR = { CP: genFR_CP, CE1: genFR_CP };
+// ═══════════════════════════════════════════════════════
+// CE1 — lecteur débutant : QCM majoritaire + premières saisies.
+// ═══════════════════════════════════════════════════════
+function _frText(display, answer, opKey, hint){
+ return {display, img:'', textInput:true, answer, res:0, opKey:opKey||'fr', type:'normal', subj:'fr', hint:hint||('Réponse : '+answer)};
+}
+const FR_SYN = [
+ {w:'joli',ok:'beau',bad:['laid','petit']},
+ {w:'content',ok:'heureux',bad:['triste','fâché']},
+ {w:'rapide',ok:'vite',bad:['lent','mou']},
+ {w:'grand',ok:'immense',bad:['minuscule','petit']},
+ {w:'gentil',ok:'aimable',bad:['méchant','dur']},
+ {w:'drôle',ok:'amusant',bad:['ennuyeux','sérieux']},
+ {w:'manger',ok:'dévorer',bad:['boire','dormir']},
+ {w:'parler',ok:'discuter',bad:['écouter','crier']}
+];
+const FR_OPP_TXT = [
+ {w:'jour',ok:'nuit'},{w:'grand',ok:'petit'},{w:'chaud',ok:'froid'},{w:'content',ok:'triste'},
+ {w:'propre',ok:'sale'},{w:'plein',ok:'vide'},{w:'ouvert',ok:'fermé'},{w:'devant',ok:'derrière'},
+ {w:'rapide',ok:'lent'},{w:'monter',ok:'descendre'},{w:'jeune',ok:'vieux'},{w:'lourd',ok:'léger'}
+];
+const FR_GRAPH = [
+ {word:'bateau',son:'o',ok:'eau',bad:['o','au']},
+ {word:'auto',son:'o',ok:'au',bad:['o','eau']},
+ {word:'moto',son:'o',ok:'o',bad:['au','eau']},
+ {word:'lapin',son:'in',ok:'in',bad:['ain','ein']},
+ {word:'pain',son:'in',ok:'ain',bad:['in','ein']},
+ {word:'frein',son:'in',ok:'ein',bad:['in','ain']},
+ {word:'classe',son:'s',ok:'ss',bad:['s','c']},
+ {word:'cerise',son:'s',ok:'c',bad:['s','ss']},
+ {word:'sac',son:'s',ok:'s',bad:['ss','c']},
+ {word:'photo',son:'f',ok:'ph',bad:['f','v']}
+];
+const FR_ACC_NOUN=[
+ {n:'chat',e:'🐱',g:'m'},{n:'fleur',e:'🌸',g:'f'},{n:'pomme',e:'🍎',g:'f'},
+ {n:'lapin',e:'🐰',g:'m'},{n:'ballon',e:'⚽',g:'m'},{n:'voiture',e:'🚗',g:'f'}
+];
+const FR_ACC_ADJ=[
+ {ms:'noir',fs:'noire',mp:'noirs',fp:'noires'},
+ {ms:'petit',fs:'petite',mp:'petits',fp:'petites'},
+ {ms:'vert',fs:'verte',mp:'verts',fp:'vertes'},
+ {ms:'grand',fs:'grande',mp:'grands',fp:'grandes'},
+ {ms:'joli',fs:'jolie',mp:'jolis',fp:'jolies'}
+];
+const FR_CONJ = [
+ {inf:'être', p:'je', ok:'suis', bad:['es','est']},
+ {inf:'être', p:'tu', ok:'es', bad:['est','suis']},
+ {inf:'être', p:'il', ok:'est', bad:['es','et']},
+ {inf:'avoir', p:'tu', ok:'as', bad:['a','ai']},
+ {inf:'avoir', p:'nous', ok:'avons', bad:['avez','ont']},
+ {inf:'aller', p:'je', ok:'vais', bad:['vas','va']},
+ {inf:'chanter', p:'tu', ok:'chantes', bad:['chante','chantent']},
+ {inf:'jouer', p:'ils', ok:'jouent', bad:['joue','joues']}
+];
+const FR_VERBS_ER=['chanter','jouer','danser','sauter','parler','regarder','dessiner'];
+const FR_PRON=[['je','e'],['tu','es'],['il','e'],['nous','ons'],['vous','ez'],['ils','ent']];
+const FR_TEMPS=[
+ {ph:'je mangeais', ok:'passé'},{ph:'je mangerai', ok:'futur'},{ph:'je mange', ok:'présent'},
+ {ph:'tu jouais', ok:'passé'},{ph:'nous irons', ok:'futur'},{ph:'il dort', ok:'présent'}
+];
+const FR_NAT=[
+ {ph:'la pomme rouge', mot:'rouge', ok:'adjectif', bad:['nom','verbe']},
+ {ph:'le chat dort', mot:'dort', ok:'verbe', bad:['nom','adjectif']},
+ {ph:'le petit chien', mot:'chien', ok:'nom', bad:['verbe','adjectif']},
+ {ph:'un grand arbre', mot:'grand', ok:'adjectif', bad:['nom','déterminant']},
+ {ph:'elle chante', mot:'chante', ok:'verbe', bad:['nom','adjectif']}
+];
+const FR_PHRASETYPE=[
+ {ph:'Tu viens ?', ok:'interrogative', bad:['déclarative','exclamative']},
+ {ph:'Quelle belle journée !', ok:'exclamative', bad:['interrogative','déclarative']},
+ {ph:'Le chat dort.', ok:'déclarative', bad:['interrogative','exclamative']},
+ {ph:'Range ta chambre.', ok:'impérative', bad:['interrogative','exclamative']}
+];
+const FR_DICTEE=['le chat','un vélo','la lune','une pomme','papa','la maison','un ballon','le soleil','une fleur','un ami','la table','le livre'];
+const FR_COMP=[
+ {t:'Tom a froid. Il met son pull.', q:'Pourquoi met-il son pull ?', ok:'il a froid', bad:['il a faim','il joue']},
+ {t:'Lila arrose les fleurs.', q:'Que fait Lila ?', ok:'elle arrose', bad:['elle dort','elle mange']},
+ {t:'Le ciel est gris et sombre.', q:'Quel temps va-t-il faire ?', ok:'de la pluie', bad:['du soleil','de la neige']}
+];
+
+function _frCE1_graph(set){ const g=_frRnd(set||FR_GRAPH); return _frQ(`Dans « ${g.word} », le son [${g.son}] s\u2019écrit comment ?`, g.ok, g.bad, 'fr-graph', `${g.word} → « ${g.ok} »`); }
+function _frCE1_syn(){ const s=_frRnd(FR_SYN); return _frQ(`Synonyme de « ${s.w} » ?`, s.ok, s.bad, 'fr-syn', `${s.w} ≈ ${s.ok}`); }
+function _frCE1_oppSaisie(){ const p=_frRnd(FR_OPP_TXT); const side=Math.random()<0.5; const cue=side?p.w:p.ok, ans=side?p.ok:p.w; return _frText(`Écris le contraire de « ${cue} ».`, ans, 'fr-oppw', `Le contraire de « ${cue} » : ${ans}`); }
+function _frCE1_nature(){ const n=_frRnd(FR_NAT); return _frQ(`Nature de « ${n.mot} » dans « ${n.ph} » ?`, n.ok, n.bad, 'fr-nature', `« ${n.mot} » → ${n.ok}`); }
+function _frCE1_conj(){ const c=_frRnd(FR_CONJ); return _frQ(`Conjugue : ${c.p} ___ (${c.inf})`, c.ok, c.bad, 'fr-conj', `${c.p} ${c.ok}`); }
+function _frCE1_conjSaisie(){ const inf=_frRnd(FR_VERBS_ER); const pr=_frRnd(FR_PRON); const ans=inf.slice(0,-2)+pr[1]; return _frText(`Conjugue « ${inf} » au présent : ${pr[0]} ___`, ans, 'fr-conjw', `${pr[0]} ${ans}`); }
+function _frCE1_temps(){ const t=_frRnd(FR_TEMPS); const bad=['passé','présent','futur'].filter(x=>x!==t.ok); return _frQ(`Quel temps ? « ${t.ph} »`, t.ok, bad, 'fr-temps', `« ${t.ph} » → ${t.ok}`); }
+function _frCE1_ptype(){ const t=_frRnd(FR_PHRASETYPE); return _frQ(`Quel type de phrase ? « ${t.ph} »`, t.ok, t.bad, 'fr-ptype', `« ${t.ph} » → ${t.ok}`); }
+function _frCE1_comp(){ const c=_frRnd(FR_COMP); return _frQ(`« ${c.t} » ${c.q}`, c.ok, c.bad, 'fr-comp', c.ok); }
+function _frCE1_accord(){
+ const n=_frRnd(FR_ACC_NOUN), a=_frRnd(FR_ACC_ADJ);
+ const plural=Math.random()<0.5;
+ const ok=a[(n.g==='m'?'m':'f')+(plural?'p':'s')];
+ const forms=[a.ms,a.fs,a.mp,a.fp].filter((x,i,arr)=>arr.indexOf(x)===i);
+ const bad=_frShuffle(forms.filter(f=>f!==ok)).slice(0,2);
+ const art=plural?'les':(n.g==='m'?'le':'la');
+ const nounDisp=n.n+(plural?'s':'');
+ const verb=plural?'sont':'est';
+ return _frQ(`Accorde : « ${art} ${nounDisp} ${verb} ___ » (${a.ms})`, ok, bad, 'fr-accord', `${art} ${nounDisp} ${verb} ${ok}`);
+}
+function _frCE1_dictee(){ const grp=_frRnd(FR_DICTEE); const q=_frText('🔊 Écris ce que tu entends.', grp, 'fr-dictee', `On écrit : « ${grp} »`); q.speakText=grp; return q; }
+
+function genFR_CE1(boss,_d){
+ _d=_d||0;
+ const phase=(typeof _progPhase==='function')?_progPhase('CE1'):1;
+ const GS=FR_GRAPH.filter(g=>g.son==='o'||g.son==='in');
+ let pool;
+ if(phase<=1)       pool=[()=>_frCE1_graph(GS),_frCE1_syn,_frCE1_nature,_frCE1_conj,_frCE1_dictee];
+ else if(phase===2) pool=[()=>_frCE1_graph(GS),_frCE1_syn,_frCE1_nature,_frCE1_conj,_frCE1_accord,_frCE1_oppSaisie,_frCE1_conjSaisie,_frCE1_ptype,_frCE1_temps,_frCE1_dictee];
+ else               pool=[_frCE1_graph,_frCE1_syn,_frCE1_nature,_frCE1_conj,_frCE1_accord,_frCE1_conjSaisie,_frCE1_ptype,_frCE1_temps,_frCE1_dictee,_frCE1_comp];
+ const q=_frUnique(_frRnd(pool)());
+ if(!q){ if(_d>14) return _frCE1_syn(); return genFR_CE1(boss,_d+1); }
+ return q;
+}
+
+// Table des générateurs français par niveau (CE2+ : à venir → repli CE1)
+const GEN_FR = { CP: genFR_CP, CE1: genFR_CE1, CE2: genFR_CE1 };

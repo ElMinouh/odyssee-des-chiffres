@@ -2586,12 +2586,18 @@ function renderQ(){
  else if(isRevision)ttl='📖 Révision';
  else ttl=`👾 ${GS.qCount}/6`;
  $('quest-title').innerHTML=`${ttl} <span class="mode-badge m-${GM.mapZone?'map':GM.mode2}">${GM.mapZone?'carte':GM.mode2}</span>`;
- $('feedback').innerText='';speak(txt);
+ $('feedback').innerText='';speak(q.speakText||txt);
  const _hasChoices = q.choices && q.choices.length;
- // Visibilité pavé/choix : forcée sur les questions à choix (exercices visuels), sinon selon le mode
- $('qcm-options').classList.toggle('hidden', !(_hasChoices || GM.mode==='qcm'));
- $('input-zone').classList.toggle('hidden', _hasChoices || GM.mode==='qcm');
- if(_hasChoices){
+ const _txt = !!q.textInput;
+ // Visibilité pavé/choix : saisie texte (français) > choix visuels > mode
+ $('qcm-options').classList.toggle('hidden', _txt || !(_hasChoices || GM.mode==='qcm'));
+ $('input-zone').classList.toggle('hidden', !_txt && (_hasChoices || GM.mode==='qcm'));
+ if(_txt){
+  const ai=$('answer-input');ai.value='';
+  const np=$('numpad'); if(np)np.style.display='none';
+  ai.setAttribute('inputmode','text');ai.setAttribute('autocapitalize','none');ai.setAttribute('autocomplete','off');ai.setAttribute('spellcheck','false');
+  setTimeout(()=>ai.focus(),120);
+ }else if(_hasChoices){
   const qcmEl=$('qcm-options');
   qcmEl.classList.toggle('prim-choices', !!q.visualChoices);
   qcmEl.innerHTML=q.choices.map(c=>`<button class="qcm-btn${q.visualChoices?' prim-choice':''}" data-val="${c.val}">${c.html!==undefined?c.html:c.label}</button>`).join('');
@@ -2606,7 +2612,12 @@ function renderQ(){
   qcmEl.classList.remove('prim-choices');
   qcmEl.innerHTML=shuffle(dedup).map(o=>`<button class="qcm-btn" data-val="${o}">${o}</button>`).join('');
   qcmEl.onclick=e=>{const b=e.target.closest('.qcm-btn');if(b&&!b.disabled)validate(+b.dataset.val);};
- }else{const ai=$('answer-input');ai.value='';if(!_numpadIsTouch())setTimeout(()=>ai.focus(),100);}
+ }else{
+  const ai=$('answer-input');ai.value='';
+  const np=$('numpad'); if(np)np.style.display='';
+  ai.setAttribute('inputmode','decimal');
+  if(!_numpadIsTouch())setTimeout(()=>ai.focus(),100);
+ }
  renderPowerBar();
  if(GM.mode2!=='chrono')startTimer();
  // v10.0.0 (C3 debug) : forçage immédiat de l'enrage si le drapeau debug est posé
@@ -2621,7 +2632,17 @@ function renderQ(){
 function _dbgForceEnrage(){
  try{ return localStorage.getItem('odyssee_dbg_enrage')==='1'; }catch(e){ return false; }
 }
-function submitAns(){const raw=($('answer-input').value||'').replace(',','.').trim();const v=parseFloat(raw);validate((raw===''||isNaN(v))?null:v);}
+function _frNorm(s){ return (s||'').toString().trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' '); }
+function submitAns(){
+ const q=GS.q;
+ if(q && q.textInput){
+  const raw=($('answer-input').value||'').trim();
+  if(raw==='') return validate(null);
+  const ok=_frNorm(raw)===_frNorm(q.answer||'');
+  return validate(ok ? q.res : (q.res||0)+9999);
+ }
+ const raw=($('answer-input').value||'').replace(',','.').trim();const v=parseFloat(raw);validate((raw===''||isNaN(v))?null:v);
+}
 function validate(ans){
  if(!GS.q||GS.answering)return; // guard : question null ou déjà en train de traiter
  GS.answering=true;
