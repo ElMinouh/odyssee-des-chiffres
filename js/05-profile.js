@@ -100,6 +100,12 @@ function validateProfile(raw, defaultName){
    '4E': _clampNum(raw.levelWins?.['4E'], 0, 9999, 0),
    '3E': _clampNum(raw.levelWins?.['3E'], 0, 9999, 0),
   },
+  // Victoires PAR MATIÈRE → déblocage indépendant des niveaux.
+  // Migration : l'historique global est attribué aux maths ; le français (et les
+  // autres matières) repartent à zéro, donc seuls PS/CP/6e y sont accessibles d'office.
+  levelWinsBySubj: (raw.levelWinsBySubj && typeof raw.levelWinsBySubj==='object')
+    ? raw.levelWinsBySubj
+    : { math: Object.assign({}, raw.levelWins||{}), fr: {} },
   // M (bilan parent) : réussites par monde maternelle { PS:{ok,total}, MS:..., GS:... }
   matStats: (raw.matStats && typeof raw.matStats === 'object') ? raw.matStats : {},
   // P9.1 : stats par classe et par type d'exercice { CE2:{'+':{ok,fail},'frac':{ok,fail}}, ... }
@@ -189,7 +195,7 @@ function defProfile(name){
  return{_v:SAVE_VERSION,name,stars:0,xp:0,skills:{shield:0,sword:0,clock:0},inventory:{potion:0,bomb:0},
   history:[],historyDetailed:[],errors:[],errorLog:[],badgesEarned:[],milestonesClaimed:[],_bestCombo:0,_totalStarsEarned:0,
   quests:null,questsDate:null,opStats:{'+':{ ok:0,fail:0},'-':{ok:0,fail:0},'x':{ok:0,fail:0},'/':{ ok:0,fail:0},'geo':{ok:0,fail:0}},
-  levelWins:{CP:0,CE1:0,CE2:0,CM1:0,CM2:0},mapBossBeaten:[],mapAvatarZone:'plaine',
+  levelWins:{CP:0,CE1:0,CE2:0,CM1:0,CM2:0},levelWinsBySubj:{math:{},fr:{}},mapBossBeaten:[],mapAvatarZone:'plaine',
   // v8.7.8 (O1) : progression sous-niveaux par zone (5 étapes par zone)
   zoneProgress:(function(){const o={};if(typeof MAP_ZONES!=='undefined'&&Array.isArray(MAP_ZONES))MAP_ZONES.forEach(z=>{o[z.id]={stepsCompleted:0,completed:false};});return o;})(),
   prefs:{level:'CP',mode2:'normal',mode:'keyboard',theme:'standard'},
@@ -406,7 +412,16 @@ function _levelGroupArr(lvl){
  if(typeof COLLEGE_LEVELS!=='undefined' && COLLEGE_LEVELS.includes(lvl)) return COLLEGE_LEVELS;
  return PRIMARY_LEVELS;
 }
-function prevWins(lvl){ const g=_levelGroupArr(lvl); const i=g.indexOf(lvl); return i<=0?0:(P.levelWins[g[i-1]]||0); }
+// Victoires du niveau pour la MATIÈRE en cours (déblocage indépendant par matière).
+// Hors contexte de matière (profil, héros…), on retombe sur les maths.
+function _subjWinsKey(){ return (typeof GM!=='undefined' && GM.subject) || 'math'; }
+function _subjWins(lvl){
+ const byS = P && P.levelWinsBySubj;
+ const m = byS && byS[_subjWinsKey()];
+ if(m) return m[lvl]||0;
+ return (P && P.levelWins && P.levelWins[lvl]) || 0;
+}
+function prevWins(lvl){ const g=_levelGroupArr(lvl); const i=g.indexOf(lvl); return i<=0?0:_subjWins(g[i-1]); }
 function applyTheme(t){
  // v8.7.5 : ne plus écraser TOUTES les classes du body (préserver
  // no-parallax, mode clair/sombre, etc.). On retire seulement les

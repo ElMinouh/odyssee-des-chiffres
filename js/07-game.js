@@ -3139,7 +3139,13 @@ if(typeof checkMilestones==='function') checkMilestones();
    },800);
   }
  }
- if(won&&(GM.mode2==='normal'||GM.mode2==='combat'||GM.mapZone))P.levelWins[GM.level]=(P.levelWins[GM.level]||0)+1;
+ if(won&&(GM.mode2==='normal'||GM.mode2==='combat'||GM.mapZone)){
+  P.levelWins[GM.level]=(P.levelWins[GM.level]||0)+1;
+  const _sj=(GM.subject)||'math';
+  if(!P.levelWinsBySubj||typeof P.levelWinsBySubj!=='object')P.levelWinsBySubj={};
+  if(!P.levelWinsBySubj[_sj])P.levelWinsBySubj[_sj]={};
+  P.levelWinsBySubj[_sj][GM.level]=(P.levelWinsBySubj[_sj][GM.level]||0)+1;
+ }
  if(won){updateQuests('wins');if(GS.errInGame===0)updateQuests('perfect');updateQuests('stars',GS.score);}
  if(won){P.objectiveDone=(P.objectiveDone||0)+1;if((P.objective||0)>0&&P.objectiveDone>=P.objective)toast('🎯 Objectif du jour atteint !',3500);}
  const newBadges=checkBadges();saveProfileNow(); // sauvegarde immédiate en fin de partie
