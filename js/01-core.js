@@ -573,10 +573,37 @@ let _speechTimer=null;
 let _speechBubble=null;
 let _timerTauntFired=false;
 
+// Adaptation nom/titre du monstre à la matière. En maths : inchangé. Sinon : on
+// clone le monstre (sans toucher aux données partagées) et on remplace le titre
+// (100 % mathématique) et, si le nom contient un terme mathématique, son qualificatif —
+// en gardant la créature (1er mot) pour rester cohérent avec l'emoji.
+const _MATH_NAME_RE = /tabl|calcul|nombr|soustr|addition|multipli|divis|chiffr|total|somm|différenc|unité|dizaine|comptab|zéro|théorèm|équation|fonction|géométr|périmètr|mental|times|inverse|diviseu|manquant|différence/i;
+const NEUTRAL_TITLES = ['Gardien du Donjon','Sentinelle de l\'Arène','Champion des Ombres','Maître du Défi','Rôdeur des Cavernes','Gardien des Portes'];
+const SUBJECT_TITLES = {
+ fr: ['Gardien des Mots','Maître des Lettres','Tisseur de Phrases','Seigneur des Sons','Dévoreur d\'Histoires','Gardien de la Langue']
+};
+const _FR_QUALIF = ['des Mots','des Lettres','des Sons','des Phrases','des Syllabes'];
+const _NEUTRAL_QUALIF = ['des Ombres','du Donjon','de l\'Arène','des Cavernes','Maudit'];
+function _hashStr(s){ let h=0; s=String(s||'x'); for(let i=0;i<s.length;i++){ h=(h*31 + s.charCodeAt(i))>>>0; } return h; }
+function _pickSeed(arr, seed){ if(!arr||!arr.length) return ''; const i=((Math.floor(seed)%arr.length)+arr.length)%arr.length; return arr[i]; }
+function _themeMonster(m){
+ const s=(typeof GM!=='undefined' && GM.subject) || 'math';
+ if(s==='math' || !s || !m) return m;
+ const seed=_hashStr(m.name);
+ const titles=(SUBJECT_TITLES[s]||[]).concat(NEUTRAL_TITLES);
+ const out=Object.assign({}, m);
+ out.title=_pickSeed(titles, seed);
+ if(_MATH_NAME_RE.test(m.name||'')){
+  const first=String(m.name).split(/[\s\-]/)[0];
+  const quals=(s==='fr'?_FR_QUALIF:_NEUTRAL_QUALIF).concat(_NEUTRAL_QUALIF);
+  out.name=first+' '+_pickSeed(quals, (seed>>>3));
+ }
+ return out;
+}
 function pickMonster(level,isBoss){
- if(isBoss)return BOSS_ROSTER[level]||BOSS_ROSTER.CP;
+ if(isBoss)return _themeMonster(BOSS_ROSTER[level]||BOSS_ROSTER.CP);
  const pool=MONSTER_ROSTER[level]||MONSTER_ROSTER.CP;
- return pool[ri(0,pool.length-1)];
+ return _themeMonster(pool[ri(0,pool.length-1)]);
 }
 
 // Intros adaptées à la matière : en maths, le monstre garde son intro à thème
@@ -599,9 +626,13 @@ const SUBJECT_INTROS = {
   'Lettres et sons : tout est piège ici !'
  ]
 };
+const _MATH_INTRO_RE = /calcul|tabl(e|es)|soustr|addition|multipli|divis|nombr|chiffr|résultat|total|somme|différenc|périmètr|géométr|théorèm|équation|fonction|dizaine|unité|mathémat|démonstration/i;
 function _introFor(monster){
  const s=(typeof GM!=='undefined' && GM.subject) || 'math';
  if(s==='math' || !s) return monster.intro;
+ // On garde l'intro si elle est déjà neutre (saisonnier, carte, zone…) ; on ne
+ // remplace que si elle évoque les mathématiques.
+ if(monster.intro && !_MATH_INTRO_RE.test(monster.intro)) return monster.intro;
  const pool=(SUBJECT_INTROS[s]||[]).concat(NEUTRAL_INTROS);
  return pool[Math.floor(Math.random()*pool.length)];
 }

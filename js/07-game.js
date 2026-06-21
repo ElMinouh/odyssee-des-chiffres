@@ -2526,7 +2526,7 @@ function nextTurn(){
    : (mapBoss
     ? {emoji:mapBoss.boss,name:mapBoss.bossName,title:'Boss de la Carte',intro:`Bienvenue dans ${mapBoss.label}. Tu ne repartiras pas vivant.`,anim:'glow',col:'#e74c3c'}
     : _currentMonster);
-  showMonsterIntro(bossM,renderQ);
+  showMonsterIntro((typeof _themeMonster==='function')?_themeMonster(bossM):bossM,renderQ);
  }else if((GS.qCount===1||(GM.mode2==='survie'&&GS.qCount%4===1)) && !(GM.mapZone && GM.mapStep)){
   // v8.7.9 (O1) : ne PAS rejouer l'intro en étape de zone : on l'a déjà
   // jouée dans startMapStep avec le bon monstre. Sinon un 2e monstre
