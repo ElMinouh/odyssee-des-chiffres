@@ -560,7 +560,7 @@ const BOSS_ROSTER={
  '3E': {emoji:'🌌',name:'Sigma, Seigneur des Fonctions',title:'l\'Ultime Théorème',intro:'Avant le Brevet, il y a moi. Je suis chaque démonstration que tu n\'as pas terminée. Achève-la.',anim:'glow',col:'#2c3e50'},
 };
 const WRONG_TAUNTS=[
- 'AH AH ! Tu m\'as raté !','Erreur ! C\'est trop facile de te battre.','Encore raté… déçu.','HA ! Les maths, c\'est dur, hein ?','Pathétique. Recommence.','Tu trembles ? C\'est bien.',
+ 'AH AH ! Tu m\'as raté !','Erreur ! C\'est trop facile de te battre.','Encore raté… déçu.','HA ! C\'est dur, hein ?','Pathétique. Recommence.','Tu trembles ? C\'est bien.',
 ];
 const CORRECT_TAUNTS=[
  'Hmm… bonne réponse. T\'as eu de la chance.','Chanceux. La prochaine sera différente !','Pas mal… pour cette fois.','Grr… correcte. Ça ne durera pas.','Bien joué. Mais je suis loin d\'être vaincu !',
@@ -579,8 +579,35 @@ function pickMonster(level,isBoss){
  return pool[ri(0,pool.length-1)];
 }
 
+// Intros adaptées à la matière : en maths, le monstre garde son intro à thème
+// mathématique ; pour le français (et les autres matières) il dit une phrase NEUTRE
+// ou en rapport avec la matière — plus de « tes calculs », « tes tables », etc.
+const NEUTRAL_INTROS = [
+ 'Montre-moi ce que tu sais faire !',
+ 'Tu crois pouvoir me vaincre ?',
+ 'En garde ! Une bonne réponse pour me toucher.',
+ 'Prouve-moi que tu es prêt !',
+ 'Je ne te laisserai pas passer si facilement…',
+ 'Alors, on tente sa chance ?'
+];
+const SUBJECT_INTROS = {
+ fr: [
+  'Tes mots ne te sauveront pas !',
+  'Crois-tu si bien lire ? Prouve-le !',
+  'Aucune phrase ne me résiste…',
+  'Montre-moi que tu maîtrises la langue !',
+  'Lettres et sons : tout est piège ici !'
+ ]
+};
+function _introFor(monster){
+ const s=(typeof GM!=='undefined' && GM.subject) || 'math';
+ if(s==='math' || !s) return monster.intro;
+ const pool=(SUBJECT_INTROS[s]||[]).concat(NEUTRAL_INTROS);
+ return pool[Math.floor(Math.random()*pool.length)];
+}
 function showMonsterIntro(monster,cb){
  _currentMonster=monster;
+ const _intro=(typeof _introFor==='function')?_introFor(monster):monster.intro;
  const trans=$('transition-screen');
  const monEl=$('trans-monster');
  const msgEl=$('trans-msg');
@@ -596,11 +623,11 @@ function showMonsterIntro(monster,cb){
  msgEl.innerHTML=`
   <div id="monster-intro-badge" style="background:${monster.col}33;color:${monster.col};border:1px solid ${monster.col}60;">${monster.title}</div>
   <div id="monster-intro-name" style="color:${monster.col};">${monster.name}</div>
-  <div id="monster-intro-quote">"${monster.intro}"</div>
+  <div id="monster-intro-quote">"${_intro}"</div>
   <div id="monster-intro-skip-hint">Toucher pour passer</div>`;
  trans.classList.remove('hidden');
  // v8.7.0 : le monstre prononce son intro avec sa voix propre
- if(typeof speakAs==='function') speakAs(monster.intro, monster);
+ if(typeof speakAs==='function') speakAs(_intro, monster);
  // Themed beep
  try{
   const ctx=getAudio();
@@ -620,7 +647,7 @@ function showMonsterIntro(monster,cb){
   try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
   cb();
  };
- const _introTimer = setTimeout(_finishIntro, Math.max(5700, _speechMs(monster.intro) + 700));
+ const _introTimer = setTimeout(_finishIntro, Math.max(5700, _speechMs(_intro) + 700));
  trans.addEventListener('click', _finishIntro);
 }
 
@@ -884,7 +911,7 @@ const _COMBAT_TAUNTS = [
  'Tu es plus fort que prévu !',
  'Continue, je faiblis !',
  'Cette fois c\'est la fin pour toi !',
- 'Mes calculs ne te résistent plus ?',
+ 'Tu me résistes encore ?!',
 ];
 function maybeMidCombatTaunt(){
  if(!GS.isBoss || !GS.monsterHP || !GS.monsterMaxHP) return;
