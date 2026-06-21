@@ -751,19 +751,70 @@ function genFR_3E(boss,_d){
 //   Progression neuro-éducative : mot → syllabe → phonème.
 // ═══════════════════════════════════════════════════════
 const FR_CRIS = [
- {cri:'Miaou',       say:'Miaaaou… miaaaou',     w:'chat',       e:'🐱'},
- {cri:'Ouaf ouaf',   say:'Ouah ! Ouah ! Ouah !', w:'chien',      e:'🐶'},
- {cri:'Meuh',        say:'Meuuuuh',              w:'vache',      e:'🐮'},
- {cri:'Cocorico',    say:'Cocorico !',           w:'coq',        e:'🐓'},
- {cri:'Côt côt',     say:'Côt côt côt codet',    w:'poule',      e:'🐔'},
- {cri:'Groin groin', say:'Groin… groin…',        w:'cochon',     e:'🐷'},
- {cri:'Bêê',         say:'Bêêêê',                w:'mouton',     e:'🐑'},
- {cri:'Coin coin',   say:'Coin coin coin',       w:'canard',     e:'🦆'},
- {cri:'Hi-han',      say:'Hi… haaan !',          w:'âne',        e:'🫏'},
- {cri:'Coâ coâ',     say:'Coâ… coâ…',            w:'grenouille', e:'🐸'},
- {cri:'Cui cui',     say:'Cui cui cui',          w:'oiseau',     e:'🐦'},
- {cri:'Hou hou',     say:'Hou… hou…',            w:'hibou',      e:'🦉'}
+ {cri:'Miaou',       say:'Miaaaou… miaaaou',     w:'chat',       e:'🐱', file:'chat'},
+ {cri:'Ouaf ouaf',   say:'Ouah ! Ouah ! Ouah !', w:'chien',      e:'🐶', file:'chien'},
+ {cri:'Meuh',        say:'Meuuuuh',              w:'vache',      e:'🐮', file:'vache'},
+ {cri:'Cocorico',    say:'Cocorico !',           w:'coq',        e:'🐓', file:'coq'},
+ {cri:'Côt côt',     say:'Côt côt côt codet',    w:'poule',      e:'🐔', file:'poule'},
+ {cri:'Groin groin', say:'Groin… groin…',        w:'cochon',     e:'🐷', file:'cochon'},
+ {cri:'Bêê',         say:'Bêêêê',                w:'mouton',     e:'🐑', file:'mouton'},
+ {cri:'Coin coin',   say:'Coin coin coin',       w:'canard',     e:'🦆', file:'canard'},
+ {cri:'Hi-han',      say:'Hi… haaan !',          w:'âne',        e:'🫏', file:'ane'},
+ {cri:'Coâ coâ',     say:'Coâ… coâ…',            w:'grenouille', e:'🐸', file:'grenouille'},
+ {cri:'Cui cui',     say:'Cui cui cui',          w:'oiseau',     e:'🐦', file:'oiseau'},
+ {cri:'Hou hou',     say:'Hou… hou…',            w:'hibou',      e:'🦉', file:'hibou'}
 ];
+
+// ── Loto sonore : VRAI son ──
+// 1) si un fichier audio/cris/<file>.mp3 existe, il est joué (prioritaire) ;
+// 2) sinon, un cri SYNTHÉTISÉ en Web Audio est généré (vrai son, sans fichier, hors-ligne).
+let _criAudioCache = {};
+function _criVoice(ctx, start, type, fpts, gpts, opts){
+ opts=opts||{};
+ const o=ctx.createOscillator(), g=ctx.createGain();
+ o.type=type||'sine';
+ fpts.forEach(([t,f],i)=>{ const at=start+t; if(i===0)o.frequency.setValueAtTime(f,at); else o.frequency.linearRampToValueAtTime(f,at); });
+ gpts.forEach(([t,v],i)=>{ const at=start+t; if(i===0)g.gain.setValueAtTime(Math.max(v,0.0001),at); else g.gain.linearRampToValueAtTime(Math.max(v,0.0001),at); });
+ o.connect(g);
+ let node=g;
+ if(opts.filter){ const bp=ctx.createBiquadFilter(); bp.type=opts.filter.type||'bandpass'; bp.frequency.value=opts.filter.freq; if(opts.filter.q)bp.Q.value=opts.filter.q; g.connect(bp); node=bp; }
+ node.connect(ctx.destination);
+ if(opts.vibrato){ const lfo=ctx.createOscillator(), lg=ctx.createGain(); lfo.frequency.value=opts.vibrato.rate; lg.gain.value=opts.vibrato.depth; lfo.connect(lg); lg.connect(o.frequency); lfo.start(start); lfo.stop(start+(opts.dur||0.6)); }
+ const end=start+(opts.dur||fpts[fpts.length-1][0]);
+ o.start(start); o.stop(end+0.03);
+ return end;
+}
+function _synthCri(w){
+ let ctx; try{ ctx=getAudio(); }catch(e){ return false; } if(!ctx) return false;
+ const t=ctx.currentTime+0.03, V=0.10;
+ try{ switch(w){
+  case 'chat': _criVoice(ctx,t,'sawtooth',[[0,520],[0.12,840],[0.45,430]],[[0,0.001],[0.05,V],[0.45,0.001]],{dur:0.5,filter:{type:'bandpass',freq:950,q:5}}); break;
+  case 'chien': _criVoice(ctx,t,'sawtooth',[[0,190],[0.12,120]],[[0,V*1.2],[0.15,0.001]],{dur:0.16,filter:{type:'lowpass',freq:700}}); _criVoice(ctx,t+0.24,'sawtooth',[[0,190],[0.12,110]],[[0,V*1.2],[0.15,0.001]],{dur:0.16,filter:{type:'lowpass',freq:700}}); break;
+  case 'vache': _criVoice(ctx,t,'sawtooth',[[0,155],[0.6,135],[0.9,122]],[[0,0.001],[0.12,V],[0.7,V],[0.95,0.001]],{dur:0.95,filter:{type:'lowpass',freq:520}}); break;
+  case 'coq': [[0,520],[0.18,720],[0.42,640],[0.62,470]].forEach(([dt,f])=>_criVoice(ctx,t+dt,'square',[[0,f],[0.16,f*0.95]],[[0,V],[0.16,0.001]],{dur:0.18,filter:{type:'bandpass',freq:f,q:6}})); break;
+  case 'poule': for(let i=0;i<3;i++)_criVoice(ctx,t+i*0.16,'square',[[0,440],[0.06,300]],[[0,V],[0.09,0.001]],{dur:0.09,filter:{type:'bandpass',freq:1200,q:8}}); break;
+  case 'cochon': for(let i=0;i<2;i++)_criVoice(ctx,t+i*0.22,'sawtooth',[[0,150],[0.14,110]],[[0,V*1.1],[0.16,0.001]],{dur:0.16,filter:{type:'lowpass',freq:600,q:2}}); break;
+  case 'mouton': _criVoice(ctx,t,'sawtooth',[[0,450],[0.5,410]],[[0,0.001],[0.05,V],[0.5,0.001]],{dur:0.55,vibrato:{rate:18,depth:30},filter:{type:'bandpass',freq:950,q:3}}); break;
+  case 'canard': for(let i=0;i<2;i++)_criVoice(ctx,t+i*0.2,'sawtooth',[[0,330],[0.1,260]],[[0,V*1.1],[0.13,0.001]],{dur:0.13,filter:{type:'bandpass',freq:1500,q:6}}); break;
+  case 'âne': _criVoice(ctx,t,'sawtooth',[[0,620],[0.25,540]],[[0,0.001],[0.05,V],[0.25,0.001]],{dur:0.28,filter:{type:'bandpass',freq:850,q:4}}); _criVoice(ctx,t+0.34,'sawtooth',[[0,210],[0.35,150]],[[0,V],[0.36,0.001]],{dur:0.38,filter:{type:'lowpass',freq:520}}); break;
+  case 'grenouille': for(let i=0;i<3;i++)_criVoice(ctx,t+i*0.16,'sawtooth',[[0,125],[0.1,100]],[[0,V],[0.12,0.001]],{dur:0.12,filter:{type:'lowpass',freq:420}}); break;
+  case 'oiseau': for(let i=0;i<3;i++)_criVoice(ctx,t+i*0.12,'sine',[[0,2700],[0.05,3500],[0.09,2900]],[[0,0.001],[0.02,V*0.8],[0.09,0.001]],{dur:0.1}); break;
+  case 'hibou': _criVoice(ctx,t,'sine',[[0,430],[0.3,360]],[[0,0.001],[0.08,V],[0.3,0.001]],{dur:0.32}); _criVoice(ctx,t+0.46,'sine',[[0,410],[0.3,345]],[[0,0.001],[0.08,V],[0.3,0.001]],{dur:0.32}); break;
+  default: return false;
+ } }catch(e){ return false; }
+ return true;
+}
+function _playCri(animal){
+ const c = FR_CRIS.find(x=>x.file===animal || x.w===animal);
+ if(!c) return;
+ try{
+  let a=_criAudioCache[c.file];
+  if(!a){ a=new Audio('audio/cris/'+c.file+'.mp3'); a.preload='auto'; _criAudioCache[c.file]=a; }
+  a.currentTime=0; a.volume=0.95;
+  const p=a.play();
+  if(p&&p.catch) p.catch(()=>{ _synthCri(c.w); });
+ }catch(e){ _synthCri(c.w); }
+}
 const FR_RIMES = [
  {e:'🐱',w:'chat',   ok:{e:'🐀',w:'rat'},     bad:[{e:'🌙',w:'lune'},{e:'🌸',w:'fleur'}]},
  {e:'🐰',w:'lapin',  ok:{e:'🌲',w:'sapin'},   bad:[{e:'🍎',w:'pomme'},{e:'🐮',w:'vache'}]},
@@ -809,8 +860,10 @@ function _frM_lex(){
 // M2 — cris d'animaux (loto sonore).
 function _frM_cris(){
  const c=_frRnd(FR_CRIS); const bad=_frShuffle(FR_CRIS.filter(x=>x.w!==c.w)).slice(0,2);
- const q=_frQ(`${c.cri} ! Quel animal fait ce cri ?`, _frHtmlEmoji(c), bad.map(_frHtmlEmoji), 'frm-cris', c.w);
- q.speakText=`${c.say} ! Quel animal fait ce cri ?`; return q;
+ const q=_frQ(`🔊 ${c.cri} ! Quel animal fait ce cri ?`, _frHtmlEmoji(c), bad.map(_frHtmlEmoji), 'frm-cris', c.w);
+ q.sound=c.file;                       // → joue le vrai cri (fichier ou synthèse)
+ q.speakText='Quel animal fait ce cri ?'; // le TTS ne lit que la consigne
+ return q;
 }
 // M3 — compréhension orale (phrase lue, choix emoji).
 function _frM_listen(){

@@ -2598,12 +2598,19 @@ function renderQ(){
  else ttl=`👾 ${GS.qCount}/6`;
  $('quest-title').innerHTML=`${ttl} <span class="mode-badge m-${GM.mapZone?'map':GM.mode2}">${GM.mapZone?'carte':GM.mode2}</span>`;
  $('feedback').innerText='';
- // Si le boss/monstre est en train de parler, on diffère la lecture de la question
- // pour qu'elle ENCHAÎNE après (au lieu de s'annuler mutuellement avec speakAs).
+ // Lecture audio de la question : si un cri est associé (loto sonore), on le joue
+ // (vrai fichier ou son synthétisé) PUIS on lit la consigne. Sinon lecture normale.
+ // Dans tous les cas, on diffère après une éventuelle réplique de boss (anti-coupure).
  (function(){
   const _say=()=>{ try{ speak(_ttsClean(q.speakText||txt)); }catch(e){} };
   const _rem=(window._monsterSpeakEnd||0)-Date.now();
-  if(_rem>60 && typeof safeTimeout==='function'){ safeTimeout(_say, _rem+150); } else { _say(); }
+  const _base=(_rem>60)?(_rem+150):0;
+  if(q.sound && typeof _playCri==='function'){
+   const _cri=()=>{ try{ _playCri(q.sound); }catch(e){} };
+   if(typeof safeTimeout==='function'){ safeTimeout(_cri,_base); safeTimeout(_say,_base+1200); }
+   else { _cri(); _say(); }
+  } else if(_base>0 && typeof safeTimeout==='function'){ safeTimeout(_say,_base); }
+  else { _say(); }
  })();
  const _hasChoices = q.choices && q.choices.length;
  const _txt = !!q.textInput;

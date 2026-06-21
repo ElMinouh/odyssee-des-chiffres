@@ -289,14 +289,22 @@ function initVoicePicker(){
 // Répéter la dernière question à la demande de l'utilisateur
 function repeatQuestion(){
  const q=typeof GS!=='undefined'?GS.q:null;if(!q)return;
- let txt=q.speakText||(q.maternelle?(q.consigne||''):(q.display||(q.a!==undefined&&q.b!==undefined?`${q.a} ${q.op||'='} ${q.b}`:String(q.res))));
- if(typeof _ttsClean==='function') txt=_ttsClean(txt);
- // Forcer la lecture même si voix non activée : user a explicitement demandé
- if(!window.speechSynthesis)return;
- window.speechSynthesis.cancel();
- const m=new SpeechSynthesisUtterance(_humanizeForSpeech(txt));
- m.lang='fr-FR';m.rate=0.95;if(_frVoice)m.voice=_frVoice;
- try{window.speechSynthesis.speak(m);}catch(e){}
+ const _spk=()=>{
+  let txt=q.speakText||(q.maternelle?(q.consigne||''):(q.display||(q.a!==undefined&&q.b!==undefined?`${q.a} ${q.op||'='} ${q.b}`:String(q.res))));
+  if(typeof _ttsClean==='function') txt=_ttsClean(txt);
+  if(!window.speechSynthesis)return;
+  window.speechSynthesis.cancel();
+  const m=new SpeechSynthesisUtterance(_humanizeForSpeech(txt));
+  m.lang='fr-FR';m.rate=0.95;if(_frVoice)m.voice=_frVoice;
+  try{window.speechSynthesis.speak(m);}catch(e){}
+ };
+ // Loto sonore : on rejoue le cri (vrai son), puis la consigne.
+ if(q.sound && typeof _playCri==='function'){
+  try{ _playCri(q.sound); }catch(e){}
+  if(typeof safeTimeout==='function') safeTimeout(_spk,1200); else _spk();
+  return;
+ }
+ _spk();
 }
 let toastT=null;
 function toast(msg,dur=2200){const el=$('toast');el.innerText=msg;el.classList.remove('hidden');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.add('hidden'),dur);}
