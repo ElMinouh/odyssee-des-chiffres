@@ -462,28 +462,28 @@ const _WEATHER_BY_REGION = {
 // d'accueil au clic. Position seedée stable, animation idle bobbing.
 const _NPCS_BY_REGION = {
  cp: [
-  { emoji:'🧙‍♂️', name:'Maître Élio',   line:'Bienvenue, jeune aventurier ! Les chiffres seront tes alliés.' },
-  { emoji:'🐑',   name:'Berger Pâquerette', line:'Mes moutons savent compter… presque aussi bien que toi !' },
+  { emoji:'🧙‍♂️', name:'Maître Élio',   line:'Bienvenue, jeune aventurier ! Le courage sera ton allié.' },
+  { emoji:'🐑',   name:'Berger Pâquerette', line:'Mes moutons sont presque aussi malins que toi !' },
  ],
  ce1: [
-  { emoji:'🧚',   name:'Fée Lumelle',   line:'Les forêts murmurent les tables de multiplication, écoute-les !' },
+  { emoji:'🧚',   name:'Fée Lumelle',   line:'Les forêts murmurent leurs secrets, écoute-les !' },
   { emoji:'🦌',   name:'Cerf Sylvain',  line:'Avance avec sagesse, brave héros. Chaque pas compte.' },
  ],
  ce2: [
   { emoji:'🧞',   name:'Génie Sablo',   line:'Trois vœux pour qui résout trois énigmes ! Mais d\'abord, prouve-toi.' },
-  { emoji:'🦅',   name:'Aigle Vent-Pur', line:'Mes ailes connaissent tous les nombres du désert.' },
+  { emoji:'🦅',   name:'Aigle Vent-Pur', line:'Mes ailes connaissent tous les secrets du désert.' },
  ],
  cm1: [
-  { emoji:'🛡️',  name:'Sir Cassel',    line:'Halte ! Seuls les vrais mathématiciens passent par cette voie.' },
-  { emoji:'🧝',   name:'Elfe Veylis',   line:'Les anciens calculs sont gravés dans la pierre des montagnes.' },
+  { emoji:'🛡️',  name:'Sir Cassel',    line:'Halte ! Seuls les plus braves passent par cette voie.' },
+  { emoji:'🧝',   name:'Elfe Veylis',   line:'Les anciens secrets sont gravés dans la pierre des montagnes.' },
  ],
  cm2: [
-  { emoji:'👽',   name:'Zorbax du Nébula', line:'Bzzip ! Tes équations résonnent dans toute la galaxie.' },
-  { emoji:'🪐',   name:'Sage Cosmik',    line:'L\'univers entier est un théorème. Décompose-le.' },
+  { emoji:'👽',   name:'Zorbax du Nébula', line:'Bzzip ! Tes exploits résonnent dans toute la galaxie.' },
+  { emoji:'🪐',   name:'Sage Cosmik',    line:'L\'univers entier est une énigme. Perce-la.' },
  ],
  final: [
   { emoji:'🦄',   name:'Licorne Astralia', line:'Tu es arrivé jusqu\'ici. Le Sanctuaire t\'observe.' },
-  { emoji:'🕊️',  name:'Esprit Aelune',  line:'Les nombres sacrés t\'attendent. Sois digne.' },
+  { emoji:'🕊️',  name:'Esprit Aelune',  line:'Les trésors sacrés t\'attendent. Sois digne.' },
  ],
 };
 // Génère le HTML des PNJ pour un îlot débloqué.
@@ -3903,11 +3903,11 @@ const _BOSS_ENRAGE_LINES = [
  "Tu as réveillé ma fureur… tant pis pour toi !",
  "Chaque bonne réponse m'enrage un peu plus !",
  "Tu ne souris plus pour longtemps ! À mon tour de jouer !",
- "Mes calculs vont devenir IMPITOYABLES !",
+ "Mes attaques vont devenir IMPITOYABLES !",
  "Je gronde, je tremble, je RUGIS de colère !",
  "Tu m'as poussé à bout… voici ma forme déchaînée !",
  "Personne ne m'avait résisté aussi longtemps. ÇA SUFFIT !",
- "Sens ma rage monter : les nombres vont pleuvoir !",
+ "Sens ma rage monter : ma fureur va pleuvoir !",
  "Tu as gratté ma fierté… et ça, JAMAIS !",
  "Mes yeux rougeoient ! Plus aucune pitié pour tes neurones !",
 ];
@@ -3923,7 +3923,7 @@ const _BOSS_ENRAGE_LINES_COL = [
 // Répliques d'enrage maternelle : douces et encourageantes (jamais effrayantes)
 const _BOSS_ENRAGE_LINES_MAT = [
  "Oh là là, tu es trop fort ! Bravo !",
- "Waouh ! Tu comptes super bien ! On continue à jouer ?",
+ "Waouh ! Tu réponds super bien ! On continue à jouer ?",
  "Tu y arrives très bien ! Encore un petit peu !",
  "Youpi ! Quel champion ! Je suis tout content !",
 ];

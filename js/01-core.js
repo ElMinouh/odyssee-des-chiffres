@@ -577,7 +577,7 @@ let _timerTauntFired=false;
 // clone le monstre (sans toucher aux données partagées) et on remplace le titre
 // (100 % mathématique) et, si le nom contient un terme mathématique, son qualificatif —
 // en gardant la créature (1er mot) pour rester cohérent avec l'emoji.
-const _MATH_NAME_RE = /tabl|calcul|nombr|soustr|addition|multipli|divis|chiffr|total|somm|différenc|unité|dizaine|comptab|zéro|théorèm|équation|fonction|géométr|périmètr|mental|times|inverse|diviseu|manquant|différence/i;
+const _MATH_TXT_RE = /tabl|calcul|compt|chiffr|nombr|soustr|subtra|addition|multipli|divis|fraction|décim|\bsomm|total|différenc|unité|dizaine|zéro|théorèm|équation|fonction|géométr|périmètr|mental|times|inverse|manquant|mathémat|\bmath/i;
 const NEUTRAL_TITLES = ['Gardien du Donjon','Sentinelle de l\'Arène','Champion des Ombres','Maître du Défi','Rôdeur des Cavernes','Gardien des Portes'];
 const SUBJECT_TITLES = {
  fr: ['Gardien des Mots','Maître des Lettres','Tisseur de Phrases','Seigneur des Sons','Dévoreur d\'Histoires','Gardien de la Langue']
@@ -590,10 +590,14 @@ function _themeMonster(m){
  const s=(typeof GM!=='undefined' && GM.subject) || 'math';
  if(s==='math' || !s || !m) return m;
  const seed=_hashStr(m.name);
- const titles=(SUBJECT_TITLES[s]||[]).concat(NEUTRAL_TITLES);
  const out=Object.assign({}, m);
- out.title=_pickSeed(titles, seed);
- if(_MATH_NAME_RE.test(m.name||'')){
+ // On ne remplace que ce qui est mathématique : les titres/noms neutres ou gentils
+ // (« Amie des Petits », « Boss Légendaire », « Gobelin Vert ») sont préservés.
+ if(_MATH_TXT_RE.test(m.title||'')){
+  const titles=(SUBJECT_TITLES[s]||[]).concat(NEUTRAL_TITLES);
+  out.title=_pickSeed(titles, seed);
+ }
+ if(_MATH_TXT_RE.test(m.name||'')){
   const first=String(m.name).split(/[\s\-]/)[0];
   const quals=(s==='fr'?_FR_QUALIF:_NEUTRAL_QUALIF).concat(_NEUTRAL_QUALIF);
   out.name=first+' '+_pickSeed(quals, (seed>>>3));
@@ -626,14 +630,22 @@ const SUBJECT_INTROS = {
   'Lettres et sons : tout est piège ici !'
  ]
 };
-const _MATH_INTRO_RE = /calcul|tabl(e|es)|soustr|addition|multipli|divis|nombr|chiffr|résultat|total|somme|différenc|périmètr|géométr|théorèm|équation|fonction|dizaine|unité|mathémat|démonstration/i;
+const _MATH_INTRO_RE = _MATH_TXT_RE; // même détection que pour noms/titres
+// Intros douces pour la maternelle (PS/MS/GS) hors maths : on garde le ton tendre.
+const NEUTRAL_INTROS_SOFT = [
+ 'Coucou ! On joue ensemble ? Montre-moi ce que tu sais faire !',
+ 'Bravo d\'être arrivé jusqu\'ici ! Un petit jeu tout gentil ?',
+ 'Youpi ! Tu es prêt ? On y va tout doucement !',
+ 'Je crois très fort en toi ! À toi de jouer !'
+];
 function _introFor(monster){
  const s=(typeof GM!=='undefined' && GM.subject) || 'math';
  if(s==='math' || !s) return monster.intro;
  // On garde l'intro si elle est déjà neutre (saisonnier, carte, zone…) ; on ne
  // remplace que si elle évoque les mathématiques.
- if(monster.intro && !_MATH_INTRO_RE.test(monster.intro)) return monster.intro;
- const pool=(SUBJECT_INTROS[s]||[]).concat(NEUTRAL_INTROS);
+ if(monster.intro && !_MATH_TXT_RE.test(monster.intro)) return monster.intro;
+ const mater = ['PS','MS','GS'].indexOf((typeof GM!=='undefined' && GM.level)||'')>=0;
+ const pool = mater ? NEUTRAL_INTROS_SOFT : (SUBJECT_INTROS[s]||[]).concat(NEUTRAL_INTROS);
  return pool[Math.floor(Math.random()*pool.length)];
 }
 function showMonsterIntro(monster,cb){
