@@ -287,6 +287,26 @@ function initVoicePicker(){
  }
 }
 // Répéter la dernière question à la demande de l'utilisateur
+// Loto sonore : lit d'abord la CONSIGNE, puis joue le cri À LA FIN de la phrase
+// (évite que le cri se superpose à la question).
+function _speakThenCri(q){
+ const animal=q&&q.sound;
+ const playCri=()=>{ if(typeof _playCri==='function'){ try{ _playCri(animal); }catch(e){} } };
+ let txt = (q&&q.speakText)||'';
+ if(typeof _ttsClean==='function') txt=_ttsClean(txt);
+ if($('voiceToggle')?.checked && window.speechSynthesis && txt){
+  try{
+   window.speechSynthesis.cancel();
+   const u=new SpeechSynthesisUtterance(_humanizeForSpeech(txt));
+   u.lang='fr-FR'; u.rate=0.95; if(_frVoice)u.voice=_frVoice;
+   let done=false; const fire=()=>{ if(done)return; done=true; playCri(); };
+   u.onend=fire; u.onerror=fire;
+   window.speechSynthesis.speak(u);
+   const ms=(typeof _speechMs==='function')?_speechMs(txt):1600;
+   (typeof safeTimeout==='function'?safeTimeout:setTimeout)(fire, Math.max(1600, ms+450));
+  }catch(e){ playCri(); }
+ } else { playCri(); }
+}
 function repeatQuestion(){
  const q=typeof GS!=='undefined'?GS.q:null;if(!q)return;
  const _spk=()=>{
@@ -298,12 +318,8 @@ function repeatQuestion(){
   m.lang='fr-FR';m.rate=0.95;if(_frVoice)m.voice=_frVoice;
   try{window.speechSynthesis.speak(m);}catch(e){}
  };
- // Loto sonore : on rejoue le cri (vrai son), puis la consigne.
- if(q.sound && typeof _playCri==='function'){
-  try{ _playCri(q.sound); }catch(e){}
-  if(typeof safeTimeout==='function') safeTimeout(_spk,1200); else _spk();
-  return;
- }
+ // Loto sonore : on relit la consigne puis on rejoue le cri (même ordre).
+ if(q.sound){ _speakThenCri(q); return; }
  _spk();
 }
 let toastT=null;

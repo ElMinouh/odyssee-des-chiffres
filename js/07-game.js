@@ -2598,17 +2598,16 @@ function renderQ(){
  else ttl=`👾 ${GS.qCount}/6`;
  $('quest-title').innerHTML=`${ttl} <span class="mode-badge m-${GM.mapZone?'map':GM.mode2}">${GM.mapZone?'carte':GM.mode2}</span>`;
  $('feedback').innerText='';
- // Lecture audio de la question : si un cri est associé (loto sonore), on le joue
- // (vrai fichier ou son synthétisé) PUIS on lit la consigne. Sinon lecture normale.
- // Dans tous les cas, on diffère après une éventuelle réplique de boss (anti-coupure).
+ // Lecture audio de la question. Loto sonore : on lit la CONSIGNE puis on joue le
+ // cri À LA FIN (plus de superposition). Sinon lecture normale. Dans tous les cas,
+ // on diffère après une éventuelle réplique de boss (anti-coupure).
  (function(){
   const _say=()=>{ try{ speak(_ttsClean(q.speakText||txt)); }catch(e){} };
   const _rem=(window._monsterSpeakEnd||0)-Date.now();
   const _base=(_rem>60)?(_rem+150):0;
-  if(q.sound && typeof _playCri==='function'){
-   const _cri=()=>{ try{ _playCri(q.sound); }catch(e){} };
-   if(typeof safeTimeout==='function'){ safeTimeout(_cri,_base); safeTimeout(_say,_base+1200); }
-   else { _cri(); _say(); }
+  if(q.sound && typeof _speakThenCri==='function'){
+   if(typeof safeTimeout==='function'){ safeTimeout(()=>{ try{ _speakThenCri(q); }catch(e){} },_base); }
+   else { try{ _speakThenCri(q); }catch(e){} }
   } else if(_base>0 && typeof safeTimeout==='function'){ safeTimeout(_say,_base); }
   else { _say(); }
  })();

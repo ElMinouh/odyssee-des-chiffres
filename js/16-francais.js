@@ -73,7 +73,14 @@ const FR_SENT = [
  {s:'Léo dort dans son lit.',         q:'Que fait Léo ?',              ok:{w:'il dort',e:'😴'},bad:[{w:'il court',e:'🏃'},{w:'il mange',e:'🍽️'}]},
  {s:'La souris a peur du chat.',      q:'De qui la souris a-t-elle peur ?', ok:{w:'chat',e:'🐱'}, bad:[{w:'poule',e:'🐔'},{w:'lapin',e:'🐰'}]},
  {s:'Papa lave la voiture.',          q:'Que lave papa ?',             ok:{w:'voiture',e:'🚗'},bad:[{w:'vélo',e:'🚲'},{w:'bateau',e:'⛵'}]},
- {s:'Le soleil brille dans le ciel.', q:'Qu\u2019est-ce qui brille ?',  ok:{w:'soleil',e:'☀️'},bad:[{w:'lune',e:'🌙'},{w:'fleur',e:'🌸'}]}
+ {s:'Le soleil brille dans le ciel.', q:'Qu\u2019est-ce qui brille ?',  ok:{w:'soleil',e:'☀️'},bad:[{w:'lune',e:'🌙'},{w:'fleur',e:'🌸'}]},
+ {s:'Le lapin mange une carotte.',     q:'Que mange le lapin ?',        ok:{w:'carotte',e:'🥕'},bad:[{w:'banane',e:'🍌'},{w:'pomme',e:'🍎'}]},
+ {s:'L\u2019oiseau vole dans le ciel.', q:'Qui vole ?',                  ok:{w:'oiseau',e:'🐦'}, bad:[{w:'poisson',e:'🐟'},{w:'chat',e:'🐱'}]},
+ {s:'La vache mange de l\u2019herbe.',  q:'Qui mange de l\u2019herbe ?',  ok:{w:'vache',e:'🐮'},  bad:[{w:'lion',e:'🦁'},{w:'souris',e:'🐭'}]},
+ {s:'Le poisson nage dans l\u2019eau.', q:'Où nage le poisson ?',        ok:{w:'eau',e:'💧'},    bad:[{w:'ciel',e:'☁️'},{w:'arbre',e:'🌳'}]},
+ {s:'La fille met son chapeau.',       q:'Que met la fille ?',          ok:{w:'chapeau',e:'🎩'},bad:[{w:'gant',e:'🧤'},{w:'botte',e:'👢'}]},
+ {s:'Le bébé boit du lait.',           q:'Que boit le bébé ?',          ok:{w:'lait',e:'🥛'},   bad:[{w:'jus',e:'🧃'},{w:'eau',e:'💧'}]},
+ {s:'Le chien court après la balle.',  q:'Après quoi court le chien ?', ok:{w:'balle',e:'⚽'},  bad:[{w:'os',e:'🦴'},{w:'chat',e:'🐱'}]}
 ];
 
 const _SOUND_LABEL = {a:'[a]',i:'[i]',o:'[o]',u:'[u]',ou:'[ou]',on:'[on]'};
@@ -96,9 +103,16 @@ function _frQ(display, correctHtml, distractorHtmls, opKey, hint){
 const _frHtmlWord = o => `<span style="font-size:1.7em">${o.e}</span><br>${o.w}`;     // emoji + mot
 const _frHtmlEmoji = o => `<span style="font-size:2em">${o.e}</span>`;                  // emoji seul
 
-// Anti-répétition immédiate (dernier display)
-let _frLastDisp = '';
-function _frUnique(q){ if(!q) return q; if(q.display===_frLastDisp) return null; _frLastDisp=q.display; return q; }
+// Anti-répétition : on évite de reposer une question vue dans les 6 dernières
+// (avant, seule la question IMMÉDIATEMENT précédente était bloquée → répétitions).
+let _frRecent = [];
+const _FR_RECENT_MAX = 6;
+function _frUnique(q){
+ if(!q) return q;
+ if(_frRecent.indexOf(q.display)>=0) return null;       // déjà vue récemment → on repioche
+ _frRecent.push(q.display); if(_frRecent.length>_FR_RECENT_MAX) _frRecent.shift();
+ return q;
+}
 
 // ── Familles d'exercices CP ──
 // A1 : Où entends-tu le son [X] ? (réponses = images)

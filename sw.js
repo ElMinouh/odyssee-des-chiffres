@@ -9,7 +9,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v10.11.2';
+const CACHE_VERSION = 'v10.11.3';
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources critiques précachées au premier chargement.
@@ -53,6 +53,19 @@ const OPTIONAL_URLS = [
   // Autres assets
   './assets/portraits.svg',
   './assets/fonts/google-fonts.css',
+  // Loto sonore maternelle — cris d'animaux (offline dès l'installation)
+  './audio/cris/chat.mp3',
+  './audio/cris/chien.mp3',
+  './audio/cris/vache.mp3',
+  './audio/cris/coq.mp3',
+  './audio/cris/poule.mp3',
+  './audio/cris/cochon.mp3',
+  './audio/cris/mouton.mp3',
+  './audio/cris/canard.mp3',
+  './audio/cris/ane.mp3',
+  './audio/cris/grenouille.mp3',
+  './audio/cris/oiseau.mp3',
+  './audio/cris/hibou.mp3',
   // GIFs de fin de partie (chantier v8.4.0) — précachés pour fonctionnement offline
   './assets/gifs/ax_obelix.gif',
   './assets/gifs/bl_happydance.gif',
