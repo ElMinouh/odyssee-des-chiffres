@@ -745,5 +745,162 @@ function genFR_3E(boss,_d){
  return q;
 }
 
-// Table des générateurs français — COMPLET : primaire CP→CM2 + collège 6e→3e.
-const GEN_FR = { CP: genFR_CP, CE1: genFR_CE1, CE2: genFR_CE2, CM1: genFR_CM1, CM2: genFR_CM1, '6E': genFR_6E, '5E': genFR_5E, '4E': genFR_4E, '3E': genFR_3E };
+// ═══════════════════════════════════════════════════════
+// MATERNELLE (PS/MS/GS) — « Mobiliser le langage ». 100 % VISUEL + AUDIO :
+//   aucun mot à lire, choix en emoji seul, la voix dit tout (speakText), sons étirés.
+//   Progression neuro-éducative : mot → syllabe → phonème.
+// ═══════════════════════════════════════════════════════
+const FR_CRIS = [
+ {cri:'Miaou', w:'chat', e:'🐱'},
+ {cri:'Ouaf ouaf', w:'chien', e:'🐶'},
+ {cri:'Meuh', w:'vache', e:'🐮'},
+ {cri:'Cot cot', w:'poule', e:'🐔'},
+ {cri:'Groin groin', w:'cochon', e:'🐷'},
+ {cri:'Bêê', w:'mouton', e:'🐑'},
+ {cri:'Coin coin', w:'canard', e:'🦆'}
+];
+const FR_RIMES = [
+ {e:'🐱',w:'chat',   ok:{e:'🐀',w:'rat'},     bad:[{e:'🌙',w:'lune'},{e:'🌸',w:'fleur'}]},
+ {e:'🐰',w:'lapin',  ok:{e:'🌲',w:'sapin'},   bad:[{e:'🍎',w:'pomme'},{e:'🐮',w:'vache'}]},
+ {e:'⚽',w:'ballon', ok:{e:'🐑',w:'mouton'},  bad:[{e:'🍌',w:'banane'},{e:'🔑',w:'clé'}]},
+ {e:'🎩',w:'chapeau',ok:{e:'🍰',w:'gâteau'},  bad:[{e:'🦁',w:'lion'},{e:'👗',w:'robe'}]},
+ {e:'🛏️',w:'lit',    ok:{e:'🐭',w:'souris'},  bad:[{e:'☀️',w:'soleil'},{e:'🐶',w:'chien'}]},
+ {e:'🚲',w:'vélo',   ok:{e:'⛵',w:'bateau'},  bad:[{e:'👧',w:'fille'},{e:'🌙',w:'lune'}]}
+];
+const FR_ATTAQUE = [
+ {son:'chhh', cue:{e:'🐱',w:'chat'},    ok:{e:'🎩',w:'chapeau'}, bad:[{e:'🍎',w:'pomme'},{e:'🌙',w:'lune'}]},
+ {son:'lll',  cue:{e:'🦁',w:'lion'},    ok:{e:'🌙',w:'lune'},    bad:[{e:'🐮',w:'vache'},{e:'🍰',w:'gâteau'}]},
+ {son:'mmm',  cue:{e:'🏠',w:'maison'},  ok:{e:'🐑',w:'mouton'},  bad:[{e:'🍌',w:'banane'},{e:'🔑',w:'clé'}]},
+ {son:'sss',  cue:{e:'🐭',w:'souris'},  ok:{e:'☀️',w:'soleil'},  bad:[{e:'🐶',w:'chien'},{e:'🍎',w:'pomme'}]},
+ {son:'bbb',  cue:{e:'🍌',w:'banane'},  ok:{e:'⚽',w:'ballon'},  bad:[{e:'🐱',w:'chat'},{e:'🌲',w:'sapin'}]},
+ {son:'rrr',  cue:{e:'🤴',w:'roi'},     ok:{e:'👗',w:'robe'},    bad:[{e:'🦁',w:'lion'},{e:'🌙',w:'lune'}]}
+];
+const FR_LOC = [
+ {w:'chapeau', syl:'cha',  pos:'début', e:'🎩'},
+ {w:'bateau',  syl:'teau', pos:'fin',   e:'⛵'},
+ {w:'lapin',   syl:'la',   pos:'début', e:'🐰'},
+ {w:'mouton',  syl:'ton',  pos:'fin',   e:'🐑'},
+ {w:'cochon',  syl:'co',   pos:'début', e:'🐷'},
+ {w:'ballon',  syl:'lon',  pos:'fin',   e:'⚽'}
+];
+const FR_LETTRE = [
+ {L:'A', son:'aaa', ok:{e:'✈️',w:'avion'},  bad:[{e:'🐱',w:'chat'},{e:'🌙',w:'lune'}]},
+ {L:'M', son:'mmm', ok:{e:'🏠',w:'maison'}, bad:[{e:'🍎',w:'pomme'},{e:'🦁',w:'lion'}]},
+ {L:'S', son:'sss', ok:{e:'☀️',w:'soleil'}, bad:[{e:'🐶',w:'chien'},{e:'🐰',w:'lapin'}]},
+ {L:'L', son:'lll', ok:{e:'🦁',w:'lion'},   bad:[{e:'🐮',w:'vache'},{e:'🍰',w:'gâteau'}]},
+ {L:'P', son:'ppp', ok:{e:'🍎',w:'pomme'},  bad:[{e:'☀️',w:'soleil'},{e:'🐭',w:'souris'}]},
+ {L:'B', son:'bbb', ok:{e:'🍌',w:'banane'}, bad:[{e:'🐱',w:'chat'},{e:'🌲',w:'sapin'}]},
+ {L:'R', son:'rrr', ok:{e:'👗',w:'robe'},   bad:[{e:'🐰',w:'lapin'},{e:'🌙',w:'lune'}]}
+];
+const _MSND_SAY = {a:'aaa',i:'iii',o:'ooo',u:'uuu',ou:'ou',on:'on'};
+function _artLe(o){ return /^[aeiouéèê]/i.test(o.w) ? 'l\u2019' : (o.g==='m'?'le ':'la '); }
+
+// M1 — lexique imagé : « Où est le chat ? » → taper l'emoji.
+function _frM_lex(){
+ const w=_frRnd(FR_WORDS); const bad=_frSample(FR_WORDS,2,[w.v]);
+ const q=_frQ(`Où est ${_artLe(w)}${w.w} ?`, _frHtmlEmoji(w), bad.map(_frHtmlEmoji), 'frm-lex', w.w);
+ q.speakText=`Où est ${_artLe(w)}${w.w} ?`; return q;
+}
+// M2 — cris d'animaux (loto sonore).
+function _frM_cris(){
+ const c=_frRnd(FR_CRIS); const bad=_frShuffle(FR_CRIS.filter(x=>x.w!==c.w)).slice(0,2);
+ const q=_frQ(`${c.cri} ! Quel animal fait ce cri ?`, _frHtmlEmoji(c), bad.map(_frHtmlEmoji), 'frm-cris', c.w);
+ q.speakText=`${c.cri} ! Quel animal fait ce cri ?`; return q;
+}
+// M3 — compréhension orale (phrase lue, choix emoji).
+function _frM_listen(){
+ const it=_frRnd(FR_SENT);
+ const q=_frQ(`🔊 « ${it.s} » ${it.q}`, _frHtmlEmoji(it.ok), it.bad.map(_frHtmlEmoji), 'frm-ecoute', it.ok.w);
+ q.speakText=`${it.s} ${it.q}`; return q;
+}
+// M4 — intrus catégoriel (choix emoji).
+function _frM_intrus(){
+ const cat=_frRnd(['animal','chose']);
+ const inCat=FR_WORDS.filter(w=>w.cat===cat);
+ const outCat=FR_WORDS.filter(w=>w.cat!==cat && w.cat!=='personne');
+ if(inCat.length<2||outCat.length<1) return null;
+ const two=_frShuffle(inCat).slice(0,2); const intrus=_frRnd(outCat);
+ const label=cat==='animal'?'un animal':'une chose';
+ const q=_frQ(`Lequel n\u2019est pas ${label} ?`, _frHtmlEmoji(intrus), two.map(_frHtmlEmoji), 'frm-intrus', intrus.w);
+ q.speakText=`Lequel n\u2019est pas ${label} ?`; return q;
+}
+// M5 — compter les syllabes (réponses = claps 👏, pas de chiffre à lire).
+function _frM_syll(maxSyl){
+ const mx=maxSyl||3; const w=_frRnd(FR_WORDS.filter(x=>x.syl>=1&&x.syl<=mx));
+ const set=new Set([w.syl]); while(set.size<3){ set.add(1+Math.floor(Math.random()*3)); }
+ const nums=_frShuffle(Array.from(set));
+ const items=nums.map((n,i)=>({val:i+1,label:String(i+1),html:`<span style="font-size:1.7em">${'👏'.repeat(n)}</span>`,n}));
+ let res=1; items.forEach(it=>{ if(it.n===w.syl)res=it.val; });
+ return {display:`Combien de syllabes ? ${w.e} ${w.w}`, img:'', choices:items.map(({val,label,html})=>({val,label,html})), visualChoices:true, res, opKey:'frm-syll', type:'normal', subj:'fr', speakText:`Combien de syllabes dans le mot ${w.w} ?`, hint:`${w.w} = ${w.syl} syllabe${w.syl>1?'s':''}`};
+}
+// M6 — rimes.
+function _frM_rime(){
+ const r=_frRnd(FR_RIMES);
+ const q=_frQ(`Lequel rime avec ${r.w} ?`, _frHtmlEmoji(r.ok), r.bad.map(_frHtmlEmoji), 'frm-rime', `${r.w} rime avec ${r.ok.w}`);
+ q.speakText=`Écoute : ${r.w}. Lequel rime avec ${r.w} ?`; return q;
+}
+// M7 — attaque (même son au début), son étiré.
+function _frM_attaque(){
+ const a=_frRnd(FR_ATTAQUE);
+ const q=_frQ(`Lequel commence comme ${a.cue.w} ?`, _frHtmlEmoji(a.ok), a.bad.map(_frHtmlEmoji), 'frm-attaque', `${a.cue.w} et ${a.ok.w} commencent par « ${a.son} »`);
+ q.speakText=`${a.cue.w} commence par ${a.son}. Lequel commence aussi par ${a.son} ?`; return q;
+}
+// M8 — présence d'un phonème (GS), son étiré.
+function _frM_son(){
+ const sounds=['a','i','o','u','ou','on']; const snd=_frRnd(sounds);
+ const withS=FR_WORDS.filter(w=>w.snd.indexOf(snd)>=0);
+ const without=FR_WORDS.filter(w=>w.snd.indexOf(snd)<0);
+ if(withS.length<1||without.length<2) return null;
+ const ok=_frRnd(withS); const bad=_frShuffle(without).slice(0,2);
+ const q=_frQ(`Où entends-tu le son ${_SOUND_LABEL[snd]} ?`, _frHtmlEmoji(ok), bad.map(_frHtmlEmoji), 'frm-son', ok.w);
+ q.speakText=`Où entends-tu le son ${_MSND_SAY[snd]||snd} ?`; return q;
+}
+// M9 — localiser la syllabe (GS) : au début ou à la fin (flèches).
+function _frM_loc(){
+ const l=_frRnd(FR_LOC);
+ const deb='<span style="font-size:1.5em">⬅️</span><br>au début';
+ const fin='<span style="font-size:1.5em">➡️</span><br>à la fin';
+ const okHtml=l.pos==='début'?deb:fin, badHtml=l.pos==='début'?fin:deb;
+ const q=_frQ(`${l.e} Dans « ${l.w} », où entends-tu « ${l.syl} » ?`, okHtml, [badHtml], 'frm-loc', `« ${l.syl} » est ${l.pos==='début'?'au début':'à la fin'}`);
+ q.speakText=`Dans le mot ${l.w}, où entends-tu ${l.syl} ? Au début, ou à la fin ?`; return q;
+}
+// M10 — principe alphabétique (GS) : grande lettre + son → image.
+function _frM_lettre(){
+ const x=_frRnd(FR_LETTRE);
+ const q=_frQ(`Cette lettre fait « ${x.son} ». Quelle image commence par ce son ?`, _frHtmlEmoji(x.ok), x.bad.map(_frHtmlEmoji), 'frm-lettre', `${x.L} → ${x.ok.w}`);
+ q.visualHtml=`<span style="font-size:3.4em;font-weight:900">${x.L}</span>`;
+ q.speakText=`Cette lettre fait ${x.son}. Quelle image commence par le son ${x.son} ?`; return q;
+}
+
+function _frMatPick(pool, self, boss, _d, fallback){
+ const q=_frUnique(_frRnd(pool)());
+ if(!q){ if(_d>16) return fallback(); return self(boss,_d+1); }
+ return q;
+}
+function genFR_PS(boss,_d){
+ _d=_d||0; const phase=(typeof _progPhase==='function')?_progPhase('PS'):1;
+ let pool;
+ if(phase<=1)       pool=[_frM_lex,_frM_cris,_frM_listen];
+ else if(phase===2) pool=[_frM_lex,_frM_cris,_frM_listen,()=>_frM_syll(2)];
+ else               pool=[_frM_lex,_frM_cris,_frM_listen,()=>_frM_syll(2),_frM_intrus];
+ return _frMatPick(pool, genFR_PS, boss, _d, _frM_lex);
+}
+function genFR_MS(boss,_d){
+ _d=_d||0; const phase=(typeof _progPhase==='function')?_progPhase('MS'):1;
+ let pool;
+ if(phase<=1)       pool=[_frM_lex,_frM_intrus,()=>_frM_syll(3),_frM_listen];
+ else if(phase===2) pool=[_frM_lex,_frM_intrus,()=>_frM_syll(3),_frM_rime,_frM_attaque,_frM_cris];
+ else               pool=[_frM_lex,()=>_frM_syll(3),_frM_rime,_frM_attaque,_frM_intrus,_frM_listen];
+ return _frMatPick(pool, genFR_MS, boss, _d, _frM_lex);
+}
+function genFR_GS(boss,_d){
+ _d=_d||0; const phase=(typeof _progPhase==='function')?_progPhase('GS'):1;
+ let pool;
+ if(phase<=1)       pool=[_frM_rime,_frM_attaque,()=>_frM_syll(3),_frM_intrus,_frM_lex];
+ else if(phase===2) pool=[_frM_attaque,_frM_son,_frM_rime,()=>_frM_syll(3),_frM_loc,_frM_lettre];
+ else               pool=[_frM_son,_frM_loc,_frM_lettre,_frM_attaque,_frM_rime,()=>_frM_syll(3)];
+ return _frMatPick(pool, genFR_GS, boss, _d, _frM_rime);
+}
+
+// Table des générateurs français — COMPLET : maternelle PS/MS/GS + primaire CP→CM2 + collège 6e→3e.
+const GEN_FR = { PS: genFR_PS, MS: genFR_MS, GS: genFR_GS, CP: genFR_CP, CE1: genFR_CE1, CE2: genFR_CE2, CM1: genFR_CM1, CM2: genFR_CM1, '6E': genFR_6E, '5E': genFR_5E, '4E': genFR_4E, '3E': genFR_3E };
