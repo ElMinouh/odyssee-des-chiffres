@@ -751,13 +751,18 @@ function genFR_3E(boss,_d){
 //   Progression neuro-éducative : mot → syllabe → phonème.
 // ═══════════════════════════════════════════════════════
 const FR_CRIS = [
- {cri:'Miaou', w:'chat', e:'🐱'},
- {cri:'Ouaf ouaf', w:'chien', e:'🐶'},
- {cri:'Meuh', w:'vache', e:'🐮'},
- {cri:'Cot cot', w:'poule', e:'🐔'},
- {cri:'Groin groin', w:'cochon', e:'🐷'},
- {cri:'Bêê', w:'mouton', e:'🐑'},
- {cri:'Coin coin', w:'canard', e:'🦆'}
+ {cri:'Miaou',       say:'Miaaaou… miaaaou',     w:'chat',       e:'🐱'},
+ {cri:'Ouaf ouaf',   say:'Ouah ! Ouah ! Ouah !', w:'chien',      e:'🐶'},
+ {cri:'Meuh',        say:'Meuuuuh',              w:'vache',      e:'🐮'},
+ {cri:'Cocorico',    say:'Cocorico !',           w:'coq',        e:'🐓'},
+ {cri:'Côt côt',     say:'Côt côt côt codet',    w:'poule',      e:'🐔'},
+ {cri:'Groin groin', say:'Groin… groin…',        w:'cochon',     e:'🐷'},
+ {cri:'Bêê',         say:'Bêêêê',                w:'mouton',     e:'🐑'},
+ {cri:'Coin coin',   say:'Coin coin coin',       w:'canard',     e:'🦆'},
+ {cri:'Hi-han',      say:'Hi… haaan !',          w:'âne',        e:'🫏'},
+ {cri:'Coâ coâ',     say:'Coâ… coâ…',            w:'grenouille', e:'🐸'},
+ {cri:'Cui cui',     say:'Cui cui cui',          w:'oiseau',     e:'🐦'},
+ {cri:'Hou hou',     say:'Hou… hou…',            w:'hibou',      e:'🦉'}
 ];
 const FR_RIMES = [
  {e:'🐱',w:'chat',   ok:{e:'🐀',w:'rat'},     bad:[{e:'🌙',w:'lune'},{e:'🌸',w:'fleur'}]},
@@ -805,7 +810,7 @@ function _frM_lex(){
 function _frM_cris(){
  const c=_frRnd(FR_CRIS); const bad=_frShuffle(FR_CRIS.filter(x=>x.w!==c.w)).slice(0,2);
  const q=_frQ(`${c.cri} ! Quel animal fait ce cri ?`, _frHtmlEmoji(c), bad.map(_frHtmlEmoji), 'frm-cris', c.w);
- q.speakText=`${c.cri} ! Quel animal fait ce cri ?`; return q;
+ q.speakText=`${c.say} ! Quel animal fait ce cri ?`; return q;
 }
 // M3 — compréhension orale (phrase lue, choix emoji).
 function _frM_listen(){

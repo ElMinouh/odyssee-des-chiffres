@@ -2597,7 +2597,14 @@ function renderQ(){
  else if(isRevision)ttl='📖 Révision';
  else ttl=`👾 ${GS.qCount}/6`;
  $('quest-title').innerHTML=`${ttl} <span class="mode-badge m-${GM.mapZone?'map':GM.mode2}">${GM.mapZone?'carte':GM.mode2}</span>`;
- $('feedback').innerText='';speak(_ttsClean(q.speakText||txt));
+ $('feedback').innerText='';
+ // Si le boss/monstre est en train de parler, on diffère la lecture de la question
+ // pour qu'elle ENCHAÎNE après (au lieu de s'annuler mutuellement avec speakAs).
+ (function(){
+  const _say=()=>{ try{ speak(_ttsClean(q.speakText||txt)); }catch(e){} };
+  const _rem=(window._monsterSpeakEnd||0)-Date.now();
+  if(_rem>60 && typeof safeTimeout==='function'){ safeTimeout(_say, _rem+150); } else { _say(); }
+ })();
  const _hasChoices = q.choices && q.choices.length;
  const _txt = !!q.textInput;
  // Visibilité pavé/choix : saisie texte (français) > choix visuels > mode
