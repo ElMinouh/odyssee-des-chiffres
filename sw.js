@@ -9,7 +9,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v10.11.6';
+const CACHE_VERSION = 'v10.12.0';
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources critiques précachées au premier chargement.

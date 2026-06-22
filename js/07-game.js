@@ -35,10 +35,21 @@ function closeMap(){
 // de la carte. Le primaire est l'aventure par défaut.
 // ═══════════════════════════════════════════════════════
 function startAdventure(advId){
+ // Variante française de la maternelle : « L'Odyssée des mots » (Le Grand Livre du
+ // Conteur). Déclenchée si la matière active est le français, ou au retour via 'matfr'.
+ const _wantFr = (advId==='matfr') || (advId==='mat' && typeof GM!=='undefined' && GM.subject==='fr');
+ if(advId==='matfr') advId='mat';
  GM.adventure = advId;
  if(advId==='mat'){
-  MAP_ZONES=MAT_ZONES; _ARCH_REGIONS=_MAT_REGIONS; _STORY=_MAT_STORY;
-  STORY_VILLAIN=_MAT_VILLAIN; STORY_KINGDOM=_MAT_KINGDOM;
+  if(_wantFr){
+   if(typeof GM!=='undefined' && GM.subject!=='fr') GM.subject='fr';
+   MAP_ZONES=MAT_ZONES_FR; _ARCH_REGIONS=_MAT_REGIONS_FR; _STORY=_MAT_STORY_FR;
+   STORY_VILLAIN=_MAT_VILLAIN_FR; STORY_KINGDOM=_MAT_KINGDOM_FR;
+   GM.adventure='matfr';
+  } else {
+   MAP_ZONES=MAT_ZONES; _ARCH_REGIONS=_MAT_REGIONS; _STORY=_MAT_STORY;
+   STORY_VILLAIN=_MAT_VILLAIN; STORY_KINGDOM=_MAT_KINGDOM;
+  }
  } else if(advId==='col'){
   MAP_ZONES=COL_ZONES; _ARCH_REGIONS=_COL_REGIONS; _STORY=_COL_STORY;
   STORY_VILLAIN=_COL_VILLAIN; STORY_KINGDOM=_COL_KINGDOM;
@@ -76,6 +87,12 @@ function _setAvatarZone(id){
 }
 // Ouvre l'écran de choix des trois aventures
 function openOdysseeSelect(){
+ try{
+  const fr=(typeof GM!=='undefined'&&GM.subject==='fr');
+  const t=document.getElementById('ody-sel-title'); if(t) t.textContent=fr?"L'Odyssée des mots":"L'Odyssée : l'aventure mathématique";
+  const su=document.getElementById('ody-sel-sub'); if(su) su.textContent=fr?"Maîtrise les secrets du langage":"Choisis ton aventure";
+  const ms=document.getElementById('ody-mat-sub'); if(ms) ms.textContent=fr?"Le Grand Livre du Conteur":"Le Pays des Couleurs";
+ }catch(e){}
  if(typeof navTo==='function') navTo('v-odyssey-select'); else showView('v-odyssey-select');
 }
 
@@ -4688,6 +4705,102 @@ const _MAT_STORY = {
  ]},
 };
 
+// ═══════════════════════════════════════════════════════
+// L'ODYSSÉE DES MOTS — Maternelle (français) : « Le Grand Livre du Conteur »
+// Aventure française pour GM.subject==='fr' en maternelle. Zones isolées
+// (ids 'matfr_…') → progression séparée des maths. Histoire A (cadre) +
+// Histoire B (le conte du Livre, débloqué à la fin).
+// ═══════════════════════════════════════════════════════
+const _MAT_VILLAIN_FR = 'le Silence';
+const _MAT_KINGDOM_FR = 'le Pays des Mots';
+// Zones : on réutilise la géométrie maternelle douce, avec des ids distincts
+// pour isoler totalement la conquête (P.mapBossBeaten) de celle des maths.
+const MAT_ZONES_FR = (typeof MAT_ZONES!=='undefined' ? MAT_ZONES : []).map(z => Object.assign({}, z, { id: String(z.id).replace('mat_','matfr_') }));
+const _MAT_REGIONS_FR = [
+ { id:'cp',    label:'La Forêt des Animaux Muets', levels:['PS'], shape:'colline' },
+ { id:'ce1',   label:'Le Pré des Premiers Mots',   levels:['PS'], shape:'feuille' },
+ { id:'ce2',   label:'Les Collines qui Chantent',  levels:['MS'], shape:'dune' },
+ { id:'cm1',   label:'Le Lac aux Échos',           levels:['MS'], shape:'citadelle' },
+ { id:'cm2',   label:'La Grotte des Premiers Sons',levels:['GS'], shape:'nebuleuse' },
+ { id:'final', label:'Le Château des Lettres',     levels:['GS'], shape:'mandala' },
+];
+const _MAT_STORY_FR = {
+ intro: { id:'matfr_intro', title:'Le Grand Livre du Conteur', pages:[
+  { emoji:'📖', text:"Il était une fois un vieux Conteur, et un Livre pas comme les autres. Quand il l'ouvrait, les mots s'envolaient de ses pages comme des papillons : on entendait chanter les oiseaux, rire les enfants, souffler le vent." },
+  { emoji:'🌑', text:"Mais une nuit, un grand <b>{villain}</b> entra par la fenêtre. Il referma le Livre d'un coup sec — clap ! — et tous les mots s'échappèrent, effrayés, aux quatre coins du monde." },
+  { emoji:'🪶', text:"Depuis, les pages sont toutes blanches. Alors une petite plume glisse du Livre et se pose sur ta main. « Petit ami {hero}, veux-tu m'aider à retrouver les mots, page après page ? Notre histoire commence ici. »" },
+ ]},
+ chapters: {
+  cp:    { id:'matfr_c_cp',  title:'La Forêt des Animaux Muets', crystal:'la première page', pages:[
+   { emoji:'🌲', text:"La première page t'emmène dans une <b>forêt</b> toute verte. D'habitude, ça chante et ça gazouille du matin au soir… mais aujourd'hui, plus un seul bruit." },
+   { emoji:'🐾', text:"Les animaux ont perdu leur voix ! « Tends bien l'oreille, {hero}, chuchote Plume. Reconnais chaque cri, et la forêt rechantera. »" },
+  ]},
+  ce1:   { id:'matfr_c_ce1', title:'Le Pré des Premiers Mots', crystal:'la deuxième page', pages:[
+   { emoji:'🌼', text:"Au bout de la forêt s'ouvre un grand <b>pré</b> doré. Mais ici, plus personne ne sait comment s'appellent les choses : tout s'est mélangé !" },
+   { emoji:'🧺', text:"« Nomme chaque chose, {hero}, dit Plume, et chasse le petit <b>intrus</b> qui s'est glissé là où il ne fallait pas ! »" },
+  ]},
+  ce2:   { id:'matfr_c_ce2', title:'Les Collines qui Chantent', crystal:'la troisième page', pages:[
+   { emoji:'⛰️', text:"Voici de grandes <b>collines</b> magiques. Quand on dit un mot tout fort, l'écho le renvoie en petits morceaux : pa-pi-llon !" },
+   { emoji:'👏', text:"« Ces morceaux, ce sont les <b>syllabes</b>, explique Plume. Tape dans tes mains pour les compter, et les collines chanteront avec toi ! »" },
+  ]},
+  cm1:   { id:'matfr_c_cm1', title:'Le Lac aux Échos', crystal:'la quatrième page', pages:[
+   { emoji:'💧', text:"Après les collines, un <b>lac</b> tranquille comme un miroir. Quand un mot tombe dans l'eau, un autre lui répond en finissant pareil : chat… rat !" },
+   { emoji:'🌊', text:"« Trouve les mots qui sonnent pareil à la fin — ce sont des <b>rimes</b> — et tu rendras au lac toutes ses chansons, {hero} ! »" },
+  ]},
+  cm2:   { id:'matfr_c_cm2', title:'La Grotte des Premiers Sons', crystal:'la cinquième page', pages:[
+   { emoji:'🕳️', text:"Voici une <b>grotte</b> fraîche et bleutée, où les sons aiment se cacher. Chaque mot commence par un petit son, comme une porte qui s'ouvre : sssserpent…" },
+   { emoji:'✨', text:"« Devine par quel <b>son</b> commence chaque mot, souffle Plume, et une lumière s'allumera dans la grotte. »" },
+  ]},
+  final: { id:'matfr_c_final', title:'Le Château des Lettres', crystal:'la dernière page', pages:[
+   { emoji:'🏰', text:"Au sortir de la grotte se dresse le <b>Château des Lettres</b>. Le A pointu comme un toit, le O rond comme une bulle… chaque lettre chante son petit son." },
+   { emoji:'🔤', text:"« Tu es presque au bout du voyage, {hero}, murmure Plume, très fière. Reconnais les <b>lettres</b> et leur chanson, et le château ouvrira sa dernière porte. »" },
+  ]},
+ },
+ victories: {
+  cp:  { id:'matfr_w_cp',  title:'Une page retrouvée !', crystal:'la première page', pages:[
+   { emoji:'🐱', text:"Hourra ! Un cri par-ci, un chant par-là… la forêt se réveille ! Les animaux ont retrouvé leur voix." },
+   { emoji:'📖', text:"La première page du Livre se remplit de mots tout neufs. <b>Page après page</b>, le Livre revit !" },
+  ]},
+  ce1: { id:'matfr_w_ce1', title:'Une page retrouvée !', crystal:'la deuxième page', pages:[
+   { emoji:'🍎', text:"Chaque chose a retrouvé son nom, et l'intrus est reparti ! Le pré brille de mille couleurs." },
+   { emoji:'📖', text:"La deuxième page se couvre de jolis dessins. Encore une page sauvée, {hero} !" },
+  ]},
+  ce2: { id:'matfr_w_ce2', title:'Une page retrouvée !', crystal:'la troisième page', pages:[
+   { emoji:'🎵', text:"Les collines résonnent de bonheur et te renvoient leur plus belle musique !" },
+   { emoji:'📖', text:"La troisième page se met à fredonner toute seule. Bravo, {hero} !" },
+  ]},
+  cm1: { id:'matfr_w_cm1', title:'Une page retrouvée !', crystal:'la quatrième page', pages:[
+   { emoji:'🌟', text:"À chaque rime trouvée, une vaguelette part danser sur l'eau. Le lac te dit merci !" },
+   { emoji:'📖', text:"La quatrième page brille comme le soleil sur l'eau. Déjà quatre pages !" },
+  ]},
+  cm2: { id:'matfr_w_cm2', title:'Une page retrouvée !', crystal:'la cinquième page', pages:[
+   { emoji:'💡', text:"Une à une, les petites lumières s'allument : la grotte scintille comme un ciel d'étoiles !" },
+   { emoji:'📖', text:"La cinquième page s'éclaire d'une douce clarté. Plus qu'une, {hero} !" },
+  ]},
+ },
+ epilogue: { id:'matfr_epilogue', title:'La Dernière Page', pages:[
+  { emoji:'🦋', text:"Il ne reste qu'une page blanche : la <b>dernière</b>. Tous les mots que tu as délivrés tournoient autour de toi comme des papillons, prêts à rentrer à la maison." },
+  { emoji:'📖', text:"« Rassemble-les tous, {hero} ! » souffle Plume. Tu ouvres grand les bras… et un à un, les mots se posent sur la dernière page. Le Livre se referme, tout chaud, rempli à nouveau." },
+  { emoji:'🌟', text:"Le grand <b>{villain}</b>, vaincu, s'enfuit par la fenêtre, et la première étoile se met à briller." },
+  { emoji:'🪶', text:"Le vieux Conteur ouvre les yeux. Il ouvre le Livre… et les mots s'envolent à nouveau, par milliers ! « Tu as sauvé toutes les histoires du monde, {hero}. Merci. »" },
+  { emoji:'📖', text:"« Maintenant que le Livre est complet, il peut enfin raconter sa <b>propre</b> histoire. Assieds-toi près du feu… et écoute. »" },
+ ]},
+ // Histoire B — débloquée à la fin : le conte du Livre (origines du Conteur).
+ bookTale: { id:'matfr_booktale', title:'Le conte du Livre', pages:[
+  { emoji:'👴', text:"Il y a très longtemps, bien avant d'être vieux, le Conteur était un tout petit garçon." },
+  { emoji:'🏚️', text:"Il vivait dans un village au bout du monde, où l'on ne parlait presque plus. Les gens avaient oublié les mots, un par un, comme on perd des billes au fond d'une poche." },
+  { emoji:'👂', text:"Mais le petit garçon avait un secret : il <b>écoutait</b>. La pluie sur les toits, le feu qui craque, l'oiseau du matin. Pour lui, le monde était plein de petites musiques." },
+  { emoji:'🪶', text:"Un jour d'automne, il trouva au pied d'un arbre une plume blanche qui brillait à peine. Et la plume se mit à parler, tout bas : « Tu entends les sons du monde ? Ce sont des mots qui attendent qu'on les garde. »" },
+  { emoji:'📖', text:"Elle fit apparaître dans ses bras un grand livre aux pages blanches. « Va par le monde, écoute, et garde chaque mot ici. Un Livre plein de mots, c'est un Livre plein de vie. »" },
+  { emoji:'🌍', text:"Alors le garçon partit. Il traversa forêts, prés, collines et lacs. Partout il s'arrêtait pour écouter, et partout il ramassait des mots comme on ramasse des fleurs." },
+  { emoji:'✨', text:"Un mot, puis un autre, puis un autre encore. Le Livre devint lourd et chaud entre ses mains. L'enfant, lui, devint vieux, avec une longue barbe blanche." },
+  { emoji:'🏡', text:"Il revint enfin dans son village silencieux. Et là, pour la première fois, il ouvrit son Livre devant tout le monde." },
+  { emoji:'🦋', text:"Les mots s'envolèrent par centaines ! Quelqu'un dit « bonjour ». Puis « merci ». Puis un enfant éclata de rire. Le village tout entier se réveilla, et plus jamais il ne se tut." },
+  { emoji:'🌑', text:"C'est ainsi qu'il devint le Conteur. Mais quelque part, dans le froid, le <b>Silence</b> avait entendu ce premier « bonjour »… et il guettait la nuit où il pourrait refermer le Livre. Cette nuit-là, justement, fut celle où commença <b>ton</b> aventure." },
+  { emoji:'💛', text:"Car tant qu'un enfant voudra bien tendre l'oreille et retrouver les mots, page après page, le Livre ne se taira jamais. « Garde-le bien, {hero}. Maintenant, c'est un peu le tien aussi. »" },
+ ]},
+};
+
 // ─── Histoire COLLÈGE : « Le Forgeron des Étoiles » (v10.2.0, mini-roman) ───
 const _COL_VILLAIN = 'Léthéas, le Titan de l\'Oubli';
 const _COL_KINGDOM = 'Sidéris';
@@ -4950,7 +5063,10 @@ function _maybeShowStory(){
  try{
   if(_STORY.epilogue && !P.storySeen.includes(_STORY.epilogue.id) && _regionConquered(_lastRegionId())){
    _markStorySeen(_STORY.epilogue.id);
-   _showStoryModal(_STORY.epilogue, null);
+   // Si l'aventure a une « histoire du Livre » (Histoire B), elle s'enchaîne juste
+   // après l'épilogue, en récompense.
+   const _after = (_STORY.bookTale) ? (function(){ try{ _markStorySeen(_STORY.bookTale.id); _showStoryModal(_STORY.bookTale, null); }catch(e){} }) : null;
+   _showStoryModal(_STORY.epilogue, _after);
    return;
   }
  }catch(e){}
