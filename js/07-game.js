@@ -3573,23 +3573,32 @@ function _advBookHtml(){
  const done = got.every(Boolean);
  const seen = (P && P.storySeen) || [];
  const taleSeen = seen.includes('matfr_booktale');
- // éventail de 6 pages qui s'illuminent au fil des mondes conquis
- let fan='';
- for(let i=0;i<6;i++){
-  const lit = i < n; const ang = -50 + i*20;
-  fan += `<g transform="translate(150 120) rotate(${ang})">`
-   + `<rect x="-13" y="-60" width="26" height="60" rx="3" fill="${lit?'#fffdf5':'#e6e2d6'}" stroke="${lit?'#d9a441':'#c2bcab'}" stroke-width="1.6"${lit?' class="advcol-band-on"':' opacity=".7"'}/>`
-   + (lit
-      ? `<g stroke="#c79a3a" stroke-width="1.4" opacity=".75"><line x1="-7" y1="-50" x2="7" y2="-50"/><line x1="-7" y1="-42" x2="5" y2="-42"/><line x1="-7" y1="-34" x2="7" y2="-34"/></g>`
-      : `<text x="0" y="-30" text-anchor="middle" font-size="13" fill="#b8b2a2">?</text>`)
-   + `</g>`;
- }
- const cover = done ? '#16a085' : '#5c8a86';
- const coverStroke = done ? '#0e6e5d' : '#46706c';
- const glow = done ? 'filter="drop-shadow(0 4px 12px rgba(26,188,156,.55))"' : '';
- const bfly = (x,y,c)=>`<g transform="translate(${x} ${y})" class="advcol-spark"><path d="M0 0 q-7 -8 -11 -2 q-2 6 5 7 Z" fill="${c}"/><path d="M0 0 q7 -8 11 -2 q2 6 -5 7 Z" fill="${c}"/><line x1="0" y1="-3" x2="0" y2="5" stroke="#7a5a2a" stroke-width="1.3"/></g>`;
- const flies = n>0 ? (bfly(70,60,'#ff9ec7') + (n>2?bfly(228,72,'#ffd43b'):'') + (n>4?bfly(96,40,'#7ec8ff'):'')) : '';
- const sparks = done ? `<g fill="#fff3b0" stroke="#ffd84d" stroke-width="1" class="advcol-spark"><path d="M150 24 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2 Z"/><path d="M214 70 l1.5 4 4 1.5 -4 1.5 -1.5 4 -1.5 -4 -4 -1.5 4 -1.5 Z"/><path d="M86 70 l1.5 4 4 1.5 -4 1.5 -1.5 4 -1.5 -4 -4 -1.5 4 -1.5 Z"/></g>` : '';
+ // Mini-image par monde : animaux, mots, syllabes, rimes, sons, lettres.
+ const mini = (i,x,y)=>{
+  if(i===0) return `<g fill="#a9651f"><ellipse cx="${x}" cy="${y+2}" rx="3" ry="2.4"/><circle cx="${x-3}" cy="${y-2}" r="1.2"/><circle cx="${x}" cy="${y-3}" r="1.2"/><circle cx="${x+3}" cy="${y-2}" r="1.2"/></g>`;
+  if(i===1) return `<g><circle cx="${x}" cy="${y+1}" r="3.3" fill="#df5a3f"/><rect x="${x-0.4}" y="${y-4}" width="1" height="2.3" fill="#7a4a25"/><path d="M${x} ${y-3} q3 -1.2 4 0.8 q-3 1 -4 -0.8 Z" fill="#4f9a4f"/></g>`;
+  if(i===2) return `<g fill="#5566c2"><ellipse cx="${x-1.6}" cy="${y+3}" rx="2.5" ry="1.9"/><rect x="${x+0.5}" y="${y-4}" width="1.3" height="7"/><path d="M${x+1.8} ${y-4} q4 0 4 3 q-2 -2 -4 -1 Z"/></g>`;
+  if(i===3) return `<path d="M${x} ${y-4} q3.6 4.2 0 8 q-3.6 -3.8 0 -8 Z" fill="#3aa1c7"/>`;
+  if(i===4) return `<path d="M${x} ${y-4.2} l1.2 3 3.3 0 -2.7 2.1 1 3.1 -2.8 -2 -2.8 2 1 -3.1 -2.7 -2.1 3.3 0 Z" fill="#d8a32a"/>`;
+  return `<text x="${x}" y="${y+4}" text-anchor="middle" font-size="12" font-weight="bold" fill="#7a5fb0" font-family="Georgia,serif">A</text>`;
+ };
+ // éventail de 6 pages. Retrouvée = parchemin clair + mini-image + lignes de texte ;
+ // perdue = grise, pointillée, estompée, avec un « ? ».
+ const pageSvg = (i,lit)=> lit
+  ? `<g transform="translate(150 120) rotate(${-50+i*20})">`
+    + `<rect x="-13" y="-60" width="26" height="60" rx="3" fill="#fffdf5" stroke="#c9962f" stroke-width="1.8" class="advcol-band-on"/>`
+    + mini(i,0,-48)
+    + `<g stroke="#c79a3a" stroke-width="1.3" opacity=".8"><line x1="-8" y1="-36" x2="8" y2="-36"/><line x1="-8" y1="-30" x2="5" y2="-30"/><line x1="-8" y1="-24" x2="8" y2="-24"/></g>`
+    + `</g>`
+  : `<g transform="translate(150 120) rotate(${-50+i*20})">`
+    + `<rect x="-13" y="-60" width="26" height="60" rx="3" fill="#cdc7b6" stroke="#aaa597" stroke-width="1.4" stroke-dasharray="3 3" opacity=".5"/>`
+    + `<text x="0" y="-28" text-anchor="middle" font-size="13" fill="#8f8a7c" opacity=".7">?</text>`
+    + `</g>`;
+ let fan=''; for(let i=0;i<6;i++) fan += pageSvg(i, i<n);
+ const gold = '#d4af37';
+ const glow = done ? ' filter="drop-shadow(0 3px 9px rgba(212,175,55,.55))"' : '';
+ const ribbon = `<g><path d="M176 110 H186 V206 L181 212 L176 206 Z" fill="#9b2226" stroke="#6f1418" stroke-width="0.6"/><rect x="176" y="110" width="3.4" height="92" fill="#c33a40"/></g>`;
+ const sparks = done ? `<g fill="#fff3b0" stroke="#ffd84d" stroke-width="1" class="advcol-spark"><path d="M150 22 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2 Z"/><path d="M222 66 l1.5 4 4 1.5 -4 1.5 -1.5 4 -1.5 -4 -4 -1.5 4 -1.5 Z"/><path d="M84 66 l1.5 4 4 1.5 -4 1.5 -1.5 4 -1.5 -4 -4 -1.5 4 -1.5 Z"/></g>` : '';
  const msg = (done && taleSeen) ? "Le Livre est complet — touche-le pour réécouter son histoire 📖"
   : done ? "Le Livre est complet ! Touche-le pour écouter son histoire ✨"
   : n>0 ? `${n} page${n>1?'s':''} retrouvée${n>1?'s':''} — continue, page après page !`
@@ -3598,17 +3607,21 @@ function _advBookHtml(){
  return `
   <div class="advlog-section-title">📖 Le Grand Livre</div>
   <div class="advcol-box advcol-mat${done?' advbook-done':''}" ${clickable}>
-   <svg viewBox="0 0 300 226" class="advcol-svg" aria-label="Le Grand Livre : ${n} pages sur 6">
+   <svg viewBox="0 0 300 224" class="advcol-svg" aria-label="Le Grand Livre : ${n} pages sur 6">
     <path d="M-10 200 q80 -14 160 0 t160 0 V230 H-10 Z" fill="#cdbb94"/>
     ${fan}
-    <g transform="translate(150 158)" ${glow}>
-     <rect x="-54" y="-32" width="108" height="64" rx="7" fill="${cover}" stroke="${coverStroke}" stroke-width="3"/>
-     <rect x="-54" y="-32" width="15" height="64" rx="5" fill="${coverStroke}"/>
-     <rect x="-30" y="-14" width="66" height="6" rx="3" fill="#f5e3a0" opacity=".92"/>
-     <rect x="-30" y="-2" width="52" height="5" rx="2.5" fill="#f5e3a0" opacity=".7"/>
-     <path d="M4 8 l1.7 5 5.2 0 -4.2 3.2 1.6 5 -4.3 -3 -4.3 3 1.6 -5 -4.2 -3.2 5.2 0 Z" fill="#f5e3a0" opacity=".95"/>
+    <g transform="translate(150 158)"${glow}>
+     <rect x="-54" y="-32" width="108" height="64" rx="7" fill="#5e4124" stroke="#362513" stroke-width="3"/>
+     <rect x="-54" y="-32" width="15" height="64" rx="5" fill="#46301c"/>
+     <rect x="-44" y="-26" width="86" height="52" rx="4" fill="none" stroke="${gold}" stroke-width="1.3" opacity=".9"/>
+     <path d="M-40 -22 h7 M-40 -22 v7" stroke="${gold}" stroke-width="1.4" fill="none" opacity=".85"/>
+     <path d="M38 -22 h-7 M38 -22 v7" stroke="${gold}" stroke-width="1.4" fill="none" opacity=".85"/>
+     <path d="M-40 22 h7 M-40 22 v-7" stroke="${gold}" stroke-width="1.4" fill="none" opacity=".85"/>
+     <path d="M38 22 h-7 M38 22 v-7" stroke="${gold}" stroke-width="1.4" fill="none" opacity=".85"/>
+     <rect x="-26" y="-13" width="52" height="20" rx="3" fill="#6b4a2b" stroke="${gold}" stroke-width="1"/>
+     <path d="M0 -10 l1.9 5.6 5.9 0 -4.8 3.5 1.8 5.6 -4.8 -3.4 -4.8 3.4 1.8 -5.6 -4.8 -3.5 5.9 0 Z" fill="${gold}"/>
     </g>
-    ${flies}
+    ${ribbon}
     ${sparks}
    </svg>
    <div class="advcol-caption">${msg} <b>${n} / 6</b></div>
@@ -4802,7 +4815,7 @@ const _MAT_REGIONS_FR = [
 const _MAT_STORY_FR = {
  intro: { id:'matfr_intro', title:'Le Grand Livre du Conteur', pages:[
   { emoji:'📖', text:"Il était une fois un vieux Conteur, et un Livre pas comme les autres. Quand il l'ouvrait, les mots s'envolaient de ses pages comme des papillons : on entendait chanter les oiseaux, rire les enfants, souffler le vent." },
-  { emoji:'🌑', text:"Mais une nuit, un grand <b>{villain}</b> entra par la fenêtre. Il referma le Livre d'un coup sec — clap ! — et tous les mots s'échappèrent, effrayés, aux quatre coins du monde." },
+  { emoji:'🌑', text:"Mais une nuit, <b>{villain}</b> entra par la fenêtre. Il referma le Livre d'un coup sec — clap ! — et tous les mots s'échappèrent, effrayés, aux quatre coins du monde." },
   { emoji:'🪶', text:"Depuis, les pages sont toutes blanches. Alors une petite plume glisse du Livre et se pose sur ta main. « Petit ami {hero}, veux-tu m'aider à retrouver les mots, page après page ? Notre histoire commence ici. »" },
  ]},
  chapters: {
@@ -4856,7 +4869,7 @@ const _MAT_STORY_FR = {
  epilogue: { id:'matfr_epilogue', title:'La Dernière Page', pages:[
   { emoji:'🦋', text:"Il ne reste qu'une page blanche : la <b>dernière</b>. Tous les mots que tu as délivrés tournoient autour de toi comme des papillons, prêts à rentrer à la maison." },
   { emoji:'📖', text:"« Rassemble-les tous, {hero} ! » souffle Plume. Tu ouvres grand les bras… et un à un, les mots se posent sur la dernière page. Le Livre se referme, tout chaud, rempli à nouveau." },
-  { emoji:'🌟', text:"Le grand <b>{villain}</b>, vaincu, s'enfuit par la fenêtre, et la première étoile se met à briller." },
+  { emoji:'🌟', text:"Vaincu, <b>{villain}</b> s'enfuit par la fenêtre, et la première étoile se met à briller." },
   { emoji:'🪶', text:"Le vieux Conteur ouvre les yeux. Il ouvre le Livre… et les mots s'envolent à nouveau, par milliers ! « Tu as sauvé toutes les histoires du monde, {hero}. Merci. »" },
   { emoji:'📖', text:"« Maintenant que le Livre est complet, il peut enfin raconter sa <b>propre</b> histoire. Assieds-toi près du feu… et écoute. »" },
  ]},
