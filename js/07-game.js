@@ -3573,32 +3573,26 @@ function _advBookHtml(){
  const done = got.every(Boolean);
  const seen = (P && P.storySeen) || [];
  const taleSeen = seen.includes('matfr_booktale');
+ const cr = '#fdf6e3';
+ const star = (x,y,c)=>`<path d="M${x} ${y-5} l1.7 5 5.3 0 -4.3 3.2 1.6 5.1 -4.3 -3.1 -4.3 3.1 1.6 -5.1 -4.3 -3.2 5.3 0 Z" fill="${c}"/>`;
+ const lines = (x,y,w)=>`<g stroke="#c79a3a" stroke-width="1.3" opacity=".75"><line x1="${x}" y1="${y}" x2="${x+w}" y2="${y}"/><line x1="${x}" y1="${y+6}" x2="${x+w*0.8}" y2="${y+6}"/><line x1="${x}" y1="${y+12}" x2="${x+w}" y2="${y+12}"/></g>`;
  // Mini-image par monde : animaux, mots, syllabes, rimes, sons, lettres.
  const mini = (i,x,y)=>{
-  if(i===0) return `<g fill="#a9651f"><ellipse cx="${x}" cy="${y+2}" rx="3" ry="2.4"/><circle cx="${x-3}" cy="${y-2}" r="1.2"/><circle cx="${x}" cy="${y-3}" r="1.2"/><circle cx="${x+3}" cy="${y-2}" r="1.2"/></g>`;
-  if(i===1) return `<g><circle cx="${x}" cy="${y+1}" r="3.3" fill="#df5a3f"/><rect x="${x-0.4}" y="${y-4}" width="1" height="2.3" fill="#7a4a25"/><path d="M${x} ${y-3} q3 -1.2 4 0.8 q-3 1 -4 -0.8 Z" fill="#4f9a4f"/></g>`;
-  if(i===2) return `<g fill="#5566c2"><ellipse cx="${x-1.6}" cy="${y+3}" rx="2.5" ry="1.9"/><rect x="${x+0.5}" y="${y-4}" width="1.3" height="7"/><path d="M${x+1.8} ${y-4} q4 0 4 3 q-2 -2 -4 -1 Z"/></g>`;
-  if(i===3) return `<path d="M${x} ${y-4} q3.6 4.2 0 8 q-3.6 -3.8 0 -8 Z" fill="#3aa1c7"/>`;
-  if(i===4) return `<path d="M${x} ${y-4.2} l1.2 3 3.3 0 -2.7 2.1 1 3.1 -2.8 -2 -2.8 2 1 -3.1 -2.7 -2.1 3.3 0 Z" fill="#d8a32a"/>`;
-  return `<text x="${x}" y="${y+4}" text-anchor="middle" font-size="12" font-weight="bold" fill="#7a5fb0" font-family="Georgia,serif">A</text>`;
+  if(i===0) return `<g fill="#9a5a18"><ellipse cx="${x}" cy="${y+2}" rx="3" ry="2.4"/><circle cx="${x-3}" cy="${y-2}" r="1.2"/><circle cx="${x}" cy="${y-3}" r="1.2"/><circle cx="${x+3}" cy="${y-2}" r="1.2"/></g>`;
+  if(i===1) return `<g><circle cx="${x}" cy="${y+1}" r="3.2" fill="#df5a3f"/><rect x="${x-0.4}" y="${y-4}" width="1" height="2.3" fill="#5e3a1c"/><path d="M${x} ${y-3} q3 -1.2 4 0.8 q-3 1 -4 -0.8 Z" fill="#3f8a3f"/></g>`;
+  if(i===2) return `<g fill="#3a49a8"><ellipse cx="${x-1.6}" cy="${y+3}" rx="2.4" ry="1.8"/><rect x="${x+0.5}" y="${y-4}" width="1.3" height="7"/><path d="M${x+1.8} ${y-4} q4 0 4 3 q-2 -2 -4 -1 Z"/></g>`;
+  if(i===3) return `<path d="M${x} ${y-4} q3.6 4.2 0 8 q-3.6 -3.8 0 -8 Z" fill="#1d86ad"/>`;
+  if(i===4) return `<path d="M${x} ${y-4.2} l1.2 3 3.3 0 -2.7 2.1 1 3.1 -2.8 -2 -2.8 2 1 -3.1 -2.7 -2.1 3.3 0 Z" fill="#c8791a"/>`;
+  return `<text x="${x}" y="${y+3.5}" text-anchor="middle" font-size="11" font-weight="bold" fill="#6a4fa0" font-family="Georgia,serif">A</text>`;
  };
- // éventail de 6 pages. Retrouvée = parchemin clair + mini-image + lignes de texte ;
- // perdue = grise, pointillée, estompée, avec un « ? ».
- const pageSvg = (i,lit)=> lit
-  ? `<g transform="translate(150 120) rotate(${-50+i*20})">`
-    + `<rect x="-13" y="-60" width="26" height="60" rx="3" fill="#fffdf5" stroke="#c9962f" stroke-width="1.8" class="advcol-band-on"/>`
-    + mini(i,0,-48)
-    + `<g stroke="#c79a3a" stroke-width="1.3" opacity=".8"><line x1="-8" y1="-36" x2="8" y2="-36"/><line x1="-8" y1="-30" x2="5" y2="-30"/><line x1="-8" y1="-24" x2="8" y2="-24"/></g>`
-    + `</g>`
-  : `<g transform="translate(150 120) rotate(${-50+i*20})">`
-    + `<rect x="-13" y="-60" width="26" height="60" rx="3" fill="#cdc7b6" stroke="#aaa597" stroke-width="1.4" stroke-dasharray="3 3" opacity=".5"/>`
-    + `<text x="0" y="-28" text-anchor="middle" font-size="13" fill="#8f8a7c" opacity=".7">?</text>`
-    + `</g>`;
- let fan=''; for(let i=0;i<6;i++) fan += pageSvg(i, i<n);
- const gold = '#d4af37';
- const glow = done ? ' filter="drop-shadow(0 3px 9px rgba(212,175,55,.55))"' : '';
- const ribbon = `<g><path d="M176 110 H186 V206 L181 212 L176 206 Z" fill="#9b2226" stroke="#6f1418" stroke-width="0.6"/><rect x="176" y="110" width="3.4" height="92" fill="#c33a40"/></g>`;
- const sparks = done ? `<g fill="#fff3b0" stroke="#ffd84d" stroke-width="1" class="advcol-spark"><path d="M150 22 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2 Z"/><path d="M222 66 l1.5 4 4 1.5 -4 1.5 -1.5 4 -1.5 -4 -4 -1.5 4 -1.5 Z"/><path d="M84 66 l1.5 4 4 1.5 -4 1.5 -1.5 4 -1.5 -4 -4 -1.5 4 -1.5 Z"/></g>` : '';
+ // Onglet d'un monde : gris et vide tant que la page n'est pas retrouvée, puis
+ // doré avec l'image du monde une fois la page récupérée.
+ const tab = (i,x,y,w,h,on)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="${on?'#f1d979':'#d6cdb4'}" stroke="${on?'#b8902a':'#bcb39b'}" stroke-width="1"/>`+(on?mini(i,x+w/2,y+h/2):'');
+ // Pages qui se remplissent au fil des mondes ; onglets en bas (un par monde).
+ const lc = n>=2 ? (lines(36,72,40)+mini(0,58,108)) : '';
+ const rc = n>=5 ? (lines(104,72,40)+mini(5,136,108)) : '';
+ let tabs=''; for(let i=0;i<6;i++){ tabs += tab(i, 25+i*27, 140, 24, 18, i<n); }
+ const glow = done ? ' filter="drop-shadow(0 3px 7px rgba(212,175,55,.45))"' : '';
  const msg = (done && taleSeen) ? "Le Livre est complet — touche-le pour réécouter son histoire 📖"
   : done ? "Le Livre est complet ! Touche-le pour écouter son histoire ✨"
   : n>0 ? `${n} page${n>1?'s':''} retrouvée${n>1?'s':''} — continue, page après page !`
@@ -3607,22 +3601,15 @@ function _advBookHtml(){
  return `
   <div class="advlog-section-title">📖 Le Grand Livre</div>
   <div class="advcol-box advcol-mat${done?' advbook-done':''}" ${clickable}>
-   <svg viewBox="0 0 300 224" class="advcol-svg" aria-label="Le Grand Livre : ${n} pages sur 6">
-    <path d="M-10 200 q80 -14 160 0 t160 0 V230 H-10 Z" fill="#cdbb94"/>
-    ${fan}
-    <g transform="translate(150 158)"${glow}>
-     <rect x="-54" y="-32" width="108" height="64" rx="7" fill="#5e4124" stroke="#362513" stroke-width="3"/>
-     <rect x="-54" y="-32" width="15" height="64" rx="5" fill="#46301c"/>
-     <rect x="-44" y="-26" width="86" height="52" rx="4" fill="none" stroke="${gold}" stroke-width="1.3" opacity=".9"/>
-     <path d="M-40 -22 h7 M-40 -22 v7" stroke="${gold}" stroke-width="1.4" fill="none" opacity=".85"/>
-     <path d="M38 -22 h-7 M38 -22 v7" stroke="${gold}" stroke-width="1.4" fill="none" opacity=".85"/>
-     <path d="M-40 22 h7 M-40 22 v-7" stroke="${gold}" stroke-width="1.4" fill="none" opacity=".85"/>
-     <path d="M38 22 h-7 M38 22 v-7" stroke="${gold}" stroke-width="1.4" fill="none" opacity=".85"/>
-     <rect x="-26" y="-13" width="52" height="20" rx="3" fill="#6b4a2b" stroke="${gold}" stroke-width="1"/>
-     <path d="M0 -10 l1.9 5.6 5.9 0 -4.8 3.5 1.8 5.6 -4.8 -3.4 -4.8 3.4 1.8 -5.6 -4.8 -3.5 5.9 0 Z" fill="${gold}"/>
-    </g>
-    ${ribbon}
-    ${sparks}
+   <svg viewBox="0 0 200 168" class="advcol-svg"${glow} aria-label="Le Grand Livre : ${n} pages sur 6">
+    <path d="M22 48 Q100 36 178 48 L178 126 Q100 116 22 126 Z" fill="#5e4124"/>
+    <path d="M28 52 Q96 42 99 52 L99 120 Q96 112 28 122 Z" fill="${cr}" stroke="#e3d3a8"/>
+    <path d="M101 52 Q104 42 172 52 L172 122 Q104 112 101 120 Z" fill="${cr}" stroke="#e3d3a8"/>
+    <rect x="97" y="48" width="6" height="74" rx="3" fill="#caa46a"/>
+    ${lc}${rc}
+    <path d="M95 38 H105 V84 L100 90 L95 84 Z" fill="#c0392b" stroke="#7a161a" stroke-width=".5"/>
+    ${done?star(100,28,'#ffd84d'):''}
+    ${tabs}
    </svg>
    <div class="advcol-caption">${msg} <b>${n} / 6</b></div>
   </div>`;
