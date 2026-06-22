@@ -3500,6 +3500,7 @@ const _ADV_COL_PIECES = [
 function _advCollectionHtml(){
  try{
   const adv = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
+  if(adv==='matfr') return _advBookHtml();
   if(adv==='mat') return _advRainbowHtml();
   if(adv==='col') return _advArmorHtml();
   return _advTalismanHtml();
@@ -3555,6 +3556,62 @@ function _advRainbowHtml(){
     ${sparks}
    </svg>
    <div class="advcol-caption">${msg} <b>${n} / 7</b></div>
+  </div>`;
+}
+// ── Carnet français (maternelle) : Le Grand Livre du Conteur ────────
+// Les pages se retrouvent monde après monde ; une fois le Livre complet,
+// un clic dessus ouvre l'Histoire B (le conte du Livre).
+function _openBookTale(){
+ try{
+  if(typeof closeAdventureLog==='function') closeAdventureLog();
+  setTimeout(()=>{ try{ if(typeof _MAT_STORY_FR!=='undefined' && _MAT_STORY_FR.bookTale && typeof _showStoryModal==='function') _showStoryModal(_MAT_STORY_FR.bookTale, null); }catch(e){} }, 320);
+ }catch(e){}
+}
+function _advBookHtml(){
+ const got = _ADV_MAT_ORDER.map(rid => _regionConquered(rid));
+ const n = got.filter(Boolean).length;                 // pages retrouvées (0..6)
+ const done = got.every(Boolean);
+ const seen = (P && P.storySeen) || [];
+ const taleSeen = seen.includes('matfr_booktale');
+ // éventail de 6 pages qui s'illuminent au fil des mondes conquis
+ let fan='';
+ for(let i=0;i<6;i++){
+  const lit = i < n; const ang = -50 + i*20;
+  fan += `<g transform="translate(150 120) rotate(${ang})">`
+   + `<rect x="-13" y="-60" width="26" height="60" rx="3" fill="${lit?'#fffdf5':'#e6e2d6'}" stroke="${lit?'#d9a441':'#c2bcab'}" stroke-width="1.6"${lit?' class="advcol-band-on"':' opacity=".7"'}/>`
+   + (lit
+      ? `<g stroke="#c79a3a" stroke-width="1.4" opacity=".75"><line x1="-7" y1="-50" x2="7" y2="-50"/><line x1="-7" y1="-42" x2="5" y2="-42"/><line x1="-7" y1="-34" x2="7" y2="-34"/></g>`
+      : `<text x="0" y="-30" text-anchor="middle" font-size="13" fill="#b8b2a2">?</text>`)
+   + `</g>`;
+ }
+ const cover = done ? '#16a085' : '#5c8a86';
+ const coverStroke = done ? '#0e6e5d' : '#46706c';
+ const glow = done ? 'filter="drop-shadow(0 4px 12px rgba(26,188,156,.55))"' : '';
+ const bfly = (x,y,c)=>`<g transform="translate(${x} ${y})" class="advcol-spark"><path d="M0 0 q-7 -8 -11 -2 q-2 6 5 7 Z" fill="${c}"/><path d="M0 0 q7 -8 11 -2 q2 6 -5 7 Z" fill="${c}"/><line x1="0" y1="-3" x2="0" y2="5" stroke="#7a5a2a" stroke-width="1.3"/></g>`;
+ const flies = n>0 ? (bfly(70,60,'#ff9ec7') + (n>2?bfly(228,72,'#ffd43b'):'') + (n>4?bfly(96,40,'#7ec8ff'):'')) : '';
+ const sparks = done ? `<g fill="#fff3b0" stroke="#ffd84d" stroke-width="1" class="advcol-spark"><path d="M150 24 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2 Z"/><path d="M214 70 l1.5 4 4 1.5 -4 1.5 -1.5 4 -1.5 -4 -4 -1.5 4 -1.5 Z"/><path d="M86 70 l1.5 4 4 1.5 -4 1.5 -1.5 4 -1.5 -4 -4 -1.5 4 -1.5 Z"/></g>` : '';
+ const msg = (done && taleSeen) ? "Le Livre est complet — touche-le pour réécouter son histoire 📖"
+  : done ? "Le Livre est complet ! Touche-le pour écouter son histoire ✨"
+  : n>0 ? `${n} page${n>1?'s':''} retrouvée${n>1?'s':''} — continue, page après page !`
+  : "Retrouve les mots, monde après monde !";
+ const clickable = done ? `onclick="_openBookTale()" role="button" tabindex="0" title="Écouter l'histoire du Livre" style="cursor:pointer"` : '';
+ return `
+  <div class="advlog-section-title">📖 Le Grand Livre</div>
+  <div class="advcol-box advcol-mat${done?' advbook-done':''}" ${clickable}>
+   <svg viewBox="0 0 300 226" class="advcol-svg" aria-label="Le Grand Livre : ${n} pages sur 6">
+    <path d="M-10 200 q80 -14 160 0 t160 0 V230 H-10 Z" fill="#cdbb94"/>
+    ${fan}
+    <g transform="translate(150 158)" ${glow}>
+     <rect x="-54" y="-32" width="108" height="64" rx="7" fill="${cover}" stroke="${coverStroke}" stroke-width="3"/>
+     <rect x="-54" y="-32" width="15" height="64" rx="5" fill="${coverStroke}"/>
+     <rect x="-30" y="-14" width="66" height="6" rx="3" fill="#f5e3a0" opacity=".92"/>
+     <rect x="-30" y="-2" width="52" height="5" rx="2.5" fill="#f5e3a0" opacity=".7"/>
+     <path d="M4 8 l1.7 5 5.2 0 -4.2 3.2 1.6 5 -4.3 -3 -4.3 3 1.6 -5 -4.2 -3.2 5.2 0 Z" fill="#f5e3a0" opacity=".95"/>
+    </g>
+    ${flies}
+    ${sparks}
+   </svg>
+   <div class="advcol-caption">${msg} <b>${n} / 6</b></div>
   </div>`;
 }
 // ── Carnet collège : l'Armure Solaire ───────────────────────────────
@@ -4714,8 +4771,26 @@ const _MAT_STORY = {
 const _MAT_VILLAIN_FR = 'le Silence';
 const _MAT_KINGDOM_FR = 'le Pays des Mots';
 // Zones : on réutilise la géométrie maternelle douce, avec des ids distincts
-// pour isoler totalement la conquête (P.mapBossBeaten) de celle des maths.
-const MAT_ZONES_FR = (typeof MAT_ZONES!=='undefined' ? MAT_ZONES : []).map(z => Object.assign({}, z, { id: String(z.id).replace('mat_','matfr_') }));
+// pour isoler totalement la conquête (P.mapBossBeaten) de celle des maths, et des
+// labels thématisés monde par monde (« Le Grand Livre du Conteur »).
+const _MATFR_ZONE_LABELS = {
+ // La Forêt des Animaux Muets (cris d'animaux)
+ 'matfr_cp_1':'La Clairière Silencieuse','matfr_cp_2':'Le Terrier du Lapin','matfr_cp_3':'La Mare aux Canards','matfr_cp_4':'Le Sentier des Bêtes','matfr_cp_5':'Le Grand Chêne Creux',
+ // Le Pré des Premiers Mots (vocabulaire, intrus)
+ 'matfr_ce1_1':'Le Pré aux Mille Choses','matfr_ce1_2':'Le Panier Renversé','matfr_ce1_3':'Le Jardin des Noms','matfr_ce1_4':"L'Allée des Images",'matfr_ce1_5':'Le Sentier des Trouvailles',
+ // Les Collines qui Chantent (syllabes)
+ 'matfr_ce2_1':"La Colline de l'Écho",'matfr_ce2_2':'Le Sentier qui Résonne','matfr_ce2_3':'Les Trois Sommets','matfr_ce2_4':'La Vallée des Tambours','matfr_ce2_5':'Le Pic des Refrains',
+ // Le Lac aux Échos (rimes)
+ 'matfr_cm1_1':'La Rive aux Rimes','matfr_cm1_2':"L'Îlot des Reflets",'matfr_cm1_3':'Le Ponton Chantant','matfr_cm1_4':'La Crique des Échos','matfr_cm1_5':"Le Miroir d'Eau",
+ // La Grotte des Premiers Sons (son d'attaque)
+ 'matfr_cm2_1':"L'Entrée Murmurante",'matfr_cm2_2':'La Galerie des Sons','matfr_cm2_3':'La Source Chuchotante','matfr_cm2_4':'Le Couloir Bleu','matfr_cm2_5':'La Chambre des Murmures',
+ // Le Château des Lettres (lettres)
+ 'matfr_final_1':'Le Pont des Lettres','matfr_final_2':"La Tour de l'Alphabet",'matfr_final_3':'La Salle du Grand A','matfr_final_4':"L'Escalier des Mots",'matfr_final_5':'Le Donjon du Conteur',
+};
+const MAT_ZONES_FR = (typeof MAT_ZONES!=='undefined' ? MAT_ZONES : []).map(z => {
+ const id = String(z.id).replace('mat_','matfr_');
+ return Object.assign({}, z, { id, label: _MATFR_ZONE_LABELS[id] || z.label });
+});
 const _MAT_REGIONS_FR = [
  { id:'cp',    label:'La Forêt des Animaux Muets', levels:['PS'], shape:'colline' },
  { id:'ce1',   label:'Le Pré des Premiers Mots',   levels:['PS'], shape:'feuille' },
@@ -5098,6 +5173,7 @@ let _questUnlockedCache = {};
 function _questVocab(){
  const adv = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
  if(adv==='mat') return { icon:'🌈', lockCollect:'🌈 Couleur à retrouver', collected:'Couleur retrouvée', region:'Île à atteindre', end:'Arc-en-ciel à compléter' };
+ if(adv==='matfr') return { icon:'📖', lockCollect:'📖 Page à retrouver', collected:'Page retrouvée', region:'Monde à atteindre', end:'Livre à compléter' };
  if(adv==='col') return { icon:'🛡️', lockCollect:'🛡️ Pièce à forger',     collected:'Pièce forgée',    region:'Îlot à atteindre',  end:'Forge finale à débloquer' };
  return { icon:'💎', lockCollect:'💎 Cristal à libérer', collected:'Cristal libéré', region:'Région à atteindre', end:'Fin à débloquer' };
 }
