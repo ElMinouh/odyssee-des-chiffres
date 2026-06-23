@@ -54,9 +54,17 @@ function startAdventure(advId){
   MAP_ZONES=COL_ZONES; _ARCH_REGIONS=_COL_REGIONS; _STORY=_COL_STORY;
   STORY_VILLAIN=_COL_VILLAIN; STORY_KINGDOM=_COL_KINGDOM;
  } else {
-  GM.adventure='prim';
-  MAP_ZONES=PRIM_ZONES; _ARCH_REGIONS=_PRIM_REGIONS; _STORY=_PRIM_STORY;
-  STORY_VILLAIN='Comte Zéro de Cafouillac'; STORY_KINGDOM='Calcultopia';
+  const _wantPrimFr = (advId==='primfr') || (advId==='prim' && typeof GM!=='undefined' && GM.subject==='fr');
+  if(_wantPrimFr){
+   if(typeof GM!=='undefined' && GM.subject!=='fr') GM.subject='fr';
+   MAP_ZONES=PRIM_ZONES_FR; _ARCH_REGIONS=_PRIM_REGIONS_FR; _STORY=_PRIM_STORY_FR;
+   STORY_VILLAIN=_PRIM_VILLAIN_FR; STORY_KINGDOM=_PRIM_KINGDOM_FR;
+   GM.adventure='primfr';
+  } else {
+   GM.adventure='prim';
+   MAP_ZONES=PRIM_ZONES; _ARCH_REGIONS=_PRIM_REGIONS; _STORY=_PRIM_STORY;
+   STORY_VILLAIN='Comte Zéro de Cafouillac'; STORY_KINGDOM='Calcultopia';
+  }
  }
  if(typeof P==='object' && P) P.lastAdventure = GM.adventure;
  openMap();
@@ -92,6 +100,7 @@ function openOdysseeSelect(){
   const t=document.getElementById('ody-sel-title'); if(t) t.textContent=fr?"L'Odyssée des mots":"L'Odyssée : l'aventure mathématique";
   const su=document.getElementById('ody-sel-sub'); if(su) su.textContent=fr?"Maîtrise les secrets du langage":"Choisis ton aventure";
   const ms=document.getElementById('ody-mat-sub'); if(ms) ms.textContent=fr?"Le Grand Livre du Conteur":"Le Pays des Couleurs";
+  const ps=document.getElementById('ody-prim-sub'); if(ps) ps.textContent=fr?"Le carnet de Verbe":"L'Ombre sur Calcultopia";
  }catch(e){}
  if(typeof navTo==='function') navTo('v-odyssey-select'); else showView('v-odyssey-select');
 }
@@ -3501,6 +3510,7 @@ function _advCollectionHtml(){
  try{
   const adv = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
   if(adv==='matfr') return _advBookHtml();
+  if(adv==='primfr') return _advBadgeHtml();
   if(adv==='mat') return _advRainbowHtml();
   if(adv==='col') return _advArmorHtml();
   return _advTalismanHtml();
@@ -3564,7 +3574,11 @@ function _advRainbowHtml(){
 function _openBookTale(){
  try{
   if(typeof closeAdventureLog==='function') closeAdventureLog();
-  setTimeout(()=>{ try{ if(typeof _MAT_STORY_FR!=='undefined' && _MAT_STORY_FR.bookTale && typeof _showStoryModal==='function') _showStoryModal(_MAT_STORY_FR.bookTale, null); }catch(e){} }, 320);
+  setTimeout(()=>{ try{
+    var tale = (typeof _STORY!=='undefined' && _STORY && _STORY.bookTale) ? _STORY.bookTale
+             : (typeof _MAT_STORY_FR!=='undefined' && _MAT_STORY_FR.bookTale ? _MAT_STORY_FR.bookTale : null);
+    if(tale && typeof _showStoryModal==='function') _showStoryModal(tale, null);
+  }catch(e){} }, 320);
  }catch(e){}
 }
 function _advBookHtml(){
@@ -3610,6 +3624,53 @@ function _advBookHtml(){
     <path d="M95 38 H105 V84 L100 90 L95 84 Z" fill="#c0392b" stroke="#7a161a" stroke-width=".5"/>
     ${done?star(100,28,'#ffd84d'):''}
     ${tabs}
+   </svg>
+   <div class="advcol-caption">${msg} <b>${n} / 6</b></div>
+  </div>`;
+}
+// ── Carnet primaire FR : l'Insigne des Gardiens de l'Alphabet ────────
+// 5 médailles de district (CP→CM2) qui se dorent et révèlent leur emblème ;
+// écusson central qui s'illumine quand l'île de la Rature est libérée.
+// Cliquable une fois complet → Histoire B (origines du Docteur Babel).
+function _advBadgeHtml(){
+ const order = (typeof _ADV_MAT_ORDER!=='undefined') ? _ADV_MAT_ORDER : ['cp','ce1','ce2','cm1','cm2','final'];
+ const got = order.map(rid => _regionConquered(rid));
+ const nD = got.slice(0,5).filter(Boolean).length;   // districts libérés (0..5)
+ const islandDone = !!got[5];
+ const done = got.every(Boolean);
+ const n = got.filter(Boolean).length;
+ const seen = (P && P.storySeen) || [];
+ const taleSeen = seen.includes('primfr_booktale');
+ const gold = '#e9c64a';
+ // emblème de chaque district : sons, lecture, vocabulaire, temps, phrase
+ const glyph = (i,x,y,on)=>{
+  const c = on ? '#5a3e0a' : '#9a937e';
+  if(i===0) return `<g fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round"><circle cx="${x-5}" cy="${y}" r="1.6" fill="${c}"/><path d="M${x-1} ${y-5} a6 6 0 0 1 0 10"/><path d="M${x+3} ${y-7} a9 9 0 0 1 0 14"/></g>`;
+  if(i===1) return `<g fill="${c}"><path d="M${x-7} ${y-4} q7 -2 7 0 v8 q-7 -2 -7 0 Z"/><path d="M${x+7} ${y-4} q-7 -2 -7 0 v8 q7 -2 7 0 Z"/></g>`;
+  if(i===2) return `<g fill="none" stroke="${c}" stroke-width="1.8"><circle cx="${x-3}" cy="${y-2}" r="3.4"/><path d="M${x-1} ${y} l5 5 M${x+3} ${y+4} l2 -2 M${x+5} ${y+6} l2 -2"/></g>`;
+  if(i===3) return `<path d="M${x-5} ${y-6} h10 l-10 12 h10" fill="none" stroke="${c}" stroke-width="1.8" stroke-linejoin="round"/>`;
+  return `<g fill="${c}"><rect x="${x-7}" y="${y-2}" width="4" height="4" rx="1"/><rect x="${x-2}" y="${y-2}" width="4" height="4" rx="1"/><rect x="${x+3}" y="${y-2}" width="4" height="4" rx="1"/></g>`;
+ };
+ const medal = (i,x,y,on)=>`<circle cx="${x}" cy="${y}" r="15" fill="${on?'#f1d979':'#d6cdb4'}" stroke="${on?'#b8902a':'#bcb39b'}" stroke-width="2"${on?' filter="drop-shadow(0 1px 3px rgba(184,144,42,.5))"':''}/>`+glyph(i,x,y,on);
+ const pos = [[34,54],[72,36],[110,30],[148,36],[186,54]];
+ let medals=''; for(let i=0;i<5;i++){ medals += medal(i, pos[i][0], pos[i][1], got[i]); }
+ const emA = islandDone ? gold : '#7c6f49';
+ const glow = done ? ' filter="drop-shadow(0 3px 9px rgba(233,198,74,.55))"' : '';
+ const msg = (done && taleSeen) ? "Insigne complet — touche-le pour relire le dossier du Docteur Babel 📖"
+  : done ? "Tu es Gardien de l'Alphabet ! Touche l'insigne pour lire le dossier secret 🦸"
+  : nD>0 ? `${nD} district${nD>1?'s':''} libéré${nD>1?'s':''} — l'insigne se forge !`
+  : "Libère les districts de Verbopolis, un par un !";
+ const clickable = done ? `onclick="_openBookTale()" role="button" tabindex="0" title="Lire le dossier du Docteur Babel" style="cursor:pointer"` : '';
+ return `
+  <div class="advlog-section-title">🦸 L'Insigne des Gardiens</div>
+  <div class="advcol-box advcol-mat${done?' advbook-done':''}" ${clickable}>
+   <svg viewBox="0 0 220 210" class="advcol-svg"${glow} aria-label="Insigne des Gardiens : ${n} sur 6">
+    <path d="M62 84 H158 V126 Q158 178 110 198 Q62 178 62 126 Z" fill="#1c3f8f" stroke="#0e2657" stroke-width="3"/>
+    <path d="M70 92 H150 V126 Q150 172 110 188 Q70 172 70 126 Z" fill="none" stroke="${gold}" stroke-width="2" opacity=".85"/>
+    <text x="110" y="156" text-anchor="middle" font-size="56" font-weight="bold" fill="${emA}" font-family="Georgia,serif">A</text>
+    ${islandDone?`<g fill="${gold}"><path d="M58 120 l-10 -4 10 -4 -3 8 Z"/><path d="M162 120 l10 -4 -10 -4 3 8 Z"/></g>`:''}
+    ${medals}
+    ${done?`<g fill="#fff3b0" stroke="#ffd84d" stroke-width="1"><path d="M110 14 l1.8 5 5 1.8 -5 1.8 -1.8 5 -1.8 -5 -5 -1.8 5 -1.8 Z"/></g>`:''}
    </svg>
    <div class="advcol-caption">${msg} <b>${n} / 6</b></div>
   </div>`;
@@ -4876,6 +4937,101 @@ const _MAT_STORY_FR = {
  ]},
 };
 
+// ═══════════════════════════════════════════════════════
+// L'ODYSSÉE DES MOTS — Primaire (français) : « Le carnet de Verbe »
+// Aventure française pour GM.subject==='fr' en primaire. Zones isolées
+// (ids 'primfr_…'). Histoire A (carnet du héros) + Histoire B (origines de Babel).
+// ═══════════════════════════════════════════════════════
+const _PRIM_VILLAIN_FR = 'le Docteur Babel';
+const _PRIM_KINGDOM_FR = 'Verbopolis';
+const PRIM_ZONES_FR = (typeof PRIM_ZONES!=='undefined' ? PRIM_ZONES : []).map(z => Object.assign({}, z, { id: 'primfr_'+z.id }));
+const _PRIM_REGIONS_FR = [
+ { id:'cp',    label:'Le district des Sons',       levels:['CP'],    shape:'colline' },
+ { id:'ce1',   label:'Le quartier de la Lecture',  levels:['CE1'],   shape:'feuille' },
+ { id:'ce2',   label:'Les halles du Vocabulaire',  levels:['CE2'],   shape:'dune' },
+ { id:'cm1',   label:'La tour du Temps',           levels:['CM1'],   shape:'citadelle' },
+ { id:'cm2',   label:'La citadelle de la Phrase',  levels:['CM2'],   shape:'nebuleuse' },
+ { id:'final', label:"L'île de la Rature",         levels:['FINAL'], shape:'mandala' },
+];
+const _PRIM_STORY_FR = {
+ intro: { id:'primfr_intro', title:'Le carnet de Verbe', pages:[
+  { emoji:'🦸', text:"Cher carnet. Avant aujourd'hui, j'étais l'écolier le plus ordinaire de <b>Verbopolis</b> — la dernière ville où les gens se comprennent encore. Dehors, la <b>Guilde de la Rature</b> a brisé la langue commune des hommes, et plus personne ne se comprend." },
+  { emoji:'🛡️', text:"Notre ville tient debout : elle est gardée par les <b>Gardiens de l'Alphabet</b>, qui repoussent chaque attaque de la Guilde et de son chef, {villain}. Moi, {hero}, je n'avais jamais eu peur… jusqu'à ce soir." },
+  { emoji:'🌑', text:"Une ombre grise m'a barré la route : <b>Mutisme</b>. Tous les sons se sont éteints. Sans réfléchir, j'ai voulu hurler « STOP » — et le mot est devenu un vrai <b>mur de pierre</b> ! Mes mots prennent vie ?!" },
+  { emoji:'⚡', text:"Mutisme allait bondir quand une cape rouge a fendu la nuit : <b>L'Orateur</b>, le héros le plus célèbre de la ville ! Il a chassé le monstre : « Beau réflexe, gamin. Tes mots prennent vie. Viens — et ça commence par l'orthographe ! »" },
+  { emoji:'🏛️', text:"C'est ainsi que je suis entré à l'<b>Académie des super-héros</b>. Sur le perron, <b>Dame Calligraphe</b>, la directrice, m'a dit : « Ici, un mot mal dit est un mot perdu. » Demain, je deviens <b>Verbe</b>." },
+ ]},
+ chapters: {
+  cp:    { id:'primfr_c_cp',  title:'Le district des Sons', crystal:'le pouvoir de la Voix', pages:[
+   { emoji:'🔤', text:"Cher carnet. Pour impressionner les recrues, j'ai voulu un <b>bouclier</b> — j'ai dit « bouclié », et un truc tout mou m'est tombé sur le pied ! « Ton pouvoir n'accepte pas les fautes », a ri L'Orateur." },
+   { emoji:'🗣️', text:"Le district est tombé sous la coupe de <b>Mutisme</b>, un sbire de la <b>Guilde de la Rature</b> qui a volé les voix. Pour le vaincre, je dois rendre à chaque lettre son chant : le <i>sss</i>, le <i>rrr</i>, le <i>ch</i>… Chaque <b>son</b> juste est une arme !" },
+  ]},
+  ce1:   { id:'primfr_c_ce1', title:'Le quartier de la Lecture', crystal:"le pouvoir d'enchaîner les mots", pages:[
+   { emoji:'📖', text:"Nouveau vilain de la <b>Guilde de la Rature</b> : <b>Cacophon</b>, un tambour couvert de mille bouches qui brouille les syllabes. J'ai voulu une « échelle » ; j'ai bafouillé « léchelle » — et une langue géante a léché le mur !" },
+   { emoji:'🎵', text:"« La lecture, c'est de la musique : chaque <b>syllabe</b> sur le bon temps ! » Alors j'apprends à enchaîner, calmement : <i>é–chel–le</i>. Plus je lis juste, plus mes mots sortent vite et nets." },
+  ]},
+  ce2:   { id:'primfr_c_ce2', title:'Les halles du Vocabulaire', crystal:'le pouvoir du mot juste', pages:[
+   { emoji:'🧠', text:"Le pire ennemi de la Guilde, jusqu'ici : <b>Amnésios</b>, élégant et glacé, qui efface le <b>sens</b> des mots. Un boulanger m'a tendu un parapluie en croyant me donner du pain !" },
+   { emoji:'🎯', text:"Mon pouvoir déraille : je dis « lampe » en pensant « lance ». « Connais le <b>sens</b> exact, ou ton pouvoir te trahira ! » Alors je réapprends les mots, leurs familles, leurs nuances." },
+  ]},
+  cm1:   { id:'primfr_c_cm1', title:'La tour du Temps', crystal:'le pouvoir sur le temps', pages:[
+   { emoji:'⏳', text:"La Guilde envoie un nouveau monstre : <b>Le Conjurateur</b>, un sablier vivant dont le sable coule à l'envers. Il fige les verbes hors du temps : tout le quartier est coincé dans un présent sans fin." },
+   { emoji:'🏃', text:"J'ai crié « je bondirai ! » pour sauter un gouffre — et mon saut est arrivé <b>trop tard</b> ! « Le bon pouvoir au bon <b>temps</b> : présent pour maintenant, futur pour après ! »" },
+  ]},
+  cm2:   { id:'primfr_c_cm2', title:'La citadelle de la Phrase', crystal:'le pouvoir des phrases', pages:[
+   { emoji:'🧩', text:"Dernier district, et le boss le plus retors de la <b>Guilde de la Rature</b> : <b>Syntax</b>, un marionnettiste qui mêle l'ordre des mots, secondé du <b>Scribe Noir</b> qui réécrit les livres en cachette." },
+   { emoji:'🥽', text:"Mes pièges, ce sont les <b>homophones</b> : j'ai voulu un « ver », j'ai fait apparaître un <b>verre</b>, puis un <b>vers</b>, puis un mur <b>vert</b> ! « Le son ne suffit plus : il faut le sens ET l'orthographe. »" },
+  ]},
+ },
+ victories: {
+  cp:  { id:'primfr_w_cp',  title:'Un pouvoir gagné !', crystal:'la Voix', pages:[
+   { emoji:'🗯️', text:"Hourra ! J'ai prononcé, fort et clair, tous les sons volés — et <b>Mutisme</b> s'est dissous comme une fumée grise. Les voix sont revenues dans tout le quartier !" },
+   { emoji:'🎖️', text:"Pouvoir gagné : <b>la Voix</b> — je fais surgir des mots simples, à condition de les dire parfaitement. Me voilà <b>Apprenti</b> ! (J'ai crié « victoir » : une banderole molle m'est retombée sur la tête.)" },
+  ]},
+  ce1: { id:'primfr_w_ce1', title:'Un pouvoir gagné !', crystal:'la Lecture', pages:[
+   { emoji:'🔊', text:"À chaque mot remis dans le bon ordre, une bouche de <b>Cacophon</b> se taisait. À la fin, la dernière a chuchoté « bravo » avant de disparaître !" },
+   { emoji:'🎖️', text:"Pouvoir gagné : je peux <b>enchaîner plusieurs mots</b> sans me tromper — des phrases courtes qui prennent vie d'un coup. Grade d'<b>Écuyer</b> !" },
+  ]},
+  ce2: { id:'primfr_w_ce2', title:'Un pouvoir gagné !', crystal:'le Vocabulaire', pages:[
+   { emoji:'💡', text:"J'ai rendu aux gens le sens de leurs mots, jusqu'à ce qu'<b>Amnésios</b> n'ait plus rien à effacer. « Tu te souviens de trop de choses… », a-t-il murmuré en s'évanouissant." },
+   { emoji:'🎖️', text:"Pouvoir gagné : <b>le mot juste</b> — je fais surgir l'objet précis dont j'ai besoin. Grade de <b>Cadet</b> !" },
+  ]},
+  cm1: { id:'primfr_w_cm1', title:'Un pouvoir gagné !', crystal:'le Temps', pages:[
+   { emoji:'🕰️', text:"J'ai conjugué plus vite que lui : à chaque verbe juste, je remettais une horloge à l'heure. Quand la dernière a sonné, <b>Le Conjurateur</b> s'est éteint comme une bougie." },
+   { emoji:'🎖️', text:"Pouvoir gagné : j'agis sur le <b>temps court</b> — figer une seconde, relancer un geste. Grade de <b>Lieutenant</b> ! Dame Calligraphe a écrit « Progrès remarquables ». Une médaille, venant d'elle." },
+  ]},
+  cm2: { id:'primfr_w_cm2', title:'Un pouvoir gagné !', crystal:'la Phrase', pages:[
+   { emoji:'🏗️', text:"J'ai appris à bâtir des <b>phrases entières</b> — sujet, verbe, accords, le bon homophone — et mon pouvoir a changé d'échelle ! <b>Syntax</b> s'est emmêlé tout seul, et j'ai rattrapé le <b>Scribe Noir</b> d'une phrase bien tournée." },
+   { emoji:'🎖️', text:"Grade de <b>Champion</b> ! Ce soir, L'Orateur est venu, sérieux : « Tu es prêt, {hero}. Les <b>Gardiens de l'Alphabet</b> t'attendent. Demain, on part pour l'île de la Rature. »" },
+  ]},
+ },
+ epilogue: { id:'primfr_epilogue', title:"L'île de la Rature", pages:[
+  { emoji:'⛵', text:"Cher carnet, je l'écris vite, on accoste. L'<b>île de la Rature</b> est noire, hérissée de tours. Autour de moi, les <b>Gardiens de l'Alphabet</b> au complet — et moi, {hero}, alias Verbe, debout parmi eux !" },
+  { emoji:'⚔️', text:"Pour atteindre {villain}, on repousse un à un tous ses sbires : Mutisme, Cacophon, Amnésios, le Conjurateur, Syntax. Chaque mot juste est un coup porté à l'ombre." },
+  { emoji:'🌑', text:"Tout en haut de la dernière tour, il y avait <b>lui</b>. Plus petit que je l'imaginais. Plus triste, aussi. Dans ses yeux, pas de haine : de la <b>solitude</b>." },
+  { emoji:'💬', text:"Il a lancé son plus terrible sort : un grand charabia où plus personne ne se comprenait. Alors j'ai prononcé, justes et vrais, les mots les plus simples — <i>bonjour, merci, ami, ensemble</i> — et chacun déchirait son charabia." },
+  { emoji:'🛡️', text:"La <b>Guilde de la Rature</b> est tombée. Partout, les peuples ont recommencé à se parler. Et moi… je suis devenu <b>Gardien de l'Alphabet</b>, le plus jeune de tous. Reste une question : pourquoi {villain} a-t-il voulu briser les mots ? À l'Académie, un vieux dossier raconte tout. J'ai le droit de l'ouvrir…" },
+ ]},
+ // Histoire B — débloquée à la fin : les origines du Docteur Babel.
+ bookTale: { id:'primfr_booktale', title:'Les origines du Docteur Babel', pages:[
+  { emoji:'👶', text:"Bien avant d'être le Docteur Babel, il fut un petit garçon. On l'appelait <b>Aldric</b>, l'enfant le plus intelligent que Verbopolis eût jamais porté. Trop, peut-être." },
+  { emoji:'🧠', text:"À deux ans, il parlait comme un livre ; à cinq, il trouvait les mots des grands trop pauvres pour dire ce qu'il avait dans la tête. Il habitait un palais et devait le décrire avec trois cailloux." },
+  { emoji:'✨', text:"Alors il inventa <b>sa propre langue</b> : <i>le Verbe pur</i>, d'une précision vertigineuse, où chaque chagrin, chaque lumière avait son mot. La plus belle langue du monde. Hélas, personne ne pouvait lui répondre." },
+  { emoji:'🎂', text:"Le jour de ses sept ans, il récita pour ses camarades le plus beau poème du Verbe pur — sur l'amitié. Silence. Puis : « On n'a rien compris ! » Et tous éclatèrent de rire. « Parle normalement ! »" },
+  { emoji:'💧', text:"Mais « normalement », pour lui, c'était parler petit. Il voulait être compris <b>entièrement</b> — et il ne le fut jamais. Pas même par sa mère, qui pleurait le soir en l'entendant murmurer des mots qu'elle ne reconnaissait pas." },
+  { emoji:'🗼', text:"La solitude monta comme une eau froide. Il devint un savant immense et seul, enfermé dans une tour pleine de livres qu'il était le seul à lire. Son palais de mots était devenu sa prison." },
+  { emoji:'⛈️', text:"Un soir d'orage, une pensée terrible lui vint : « Si personne ne veut me comprendre, alors plus personne ne comprendra personne. » Cette nuit-là, Aldric mourut, et le <b>Docteur Babel</b> naquit." },
+  { emoji:'⚙️', text:"Il bâtit une machine capable de <b>briser la langue commune</b> des hommes. Pour l'aider, il alla chercher ceux que les mots avaient blessés." },
+  { emoji:'🤍', text:"Un <b>muet</b> qu'on n'avait jamais écouté devint <b>Mutisme</b>. Un enfant <b>bègue</b> qu'on avait moqué devint <b>Cacophon</b>. Une savante qu'on n'avait jamais crue devint <b>Amnésios</b>." },
+  { emoji:'🔮', text:"Un voyant qu'on prenait pour un fou devint le <b>Sous-Entendu</b>. À tous, Babel fit la même promesse douce et empoisonnée : « Plus jamais vous ne souffrirez de n'être pas compris. » Ainsi naquit la <b>Guilde de la Rature</b>." },
+  { emoji:'🌍', text:"La machine s'éveilla. D'un bout à l'autre de la Terre, les mots se vidèrent. Les peuples se turent, se déchirèrent, se murèrent dans leur charabia. Le monde devint cette mosaïque d'îles solitaires." },
+  { emoji:'🕯️', text:"Mais Babel avait commis la plus belle des erreurs : il restait une ville qui croyait que comprendre l'autre est ce qu'il y a de plus précieux — <b>Verbopolis</b>. Là naquit un garçon qui ferait jaillir des mots : <b>toi</b>." },
+  { emoji:'🤝', text:"Car voici son secret jamais compris : un mot juste n'est pas un mot <b>parfait</b>, c'est un mot <b>partagé</b>. La langue commune n'était pas une prison : c'était un <b>pont</b>. Et Babel avait passé sa vie à brûler les ponts." },
+  { emoji:'🙏', text:"Le jour où tu l'as vaincu, ce n'est pas ta force qui l'a désarmé : c'est qu'un enfant avait pris la peine de le comprendre. Avant de disparaître, il prononça le mot qu'il refusait de dire depuis l'enfance : « <b>Pardon.</b> »" },
+  { emoji:'💛', text:"Au même instant, très loin, un enfant que personne n'avait su comprendre leva la tête : on venait de dire son prénom. — {hero} referma le dossier et écrivit : « Demain, j'irai m'asseoir près de celui qui reste seul dans la cour. Les mots, ça ne sert à rien si on les garde pour soi. »" },
+ ]},
+};
+
 // ─── Histoire COLLÈGE : « Le Forgeron des Étoiles » (v10.2.0, mini-roman) ───
 const _COL_VILLAIN = 'Léthéas, le Titan de l\'Oubli';
 const _COL_KINGDOM = 'Sidéris';
@@ -5174,6 +5330,7 @@ function _questVocab(){
  const adv = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
  if(adv==='mat') return { icon:'🌈', lockCollect:'🌈 Couleur à retrouver', collected:'Couleur retrouvée', region:'Île à atteindre', end:'Arc-en-ciel à compléter' };
  if(adv==='matfr') return { icon:'📖', lockCollect:'📖 Page à retrouver', collected:'Page retrouvée', region:'Monde à atteindre', end:'Livre à compléter' };
+ if(adv==='primfr') return { icon:'🎖️', lockCollect:'🎖️ District à libérer', collected:'District libéré', region:'District à atteindre', end:'Insigne à compléter' };
  if(adv==='col') return { icon:'🛡️', lockCollect:'🛡️ Pièce à forger',     collected:'Pièce forgée',    region:'Îlot à atteindre',  end:'Forge finale à débloquer' };
  return { icon:'💎', lockCollect:'💎 Cristal à libérer', collected:'Cristal libéré', region:'Région à atteindre', end:'Fin à débloquer' };
 }
