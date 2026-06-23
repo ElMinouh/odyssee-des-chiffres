@@ -94,13 +94,25 @@ function _setAvatarZone(id){
  P.mapAvatarZone = id; // compat héritée
 }
 // Ouvre l'écran de choix des trois aventures
+// v10.12.5 — Logo selon la matière : « L'Odyssée des Mots » en français,
+// « L'Odyssée des Chiffres » en maths. Les <img class="subj-logo"> sont basculées.
+function _setSubjectLogos(){
+ try{
+  const fr = (typeof GM!=='undefined' && GM && GM.subject==='fr');
+  document.querySelectorAll('img.subj-logo').forEach(function(im){
+   im.src = fr ? 'assets/logo-mots.webp?v=1003' : 'assets/logo-main.webp?v=1003';
+   im.alt = fr ? "L'Odyssée des Mots" : "L'Odyssée des Chiffres";
+  });
+ }catch(e){}
+}
 function openOdysseeSelect(){
  try{
   const fr=(typeof GM!=='undefined'&&GM.subject==='fr');
-  const t=document.getElementById('ody-sel-title'); if(t) t.textContent=fr?"L'Odyssée des mots":"L'Odyssée : l'aventure mathématique";
+  const t=document.getElementById('ody-sel-title'); if(t) t.textContent=fr?"L'Odyssée : l'aventure littéraire":"L'Odyssée : l'aventure mathématique";
   const su=document.getElementById('ody-sel-sub'); if(su) su.textContent=fr?"Maîtrise les secrets du langage":"Choisis ton aventure";
   const ms=document.getElementById('ody-mat-sub'); if(ms) ms.textContent=fr?"Le Grand Livre du Conteur":"Le Pays des Couleurs";
-  const ps=document.getElementById('ody-prim-sub'); if(ps) ps.textContent=fr?"Le carnet de Verbe":"L'Ombre sur Calcultopia";
+  const ps=document.getElementById('ody-prim-sub'); if(ps) ps.textContent=fr?"Le journal intime":"L'Ombre sur Calcultopia";
+  if(typeof _setSubjectLogos==='function') _setSubjectLogos();
  }catch(e){}
  if(typeof navTo==='function') navTo('v-odyssey-select'); else showView('v-odyssey-select');
 }
@@ -4944,7 +4956,21 @@ const _MAT_STORY_FR = {
 // ═══════════════════════════════════════════════════════
 const _PRIM_VILLAIN_FR = 'le Docteur Babel';
 const _PRIM_KINGDOM_FR = 'Verbopolis';
-const PRIM_ZONES_FR = (typeof PRIM_ZONES!=='undefined' ? PRIM_ZONES : []).map(z => Object.assign({}, z, { id: 'primfr_'+z.id }));
+const _PRIMFR_ZONE_LABELS = {
+ // CP — district des Sons
+ plaine:'Les Faubourgs de Verbopolis', village:'La Place des Lettres', prairie:"L'Allée des Voyelles", bonbons:'Le Marché aux Syllabes',
+ // CE1 — quartier de la Lecture
+ foret:'La Rue des Libraires', champignons:'Le Passage des Conteurs', trolls:"L'Impasse des Syllabes", plage:'Les Quais de la Lecture',
+ // CE2 — halles du Vocabulaire
+ desert:'Les Halles aux Mots', plaines_venteuses:'Le Jardin des Synonymes', temple:'La Grande Bibliothèque', profondeurs:'Les Souterrains du Sens',
+ // CM1 — tour du Temps
+ glace:'Le Quartier des Horloges', marais:'La Gare des Temps', forteresse:'La Tour des Verbes', sakura:'Le Beffroi des Conjugaisons', nocturne:"L'Observatoire du Temps",
+ // CM2 — citadelle de la Phrase
+ volcan:"L'Imprimerie du Scribe Noir", espace:'Les Toits de la Syntaxe', cimes:'Le Grand Pont des Mots', mecanique:"L'Atelier des Phrases", ile:'La Citadelle de la Phrase',
+ // Final — île de la Rature
+ sanctuaire:"L'Antre du Docteur Babel",
+};
+const PRIM_ZONES_FR = (typeof PRIM_ZONES!=='undefined' ? PRIM_ZONES : []).map(z => Object.assign({}, z, { id:'primfr_'+z.id, label: _PRIMFR_ZONE_LABELS[z.id] || z.label }));
 const _PRIM_REGIONS_FR = [
  { id:'cp',    label:'Le district des Sons',       levels:['CP'],    shape:'colline' },
  { id:'ce1',   label:'Le quartier de la Lecture',  levels:['CE1'],   shape:'feuille' },
@@ -4954,12 +4980,12 @@ const _PRIM_REGIONS_FR = [
  { id:'final', label:"L'île de la Rature",         levels:['FINAL'], shape:'mandala' },
 ];
 const _PRIM_STORY_FR = {
- intro: { id:'primfr_intro', title:'Le carnet de Verbe', pages:[
+ intro: { id:'primfr_intro', title:'Le journal intime', pages:[
   { emoji:'🦸', text:"Cher carnet. Avant aujourd'hui, j'étais l'écolier le plus ordinaire de <b>Verbopolis</b> — la dernière ville où les gens se comprennent encore. Dehors, la <b>Guilde de la Rature</b> a brisé la langue commune des hommes, et plus personne ne se comprend." },
   { emoji:'🛡️', text:"Notre ville tient debout : elle est gardée par les <b>Gardiens de l'Alphabet</b>, qui repoussent chaque attaque de la Guilde et de son chef, {villain}. Moi, {hero}, je n'avais jamais eu peur… jusqu'à ce soir." },
   { emoji:'🌑', text:"Une ombre grise m'a barré la route : <b>Mutisme</b>. Tous les sons se sont éteints. Sans réfléchir, j'ai voulu hurler « STOP » — et le mot est devenu un vrai <b>mur de pierre</b> ! Mes mots prennent vie ?!" },
   { emoji:'⚡', text:"Mutisme allait bondir quand une cape rouge a fendu la nuit : <b>L'Orateur</b>, le héros le plus célèbre de la ville ! Il a chassé le monstre : « Beau réflexe, gamin. Tes mots prennent vie. Viens — et ça commence par l'orthographe ! »" },
-  { emoji:'🏛️', text:"C'est ainsi que je suis entré à l'<b>Académie des super-héros</b>. Sur le perron, <b>Dame Calligraphe</b>, la directrice, m'a dit : « Ici, un mot mal dit est un mot perdu. » Demain, je deviens <b>Verbe</b>." },
+  { emoji:'🏛️', text:"C'est ainsi que je suis entré à l'<b>Académie des super-héros</b>. Sur le perron, <b>Dame Calligraphe</b>, la directrice, m'a dit : « Ici, un mot mal dit est un mot perdu. » Demain commence ma formation de héros — et puisque mes mots prennent vie, on m'a déjà trouvé un nom de code : désormais, je serai <b>Verbe</b>." },
  ]},
  chapters: {
   cp:    { id:'primfr_c_cp',  title:'Le district des Sons', crystal:'le pouvoir de la Voix', pages:[

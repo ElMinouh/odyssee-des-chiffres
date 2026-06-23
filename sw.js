@@ -9,7 +9,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v10.12.4';
+const CACHE_VERSION = 'v10.12.5';
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources critiques précachées au premier chargement.
@@ -49,6 +49,7 @@ const OPTIONAL_URLS = [
   './assets/favicon-32.png',
   './assets/apple-touch-icon.png',
   './assets/logo-main.webp',
+  './assets/logo-mots.webp',
   './assets/logo-circle.webp',
   // Autres assets
   './assets/portraits.svg',

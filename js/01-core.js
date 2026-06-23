@@ -1042,6 +1042,7 @@ function chooseSubject(key){
  }catch(e){}
  if(SUBJECTS_ACTIVE.indexOf(key)>=0){
   GM.subject=key;
+  try{ if(typeof _setSubjectLogos==='function') _setSubjectLogos(); }catch(e){}
   try{ if(typeof beep==='function') beep(660,'sine',.12); }catch(e){}
   gotoMenu2();
  }else{
