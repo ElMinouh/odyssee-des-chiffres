@@ -1009,6 +1009,7 @@ function refreshMenu2(){
 function gotoMenu2(){
  if(typeof savePrefs==='function') savePrefs();
  refreshMenu2();
+ try{ if(typeof _setSubjectLogos==='function') _setSubjectLogos(); }catch(e){}
  navTo('v-menu2');
 }
 // Écran 1 → Écran « Choisis ta matière » (v10.5.0 : app multi-matières)

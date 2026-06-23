@@ -100,9 +100,11 @@ function _setSubjectLogos(){
  try{
   const fr = (typeof GM!=='undefined' && GM && GM.subject==='fr');
   document.querySelectorAll('img.subj-logo').forEach(function(im){
-   im.src = fr ? 'assets/logo-mots.webp?v=1003' : 'assets/logo-main.webp?v=1003';
+   im.src = fr ? 'assets/logo-mots.webp?v=1004' : 'assets/logo-main.webp?v=1004';
    im.alt = fr ? "L'Odyssée des Mots" : "L'Odyssée des Chiffres";
   });
+  const lbl = document.getElementById('ody-btn-label');
+  if(lbl) lbl.textContent = fr ? "L'ODYSSÉE : L'AVENTURE LITTÉRAIRE" : "L'ODYSSÉE : L'AVENTURE MATHÉMATIQUE";
  }catch(e){}
 }
 function openOdysseeSelect(){
