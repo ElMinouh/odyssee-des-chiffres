@@ -100,7 +100,7 @@ function _setSubjectLogos(){
  try{
   const fr = (typeof GM!=='undefined' && GM && GM.subject==='fr');
   document.querySelectorAll('img.subj-logo').forEach(function(im){
-   im.src = fr ? 'assets/logo-mots.webp?v=1004' : 'assets/logo-main.webp?v=1004';
+   im.src = fr ? 'assets/logo-mots.webp?v=1005' : 'assets/logo-main.webp?v=1005';
    im.alt = fr ? "L'Odyssée des Mots" : "L'Odyssée des Chiffres";
   });
   const lbl = document.getElementById('ody-btn-label');
@@ -3642,10 +3642,11 @@ function _advBookHtml(){
    <div class="advcol-caption">${msg} <b>${n} / 6</b></div>
   </div>`;
 }
-// ── Carnet primaire FR : l'Insigne des Gardiens de l'Alphabet ────────
-// 5 médailles de district (CP→CM2) qui se dorent et révèlent leur emblème ;
-// écusson central qui s'illumine quand l'île de la Rature est libérée.
-// Cliquable une fois complet → Histoire B (origines du Docteur Babel).
+// ── Carnet primaire FR : le Journal intime du héros ─────────────────
+// Couverture de journal intime ornée du médaillon des Gardiens (insigne 3),
+// avec un petit super-héros au centre (le héros est fan de ses héros !).
+// 5 pierres de district se dorent et révèlent leur emblème ; au complet le
+// médaillon rayonne. Cliquable une fois Babel vaincu → Histoire B.
 function _advBadgeHtml(){
  const order = (typeof _ADV_MAT_ORDER!=='undefined') ? _ADV_MAT_ORDER : ['cp','ce1','ce2','cm1','cm2','final'];
  const got = order.map(rid => _regionConquered(rid));
@@ -3658,33 +3659,56 @@ function _advBadgeHtml(){
  const gold = '#e9c64a';
  // emblème de chaque district : sons, lecture, vocabulaire, temps, phrase
  const glyph = (i,x,y,on)=>{
-  const c = on ? '#5a3e0a' : '#9a937e';
-  if(i===0) return `<g fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round"><circle cx="${x-5}" cy="${y}" r="1.6" fill="${c}"/><path d="M${x-1} ${y-5} a6 6 0 0 1 0 10"/><path d="M${x+3} ${y-7} a9 9 0 0 1 0 14"/></g>`;
-  if(i===1) return `<g fill="${c}"><path d="M${x-7} ${y-4} q7 -2 7 0 v8 q-7 -2 -7 0 Z"/><path d="M${x+7} ${y-4} q-7 -2 -7 0 v8 q7 -2 7 0 Z"/></g>`;
-  if(i===2) return `<g fill="none" stroke="${c}" stroke-width="1.8"><circle cx="${x-3}" cy="${y-2}" r="3.4"/><path d="M${x-1} ${y} l5 5 M${x+3} ${y+4} l2 -2 M${x+5} ${y+6} l2 -2"/></g>`;
-  if(i===3) return `<path d="M${x-5} ${y-6} h10 l-10 12 h10" fill="none" stroke="${c}" stroke-width="1.8" stroke-linejoin="round"/>`;
-  return `<g fill="${c}"><rect x="${x-7}" y="${y-2}" width="4" height="4" rx="1"/><rect x="${x-2}" y="${y-2}" width="4" height="4" rx="1"/><rect x="${x+3}" y="${y-2}" width="4" height="4" rx="1"/></g>`;
+  const c = on ? '#5a3e0a' : '#9aa0b0';
+  if(i===0) return `<g fill="none" stroke="${c}" stroke-width="1.5" stroke-linecap="round"><circle cx="${x-4}" cy="${y}" r="1.3" fill="${c}"/><path d="M${x-1} ${y-3} a4 4 0 0 1 0 6"/><path d="M${x+2} ${y-5} a7 7 0 0 1 0 10"/></g>`;
+  if(i===1) return `<g fill="${c}"><path d="M${x-5} ${y-3} q5 -2 5 0 v6 q-5 -2 -5 0 Z"/><path d="M${x+5} ${y-3} q-5 -2 -5 0 v6 q5 -2 5 0 Z"/></g>`;
+  if(i===2) return `<g fill="none" stroke="${c}" stroke-width="1.5"><circle cx="${x-2}" cy="${y-2}" r="2.6"/><path d="M${x} ${y} l4 4 M${x+3} ${y+3} l1.6 -1.6"/></g>`;
+  if(i===3) return `<path d="M${x-3.5} ${y-4} h7 l-7 8 h7" fill="none" stroke="${c}" stroke-width="1.5" stroke-linejoin="round"/>`;
+  return `<g fill="${c}"><rect x="${x-5}" y="${y-1.6}" width="3" height="3" rx="1"/><rect x="${x-1.5}" y="${y-1.6}" width="3" height="3" rx="1"/><rect x="${x+2}" y="${y-1.6}" width="3" height="3" rx="1"/></g>`;
  };
- const medal = (i,x,y,on)=>`<circle cx="${x}" cy="${y}" r="15" fill="${on?'#f1d979':'#d6cdb4'}" stroke="${on?'#b8902a':'#bcb39b'}" stroke-width="2"${on?' filter="drop-shadow(0 1px 3px rgba(184,144,42,.5))"':''}/>`+glyph(i,x,y,on);
- const pos = [[34,54],[72,36],[110,30],[148,36],[186,54]];
- let medals=''; for(let i=0;i<5;i++){ medals += medal(i, pos[i][0], pos[i][1], got[i]); }
- const emA = islandDone ? gold : '#7c6f49';
- const glow = done ? ' filter="drop-shadow(0 3px 9px rgba(233,198,74,.55))"' : '';
- const msg = (done && taleSeen) ? "Insigne complet — touche-le pour relire le dossier du Docteur Babel 📖"
-  : done ? "Tu es Gardien de l'Alphabet ! Touche l'insigne pour lire le dossier secret 🦸"
-  : nD>0 ? `${nD} district${nD>1?'s':''} libéré${nD>1?'s':''} — l'insigne se forge !`
+ const star = (x,y,c,s)=>{ s=s||4; return `<path d="M${x} ${y-s} l${s*0.34} ${s} ${s} ${s*0.34} -${s*0.82} ${s*0.62} ${s*0.3} ${s} -${s*0.82} -${s*0.6} -${s*0.82} ${s*0.6} ${s*0.3} -${s} -${s*0.82} -${s*0.62} ${s} -${s*0.34} Z" fill="${c}"/>`; };
+ // super-héros au centre du médaillon (cape, masque, poing levé)
+ const hero = (cx,cy)=>`<g>`
+  +`<path d="M${cx-9} ${cy-9} q-12 14 -3 30 l7 -7 q-3 -12 3 -19 Z" fill="#8e1a20"/>`
+  +`<path d="M${cx+9} ${cy-9} q12 14 3 30 l-7 -7 q3 -12 -3 -19 Z" fill="#b5232b"/>`
+  +`<rect x="${cx-4.5}" y="${cy+11}" width="4" height="10" rx="1.5" fill="#16306e"/><rect x="${cx+0.5}" y="${cy+11}" width="4" height="10" rx="1.5" fill="#16306e"/>`
+  +`<rect x="${cx-5.5}" y="${cy+19}" width="5.5" height="4" rx="1.5" fill="#b5232b"/><rect x="${cx}" y="${cy+19}" width="5.5" height="4" rx="1.5" fill="#b5232b"/>`
+  +`<path d="M${cx-7} ${cy-3} q7 -3 14 0 l-2 16 h-10 Z" fill="#2e57c8"/>`
+  +star(cx,cy+4,gold,3.2)
+  +`<path d="M${cx-6} ${cy-1} l-7 7" stroke="#2e57c8" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx-14}" cy="${cy+7}" r="2.4" fill="#f2c79b"/>`
+  +`<path d="M${cx+6} ${cy-2} l9 -11" stroke="#2e57c8" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx+16}" cy="${cy-14}" r="3" fill="#f2c79b"/>`
+  +`<circle cx="${cx}" cy="${cy-12}" r="6.2" fill="#f2c79b"/>`
+  +`<path d="M${cx-6.4} ${cy-15} q6.4 -6 12.8 0 q-2 -3 -6.4 -3 q-4.4 0 -6.4 3 Z" fill="#16306e"/>`
+  +`<rect x="${cx-6.4}" y="${cy-13}" width="12.8" height="3.6" rx="1.8" fill="#16306e"/>`
+  +`<circle cx="${cx-2.6}" cy="${cy-11.2}" r="1" fill="#fff"/><circle cx="${cx+2.6}" cy="${cy-11.2}" r="1" fill="#fff"/>`
+  +`</g>`;
+ const cx=100, cy=132, R=46, ang=[-90,-18,54,126,198];
+ let slots=''; for(let i=0;i<5;i++){ const a=ang[i]*Math.PI/180, x=cx+R*Math.cos(a), y=cy+R*Math.sin(a), on=got[i];
+  slots += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="11" fill="${on?'#f1d979':'#cfd5e6'}" stroke="${on?'#b8902a':'#aab2c8'}" stroke-width="2"/>`+glyph(i,x,y,on); }
+ const rays = done ? `<g stroke="${gold}" stroke-width="2.6" stroke-linecap="round" opacity=".75">`+[0,45,90,135,180,225,270,315].map(d=>{ const a=d*Math.PI/180; return `<line x1="${(cx+60*Math.cos(a)).toFixed(1)}" y1="${(cy+60*Math.sin(a)).toFixed(1)}" x2="${(cx+70*Math.cos(a)).toFixed(1)}" y2="${(cy+70*Math.sin(a)).toFixed(1)}"/>`; }).join('')+`</g>` : '';
+ const glow = done ? ' filter="drop-shadow(0 4px 12px rgba(233,198,74,.5))"' : '';
+ const msg = (done && taleSeen) ? "Journal complet — touche-le pour relire le dossier du Docteur Babel 📖"
+  : done ? "Tu es Gardien de l'Alphabet ! Touche le journal pour lire le dossier secret 🦸"
+  : nD>0 ? `${nD} district${nD>1?'s':''} libéré${nD>1?'s':''} — le médaillon se forge !`
   : "Libère les districts de Verbopolis, un par un !";
  const clickable = done ? `onclick="_openBookTale()" role="button" tabindex="0" title="Lire le dossier du Docteur Babel" style="cursor:pointer"` : '';
  return `
-  <div class="advlog-section-title">🦸 L'Insigne des Gardiens</div>
+  <div class="advlog-section-title">📔 Le Journal intime</div>
   <div class="advcol-box advcol-mat${done?' advbook-done':''}" ${clickable}>
-   <svg viewBox="0 0 220 210" class="advcol-svg"${glow} aria-label="Insigne des Gardiens : ${n} sur 6">
-    <path d="M62 84 H158 V126 Q158 178 110 198 Q62 178 62 126 Z" fill="#1c3f8f" stroke="#0e2657" stroke-width="3"/>
-    <path d="M70 92 H150 V126 Q150 172 110 188 Q70 172 70 126 Z" fill="none" stroke="${gold}" stroke-width="2" opacity=".85"/>
-    <text x="110" y="156" text-anchor="middle" font-size="56" font-weight="bold" fill="${emA}" font-family="Georgia,serif">A</text>
-    ${islandDone?`<g fill="${gold}"><path d="M58 120 l-10 -4 10 -4 -3 8 Z"/><path d="M162 120 l10 -4 -10 -4 3 8 Z"/></g>`:''}
-    ${medals}
-    ${done?`<g fill="#fff3b0" stroke="#ffd84d" stroke-width="1"><path d="M110 14 l1.8 5 5 1.8 -5 1.8 -1.8 5 -1.8 -5 -5 -1.8 5 -1.8 Z"/></g>`:''}
+   <svg viewBox="0 0 200 250" class="advcol-svg"${glow} aria-label="Le Journal intime : ${n} sur 6">
+    <rect x="170" y="20" width="10" height="214" rx="3" fill="#f2e8cf" stroke="#d8c79c"/>
+    <rect x="20" y="16" width="152" height="220" rx="12" fill="#21386e" stroke="#10204a" stroke-width="3"/>
+    <rect x="20" y="16" width="20" height="220" rx="10" fill="#172a52"/>
+    <rect x="30" y="26" width="132" height="200" rx="8" fill="none" stroke="${gold}" stroke-width="1.4" stroke-dasharray="2 4" opacity=".7"/>
+    <text x="100" y="46" text-anchor="middle" font-size="13" font-weight="bold" fill="${gold}" font-family="Georgia,serif" letter-spacing="1">JOURNAL INTIME</text>
+    <text x="100" y="228" text-anchor="middle" font-size="9" fill="#aab8df" font-family="Georgia,serif">— Gardiens de l'Alphabet —</text>
+    <rect x="150" y="16" width="6" height="220" fill="#16306e" opacity=".85"/>
+    ${rays}
+    <circle cx="${cx}" cy="${cy}" r="52" fill="#b5232b" stroke="#7a141a" stroke-width="3"/>
+    <circle cx="${cx}" cy="${cy}" r="42" fill="#1c3f8f" stroke="${gold}" stroke-width="2.5"/>
+    <circle cx="${cx}" cy="${cy}" r="34" fill="#24499a"/>
+    ${hero(cx,cy)}
+    ${slots}
    </svg>
    <div class="advcol-caption">${msg} <b>${n} / 6</b></div>
   </div>`;
