@@ -106,7 +106,7 @@ const _frHtmlEmoji = o => `<span style="font-size:2em">${o.e}</span>`;          
 // Anti-répétition : on évite de reposer une question vue dans les 6 dernières
 // (avant, seule la question IMMÉDIATEMENT précédente était bloquée → répétitions).
 let _frRecent = [];
-const _FR_RECENT_MAX = 6;
+const _FR_RECENT_MAX = 20;
 function _frUnique(q){
  if(!q) return q;
  if(_frRecent.indexOf(q.display)>=0) return null;       // déjà vue récemment → on repioche

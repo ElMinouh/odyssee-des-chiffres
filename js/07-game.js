@@ -100,7 +100,7 @@ function _setSubjectLogos(){
  try{
   const fr = (typeof GM!=='undefined' && GM && GM.subject==='fr');
   document.querySelectorAll('img.subj-logo').forEach(function(im){
-   im.src = fr ? 'assets/logo-mots.webp?v=1005' : 'assets/logo-main.webp?v=1005';
+   im.src = fr ? 'assets/logo-mots.webp?v=1006' : 'assets/logo-main.webp?v=1006';
    im.alt = fr ? "L'Odyssée des Mots" : "L'Odyssée des Chiffres";
   });
   const lbl = document.getElementById('ody-btn-label');
@@ -2857,6 +2857,9 @@ GS.errInGame++;GS.combo=0;GS.opCombo=0;GS.lastOpKey=null;$('gc').classList.remov
    if(!GS.errList.some(e=>e.display===_disp && e.res===q.res)){
     GS.errList.push({display:_disp, res:q.res, opKey:q.opKey||q.op||'+', type:q.type||'normal'});
    }
+   // Erreur commise : on retire la question de l'anti-répétition pour qu'elle
+   // puisse réapparaître plus tôt (entraînement ciblé).
+   try{ if(typeof _untrackQ==='function') _untrackQ(q); }catch(e){}
   }
   // Monster taunts on wrong answer
   monsterSpeak(WRONG_TAUNTS[ri(0,WRONG_TAUNTS.length-1)],2200);
@@ -3692,21 +3695,41 @@ function _advBadgeHtml(){
   : nD>0 ? `${nD} district${nD>1?'s':''} libéré${nD>1?'s':''} — le médaillon se forge !`
   : "Libère les districts de Verbopolis, un par un !";
  const clickable = done ? `onclick="_openBookTale()" role="button" tabindex="0" title="Lire le dossier du Docteur Babel" style="cursor:pointer"` : '';
+ const _hn = (typeof P!=='undefined' && P && P.name) ? String(P.name) : 'le héros';
+ const heroEsc = _hn.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
  return `
   <div class="advlog-section-title">📔 Le Journal intime</div>
   <div class="advcol-box advcol-mat${done?' advbook-done':''}" ${clickable}>
-   <svg viewBox="0 0 200 250" class="advcol-svg"${glow} aria-label="Le Journal intime : ${n} sur 6">
-    <rect x="170" y="20" width="10" height="214" rx="3" fill="#f2e8cf" stroke="#d8c79c"/>
-    <rect x="20" y="16" width="152" height="220" rx="12" fill="#21386e" stroke="#10204a" stroke-width="3"/>
-    <rect x="20" y="16" width="20" height="220" rx="10" fill="#172a52"/>
-    <rect x="30" y="26" width="132" height="200" rx="8" fill="none" stroke="${gold}" stroke-width="1.4" stroke-dasharray="2 4" opacity=".7"/>
-    <text x="100" y="46" text-anchor="middle" font-size="13" font-weight="bold" fill="${gold}" font-family="Georgia,serif" letter-spacing="1">JOURNAL INTIME</text>
-    <text x="100" y="228" text-anchor="middle" font-size="9" fill="#aab8df" font-family="Georgia,serif">— Gardiens de l'Alphabet —</text>
-    <rect x="150" y="16" width="6" height="220" fill="#16306e" opacity=".85"/>
+   <svg viewBox="0 0 200 256" class="advcol-svg"${glow} aria-label="Le Journal intime : ${n} sur 6">
+    <defs>
+     <linearGradient id="jcLeather" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8a2a3b"/><stop offset=".5" stop-color="#6e1f2e"/><stop offset="1" stop-color="#46121d"/></linearGradient>
+     <linearGradient id="jcSpine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#360c15"/><stop offset="1" stop-color="#5c1824"/></linearGradient>
+     <radialGradient id="jcGlow" cx=".5" cy=".4" r=".62"><stop offset="0" stop-color="#a83249" stop-opacity=".5"/><stop offset="1" stop-color="#6e1f2e" stop-opacity="0"/></radialGradient>
+    </defs>
+    <ellipse cx="98" cy="248" rx="80" ry="9" fill="#000" opacity=".28"/>
+    <rect x="168" y="26" width="13" height="206" rx="3" fill="#c9bb95"/>
+    <rect x="166" y="23" width="13" height="208" rx="3" fill="#e3d7b3"/>
+    <rect x="164" y="20" width="13" height="210" rx="3" fill="#f5ecd2" stroke="#d8c79c" stroke-width=".6"/>
+    <g stroke="#d8c79c" stroke-width=".5" opacity=".7"><line x1="166" y1="44" x2="176" y2="44"/><line x1="166" y1="74" x2="176" y2="74"/><line x1="166" y1="120" x2="176" y2="120"/><line x1="166" y1="178" x2="176" y2="178"/><line x1="166" y1="208" x2="176" y2="208"/></g>
+    <rect x="18" y="14" width="150" height="226" rx="13" fill="url(#jcLeather)" stroke="#2a0a12" stroke-width="3"/>
+    <rect x="18" y="14" width="150" height="226" rx="13" fill="url(#jcGlow)"/>
+    <rect x="18" y="14" width="22" height="226" rx="11" fill="url(#jcSpine)"/>
+    <line x1="40" y1="18" x2="40" y2="236" stroke="#2a0a12" stroke-width="1.3" opacity=".55"/>
+    <rect x="23" y="18" width="140" height="218" rx="10" fill="none" stroke="#cf6f86" stroke-width="1.2" opacity=".35"/>
+    <rect x="25" y="20" width="136" height="214" rx="9" fill="none" stroke="#360c15" stroke-width="1.2" opacity=".5"/>
+    <rect x="30" y="26" width="126" height="202" rx="8" fill="none" stroke="${gold}" stroke-width="1.3" stroke-dasharray="2 4" opacity=".75"/>
+    <text x="100" y="41" text-anchor="middle" font-size="13" font-weight="bold" fill="${gold}" font-family="Georgia,serif">Journal intime</text>
+    <text x="100" y="56" text-anchor="middle" font-size="11" fill="#f0d98a" font-family="Georgia,serif">de ${heroEsc}</text>
+    <text x="100" y="226" text-anchor="middle" font-size="8.6" fill="#e7b9c4" font-family="Georgia,serif">— Gardiens de l'Alphabet —</text>
+    <rect x="158" y="14" width="6" height="226" rx="2" fill="#2a0a12" opacity=".7"/>
+    <rect x="158.6" y="14" width="2" height="226" fill="#7a2a3a" opacity=".5"/>
     ${rays}
+    <circle cx="${cx}" cy="${cy}" r="55" fill="#000" opacity=".22"/>
+    <circle cx="${cx}" cy="${cy}" r="54" fill="none" stroke="${gold}" stroke-width="2"/>
     <circle cx="${cx}" cy="${cy}" r="52" fill="#b5232b" stroke="#7a141a" stroke-width="3"/>
     <circle cx="${cx}" cy="${cy}" r="42" fill="#1c3f8f" stroke="${gold}" stroke-width="2.5"/>
     <circle cx="${cx}" cy="${cy}" r="34" fill="#24499a"/>
+    <ellipse cx="${cx}" cy="${cy-12}" rx="28" ry="14" fill="#3a62c8" opacity=".35"/>
     ${hero(cx,cy)}
     ${slots}
    </svg>

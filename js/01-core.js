@@ -23,11 +23,20 @@ function resetGS(){
 function _trackQ(q){
  GS.recentQ=GS.recentQ||[];
  GS.recentQ.push(q.res+'|'+q.display);
- if(GS.recentQ.length>10)GS.recentQ.shift();
+ if(GS.recentQ.length>20)GS.recentQ.shift();
 }
 function _seenQ(q){
  GS.recentQ=GS.recentQ||[];
  return GS.recentQ.includes(q.res+'|'+q.display);
+}
+// Retire une question des fenêtres anti-répétition (math + français) :
+// utilisé sur une ERREUR, pour qu'une question ratée puisse revenir plus tôt.
+function _untrackQ(q){
+ try{
+  if(!q) return;
+  if(Array.isArray(GS.recentQ)){ const k=q.res+'|'+q.display; let i; while((i=GS.recentQ.indexOf(k))>=0) GS.recentQ.splice(i,1); }
+  if(typeof _frRecent!=='undefined' && Array.isArray(_frRecent) && q.display!=null){ let j; while((j=_frRecent.indexOf(q.display))>=0) _frRecent.splice(j,1); }
+ }catch(e){}
 }
 // ── Anti-répétition boss : file shufflée par niveau ──────────────────
 function _nextBossType(types,level){
