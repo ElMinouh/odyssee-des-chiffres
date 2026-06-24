@@ -178,13 +178,33 @@ const _MAT_PH_BY_LEVEL = {
  PS: { _matDonne:3, _matIntrus:3, _matSuite:3 },
  MS: { _matRanger:3, _matNombreManque:3 },
 };
+// ── Anti-répétition maternelle (v10.12.9) ───────────────────────────
+// Fenêtre de 20 sur la SIGNATURE visuelle (consigne + visuel + réponse),
+// car les questions maternelle n'ont pas de `display`. Repli gracieux :
+// si aucune question fraîche après 24 essais, on accepte une répétition
+// plutôt que de boucler (jamais de blocage). Réinitialisée par partie.
+let _matRecent = [];
+const _MAT_RECENT_MAX = 20;
+function _matSig(q){ return (q.consigne||'')+'¦'+(q.visuelHtml||'')+'¦'+(q.res); }
+function _matRecentSeen(sig){ return _matRecent.indexOf(sig) >= 0; }
+function _matRecentTrack(sig){ _matRecent.push(sig); if(_matRecent.length>_MAT_RECENT_MAX) _matRecent.shift(); }
+function _matRecentUntrack(sig){ let i; while((i=_matRecent.indexOf(sig))>=0) _matRecent.splice(i,1); }
+function _matRecentReset(){ _matRecent.length = 0; }
 function _matGen(level){
  const pool = _MAT_POOL[level] || _MAT_POOL.PS;
  const phase = (typeof _progPhase==='function') ? _progPhase(level) : 3;
  const _ov = _MAT_PH_BY_LEVEL[level] || {};
  let avail = pool.filter(f => (_ov[f.name] || (f && f.ph) || 1) <= phase);
  if(!avail.length) avail = pool;
- return avail[ri(0, avail.length-1)](level);
+ let q=null, sig='';
+ for(let t=0; t<24; t++){
+  q = avail[ri(0, avail.length-1)](level);
+  sig = _matSig(q);
+  if(!_matRecentSeen(sig)) break;   // question non vue récemment : on la garde
+ }
+ _matRecentTrack(sig);              // (repli : la dernière tirée est enregistrée)
+ if(q) q.matSig = sig;
+ return q;
 }
 function genQ_PS(){ return _matGen('PS'); }
 function genQ_MS(){ return _matGen('MS'); }

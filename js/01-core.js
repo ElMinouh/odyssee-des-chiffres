@@ -18,6 +18,7 @@ function resetGS(){
   isBoss:false,isGolden:false,errInGame:0,fracOk:0,missingOk:0,combatWon:false,mapBossWon:false,
   sessionStart:Date.now(),frozen:false,monsterHP:1,monsterMaxHP:1,activeEvent:null,eventLeft:0,
   recentQ:[],bossTypeQ:{},errList:[]});
+ try{ if(typeof _matRecentReset==='function') _matRecentReset(); }catch(e){}
 }
 // Enregistre une question dans l'historique et évite les répétitions
 function _trackQ(q){
@@ -36,6 +37,7 @@ function _untrackQ(q){
   if(!q) return;
   if(Array.isArray(GS.recentQ)){ const k=q.res+'|'+q.display; let i; while((i=GS.recentQ.indexOf(k))>=0) GS.recentQ.splice(i,1); }
   if(typeof _frRecent!=='undefined' && Array.isArray(_frRecent) && q.display!=null){ let j; while((j=_frRecent.indexOf(q.display))>=0) _frRecent.splice(j,1); }
+  if(typeof _matRecentUntrack==='function' && q.matSig) _matRecentUntrack(q.matSig);
  }catch(e){}
 }
 // ── Anti-répétition boss : file shufflée par niveau ──────────────────
