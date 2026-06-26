@@ -110,7 +110,7 @@ function _setSubjectLogos(){
  try{
   const fr = (typeof GM!=='undefined' && GM && GM.subject==='fr');
   document.querySelectorAll('img.subj-logo').forEach(function(im){
-   im.src = fr ? 'assets/logo-mots.webp?v=1012' : 'assets/logo-main.webp?v=1012';
+   im.src = fr ? 'assets/logo-mots.webp?v=1013' : 'assets/logo-main.webp?v=1013';
    im.alt = fr ? "L'Odyssée des Mots" : "L'Odyssée des Chiffres";
   });
   const lbl = document.getElementById('ody-btn-label');
@@ -5327,12 +5327,13 @@ const _COL_STORY_FR = {
 // seront rédigés et vérifiés un par un (ready:false → « bientôt »). Le Livre
 // VI lisible = le récit romancé _COL_STORY_FR.bookTale (débloqué à l'épilogue).
 const _COL_BOOKS_FR = [
- { roman:'I', region:'cp', accent:'#9E4326', accent2:'#C2603A', title:'Le Français des Origines', power:"l'Étymologie", ready:true, pages: _colBook1Pages() },
- { roman:'II',  region:'ce1', accent:'#1D6E56', accent2:'#1D9E75', title:'Le Trésor des Mots',       power:'la Nuance',     ready:true, pages: _colBook2Pages() },
- { roman:'III', region:'ce2', accent:'#854F0B', accent2:'#BA7517', title:"L'Art de Convaincre",      power:"l'Éloquence",  ready:true, pages: _colBook3Pages() },
- { roman:'IV',  region:'cm1', accent:'#0C447C', accent2:'#185FA5', title:'Les Mécaniques du Verbe',  power:'la Précision', ready:true, pages: _colBook4Pages() },
- { roman:'V',   region:'cm2', accent:'#3C3489', accent2:'#534AB7', title:'Le Miroir des Genres',     power:"l'Imaginaire", ready:true, pages: _colBook5Pages() },
- { roman:'VI',  region:'final', accent:'#7A2A1E', accent2:'#A33D2D', title:'Le Livre du Réveil',     power:'le Verbe libre', ready:true, bookTale:true },
+ { roman:'I',   short:'Origines',   region:'cp',    accent:'#9E4326', accent2:'#C2603A', dark:'#5a2718', title:'Le Français des Origines', power:"l'Étymologie",  ready:true, pages: _colBook1Pages() },
+ { roman:'II',  short:'Trésor',     region:'ce1',   accent:'#1D6E56', accent2:'#1D9E75', dark:'#134a3a', title:'Le Trésor des Mots',       power:'la Nuance',      ready:true, pages: _colBook2Pages() },
+ { roman:'III', short:'Convaincre', region:'ce2',   accent:'#854F0B', accent2:'#BA7517', dark:'#5a350a', title:"L'Art de Convaincre",      power:"l'Éloquence",   ready:true, pages: _colBook3Pages() },
+ { roman:'IV',  short:'Mécaniques', region:'cm1',   accent:'#0C447C', accent2:'#185FA5', dark:'#082f56', title:'Les Mécaniques du Verbe',  power:'la Précision',  ready:true, pages: _colBook4Pages() },
+ { roman:'V',   short:'Genres',     region:'cm2',   accent:'#3C3489', accent2:'#534AB7', dark:'#2a2456', title:'Le Miroir des Genres',     power:"l'Imaginaire",  ready:true, pages: _colBook5Pages() },
+ { roman:'VI',  short:'Réveil',     region:'final', accent:'#7A2A1E', accent2:'#A33D2D', dark:'#511a12', title:'Le Livre du Réveil',       power:'le Verbe libre', ready:true, bookTale:true },
+ { roman:'',    short:'Bonus',      region:'titan', accent:'#34333c', accent2:'#4a4856', dark:'#232228', gold:'#cdcdd6', title:"L'Antre du Chancelier", power:'', ready:true, bonus:true, pages: _colBook7Pages() },
 ];
 function _colBook1Pages(){
  const I_KEY = '<svg viewBox="0 0 120 90" width="100%"><circle cx="60" cy="34" r="9" fill="none" stroke="#C79A3A" stroke-width="3"/><circle cx="60" cy="34" r="3" fill="#C79A3A"/><line x1="60" y1="43" x2="60" y2="62" stroke="#C79A3A" stroke-width="3.5" stroke-linecap="round"/><path d="M60 62 C52 68 49 72 44 78" fill="none" stroke="#C79A3A" stroke-width="2.4" stroke-linecap="round"/><path d="M60 62 C68 68 71 72 76 78" fill="none" stroke="#C79A3A" stroke-width="2.4" stroke-linecap="round"/><path d="M60 62 C56 70 54 74 51 80" fill="none" stroke="#C79A3A" stroke-width="2" stroke-linecap="round"/><path d="M60 62 C64 70 66 74 69 80" fill="none" stroke="#C79A3A" stroke-width="2" stroke-linecap="round"/></svg>';
@@ -5435,97 +5436,184 @@ function _colBook5Pages(){
  ];
 }
 
-// ── Lecteur de livre (visionneuse parchemin paginée, illustrations) ─────
-function _openColBook(idx){
- try{
-  const book = (typeof _COL_BOOKS_FR!=='undefined' ? _COL_BOOKS_FR : [])[idx];
-  if(!book || !book.ready || !Array.isArray(book.pages) || !book.pages.length) return;
-  if(typeof closeAdventureLog==='function') closeAdventureLog();
-  setTimeout(()=>{ _renderColBook(book); }, 300);
- }catch(e){}
+// ── Symbole de pouvoir (unité, réutilisé tranche + couverture) ──────────
+function _colSymbol(i,cx,cy,s,col){
+ const g='<g transform="translate('+cx+' '+cy+') scale('+s+')" fill="none" stroke="'+col+'" stroke-linecap="round">';
+ if(i===0) return g+'<circle cx="0" cy="-8" r="4.5" stroke-width="1.3"/><circle cx="0" cy="-8" r="1.5" fill="'+col+'"/><line x1="0" y1="-3.5" x2="0" y2="9" stroke-width="1.7"/><line x1="0" y1="3" x2="4.2" y2="3" stroke-width="1.4"/><line x1="0" y1="6" x2="4.2" y2="6" stroke-width="1.4"/><path d="M0 9 C-4 12 -5 13 -7 15" stroke-width="1.1"/><path d="M0 9 C4 12 5 13 7 15" stroke-width="1.1"/></g>';
+ if(i===1) return g+'<polygon points="0,-9 9,8 -9,8" stroke-width="1.4"/><line x1="-13" y1="-1" x2="-3" y2="-1" stroke-width="1.1"/><line x1="3" y1="-3" x2="13" y2="-7" stroke-width="1.1"/><line x1="3" y1="1" x2="13" y2="3" stroke-width="1.1"/><line x1="3" y1="5" x2="12" y2="11" stroke-width="1.1"/></g>';
+ if(i===2) return g+'<path d="M0 10 C-7 3 6 -3 0 -12 C9 -3 7 4 0 10 Z" stroke-width="1.5"/></g>';
+ if(i===3) return g+'<circle cx="0" cy="0" r="8" stroke-width="1.5"/><circle cx="0" cy="0" r="2.6" fill="'+col+'"/><line x1="0" y1="-11" x2="0" y2="-8" stroke-width="1.5"/><line x1="0" y1="8" x2="0" y2="11" stroke-width="1.5"/><line x1="-11" y1="0" x2="-8" y2="0" stroke-width="1.5"/><line x1="8" y1="0" x2="11" y2="0" stroke-width="1.5"/><line x1="-7.8" y1="-7.8" x2="-5.7" y2="-5.7" stroke-width="1.5"/><line x1="7.8" y1="7.8" x2="5.7" y2="5.7" stroke-width="1.5"/><line x1="-7.8" y1="7.8" x2="-5.7" y2="5.7" stroke-width="1.5"/><line x1="7.8" y1="-7.8" x2="5.7" y2="-5.7" stroke-width="1.5"/></g>';
+ if(i===4) return g+'<path d="M0 -11 l3 7.5 8 0 -6.5 5 2.5 7.7 -7 -4.8 -7 4.8 2.5 -7.7 -6.5 -5 8 0 Z" stroke-width="1.3"/></g>';
+ if(i===5) return g+'<path d="M-9 6 a9 9 0 0 1 18 0" stroke-width="1.6"/><line x1="-13" y1="6" x2="13" y2="6" stroke-width="1.3"/><line x1="0" y1="-9" x2="0" y2="-5" stroke-width="1.2"/><line x1="-8" y1="-5" x2="-5.5" y2="-2.5" stroke-width="1.2"/><line x1="8" y1="-5" x2="5.5" y2="-2.5" stroke-width="1.2"/></g>';
+ return g+'<path d="M-6 8 L-6 -8 L6 -8 L6 8" stroke-width="1.4"/><circle cx="-6" cy="-9.5" r="1.6" fill="'+col+'"/><circle cx="6" cy="-9.5" r="1.6" fill="'+col+'"/><path d="M0 -5 l2.6 2.6 -2.6 2.6 -2.6 -2.6 Z" fill="'+col+'"/><line x1="-8.5" y1="2" x2="8.5" y2="2" stroke-width="1.4"/><line x1="-8.5" y1="2" x2="-8.5" y2="8" stroke-width="1.4"/><line x1="8.5" y1="2" x2="8.5" y2="8" stroke-width="1.4"/><line x1="-9.5" y1="8" x2="9.5" y2="8" stroke-width="1.3"/><line x1="-11.5" y1="11" x2="11.5" y2="11" stroke-width="1.3"/></g>';
 }
-function _renderColBook(book){
- let page = 0;
- const ov = document.createElement('div');
- ov.className = 'story-overlay';
- function close(){ ov.classList.add('story-out'); setTimeout(()=>{ try{ ov.remove(); }catch(e){} }, 300); }
- function _heroName(){ try{ return (typeof P!=='undefined'&&P&&P.name)?String(P.name):'le Porteur de Mots'; }catch(e){ return 'le Porteur de Mots'; } }
- function _fill(s){ try{ s=String(s||''); const h=_heroName().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); return s.replace(/\{hero\}/g,'<b>'+h+'</b>').replace(/\{villain\}/g, (typeof _COL_VILLAIN_FR!=='undefined'?_COL_VILLAIN_FR:'le Chancelier')); }catch(e){ return s; } }
- function render(){
-  const p = book.pages[page] || {};
-  const last = page >= book.pages.length - 1;
-  const acc = book.accent || '#9E4326';
-  ov.innerHTML =
-   '<div class="story-parchment" style="max-width:560px;border-top:6px solid '+acc+';">'
-   + '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;border-bottom:1px solid #d8c79c;padding-bottom:6px;margin-bottom:10px;">'
-   +  '<span style="font-family:Georgia,serif;font-weight:700;color:'+acc+';font-size:1.02em;">'+book.title+'</span>'
-   +  '<span style="font-family:Georgia,serif;font-size:.78em;color:#8a6a45;">'+(p.chap||'')+'</span>'
-   + '</div>'
-   + (p.illus ? '<div style="margin:0 auto 10px;max-width:300px;background:#e7d7ae;border:1px solid #c9b486;border-radius:6px;padding:8px;">'+p.illus+(p.cap?'<div style="font-family:Georgia,serif;font-style:italic;font-size:.76em;color:#6b5638;text-align:center;margin-top:4px;">'+p.cap+'</div>':'')+'</div>' : '')
-   + '<div class="story-text" style="font-family:Georgia,serif;text-align:justify;line-height:1.7;">'+_fill(p.html||'')+'</div>'
-   + '<div class="story-nav">'
-   +  (page>0?'<button class="story-btn cb-prev">‹</button>':'<span class="story-spacer"></span>')
-   +  '<div class="story-dots" style="flex-wrap:wrap;">'+book.pages.map(function(_,i){return '<span class="story-dot'+(i===page?' on':'')+'"></span>';}).join('')+'</div>'
-   +  '<button class="story-btn cb-next">'+(last?'Fermer le livre':'Suivant ›')+'</button>'
-   + '</div>'
-   + '<div style="text-align:center;font-family:Georgia,serif;font-size:.78em;color:#8a6a45;margin-top:4px;">page '+(page+1)+' / '+book.pages.length+'</div>'
-   + '</div>';
-  const nx=ov.querySelector('.cb-next'); if(nx) nx.onclick=function(){ if(!last){ page++; render(); } else close(); };
-  const pv=ov.querySelector('.cb-prev'); if(pv) pv.onclick=function(){ if(page>0){ page--; render(); } };
-  if(typeof beep==='function'){ try{ beep(520,'sine',.10,.04); }catch(e){} }
- }
- render();
- document.body.appendChild(ov);
+function _colLock(cx,y,c){ return '<rect x="'+(cx-4).toFixed(1)+'" y="'+(y).toFixed(1)+'" width="8" height="6.5" rx="1.4" fill="none" stroke="'+c+'" stroke-width="1.1"/><path d="M'+(cx-2.4).toFixed(1)+' '+(y).toFixed(1)+' v-1.8 a2.4 2.4 0 0 1 4.8 0 v1.8" fill="none" stroke="'+c+'" stroke-width="1.1"/>'; }
+function _wrapTitle(t,max){ max=max||14; const w=String(t).split(' '); const lines=[]; let cur=''; for(let k=0;k<w.length;k++){ const x=w[k]; if((cur+' '+x).trim().length>max && cur){ lines.push(cur); cur=x; } else { cur=(cur?cur+' ':'')+x; } } if(cur) lines.push(cur); return lines.slice(0,3); }
+
+// ── Grande couverture (1re page) et dos de couverture (dernière page) ────
+function _colCoverSvg(book,idx){
+ const acc=book.accent||'#9E4326', dk=book.dark||'#5a2718', gold=book.gold||'#E0B24F', gly=book.gold?'#e7e7ef':'#F4DCA0';
+ const lines=_wrapTitle(book.title,14);
+ const ty=(lines.length>=3?96:104);
+ let title=''; for(let k=0;k<lines.length;k++){ title+='<text x="180" y="'+(ty+k*23)+'" text-anchor="middle" font-family="Georgia,serif" font-size="17" letter-spacing="0.6" font-weight="700" fill="'+gold+'">'+lines[k]+'</text>'; }
+ const ruleY=ty+lines.length*23-8;
+ const bottom=book.bonus?'Bonus':('Tome '+(book.roman||''));
+ return '<svg viewBox="0 0 360 470" width="100%" style="max-width:300px;display:block;margin:0 auto" role="img" aria-label="Couverture : '+book.title+'">'
+  +'<ellipse cx="186" cy="424" rx="132" ry="16" fill="#000000" opacity="0.16"/>'
+  +'<polygon points="285,56 297,68 297,410 285,398" fill="#EFE3C4"/>'
+  +'<polygon points="75,398 87,410 297,410 285,398" fill="#D6C49A"/>'
+  +'<rect x="75" y="56" width="210" height="342" rx="6" fill="'+acc+'"/>'
+  +'<rect x="75" y="56" width="13" height="342" rx="5" fill="#000000" opacity="0.20"/>'
+  +'<rect x="77" y="58" width="206" height="5" fill="#FFFFFF" opacity="0.13"/>'
+  +'<rect x="91" y="70" width="178" height="314" rx="4" fill="none" stroke="'+gold+'" stroke-width="2.6"/>'
+  +'<rect x="97" y="76" width="166" height="302" rx="3" fill="none" stroke="'+gold+'" stroke-width="1"/>'
+  +'<g fill="'+gold+'"><path d="M91 70 h16 v3 h-13 v13 h-3 z"/><path d="M269 70 h-16 v3 h13 v13 h3 z"/><path d="M91 384 h16 v-3 h-13 v-13 h-3 z"/><path d="M269 384 h-16 v-3 h13 v-13 h3 z"/></g>'
+  +title
+  +'<line x1="135" y1="'+ruleY+'" x2="225" y2="'+ruleY+'" stroke="'+gold+'" stroke-width="1"/>'
+  +'<circle cx="180" cy="244" r="56" fill="none" stroke="'+gold+'" stroke-width="6"/>'
+  +'<circle cx="180" cy="244" r="48" fill="'+dk+'"/>'
+  +_colSymbol(idx,180,244,3.7,gly)
+  +'<text x="180" y="360" text-anchor="middle" font-family="Georgia,serif" font-size="14" letter-spacing="3.5" font-weight="700" fill="'+gold+'">'+bottom+'</text>'
+  +'</svg>';
+}
+function _colBackCoverSvg(book,idx){
+ const acc=book.accent||'#9E4326', dk=book.dark||'#5a2718', gold=book.gold||'#E0B24F', gly=book.gold?'#e7e7ef':'#F4DCA0';
+ const quote=book.bonus?'« Les mots reviennent toujours. »':(book.power?('Pouvoir : '+book.power):'La Bibliothèque infinie');
+ return '<svg viewBox="0 0 360 470" width="100%" style="max-width:300px;display:block;margin:0 auto" role="img" aria-label="Dos de couverture : '+book.title+'">'
+  +'<ellipse cx="186" cy="424" rx="132" ry="16" fill="#000000" opacity="0.16"/>'
+  +'<rect x="75" y="56" width="210" height="342" rx="6" fill="'+acc+'"/>'
+  +'<rect x="75" y="56" width="13" height="342" rx="5" fill="#000000" opacity="0.20"/>'
+  +'<rect x="91" y="70" width="178" height="314" rx="4" fill="none" stroke="'+gold+'" stroke-width="2"/>'
+  +'<circle cx="180" cy="150" r="34" fill="'+dk+'"/><circle cx="180" cy="150" r="34" fill="none" stroke="'+gold+'" stroke-width="3"/>'
+  +_colSymbol(idx,180,150,2.1,gly)
+  +'<text x="180" y="252" text-anchor="middle" font-family="Georgia,serif" font-size="12" font-style="italic" fill="'+gold+'">'+quote+'</text>'
+  +'<text x="180" y="356" text-anchor="middle" font-family="Georgia,serif" font-size="11" letter-spacing="2" fill="'+gold+'">La Bibliothèque infinie</text>'
+  +'</svg>';
 }
 
-// ── Carnet collège FR : La Bibliothèque infinie (6 tomes sur une étagère) ─
+// ── Lecteur de livre : couverture → double page enluminée → dos ─────────
+function _resolveBookPages(book){
+ let ps=book.pages;
+ if(!ps && book.bookTale && typeof _COL_STORY_FR!=='undefined' && _COL_STORY_FR.bookTale) ps=_COL_STORY_FR.bookTale.pages;
+ ps=ps||[];
+ return ps.map(function(p){ return { chap:p.chap||'', html:p.html||p.text||'', illus:p.illus||'', cap:p.cap||'' }; });
+}
+function _openColBook(idx){
+ try{
+  const book=(typeof _COL_BOOKS_FR!=='undefined'?_COL_BOOKS_FR:[])[idx];
+  if(!book) return;
+  const pages=_resolveBookPages(book);
+  if(!pages.length) return;
+  if(typeof closeAdventureLog==='function') closeAdventureLog();
+  setTimeout(function(){ _renderColBook(book,idx,pages); },300);
+ }catch(e){}
+}
+function _renderColBook(book,idx,pages){
+ const acc=book.accent||'#9E4326', gold=book.gold||'#C79A3A';
+ const S=Math.ceil(pages.length/2), total=S+2;
+ let step=0;
+ const ov=document.createElement('div'); ov.className='story-overlay';
+ function close(){ ov.classList.add('story-out'); setTimeout(function(){try{ov.remove();}catch(e){}},300); }
+ function _heroName(){ try{ return (typeof P!=='undefined'&&P&&P.name)?String(P.name):'le Porteur de Mots'; }catch(e){ return 'le Porteur de Mots'; } }
+ function _fill(s){ try{ s=String(s||''); const h=_heroName().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); return s.replace(/\{hero\}/g,'<b>'+h+'</b>').replace(/\{villain\}/g,(typeof _COL_VILLAIN_FR!=='undefined'?_COL_VILLAIN_FR:'le Chancelier')); }catch(e){ return s; } }
+ function half(p,isLeft){
+  if(!p) return '<div style="border:2px solid '+gold+';border-radius:3px;padding:2px;height:100%;"><div style="border:1px solid '+gold+';border-radius:2px;min-height:240px;"></div></div>';
+  let body=_fill(p.html||'');
+  if(isLeft && /^<p>/.test(body)) body=body.replace(/^<p>\s*(.)/,'<p><span style="float:left;font-family:Georgia,serif;font-size:44px;line-height:.74;font-weight:700;color:'+acc+';padding:2px 8px 0 0;">$1</span>');
+  const illus=p.illus?'<div style="background:#e7d7ae;border:1px solid #c9b486;border-radius:4px;padding:7px;margin-bottom:8px;">'+p.illus+(p.cap?'<div style="font-family:Georgia,serif;font-style:italic;font-size:11px;color:#6b5638;text-align:center;margin-top:3px;">'+p.cap+'</div>':'')+'</div>':'';
+  return '<div style="border:2px solid '+gold+';border-radius:3px;padding:2px;height:100%;"><div style="border:1px solid '+gold+';border-radius:2px;padding:13px;min-height:240px;">'+illus+'<div style="font-family:Georgia,serif;font-size:13px;line-height:1.65;color:#3A2A18;text-align:justify;">'+body+'</div></div></div>';
+ }
+ function render(){
+  let inner='';
+  if(step===0){ inner='<div style="text-align:center;">'+_colCoverSvg(book,idx)+'<div style="font-family:Georgia,serif;font-size:12px;color:#8a6a45;margin-top:8px;">Touche « Feuilleter » pour ouvrir le livre.</div></div>'; }
+  else if(step===total-1){ inner='<div style="text-align:center;">'+_colBackCoverSvg(book,idx)+'<div style="font-family:Georgia,serif;font-size:12px;color:#8a6a45;margin-top:8px;">Fin.</div></div>'; }
+  else {
+   const li=(step-1)*2, L=pages[li], R=pages[li+1];
+   const chap=(L&&L.chap)||(R&&R.chap)||'';
+   inner='<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;border-bottom:1px solid #d8c79c;padding-bottom:6px;margin-bottom:10px;">'
+    +'<span style="font-family:Georgia,serif;font-weight:700;color:'+acc+';font-size:1.0em;">'+book.title+'</span>'
+    +'<span style="font-family:Georgia,serif;font-size:.76em;color:#8a6a45;">'+chap+'</span></div>'
+    +'<div style="position:relative;display:grid;grid-template-columns:1fr 1fr;gap:0;background:#EBDFBF;border-radius:5px;overflow:hidden;">'
+    +'<div style="background:linear-gradient(90deg,#F3E8CD,#ECE0C2 86%,#DCCBA0);padding:13px 13px 13px 15px;">'+half(L,true)+'</div>'
+    +'<div style="background:linear-gradient(90deg,#DCCBA0,#ECE0C2 14%,#F3E8CD);padding:13px 15px 13px 13px;">'+half(R,false)+'</div>'
+    +'<div style="position:absolute;top:0;bottom:0;left:50%;width:18px;transform:translateX(-50%);background:linear-gradient(90deg,rgba(0,0,0,0),rgba(90,60,30,.20) 50%,rgba(0,0,0,0));pointer-events:none;"></div>'
+    +'</div>';
+  }
+  const prevLbl=step===total-1?'‹ Pages':'‹ Précédent';
+  const nextLbl=step===0?'Feuilleter ›':(step===total-1?'Fermer le livre':'Suivant ›');
+  let counter; if(step===0) counter='Couverture'; else if(step===total-1) counter='Dos de couverture'; else { const a=(step-1)*2+1, b=Math.min(a+1,pages.length); counter=(a===b?('page '+a):('pages '+a+'–'+b))+' / '+pages.length; }
+  ov.innerHTML='<div class="story-parchment" style="max-width:'+((step===0||step===total-1)?'360':'600')+'px;border-top:6px solid '+acc+';">'
+   +inner
+   +'<div class="story-nav">'
+   +(step>0?'<button class="story-btn cb-prev">'+prevLbl+'</button>':'<span class="story-spacer"></span>')
+   +'<div class="story-dots" style="flex-wrap:wrap;max-width:58%;">'+Array.apply(null,{length:total}).map(function(_,i){return '<span class="story-dot'+(i===step?' on':'')+'"></span>';}).join('')+'</div>'
+   +'<button class="story-btn cb-next">'+nextLbl+'</button>'
+   +'</div>'
+   +'<div style="text-align:center;font-family:Georgia,serif;font-size:.76em;color:#8a6a45;margin-top:4px;">'+counter+'</div>'
+   +'</div>';
+  const nx=ov.querySelector('.cb-next'); if(nx) nx.onclick=function(){ if(step<total-1){step++;render();} else close(); };
+  const pv=ov.querySelector('.cb-prev'); if(pv) pv.onclick=function(){ if(step>0){step--;render();} };
+  if(typeof beep==='function'){ try{ beep(520,'sine',.09,.04); }catch(e){} }
+ }
+ render(); document.body.appendChild(ov);
+}
+
+// ── Carnet collège FR : La Bibliothèque infinie (7 tranches 3D) ─────────
 function _advLibraryHtml(){
- const regs=['cp','ce1','ce2','cm1','cm2'];
  const seen=(typeof P!=='undefined'&&P&&P.storySeen)||[];
  const books=(typeof _COL_BOOKS_FR!=='undefined')?_COL_BOOKS_FR:[];
- const unlocked=function(i){ return i<5 ? _regionConquered(regs[i]) : seen.includes('colfr_booktale'); };
+ const reg=['cp','ce1','ce2','cm1','cm2'];
+ const unlocked=function(i){ if(i<5) return _regionConquered(reg[i]); if(i===5) return seen.indexOf('colfr_booktale')>=0; return seen.indexOf('colfr_c_titan')>=0; };
+ const N=books.length||7;
  const nUn=books.reduce(function(a,b,i){return a+(unlocked(i)?1:0);},0);
- const nRead=books.reduce(function(a,b,i){return a+((b.ready&&unlocked(i))?1:0);},0);
- const x0=12, bw=28, gap=2.4;
+ const bw=22, gap=2.2, totalW=N*bw+(N-1)*gap, x0=(200-totalW)/2;
  let spines='';
- for(let i=0;i<6;i++){
-  const b=books[i]||{}; const lit=unlocked(i); const on=lit&&b.ready;
-  const x=x0+i*(bw+gap);
-  const cx=(x+bw/2);
+ for(let i=0;i<N;i++){
+  const b=books[i]||{}; const on=unlocked(i); const x=x0+i*(bw+gap), cx=x+bw/2;
   const col=on?(b.accent||'#9E4326'):'#615d57';
-  const top=on?(b.accent2||'#C2603A'):'#7a756e';
+  const dk=on?(b.dark||'#3a1c10'):'#46433e';
+  const gold=on?(b.gold||'#E0B24F'):'#8a857d';
+  const gly=on?(b.gold?'#dcdce4':'#f0d68a'):'#8a857d';
   const click=on?(' onclick="_openColBook('+i+')" style="cursor:pointer" role="button" tabindex="0" title="Lire : '+(b.title||'')+'"'):'';
   spines+='<g'+click+'>'
-   +'<rect x="'+x.toFixed(1)+'" y="26" width="'+bw+'" height="106" rx="2" fill="'+col+'"/>'
-   +'<rect x="'+x.toFixed(1)+'" y="26" width="'+bw+'" height="9" rx="2" fill="'+top+'"/>'
-   +'<rect x="'+(x+3).toFixed(1)+'" y="40" width="'+(bw-6)+'" height="80" rx="1" fill="none" stroke="'+(on?'#f0d68a':'#54504a')+'" stroke-width="1"/>'
-   +'<text x="'+cx.toFixed(1)+'" y="92" text-anchor="middle" font-family="Georgia,serif" font-size="13" font-weight="700" fill="'+(on?'#f4dca0':'#54504a')+'" transform="rotate(-90 '+cx.toFixed(1)+' 92)">'+(b.roman||(i+1))+'</text>'
-   +(on?('<circle cx="'+cx.toFixed(1)+'" cy="116" r="6" fill="#3a1c10" stroke="#f0d68a" stroke-width="1.1"/>'+_colPowerGlyph(i,cx,116)):'')
-   +(!lit?('<text x="'+cx.toFixed(1)+'" y="86" text-anchor="middle" font-size="13">🔒</text>'):'')
-   +(lit&&!b.ready?('<text x="'+cx.toFixed(1)+'" y="118" text-anchor="middle" font-size="7" fill="#cfcabf" font-family="Georgia,serif">bientôt</text>'):'')
+   +'<polygon points="'+x.toFixed(1)+',24 '+(x+3).toFixed(1)+',21 '+(x+bw+3).toFixed(1)+',21 '+(x+bw).toFixed(1)+',24" fill="'+dk+'"/>'
+   +'<polygon points="'+(x+bw).toFixed(1)+',24 '+(x+bw+3).toFixed(1)+',21 '+(x+bw+3).toFixed(1)+',127 '+(x+bw).toFixed(1)+',130" fill="'+dk+'"/>'
+   +'<rect x="'+x.toFixed(1)+'" y="24" width="'+bw+'" height="106" rx="2" fill="'+col+'"/>'
+   +'<rect x="'+(x+1.5).toFixed(1)+'" y="26" width="2" height="102" fill="#ffffff" opacity="0.10"/>'
+   +'<rect x="'+(x+2).toFixed(1)+'" y="33" width="'+(bw-4)+'" height="2" fill="'+gold+'"/><rect x="'+(x+2).toFixed(1)+'" y="119" width="'+(bw-4)+'" height="2" fill="'+gold+'"/>'
+   +'<text x="'+cx.toFixed(1)+'" y="52" text-anchor="middle" dominant-baseline="central" font-family="Georgia,serif" font-size="7" fill="'+gly+'" transform="rotate(-90 '+cx.toFixed(1)+' 52)">'+(b.short||b.roman||(i+1))+'</text>'
+   +(on?_colSymbol(i,cx,80,0.5,gly):_colLock(cx,77,'#cfcabf'))
+   +'<circle cx="'+cx.toFixed(1)+'" cy="108" r="8" fill="'+dk+'"/><circle cx="'+cx.toFixed(1)+'" cy="108" r="8" fill="none" stroke="'+gold+'" stroke-width="1.4"/>'
+   +'<text x="'+cx.toFixed(1)+'" y="108" text-anchor="middle" dominant-baseline="central" font-family="Georgia,serif" font-size="'+(b.roman?8:9)+'" font-weight="700" fill="'+gly+'">'+(b.roman||'✦')+'</text>'
    +'</g>';
  }
- const shelf='<rect x="6" y="132" width="188" height="9" rx="2" fill="#5a4126"/><rect x="6" y="132" width="188" height="3" fill="#7a5a34"/><rect x="6" y="22" width="188" height="5" rx="2" fill="#3c2c18"/>';
- const msg = nRead>0 ? (nRead+' livre'+(nRead>1?'s':'')+' à lire — touche un tome doré 📖')
-   : "Conquiers les îlots : chaque tome rejoindra ta bibliothèque.";
+ const shelf='<rect x="6" y="130" width="188" height="9" rx="2" fill="#5a4126"/><rect x="6" y="130" width="188" height="3" fill="#7a5a34"/><rect x="6" y="20" width="188" height="4" rx="2" fill="#3c2c18"/>';
+ const msg=nUn>0?'Touche un tome débloqué pour le feuilleter.':"Conquiers les îlots : chaque tome rejoindra ta bibliothèque.";
  return ''
   +'<div class="advlog-section-title">📚 La Bibliothèque infinie</div>'
   +'<div class="advcol-box advcol-mat">'
-  +' <svg viewBox="0 0 200 150" class="advcol-svg" aria-label="Bibliothèque : '+nUn+' livres sur 6">'
+  +' <svg viewBox="0 0 200 150" class="advcol-svg" aria-label="Bibliothèque : '+nUn+' livres sur '+N+'">'
   +'  '+shelf+spines
   +' </svg>'
-  +' <div class="advcol-caption">'+msg+' <b>'+nUn+' / 6</b></div>'
+  +' <div class="advcol-caption">'+msg+' <b>'+nUn+' / '+N+'</b></div>'
   +'</div>';
 }
-// Petit symbole de pouvoir au pied de chaque tome débloqué
-function _colPowerGlyph(i,x,y){
- const c='#f0d68a';
- if(i===0) return '<path d="M'+x+' '+(y-3)+' v5 M'+(x-2)+' '+(y+2)+' h4" stroke="'+c+'" stroke-width="1.2" fill="none" stroke-linecap="round"/><circle cx="'+x+'" cy="'+(y-3)+'" r="1.4" fill="none" stroke="'+c+'" stroke-width="1"/>'; // clé
- if(i===1) return '<path d="M'+x+' '+(y-3.5)+' l3 3.5 -3 3.5 -3 -3.5 Z" fill="none" stroke="'+c+'" stroke-width="1"/>'; // prisme
- if(i===2) return '<path d="M'+x+' '+(y-4)+' q2.5 4 0 8 q-2.5 -4 0 -8 Z" fill="'+c+'"/>'; // flamme
- if(i===3) return '<circle cx="'+x+'" cy="'+y+'" r="2.4" fill="none" stroke="'+c+'" stroke-width="1"/><path d="M'+x+' '+(y-3.6)+' v1.4 M'+x+' '+(y+2.2)+' v1.4 M'+(x-3.6)+' '+y+' h1.4 M'+(x+2.2)+' '+y+' h1.4" stroke="'+c+'" stroke-width="1" stroke-linecap="round"/>'; // rouage
- if(i===4) return '<path d="M'+x+' '+(y-4)+' l1 2.6 2.8 0 -2.3 1.8 .9 2.8 -2.4 -1.7 -2.4 1.7 .9 -2.8 -2.3 -1.8 2.8 0 Z" fill="'+c+'"/>'; // étoile
- return '<path d="M'+(x-3.5)+' '+(y+2)+' a3.5 3.5 0 0 1 7 0 Z" fill="'+c+'"/><path d="M'+x+' '+(y-3)+' v2 M'+(x-3)+' '+(y-1)+' l1.4 1 M'+(x+3)+' '+(y-1)+' l-1.4 1" stroke="'+c+'" stroke-width=".8" stroke-linecap="round"/>'; // aube
+
+// ── Livre VII (Bonus) : « L'Antre du Chancelier » ──────────────────────
+function _colBook7Pages(){
+ const THRONE='<svg viewBox="0 0 150 96" width="100%"><g fill="none" stroke="#4a4856" stroke-width="2" stroke-linecap="round"><path d="M58 70 L58 30 L92 30 L92 70"/><path d="M52 70 L98 70"/><path d="M52 70 L52 82 M98 70 L98 82"/><path d="M44 82 L106 82 M36 90 L114 90"/></g><circle cx="58" cy="27" r="3.5" fill="#6a6878"/><circle cx="92" cy="27" r="3.5" fill="#6a6878"/><path d="M75 42 l5 5 -5 5 -5 -5 Z" fill="#7a6bb0"/></svg>';
+ const STELES='<svg viewBox="0 0 160 80" width="100%"><g fill="#d8cdb6" stroke="#9a8f78" stroke-width="1"><path d="M14 74 V40 a8 8 0 0 1 16 0 V74 Z"/><path d="M42 74 V44 a8 8 0 0 1 16 0 V74 Z"/><path d="M70 74 V38 a8 8 0 0 1 16 0 V74 Z"/><path d="M98 74 V46 a8 8 0 0 1 16 0 V74 Z"/><path d="M126 74 V42 a8 8 0 0 1 16 0 V74 Z"/></g><g stroke="#9a8f78" stroke-width="1"><line x1="18" y1="52" x2="26" y2="60"/><line x1="26" y1="52" x2="18" y2="60"/><line x1="74" y1="50" x2="82" y2="58"/><line x1="82" y1="50" x2="74" y2="58"/><line x1="130" y1="54" x2="138" y2="62"/><line x1="138" y1="54" x2="130" y2="62"/></g></svg>';
+ return [
+  { chap:'L\'Antre du Chancelier', illus:THRONE, cap:'Le trône de cendre, au cœur du Palais.', html:"<p>Ce tome ne figurait sur aucune carte. Il raconte ce qui advint derrière les portes closes du <b>Palais de Cendre</b>, le jour où {hero} y pénétra seul pour affronter {villain}.</p>" },
+  { chap:'Le Palais de Cendre', html:"<p>Le palais ne brûlait pas. Il ne brillait pas. Il était gris — d'un gris qui avait oublié jusqu'au souvenir des couleurs. Nulle garde aux portes : à quoi bon défendre un lieu que plus aucun mot ne savait nommer ?</p>" },
+  { chap:'La galerie des mots morts', illus:STELES, cap:'Les mots que le Chancelier fit taire.', html:"<p>Une longue galerie menait au trône. De part et d'autre, dressées comme des stèles, veillaient les mots que le Chancelier avait fait taire : <i>liberté</i>, <i>peut-être</i>, <i>autrefois</i>, <i>ensemble</i>, <i>demain</i>. Chacun gravé, puis soigneusement raturé.</p>" },
+  { chap:'Le trône', html:"<p>Au bout l'attendait un homme petit, gris, presque ordinaire — rien d'un monstre. « Te voilà, dit {villain} avec un demi-sourire. Le fameux Porteur de Mots. Je l'avoue : je t'imaginais plus grand. »</p>" },
+  { chap:'La joute de verbe', html:"<p>Il leva la main et lança son dernier sort : un grand charabia où les sons s'entrechoquaient sans plus rien vouloir dire, un brouillard où nul ne pouvait se comprendre. Mais {hero} répondit par des mots justes, et chacun perça le brouillard comme une lame perce la brume.</p>" },
+  { chap:'Pourquoi ?', html:"<p>« Pourquoi ? demanda {hero}. Pourquoi avoir volé les mots d'un peuple entier ? » Le sourire du vieil homme se fissura. « Parce qu'un peuple qui sait nommer sa peine finit toujours par exiger qu'on y mette fin. Sans les mots, ils étaient… tranquilles. »</p>" },
+  { chap:'L\'aveu', html:"<p>« Tranquilles, repris-tu, ou seulement muets ? » Le Chancelier baissa les yeux. Et pour la première fois depuis des années, il prononça, d'une voix qui tremblait, les deux mots qu'il s'était toujours interdits : « <b>J'avais peur.</b> »</p>" },
+  { chap:'La chute', html:"<p>Au-dehors, la foule scandait des mots qu'elle venait de réapprendre. Aucun mur, aucun trône ne tient contre une langue rendue au peuple. Le siège de cendre s'effondra, et {villain} avec lui — vaincu non par la force, mais par le <b>sens</b>.</p>" },
+  { chap:'Épilogue', illus:THRONE, cap:'On posa, sur le trône, un livre ouvert.', html:"<p>On ne détruisit pas le Palais : on en fit la plus grande bibliothèque de <b>Sémantia</b>. Et sur le trône de cendre, désormais, on posa simplement un livre ouvert. Ainsi s'achève l'histoire de l'Antre — et commence celle d'un peuple qui n'aura plus jamais peur de ses propres mots.</p>" },
+ ];
 }
 
 // Affiche une scène narrative (parchemin paginé). onDone() appelé à la fermeture.
