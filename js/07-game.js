@@ -50,9 +50,19 @@ function startAdventure(advId){
    MAP_ZONES=MAT_ZONES; _ARCH_REGIONS=_MAT_REGIONS; _STORY=_MAT_STORY;
    STORY_VILLAIN=_MAT_VILLAIN; STORY_KINGDOM=_MAT_KINGDOM;
   }
- } else if(advId==='col'){
-  MAP_ZONES=COL_ZONES; _ARCH_REGIONS=_COL_REGIONS; _STORY=_COL_STORY;
-  STORY_VILLAIN=_COL_VILLAIN; STORY_KINGDOM=_COL_KINGDOM;
+ } else if(advId==='col' || advId==='colfr'){
+  // Variante française du collège : « L'Odyssée des mots — La Bibliothèque infinie ».
+  const _wantColFr = (advId==='colfr') || (advId==='col' && typeof GM!=='undefined' && GM.subject==='fr');
+  if(_wantColFr){
+   if(typeof GM!=='undefined' && GM.subject!=='fr') GM.subject='fr';
+   MAP_ZONES=COL_ZONES_FR; _ARCH_REGIONS=_COL_REGIONS_FR; _STORY=_COL_STORY_FR;
+   STORY_VILLAIN=_COL_VILLAIN_FR; STORY_KINGDOM=_COL_KINGDOM_FR;
+   GM.adventure='colfr';
+  } else {
+   GM.adventure='col';
+   MAP_ZONES=COL_ZONES; _ARCH_REGIONS=_COL_REGIONS; _STORY=_COL_STORY;
+   STORY_VILLAIN=_COL_VILLAIN; STORY_KINGDOM=_COL_KINGDOM;
+  }
  } else {
   const _wantPrimFr = (advId==='primfr') || (advId==='prim' && typeof GM!=='undefined' && GM.subject==='fr');
   if(_wantPrimFr){
@@ -100,7 +110,7 @@ function _setSubjectLogos(){
  try{
   const fr = (typeof GM!=='undefined' && GM && GM.subject==='fr');
   document.querySelectorAll('img.subj-logo').forEach(function(im){
-   im.src = fr ? 'assets/logo-mots.webp?v=1006' : 'assets/logo-main.webp?v=1006';
+   im.src = fr ? 'assets/logo-mots.webp?v=1008' : 'assets/logo-main.webp?v=1008';
    im.alt = fr ? "L'Odyssée des Mots" : "L'Odyssée des Chiffres";
   });
   const lbl = document.getElementById('ody-btn-label');
@@ -114,6 +124,7 @@ function openOdysseeSelect(){
   const su=document.getElementById('ody-sel-sub'); if(su) su.textContent=fr?"Maîtrise les secrets du langage":"Choisis ton aventure";
   const ms=document.getElementById('ody-mat-sub'); if(ms) ms.textContent=fr?"Le Grand Livre du Conteur":"Le Pays des Couleurs";
   const ps=document.getElementById('ody-prim-sub'); if(ps) ps.textContent=fr?"Le journal intime":"L'Ombre sur Calcultopia";
+  const cs=document.getElementById('ody-col-sub'); if(cs) cs.textContent=fr?"La Bibliothèque infinie":"Le Forgeron des Étoiles";
   if(typeof _setSubjectLogos==='function') _setSubjectLogos();
  }catch(e){}
  if(typeof navTo==='function') navTo('v-odyssey-select'); else showView('v-odyssey-select');
@@ -3528,6 +3539,7 @@ function _advCollectionHtml(){
   const adv = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
   if(adv==='matfr') return _advBookHtml();
   if(adv==='primfr') return _advBadgeHtml();
+  if(adv==='colfr') return _advLibraryHtml();
   if(adv==='mat') return _advRainbowHtml();
   if(adv==='col') return _advArmorHtml();
   return _advTalismanHtml();
@@ -5184,6 +5196,260 @@ const _COL_STORY = {
  ]},
 };
 
+// ═══════════════════════════════════════════════════════════════════════
+// ─── Odyssée des MOTS — COLLÈGE : « La Bibliothèque infinie » (v10.13.0) ──
+// Dystopie : le Chancelier Suprême Ulrich Morne a réduit la langue de
+// Monotonia à quelques mots dociles. {hero}, alias « le Porteur de Mots »,
+// découvre une bibliothèque infinie ; chaque îlot est un livre-monde dont la
+// conquête rend un pouvoir — puis un livre lisible rejoint sa bibliothèque.
+// Voix : épopée lyrique (général) · sobriété glaçante (Monotonia) · romanesque
+// (plongées) · ironie légère (Morne). Routage 'colfr' (cf. startAdventure).
+// ═══════════════════════════════════════════════════════════════════════
+const _COL_VILLAIN_FR = 'le Chancelier Suprême Ulrich Morne';
+const _COL_KINGDOM_FR = 'Monotonia';
+const _COLFR_ZONE_LABELS = {
+ // 6e — Livre I : Le Français des Origines
+ col_cp_1:'Le Fleuve des Langues', col_cp_2:'Les Ruines Latines', col_cp_3:'Le Bois Gaulois', col_cp_4:'Le Cloître des Moines', col_cp_5:'La Source du Verbe',
+ // 5e — Livre II : Le Trésor des Mots
+ col_ce1_1:'La Caverne aux Mille Reflets', col_ce1_2:'Le Verger des Familles', col_ce1_3:'Le Marché des Synonymes', col_ce1_4:'La Galerie des Registres', col_ce1_5:'Le Prisme du Sens',
+ // 4e — Livre III : L'Art de Convaincre
+ col_ce2_1:"L'Agora", col_ce2_2:'La Tribune des Orateurs', col_ce2_3:"L'Amphithéâtre", col_ce2_4:'Le Forum du Débat', col_ce2_5:'La Flamme de Cicéron',
+ // 4e/3e — Livre IV : Les Mécaniques du Verbe
+ col_cm1_1:"La Cité-Horlogerie", col_cm1_2:'Les Grands Engrenages', col_cm1_3:'La Salle des Temps', col_cm1_4:'Le Pont des Subordonnées', col_cm1_5:'Le Cœur de la Machine',
+ // 3e — Livre V : Le Miroir des Genres
+ col_cm2_1:'Le Théâtre-Monde', col_cm2_2:'La Galerie des Masques', col_cm2_3:'La Scène aux Mille Voix', col_cm2_4:'Le Cabinet des Miroirs', col_cm2_5:"L'Étoile des Genres",
+ // 3e — Livre VI : Le Réveil (le soulèvement)
+ col_final_1:'Les Faubourgs Gris', col_final_2:'La Place du Silence', col_final_3:'Les Toits de Monotonia', col_final_4:'La Grande Tribune', col_final_5:"L'Aube du Verbe",
+ // Antre du Chancelier
+ col_titan_1:'Le Palais de Cendre', col_titan_2:'La Galerie des Mots Morts', col_titan_3:'Le Trône du Chancelier',
+};
+const COL_ZONES_FR = (typeof COL_ZONES!=='undefined' ? COL_ZONES : []).map(z => Object.assign({}, z, { id:'colfr_'+z.id, label: _COLFR_ZONE_LABELS[z.id] || z.label }));
+const _COL_REGIONS_FR = [
+ { id:'cp',    label:'Livre I — Le Français des Origines', levels:['6E'],     shape:'colline' },
+ { id:'ce1',   label:'Livre II — Le Trésor des Mots',      levels:['5E'],     shape:'feuille' },
+ { id:'ce2',   label:"Livre III — L'Art de Convaincre",    levels:['4E'],     shape:'dune' },
+ { id:'cm1',   label:'Livre IV — Les Mécaniques du Verbe', levels:['4E'],     shape:'citadelle' },
+ { id:'cm2',   label:'Livre V — Le Miroir des Genres',     levels:['3E'],     shape:'nebuleuse' },
+ { id:'final', label:'Livre VI — Le Réveil',               levels:['3E'],     shape:'mandala' },
+ { id:'titan', label:'L\'Antre du Chancelier',             levels:['3E'],     shape:'citadelle' },
+];
+const _COL_STORY_FR = {
+ intro: { id:'colfr_intro', title:'La Bibliothèque infinie', pages:[
+  { emoji:'🏙️', text:"Il fut un temps, dit-on, où les hommes de ce pays possédaient autant de mots qu'il y a d'étoiles. Puis vint <b>{villain}</b>, et il fit de la langue un désert. Aujourd'hui, à <b>Monotonia</b>, on n'enseigne plus qu'une poignée de mots dociles." },
+  { emoji:'🌫️', text:"La ville est grise — d'un gris décrété, administratif, définitif. Les gens se croisent sans se parler : il ne reste plus grand-chose à dire. Car {villain} l'a compris — sans mot, pas d'idée ; sans nuance, pas de désaccord ; sans passé, pas d'« avant »." },
+  { emoji:'😐', text:"« À quoi bon mille mots, répète le Chancelier dans son infinie sollicitude, quand un seul suffit à obéir ? » On l'applaudit beaucoup — du reste, <i>applaudir</i> et <i>approuver</i> se disent désormais d'un même mot, ce qui simplifie la vie publique." },
+  { emoji:'🧱', text:"Toi, {hero}, tu t'ennuies au collège, où l'on récite les rares mots permis. Un matin, au fond du préau désert, ton coude heurte une dalle disjointe. Un déclic sec. Et le mur, lentement, s'ouvre." },
+  { emoji:'📚', text:"Derrière : un escalier, puis une salle sans fin — des rayonnages qui montent jusqu'à des cieux de parchemin. Une <b>bibliothèque infinie</b>, oubliée de tous. « Bienvenue », murmure un vieil homme surgi de l'ombre. « Je suis le <b>Bibliothécaire</b>. Je t'attendais. »" },
+  { emoji:'🗝️', text:"« Chaque livre est un monde, dit-il. Plonge dedans, traverse ses épreuves, et tu en rapporteras un <b>pouvoir</b> — un morceau de la langue volée. Quand tu les auras tous, tu pourras réveiller Monotonia. On t'appellera le <b>Porteur de Mots</b>. Commence par le premier tome : <i>Le Français des Origines</i>. »" },
+ ]},
+ chapters: {
+  cp:    { id:'colfr_c_cp',  title:'Livre I — Le Français des Origines', crystal:"le pouvoir d'Étymologie", pages:[
+   { emoji:'🌊', text:"À peine as-tu posé la main sur la page que le sol se dérobe : te voici au bord d'un <b>fleuve des langues</b>, sous un ciel de parchemin. De l'autre rive montent des voix anciennes — du latin, du grec, des mots qui résonnent en toi comme un souvenir." },
+   { emoji:'🗝️', text:"« Ce livre garde l'<b>origine des mots</b>, souffle le Bibliothécaire. Son gardien est <b>l'Oubli</b>, une brume qui efface les racines. Rends à chaque mot sa source, et tu gagneras l'<b>Étymologie</b> : le pouvoir de lire, sous chaque mot, les siècles qui l'ont façonné. »" },
+  ]},
+  ce1:   { id:'colfr_c_ce1', title:'Livre II — Le Trésor des Mots', crystal:'le pouvoir de Nuance', pages:[
+   { emoji:'💎', text:"Le deuxième tome t'engloutit dans une <b>caverne aux mille reflets</b>, où chaque mot scintille d'une lueur différente. Ici dorment les familles, les synonymes, les registres — toute la richesse que Monotonia a perdue." },
+   { emoji:'🌑', text:"Son gardien est <b>la Platitude</b>, une créature qui aplatit tout en un seul mot terne. « Apprends à distinguer la lueur exacte d'un mot, dit le Bibliothécaire, et tu gagneras la <b>Nuance</b> : le pouvoir de préciser, et donc de contredire. »" },
+  ]},
+  ce2:   { id:'colfr_c_ce2', title:"Livre III — L'Art de Convaincre", crystal:"le pouvoir d'Éloquence", pages:[
+   { emoji:'🏛️', text:"Le troisième livre t'ouvre une <b>agora antique</b> baignée de soleil, où des foules écoutent, debout, des orateurs enflammés. C'est ici qu'on apprend à transformer un récit en argument, et un argument en flamme." },
+   { emoji:'🎭', text:"Son gardien est <b>le Sophiste</b>, un beau parleur qui plie la vérité à son gré. « Distingue convaincre de manipuler, prévient le Bibliothécaire, et tu gagneras l'<b>Éloquence</b> : le pouvoir d'émouvoir et de rallier une foule. »" },
+  ]},
+  cm1:   { id:'colfr_c_cm1', title:'Livre IV — Les Mécaniques du Verbe', crystal:'le pouvoir de Précision', pages:[
+   { emoji:'⚙️', text:"Le quatrième tome te précipite dans une <b>cité-horlogerie</b> aux engrenages géants, où chaque rouage est une fonction de la phrase : sujet, verbe, complément, subordonnée. Tout s'emboîte, ou tout se grippe." },
+   { emoji:'🔧', text:"Son gardien est <b>le Solécisme</b>, un monstre fait de phrases brisées et de temps mal accordés. « Règle chaque rouage, dit le Bibliothécaire, et tu gagneras la <b>Précision</b> : le pouvoir d'énoncer sans la moindre faille. »" },
+  ]},
+  cm2:   { id:'colfr_c_cm2', title:'Livre V — Le Miroir des Genres', crystal:"le pouvoir d'Imaginaire", pages:[
+   { emoji:'🪞', text:"Le cinquième livre t'entraîne dans un <b>théâtre-monde</b>, une galerie de miroirs où vivent tous les genres : le conte et le merveilleux, la poésie, la tragédie, le roman, la littérature qui s'engage." },
+   { emoji:'👻', text:"Son gardien est <b>le Spectre des Lieux communs</b>, qui n'a plus que des phrases mortes et rebattues à la bouche. « Ranime l'invention, dit le Bibliothécaire, et tu gagneras l'<b>Imaginaire</b> : le pouvoir de faire rêver, d'émouvoir, de créer. »" },
+  ]},
+  final: { id:'colfr_c_final', title:'Livre VI — Le Réveil', crystal:'le pouvoir du Verbe libre', pages:[
+   { emoji:'✊', text:"Tu as tous les pouvoirs. Le dernier livre, lui, ne t'emporte nulle part : il te ramène <b>chez toi</b>, dans les faubourgs gris de Monotonia. Car le moment est venu de rendre au peuple les mots qu'on lui a volés." },
+   { emoji:'🤫', text:"« Tu n'es pas seul, dit le Bibliothécaire. Dans l'ombre survivent les <b>Murmureurs</b>, ceux qui se transmettent en secret les mots interdits. Rassemble-les. Monte à la <b>Grande Tribune</b>. Et prononce les mots qui réveillent. » Au loin veillent les <b>Censeurs</b> du Chancelier." },
+  ]},
+  titan: { id:'colfr_c_titan', title:"L'Antre du Chancelier", crystal:'', pages:[
+   { emoji:'🏯', text:"La foule réveillée gronde derrière toi. Il ne reste qu'un seuil à franchir : le <b>Palais de Cendre</b>, où trône {villain}, seul gardien des derniers grands mots du pays." },
+   { emoji:'🌑', text:"Tu remontes la <b>galerie des mots morts</b> — tous les mots qu'il a fait taire, alignés comme des stèles. Au bout, un trône, et un homme petit, gris, qui t'attend en souriant à peine. La dernière joute commence : non pas d'épée, mais de <b>verbe</b>." },
+  ]},
+ },
+ victories: {
+  cp:  { id:'colfr_w_cp',  title:'Pouvoir gagné : l\'Étymologie', crystal:"l'Étymologie", pages:[
+   { emoji:'🗝️', text:"À mesure que tu rends aux mots leurs racines — latines, grecques, gauloises, franques —, l'<b>Oubli</b> se dissipe comme une brume au soleil. Une clé d'or t'apparaît : tu tiens l'<b>Étymologie</b>." },
+   { emoji:'📕', text:"Le tome se referme et rejoint ta <b>bibliothèque</b> : désormais, tu peux relire <i>Le Français des Origines</i> page à page. « Premier pouvoir reconquis, sourit le Bibliothécaire. Monotonia vient de respirer un peu mieux, sans le savoir. »" },
+  ]},
+  ce1: { id:'colfr_w_ce1', title:'Pouvoir gagné : la Nuance', crystal:'la Nuance', pages:[
+   { emoji:'💎', text:"Tu rends à chaque mot sa lueur exacte, jusqu'à ce que <b>la Platitude</b> n'ait plus rien à aplatir. Un prisme de lumière naît dans ta main : la <b>Nuance</b> est à toi." },
+   { emoji:'📗', text:"<i>Le Trésor des Mots</i> rejoint ta bibliothèque. « Avec la nuance revient le <b>doute</b>, murmure le Bibliothécaire — et avec le doute, le droit de n'être pas d'accord. C'est exactement ce que le Chancelier craint le plus. »" },
+  ]},
+  ce2: { id:'colfr_w_ce2', title:"Pouvoir gagné : l'Éloquence", crystal:"l'Éloquence", pages:[
+   { emoji:'🔥', text:"Tu démêles le vrai du beau parler, et <b>le Sophiste</b> s'effondre sous ses propres pièges. Une flamme calme se pose sur tes lèvres : tu possèdes l'<b>Éloquence</b>." },
+   { emoji:'📙', text:"<i>L'Art de Convaincre</i> rejoint ta bibliothèque. « Te voilà capable de rallier une foule, dit le Bibliothécaire, gravement. Garde ce pouvoir pur : l'éloquence sert la vérité, jamais le mensonge. »" },
+  ]},
+  cm1: { id:'colfr_w_cm1', title:'Pouvoir gagné : la Précision', crystal:'la Précision', pages:[
+   { emoji:'⚙️', text:"Tu remets chaque rouage à sa place — accords, temps, subordonnées — et <b>le Solécisme</b> se disloque dans un grincement. Une plume d'acier se forme : la <b>Précision</b> est tienne." },
+   { emoji:'📘', text:"<i>Les Mécaniques du Verbe</i> rejoint ta bibliothèque. « Une phrase juste est une arme que nul ne peut retourner contre toi, dit le Bibliothécaire. Le Chancelier déteste les phrases qu'il ne peut pas tordre. »" },
+  ]},
+  cm2: { id:'colfr_w_cm2', title:"Pouvoir gagné : l'Imaginaire", crystal:"l'Imaginaire", pages:[
+   { emoji:'⭐', text:"Tu chasses les phrases mortes et ranimes l'invention, jusqu'à ce que <b>le Spectre des Lieux communs</b> se dissolve dans un dernier cliché. Une étoile se lève en toi : l'<b>Imaginaire</b>." },
+   { emoji:'📓', text:"<i>Le Miroir des Genres</i> rejoint ta bibliothèque. « Cinq pouvoirs, dit le Bibliothécaire, et sa voix tremble. Il ne te manque plus que le dernier — celui que l'on ne reçoit pas d'un livre, mais que l'on prend soi-même. Rentre à Monotonia, {hero}. Il est temps. »" },
+  ]},
+  final: { id:'colfr_w_final', title:'Pouvoir gagné : le Verbe libre', crystal:'le Verbe libre', pages:[
+   { emoji:'🌅', text:"Du haut de la <b>Grande Tribune</b>, tu parles. Les mots reconquis — <i>liberté, injustice, ensemble, demain</i> — tombent sur la foule grise comme une pluie sur une terre sèche. Et la foule, pour la première fois, <b>comprend</b>." },
+   { emoji:'✊', text:"Un murmure, puis une clameur : Monotonia se réveille. Tu sens naître en toi le dernier pouvoir, le plus grand — le <b>Verbe libre</b>, celui qui soulève les peuples. Les Murmureurs sortent de l'ombre. La révolution est en marche." },
+  ]},
+ },
+ epilogue: { id:'colfr_epilogue', title:'Le Réveil de Sémantia', pages:[
+  { emoji:'🌑', text:"Au sommet du Palais de Cendre, {villain} t'attend. Il lance son dernier sort : un grand charabia où plus personne ne se comprend. Mais tu prononces, justes et vrais, les mots qu'il croyait morts — et chacun déchire son brouillard." },
+  { emoji:'💬', text:"« Pourquoi ? lui demandes-tu. Pourquoi avoir volé les mots ? » Il te regarde, et pour la première fois, son sourire d'ironie se fissure : « Parce qu'un peuple qui sait nommer sa peine… finit toujours par exiger qu'on y mette fin. »" },
+  { emoji:'⚖️', text:"Alors la foule, en bas, scande des mots qu'elle vient de réapprendre. Le Chancelier comprend qu'aucun mur ne tient contre une langue rendue au peuple. Son trône de cendre s'effondre. {villain} tombe — vaincu non par la force, mais par le <b>sens</b>." },
+  { emoji:'🌅', text:"À l'aube, on demande à {hero}, le <b>Porteur de Mots</b>, de gouverner. Tu acceptes — à une condition : que jamais plus on ne touche aux mots du peuple. On rouvre les écoles, les bibliothèques, les théâtres." },
+  { emoji:'📖', text:"Et d'une seule voix, sous les acclamations, le pays se choisit un nom nouveau, à la mesure de sa parole retrouvée : <b>Sémantia</b>, le pays du sens. Le vieux Bibliothécaire essuie une larme : « Il restait une ville où l'on croyait que comprendre est ce qu'il y a de plus précieux. C'était toi. »" },
+ ]},
+ // Livre VI lisible — le récit romancé du Réveil, débloqué après l'épilogue.
+ bookTale: { id:'colfr_booktale', title:'Le Livre du Réveil', pages:[
+  { emoji:'🕯️', text:"Longtemps après, on écrivit ce livre pour que nul n'oubliât comment Sémantia retrouva la parole. Il commence par une nuit grise, la dernière de Monotonia, et par un enfant qui ne savait pas encore qu'il était un héros." },
+  { emoji:'📚', text:"Le Porteur de Mots avait conquis les cinq livres-mondes : l'Étymologie, la Nuance, l'Éloquence, la Précision, l'Imaginaire. Cinq pouvoirs, cinq fragments de la langue volée. Mais le sixième ne dormait dans aucun livre : il dormait dans le <b>peuple</b>." },
+  { emoji:'🤫', text:"Une nuit, par les caves et les toits, il rassembla les <b>Murmureurs</b> — couturières, vieux maîtres, enfants têtus — tous ceux qui avaient gardé en secret quelques mots interdits, comme on garde des braises sous la cendre." },
+  { emoji:'📜', text:"À l'aube, il monta à la <b>Grande Tribune</b>, là où le Chancelier ne laissait dire qu'un mot par jour. Et il prononça le <b>grand discours</b> : non un discours de haine, mais de mots simples, rendus un à un à ceux qui les avaient perdus." },
+  { emoji:'🗣️', text:"« On vous a dit que vous étiez <i>contents</i>. Mais pour dire la <i>joie</i>, la <i>colère</i>, l'<i>espoir</i>, il vous manquait les mots — et sans les mots, vous ne pouviez même pas savoir ce qui vous manquait. On ne vous a pas seulement réduits au silence : on vous a réduits à l'<b>aveuglement</b>. »" },
+  { emoji:'🌊', text:"Un frisson parcourut la foule grise. Des hommes pleuraient sans savoir nommer pourquoi — puis le mot leur revenait : <i>injustice</i>. Et avec le mot, la colère ; et avec la colère, le courage." },
+  { emoji:'🔥', text:"Les <b>Censeurs</b> chargèrent pour faire taire la Tribune. Mais comment fait-on taire dix mille bouches qui viennent de retrouver la parole ? Chaque mot rendu était un pavé ; chaque phrase, une barricade." },
+  { emoji:'⚔️', text:"Ce ne fut pas une bataille d'épées. Ce fut une bataille de <b>voix</b>. Là où passait le Porteur de Mots, les murs d'affiches à un seul mot tombaient, et les gens recommençaient à se parler, à se nommer, à se reconnaître." },
+  { emoji:'🏯', text:"Au cœur du Palais de Cendre, le Chancelier comprit qu'il avait perdu. Il avait cru qu'en ôtant les mots, il ôtait les idées. Il découvrait, trop tard, qu'une idée rendue à un seul homme contamine aussitôt tous les autres." },
+  { emoji:'🌅', text:"Quand le tyran tomba, on ne le mit pas à mort : on lui rendit, lui aussi, les mots qu'il avait perdus en chemin — et l'on dit qu'il prononça enfin, en pleurant, ceux qu'il refusait depuis l'enfance : « <b>J'avais peur.</b> »" },
+  { emoji:'🕊️', text:"Le pays se choisit un nom : <b>Sémantia</b>. On grava au fronton de la bibliothèque enfin rouverte une phrase que les écoliers récitent encore : « <i>Un peuple qui possède ses mots possède son destin.</i> »" },
+  { emoji:'💛', text:"Et toi qui lis ces lignes : souviens-toi que ce livre, comme les cinq autres, faillit disparaître à jamais. Les mots ne sont pas un décor. Ce sont des outils, des armes, des ponts. Garde-les vivants, et nul Chancelier ne te réduira jamais au silence." },
+ ]},
+};
+
+// ── Livres lisibles de la Bibliothèque infinie ──────────────────────────
+// Seul le Livre I a son contenu rédigé/vérifié (v10.13.0). Les tomes II→V
+// seront rédigés et vérifiés un par un (ready:false → « bientôt »). Le Livre
+// VI lisible = le récit romancé _COL_STORY_FR.bookTale (débloqué à l'épilogue).
+const _COL_BOOKS_FR = [
+ { roman:'I', region:'cp', accent:'#9E4326', accent2:'#C2603A', title:'Le Français des Origines', power:"l'Étymologie", ready:true, pages: _colBook1Pages() },
+ { roman:'II',  region:'ce1', accent:'#1D6E56', accent2:'#1D9E75', title:'Le Trésor des Mots',       power:'la Nuance',     ready:false },
+ { roman:'III', region:'ce2', accent:'#854F0B', accent2:'#BA7517', title:"L'Art de Convaincre",      power:"l'Éloquence",  ready:false },
+ { roman:'IV',  region:'cm1', accent:'#0C447C', accent2:'#185FA5', title:'Les Mécaniques du Verbe',  power:'la Précision', ready:false },
+ { roman:'V',   region:'cm2', accent:'#3C3489', accent2:'#534AB7', title:'Le Miroir des Genres',     power:"l'Imaginaire", ready:false },
+ { roman:'VI',  region:'final', accent:'#7A2A1E', accent2:'#A33D2D', title:'Le Livre du Réveil',     power:'le Verbe libre', ready:true, bookTale:true },
+];
+function _colBook1Pages(){
+ const I_KEY = '<svg viewBox="0 0 120 90" width="100%"><circle cx="60" cy="34" r="9" fill="none" stroke="#C79A3A" stroke-width="3"/><circle cx="60" cy="34" r="3" fill="#C79A3A"/><line x1="60" y1="43" x2="60" y2="62" stroke="#C79A3A" stroke-width="3.5" stroke-linecap="round"/><path d="M60 62 C52 68 49 72 44 78" fill="none" stroke="#C79A3A" stroke-width="2.4" stroke-linecap="round"/><path d="M60 62 C68 68 71 72 76 78" fill="none" stroke="#C79A3A" stroke-width="2.4" stroke-linecap="round"/><path d="M60 62 C56 70 54 74 51 80" fill="none" stroke="#C79A3A" stroke-width="2" stroke-linecap="round"/><path d="M60 62 C64 70 66 74 69 80" fill="none" stroke="#C79A3A" stroke-width="2" stroke-linecap="round"/></svg>';
+ const XVXX = '<svg viewBox="0 0 130 70" width="100%"><rect x="20" y="14" width="90" height="44" rx="3" fill="#E7D7AE" stroke="#B79A63" stroke-width="1.5"/><text x="65" y="44" text-anchor="middle" font-family="Georgia,serif" font-size="22" font-weight="700" fill="#7A2A1E">XV-XX</text></svg>';
+ const PARCH = '<svg viewBox="0 0 160 96" width="100%"><rect x="22" y="10" width="116" height="76" rx="3" fill="#EFE2BE" stroke="#B79A63" stroke-width="1.5"/><g stroke="#B79A63" stroke-width="0.8"><line x1="34" y1="26" x2="126" y2="26"/><line x1="34" y1="36" x2="118" y2="36"/><line x1="34" y1="46" x2="126" y2="46"/><line x1="34" y1="56" x2="110" y2="56"/></g><circle cx="50" cy="74" r="9" fill="#A33D2D" stroke="#7A2A1E" stroke-width="1.5"/><circle cx="110" cy="74" r="9" fill="#7A6BB0" stroke="#534AB7" stroke-width="1.5"/></svg>';
+ const CIRC = '<svg viewBox="0 0 150 70" width="100%"><text x="75" y="46" text-anchor="middle" font-family="Georgia,serif" font-size="30" fill="#3A2A18">for<tspan fill="#9E4326">ê</tspan>t</text><text x="92" y="22" text-anchor="middle" font-family="Georgia,serif" font-size="16" fill="#B79A63" font-style="italic">s</text></svg>';
+ return [
+  { chap:'Frontispice', illus:I_KEY, cap:'La clé-racine — le pouvoir d\'Étymologie.', html:"<p><i>Tout mot que tu prononces a vécu mille ans avant toi.</i></p><p>Ce livre raconte d'où vient le français, comme un voyage. Tu remonteras le cours du temps jusqu'aux sources de ta langue, et tu apprendras à lire, derrière chaque mot, les siècles qui l'ont façonné.</p>" },
+  { chap:'I — Les racines latines', html:"<p>Avant le français, il y eut le <b>gaulois</b>, langue d'un peuple celte qui ne savait pas écrire son histoire. Une centaine de mots seulement nous en restent, presque tous nés de la terre et des bois : <i>chêne, bouleau, alouette, mouton, ruche, charrue, chemin, lieue</i>. Quand tu marches dans la campagne, tu parles encore la langue des druides.</p>" },
+  { chap:'I — Les racines latines', illus:XVXX, cap:'Les Quinze-Vingts : 15 × 20 = 300.', html:"<p>Les Gaulois comptaient <b>par vingt</b> — on pense que c'est d'eux que vient notre <i>quatre-vingts</i>, « quatre fois vingt ». À Paris, l'hôpital des <b>Quinze-Vingts</b> garde la trace de cet usage : fondé pour trois cents aveugles, soit <i>quinze fois vingt</i>.</p>" },
+  { chap:'I — Les racines latines', html:"<p>Puis vinrent les légions de Rome, et avec elles le <b>latin</b> — non le latin des poètes, mais celui, vivant et déformé, des soldats et des marchands. C'est de cette langue parlée qu'est né le français : une <b>langue romane</b>, « issue de Rome », sœur de l'espagnol et de l'italien.</p><p>Les mots s'usaient à l'oreille comme des galets : <i>caballus</i> devint <i>cheval</i>, <i>schola</i> devint <i>école</i>.</p>" },
+  { chap:'I — Les racines latines', html:"<p><b>L'anecdote du sel.</b> Le mot <b>salaire</b> vient du latin <i>salarium</i>, qui contient <i>sal</i> : le sel. On raconte depuis l'Antiquité que les soldats romains étaient payés en sel. La vérité est plus prudente : les historiens doutent aujourd'hui de cette jolie légende. Retiens la leçon — une étymologie séduisante n'est pas toujours vraie.</p>" },
+  { chap:'II — L\'héritage grec', html:"<p>Si le latin est la mère du français, le <b>grec</b> en est le parrain savant. Il nous a donné les mots du savoir — <i>philosophie</i> (« amour de la sagesse »), <i>démocratie</i> (« pouvoir du peuple »), <i>théâtre</i> — et des <b>briques</b> qu'on assemble : <i>télé-</i> (loin), <i>-phone</i> (la voix), <i>-graphe</i> (écrire), <i>bio-</i> (la vie).</p>" },
+  { chap:'II — L\'héritage grec', html:"<p>Deux mots pour sourire. <b>Musée</b> vient des <b>Muses</b>, les neuf déesses des arts : un musée est un « temple des Muses ». Et <b>barbare</b> désignait, pour les Grecs, ceux qui ne parlaient pas leur langue : à leurs oreilles, ils semblaient dire « bar-bar-bar » ! Un mot peut naître d'une moquerie.</p>" },
+  { chap:'III — Le Moyen Âge', html:"<p>Au Moyen Âge, les <b>Francs</b>, guerriers germaniques, donnèrent leur nom à la <b>France</b>. Ils ne remplacèrent pas le latin : ils le colorèrent. On leur doit les mots de la guerre (<i>guerre, heaume, maréchal</i>), des couleurs (<i>bleu, blanc, gris, blond</i>) et le mot <i>jardin</i>. On dit que le français est <b>la plus germanique des langues romanes</b>.</p>" },
+  { chap:'III — Le Moyen Âge', illus:PARCH, cap:'Les Serments de Strasbourg, scellés des deux frères.', html:"<p><b>Le plus vieux français du monde.</b> En <b>842</b>, deux petits-fils de Charlemagne se jurèrent alliance à Strasbourg, chacun dans la langue de l'autre. Ces <b>Serments de Strasbourg</b>, recopiés par l'historien Nithard, sont le plus ancien texte conservé dans la langue qui allait devenir le français.</p>" },
+  { chap:'IV — Le français moderne', html:"<p><b>Le jour où le français devint roi.</b> En <b>1539</b>, <b>François Ier</b> signa l'ordonnance de <b>Villers-Cotterêts</b> : désormais, la justice et l'administration se feraient en français, et non plus en latin. La même loi créa les registres de baptême, ancêtres de l'état civil. C'est le plus ancien texte de loi français encore en partie en vigueur.</p>" },
+  { chap:'IV — Le français moderne', html:"<p>En <b>1549</b>, le poète <b>Joachim du Bellay</b> et ses amis de la <b>Pléiade</b> proclamèrent, dans un texte au titre flamboyant, que le français pouvait être aussi beau que le latin. En <b>1635</b>, Richelieu fonda l'<b>Académie française</b>. Au siècle des Lumières, le français rayonnait sur toute l'Europe cultivée.</p>" },
+  { chap:'V — La langue vivante', illus:CIRC, cap:'L\'accent circonflexe : la pierre tombale d\'un « s ».', html:"<p>Une langue est un être vivant. <b>Le chapeau qui cache un fantôme :</b> l'accent circonflexe est, le plus souvent, la trace d'un <b>s disparu</b>. On écrivait jadis <i>forest, hospital, feste, isle, chasteau</i> — devenus <i>forêt, hôpital, fête, île, château</i>.</p>" },
+  { chap:'V — La langue vivante', html:"<p><b>Le truc du détective :</b> pour débusquer ce <i>s</i> enfui, cherche un mot de la même famille — il l'a souvent gardé : <i>forêt → forestier</i>, <i>hôpital → hospitalier</i>, <i>fête → festin</i>. Et si tu connais l'anglais, observe : <i>forest, hospital, feast</i> ont gardé le <i>s</i> d'avant.</p>" },
+  { chap:'V — Clôture', illus:I_KEY, cap:'Premier pouvoir reconquis.', html:"<p>Te voici au bout du premier livre. Ta langue est l'héritage de Gaulois et de Romains, de Grecs savants et de Francs guerriers, de rois et de poètes — un trésor que mille générations t'ont transmis. {villain} voudrait te faire croire que les mots ne servent qu'à obéir. Mais tu sais, désormais, qu'ils portent toute l'histoire des hommes.</p>" },
+ ];
+}
+
+// ── Lecteur de livre (visionneuse parchemin paginée, illustrations) ─────
+function _openColBook(idx){
+ try{
+  const book = (typeof _COL_BOOKS_FR!=='undefined' ? _COL_BOOKS_FR : [])[idx];
+  if(!book || !book.ready || !Array.isArray(book.pages) || !book.pages.length) return;
+  if(typeof closeAdventureLog==='function') closeAdventureLog();
+  setTimeout(()=>{ _renderColBook(book); }, 300);
+ }catch(e){}
+}
+function _renderColBook(book){
+ let page = 0;
+ const ov = document.createElement('div');
+ ov.className = 'story-overlay';
+ function close(){ ov.classList.add('story-out'); setTimeout(()=>{ try{ ov.remove(); }catch(e){} }, 300); }
+ function _heroName(){ try{ return (typeof P!=='undefined'&&P&&P.name)?String(P.name):'le Porteur de Mots'; }catch(e){ return 'le Porteur de Mots'; } }
+ function _fill(s){ try{ s=String(s||''); const h=_heroName().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); return s.replace(/\{hero\}/g,'<b>'+h+'</b>').replace(/\{villain\}/g, (typeof _COL_VILLAIN_FR!=='undefined'?_COL_VILLAIN_FR:'le Chancelier')); }catch(e){ return s; } }
+ function render(){
+  const p = book.pages[page] || {};
+  const last = page >= book.pages.length - 1;
+  const acc = book.accent || '#9E4326';
+  ov.innerHTML =
+   '<div class="story-parchment" style="max-width:560px;border-top:6px solid '+acc+';">'
+   + '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;border-bottom:1px solid #d8c79c;padding-bottom:6px;margin-bottom:10px;">'
+   +  '<span style="font-family:Georgia,serif;font-weight:700;color:'+acc+';font-size:1.02em;">'+book.title+'</span>'
+   +  '<span style="font-family:Georgia,serif;font-size:.78em;color:#8a6a45;">'+(p.chap||'')+'</span>'
+   + '</div>'
+   + (p.illus ? '<div style="margin:0 auto 10px;max-width:300px;background:#e7d7ae;border:1px solid #c9b486;border-radius:6px;padding:8px;">'+p.illus+(p.cap?'<div style="font-family:Georgia,serif;font-style:italic;font-size:.76em;color:#6b5638;text-align:center;margin-top:4px;">'+p.cap+'</div>':'')+'</div>' : '')
+   + '<div class="story-text" style="font-family:Georgia,serif;text-align:justify;line-height:1.7;">'+_fill(p.html||'')+'</div>'
+   + '<div class="story-nav">'
+   +  (page>0?'<button class="story-btn cb-prev">‹</button>':'<span class="story-spacer"></span>')
+   +  '<div class="story-dots" style="flex-wrap:wrap;">'+book.pages.map(function(_,i){return '<span class="story-dot'+(i===page?' on':'')+'"></span>';}).join('')+'</div>'
+   +  '<button class="story-btn cb-next">'+(last?'Fermer le livre':'Suivant ›')+'</button>'
+   + '</div>'
+   + '<div style="text-align:center;font-family:Georgia,serif;font-size:.78em;color:#8a6a45;margin-top:4px;">page '+(page+1)+' / '+book.pages.length+'</div>'
+   + '</div>';
+  const nx=ov.querySelector('.cb-next'); if(nx) nx.onclick=function(){ if(!last){ page++; render(); } else close(); };
+  const pv=ov.querySelector('.cb-prev'); if(pv) pv.onclick=function(){ if(page>0){ page--; render(); } };
+  if(typeof beep==='function'){ try{ beep(520,'sine',.10,.04); }catch(e){} }
+ }
+ render();
+ document.body.appendChild(ov);
+}
+
+// ── Carnet collège FR : La Bibliothèque infinie (6 tomes sur une étagère) ─
+function _advLibraryHtml(){
+ const regs=['cp','ce1','ce2','cm1','cm2'];
+ const seen=(typeof P!=='undefined'&&P&&P.storySeen)||[];
+ const books=(typeof _COL_BOOKS_FR!=='undefined')?_COL_BOOKS_FR:[];
+ const unlocked=function(i){ return i<5 ? _regionConquered(regs[i]) : seen.includes('colfr_booktale'); };
+ const nUn=books.reduce(function(a,b,i){return a+(unlocked(i)?1:0);},0);
+ const nRead=books.reduce(function(a,b,i){return a+((b.ready&&unlocked(i))?1:0);},0);
+ const x0=12, bw=28, gap=2.4;
+ let spines='';
+ for(let i=0;i<6;i++){
+  const b=books[i]||{}; const lit=unlocked(i); const on=lit&&b.ready;
+  const x=x0+i*(bw+gap);
+  const cx=(x+bw/2);
+  const col=on?(b.accent||'#9E4326'):'#615d57';
+  const top=on?(b.accent2||'#C2603A'):'#7a756e';
+  const click=on?(' onclick="_openColBook('+i+')" style="cursor:pointer" role="button" tabindex="0" title="Lire : '+(b.title||'')+'"'):'';
+  spines+='<g'+click+'>'
+   +'<rect x="'+x.toFixed(1)+'" y="26" width="'+bw+'" height="106" rx="2" fill="'+col+'"/>'
+   +'<rect x="'+x.toFixed(1)+'" y="26" width="'+bw+'" height="9" rx="2" fill="'+top+'"/>'
+   +'<rect x="'+(x+3).toFixed(1)+'" y="40" width="'+(bw-6)+'" height="80" rx="1" fill="none" stroke="'+(on?'#f0d68a':'#54504a')+'" stroke-width="1"/>'
+   +'<text x="'+cx.toFixed(1)+'" y="92" text-anchor="middle" font-family="Georgia,serif" font-size="13" font-weight="700" fill="'+(on?'#f4dca0':'#54504a')+'" transform="rotate(-90 '+cx.toFixed(1)+' 92)">'+(b.roman||(i+1))+'</text>'
+   +(on?('<circle cx="'+cx.toFixed(1)+'" cy="116" r="6" fill="#3a1c10" stroke="#f0d68a" stroke-width="1.1"/>'+_colPowerGlyph(i,cx,116)):'')
+   +(!lit?('<text x="'+cx.toFixed(1)+'" y="86" text-anchor="middle" font-size="13">🔒</text>'):'')
+   +(lit&&!b.ready?('<text x="'+cx.toFixed(1)+'" y="118" text-anchor="middle" font-size="7" fill="#cfcabf" font-family="Georgia,serif">bientôt</text>'):'')
+   +'</g>';
+ }
+ const shelf='<rect x="6" y="132" width="188" height="9" rx="2" fill="#5a4126"/><rect x="6" y="132" width="188" height="3" fill="#7a5a34"/><rect x="6" y="22" width="188" height="5" rx="2" fill="#3c2c18"/>';
+ const msg = nRead>0 ? (nRead+' livre'+(nRead>1?'s':'')+' à lire — touche un tome doré 📖')
+   : "Conquiers les îlots : chaque tome rejoindra ta bibliothèque.";
+ return ''
+  +'<div class="advlog-section-title">📚 La Bibliothèque infinie</div>'
+  +'<div class="advcol-box advcol-mat">'
+  +' <svg viewBox="0 0 200 150" class="advcol-svg" aria-label="Bibliothèque : '+nUn+' livres sur 6">'
+  +'  '+shelf+spines
+  +' </svg>'
+  +' <div class="advcol-caption">'+msg+' <b>'+nUn+' / 6</b></div>'
+  +'</div>';
+}
+// Petit symbole de pouvoir au pied de chaque tome débloqué
+function _colPowerGlyph(i,x,y){
+ const c='#f0d68a';
+ if(i===0) return '<path d="M'+x+' '+(y-3)+' v5 M'+(x-2)+' '+(y+2)+' h4" stroke="'+c+'" stroke-width="1.2" fill="none" stroke-linecap="round"/><circle cx="'+x+'" cy="'+(y-3)+'" r="1.4" fill="none" stroke="'+c+'" stroke-width="1"/>'; // clé
+ if(i===1) return '<path d="M'+x+' '+(y-3.5)+' l3 3.5 -3 3.5 -3 -3.5 Z" fill="none" stroke="'+c+'" stroke-width="1"/>'; // prisme
+ if(i===2) return '<path d="M'+x+' '+(y-4)+' q2.5 4 0 8 q-2.5 -4 0 -8 Z" fill="'+c+'"/>'; // flamme
+ if(i===3) return '<circle cx="'+x+'" cy="'+y+'" r="2.4" fill="none" stroke="'+c+'" stroke-width="1"/><path d="M'+x+' '+(y-3.6)+' v1.4 M'+x+' '+(y+2.2)+' v1.4 M'+(x-3.6)+' '+y+' h1.4 M'+(x+2.2)+' '+y+' h1.4" stroke="'+c+'" stroke-width="1" stroke-linecap="round"/>'; // rouage
+ if(i===4) return '<path d="M'+x+' '+(y-4)+' l1 2.6 2.8 0 -2.3 1.8 .9 2.8 -2.4 -1.7 -2.4 1.7 .9 -2.8 -2.3 -1.8 2.8 0 Z" fill="'+c+'"/>'; // étoile
+ return '<path d="M'+(x-3.5)+' '+(y+2)+' a3.5 3.5 0 0 1 7 0 Z" fill="'+c+'"/><path d="M'+x+' '+(y-3)+' v2 M'+(x-3)+' '+(y-1)+' l1.4 1 M'+(x+3)+' '+(y-1)+' l-1.4 1" stroke="'+c+'" stroke-width=".8" stroke-linecap="round"/>'; // aube
+}
+
 // Affiche une scène narrative (parchemin paginé). onDone() appelé à la fermeture.
 // ── Narration chaleureuse du livre (mode Odyssée) ──────────────────────
 // Voix de conteur : lente, posée, en privilégiant une voix française
@@ -5406,6 +5672,7 @@ function _questVocab(){
  if(adv==='mat') return { icon:'🌈', lockCollect:'🌈 Couleur à retrouver', collected:'Couleur retrouvée', region:'Île à atteindre', end:'Arc-en-ciel à compléter' };
  if(adv==='matfr') return { icon:'📖', lockCollect:'📖 Page à retrouver', collected:'Page retrouvée', region:'Monde à atteindre', end:'Livre à compléter' };
  if(adv==='primfr') return { icon:'🎖️', lockCollect:'🎖️ District à libérer', collected:'District libéré', region:'District à atteindre', end:'Insigne à compléter' };
+ if(adv==='colfr') return { icon:'📚', lockCollect:'📚 Tome à conquérir', collected:'Tome conquis', region:'Livre à atteindre', end:'Bibliothèque à compléter' };
  if(adv==='col') return { icon:'🛡️', lockCollect:'🛡️ Pièce à forger',     collected:'Pièce forgée',    region:'Îlot à atteindre',  end:'Forge finale à débloquer' };
  return { icon:'💎', lockCollect:'💎 Cristal à libérer', collected:'Cristal libéré', region:'Région à atteindre', end:'Fin à débloquer' };
 }
