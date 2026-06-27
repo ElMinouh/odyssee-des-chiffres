@@ -110,7 +110,7 @@ function _setSubjectLogos(){
  try{
   const fr = (typeof GM!=='undefined' && GM && GM.subject==='fr');
   document.querySelectorAll('img.subj-logo').forEach(function(im){
-   im.src = fr ? 'assets/logo-mots.webp?v=1015' : 'assets/logo-main.webp?v=1015';
+   im.src = fr ? 'assets/logo-mots.webp?v=1016' : 'assets/logo-main.webp?v=1016';
    im.alt = fr ? "L'Odyssée des Mots" : "L'Odyssée des Chiffres";
   });
   const lbl = document.getElementById('ody-btn-label');
@@ -3618,43 +3618,64 @@ function _advBookHtml(){
  const done = got.every(Boolean);
  const seen = (P && P.storySeen) || [];
  const taleSeen = seen.includes('matfr_booktale');
- const cr = '#fdf6e3';
- const star = (x,y,c)=>`<path d="M${x} ${y-5} l1.7 5 5.3 0 -4.3 3.2 1.6 5.1 -4.3 -3.1 -4.3 3.1 1.6 -5.1 -4.3 -3.2 5.3 0 Z" fill="${c}"/>`;
- const lines = (x,y,w)=>`<g stroke="#c79a3a" stroke-width="1.3" opacity=".75"><line x1="${x}" y1="${y}" x2="${x+w}" y2="${y}"/><line x1="${x}" y1="${y+6}" x2="${x+w*0.8}" y2="${y+6}"/><line x1="${x}" y1="${y+12}" x2="${x+w}" y2="${y+12}"/></g>`;
- // Mini-image par monde : animaux, mots, syllabes, rimes, sons, lettres.
- const mini = (i,x,y)=>{
-  if(i===0) return `<g fill="#9a5a18"><ellipse cx="${x}" cy="${y+2}" rx="3" ry="2.4"/><circle cx="${x-3}" cy="${y-2}" r="1.2"/><circle cx="${x}" cy="${y-3}" r="1.2"/><circle cx="${x+3}" cy="${y-2}" r="1.2"/></g>`;
-  if(i===1) return `<g><circle cx="${x}" cy="${y+1}" r="3.2" fill="#df5a3f"/><rect x="${x-0.4}" y="${y-4}" width="1" height="2.3" fill="#5e3a1c"/><path d="M${x} ${y-3} q3 -1.2 4 0.8 q-3 1 -4 -0.8 Z" fill="#3f8a3f"/></g>`;
-  if(i===2) return `<g fill="#3a49a8"><ellipse cx="${x-1.6}" cy="${y+3}" rx="2.4" ry="1.8"/><rect x="${x+0.5}" y="${y-4}" width="1.3" height="7"/><path d="M${x+1.8} ${y-4} q4 0 4 3 q-2 -2 -4 -1 Z"/></g>`;
-  if(i===3) return `<path d="M${x} ${y-4} q3.6 4.2 0 8 q-3.6 -3.8 0 -8 Z" fill="#1d86ad"/>`;
-  if(i===4) return `<path d="M${x} ${y-4.2} l1.2 3 3.3 0 -2.7 2.1 1 3.1 -2.8 -2 -2.8 2 1 -3.1 -2.7 -2.1 3.3 0 Z" fill="#c8791a"/>`;
-  return `<text x="${x}" y="${y+3.5}" text-anchor="middle" font-size="11" font-weight="bold" fill="#6a4fa0" font-family="Georgia,serif">A</text>`;
+ // Couleur propre à chaque monde (chatoyant) une fois la page acquise.
+ const WORLD=[{c:'#2ecc71',r:'#1e8e4e'},{c:'#ff7fb0',r:'#c64d80'},{c:'#f5a623',r:'#b9791a'},{c:'#3aa0e8',r:'#1f6fb0'},{c:'#9b6fdf',r:'#6e47ac'},{c:'#e74c5b',r:'#b02a38'}];
+ const memb=(i,x,y,em)=>{
+  if(i===0) return `<g fill="${em}"><circle cx="${x}" cy="${y+1}" r="3.8"/><circle cx="${x-3.3}" cy="${y-2.8}" r="1.7"/><circle cx="${x+3.3}" cy="${y-2.8}" r="1.7"/></g>`;
+  if(i===1) return `<g fill="${em}"><circle cx="${x}" cy="${y}" r="1.7"/><circle cx="${x}" cy="${y-3.3}" r="1.7"/><circle cx="${x}" cy="${y+3.3}" r="1.7"/><circle cx="${x-3.3}" cy="${y}" r="1.7"/><circle cx="${x+3.3}" cy="${y}" r="1.7"/></g>`;
+  if(i===2) return `<g fill="${em}"><ellipse cx="${x-2}" cy="${y+3}" rx="2.3" ry="1.7"/><rect x="${x-0.1}" y="${y-4}" width="1.5" height="7.3"/><path d="M${x+1.4} ${y-4} q3.8 0 3.8 2.8 q-1.9 -1.9 -3.8 -1 Z"/></g>`;
+  if(i===3) return `<path d="M${x} ${y-4.4} q3.9 5 0 9 q-3.9 -4 0 -9 Z" fill="${em}"/>`;
+  if(i===4) return `<path d="M${x} ${y-4.6} l1.3 3.2 3.5 0 -2.8 2.2 1.1 3.3 -3.1 -2.1 -3.1 2.1 1.1 -3.3 -2.8 -2.2 3.5 0 Z" fill="${em}"/>`;
+  return `<text x="${x}" y="${y+4}" text-anchor="middle" font-family="Georgia,serif" font-size="12" font-weight="700" fill="${em}">A</text>`;
  };
- // Onglet d'un monde : gris et vide tant que la page n'est pas retrouvée, puis
- // doré avec l'image du monde une fois la page récupérée.
- const tab = (i,x,y,w,h,on)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="${on?'#f1d979':'#d6cdb4'}" stroke="${on?'#b8902a':'#bcb39b'}" stroke-width="1"/>`+(on?mini(i,x+w/2,y+h/2):'');
- // Pages qui se remplissent au fil des mondes ; onglets en bas (un par monde).
- const lc = n>=2 ? (lines(36,72,40)+mini(0,58,108)) : '';
- const rc = n>=5 ? (lines(104,72,40)+mini(5,136,108)) : '';
- let tabs=''; for(let i=0;i<6;i++){ tabs += tab(i, 25+i*27, 140, 24, 18, i<n); }
- const glow = done ? ' filter="drop-shadow(0 3px 7px rgba(212,175,55,.45))"' : '';
+ const coin=(i,x,y,on)=>{
+  const w=WORLD[i], fill=on?w.c:'#cdd0c9', rim=on?w.r:'#a6a89e', em=on?'#ffffff':'#eef0ea';
+  return `<circle cx="${x}" cy="${y}" r="12.5" fill="${rim}"/><circle cx="${x}" cy="${y}" r="11" fill="${fill}"/>`
+   +`<ellipse cx="${x}" cy="${y-4}" rx="7" ry="3.4" fill="#ffffff" opacity="${on?0.28:0.16}"/>`+memb(i,x,y,em);
+ };
+ let coins=''; const cxs=[32,66,100,134,168,202]; for(let i=0;i<6;i++){ coins+=coin(i,cxs[i],194,i<n); }
+ const glow = done ? ' filter="drop-shadow(0 3px 8px rgba(255,210,90,.5))"' : '';
  const msg = (done && taleSeen) ? "Le Livre est complet — touche-le pour réécouter son histoire 📖"
   : done ? "Le Livre est complet ! Touche-le pour écouter son histoire ✨"
   : n>0 ? `${n} page${n>1?'s':''} retrouvée${n>1?'s':''} — continue, page après page !`
   : "Retrouve les mots, monde après monde !";
  const clickable = done ? `onclick="_openBookTale()" role="button" tabindex="0" title="Écouter l'histoire du Livre" style="cursor:pointer"` : '';
+ const haloR = done ? `<ellipse cx="120" cy="100" rx="112" ry="92" fill="url(#gbGlo)"/>` : '';
  return `
   <div class="advlog-section-title">📖 Le Grand Livre</div>
   <div class="advcol-box advcol-mat${done?' advbook-done':''}" ${clickable}>
-   <svg viewBox="0 0 200 168" class="advcol-svg"${glow} aria-label="Le Grand Livre : ${n} pages sur 6">
-    <path d="M22 48 Q100 36 178 48 L178 126 Q100 116 22 126 Z" fill="#5e4124"/>
-    <path d="M28 52 Q96 42 99 52 L99 120 Q96 112 28 122 Z" fill="${cr}" stroke="#e3d3a8"/>
-    <path d="M101 52 Q104 42 172 52 L172 122 Q104 112 101 120 Z" fill="${cr}" stroke="#e3d3a8"/>
-    <rect x="97" y="48" width="6" height="74" rx="3" fill="#caa46a"/>
-    ${lc}${rc}
-    <path d="M95 38 H105 V84 L100 90 L95 84 Z" fill="#c0392b" stroke="#7a161a" stroke-width=".5"/>
-    ${done?star(100,28,'#ffd84d'):''}
-    ${tabs}
+   <svg viewBox="0 0 240 212" class="advcol-svg"${glow} aria-label="Le Grand Livre : ${n} pages sur 6">
+    <defs>
+     <linearGradient id="gbLea" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6678ec"/><stop offset=".5" stop-color="#3a44ad"/><stop offset="1" stop-color="#232a86"/></linearGradient>
+     <linearGradient id="gbGld" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffeead"/><stop offset=".5" stop-color="#e6bd58"/><stop offset="1" stop-color="#bd8f2e"/></linearGradient>
+     <linearGradient id="gbPag" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff9ec"/><stop offset="1" stop-color="#f0e2bf"/></linearGradient>
+     <linearGradient id="gbEdg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#efe3c4"/><stop offset="1" stop-color="#cdb98c"/></linearGradient>
+     <linearGradient id="gbVal" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset=".5" stop-color="#6b5a2e" stop-opacity=".45"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient>
+     <radialGradient id="gbGlo" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".55"/><stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/></radialGradient>
+     <radialGradient id="gbSky" cx=".5" cy=".3" r=".9"><stop offset="0" stop-color="#dff0ff"/><stop offset="1" stop-color="#bfe3c8"/></radialGradient>
+    </defs>
+    ${haloR}
+    <ellipse cx="122" cy="174" rx="94" ry="10" fill="#000000" opacity="0.16"/>
+    <rect x="26" y="27" width="188" height="138" rx="9" fill="#1a2070"/>
+    <rect x="26" y="26" width="188" height="136" rx="9" fill="url(#gbLea)"/>
+    <rect x="27" y="27" width="186" height="3" rx="2" fill="#ffffff" opacity="0.16"/>
+    <rect x="32" y="32" width="176" height="124" rx="6" fill="none" stroke="url(#gbGld)" stroke-width="2"/>
+    <rect x="36" y="36" width="168" height="116" rx="4" fill="none" stroke="url(#gbGld)" stroke-width=".7"/>
+    <g fill="url(#gbGld)"><path d="M32 32 h12 v2.4 h-9.6 v9.6 h-2.4 z"/><path d="M208 32 h-12 v2.4 h9.6 v9.6 h2.4 z"/><path d="M32 156 h12 v-2.4 h-9.6 v-9.6 h-2.4 z"/><path d="M208 156 h-12 v-2.4 h9.6 v9.6 h2.4 z"/></g>
+    <rect x="33" y="39" width="174" height="117" rx="4" fill="url(#gbEdg)"/>
+    <g stroke="#cbb88c" stroke-width="0.6" opacity="0.7"><line x1="36" y1="154" x2="204" y2="154"/><line x1="38" y1="157" x2="202" y2="157"/></g>
+    <path d="M40 42 Q37 100 40 156 L118 156 Q121 100 118 42 Z" fill="url(#gbPag)" stroke="#e3d3a8" stroke-width="1"/>
+    <path d="M122 42 Q119 100 122 156 L200 156 Q203 100 200 42 Z" fill="url(#gbPag)" stroke="#e3d3a8" stroke-width="1"/>
+    <rect x="117" y="42" width="6" height="114" fill="url(#gbVal)"/>
+    <g><rect x="50" y="52" width="58" height="34" rx="4" fill="url(#gbSky)" stroke="#cdbf94" stroke-width="1"/><ellipse cx="79" cy="84" rx="30" ry="9" fill="#86c98a"/><rect x="93" y="72" width="3" height="12" fill="#8a5a2a"/><circle cx="94.5" cy="69" r="7" fill="#4aa85f"/><circle cx="70" cy="79" r="6" fill="#8a5a2a"/><circle cx="70" cy="73.5" r="4.6" fill="#a06a34"/><circle cx="67.6" cy="73" r="1" fill="#2a1a0a"/><circle cx="72.4" cy="73" r="1" fill="#2a1a0a"/><circle cx="66.6" cy="69.5" r="1.6" fill="#a06a34"/><circle cx="73.4" cy="69.5" r="1.6" fill="#a06a34"/></g>
+    <g stroke="#c79a3a" stroke-width="1" opacity="0.6"><line x1="50" y1="96" x2="108" y2="96"/><line x1="50" y1="101" x2="100" y2="101"/><line x1="50" y1="106" x2="108" y2="106"/></g>
+    <g><path d="M134 96 a30 30 0 0 1 60 0" fill="none" stroke="#e74c3c" stroke-width="3.4"/><path d="M138 96 a26 26 0 0 1 52 0" fill="none" stroke="#f1c40f" stroke-width="3.4"/><path d="M142 96 a22 22 0 0 1 44 0" fill="none" stroke="#2ecc71" stroke-width="3.4"/><path d="M146 96 a18 18 0 0 1 36 0" fill="none" stroke="#3498db" stroke-width="3.4"/><ellipse cx="164" cy="96" rx="22" ry="6" fill="#86c98a"/><circle cx="150" cy="66" r="5" fill="#fff6c8"/></g>
+    <g stroke="#c79a3a" stroke-width="1" opacity="0.6"><line x1="132" y1="110" x2="196" y2="110"/><line x1="132" y1="115" x2="186" y2="115"/><line x1="132" y1="120" x2="196" y2="120"/></g>
+    <path d="M117 26 L123 26 L123 64 L120 59 L117 64 Z" fill="#c0392b"/><path d="M120 26 L123 26 L123 64 L120 59 Z" fill="#9b2620"/>
+    <path d="M58 8 L182 8 Q190 16 182 24 L58 24 Q50 16 58 8 Z" fill="url(#gbGld)" stroke="#a9781f" stroke-width="1"/>
+    <path d="M58 8 L46 14 L58 20 Z" fill="#a9781f"/><path d="M182 8 L194 14 L182 20 Z" fill="#a9781f"/>
+    <text x="120" y="20" text-anchor="middle" font-family="Georgia,serif" font-size="10" font-weight="700" fill="#5a3d12">Le Grand Livre du Conteur</text>
+    ${coins}
    </svg>
    <div class="advcol-caption">${msg} <b>${n} / 6</b></div>
   </div>`;
