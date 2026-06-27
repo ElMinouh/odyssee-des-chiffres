@@ -110,7 +110,7 @@ function _setSubjectLogos(){
  try{
   const fr = (typeof GM!=='undefined' && GM && GM.subject==='fr');
   document.querySelectorAll('img.subj-logo').forEach(function(im){
-   im.src = fr ? 'assets/logo-mots.webp?v=1014' : 'assets/logo-main.webp?v=1014';
+   im.src = fr ? 'assets/logo-mots.webp?v=1015' : 'assets/logo-main.webp?v=1015';
    im.alt = fr ? "L'Odyssée des Mots" : "L'Odyssée des Chiffres";
   });
   const lbl = document.getElementById('ody-btn-label');
@@ -468,8 +468,14 @@ function _playRegionSignature(regionId){
  });
 }
 function _showBiomeBanner(regionId){
- const meta = _BIOME_BANNER_META[regionId];
- if(!meta) return;
+ const meta = _BIOME_BANNER_META[regionId] || { emoji:'📖', accent:'#ffe08a', bgGrad:'linear-gradient(135deg,#27ae60,#74b9ff)' };
+ // v10.13.7 — Le NOM affiché ET prononcé vient TOUJOURS de l'aventure courante
+ // (_ARCH_REGIONS), jamais du libellé math par défaut. Vrai pour toutes les
+ // odyssées (maths/français/futures), même celles aux ids de région inédits.
+ let _regionName = '';
+ try{ const _r=(typeof _ARCH_REGIONS!=='undefined'&&Array.isArray(_ARCH_REGIONS))?_ARCH_REGIONS.find(r=>r.id===regionId):null; _regionName=(_r&&_r.label)||''; }catch(e){}
+ if(!_regionName) _regionName = meta.subtitle || '';
+ if(!_regionName) return;
  // Si une bannière précédente existe encore (cas d'enchaînement rapide), la retirer
  const existing = document.querySelector('.biome-banner');
  if(existing) existing.remove();
@@ -481,7 +487,7 @@ function _showBiomeBanner(regionId){
   <div class="biome-banner-emoji">${meta.emoji}</div>
   <div class="biome-banner-text">
    <div class="biome-banner-lead">Vous entrez dans</div>
-   <div class="biome-banner-name" style="color:${meta.accent};">${meta.subtitle}</div>
+   <div class="biome-banner-name" style="color:${meta.accent};">${_regionName}</div>
   </div>
   <div class="biome-banner-emoji">${meta.emoji}</div>
  `;
@@ -490,7 +496,7 @@ function _showBiomeBanner(regionId){
  _playRegionSignature(regionId);
  // Narration vocale discrète : annonce du nouveau biome (après le jingle)
  if(typeof speak === 'function'){
-  setTimeout(()=>{ try{ speak(meta.subtitle); }catch(e){} }, 850);
+  setTimeout(()=>{ try{ speak(_regionName); }catch(e){} }, 850);
  }
  // Cycle : slide-in (0.5s) → hold (1.6s) → slide-out (0.5s) → remove
  setTimeout(()=> banner.classList.add('biome-banner-out'), 2100);
