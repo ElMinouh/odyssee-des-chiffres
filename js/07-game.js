@@ -110,7 +110,7 @@ function _setSubjectLogos(){
  try{
   const fr = (typeof GM!=='undefined' && GM && GM.subject==='fr');
   document.querySelectorAll('img.subj-logo').forEach(function(im){
-   im.src = fr ? 'assets/logo-mots.webp?v=1016' : 'assets/logo-main.webp?v=1016';
+   im.src = fr ? 'assets/logo-mots.webp?v=1017' : 'assets/logo-main.webp?v=1017';
    im.alt = fr ? "L'Odyssée des Mots" : "L'Odyssée des Chiffres";
   });
   const lbl = document.getElementById('ody-btn-label');
@@ -3568,6 +3568,8 @@ function _advRainbowHtml(){
   ? `<path d="${b[0]}" fill="none" stroke="${b[1]}" stroke-width="${b[2]}" stroke-linecap="round" class="advcol-band-on"/>`
   : `<path d="${b[0]}" fill="none" stroke="#d9d4e8" stroke-width="${Math.max(4,b[2]-6)}" stroke-linecap="round" stroke-dasharray="2 9" opacity=".55"/>`
  ).join('');
+ const taleSeen = seen.includes('mat_tale_rainbow');
+ const clickable = violet ? `onclick="_openTaleIllus(_MAT_TALE_RAINBOW)" role="button" tabindex="0" title="Lire l'histoire du trésor" style="cursor:pointer"` : '';
  const cloudFill = happy ? '#ffffff' : '#cfd6e6';
  const mouth = happy ? 'M-11 13 q11 12 22 0' : 'M-9 16 q9 -2 18 0';
  const sparks = (violet)
@@ -3575,13 +3577,13 @@ function _advRainbowHtml(){
       <path d="M150 30 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2 Z"/>
       <path d="M196 52 l1.5 4 4 1.5 -4 1.5 -1.5 4 -1.5 -4 -4 -1.5 4 -1.5 Z"/>
       <path d="M104 52 l1.5 4 4 1.5 -4 1.5 -1.5 4 -1.5 -4 -4 -1.5 4 -1.5 Z"/></g>` : '';
- const msg = violet ? 'Arc-en-ciel complet ! Le nuage t\'a offert le violet 💜'
+ const msg = violet ? (taleSeen ? "Arc-en-ciel complet — touche-le pour relire l'histoire du trésor 📖" : "Arc-en-ciel complet ! Touche-le pour lire l'histoire du trésor 🌈✨")
   : happy ? 'Six couleurs ! Le nuage sourit… une surprise t\'attend ✨'
   : n>0 ? `${n} couleur${n>1?'s':''} retrouvée${n>1?'s':''} — continue !`
   : 'Rapporte les couleurs, île après île !';
  return `
   <div class="advlog-section-title">🌈 Mon Arc-en-ciel</div>
-  <div class="advcol-box advcol-mat">
+  <div class="advcol-box advcol-mat${violet?' advbook-done':''}" ${clickable}>
    <svg viewBox="0 0 300 226" class="advcol-svg" aria-label="Arc-en-ciel : ${n} couleurs sur 7">
     ${bands}
     <path d="M-10 212 q60 -26 120 0 t140 0 t80 0 V230 H-10 Z" fill="#b5e3b0"/>
@@ -3602,6 +3604,108 @@ function _advRainbowHtml(){
 // ── Carnet français (maternelle) : Le Grand Livre du Conteur ────────
 // Les pages se retrouvent monde après monde ; une fois le Livre complet,
 // un clic dessus ouvre l'Histoire B (le conte du Livre).
+// ── Lecteur d'histoire illustré (grande image + texte + lecture vocale) ─
+function _markTaleSeen(id){ try{ if(P && P.storySeen && P.storySeen.indexOf(id)<0){ P.storySeen.push(id); if(typeof saveProfile==='function') saveProfile(); } }catch(e){} }
+function _openTaleIllus(tale){
+ try{
+  if(!tale || !tale.pages || !tale.pages.length) return;
+  if(typeof closeAdventureLog==='function') closeAdventureLog();
+  setTimeout(function(){ _renderTaleIllus(tale); }, 300);
+ }catch(e){}
+}
+function _renderTaleIllus(tale){
+ const pages=tale.pages, total=pages.length; let step=0;
+ _markTaleSeen(tale.id);
+ const ov=document.createElement('div'); ov.className='story-overlay';
+ function _hero(){ try{ return (typeof P!=='undefined'&&P&&P.name)?String(P.name):'mon ami'; }catch(e){ return 'mon ami'; } }
+ function _fill(s){ s=String(s||''); const h=_hero().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); return s.replace(/\{hero\}/g,h); }
+ function sayCur(){ try{ if(typeof speak==='function'){ const t=_fill(pages[step].text||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim(); speak(t); } }catch(e){} }
+ function stopSay(){ try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){} }
+ function close(){ stopSay(); ov.classList.add('story-out'); setTimeout(function(){try{ov.remove();}catch(e){}},300); }
+ function render(){
+  const p=pages[step];
+  ov.innerHTML='<div class="story-parchment" style="max-width:560px;border-top:6px solid '+(tale.accent||'#7c5bd0')+';">'
+   +'<div style="text-align:center;font-family:Georgia,serif;font-weight:700;color:'+(tale.accent||'#7c5bd0')+';font-size:15px;margin-bottom:8px;">'+tale.title+'</div>'
+   +'<div style="background:#fffaf0;border:2px solid #e6d3a3;border-radius:12px;padding:6px;overflow:hidden;">'+(p.illus||'')+'</div>'
+   +'<div style="font-family:Georgia,serif;font-size:18px;line-height:1.55;color:#3a2a18;text-align:center;margin:12px 8px 6px;">'+_fill(p.text||'')+'</div>'
+   +'<div class="story-nav">'
+   +(step>0?'<button class="story-btn ti-prev">‹ Avant</button>':'<span class="story-spacer"></span>')
+   +'<div class="story-dots" style="flex-wrap:wrap;max-width:54%;">'+pages.map(function(_,i){return '<span class="story-dot'+(i===step?' on':'')+'"></span>';}).join('')+'</div>'
+   +'<button class="story-btn ti-next">'+(step===total-1?'Fin ✨':'Après ›')+'</button>'
+   +'</div>'
+   +'<div style="text-align:center;margin-top:6px;"><button class="story-btn ti-read">🔊 Relire</button> <span style="font-family:Georgia,serif;font-size:12px;color:#8a6a45;margin-left:8px;">page '+(step+1)+' / '+total+'</span></div>'
+   +'</div>';
+  const nx=ov.querySelector('.ti-next'); nx.onclick=function(){ stopSay(); if(step<total-1){ step++; render(); if(tale.autoSpeak) sayCur(); } else close(); };
+  const pv=ov.querySelector('.ti-prev'); if(pv) pv.onclick=function(){ stopSay(); if(step>0){ step--; render(); if(tale.autoSpeak) sayCur(); } };
+  ov.querySelector('.ti-read').onclick=sayCur;
+  if(typeof beep==='function'){ try{ beep(560,'sine',.08,.04); }catch(e){} }
+ }
+ render(); document.body.appendChild(ov); if(tale.autoSpeak) setTimeout(sayCur,260);
+}
+
+// ── Histoire maternelle (maths) : « Le Trésor au bout de l'Arc-en-ciel » ─
+// Débloquée au clic sur l'arc-en-ciel reconstitué. Niveau fin de GS.
+const _MAT_TALE_RAINBOW = (function(){
+ const SV=(inner)=>'<svg viewBox="0 0 300 200" width="100%" preserveAspectRatio="xMidYMid meet">'+inner+'</svg>';
+ const bg=(c)=>'<rect x="0" y="0" width="300" height="200" fill="'+(c||'#dff0ff')+'"/>';
+ const ground=(y,c)=>'<path d="M-5 '+y+' q80 -20 155 0 t160 0 V205 H-5 Z" fill="'+(c||'#9bd69a')+'"/>';
+ const sun=(x,y,r)=>'<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="#ffe066"/><circle cx="'+x+'" cy="'+y+'" r="'+(r+5)+'" fill="#ffe066" opacity=".25"/>';
+ const rainbow=(cx,cy,s)=>{ const C=['#ff6b6b','#ffa94d','#ffd43b','#69db7c','#4dabf7','#7c8cf8','#c08cf8']; let p=''; for(let i=0;i<7;i++){ const r=(72-i*8)*s; p+='<path d="M'+(cx-r)+' '+cy+' a'+r+' '+r+' 0 0 1 '+(2*r)+' 0" fill="none" stroke="'+C[i]+'" stroke-width="'+(7*s)+'"/>'; } return p; };
+ const pim=(x,y,s)=>{ s=s||1; return '<g transform="translate('+x+' '+y+') scale('+s+')">'
+  +'<ellipse cx="0" cy="40" rx="15" ry="4" fill="#000" opacity=".12"/>'
+  +'<rect x="-8" y="34" width="5" height="8" rx="2" fill="#5a3a1a"/><rect x="3" y="34" width="5" height="8" rx="2" fill="#5a3a1a"/>'
+  +'<path d="M-12 38 L-9 18 L9 18 L12 38 Z" fill="#2e8b57"/>'
+  +'<rect x="-12" y="30" width="24" height="3" fill="#d4af37"/>'
+  +'<circle cx="0" cy="11" r="9" fill="#f2c79b"/>'
+  +'<path d="M-8 14 q8 13 16 0 q-8 5 -16 0 Z" fill="#f0f0f0"/>'
+  +'<circle cx="-3" cy="10" r="1.2" fill="#2a1a0a"/><circle cx="3" cy="10" r="1.2" fill="#2a1a0a"/>'
+  +'<path d="M-1 12 q1 1.4 2 0" fill="none" stroke="#c0884a" stroke-width="1"/>'
+  +'<path d="M-11 4 q11 -7 22 0 Z" fill="#1f6b3a"/><rect x="-7" y="-8" width="14" height="9" rx="2" fill="#2e8b57"/><rect x="-7" y="-2" width="14" height="3" fill="#d4af37"/>'
+  +'</g>'; };
+ const pot=(x,y,s,open)=>{ s=s||1; let g='<g transform="translate('+x+' '+y+') scale('+s+')">'
+  +'<ellipse cx="0" cy="28" rx="26" ry="5" fill="#000" opacity=".15"/>'
+  +'<path d="M-24 4 Q-27 28 0 30 Q27 28 24 4 Z" fill="#2b2b33"/>'
+  +'<ellipse cx="0" cy="4" rx="24" ry="7" fill="#1c1c22"/>';
+  if(open) g+='<ellipse cx="0" cy="2" rx="20" ry="5.5" fill="#ffd84d"/><circle cx="-9" cy="0" r="3.4" fill="#ffe680"/><circle cx="0" cy="-2" r="3.4" fill="#ffe680"/><circle cx="9" cy="0" r="3.4" fill="#ffd84d"/><circle cx="-3" cy="2" r="3.4" fill="#ffd84d"/><circle cx="5" cy="2" r="3.4" fill="#ffe680"/>';
+  else g+='<ellipse cx="0" cy="3" rx="20" ry="5" fill="#3a3a44"/>';
+  return g+'</g>'; };
+ const coin=(x,y,num,r)=>{ r=r||11; return '<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="#e0a81f"/><circle cx="'+x+'" cy="'+y+'" r="'+(r-2.4)+'" fill="#ffd84d"/><text x="'+x+'" y="'+(y+r*0.42)+'" text-anchor="middle" font-family="Georgia,serif" font-size="'+(r*1.05)+'" font-weight="700" fill="#9a6a12">'+num+'</text>'; };
+ const lady=(x,y)=>'<g><ellipse cx="'+x+'" cy="'+y+'" rx="6" ry="5.2" fill="#e23b3b"/><line x1="'+x+'" y1="'+(y-5)+'" x2="'+x+'" y2="'+(y+5)+'" stroke="#3a1010" stroke-width="1"/><circle cx="'+x+'" cy="'+(y-6)+'" r="2.6" fill="#222"/><circle cx="'+(x-2.5)+'" cy="'+(y-1)+'" r="1" fill="#3a1010"/><circle cx="'+(x+2.5)+'" cy="'+(y+1.5)+'" r="1" fill="#3a1010"/></g>';
+ const fly=(x,y,c)=>'<g><ellipse cx="'+(x-3.5)+'" cy="'+(y-2)+'" rx="3.6" ry="4.4" fill="'+c+'"/><ellipse cx="'+(x+3.5)+'" cy="'+(y-2)+'" rx="3.6" ry="4.4" fill="'+c+'"/><ellipse cx="'+(x-3)+'" cy="'+(y+3)+'" rx="3" ry="3.4" fill="'+c+'" opacity=".85"/><ellipse cx="'+(x+3)+'" cy="'+(y+3)+'" rx="3" ry="3.4" fill="'+c+'" opacity=".85"/><rect x="'+(x-0.6)+'" y="'+(y-4)+'" width="1.2" height="9" rx="0.6" fill="#5a3a1a"/></g>';
+ const chick=(x,y)=>'<g><ellipse cx="'+x+'" cy="'+y+'" rx="6" ry="5.5" fill="#ffd84d"/><circle cx="'+x+'" cy="'+(y-5)+'" r="4.2" fill="#ffe066"/><path d="M'+(x+4)+' '+(y-5)+' l4 -1 -4 -1 Z" fill="#f0922a"/><circle cx="'+(x+1)+'" cy="'+(y-6)+'" r="0.9" fill="#2a1a0a"/><line x1="'+(x-2)+'" y1="'+(y+5)+'" x2="'+(x-2)+'" y2="'+(y+8)+'" stroke="#f0922a" stroke-width="1"/><line x1="'+(x+2)+'" y1="'+(y+5)+'" x2="'+(x+2)+'" y2="'+(y+8)+'" stroke="#f0922a" stroke-width="1"/></g>';
+ const frog=(x,y)=>'<g><ellipse cx="'+x+'" cy="'+y+'" rx="7" ry="5" fill="#5fbf57"/><circle cx="'+(x-3)+'" cy="'+(y-4)+'" r="2.6" fill="#5fbf57"/><circle cx="'+(x+3)+'" cy="'+(y-4)+'" r="2.6" fill="#5fbf57"/><circle cx="'+(x-3)+'" cy="'+(y-4)+'" r="1.1" fill="#1a1a1a"/><circle cx="'+(x+3)+'" cy="'+(y-4)+'" r="1.1" fill="#1a1a1a"/><path d="M'+(x-3)+' '+(y+2)+' q3 2 6 0" fill="none" stroke="#2f7a30" stroke-width="1"/></g>';
+ const pad=(x,y)=>'<ellipse cx="'+x+'" cy="'+(y+6)+'" rx="11" ry="4" fill="#3f9a55"/>';
+ const fish=(x,y,c)=>'<g><ellipse cx="'+x+'" cy="'+y+'" rx="7" ry="4.4" fill="'+c+'"/><path d="M'+(x+6)+' '+y+' l6 -4 0 8 Z" fill="'+c+'"/><circle cx="'+(x-3)+'" cy="'+(y-1)+'" r="1" fill="#fff"/></g>';
+ const firefly=(x,y)=>'<g><circle cx="'+x+'" cy="'+y+'" r="5" fill="#fff3b0" opacity=".55"/><circle cx="'+x+'" cy="'+y+'" r="2.3" fill="#ffe066"/></g>';
+ const row=(n,fn,x0,dx,y,jit)=>{ let s=''; for(let i=0;i<n;i++){ s+=fn(x0+i*dx, y+((i%2)?(jit||0):0)); } return s; };
+
+ const P=[];
+ P.push({ text:"<b>Le Trésor au bout de l'Arc-en-ciel</b>", illus:SV(bg('#eaf6ff')+ground(150,'#9bd69a')+rainbow(150,150,1.05)+pot(150,120,1.1,false)+pim(214,118,1.15)+sun(258,40,16)) });
+ P.push({ text:"Après la grosse pluie, un magnifique arc-en-ciel apparaît dans le ciel. {hero} lève la tête : « Qu'y a-t-il, tout au bout ? »", illus:SV(bg('#dff0ff')+ground(158,'#9bd69a')+rainbow(150,158,1.1)+'<circle cx="60" cy="130" r="10" fill="#f2c79b"/><rect x="54" y="140" width="12" height="22" rx="5" fill="#e8533f"/>'+sun(255,38,15)) });
+ P.push({ text:"Soudain, un petit lutin surgit ! Il s'appelle <b>Pim</b>. « Au bout de l'arc-en-ciel se cache un trésor… mais il faut grimper mes <b>sept couleurs</b> ! »", illus:SV(bg('#eaf6ff')+ground(155,'#9bd69a')+rainbow(180,155,0.9)+pim(95,120,2.0)) });
+ P.push({ text:"La première couleur, c'est le <b>ROUGE</b> ! Dans le pré rouge, compte les coccinelles avec moi : 1, 2, 3, 4, 5. <b>Cinq</b> coccinelles !", illus:SV(bg('#ffe3e3')+ground(150,'#e86b6b')+row(5,lady,70,42,120,-8)) });
+ P.push({ text:"Voici l'<b>ORANGE</b> ! Six papillons orange dansent dans l'air. Comptons-les : 1, 2, 3, 4, 5, 6. <b>Six</b> papillons !", illus:SV(bg('#fff0e0')+ground(155,'#f0a35a')+row(6,(x,y)=>fly(x,y,'#ff922b'),58,40,95,16)) });
+ P.push({ text:"Le <b>JAUNE</b>, comme le soleil ! Sept poussins suivent maman poule. 1, 2, 3, 4, 5, 6, 7. <b>Sept</b> poussins !", illus:SV(bg('#fff8d6')+ground(150,'#ffd84d')+sun(40,38,16)+row(7,chick,46,36,125,-7)) });
+ P.push({ text:"Le <b>VERT</b> du gazon ! Sur les nénuphars tout ronds, combien de grenouilles ? 1 à 8. <b>Huit</b> grenouilles !", illus:SV(bg('#e3f7e0')+ground(150,'#5fbf57')+row(8,pad,40,32,128,0)+row(8,frog,40,32,124,-6)) });
+ P.push({ text:"Le <b>BLEU</b> de l'eau fraîche ! Neuf petits poissons nagent. Compte-les avec Pim : 1 à 9. <b>Neuf</b> poissons !", illus:SV(bg('#d6efff')+'<rect x="0" y="120" width="300" height="85" fill="#4dabf7"/>'+row(9,(x,y)=>fish(x,y,'#ff8f3f'),34,30,150,-12)) });
+ P.push({ text:"L'<b>INDIGO</b> du soir qui tombe ! Dix lucioles s'allument une à une, jusqu'à <b>dix</b>. 1, 2, 3… 10 !", illus:SV(bg('#2a2d6a')+ground(160,'#23265a')+row(10,firefly,28,27,120,-16)+'<circle cx="270" cy="35" r="12" fill="#fdf6c3"/>') });
+ P.push({ text:"Et enfin le <b>VIOLET</b>, la dernière couleur ! {hero} a grimpé les <b>sept</b> couleurs de l'arc-en-ciel. Bravo, quel courage !", illus:SV(bg('#efe3ff')+ground(155,'#9b6fdf')+rainbow(150,155,1.05)+'<g fill="#a86fd6">'+row(6,(x,y)=>'<circle cx="'+x+'" cy="'+y+'" r="4"/><circle cx="'+(x-4)+'" cy="'+(y+3)+'" r="3"/><circle cx="'+(x+4)+'" cy="'+(y+3)+'" r="3"/>',60,36,140,0)+'</g>') });
+ P.push({ text:"Tout en haut brille le trésor : un grand <b>chaudron d'or</b> ! Mais il est fermé. Pim demande : « Combien de couleurs as-tu grimpées ? » — « SEPT ! » répond {hero}.", illus:SV(bg('#eaf6ff')+ground(150,'#9bd69a')+pot(150,118,1.5,false)+pim(225,120,1.2)) });
+ P.push({ text:"Clic ! Le chaudron s'ouvre. Il déborde de <b>pièces d'or</b>, et sur chacune, un chiffre : 1, 2, 3… jusqu'à 10 !", illus:SV(bg('#fff6df')+ground(155,'#9bd69a')+pot(150,120,1.5,true)+coin(96,150,1)+coin(120,158,2)+coin(150,162,3)+coin(180,158,4)+coin(204,150,5)+coin(110,170,6)+coin(140,174,7)+coin(170,174,8)+coin(200,170,9)+coin(150,150,10)) });
+ P.push({ text:"Mais Pim baisse les yeux et soupire. « Ce trésor… je le garde tout seul. Depuis très, très longtemps. Je n'ai personne avec qui jouer. »", illus:SV(bg('#e9eef6')+ground(150,'#9bd69a')+pot(95,120,1.3,true)+pim(180,122,1.6)+'<path d="M186 112 q3 4 0 7" stroke="#6aa6e0" stroke-width="2" fill="none"/>') });
+ P.push({ text:"{hero} a une idée. « Et si on <b>partageait</b> ? » Pim appelle tous les amis de la forêt : l'ours, les canetons, le mouton et le hibou !", illus:SV(bg('#eaf6ff')+ground(150,'#9bd69a')
+   +'<g><circle cx="60" cy="120" r="13" fill="#a06a34"/><circle cx="51" cy="108" r="5" fill="#a06a34"/><circle cx="69" cy="108" r="5" fill="#a06a34"/><circle cx="56" cy="118" r="1.6" fill="#2a1a0a"/><circle cx="64" cy="118" r="1.6" fill="#2a1a0a"/></g>'
+   +chick(110,130)+chick(124,130)
+   +'<g><ellipse cx="175" cy="124" rx="14" ry="11" fill="#f3f3f3"/><circle cx="175" cy="110" r="8" fill="#f3f3f3"/><ellipse cx="170" cy="123" rx="3" ry="4" fill="#3a3a3a"/></g>'
+   +'<g><ellipse cx="230" cy="120" rx="12" ry="13" fill="#b07a3a"/><circle cx="225" cy="114" r="4" fill="#fff"/><circle cx="235" cy="114" r="4" fill="#fff"/><circle cx="225" cy="114" r="1.6" fill="#000"/><circle cx="235" cy="114" r="1.6" fill="#000"/><path d="M228 120 l4 0 -2 3 Z" fill="#f0922a"/></g>'
+   +pim(20,124,1.0)) });
+ P.push({ text:"On partage les pièces : une pour l'ours, deux pour les canetons, trois pour les oiseaux… Chacun reçoit sa part. <b>Partager</b>, c'est joyeux !", illus:SV(bg('#fff6df')+ground(150,'#9bd69a')+coin(60,118,1,12)+coin(120,118,2,12)+coin(150,118,2,12)+coin(200,116,3,12)+coin(218,124,3,12)+'<circle cx="60" cy="150" r="11" fill="#a06a34"/>'+chick(126,150)+chick(146,150)+'<g><ellipse cx="210" cy="150" rx="11" ry="12" fill="#b07a3a"/></g>') });
+ P.push({ text:"Pim sourit enfin, de toutes ses dents. « Le <b>vrai trésor</b>, dit-il, c'est d'avoir des amis avec qui partager ! »", illus:SV(bg('#eaf6ff')+ground(150,'#9bd69a')+pim(150,108,2.2)+'<g fill="#ffd84d">'+row(5,(x,y)=>'<path d="M'+x+' '+(y-4)+' l1.2 3 3.2 0 -2.6 2 1 3 -2.8-1.8 -2.8 1.8 1-3 -2.6-2 3.2 0 Z"/>',70,40,70,-6)+'</g>') });
+ P.push({ text:"Alors l'arc-en-ciel se met à briller plus fort que jamais, et tout le monde danse de joie sous ses sept couleurs.", illus:SV(bg('#fff0d0')+ground(155,'#9bd69a')+rainbow(150,155,1.15)+pim(110,128,1.0)+chick(150,138)+'<circle cx="190" cy="124" r="11" fill="#a06a34"/>') });
+ P.push({ text:"{hero} garde une seule petite pièce d'or, en souvenir. Car le plus beau des trésors, c'était l'<b>amitié</b>. ✨ <b>FIN</b>", illus:SV(bg('#efe3ff')+ground(155,'#9bd69a')+'<circle cx="150" cy="120" r="12" fill="#f2c79b"/><rect x="142" y="132" width="16" height="26" rx="6" fill="#e8533f"/>'+coin(176,120,1,12)+'<path d="M150 86 q8 -10 16 0 q0 9 -8 14 q-8 -5 -8 -14 Z" fill="#ff6b8a"/>') });
+ return { id:'mat_tale_rainbow', title:"Le Trésor au bout de l'Arc-en-ciel", accent:'#c08cf8', autoSpeak:true, pages:P };
+})();
+
 function _openBookTale(){
  try{
   if(typeof closeAdventureLog==='function') closeAdventureLog();
