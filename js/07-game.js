@@ -110,7 +110,7 @@ function _setSubjectLogos(){
  try{
   const fr = (typeof GM!=='undefined' && GM && GM.subject==='fr');
   document.querySelectorAll('img.subj-logo').forEach(function(im){
-   im.src = fr ? 'assets/logo-mots.webp?v=1017' : 'assets/logo-main.webp?v=1017';
+   im.src = fr ? 'assets/logo-mots.webp?v=1018' : 'assets/logo-main.webp?v=1018';
    im.alt = fr ? "L'Odyssée des Mots" : "L'Odyssée des Chiffres";
   });
   const lbl = document.getElementById('ody-btn-label');
@@ -3706,6 +3706,38 @@ const _MAT_TALE_RAINBOW = (function(){
  return { id:'mat_tale_rainbow', title:"Le Trésor au bout de l'Arc-en-ciel", accent:'#c08cf8', autoSpeak:true, pages:P };
 })();
 
+// ── Histoire primaire (maths) : « La Grande Histoire des Nombres » ──────
+// Débloquée au clic sur le Talisman de Calcultopia complet. Niveau fin CM2.
+// Fond historique vérifié ; forme romancée et illustrée.
+const _PRIM_TALE_NUMBERS = (function(){
+ const SV=(inner)=>'<svg viewBox="0 0 300 200" width="100%" preserveAspectRatio="xMidYMid meet">'+inner+'</svg>';
+ const bg=(c)=>'<rect x="0" y="0" width="300" height="200" fill="'+(c||'#f3ecdb')+'"/>';
+ const digit=(x,y,n,s,c)=>'<text x="'+x+'" y="'+y+'" font-family="Georgia,serif" font-size="'+(s||18)+'" font-weight="700" fill="'+(c||'#b9893a')+'" text-anchor="middle">'+n+'</text>';
+ const tally=(x,y,n)=>{ let s='<g stroke="#5a3a1a" stroke-width="2" stroke-linecap="round">'; for(let i=0;i<n;i++){ s+='<line x1="'+(x+i*6)+'" y1="'+y+'" x2="'+(x+i*6)+'" y2="'+(y+16)+'"/>'; } return s+'</g>'; };
+ const spiral=(cx,cy)=>{ const C=['#e0584f','#e7943f','#e9c33d','#56b96a','#3f8fd0','#7a6bd0','#b06cff']; let s=''; for(let i=0;i<7;i++){ const a=i*0.9, r=8+i*7; s+='<circle cx="'+(cx+r*Math.cos(a)).toFixed(1)+'" cy="'+(cy+r*Math.sin(a)).toFixed(1)+'" r="9" fill="'+C[i]+'"/>'+digit((cx+r*Math.cos(a)),(cy+r*Math.sin(a)+4),i+1,11,'#fff'); } return s; };
+
+ const P=[];
+ P.push({ text:"<b>La Grande Histoire des Nombres</b> — Les nombres n'ont pas toujours existé. Voici leur incroyable voyage, à travers le monde et les siècles.", illus:SV(bg('#10204a')+spiral(150,100)+'<g fill="#ffe07a">'+'<path d="M40 30 l1.6 4 4 1.6 -4 1.6 -1.6 4 -1.6 -4 -4 -1.6 4 -1.6 Z"/><path d="M262 150 l1.6 4 4 1.6 -4 1.6 -1.6 4 -1.6 -4 -4 -1.6 4 -1.6 Z"/></g>') });
+ P.push({ text:"Il y a très longtemps, on ne savait compter que « un, deux… beaucoup ». Pour suivre leur troupeau, les hommes traçaient une encoche par bête sur un bâton ou un os.", illus:SV(bg('#caa86f')+'<path d="M0 130 q150 -40 300 0 V200 H0 Z" fill="#8a6a3a"/><ellipse cx="150" cy="150" rx="110" ry="14" fill="#6e5230"/>'+tally(96,120,5)+tally(140,120,5)+tally(184,120,3)+'<circle cx="60" cy="120" r="10" fill="#3a2a18"/><circle cx="62" cy="116" r="2" fill="#fff"/>') });
+ P.push({ text:"Près du lac Édouard, en Afrique, on a retrouvé un os vieux d'environ <b>20 000 ans</b>, couvert d'entailles rangées en colonnes : l'<b>os d'Ishango</b>, peut-être le plus ancien outil de comptage du monde !", illus:SV(bg('#e7d8b0')+'<g transform="rotate(-8 150 110)"><rect x="60" y="92" width="180" height="34" rx="16" fill="#d8c69a" stroke="#9a855a" stroke-width="2"/><rect x="232" y="96" width="14" height="26" rx="5" fill="#b9b6c4"/>'+'<g stroke="#5a4a2a" stroke-width="1.6">'+(function(){let s='';const groups=[3,6,4,8,5,7];let x=78;groups.forEach(g=>{for(let i=0;i<g;i++){s+='<line x1="'+x+'" y1="98" x2="'+x+'" y2="120"/>';x+=4;}x+=8;});return s;})()+'</g></g>') });
+ P.push({ text:"Bien plus tard, à Sumer puis à <b>Babylone</b>, les marchands notaient leurs comptes en pressant un roseau dans des <b>tablettes d'argile</b>. Surprise : ils comptaient par paquets de <b>60</b> !", illus:SV(bg('#cdb083')+'<rect x="78" y="44" width="144" height="112" rx="10" fill="#b48a52" stroke="#7a5a2e" stroke-width="3"/>'+'<g fill="#5a3f1e">'+(function(){let s='';for(let r=0;r<4;r++)for(let c=0;c<5;c++){const x=98+c*24,y=66+r*22;s+='<path d="M'+x+' '+y+' l4 6 -4 6 -4 -6 Z"/><rect x="'+(x+4)+'" y="'+(y-1)+'" width="9" height="2.4"/>';}return s;})()+'</g>') });
+ P.push({ text:"Cette idée nous suit encore aujourd'hui : c'est pour cela qu'une heure dure <b>60 minutes</b>, une minute <b>60 secondes</b>, et qu'un tour complet fait <b>360 degrés</b> !", illus:SV(bg('#dff0ff')+'<circle cx="100" cy="100" r="56" fill="#fff" stroke="#3f6ad0" stroke-width="4"/>'+(function(){let s='<g stroke="#3f6ad0" stroke-width="2">';for(let i=0;i<12;i++){const a=i*30*Math.PI/180;s+='<line x1="'+(100+48*Math.cos(a)).toFixed(1)+'" y1="'+(100+48*Math.sin(a)).toFixed(1)+'" x2="'+(100+54*Math.cos(a)).toFixed(1)+'" y2="'+(100+54*Math.sin(a)).toFixed(1)+'"/>';}return s+'</g>';})()+'<line x1="100" y1="100" x2="100" y2="64" stroke="#16306e" stroke-width="3"/><line x1="100" y1="100" x2="128" y2="100" stroke="#16306e" stroke-width="3"/>'+'<circle cx="225" cy="100" r="40" fill="none" stroke="#e0843a" stroke-width="3" stroke-dasharray="3 4"/>'+digit(225,106,'360°',15,'#c0631a')) });
+ P.push({ text:"En <b>Égypte</b>, chaque année, le Nil débordait et effaçait les champs. Des « arpenteurs » les re-mesuraient avec une corde à nœuds. Mesurer la terre, en grec, se dit <b>géométrie</b>.", illus:SV(bg('#f4e3b0')+'<path d="M0 150 q150 -16 300 0 V200 H0 Z" fill="#7ab06a"/><path d="M120 0 q-10 100 0 200 l40 0 q-10 -100 0 -200 Z" fill="#4da3d0"/>'+'<g stroke="#7a5a2e" stroke-width="2"><polyline points="190,150 215,120 245,140" fill="none"/></g><circle cx="190" cy="150" r="2.6" fill="#5a3a1a"/><circle cx="215" cy="120" r="2.6" fill="#5a3a1a"/><circle cx="245" cy="140" r="2.6" fill="#5a3a1a"/>'+'<circle cx="60" cy="120" r="9" fill="#c8945a"/><rect x="54" y="129" width="12" height="22" rx="4" fill="#e8d28a"/>') });
+ P.push({ text:"Les Égyptiens écrivaient leurs nombres avec de petits dessins (des <b>hiéroglyphes</b>) et adoraient les <b>fractions</b> : un pain se partageait en 1/2, puis 1/4, puis 1/8…", illus:SV(bg('#efe2bd')+'<g stroke="#8a5a2a" stroke-width="2.4" fill="none"><path d="M50 60 v26"/><path d="M70 62 a10 10 0 1 0 0.1 0"/><path d="M96 58 q8 8 0 28 q-8 -20 0 -28"/></g>'+'<g><circle cx="210" cy="95" r="44" fill="#e8c98a" stroke="#b9893a" stroke-width="2"/><line x1="210" y1="51" x2="210" y2="139" stroke="#b9893a" stroke-width="2"/><line x1="166" y1="95" x2="254" y2="95" stroke="#b9893a" stroke-width="2"/><path d="M210 95 L254 95 A44 44 0 0 0 210 51 Z" fill="#d4a85a"/>'+digit(232,80,'¼',13,'#7a5320')+'</g>') });
+ P.push({ text:"En <b>Grèce</b>, le savant <b>Pythagore</b> et ses élèves formaient une école presque secrète. Leur devise : « <b>Tout est nombre !</b> » On leur doit le célèbre théorème du triangle rectangle.", illus:SV(bg('#eef3f7')+'<polygon points="90,150 90,80 150,150" fill="#cfe0f0" stroke="#3f6ad0" stroke-width="2"/><rect x="90" y="138" width="12" height="12" fill="none" stroke="#3f6ad0" stroke-width="1.5"/>'+'<rect x="60" y="80" width="30" height="30" fill="#a7c8ec" opacity=".8"/><rect x="90" y="150" width="60" height="30" fill="#f0c98a" opacity=".8"/>'+digit(150,70,'a² + b² = c²',14,'#2a4a86')) });
+ P.push({ text:"Les Grecs poursuivirent un nombre mystérieux, caché dans tous les cercles : <b>π</b> (pi), un peu plus que 3, et dont les chiffres après la virgule ne s'arrêtent jamais !", illus:SV(bg('#fff3df')+'<circle cx="110" cy="100" r="58" fill="none" stroke="#e0843a" stroke-width="4"/><line x1="52" y1="100" x2="168" y2="100" stroke="#16306e" stroke-width="2.4" stroke-dasharray="5 4"/>'+digit(232,96,'π',40,'#c0631a')+digit(232,128,'≈ 3,14…',13,'#7a4a18')) });
+ P.push({ text:"Mais il manquait encore un nombre très étrange : le nombre de… <b>rien</b> ! Comment écrire « il ne reste rien » ? Et comment différencier <b>25</b> de <b>205</b> ?", illus:SV(bg('#eceff5')+'<rect x="40" y="70" width="80" height="60" rx="8" fill="#fff" stroke="#9aa6c0" stroke-width="2" stroke-dasharray="5 4"/>'+digit(80,108,'?',30,'#9aa6c0')+digit(210,95,'25',26,'#2a4a86')+digit(210,135,'205',26,'#c0631a')) });
+ P.push({ text:"La réponse vint d'<b>Inde</b>. En <b>628</b>, le savant <b>Brahmagupta</b> donna enfin des règles au <b>zéro</b> et en fit un vrai nombre. On l'appelait « sunya » : le vide.", illus:SV(bg('#f1e6d0')+'<circle cx="200" cy="100" r="50" fill="none" stroke="#b9893a" stroke-width="10"/><circle cx="200" cy="100" r="50" fill="none" stroke="#e9c33d" stroke-width="3"/>'+'<g><circle cx="80" cy="86" r="16" fill="#d8a36a"/><path d="M62 150 q18 -34 36 0 Z" fill="#7a4fa0"/><path d="M66 78 q14 -12 28 0" stroke="#3a2a18" stroke-width="2" fill="none"/></g>'+digit(80,140,'628',12,'#5a3a1a')) });
+ P.push({ text:"Génial : avec le zéro et la <b>position</b> des chiffres (unités, dizaines, centaines…), on peut écrire <b>tous</b> les nombres avec seulement dix signes : 0 1 2 3 4 5 6 7 8 9 !", illus:SV(bg('#eef3f7')+'<g>'+['centaines','dizaines','unités'].map((t,i)=>{const x=70+i*80;return '<rect x="'+(x-30)+'" y="60" width="60" height="60" rx="6" fill="#fff" stroke="#3f6ad0" stroke-width="2"/>'+digit(x,104,[2,0,5][i],30,'#2a4a86')+'<text x="'+x+'" y="138" text-anchor="middle" font-family="Georgia,serif" font-size="11" fill="#3f6ad0">'+t+'</text>';}).join('')+'</g>'+digit(150,168,'= 205',16,'#c0631a')) });
+ P.push({ text:"À <b>Bagdad</b>, dans la « <b>Maison de la Sagesse</b> », le savant <b>Al-Khwarizmi</b> rassembla ces idées vers l'an 820. De son livre « al-jabr » vient le mot <b>algèbre</b> ; et de son nom vient le mot <b>algorithme</b> !", illus:SV(bg('#f3e7c8')+'<rect x="70" y="80" width="160" height="76" fill="#caa86f" stroke="#7a5a2e" stroke-width="2"/><path d="M60 80 L150 40 L240 80 Z" fill="#9a6a3a" stroke="#7a5a2e" stroke-width="2"/><path d="M150 100 a16 16 0 0 1 0 56 Z" fill="#8a5a2a"/><path d="M150 100 a16 16 0 0 0 0 56 Z" fill="#7a4a1f"/>'+'<rect x="96" y="110" width="36" height="44" rx="3" fill="#3f6ad0"/>'+digit(112,138,'الجبر',12,'#fff')) });
+ P.push({ text:"En Europe, on s'embrouillait avec les lourds <b>chiffres romains</b>. En <b>1202</b>, l'Italien <b>Léonard de Pise</b>, dit <b>Fibonacci</b>, publia un livre qui fit découvrir les <b>chiffres « arabes »</b>, bien plus pratiques.", illus:SV(bg('#eef3f7')+'<rect x="30" y="60" width="110" height="80" rx="6" fill="#f6efe0" stroke="#b08a4a" stroke-width="2"/>'+digit(85,108,'MCMXIV',16,'#8a6a3a')+'<text x="85" y="130" text-anchor="middle" font-size="10" fill="#b08a4a">compliqué…</text>'+'<rect x="160" y="60" width="110" height="80" rx="6" fill="#dff0ff" stroke="#3f6ad0" stroke-width="2"/>'+digit(215,110,'1914',24,'#2a4a86')+'<text x="215" y="130" text-anchor="middle" font-size="10" fill="#3f6ad0">facile !</text>') });
+ P.push({ text:"Dans ce livre, une drôle d'énigme : si un couple de lapins en fait naître un autre chaque mois… combien à la fin de l'année ? La réponse forme une suite magique : <b>1, 1, 2, 3, 5, 8, 13…</b>, qu'on retrouve jusque dans les fleurs !", illus:SV(bg('#eaf6e6')+'<g fill="#f3f3f3" stroke="#cfcfcf">'+[[55,140],[80,140],[110,135],[150,130]].map(p=>'<ellipse cx="'+p[0]+'" cy="'+p[1]+'" rx="9" ry="7"/><circle cx="'+(p[0]-6)+'" cy="'+(p[1]-7)+'" r="3"/><circle cx="'+(p[0]-2)+'" cy="'+(p[1]-9)+'" r="3"/>').join('')+'</g>'+(function(){const seq=[1,1,2,3,5,8,13];let s='';seq.forEach((n,i)=>{s+=digit(190+i*15,70,n,12,'#2a7a4a');});return s;})()+'<path d="M210 150 a26 26 0 1 1 -26 -26" fill="none" stroke="#e0a83a" stroke-width="3"/>') });
+ P.push({ text:"Le changement ne fut pas facile : méfiantes, certaines villes <b>interdirent</b> même le zéro, qu'elles trouvaient « louche » ! Mais les chiffres arabes l'emportèrent : on calculait dix fois plus vite.", illus:SV(bg('#f1e6d0')+'<circle cx="120" cy="100" r="44" fill="none" stroke="#caa64e" stroke-width="8"/>'+digit(120,114,'0',42,'#b9893a')+'<circle cx="120" cy="100" r="56" fill="none" stroke="#cc3b3b" stroke-width="6"/><line x1="84" y1="64" x2="156" y2="136" stroke="#cc3b3b" stroke-width="6"/>'+'<g fill="#2a7a4a">'+digit(225,90,'+',16)+digit(225,120,'×',16)+'</g>') });
+ P.push({ text:"Puis vinrent les <b>machines</b> : la <b>Pascaline</b> de Blaise Pascal (1642), puis, bien plus tard, les <b>ordinateurs</b>… qui calculent avec seulement deux chiffres : <b>0 et 1</b> !", illus:SV(bg('#e7e2d4')+'<rect x="40" y="90" width="90" height="46" rx="5" fill="#8a6a3a" stroke="#5a3f1e" stroke-width="2"/>'+(function(){let s='<g fill="#caa86f">';for(let i=0;i<4;i++)s+='<circle cx="'+(54+i*22)+'" cy="113" r="8"/>';return s+'</g>';})()+digit(85,82,'1642',11,'#5a3f1e')+'<rect x="180" y="74" width="86" height="60" rx="5" fill="#2a3450" stroke="#16306e" stroke-width="2"/><rect x="188" y="82" width="70" height="44" fill="#0c2a5a"/>'+digit(223,112,'0 1 0 1',13,'#5fd0ff')+'<rect x="206" y="134" width="34" height="10" fill="#2a3450"/>') });
+ P.push({ text:"Des encoches sur un vieil os jusqu'aux ordinateurs, les nombres ont voyagé à travers le monde et les siècles. Et toi, quand tu calcules aujourd'hui, tu écris la suite de cette grande histoire ! ✨ <b>FIN</b>", illus:SV(bg('#10204a')+spiral(150,100)+'<g fill="#ffe07a"><path d="M150 24 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2 Z"/></g>') });
+ return { id:'prim_tale_numbers', title:"La Grande Histoire des Nombres", accent:'#3f6ad0', autoSpeak:false, pages:P };
+})();
+
 function _openBookTale(){
  try{
   if(typeof closeAdventureLog==='function') closeAdventureLog();
@@ -4047,14 +4079,14 @@ function _advTalismanHtml(){
  const done = count>=5;
  // monture étoile 3D + rivets
  const sp=[]; for(let i=0;i<5;i++){ sp.push(pt(gemAng[i],100)); sp.push(pt(innerAng[i],46)); }
- const P = sp.map(q=>fx(q[0])+','+fx(q[1])).join(' ');
+ const _ptsStr = sp.map(q=>fx(q[0])+','+fx(q[1])).join(' ');
  let rivets=''; for(let i=0;i<5;i++){ const o=pt(gemAng[i],100), ii=pt(innerAng[i],46);
   rivets+=`<circle cx="${fx(o[0])}" cy="${fx(o[1])}" r="2.1" fill="url(#tlRivet)"/><circle cx="${fx(ii[0])}" cy="${fx(ii[1])}" r="1.6" fill="url(#tlRivet)"/>`; }
  const mount = `
-  <polygon points="${P}" fill="none" stroke="#0a1228" stroke-width="12" stroke-linejoin="round" transform="translate(0 1.5)"/>
-  <polygon points="${P}" fill="none" stroke="url(#tlMetalV)" stroke-width="10" stroke-linejoin="round"/>
-  <polygon points="${P}" fill="none" stroke="#eef5ff" stroke-width="3" stroke-linejoin="round" opacity=".45" transform="translate(0 -1.2)"/>
-  <polygon points="${P}" fill="none" stroke="#1a2748" stroke-width=".8" stroke-linejoin="round"/>${rivets}`;
+  <polygon points="${_ptsStr}" fill="none" stroke="#0a1228" stroke-width="12" stroke-linejoin="round" transform="translate(0 1.5)"/>
+  <polygon points="${_ptsStr}" fill="none" stroke="url(#tlMetalV)" stroke-width="10" stroke-linejoin="round"/>
+  <polygon points="${_ptsStr}" fill="none" stroke="#eef5ff" stroke-width="3" stroke-linejoin="round" opacity=".45" transform="translate(0 -1.2)"/>
+  <polygon points="${_ptsStr}" fill="none" stroke="#1a2748" stroke-width=".8" stroke-linejoin="round"/>${rivets}`;
  // sertissures
  let bez=''; for(let i=0;i<5;i++){ const c=pt(gemAng[i],R);
   bez+=`<circle cx="${fx(c[0])}" cy="${fx(c[1])}" r="15" fill="url(#tlBezel)" stroke="#1a2748" stroke-width="1"/><circle cx="${fx(c[0])}" cy="${fx(c[1])}" r="15" fill="none" stroke="#eef5ff" stroke-width="1" opacity=".4"/><circle cx="${fx(c[0])}" cy="${fx(c[1])}" r="11.5" fill="#0c1530"/>`; }
@@ -4084,12 +4116,14 @@ function _advTalismanHtml(){
      <circle cx="150" cy="150" r="19" fill="url(#tlCore)" stroke="#fff6d6" stroke-width="1.2" opacity="${(0.3+count*0.1).toFixed(2)}"/>`;
  const legend = _ADV_PRIM_CRYSTALS.map((c,i)=>
   `<div class="advtal-lg ${got[i]?'on':''}"><span class="advtal-dot" style="background:${c.dot}"></span><b>${c.name}</b> <span style="opacity:.85">(${c.color})</span></div>`).join('');
- const msg = done ? 'Talisman complet — Calcultopia est sauvée ! ✨'
+ const seen=(P&&P.storySeen)||[]; const taleSeen=seen.includes('prim_tale_numbers');
+ const clickable = done ? `onclick="_openTaleIllus(_PRIM_TALE_NUMBERS)" role="button" tabindex="0" title="Lire La Grande Histoire des Nombres" style="cursor:pointer"` : '';
+ const msg = done ? (taleSeen ? "Talisman complet — touche-le pour relire La Grande Histoire des Nombres 📖" : "Talisman complet ! Touche-le pour lire La Grande Histoire des Nombres 📜✨")
   : count>0 ? `${count} Cristal${count>1?'aux':''} libéré${count>1?'s':''} — continue !`
   : 'Libère les Cristaux pour reformer le Talisman !';
  return `
   <div class="advlog-section-title">💎 Talisman de Calcultopia <span class="advcol-count">${count} / 5 cristaux</span></div>
-  <div class="advcol-box advtal-box">
+  <div class="advcol-box advtal-box${done?' advbook-done':''}" ${clickable}>
    <svg viewBox="0 0 300 300" class="advcol-svg" aria-label="Talisman : ${count} cristaux sur 5">
     <defs>
      <radialGradient id="tlHalo" cx="50%" cy="50%" r="55%"><stop offset="0%" stop-color="#9fd0ff" stop-opacity=".5"/><stop offset="55%" stop-color="#3f6ad0" stop-opacity=".14"/><stop offset="100%" stop-color="#3f6ad0" stop-opacity="0"/></radialGradient>
