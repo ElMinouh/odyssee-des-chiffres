@@ -110,7 +110,7 @@ function _setSubjectLogos(){
  try{
   const fr = (typeof GM!=='undefined' && GM && GM.subject==='fr');
   document.querySelectorAll('img.subj-logo').forEach(function(im){
-   im.src = fr ? 'assets/logo-mots.webp?v=1013' : 'assets/logo-main.webp?v=1013';
+   im.src = fr ? 'assets/logo-mots.webp?v=1014' : 'assets/logo-main.webp?v=1014';
    im.alt = fr ? "L'Odyssée des Mots" : "L'Odyssée des Chiffres";
   });
   const lbl = document.getElementById('ody-btn-label');
@@ -1150,11 +1150,7 @@ function renderMap(){
  const _islandFogged = {};
  _ARCH_REGIONS.forEach(r => {
   const zonesOfRegion = positions.filter(p => p.regionId === r.id);
-  const anyAccessible = zonesOfRegion.some(p => {
-   const idx = p.zoneIdx;
-   const prev = idx === 0 || beaten.includes(MAP_ZONES[idx-1].id);
-   return prev && (starsTotal >= p.zone.starsReq);
-  });
+  const anyAccessible = zonesOfRegion.some(p => _zoneReachable(p, beaten, starsTotal));
   // Une région complètement battue n'est jamais foggée (cas du joueur qui revient)
   const anyBeaten = zonesOfRegion.some(p => beaten.includes(p.zone.id));
   _islandFogged[r.id] = !anyAccessible && !anyBeaten;
@@ -1177,7 +1173,7 @@ function renderMap(){
   const idx = p.zoneIdx;
   const prev = idx===0 || beaten.includes(MAP_ZONES[idx-1].id);
   const done = beaten.includes(z.id);
-  const canPlay = prev && (starsTotal >= z.starsReq);
+  const canPlay = _zoneReachable(p, beaten, starsTotal);
   let cls = 'archipel-zone';
   if(done) cls += ' completed';
   else if(canPlay) cls += ' current';
@@ -5774,6 +5770,21 @@ function _regionConquered(regionId){
   return zones.every(z => beaten.includes(z.id));
  }catch(e){ return false; }
 }
+// v10.13.6 — Accessibilité d'une zone, avec garde anti-soft-lock : si la zone
+// précédente est battue ET qu'on franchit une frontière de région entièrement
+// conquise, la 1re zone de la région suivante est TOUJOURS jouable, sans exiger
+// le palier d'étoiles (sinon un joueur peu scoreur reste bloqué entre deux îles).
+function _zoneReachable(p, beaten, starsTotal){
+ try{
+  const idx = p.zoneIdx;
+  const prevZone = idx > 0 ? MAP_ZONES[idx-1] : null;
+  const prev = idx === 0 || (prevZone && beaten.includes(prevZone.id));
+  if(!prev) return false;
+  if(starsTotal >= p.zone.starsReq) return true;
+  if(prevZone && prevZone.region && p.zone.region && prevZone.region !== p.zone.region && _regionConquered(prevZone.region)) return true;
+  return false;
+ }catch(e){ return false; }
+}
 // Déclencheur principal : prologue, puis victoire de Cristal, puis épilogue, puis chapitre d'entrée.
 function _maybeShowStory(){
  if(typeof P==='undefined' || !P) return;
@@ -5844,7 +5855,8 @@ function _questVocab(){
 }
 function _questEntries(){
  const vocab = _questVocab();
- const entries = [{ id:'intro', kind:'intro', label:'📜', regionId:null, color:'#c9a86a' }];
+ const _introId=(_STORY.intro&&_STORY.intro.id)||'intro';
+ const entries = [{ id:_introId, kind:'intro', label:'📜', regionId:null, color:'#c9a86a' }];
  const roman = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
  let i = 0;
  _ARCH_REGIONS.forEach(r => {
@@ -5863,7 +5875,7 @@ function _questEntries(){
 function _chapterUnlocked(entry, foggedMap){
  const seen = (typeof P!=='undefined' && P && Array.isArray(P.storySeen)) ? P.storySeen : [];
  if(seen.includes(entry.id)) return true;                       // déjà vu → relisable
- if(entry.kind === 'intro')   return seen.includes('intro');
+ if(entry.kind === 'intro')   return !!(foggedMap && _ARCH_REGIONS[0] && !foggedMap[_ARCH_REGIONS[0].id]) || _ARCH_REGIONS.some(function(r){return _regionConquered(r.id);});
  if(entry.kind === 'chapter') return !!(entry.regionId && foggedMap && !foggedMap[entry.regionId]); // région atteinte
  if(entry.kind === 'victory') return _regionConquered(entry.regionId);   // Cristal mérité = région conquise
  if(entry.kind === 'epilogue')return _regionConquered('final');
@@ -5911,6 +5923,7 @@ function _toggleDrawer(name){
 }
 // Retrouve un chapitre par son id (intro, chap_xxx, win_xxx, epilogue)
 function _findChapter(id){
+ if(_STORY.intro && _STORY.intro.id === id) return _STORY.intro;
  if(id === 'intro') return _STORY.intro;
  if(_STORY.epilogue && _STORY.epilogue.id === id) return _STORY.epilogue;
  for(const k in _STORY.chapters){ if(_STORY.chapters[k].id === id) return _STORY.chapters[k]; }
