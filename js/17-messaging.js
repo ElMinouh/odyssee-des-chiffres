@@ -119,6 +119,7 @@ async function openMessaging(readOnlyName){
  const name = readOnlyName || _curName();
  const ro = !!readOnlyName;
  if(!name){ if(typeof toast==='function') toast('Aucun profil.',2000); return; }
+ if(!ro){ try{ await chatSyncIdentityFromCloud(name); }catch(e){} } // adopte l'identité du cloud si elle existe
  const prof = _chatLoad(name);
  if(!prof.chatEnabled && !ro){ if(typeof toast==='function') toast('La messagerie est désactivée. Un parent peut l\u2019activer dans Vue Parent → Options.',3200); return; }
  ensureChatIdentity(prof);
@@ -338,10 +339,35 @@ function _setBadge(id, n){
  if(n>0){ el.textContent = n>9?'9+':String(n); el.classList.remove('hidden'); }
  else { el.classList.add('hidden'); }
 }
+// Tire l'identité de messagerie depuis le cloud (lecture seule du profil cloud, sans toucher au profil de jeu).
+async function chatSyncIdentityFromCloud(name){
+ name = name || _curName(); if(!name) return;
+ let prof = null;
+ try{ prof = (typeof P!=='undefined' && P && P.name===name) ? P : (typeof _readProfile==='function' ? _readProfile(name) : null); }catch(e){}
+ const code = prof && prof.cloudCode;
+ if(!code || typeof pullProfileFromCloud!=='function') return;
+ try{
+  const res = await pullProfileFromCloud(code);
+  if(res && res.ok && res.profile && res.profile._chat){ chatMergeFromCloud(name, res.profile._chat); }
+ }catch(e){}
+}
+var _chatPushedOnce = false;
+async function chatSyncTick(){
+ const name = _curName();
+ if(name){
+  await chatSyncIdentityFromCloud(name);              // adopte l'identité du cloud si dispo (tablette/téléphone)
+  const prof = _chatLoad(name);
+  if(prof.chatEnabled && prof.chatId && !_chatPushedOnce){ // s'assure que l'appareil déjà activé pousse son identité
+   _chatPushedOnce = true;
+   try{ if(typeof scheduleCloudSync==='function') scheduleCloudSync(); }catch(e){}
+  }
+ }
+ chatRefreshBadges();
+}
 function chatStartBadgePoll(){
  if(_msgBadgePoll) clearInterval(_msgBadgePoll);
- chatRefreshBadges();
- _msgBadgePoll = setInterval(chatRefreshBadges, 25000);
+ chatSyncTick();
+ _msgBadgePoll = setInterval(chatSyncTick, 25000);
 }
 
 // ═══════════════════════════════════════════════════════
