@@ -1320,6 +1320,7 @@ function optSelectProfile(){
  if(typeof renderCloudPanel==='function') renderCloudPanel();
  renderOptBirthday(name);
  renderOptResetOne(name);
+ if(typeof renderOptMessaging==="function") renderOptMessaging(name);
 }
 function renderOptBirthday(name){
  const box=$('opt-birthday'); if(!box) return;
