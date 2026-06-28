@@ -1262,13 +1262,13 @@ function renderProfileManager(){
  const _e=(typeof esc==='function')?esc:(s=>String(s));
  const roster=(typeof getRoster==='function')?getRoster():[];
  const rows = roster.length
-  ? roster.map(n=>`<div class="lb-row"><span class="lb-name">${_e(n)}</span><button onclick="pmRemoveProfile(this.dataset.n)" data-n="${_e(n)}" title="Retirer ${_e(n)}" style="background:#e74c3c;color:#fff;border:none;border-radius:6px;width:28px;height:28px;cursor:pointer;font-weight:700;line-height:1;">✕</button></div>`).join('')
+  ? roster.map(n=>{ const _b=(typeof getBirthday==='function')?getBirthday(n):null; const _mm=(_b&&_b.m)?_b.m:''; const _dd=(_b&&_b.d)?_b.d:''; return `<div class="lb-row" style="flex-wrap:wrap;gap:6px;"><span class="lb-name" style="flex:1;min-width:72px;">${_e(n)}</span><span style="font-size:.82em;color:#9aa6b2;" title="Anniversaire">🎂</span><input type="number" min="1" max="31" placeholder="J" value="${_dd}" data-n="${_e(n)}" onchange="pmSetBirthday(this.dataset.n,'d',this.value)" style="width:46px;text-align:center;" title="Jour"><input type="number" min="1" max="12" placeholder="M" value="${_mm}" data-n="${_e(n)}" onchange="pmSetBirthday(this.dataset.n,'m',this.value)" style="width:46px;text-align:center;" title="Mois"><button onclick="pmRemoveProfile(this.dataset.n)" data-n="${_e(n)}" title="Retirer ${_e(n)}" style="background:#e74c3c;color:#fff;border:none;border-radius:6px;width:28px;height:28px;cursor:pointer;font-weight:700;line-height:1;">✕</button></div>`; }).join('')
   : '<span style="color:#bdc3c7;">Aucun profil pour le moment. Ajoute-en un ci-dessous.</span>';
  box.innerHTML = `<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px;">
    <strong>👤 Profils du jeu</strong>
    <div style="margin:8px 0;display:flex;flex-direction:column;gap:5px;">${rows}</div>
    <div style="display:flex;gap:6px;"><input id="pm-new" type="text" placeholder="Nouveau prénom…" maxlength="20" style="flex:1;" onkeydown="if(event.key==='Enter')pmAddProfile()"><button onclick="pmAddProfile()" style="background:#27ae60;color:#fff;border:none;border-radius:8px;padding:0 14px;cursor:pointer;font-weight:700;">Ajouter</button></div>
-   <div style="font-size:.74em;color:#9aa6b2;margin-top:6px;line-height:1.4;">Les profils et tous leurs progrès sont enregistrés sur cet appareil. Retirer un profil n'efface pas sa progression : il réapparaîtra si tu le rajoutes.</div>
+   <div style="font-size:.74em;color:#9aa6b2;margin-top:6px;line-height:1.4;">Les profils et tous leurs progrès sont enregistrés sur cet appareil. Retirer un profil n'efface pas sa progression : il réapparaîtra si tu le rajoutes.<br>🎂 Renseigne le jour/mois de naissance : un gâteau-cadeau apparaît ce jour-là.</div>
   </div>`;
 }
 function pmAddProfile(){
@@ -1287,4 +1287,12 @@ function pmRemoveProfile(n){
  removeFromRoster(n);
  renderProfileManager();
  if(typeof fillPlayerSelect==='function') fillPlayerSelect();
+}
+
+function pmSetBirthday(name, field, val){
+ if(typeof getBirthday!=='function' || typeof setBirthday!=='function') return;
+ const cur=getBirthday(name)||{m:0,d:0};
+ const v=parseInt(val,10)||0;
+ if(field==='m') cur.m=v; else cur.d=v;
+ setBirthday(name, cur.m, cur.d);
 }

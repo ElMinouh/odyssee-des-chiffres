@@ -596,7 +596,8 @@ const FIGURINES=[
 {id:'sx_anniv_peyo', name:'Gâteau de Peyo',       uni:'Saisonnier',uk:'sx',em:'🎂',em2:'🎈',color:'#3498db',gc:'#74b9ff',desc:'Le gâteau bleu cobalt qui célèbre Peyo chaque 7 juillet. Ses 7 bougies scintillent d\'une joie pure. Trophée du jour le plus spécial.',r:'exclusif',p:0},
 {id:'sx_anniv_tomi', name:'Gâteau de Tomi',       uni:'Saisonnier',uk:'sx',em:'🎂',em2:'🎈',color:'#9b59b6',gc:'#a29bfe',desc:'Le gâteau violet enchanté qui apparaît le 13 mars pour Tomi. Sa crème aux mathématiques magiques porte-bonheur garantit une année excellente.',r:'exclusif',p:0},
 {id:'sx_anniv_papa', name:'Gâteau de Papa',       uni:'Saisonnier',uk:'sx',em:'🎂',em2:'🎈',color:'#27ae60',gc:'#7bed9f',desc:'Le gâteau d\'émeraude offert à Papa chaque 28 avril. Ses bougies dorées éclairent le foyer toute la journée. Trophée familial unique.',r:'exclusif',p:0},
-{id:'sx_anniv_maman',name:'Gâteau de Maman',      uni:'Saisonnier',uk:'sx',em:'🎂',em2:'🎈',color:'#e67e22',gc:'#fab1a0',desc:'Le gâteau ambré offert à Maman chaque 11 avril. Sa lumière chaleureuse illumine toute la famille. Souvenir précieux d\'une journée d\'amour.',r:'exclusif',p:0}
+{id:'sx_anniv_maman',name:'Gâteau de Maman',      uni:'Saisonnier',uk:'sx',em:'🎂',em2:'🎈',color:'#e67e22',gc:'#fab1a0',desc:'Le gâteau ambré offert à Maman chaque 11 avril. Sa lumière chaleureuse illumine toute la famille. Souvenir précieux d\'une journée d\'amour.',r:'exclusif',p:0},
+{id:'sx_anniv',name:"Gâteau d'anniversaire",uni:'Saisonnier',uk:'sx',em:'🎂',em2:'🎈',color:'#e84393',gc:'#ff79c6',desc:"Le gâteau magique qui apparaît le jour de ton anniversaire. Ses bougies brillent d'une lumière féérique. Souvenir d'une journée pas comme les autres.",r:'exclusif',p:0}
 ];
 
 // ═══════════════════════════════════════════════════════
@@ -2180,6 +2181,10 @@ Object.assign(FIG_PAGES, {
  sx_nouvelan: [
   "L'Horloge Infernale est la figurine du Nouvel An, qui égrène les dernières secondes avant minuit. Quand ses aiguilles se rejoignent, une nouvelle année commence dans la joie.",
   "Compte à rebours, vœux et feux d'artifice marquent ce passage. L'Horloge Infernale symbolise l'excitation du moment où tout recommence.",
+ ],
+ sx_anniv: [
+  "Le Gâteau d'anniversaire est une figurine spéciale qui apparaît le jour de ta fête. Couronné de bougies, il célèbre une année de plus et tous les vœux à souffler.",
+  "Cadeaux, surprises et bonne humeur sont au rendez-vous. Un clin d'œil tendre pour un jour pas comme les autres.",
  ],
  sx_anniv_soren: [
   "Le Gâteau de Soren est une figurine spéciale d'anniversaire, créée pour fêter Soren. Couronné de bougies, il célèbre une année de plus et tous les vœux à souffler.",

@@ -61,13 +61,8 @@ const SEASONAL_BOSSES = [
 ];
 
 // ── Anniversaires des joueurs (boss perso) ───────────────────
-const BIRTHDAY_BOSSES = {
- 'Soren': {month:8,  day:1,  emoji:'🎂', name:'Gâteau de Soren', col:'#e84393', figId:'sx_anniv_soren'},
- 'Peyo':  {month:7,  day:7,  emoji:'🎂', name:'Gâteau de Peyo',  col:'#3498db', figId:'sx_anniv_peyo'},
- 'Tomi':  {month:3,  day:13, emoji:'🎂', name:'Gâteau de Tomi',  col:'#9b59b6', figId:'sx_anniv_tomi'},
- 'Papa':  {month:4,  day:28, emoji:'🎂', name:'Gâteau de Papa',  col:'#27ae60', figId:'sx_anniv_papa'},
- 'Maman': {month:4,  day:11, emoji:'🎂', name:'Gâteau de Maman', col:'#e67e22', figId:'sx_anniv_maman'},
-};
+// Anniversaires : désormais réglés par le parent et stockés en localStorage
+// (voir getBirthday/setBirthday dans 02-data.js). Aucun prénom en dur ici.
 
 /**
  * Renvoie le boss saisonnier ou d'anniversaire actif aujourd'hui pour le joueur,
@@ -79,20 +74,20 @@ function getActiveSeasonalBoss(playerName){
  const year  = today.getFullYear();
 
  // 1. Boss d'anniversaire (priorité absolue)
- const bday = BIRTHDAY_BOSSES[playerName];
- if(bday){
-  const bdayDate = new Date(year, bday.month-1, bday.day);
+ const bday = (typeof getBirthday==='function') ? getBirthday(playerName) : null;
+ if(bday && bday.m>=1 && bday.d>=1){
+  const bdayDate = new Date(year, bday.m-1, bday.d);
   if(_isInDateWindow(today, bdayDate, SEASONAL_WINDOW_DAYS)){
    return {
     key:`birthday_${playerName}`,
-    emoji: bday.emoji,
-    name: bday.name,
+    emoji: '🎂',
+    name: 'Gâteau de '+playerName,
     title:`Joyeux anniversaire ${playerName} !`,
     intro:`🎉 ${playerName}, c'est ton jour spécial ! Bats-moi pour ouvrir ton cadeau !`,
-    col: bday.col,
+    col: '#e84393',
     anim:'glow',
     mult: 3,
-    figId: bday.figId,
+    figId: (function(){var _s=String(playerName||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');return (typeof FIGURINES!=='undefined'&&Array.isArray(FIGURINES)&&FIGURINES.find(function(f){return f.id==='sx_anniv_'+_s;}))?'sx_anniv_'+_s:'sx_anniv';})(),
     isBirthday: true,
     playerName
    };

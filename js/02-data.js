@@ -14,6 +14,12 @@ function getRoster(){ try{ const r=JSON.parse(localStorage.getItem('roster')||'n
 function setRoster(arr){ try{ const clean=(arr||[]).map(x=>String(x).trim()).filter(Boolean); localStorage.setItem('roster', JSON.stringify(clean)); }catch(e){} }
 function addToRoster(name){ name=String(name||'').trim(); if(!name) return false; const r=getRoster(); if(r.some(x=>x.toLowerCase()===name.toLowerCase())) return false; r.push(name); setRoster(r); return true; }
 function removeFromRoster(name){ setRoster(getRoster().filter(x=>x!==name)); }
+// ── Anniversaires des profils (réglés par le parent) ────────────────
+// Stockés localement (clé 'birthdays' : { "Prénom": {m,d} }). Aucun
+// prénom n'est codé en dur : chaque famille règle les siens.
+function getBirthdays(){ try{ const b=JSON.parse(localStorage.getItem('birthdays')||'null'); if(b && typeof b==='object' && !Array.isArray(b)) return b; }catch(e){} return {}; }
+function getBirthday(name){ const b=getBirthdays(); return b[name]||null; }
+function setBirthday(name,m,d){ name=String(name||'').trim(); if(!name) return; const b=getBirthdays(); m=parseInt(m,10)||0; d=parseInt(d,10)||0; if(m<0)m=0; if(m>12)m=12; if(d<0)d=0; if(d>31)d=31; if(!m&&!d){ delete b[name]; } else { b[name]={m,d}; } try{ localStorage.setItem('birthdays', JSON.stringify(b)); }catch(e){} }
 // v8.7.47 : genre des joueurs connus pour les accords (Aventurier/Aventurière, etc.)
 // 'm' = masculin, 'f' = féminin. Clés en minuscules pour comparaison insensible à la casse.
 const KNOWN_GENDERS={ papa:'m', maman:'f' }; // mots génériques uniquement (pas de prénoms privés)
