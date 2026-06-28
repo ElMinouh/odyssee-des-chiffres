@@ -110,7 +110,7 @@ function _setSubjectLogos(){
  try{
   const fr = (typeof GM!=='undefined' && GM && GM.subject==='fr');
   document.querySelectorAll('img.subj-logo').forEach(function(im){
-   im.src = fr ? 'assets/logo-mots.webp?v=1020' : 'assets/logo-main.webp?v=1020';
+   im.src = fr ? 'assets/logo-mots.webp?v=1021' : 'assets/logo-main.webp?v=1021';
    im.alt = fr ? "L'Odyssée des Mots" : "L'Odyssée des Chiffres";
   });
   const lbl = document.getElementById('ody-btn-label');
