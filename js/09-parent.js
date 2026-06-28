@@ -35,7 +35,7 @@ function ptab(name){
  if(name==='rapport'){renderReport();renderReportView();}
  if(name==='controles'){loadBlockSettings();loadFilterSettings();if(typeof onFilterSubjectChange==='function')onFilterSubjectChange();if(typeof loadBlockedSubjects==='function')loadBlockedSubjects();}
  if(name==='objectifs'){ if(typeof onHwLevelChange==='function') onHwLevelChange(); if(typeof loadHomework==='function') loadHomework(); }
- if(name==='options'){setTimeout(renderResetZone,60); setTimeout(renderCloudPanel,80); setTimeout(renderProfileManager,70);}
+ if(name==='options'){setTimeout(()=>{if(typeof optFillProfiles==='function')optFillProfiles(); if(typeof renderProfileManager==='function')renderProfileManager();},60);}
  if(name==='figurines'){
   const sel=$('pfig-player');if(!sel)return;
   const cu=localStorage.getItem('customPlayerName');
@@ -597,7 +597,11 @@ function saveObj(){
 }
 function savePin(){
  const pin=$('new-pin')?.value.trim();if(!/^\d{4}$/.test(pin)){$('pin-msg').innerText='❌ 4 chiffres requis.';$('pin-msg').style.color='#e74c3c';return;}
- localStorage.setItem('parentPin',hashPin(pin));$('pin-msg').innerText='✅ Code mis à jour !';$('pin-msg').style.color='#2ecc71';$('new-pin').value='';beep(700,'sine',.3);
+ localStorage.setItem('parentPin',hashPin(pin));
+ const q=$('new-secq')?.value.trim(), a=$('new-seca')?.value.trim();
+ if(q && a){ localStorage.setItem('parentSecQ',q); localStorage.setItem('parentSecA',hashPin(a.toLowerCase())); }
+ $('pin-msg').innerText=(q&&a)?'✅ Code et question secrète enregistrés !':'✅ Code mis à jour !';
+ $('pin-msg').style.color='#2ecc71';$('new-pin').value='';if($('new-seca'))$('new-seca').value='';beep(700,'sine',.3);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1262,13 +1266,13 @@ function renderProfileManager(){
  const _e=(typeof esc==='function')?esc:(s=>String(s));
  const roster=(typeof getRoster==='function')?getRoster():[];
  const rows = roster.length
-  ? roster.map(n=>{ const _b=(typeof getBirthday==='function')?getBirthday(n):null; const _mm=(_b&&_b.m)?_b.m:''; const _dd=(_b&&_b.d)?_b.d:''; return `<div class="lb-row" style="flex-wrap:wrap;gap:6px;"><span class="lb-name" style="flex:1;min-width:72px;">${_e(n)}</span><span style="font-size:.82em;color:#9aa6b2;" title="Anniversaire">🎂</span><input type="number" min="1" max="31" placeholder="J" value="${_dd}" data-n="${_e(n)}" onchange="pmSetBirthday(this.dataset.n,'d',this.value)" style="width:46px;text-align:center;" title="Jour"><input type="number" min="1" max="12" placeholder="M" value="${_mm}" data-n="${_e(n)}" onchange="pmSetBirthday(this.dataset.n,'m',this.value)" style="width:46px;text-align:center;" title="Mois"><button onclick="pmRemoveProfile(this.dataset.n)" data-n="${_e(n)}" title="Retirer ${_e(n)}" style="background:#e74c3c;color:#fff;border:none;border-radius:6px;width:28px;height:28px;cursor:pointer;font-weight:700;line-height:1;">✕</button></div>`; }).join('')
+  ? roster.map(n=>`<div class="lb-row"><span class="lb-name" style="flex:1;">${_e(n)}</span><button onclick="pmRemoveProfile(this.dataset.n)" data-n="${_e(n)}" title="Retirer ${_e(n)}" style="background:#e74c3c;color:#fff;border:none;border-radius:6px;width:28px;height:28px;cursor:pointer;font-weight:700;line-height:1;">✕</button></div>`).join('')
   : '<span style="color:#bdc3c7;">Aucun profil pour le moment. Ajoute-en un ci-dessous.</span>';
  box.innerHTML = `<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px;">
    <strong>👤 Profils du jeu</strong>
    <div style="margin:8px 0;display:flex;flex-direction:column;gap:5px;">${rows}</div>
    <div style="display:flex;gap:6px;"><input id="pm-new" type="text" placeholder="Nouveau prénom…" maxlength="20" style="flex:1;" onkeydown="if(event.key==='Enter')pmAddProfile()"><button onclick="pmAddProfile()" style="background:#27ae60;color:#fff;border:none;border-radius:8px;padding:0 14px;cursor:pointer;font-weight:700;">Ajouter</button></div>
-   <div style="font-size:.74em;color:#9aa6b2;margin-top:6px;line-height:1.4;">Les profils et tous leurs progrès sont enregistrés sur cet appareil. Retirer un profil n'efface pas sa progression : il réapparaîtra si tu le rajoutes.<br>🎂 Renseigne le jour/mois de naissance : un gâteau-cadeau apparaît ce jour-là.</div>
+   <div style="font-size:.74em;color:#9aa6b2;margin-top:6px;line-height:1.4;">Les profils et tous leurs progrès sont enregistrés sur cet appareil. Retirer un profil n'efface pas sa progression : il réapparaîtra si tu le rajoutes. L'anniversaire se règle dans le panneau du profil ci-dessus.</div>
   </div>`;
 }
 function pmAddProfile(){
@@ -1295,4 +1299,89 @@ function pmSetBirthday(name, field, val){
  const v=parseInt(val,10)||0;
  if(field==='m') cur.m=v; else cur.d=v;
  setBirthday(name, cur.m, cur.d);
+}
+
+// ── Onglet Options réorganisé : pilotage par profil ──────────────────
+function optFillProfiles(){
+ const sel=$('opt-profile'); if(!sel) return;
+ const _e=(typeof esc==='function')?esc:(s=>String(s));
+ const roster=(typeof getRoster==='function')?getRoster():[];
+ sel.innerHTML=roster.map(n=>`<option value="${_e(n)}">${_e(n)}</option>`).join('');
+ if(P && P.name && roster.includes(P.name)) sel.value=P.name;
+ optSelectProfile();
+}
+function optSelectProfile(){
+ const sel=$('opt-profile'); if(!sel) return;
+ const name=sel.value; if(!name){ const b=$('opt-birthday'); if(b)b.innerHTML='<span style="font-size:.78em;color:#bdc3c7;">Aucun profil. Ajoute-en un dans « Général ».</span>'; return; }
+ const roster=(typeof getRoster==='function')?getRoster():[];
+ const opts=roster.map(n=>`<option>${n}</option>`).join('');
+ const cs=$('cloud-sync-player'); if(cs){ cs.innerHTML=opts; cs.value=name; }
+ const cp=$('cloud-player'); if(cp){ cp.innerHTML=opts; cp.value=name; }
+ if(typeof renderCloudPanel==='function') renderCloudPanel();
+ renderOptBirthday(name);
+ renderOptResetOne(name);
+}
+function renderOptBirthday(name){
+ const box=$('opt-birthday'); if(!box) return;
+ const b=(typeof getBirthday==='function')?getBirthday(name):null;
+ const dd=(b&&b.d)?b.d:'', mm=(b&&b.m)?b.m:'';
+ const _e=(typeof esc==='function')?esc:(s=>String(s));
+ box.innerHTML=`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+   <label style="font-size:.78em;color:#bdc3c7;">Jour d'anniversaire</label>
+   <input type="number" min="1" max="31" value="${dd}" data-n="${_e(name)}" onchange="pmSetBirthday(this.dataset.n,'d',this.value)" style="width:56px;text-align:center;">
+   <label style="font-size:.78em;color:#bdc3c7;">Mois d'anniversaire</label>
+   <input type="number" min="1" max="12" value="${mm}" data-n="${_e(name)}" onchange="pmSetBirthday(this.dataset.n,'m',this.value)" style="width:56px;text-align:center;">
+  </div>`;
+}
+function renderOptResetOne(name){
+ const box=$('opt-reset-one'); if(!box) return;
+ const en=encodeURIComponent(name);
+ let stars=0,figs=0,lvl=1,zb=0;
+ try{const p=JSON.parse(localStorage.getItem('user_'+name)||'null'); if(p){stars=p.stars||0;figs=(p.ownedFigurines||[]).length;lvl=p.xp?Math.floor(p.xp/100)+1:1;zb=(p.mapBossBeaten||[]).length;}}catch(e){}
+ box.innerHTML=`<div style="font-size:.72em;color:#bdc3c7;margin-bottom:6px;">Niv.${lvl} · ${stars} étoiles · ${figs} figurines · ${zb}/23 zones</div>
+  <div style="display:flex;gap:6px;">
+   <button data-pname="${en}" onclick="resetAdventure(decodeURIComponent(this.dataset.pname))" style="flex:1;background:#16a085;color:#fff;padding:8px 10px;font-size:.78em;font-weight:700;border-radius:8px;border:2px solid #1abc9c;cursor:pointer;">🗺 Reset Aventure</button>
+   <button data-pname="${en}" onclick="resetProfile(decodeURIComponent(this.dataset.pname))" style="flex:1;background:#c0392b;color:#fff;padding:8px 10px;font-size:.78em;font-weight:700;border-radius:8px;border:2px solid #ff6b6b;cursor:pointer;">🗑 Reset Total</button>
+  </div>`;
+}
+// Sauvegarde globale : un seul fichier contenant tous les profils.
+function exportAllProfiles(){
+ const roster=(typeof getRoster==='function')?getRoster():[];
+ const profiles={};
+ roster.forEach(n=>{ try{ const d=localStorage.getItem('user_'+n); if(d) profiles[n]=JSON.parse(d); }catch(e){} });
+ const bundle={ _type:'odyssee-all-profiles', _date:Date.now(), roster, birthdays:(typeof getBirthdays==='function'?getBirthdays():{}), profiles };
+ try{
+  const blob=new Blob([JSON.stringify(bundle,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob); const a=document.createElement('a');
+  a.href=url; a.download='odyssee-tous-profils-'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  if(typeof toast==='function') toast('💾 Sauvegarde de tous les profils téléchargée !',2500);
+ }catch(e){ if(typeof toast==='function') toast('Échec de la sauvegarde globale.',2500); }
+}
+// Réinitialisation globale (double confirmation).
+function resetAllProfiles(){
+ const roster=(typeof getRoster==='function')?getRoster():[];
+ if(!roster.length){ if(typeof toast==='function') toast('Aucun profil.',2000); return; }
+ if(!confirm('⚠️ Réinitialiser TOUS les profils ('+roster.join(', ')+') ?\n\nÉtoiles, figurines, XP, badges : tout sera remis à zéro. Action irréversible.')) return;
+ if(!confirm('Confirmation finale : tout remettre à zéro ?')) return;
+ roster.forEach(n=>{ try{ localStorage.removeItem('user_'+n); }catch(e){} });
+ if(typeof toast==='function') toast('Tous les profils ont été réinitialisés.',2500);
+ setTimeout(()=>{ try{ location.reload(); }catch(e){} }, 900);
+}
+// Récupération du code parent via question secrète (écran de verrouillage).
+function recoverParentPin(){
+ const q=localStorage.getItem('parentSecQ');
+ if(!q){ alert("Aucune question secrète n'a été configurée.\n\nAstuce : si le code n'a jamais été changé, le code par défaut est 1234."); return; }
+ const ans=prompt('Question secrète :\n\n'+q);
+ if(ans===null) return;
+ const stored=localStorage.getItem('parentSecA');
+ if(stored && (typeof hashPin==='function') && hashPin(String(ans).trim().toLowerCase())===stored){
+  const np=prompt('✅ Bonne réponse !\n\nChoisis un nouveau code parent (4 chiffres) :');
+  if(np!==null){
+   if(/^\d{4}$/.test(String(np).trim())){ localStorage.setItem('parentPin',hashPin(String(np).trim())); alert('Code mis à jour. Tu peux maintenant te connecter avec ce nouveau code.'); }
+   else alert('Code invalide : il faut exactement 4 chiffres. Recommence.');
+  }
+ } else {
+  alert('❌ Réponse incorrecte.');
+ }
 }
