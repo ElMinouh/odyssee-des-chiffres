@@ -53,16 +53,18 @@ async function chatMsgLatest(prof){ return _chatApi('/msg/latest', _chatAuth(pro
 // ═══════════════════════════════════════════════════════
 function chatIsEnabled(prof){ return !!(prof && prof.chatEnabled); }
 function _chatActiveProf(name){ return (typeof P!=='undefined' && P && P.name===name) ? P : _readProfile(name); }
-function _chatPersist(prof){ if(typeof P!=='undefined' && P && P.name===prof.name){ saveProfileNow(); } else { _writeProfile(prof); } }
+function _chatPersist(prof){ try{ _writeProfile(prof); }catch(e){} } // écriture directe (insensible au verrou de sauvegarde)
 
 async function chatEnableForProfile(name){
  const prof = _chatActiveProf(name); if(!prof) return { error:'no_profile' };
+ // L'activation est un état LOCAL : on l'enregistre d'abord et on ne l'annule jamais sur échec réseau.
  ensureChatIdentity(prof); prof.chatEnabled = true; _chatPersist(prof);
  let res = await chatRegister(prof);
  if(res && res.error === 'taken'){ // collision de code ami : on régénère une fois
   prof.chatId = _chatGenId(); _chatPersist(prof); res = await chatRegister(prof);
  }
- return res;
+ if(res && res.ok){ prof.chatRegistered = true; _chatPersist(prof); }
+ return res || { error:'network' };
 }
 function chatDisableForProfile(name){
  const prof = _chatActiveProf(name); if(!prof) return;
@@ -94,7 +96,7 @@ var _msgBadgePoll = null;
 function _e(s){ return (typeof esc==='function') ? esc(s) : String(s==null?'':s); }
 function _msgEl(){ return document.getElementById('msg-overlay'); }
 
-function openMessaging(readOnlyName){
+async function openMessaging(readOnlyName){
  let prof, ro=false;
  if(readOnlyName){ prof = _readProfile(readOnlyName); ro = true; }
  else { prof = (typeof P!=='undefined') ? P : null; }
@@ -103,6 +105,11 @@ function openMessaging(readOnlyName){
  ensureChatIdentity(prof);
  _msgProf = prof; _msgReadOnly = ro; _msgConv = null;
  const ov = _msgEl(); if(ov) ov.classList.remove('hidden');
+ // Si l'enregistrement au serveur n'a pas encore réussi, on le retente maintenant.
+ if(!ro && !prof.chatRegistered){
+  const r = await chatRegister(prof);
+  if(r && r.ok){ prof.chatRegistered = true; _chatPersist(prof); }
+ }
  renderContactsScreen();
 }
 function closeMessaging(){
@@ -360,8 +367,9 @@ async function optToggleMessaging(name){
  } else {
   if(typeof toast==='function') toast('Activation\u2026',1500);
   const res = await chatEnableForProfile(name);
+  // L'activation reste effective même si le serveur n'a pas encore répondu (enregistrement réessayé à l'ouverture).
   if(res && res.ok){ if(typeof toast==='function') toast('✅ Messagerie activée !',2000); }
-  else { if(typeof toast==='function') toast('Échec de l\u2019activation (connexion ?).',2500); chatDisableForProfile(name); }
+  else { if(typeof toast==='function') toast('✅ Activée. Le code se synchronisera à la prochaine ouverture de la messagerie.',3500); }
  }
  renderOptMessaging(name);
  if(typeof chatRefreshBadges==='function') chatRefreshBadges();
