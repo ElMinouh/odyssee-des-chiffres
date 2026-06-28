@@ -1868,7 +1868,7 @@ function resetAdventure(playerName){
 function renderResetZone(){
   const z=$('reset-zone');if(!z)return;
   // Utiliser KNOWN (liste fixe) + le joueur custom si existant
-  const knownPlayers=typeof KNOWN!=='undefined'?KNOWN:['Soren','Peyo','Tomi','Maman','Papa'];
+  const knownPlayers=(typeof getRoster==='function')?getRoster():[];
   const custom=localStorage.getItem('customPlayerName');
   const players=[...knownPlayers,...(custom&&!knownPlayers.includes(custom)?[custom]:[])];
   z.innerHTML=players.map(name=>{

@@ -241,11 +241,8 @@ async function restoreProfileByCode(code){
  }
  // Ajouter le nom dans la liste des joueurs personnalisés s'il n'est ni prédéfini ni "Autre"
  try{
-  const customs = JSON.parse(localStorage.getItem('customPlayerNames') || '[]');
-  const isPreset = (typeof KNOWN !== 'undefined' && Array.isArray(KNOWN)) ? KNOWN.includes(prof.name) : false;
-  if(!customs.includes(prof.name) && !isPreset && prof.name !== 'Autre'){
-   customs.push(prof.name);
-   localStorage.setItem('customPlayerNames', JSON.stringify(customs));
+  if(prof.name && prof.name !== 'Autre' && typeof addToRoster === 'function'){
+   addToRoster(prof.name); // profil synchronisé/restauré → visible dans le sélecteur
   }
  }catch(e){}
  return { ok:true, name: prof.name };
@@ -330,11 +327,8 @@ async function forceRestoreFromCloud(code){
 
  // 7. Ajouter le nom à la liste des joueurs si custom
  try{
-  const customs = JSON.parse(localStorage.getItem('customPlayerNames') || '[]');
-  const isPreset = (typeof KNOWN !== 'undefined' && Array.isArray(KNOWN)) ? KNOWN.includes(prof.name) : false;
-  if(!customs.includes(prof.name) && !isPreset && prof.name !== 'Autre'){
-   customs.push(prof.name);
-   localStorage.setItem('customPlayerNames', JSON.stringify(customs));
+  if(prof.name && prof.name !== 'Autre' && typeof addToRoster === 'function'){
+   addToRoster(prof.name); // profil synchronisé/restauré → visible dans le sélecteur
   }
  }catch(e){}
 

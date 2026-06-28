@@ -1,0 +1,33 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test odyssee-chat</title>
+<style>
+ body{font-family:system-ui,sans-serif;max-width:640px;margin:24px auto;padding:0 16px;background:#0f1226;color:#e7e9f5}
+ h1{font-size:18px} input{width:100%;padding:10px;border-radius:8px;border:1px solid #3a3f66;background:#1b1f3b;color:#fff;font-size:15px;box-sizing:border-box}
+ button{margin-top:12px;padding:12px 18px;border:none;border-radius:10px;background:#3f6ad0;color:#fff;font-size:15px;font-weight:700;cursor:pointer}
+ pre{background:#1b1f3b;border:1px solid #3a3f66;border-radius:10px;padding:14px;white-space:pre-wrap;word-break:break-word;margin-top:14px}
+ .ok{color:#56d18a} .ko{color:#ff7a7a} label{font-size:13px;color:#9aa6d0;display:block;margin:10px 0 4px}
+</style></head><body>
+<h1>Test du serveur de messagerie</h1>
+<label>Adresse de ton Worker</label>
+<input id="url" value="https://odyssee-chat.air7841.workers.dev">
+<button onclick="run()">Lancer le test</button>
+<pre id="out">Clique sur « Lancer le test »…</pre>
+<script>
+async function run(){
+ const base=document.getElementById('url').value.replace(/\/+$/,'');
+ const out=document.getElementById('out'); out.textContent='Test en cours…';
+ try{
+  const r=await fetch(base+'/register',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({id:'TEST-1234',secret:'un-secret-de-test',name:'Test'})});
+  const data=await r.json();
+  if(data && data.ok){
+   out.innerHTML='<span class="ok">✅ Le serveur fonctionne parfaitement !</span>\n\nRéponse reçue :\n'+JSON.stringify(data,null,2);
+  } else {
+   out.innerHTML='<span class="ko">⚠️ Réponse inattendue ('+r.status+') :</span>\n'+JSON.stringify(data,null,2);
+  }
+ }catch(e){
+  out.innerHTML='<span class="ko">❌ Impossible de joindre le serveur.</span>\n'+e;
+ }
+}
+</script></body></html>
