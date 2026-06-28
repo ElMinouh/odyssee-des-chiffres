@@ -37,7 +37,7 @@ function renderRecords(){
  $('p-records').innerHTML=`<div class="lb-row"><span>🔮 Niveau XP</span><span class="lb-score">Niv.${lvl} (${xp} XP)</span></div><div class="lb-row"><span>🏅 Meilleur score</span><span class="lb-score">${best}</span></div><div class="lb-row"><span>🎮 Parties jouées</span><span>${h.length}</span></div><div class="lb-row"><span>⏱️ Temps de jeu</span><span>${P.sessionMinutes||0} min</span></div><div class="lb-row"><span>⭐ Trésor total</span><span class="lb-score">${P.stars||0}</span></div><div class="lb-row"><span>🗺️ Boss battus</span><span>${(P.mapBossBeaten||[]).length}/${MAP_ZONES.length}</span></div>`;
 }
 function renderLB(){
- const all=[...KNOWN];const cu=localStorage.getItem('customPlayerName');if(cu&&!all.includes(cu))all.push(cu);
+ const all=[...getRoster()];const cu=localStorage.getItem('customPlayerName');if(cu&&!all.includes(cu))all.push(cu);
  const rows=[];all.forEach(n=>{try{const d=JSON.parse(localStorage.getItem('user_'+n)||'null');if(d&&((d.stars||0)>0||(d.history||[]).length))rows.push({name:n,stars:d.stars||0,xp:d.xp||0});}catch(e){}});
  rows.sort((a,b)=>b.xp-a.xp);const m=['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣'];
  $('p-lb').innerHTML=rows.length?rows.map((r,i)=>`<div class="lb-row"><span>${m[i]||'•'}</span><span class="lb-name">${esc(r.name)}${r.name===P.name?' (moi)':''}</span><span class="lb-score">Niv.${levelFromXP(r.xp)} · ${r.stars}⭐</span></div>`).join(''):'<span style="color:#bdc3c7;">Aucune donnée.</span>';

@@ -206,6 +206,16 @@ function defProfile(name){
   heroStageId:'oeuf',
   cloudCode:null,cloudEnabled:false};
 }
+function fillPlayerSelect(){
+ const sel=$('playerSelect'); if(!sel) return;
+ const cur=sel.value;
+ const roster=(typeof getRoster==='function')?getRoster():[];
+ const _e=(typeof esc==='function')?esc:(s=>String(s));
+ let html=roster.map(n=>`<option value="${_e(n)}">${_e(n)}</option>`).join('');
+ html+='<option value="Autre">✏️ Autre joueur…</option>';
+ sel.innerHTML=html;
+ if(cur && Array.from(sel.options).some(o=>o.value===cur)) sel.value=cur;
+}
 function loadProfile(){
  const sel=$('playerSelect').value;
  let name=sel==='Autre'?($('customInput').value.trim()||localStorage.getItem('customPlayerName')||'Joueur'):sel;

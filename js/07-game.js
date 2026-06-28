@@ -110,7 +110,7 @@ function _setSubjectLogos(){
  try{
   const fr = (typeof GM!=='undefined' && GM && GM.subject==='fr');
   document.querySelectorAll('img.subj-logo').forEach(function(im){
-   im.src = fr ? 'assets/logo-mots.webp?v=1018' : 'assets/logo-main.webp?v=1018';
+   im.src = fr ? 'assets/logo-mots.webp?v=1020' : 'assets/logo-main.webp?v=1020';
    im.alt = fr ? "L'Odyssée des Mots" : "L'Odyssée des Chiffres";
   });
   const lbl = document.getElementById('ody-btn-label');
@@ -2289,10 +2289,10 @@ function renderCombatCfg(){
   <div class="combat-row">
    <span>👤</span>
    <select onchange="onCCP(${i},this.value)" style="flex:1.2;">
-    ${KNOWN.map(n=>`<option value="${esc(n)}"${n===p.name?' selected':''}>${esc(n)}</option>`).join('')}
-    <option value="__c__"${!KNOWN.includes(p.name)?' selected':''}>✏️ Autre…</option>
+    ${getRoster().map(n=>`<option value="${esc(n)}"${n===p.name?' selected':''}>${esc(n)}</option>`).join('')}
+    <option value="__c__"${!getRoster().includes(p.name)?' selected':''}>✏️ Autre…</option>
    </select>
-   ${!KNOWN.includes(p.name)?`<input type="text" placeholder="Prénom…" value="${esc(p.name)}" maxlength="16" oninput="combatCfg[${i}].name=this.value" style="flex:1;">`:''}
+   ${!getRoster().includes(p.name)?`<input type="text" placeholder="Prénom…" value="${esc(p.name)}" maxlength="16" oninput="combatCfg[${i}].name=this.value" style="flex:1;">`:''}
    <select onchange="combatCfg[${i}].level=this.value" style="flex:.8;">
     ${(()=>{ const _gi=(l)=>(typeof _groupIcon==='function')?_groupIcon(l)+' ':''; const _ll=(l)=>(typeof _levelLabel==='function')?_levelLabel(l):l; const o=(l)=>`<option value="${l}"${l===p.level?' selected':''}>${_gi(l)}${_ll(l)}</option>`; const prim=(typeof PRIMARY_LEVELS!=='undefined')?PRIMARY_LEVELS:['CP','CE1','CE2','CM1','CM2']; const coll=(typeof COLLEGE_LEVELS!=='undefined')?COLLEGE_LEVELS:[]; const gm=(typeof GROUP_META!=='undefined')?GROUP_META:{primaire:{icon:'🎒',name:'Primaire'},college:{icon:'🎓',name:'Collège'}}; return `<optgroup label="${gm.primaire.icon} ${gm.primaire.name}">${prim.map(o).join('')}</optgroup>`+(coll.length?`<optgroup label="${gm.college.icon} ${gm.college.name}">${coll.map(o).join('')}</optgroup>`:''); })()}
    </select>
@@ -3299,7 +3299,7 @@ if(typeof checkMilestones==='function') checkMilestones();
  $('end-score').innerText=`Score : ${GS.score} pts · Combo max : ×${GS.maxCombo}`;
  $('end-stars').innerText=`+${won?Math.round(GS.score*1.5):0} ⭐`;
  $('end-xp').innerText=`+${xpGained} XP · Niv.${levelFromXP(P.xp)}`;
- $('end-enc').innerText=won?msgs[ri(0,msgs.length-1)]:'';
+ $('end-enc').innerText=won?String(msgs[ri(0,msgs.length-1)]).replace(/\{name\}/g,P.name||''):'';
  renderEndStars(computeStars(GS.score,won));
  $('end-badges').innerHTML=newBadges.length?'<p style="color:#f1c40f;margin:3px 0;">🏅 '+newBadges.map(b=>b.e+' '+b.l).join(', ')+'</p>':'';
  _renderEndRecap(won);
@@ -3626,7 +3626,7 @@ function _renderTaleIllus(tale){
   const p=pages[step];
   ov.innerHTML='<div class="story-parchment" style="max-width:560px;border-top:6px solid '+(tale.accent||'#7c5bd0')+';">'
    +'<div style="text-align:center;font-family:Georgia,serif;font-weight:700;color:'+(tale.accent||'#7c5bd0')+';font-size:15px;margin-bottom:8px;">'+tale.title+'</div>'
-   +'<div style="background:#fffaf0;border:2px solid #e6d3a3;border-radius:12px;padding:6px;overflow:hidden;">'+(p.illus||'')+'</div>'
+   +(p.illus?('<div style="background:#fffaf0;border:2px solid #e6d3a3;border-radius:12px;padding:6px;overflow:hidden;">'+p.illus+'</div>'):'')
    +'<div style="font-family:Georgia,serif;font-size:18px;line-height:1.55;color:#3a2a18;text-align:center;margin:12px 8px 6px;">'+_fill(p.text||'')+'</div>'
    +'<div class="story-nav">'
    +(step>0?'<button class="story-btn ti-prev">‹ Avant</button>':'<span class="story-spacer"></span>')
@@ -3736,6 +3736,72 @@ const _PRIM_TALE_NUMBERS = (function(){
  P.push({ text:"Puis vinrent les <b>machines</b> : la <b>Pascaline</b> de Blaise Pascal (1642), puis, bien plus tard, les <b>ordinateurs</b>… qui calculent avec seulement deux chiffres : <b>0 et 1</b> !", illus:SV(bg('#e7e2d4')+'<rect x="40" y="90" width="90" height="46" rx="5" fill="#8a6a3a" stroke="#5a3f1e" stroke-width="2"/>'+(function(){let s='<g fill="#caa86f">';for(let i=0;i<4;i++)s+='<circle cx="'+(54+i*22)+'" cy="113" r="8"/>';return s+'</g>';})()+digit(85,82,'1642',11,'#5a3f1e')+'<rect x="180" y="74" width="86" height="60" rx="5" fill="#2a3450" stroke="#16306e" stroke-width="2"/><rect x="188" y="82" width="70" height="44" fill="#0c2a5a"/>'+digit(223,112,'0 1 0 1',13,'#5fd0ff')+'<rect x="206" y="134" width="34" height="10" fill="#2a3450"/>') });
  P.push({ text:"Des encoches sur un vieil os jusqu'aux ordinateurs, les nombres ont voyagé à travers le monde et les siècles. Et toi, quand tu calcules aujourd'hui, tu écris la suite de cette grande histoire ! ✨ <b>FIN</b>", illus:SV(bg('#10204a')+spiral(150,100)+'<g fill="#ffe07a"><path d="M150 24 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2 Z"/></g>') });
  return { id:'prim_tale_numbers', title:"La Grande Histoire des Nombres", accent:'#3f6ad0', autoSpeak:false, pages:P };
+})();
+
+// ── Histoire collège (maths) : « La Saga des Porteurs de l'Armure » ─────
+// Débloquée au clic sur l'Armure Solaire complète, le Titan Léthéas vaincu.
+// Niveau fin de 3e. Chronique épique (mythologie du jeu).
+const _COL_TALE_ARMOR = (function(){
+ const SV=(inner)=>'<svg viewBox="0 0 300 200" width="100%" preserveAspectRatio="xMidYMid meet">'+inner+'</svg>';
+ const bg=(c)=>'<rect x="0" y="0" width="300" height="200" fill="'+(c||'#15131f')+'"/>';
+ const titan=(cx,by,s,glow)=>{ s=s||1; const g='<g transform="translate('+cx+' '+by+') scale('+s+')">'
+  +'<path d="M0 0 C-46 -6 -58 -70 -40 -120 C-30 -148 -16 -160 0 -162 C16 -160 30 -148 40 -120 C58 -70 46 -6 0 0 Z" fill="#0c0a16"/>'
+  +'<path d="M-22 -150 q22 -22 44 0 q-10 -6 -22 -6 q-12 0 -22 6 Z" fill="#0c0a16"/>'
+  +'<circle cx="-12" cy="-128" r="4.5" fill="'+(glow||'#b06cff')+'"/><circle cx="12" cy="-128" r="4.5" fill="'+(glow||'#b06cff')+'"/>'
+  +'<g stroke="#2a2440" stroke-width="3" stroke-linecap="round" opacity=".7"><line x1="-44" y1="-70" x2="-72" y2="-58"/><line x1="44" y1="-70" x2="72" y2="-58"/></g>'
+  +'</g>'; return g; };
+ const armor=(cx,cy,s)=>{ s=s||1; return '<g transform="translate('+cx+' '+cy+') scale('+s+')">'
+  +'<ellipse cx="0" cy="86" rx="40" ry="7" fill="#000" opacity=".3"/>'
+  +'<circle cx="0" cy="-58" r="16" fill="#e8c24a" stroke="#fff6cc" stroke-width="1.5"/><path d="M-12 -62 a12 12 0 0 1 24 0 Z" fill="#caa23a"/>'
+  +'<path d="M-26 -40 Q0 -50 26 -40 L30 36 Q0 50 -30 36 Z" fill="#f0c44a" stroke="#fff6cc" stroke-width="1.6"/>'
+  +'<path d="M-26 -40 Q0 -50 26 -40 L24 -30 Q0 -40 -24 -30 Z" fill="#fffdf0" opacity=".5"/>'
+  +'<circle cx="0" cy="-6" r="9" fill="#ffe89a" stroke="#7a5200" stroke-width="1.2"/><circle cx="0" cy="-6" r="4.5" fill="#ff8a3d"/>'
+  +'<path d="M-26 -38 l-16 6 -2 50 16 2 Z" fill="#e0a82a" stroke="#fff6cc" stroke-width="1.2"/><path d="M26 -38 l16 6 2 50 -16 2 Z" fill="#e0a82a" stroke="#fff6cc" stroke-width="1.2"/>'
+  +'<path d="M-18 38 q9 6 18 0 l-2 44 q-7 4 -14 0 Z" fill="#e0a82a" stroke="#fff6cc" stroke-width="1.2"/><path d="M2 38 q9 6 18 0 l-2 44 q-7 4 -14 0 Z" fill="#e0a82a" stroke="#fff6cc" stroke-width="1.2"/>'
+  +'</g>'; };
+ const sword=(cx,cy,s)=>{ s=s||1; return '<g transform="translate('+cx+' '+cy+') scale('+s+')">'
+  +'<circle cx="0" cy="0" r="50" fill="#ffe89a" opacity=".25"/>'
+  +'<polygon points="0,-70 7,-50 -7,-50" fill="#fffbe6"/>'
+  +'<rect x="-7" y="-54" width="14" height="96" rx="3" fill="#fff2b8" stroke="#fff" stroke-width="1"/>'
+  +'<line x1="0" y1="-50" x2="0" y2="40" stroke="#fff" stroke-width="1.4" opacity=".8"/>'
+  +'<path d="M-24 44 q24 8 48 0 l-4 9 q-20 6 -40 0 Z" fill="#e8c24a" stroke="#fff6cc" stroke-width="1.2"/>'
+  +'<rect x="-5" y="50" width="10" height="22" rx="3" fill="#caa23a"/><circle cx="0" cy="78" r="7" fill="#ff8a3d" stroke="#fff6cc" stroke-width="1.2"/>'
+  +'</g>'; };
+ const dawn=()=>'<rect x="0" y="0" width="300" height="200" fill="#1a1830"/><path d="M0 130 H300 V200 H0 Z" fill="#241f3e"/><circle cx="150" cy="132" r="42" fill="#ffd24a"/><circle cx="150" cy="132" r="58" fill="#ffd24a" opacity=".25"/><path d="M0 132 H300" stroke="#caa23a" stroke-width="1" opacity=".5"/>';
+ const halo=(c)=>'<circle cx="150" cy="100" r="92" fill="'+(c||'#caa23a')+'" opacity=".12"/>';
+
+ const P=[];
+ P.push({ text:"<b>La Saga des Porteurs de l'Armure</b> — Cette chronique, gravée à l'intérieur du plastron, n'apparaît qu'à celui qui a reconstitué l'Armure et terrassé le Titan. Tu peux enfin la lire.", illus:SV(bg('#13111d')+halo('#caa23a')+armor(150,100,1.0)) });
+ P.push({ text:"Avant les royaumes, avant même les noms, il y avait l'Oubli. On l'appela plus tard <b>Léthéas, le Titan de l'Oubli</b>. Là où s'étendait son ombre, les peuples oubliaient leur langue, leurs ancêtres, jusqu'à leur propre visage.", illus:SV(bg('#0f0d1a')+titan(150,182,1.0)) });
+ P.push({ text:"Ce que Léthéas dévorait n'était ni l'or ni le sang, mais la <b>mémoire</b>. Et il le savait : un peuple qui oublie son passé est un peuple sans avenir, aussi vide qu'une page effacée.", illus:'' });
+ P.push({ text:"Une seule force résistait à l'Oubli : la <b>lumière</b>. Au sommet d'une montagne battue par les vents, un forgeron-sage, <b>Orïas</b>, recueillit un éclat tombé du soleil et le martela sur son enclume, mille jours et mille nuits durant.", illus:SV(bg('#1b1018')+'<g><circle cx="150" cy="120" r="26" fill="#ff8a3d" opacity=".5"/><rect x="96" y="120" width="108" height="30" rx="6" fill="#2a2230"/><rect x="120" y="104" width="60" height="20" rx="4" fill="#3a3040"/><circle cx="150" cy="114" r="9" fill="#ffd24a"/><g stroke="#ffb13d" stroke-width="2" stroke-linecap="round"><line x1="150" y1="100" x2="146" y2="88"/><line x1="158" y1="102" x2="162" y2="90"/><line x1="142" y1="102" x2="136" y2="92"/></g><rect x="184" y="74" width="9" height="34" rx="3" fill="#6a4a2a" transform="rotate(28 188 90)"/><rect x="196" y="70" width="22" height="12" rx="3" fill="#8a8a92" transform="rotate(28 207 76)"/></g>') });
+ P.push({ text:"De ce feu naquit l'<b>Armure Solaire</b> : six pièces, six pouvoirs, et un serment gravé contre le cœur — « <i>Tant qu'un seul se souviendra, l'Oubli ne vaincra pas.</i> »", illus:SV(bg('#13111d')+halo()+armor(150,100,1.05)) });
+ P.push({ text:"Mais Orïas était trop vieux pour la revêtir. Il comprit alors la vérité qui ferait sa force comme sa fragilité : l'Armure ne serait jamais l'affaire d'un seul. Elle devrait se <b>transmettre</b>, d'épaule en épaule, à travers les âges.", illus:'' });
+ P.push({ text:"<b>Première porteuse — l'Antiquité.</b> Ce fut <b>Cassia l'Archiviste</b>, gardienne de la grande bibliothèque de Mémosa. Quand l'ombre du Titan tomba sur la cité, les habitants oublièrent jusqu'au nom de leurs enfants.", illus:SV(bg('#171426')+'<g stroke="#caa23a" stroke-width="3" fill="none">'+[60,110,160,210,250].map(x=>'<line x1="'+x+'" y1="70" x2="'+x+'" y2="150"/>').join('')+'</g><rect x="44" y="60" width="222" height="12" fill="#b89540"/><rect x="44" y="150" width="222" height="10" fill="#9a7a30"/><rect x="120" y="96" width="56" height="40" rx="3" fill="#e8d8a8"/><line x1="148" y1="96" x2="148" y2="136" stroke="#9a7a30"/></g>') });
+ P.push({ text:"Revêtant l'Armure, Cassia illumina les rues et, toute la nuit, lut à voix haute chaque nom inscrit dans ses registres. Un à un, les habitants se souvinrent. Au matin, Mémosa avait retrouvé sa mémoire — mais Cassia, épuisée, savait qu'elle ne tiendrait pas un second assaut.", illus:'' });
+ P.push({ text:"Elle confia l'Armure à un jeune messager et lui fit prêter le serment. « Ce n'est pas la force qui fait le porteur, lui dit-elle, mais le <b>refus d'oublier</b>. »", illus:'' });
+ P.push({ text:"<b>Deuxième porteur — le Moyen Âge.</b> L'Oubli revint sous la forme d'une étrange fièvre : dans tout un royaume, les chroniques s'effaçaient et les gens perdaient le fil de leur histoire. <b>Sire Aldric</b> reçut l'Armure d'un moine mourant.", illus:SV(bg('#141220')+'<path d="M0 150 H300 V200 H0 Z" fill="#241f33"/><rect x="20" y="150" width="100" height="12" fill="#3a3145"/><rect x="180" y="150" width="100" height="12" fill="#3a3145"/><rect x="120" y="150" width="60" height="14" fill="#2a2230"/>'+armor(150,118,0.62)+'<rect x="150" y="80" width="3" height="40" fill="#caa23a"/>') });
+ P.push({ text:"Tandis que des moines copiaient en hâte les derniers livres, Aldric tint seul un pont étroit contre les spectres de l'Oubli. Quand les cartes elles-mêmes s'effacèrent dans le brouillard, le <b>casque</b> de l'Armure lui souffla le chemin du retour.", illus:'' });
+ P.push({ text:"Grièvement blessé, il remit l'Armure à une jeune paysanne qui, seule au village, savait lire. À ceux qui s'en étonnaient, il répondit : « L'Armure ne se mérite pas par la naissance, mais par ce qu'on accepte de <b>sauvegarder</b>. »", illus:'' });
+ P.push({ text:"<b>Troisième porteuse — la Renaissance.</b> En un temps de redécouvertes, <b>Livia</b> servait dans un atelier d'<b>imprimerie</b>. Elle comprit la première qu'une arme nouvelle venait de naître contre le Titan : la <b>copie</b>.", illus:SV(bg('#1a1726')+'<rect x="96" y="60" width="108" height="78" rx="4" fill="#5a4a2e" stroke="#caa23a" stroke-width="2"/><rect x="110" y="74" width="80" height="40" fill="#2a2230"/><rect x="118" y="50" width="64" height="14" fill="#3a3040"/><g fill="#efe6cf">'+[ [40,150],[70,160],[230,150],[260,162],[150,168]].map(p=>'<rect x="'+p[0]+'" y="'+p[1]+'" width="22" height="16" rx="1" transform="rotate('+((p[0]%30)-12)+' '+p[0]+' '+p[1]+')"/>').join('')+'</g>') });
+ P.push({ text:"Là où l'Oubli ne pouvait brûler qu'un livre à la fois, Livia en imprima des milliers, qu'elle dispersa aux quatre coins du monde. « Désormais, dit-elle, pour effacer un savoir, il faudrait tous nous effacer. »", illus:'' });
+ P.push({ text:"Elle passa l'Armure en murmurant le serment, qui s'allongeait à présent de tous les noms de celles et ceux qui l'avaient porté avant elle.", illus:'' });
+ P.push({ text:"<b>Quatrième porteur — le siècle des Lumières.</b> Vint <b>Augustin</b>, l'un de ces savants qui rêvaient de rassembler toutes les connaissances humaines en un seul grand ouvrage, afin que nul ne puisse plus les confisquer.", illus:SV(bg('#17131f')+'<g><path d="M150 60 l18 10 0 60 -18 10 -18 -10 0 -60 Z" fill="#2a2230" stroke="#caa23a" stroke-width="1.6"/><circle cx="150" cy="104" r="14" fill="#ffd24a"/><circle cx="150" cy="104" r="20" fill="#ffd24a" opacity=".25"/><rect x="146" y="118" width="8" height="24" fill="#5a4a2e"/></g><g fill="#e8d8a8">'+[[70,150],[210,150]].map(p=>'<rect x="'+p[0]+'" y="'+p[1]+'" width="26" height="34" rx="2"/>').join('')+'</g>') });
+ P.push({ text:"Quand un pouvoir tyrannique voulut effacer l'histoire d'un peuple entier, Augustin, sous l'Armure, mit les archives à l'abri et alluma la « lanterne de mémoire » : la preuve que la lumière d'un seul peut traverser les nuits les plus noires.", illus:'' });
+ P.push({ text:"À sa suite, l'Armure traversa les révolutions et les empires, portée par des héros dont l'Histoire, ironie de l'Oubli, n'a pas toujours retenu le nom — mais l'Armure, elle, se souvient de chacun.", illus:'' });
+ P.push({ text:"<b>Cinquième porteuse — l'époque des machines.</b> En un siècle de fer, de vitesse et de guerres, des villes entières furent rasées, et avec elles leurs registres. <b>Nora</b> porta l'Armure parmi les décombres.", illus:'' });
+ P.push({ text:"Elle ne sauva ni trône ni trésor, mais des <b>témoignages</b> : des lettres, des photographies, des voix. « Tant qu'un seul témoin parle, répétait-elle, l'Oubli recule d'un pas. »", illus:'' });
+ P.push({ text:"Puis l'Armure parvint jusqu'à notre temps. Et c'est ici que la chronique cesse de parler du passé… pour parler de <b>toi</b>.", illus:'' });
+ P.push({ text:"Car Léthéas, mille fois repoussé, n'était pas mort : l'Oubli ne meurt pas, il <b>attend</b>. À notre époque, il se réveilla plus puissant que jamais.", illus:SV(bg('#0e0c18')+titan(150,188,1.18,'#c46bff')) });
+ P.push({ text:"Mais il avait appris à se déguiser. Non plus en ombre terrifiante, mais en <b>distraction</b> : un flot ininterrompu de bruits et d'images, si rapide qu'on oublie aussitôt ce que l'on vient de voir. Le plus dangereux des oublis est celui que l'on ne remarque même pas.", illus:'' });
+ P.push({ text:"C'est alors que l'Armure choisit son nouveau porteur : <b>toi</b>, {hero}. Pièce après pièce, île après île, épreuve après épreuve, tu l'as patiemment reconstituée.", illus:SV(bg('#13111d')+halo('#ffd24a')+armor(150,100,1.05)) });
+ P.push({ text:"Et lorsque la dernière pièce, le casque, s'ajusta sur ton front, une lumière jaillit dans ta main : la <b>Lame d'Aurore</b>, forgée par Orïas pour le jour — ce jour — où il faudrait affronter le Titan en personne.", illus:SV(bg('#120f1d')+sword(150,100,1.0)) });
+ P.push({ text:"Léthéas se dressa, immense, et prononça le plus terrible de ses sortilèges : il te fit oublier ton propre <b>nom</b>. Un instant, tu vacillas, ne sachant plus qui tu étais, ni pourquoi tu te battais.", illus:SV(bg('#0e0c18')+titan(150,190,1.25,'#c46bff')) });
+ P.push({ text:"Mais le serment gravé contre ton cœur se mit à briller. Tu te souvins : de la forge d'Orïas, de Cassia, d'Aldric, de Livia, d'Augustin, de Nora — de <b>tous</b> les porteurs. Et en te souvenant d'eux, tu te souvins enfin de <b>toi</b>.", illus:'' });
+ P.push({ text:"D'un seul éclat de la Lame d'Aurore, tu déchiras l'ombre. Léthéas ne fut pas anéanti — l'Oubli ne se tue pas — mais <b>repoussé</b>, renvoyé attendre dans les ténèbres, vaincu une fois encore.", illus:SV(bg('#1a1226')+sword(108,100,0.9)+titan(238,196,0.7,'#5a3a7a')+'<path d="M150 40 L150 170" stroke="#ffe89a" stroke-width="3" opacity=".5"/>') });
+ P.push({ text:"Tu connais désormais le secret de l'Armure : sa véritable puissance n'est pas dans son or ni dans sa lame, mais dans la <b>chaîne ininterrompue</b> de celles et ceux qui, de siècle en siècle, ont refusé d'oublier.", illus:SV(dawn()+armor(150,118,0.7)) });
+ P.push({ text:"Un jour, à ton tour, tu transmettras l'Armure et le serment à qui saura le tenir. Car tant qu'un seul se souviendra… l'Oubli ne vaincra jamais. ✨ <b>FIN</b>", illus:SV(dawn()) });
+ return { id:'col_tale_armor', title:"La Saga des Porteurs de l'Armure", accent:'#caa64e', autoSpeak:false, pages:P };
 })();
 
 function _openBookTale(){
@@ -3922,9 +3988,13 @@ function _advArmorHtml(){
  const ult = sword
   ? `<div class="advcol-ult on">⚔️ <b>Lame d'Aurore</b> — puissance à son paroxysme. Prêt pour le Titan.</div>`
   : `<div class="advcol-ult">⚔️ <b>Lame d'Aurore</b> — apparaît quand l'armure est complète.</div>`;
+ const titanDone = _regionConquered('titan');
+ const seenC=(P&&P.storySeen)||[]; const taleSeenC=seenC.includes('col_tale_armor');
+ const clickableC = titanDone ? `onclick="_openTaleIllus(_COL_TALE_ARMOR)" role="button" tabindex="0" title="Lire La Saga des Porteurs de l'Armure" style="cursor:pointer"` : '';
+ const sagaInvite = titanDone ? `<div class="advcol-caption">${taleSeenC?"Titan vaincu — touche l'Armure pour relire la Saga 📖":"Titan vaincu ! Touche l'Armure pour lire la Saga des Porteurs ⚔️📜"}</div>` : '';
  return `
   <div class="advlog-section-title">🛡️ Armure Solaire <span class="advcol-count">${count} / 6 pièces</span></div>
-  <div class="advcol-box advcol-col">
+  <div class="advcol-box advcol-col${titanDone?' advbook-done':''}" ${clickableC}>
    <svg viewBox="0 0 300 340" class="advcol-svg" aria-label="Armure Solaire : ${count} pièces sur 6">
     <defs>
      <radialGradient id="acAura" cx="50%" cy="38%" r="60%"><stop offset="0%" stop-color="#ffe89a" stop-opacity=".62"/><stop offset="45%" stop-color="#d4a017" stop-opacity=".18"/><stop offset="100%" stop-color="#d4a017" stop-opacity="0"/></radialGradient>
@@ -4058,6 +4128,7 @@ function _advArmorHtml(){
    </svg>
    <div class="advcol-powers">${powers}</div>
    ${ult}
+   ${sagaInvite}
   </div>`;
 }
 

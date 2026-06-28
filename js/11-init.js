@@ -136,6 +136,7 @@ window.onload=()=>{
  // Indispensable pour que la récupération cloud forcée fonctionne :
  // forceRestoreFromCloud écrit lastPlayer puis recharge la page.
  try{
+  if(typeof fillPlayerSelect==='function') fillPlayerSelect();
   const lastP = localStorage.getItem('lastPlayer');
   if(lastP){
    const sel = $('playerSelect');

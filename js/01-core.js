@@ -18,27 +18,16 @@ function resetGS(){
   isBoss:false,isGolden:false,errInGame:0,fracOk:0,missingOk:0,combatWon:false,mapBossWon:false,
   sessionStart:Date.now(),frozen:false,monsterHP:1,monsterMaxHP:1,activeEvent:null,eventLeft:0,
   recentQ:[],bossTypeQ:{},errList:[]});
- try{ if(typeof _matRecentReset==='function') _matRecentReset(); }catch(e){}
 }
 // Enregistre une question dans l'historique et évite les répétitions
 function _trackQ(q){
  GS.recentQ=GS.recentQ||[];
  GS.recentQ.push(q.res+'|'+q.display);
- if(GS.recentQ.length>20)GS.recentQ.shift();
+ if(GS.recentQ.length>10)GS.recentQ.shift();
 }
 function _seenQ(q){
  GS.recentQ=GS.recentQ||[];
  return GS.recentQ.includes(q.res+'|'+q.display);
-}
-// Retire une question des fenêtres anti-répétition (math + français) :
-// utilisé sur une ERREUR, pour qu'une question ratée puisse revenir plus tôt.
-function _untrackQ(q){
- try{
-  if(!q) return;
-  if(Array.isArray(GS.recentQ)){ const k=q.res+'|'+q.display; let i; while((i=GS.recentQ.indexOf(k))>=0) GS.recentQ.splice(i,1); }
-  if(typeof _frRecent!=='undefined' && Array.isArray(_frRecent) && q.display!=null){ let j; while((j=_frRecent.indexOf(q.display))>=0) _frRecent.splice(j,1); }
-  if(typeof _matRecentUntrack==='function' && q.matSig) _matRecentUntrack(q.matSig);
- }catch(e){}
 }
 // ── Anti-répétition boss : file shufflée par niveau ──────────────────
 function _nextBossType(types,level){
@@ -298,40 +287,15 @@ function initVoicePicker(){
  }
 }
 // Répéter la dernière question à la demande de l'utilisateur
-// Loto sonore : lit d'abord la CONSIGNE, puis joue le cri À LA FIN de la phrase
-// (évite que le cri se superpose à la question).
-function _speakThenCri(q){
- const animal=q&&q.sound;
- const playCri=()=>{ if(typeof _playCri==='function'){ try{ _playCri(animal); }catch(e){} } };
- let txt = (q&&q.speakText)||'';
- if(typeof _ttsClean==='function') txt=_ttsClean(txt);
- if($('voiceToggle')?.checked && window.speechSynthesis && txt){
-  try{
-   window.speechSynthesis.cancel();
-   const u=new SpeechSynthesisUtterance(_humanizeForSpeech(txt));
-   u.lang='fr-FR'; u.rate=0.95; if(_frVoice)u.voice=_frVoice;
-   let done=false; const fire=()=>{ if(done)return; done=true; playCri(); };
-   u.onend=fire; u.onerror=fire;
-   window.speechSynthesis.speak(u);
-   const ms=(typeof _speechMs==='function')?_speechMs(txt):1600;
-   (typeof safeTimeout==='function'?safeTimeout:setTimeout)(fire, Math.max(1600, ms+450));
-  }catch(e){ playCri(); }
- } else { playCri(); }
-}
 function repeatQuestion(){
  const q=typeof GS!=='undefined'?GS.q:null;if(!q)return;
- const _spk=()=>{
-  let txt=q.speakText||(q.maternelle?(q.consigne||''):(q.display||(q.a!==undefined&&q.b!==undefined?`${q.a} ${q.op||'='} ${q.b}`:String(q.res))));
-  if(typeof _ttsClean==='function') txt=_ttsClean(txt);
-  if(!window.speechSynthesis)return;
-  window.speechSynthesis.cancel();
-  const m=new SpeechSynthesisUtterance(_humanizeForSpeech(txt));
-  m.lang='fr-FR';m.rate=0.95;if(_frVoice)m.voice=_frVoice;
-  try{window.speechSynthesis.speak(m);}catch(e){}
- };
- // Loto sonore : on relit la consigne puis on rejoue le cri (même ordre).
- if(q.sound){ _speakThenCri(q); return; }
- _spk();
+ const txt=q.maternelle?(q.consigne||''):(q.display||(q.a!==undefined&&q.b!==undefined?`${q.a} ${q.op||'='} ${q.b}`:String(q.res)));
+ // Forcer la lecture même si voix non activée : user a explicitement demandé
+ if(!window.speechSynthesis)return;
+ window.speechSynthesis.cancel();
+ const m=new SpeechSynthesisUtterance(_humanizeForSpeech(txt));
+ m.lang='fr-FR';m.rate=0.95;if(_frVoice)m.voice=_frVoice;
+ try{window.speechSynthesis.speak(m);}catch(e){}
 }
 let toastT=null;
 function toast(msg,dur=2200){const el=$('toast');el.innerText=msg;el.classList.remove('hidden');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.add('hidden'),dur);}
@@ -571,7 +535,7 @@ const BOSS_ROSTER={
  '3E': {emoji:'🌌',name:'Sigma, Seigneur des Fonctions',title:'l\'Ultime Théorème',intro:'Avant le Brevet, il y a moi. Je suis chaque démonstration que tu n\'as pas terminée. Achève-la.',anim:'glow',col:'#2c3e50'},
 };
 const WRONG_TAUNTS=[
- 'AH AH ! Tu m\'as raté !','Erreur ! C\'est trop facile de te battre.','Encore raté… déçu.','HA ! C\'est dur, hein ?','Pathétique. Recommence.','Tu trembles ? C\'est bien.',
+ 'AH AH ! Tu m\'as raté !','Erreur ! C\'est trop facile de te battre.','Encore raté… déçu.','HA ! Les maths, c\'est dur, hein ?','Pathétique. Recommence.','Tu trembles ? C\'est bien.',
 ];
 const CORRECT_TAUNTS=[
  'Hmm… bonne réponse. T\'as eu de la chance.','Chanceux. La prochaine sera différente !','Pas mal… pour cette fois.','Grr… correcte. Ça ne durera pas.','Bien joué. Mais je suis loin d\'être vaincu !',
@@ -584,84 +548,14 @@ let _speechTimer=null;
 let _speechBubble=null;
 let _timerTauntFired=false;
 
-// Adaptation nom/titre du monstre à la matière. En maths : inchangé. Sinon : on
-// clone le monstre (sans toucher aux données partagées) et on remplace le titre
-// (100 % mathématique) et, si le nom contient un terme mathématique, son qualificatif —
-// en gardant la créature (1er mot) pour rester cohérent avec l'emoji.
-const _MATH_TXT_RE = /tabl|calcul|compt|chiffr|nombr|soustr|subtra|addition|multipli|divis|fraction|décim|\bsomm|total|différenc|unité|dizaine|zéro|théorèm|équation|fonction|géométr|périmètr|mental|times|inverse|manquant|mathémat|\bmath/i;
-const NEUTRAL_TITLES = ['Gardien du Donjon','Sentinelle de l\'Arène','Champion des Ombres','Maître du Défi','Rôdeur des Cavernes','Gardien des Portes'];
-const SUBJECT_TITLES = {
- fr: ['Gardien des Mots','Maître des Lettres','Tisseur de Phrases','Seigneur des Sons','Dévoreur d\'Histoires','Gardien de la Langue']
-};
-const _FR_QUALIF = ['des Mots','des Lettres','des Sons','des Phrases','des Syllabes'];
-const _NEUTRAL_QUALIF = ['des Ombres','du Donjon','de l\'Arène','des Cavernes','Maudit'];
-function _hashStr(s){ let h=0; s=String(s||'x'); for(let i=0;i<s.length;i++){ h=(h*31 + s.charCodeAt(i))>>>0; } return h; }
-function _pickSeed(arr, seed){ if(!arr||!arr.length) return ''; const i=((Math.floor(seed)%arr.length)+arr.length)%arr.length; return arr[i]; }
-function _themeMonster(m){
- const s=(typeof GM!=='undefined' && GM.subject) || 'math';
- if(s==='math' || !s || !m) return m;
- const seed=_hashStr(m.name);
- const out=Object.assign({}, m);
- // On ne remplace que ce qui est mathématique : les titres/noms neutres ou gentils
- // (« Amie des Petits », « Boss Légendaire », « Gobelin Vert ») sont préservés.
- if(_MATH_TXT_RE.test(m.title||'')){
-  const titles=(SUBJECT_TITLES[s]||[]).concat(NEUTRAL_TITLES);
-  out.title=_pickSeed(titles, seed);
- }
- if(_MATH_TXT_RE.test(m.name||'')){
-  const first=String(m.name).split(/[\s\-]/)[0];
-  const quals=(s==='fr'?_FR_QUALIF:_NEUTRAL_QUALIF).concat(_NEUTRAL_QUALIF);
-  out.name=first+' '+_pickSeed(quals, (seed>>>3));
- }
- return out;
-}
 function pickMonster(level,isBoss){
- if(isBoss)return _themeMonster(BOSS_ROSTER[level]||BOSS_ROSTER.CP);
+ if(isBoss)return BOSS_ROSTER[level]||BOSS_ROSTER.CP;
  const pool=MONSTER_ROSTER[level]||MONSTER_ROSTER.CP;
- return _themeMonster(pool[ri(0,pool.length-1)]);
+ return pool[ri(0,pool.length-1)];
 }
 
-// Intros adaptées à la matière : en maths, le monstre garde son intro à thème
-// mathématique ; pour le français (et les autres matières) il dit une phrase NEUTRE
-// ou en rapport avec la matière — plus de « tes calculs », « tes tables », etc.
-const NEUTRAL_INTROS = [
- 'Montre-moi ce que tu sais faire !',
- 'Tu crois pouvoir me vaincre ?',
- 'En garde ! Une bonne réponse pour me toucher.',
- 'Prouve-moi que tu es prêt !',
- 'Je ne te laisserai pas passer si facilement…',
- 'Alors, on tente sa chance ?'
-];
-const SUBJECT_INTROS = {
- fr: [
-  'Tes mots ne te sauveront pas !',
-  'Crois-tu si bien lire ? Prouve-le !',
-  'Aucune phrase ne me résiste…',
-  'Montre-moi que tu maîtrises la langue !',
-  'Lettres et sons : tout est piège ici !'
- ]
-};
-const _MATH_INTRO_RE = _MATH_TXT_RE; // même détection que pour noms/titres
-// Intros douces pour la maternelle (PS/MS/GS) hors maths : on garde le ton tendre.
-const NEUTRAL_INTROS_SOFT = [
- 'Coucou ! On joue ensemble ? Montre-moi ce que tu sais faire !',
- 'Bravo d\'être arrivé jusqu\'ici ! Un petit jeu tout gentil ?',
- 'Youpi ! Tu es prêt ? On y va tout doucement !',
- 'Je crois très fort en toi ! À toi de jouer !'
-];
-function _introFor(monster){
- const s=(typeof GM!=='undefined' && GM.subject) || 'math';
- if(s==='math' || !s) return monster.intro;
- // On garde l'intro si elle est déjà neutre (saisonnier, carte, zone…) ; on ne
- // remplace que si elle évoque les mathématiques.
- if(monster.intro && !_MATH_TXT_RE.test(monster.intro)) return monster.intro;
- const mater = ['PS','MS','GS'].indexOf((typeof GM!=='undefined' && GM.level)||'')>=0;
- const pool = mater ? NEUTRAL_INTROS_SOFT : (SUBJECT_INTROS[s]||[]).concat(NEUTRAL_INTROS);
- return pool[Math.floor(Math.random()*pool.length)];
-}
 function showMonsterIntro(monster,cb){
  _currentMonster=monster;
- const _intro=(typeof _introFor==='function')?_introFor(monster):monster.intro;
  const trans=$('transition-screen');
  const monEl=$('trans-monster');
  const msgEl=$('trans-msg');
@@ -677,11 +571,11 @@ function showMonsterIntro(monster,cb){
  msgEl.innerHTML=`
   <div id="monster-intro-badge" style="background:${monster.col}33;color:${monster.col};border:1px solid ${monster.col}60;">${monster.title}</div>
   <div id="monster-intro-name" style="color:${monster.col};">${monster.name}</div>
-  <div id="monster-intro-quote">"${_intro}"</div>
+  <div id="monster-intro-quote">"${monster.intro}"</div>
   <div id="monster-intro-skip-hint">Toucher pour passer</div>`;
  trans.classList.remove('hidden');
  // v8.7.0 : le monstre prononce son intro avec sa voix propre
- if(typeof speakAs==='function') speakAs(_intro, monster);
+ if(typeof speakAs==='function') speakAs(monster.intro, monster);
  // Themed beep
  try{
   const ctx=getAudio();
@@ -701,7 +595,7 @@ function showMonsterIntro(monster,cb){
   try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
   cb();
  };
- const _introTimer = setTimeout(_finishIntro, Math.max(5700, _speechMs(_intro) + 700));
+ const _introTimer = setTimeout(_finishIntro, Math.max(5700, _speechMs(monster.intro) + 700));
  trans.addEventListener('click', _finishIntro);
 }
 
@@ -965,7 +859,7 @@ const _COMBAT_TAUNTS = [
  'Tu es plus fort que prévu !',
  'Continue, je faiblis !',
  'Cette fois c\'est la fin pour toi !',
- 'Tu me résistes encore ?!',
+ 'Mes calculs ne te résistent plus ?',
 ];
 function maybeMidCombatTaunt(){
  if(!GS.isBoss || !GS.monsterHP || !GS.monsterMaxHP) return;
@@ -1020,41 +914,19 @@ function refreshMenu2(){
 function gotoMenu2(){
  if(typeof savePrefs==='function') savePrefs();
  refreshMenu2();
- try{ if(typeof _setSubjectLogos==='function') _setSubjectLogos(); }catch(e){}
  navTo('v-menu2');
 }
 // Écran 1 → Écran « Choisis ta matière » (v10.5.0 : app multi-matières)
 function gotoSubjects(){
  if(typeof savePrefs==='function') savePrefs();
  try{ const nm=$('subj-player'); if(nm) nm.textContent=(P&&P.name)||'Joueur'; }catch(e){}
- try{
-  const blocked=(typeof P!=='undefined'&&P&&Array.isArray(P.blockedSubjects))?P.blockedSubjects:[];
-  document.querySelectorAll('#v-subjects .subj-tile').forEach(t=>{
-   const m=(t.getAttribute('onclick')||'').match(/chooseSubject\('(\w+)'\)/);
-   if(!m)return;
-   const isB=blocked.indexOf(m[1])>=0;
-   t.classList.toggle('subj-blocked', isB);
-   const badge=t.querySelector('.subj-badge');
-   if(badge){ if(!badge.dataset.orig) badge.dataset.orig=badge.innerHTML; badge.innerHTML = isB ? '🔒 Bloqué' : badge.dataset.orig; }
-  });
- }catch(e){}
  navTo('v-subjects');
 }
 // Choix d'une matière. Maths → flux actuel (modes). Autres → bientôt disponibles.
 const SUBJECT_LABELS={ math:'Mathématiques', fr:'Français', hist:'Histoire', geo:'Géographie', en:'Anglais', svt:'SVT', pc:'Physique-Chimie' };
-const SUBJECTS_ACTIVE=['math','fr'];
 function chooseSubject(key){
- // Blocage parental : matière interdite pour ce joueur
- try{
-  if(typeof P!=='undefined' && P && Array.isArray(P.blockedSubjects) && P.blockedSubjects.indexOf(key)>=0){
-   if(typeof toast==='function') toast('🔒 '+(SUBJECT_LABELS[key]||'Cette matière')+' est bloquée par le parent.');
-   try{ if(typeof beep==='function') beep(180,'sine',.15); }catch(e){}
-   return;
-  }
- }catch(e){}
- if(SUBJECTS_ACTIVE.indexOf(key)>=0){
-  GM.subject=key;
-  try{ if(typeof _setSubjectLogos==='function') _setSubjectLogos(); }catch(e){}
+ if(key==='math'){
+  GM.subject='math';
   try{ if(typeof beep==='function') beep(660,'sine',.12); }catch(e){}
   gotoMenu2();
  }else{
@@ -1160,7 +1032,7 @@ function openModeConfig(mode){
 function mcRenderCombat(){
  const box = document.getElementById('mc-combat-rows');
  if(!box) return;
- const KN = (typeof KNOWN!=='undefined' && Array.isArray(KNOWN)) ? KNOWN : ['Soren','Peyo','Tomi','Maman','Papa'];
+ const KN = (typeof getRoster==='function') ? getRoster() : [];
  const _esc = (typeof esc==='function') ? esc : (s=>String(s).replace(/[<>"']/g,''));
  box.innerHTML = _mcCombat.map((p,i)=>{
   const isCustom = !KN.includes(p.name);

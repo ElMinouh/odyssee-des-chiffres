@@ -4,10 +4,19 @@
 // Constantes du jeu : niveaux, zones, skins, sons, pouvoirs, événements,
 // badges, quêtes, défis hebdo, encouragements, GIFs, géométrie, filtres ops.
 
-const KNOWN=['Soren','Peyo','Tomi','Maman','Papa'];
+// ── Roster des profils ──────────────────────────────────────────────
+// La liste des joueurs n'est plus codée en dur : elle est gérée par le
+// parent (écran Options) et stockée dans localStorage (clé 'roster').
+// Migration auto : si 'roster' est absent, on la reconstruit depuis les
+// sauvegardes existantes (clés user_*) → aucun progrès n'est perdu.
+function _scanSavedProfiles(){ const out=[]; try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k && k.slice(0,5)==='user_'){ const n=k.slice(5); if(n && out.indexOf(n)<0) out.push(n); } } }catch(e){} return out; }
+function getRoster(){ try{ const r=JSON.parse(localStorage.getItem('roster')||'null'); if(Array.isArray(r)) return r.filter(Boolean); }catch(e){} const found=_scanSavedProfiles(); try{ localStorage.setItem('roster', JSON.stringify(found)); }catch(e){} return found; }
+function setRoster(arr){ try{ const clean=(arr||[]).map(x=>String(x).trim()).filter(Boolean); localStorage.setItem('roster', JSON.stringify(clean)); }catch(e){} }
+function addToRoster(name){ name=String(name||'').trim(); if(!name) return false; const r=getRoster(); if(r.some(x=>x.toLowerCase()===name.toLowerCase())) return false; r.push(name); setRoster(r); return true; }
+function removeFromRoster(name){ setRoster(getRoster().filter(x=>x!==name)); }
 // v8.7.47 : genre des joueurs connus pour les accords (Aventurier/Aventurière, etc.)
 // 'm' = masculin, 'f' = féminin. Clés en minuscules pour comparaison insensible à la casse.
-const KNOWN_GENDERS={ soren:'m', peyo:'m', tomi:'m', papa:'m', maman:'f' };
+const KNOWN_GENDERS={ papa:'m', maman:'f' }; // mots génériques uniquement (pas de prénoms privés)
 // Retourne 'm' ou 'f' pour un prénom donné.
 // 1) table des prénoms connus, 2) heuristique française (finit par 'a'/'e' → féminin).
 function heroGender(name){
@@ -935,12 +944,8 @@ const WEEKLY_CH=[
 ];
 function getWCFilter(id){return(WEEKLY_CH.find(c=>c.id===id)||WEEKLY_CH[0]).filter;}
 const ENC={
- Soren:['Allez Soren, tu es le meilleur !','Super Soren !','Soren champion ! 🏆'],
- Peyo:['Trop fort Peyo !','Peyo, tu déchires !','Bravo Peyo, quel génie ! 🧠'],
- Tomi:['Tomi en feu ! 🔥','Tomi le guerrier !','Super Tomi !'],
- Maman:['Bravo Maman ! 💪','Maman la meilleure ! 🌟'],
- Papa:["Papa champion ! 🏅","Bravo Papa ! 👑"],
- def:['Bravo champion !','Excellent travail ! 🌟','Tu es incroyable ! 🔥'],
+ // Encouragements génériques, personnalisés via le placeholder {name}.
+ def:['Bravo {name} ! 🏆','Super {name} !','Excellent travail {name} ! 🌟','Tu es incroyable {name} ! 🔥','Champion {name} ! 👑','Continue comme ça {name} !'],
 };
 // ── GIFS DE FIN DE PARTIE ──
 // Hébergés en local dans assets/gifs/ (chantier v8.4.0)

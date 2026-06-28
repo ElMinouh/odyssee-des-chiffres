@@ -10,7 +10,7 @@ var _pfigSearch = '';
 // ═══════════════════════════════════════════════════════
 function openParent(){
  $('parent-lock').classList.remove('hidden');$('parent-content').classList.add('hidden');$('pin-input').value='';
- const opts=KNOWN.map(n=>`<option>${n}</option>`).join('');
+ const opts=getRoster().map(n=>`<option>${n}</option>`).join('');
 ['parent-player','obj-player','block-player','filter-player','hw-player','bsubj-player'].forEach(id=>{const e=$(id);if(e)e.innerHTML=opts;});
  $('cloud-player').innerHTML='<option value="ALL">Tous les joueurs</option>'+opts;
  if(typeof navTo==='function') navTo('v-parent'); else showView('v-parent');
@@ -35,13 +35,13 @@ function ptab(name){
  if(name==='rapport'){renderReport();renderReportView();}
  if(name==='controles'){loadBlockSettings();loadFilterSettings();if(typeof onFilterSubjectChange==='function')onFilterSubjectChange();if(typeof loadBlockedSubjects==='function')loadBlockedSubjects();}
  if(name==='objectifs'){ if(typeof onHwLevelChange==='function') onHwLevelChange(); if(typeof loadHomework==='function') loadHomework(); }
- if(name==='options'){setTimeout(renderResetZone,60); setTimeout(renderCloudPanel,80);}
+ if(name==='options'){setTimeout(renderResetZone,60); setTimeout(renderCloudPanel,80); setTimeout(renderProfileManager,70);}
  if(name==='figurines'){
   const sel=$('pfig-player');if(!sel)return;
   const cu=localStorage.getItem('customPlayerName');
-  const allP=[...KNOWN,...(cu&&!KNOWN.includes(cu)?[cu]:[])]; 
+  const allP=[...getRoster(),...(cu&&!getRoster().includes(cu)?[cu]:[])]; 
   sel.innerHTML=allP.map(n=>`<option>${n}</option>`).join('');
-  sel.value=P.name||KNOWN[0];
+  sel.value=P.name||getRoster()[0]||'';
   _pfigFilter='none'; _pfigSearch='';
   renderParentFigurines();
  }
@@ -605,7 +605,7 @@ function savePin(){
 // ═══════════════════════════════════════════════════════
 function exportCloud(){
  const sel=$('cloud-player')?.value||'ALL';
- const players=sel==='ALL'?[...KNOWN]:([sel]);
+ const players=sel==='ALL'?[...getRoster()]:([sel]);
  const cu=localStorage.getItem('customPlayerName');if(cu&&sel==='ALL')players.push(cu);
  const data={};players.forEach(p=>{try{const d=localStorage.getItem('user_'+p);if(d)data[p]=JSON.parse(d);}catch(e){}});
  const code=btoa(unescape(encodeURIComponent(JSON.stringify(data))));
@@ -623,7 +623,7 @@ function sanitizePlayerKey(k){return/^[a-zA-ZÀ-ÿ0-9_\- ]{1,30}$/.test(k);}
 // ═══════════════════════════════════════════════════════
 function exportProfileFile(){
  const sel=$('cloud-player')?.value||'ALL';
- const players=sel==='ALL'?[...KNOWN]:([sel]);
+ const players=sel==='ALL'?[...getRoster()]:([sel]);
  const cu=localStorage.getItem('customPlayerName');
  if(cu&&sel==='ALL'&&!players.includes(cu))players.push(cu);
  const data={};
@@ -998,9 +998,7 @@ function clearHomework(){
 function _listAllProfilesNames(){
  const names = new Set();
  // Profils prédéfinis (source de vérité : constante KNOWN dans 02-data.js)
- if(typeof KNOWN !== 'undefined' && Array.isArray(KNOWN)){
-  KNOWN.forEach(n => names.add(n));
- }
+ getRoster().forEach(n => names.add(n));
  // Profils personnalisés
  try{
   const customs = JSON.parse(localStorage.getItem('customPlayerNames') || '[]');
@@ -1254,4 +1252,39 @@ async function doCloudRestore(){
    }
   }
  }catch(e){}
+}
+
+// ── Gestion des profils (écran parent → Options) ────────────────────
+// Ajout/retrait de profils. Retirer un profil n'efface PAS sa sauvegarde
+// (user_*) : la progression réapparaît si on le rajoute.
+function renderProfileManager(){
+ const box=$('profile-manager'); if(!box) return;
+ const _e=(typeof esc==='function')?esc:(s=>String(s));
+ const roster=(typeof getRoster==='function')?getRoster():[];
+ const rows = roster.length
+  ? roster.map(n=>`<div class="lb-row"><span class="lb-name">${_e(n)}</span><button onclick="pmRemoveProfile(this.dataset.n)" data-n="${_e(n)}" title="Retirer ${_e(n)}" style="background:#e74c3c;color:#fff;border:none;border-radius:6px;width:28px;height:28px;cursor:pointer;font-weight:700;line-height:1;">✕</button></div>`).join('')
+  : '<span style="color:#bdc3c7;">Aucun profil pour le moment. Ajoute-en un ci-dessous.</span>';
+ box.innerHTML = `<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px;">
+   <strong>👤 Profils du jeu</strong>
+   <div style="margin:8px 0;display:flex;flex-direction:column;gap:5px;">${rows}</div>
+   <div style="display:flex;gap:6px;"><input id="pm-new" type="text" placeholder="Nouveau prénom…" maxlength="20" style="flex:1;" onkeydown="if(event.key==='Enter')pmAddProfile()"><button onclick="pmAddProfile()" style="background:#27ae60;color:#fff;border:none;border-radius:8px;padding:0 14px;cursor:pointer;font-weight:700;">Ajouter</button></div>
+   <div style="font-size:.74em;color:#9aa6b2;margin-top:6px;line-height:1.4;">Les profils et tous leurs progrès sont enregistrés sur cet appareil. Retirer un profil n'efface pas sa progression : il réapparaîtra si tu le rajoutes.</div>
+  </div>`;
+}
+function pmAddProfile(){
+ const i=$('pm-new'); if(!i) return; const n=i.value.trim();
+ if(!n) return;
+ if(typeof addToRoster!=='function') return;
+ if(!addToRoster(n)){ if(typeof toast==='function')toast('Ce profil existe déjà.',2000); return; }
+ i.value='';
+ renderProfileManager();
+ if(typeof fillPlayerSelect==='function') fillPlayerSelect();
+ if(typeof toast==='function')toast('✅ Profil ajouté : '+n,2000);
+}
+function pmRemoveProfile(n){
+ if(!n || typeof removeFromRoster!=='function') return;
+ if(!confirm('Retirer « '+n+' » de la liste ?\n\nSa progression reste sauvegardée sur l\'appareil et réapparaîtra si tu le rajoutes.')) return;
+ removeFromRoster(n);
+ renderProfileManager();
+ if(typeof fillPlayerSelect==='function') fillPlayerSelect();
 }
