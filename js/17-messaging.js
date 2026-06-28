@@ -362,6 +362,7 @@ async function chatSyncTick(){
    try{ if(typeof scheduleCloudSync==='function') scheduleCloudSync(); }catch(e){}
   }
  }
+ if(!_chatAllPulled){ _chatAllPulled = true; try{ await chatPullAllIdentities(); }catch(e){} } // adopte TOUS les profils synchronisés
  chatRefreshBadges();
 }
 function chatStartBadgePoll(){
@@ -422,6 +423,43 @@ function chatMergeFromCloud(name, cloudChat){
  };
  _chatSaveStore(s);
  if(typeof chatRefreshBadges==='function'){ try{ chatRefreshBadges(); }catch(e){} }
+}
+
+// Force l'envoi de l'identité de messagerie de TOUS les profils activés vers le cloud
+// (réutilise la version cloud la plus à jour pour ne pas régresser le profil de jeu).
+async function chatForceSyncMessaging(){
+ if(typeof getRoster!=='function' || typeof CLOUD_API==='undefined'){ if(typeof toast==='function') toast('Synchro cloud indisponible.',2500); return; }
+ const roster = getRoster(); let okN=0, skip=0, fail=0;
+ for(const name of roster){
+  const local = _chatLoad(name);
+  if(!local.chatEnabled || !local.chatId){ skip++; continue; }
+  let prof=null; try{ prof = (typeof P!=='undefined' && P && P.name===name) ? P : _readProfile(name); }catch(e){}
+  const cc = prof && prof.cloudCode;
+  if(!cc){ fail++; continue; }
+  let base = prof;
+  try{ const r = await pullProfileFromCloud(cc); if(r && r.ok && r.profile) base = r.profile; }catch(e){}
+  const payload = Object.assign({}, base);
+  delete payload._syncedAt;
+  payload._chat = { id:local.chatId, secret:local.chatSecret, enabled:true, registered:!!local.chatRegistered, seen:local.chatSeen||{} };
+  try{
+   const r = await fetch(`${CLOUD_API}/profile/${encodeURIComponent(cc)}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+   if(r.ok){ okN++; } else { fail++; }
+  }catch(e){ fail++; }
+ }
+ if(typeof toast==='function') toast('🔄 Messagerie envoyée pour '+okN+' profil(s). Recharge maintenant les autres appareils.', 4500);
+ return { ok:okN, skip, fail };
+}
+// Côté récepteur : tire l'identité de TOUS les profils synchronisés (une fois par session).
+var _chatAllPulled = false;
+async function chatPullAllIdentities(){
+ if(typeof getRoster!=='function') return;
+ for(const n of getRoster()){
+  const local = _chatLoad(n);
+  if(local.chatId) continue; // déjà une identité locale
+  let prof=null; try{ prof = _readProfile(n); }catch(e){}
+  const cc = prof && prof.cloudCode; if(!cc) continue;
+  try{ const r = await pullProfileFromCloud(cc); if(r && r.ok && r.profile && r.profile._chat){ chatMergeFromCloud(n, r.profile._chat); } }catch(e){}
+ }
 }
 
 // Démarrage : suivi des pastilles + affichage du bouton menu (fixe)
