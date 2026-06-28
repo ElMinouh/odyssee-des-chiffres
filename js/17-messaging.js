@@ -1,11 +1,30 @@
 // 17-messaging.js — L'Odyssée des Chiffres
 // Messagerie fermée (contacts validés des deux côtés), branchée sur le Worker odyssee-chat.
+// IMPORTANT : l'identité + l'état d'activation sont stockés dans une zone SÉPARÉE
+// (localStorage 'chatProfiles'), indépendante du profil de jeu — donc insensible à la
+// synchronisation cloud (qui réécrit user_<nom>).
 'use strict';
 
 const CHAT_API = 'https://odyssee-chat.air7841.workers.dev';
 
 // ═══════════════════════════════════════════════════════
-// IDENTITÉ (code ami public + secret privé), par profil
+// STOCKAGE SÉPARÉ (identité, activation, non-lus) par nom de profil
+// ═══════════════════════════════════════════════════════
+function _chatStore(){ try{ return JSON.parse(localStorage.getItem('chatProfiles') || '{}'); }catch(e){ return {}; } }
+function _chatSaveStore(s){ try{ localStorage.setItem('chatProfiles', JSON.stringify(s)); }catch(e){} }
+function _chatLoad(name){
+ const s = _chatStore(); const e = s[name] || {};
+ return { name, chatId:e.id||null, chatSecret:e.secret||null, chatEnabled:!!e.enabled, chatRegistered:!!e.registered, chatSeen:e.seen||{} };
+}
+function _chatPersist(prof){
+ if(!prof || !prof.name) return;
+ const s = _chatStore();
+ s[prof.name] = { id:prof.chatId||null, secret:prof.chatSecret||null, enabled:!!prof.chatEnabled, registered:!!prof.chatRegistered, seen:prof.chatSeen||{} };
+ _chatSaveStore(s);
+}
+
+// ═══════════════════════════════════════════════════════
+// IDENTITÉ (code ami public + secret privé)
 // ═══════════════════════════════════════════════════════
 const _CHAT_IDCHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sans 0/O/I/1
 function _chatRand(n, chars){
@@ -16,13 +35,15 @@ function _chatRand(n, chars){
  }
  let s=''; for(let i=0;i<n;i++) s += chars[Math.floor(Math.random()*chars.length)]; return s;
 }
-function _chatGenId(){ return _chatRand(4) + '-' + _chatRand(4); } // ex: 7K2P-9QXM
+function _chatGenId(){ return _chatRand(4) + '-' + _chatRand(4); }            // ex: 7K2P-9QXM
 function _chatGenSecret(){ return _chatRand(28, 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'); }
 function ensureChatIdentity(prof){
  if(!prof) return prof;
- if(!prof.chatId) prof.chatId = _chatGenId();
- if(!prof.chatSecret) prof.chatSecret = _chatGenSecret();
- if(!prof.chatSeen) prof.chatSeen = {};
+ let changed=false;
+ if(!prof.chatId){ prof.chatId = _chatGenId(); changed=true; }
+ if(!prof.chatSecret){ prof.chatSecret = _chatGenSecret(); changed=true; }
+ if(!prof.chatSeen){ prof.chatSeen = {}; }
+ if(changed) _chatPersist(prof);
  return prof;
 }
 
@@ -31,9 +52,7 @@ function ensureChatIdentity(prof){
 // ═══════════════════════════════════════════════════════
 async function _chatApi(path, body){
  try{
-  const r = await fetch(CHAT_API + path, {
-   method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)
-  });
+  const r = await fetch(CHAT_API + path, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
   return await r.json();
  }catch(e){ return { error:'network' }; }
 }
@@ -52,23 +71,21 @@ async function chatMsgLatest(prof){ return _chatApi('/msg/latest', _chatAuth(pro
 // ACTIVATION (parental) — désactivée par défaut
 // ═══════════════════════════════════════════════════════
 function chatIsEnabled(prof){ return !!(prof && prof.chatEnabled); }
-function _chatActiveProf(name){ return (typeof P!=='undefined' && P && P.name===name) ? P : _readProfile(name); }
-function _chatPersist(prof){ try{ _writeProfile(prof); }catch(e){} } // écriture directe (insensible au verrou de sauvegarde)
+function chatIsEnabledByName(name){ return name ? _chatLoad(name).chatEnabled : false; }
 
 async function chatEnableForProfile(name){
- const prof = _chatActiveProf(name); if(!prof) return { error:'no_profile' };
- // L'activation est un état LOCAL : on l'enregistre d'abord et on ne l'annule jamais sur échec réseau.
- ensureChatIdentity(prof); prof.chatEnabled = true; _chatPersist(prof);
+ if(!name) return { error:'no_profile' };
+ const prof = _chatLoad(name);
+ ensureChatIdentity(prof);
+ prof.chatEnabled = true; _chatPersist(prof);     // état LOCAL d'abord (jamais annulé sur échec réseau)
  let res = await chatRegister(prof);
- if(res && res.error === 'taken'){ // collision de code ami : on régénère une fois
-  prof.chatId = _chatGenId(); _chatPersist(prof); res = await chatRegister(prof);
- }
+ if(res && res.error === 'taken'){ prof.chatId = _chatGenId(); _chatPersist(prof); res = await chatRegister(prof); }
  if(res && res.ok){ prof.chatRegistered = true; _chatPersist(prof); }
  return res || { error:'network' };
 }
 function chatDisableForProfile(name){
- const prof = _chatActiveProf(name); if(!prof) return;
- prof.chatEnabled = false; _chatPersist(prof);
+ if(!name) return;
+ const prof = _chatLoad(name); prof.chatEnabled = false; _chatPersist(prof);
  if(typeof chatRefreshBadges==='function') chatRefreshBadges();
 }
 
@@ -87,7 +104,7 @@ function chatUnreadCount(prof, latestMap){
 // ═══════════════════════════════════════════════════════
 // ÉTAT UI + OUVERTURE
 // ═══════════════════════════════════════════════════════
-var _msgProf = null;       // profil dont on consulte la boîte
+var _msgProf = null;       // objet messagerie (identité + état) du profil consulté
 var _msgReadOnly = false;  // mode lecture seule (visualisation parentale)
 var _msgConv = null;       // {id, name, lastId}
 var _msgConvTimer = null;
@@ -95,21 +112,18 @@ var _msgBadgePoll = null;
 
 function _e(s){ return (typeof esc==='function') ? esc(s) : String(s==null?'':s); }
 function _msgEl(){ return document.getElementById('msg-overlay'); }
+function _curName(){ return (typeof P!=='undefined' && P) ? P.name : null; }
 
 async function openMessaging(readOnlyName){
- let prof, ro=false;
- if(readOnlyName){ prof = _readProfile(readOnlyName); ro = true; }
- else { prof = (typeof P!=='undefined') ? P : null; }
- if(!prof){ if(typeof toast==='function') toast('Aucun profil.',2000); return; }
- if(!chatIsEnabled(prof) && !ro){ if(typeof toast==='function') toast('La messagerie est désactivée. Un parent peut l\u2019activer dans les options.',3000); return; }
+ const name = readOnlyName || _curName();
+ const ro = !!readOnlyName;
+ if(!name){ if(typeof toast==='function') toast('Aucun profil.',2000); return; }
+ const prof = _chatLoad(name);
+ if(!prof.chatEnabled && !ro){ if(typeof toast==='function') toast('La messagerie est désactivée. Un parent peut l\u2019activer dans Vue Parent → Options.',3200); return; }
  ensureChatIdentity(prof);
  _msgProf = prof; _msgReadOnly = ro; _msgConv = null;
  const ov = _msgEl(); if(ov) ov.classList.remove('hidden');
- // Si l'enregistrement au serveur n'a pas encore réussi, on le retente maintenant.
- if(!ro && !prof.chatRegistered){
-  const r = await chatRegister(prof);
-  if(r && r.ok){ prof.chatRegistered = true; _chatPersist(prof); }
- }
+ if(!ro && !prof.chatRegistered){ const r = await chatRegister(prof); if(r && r.ok){ prof.chatRegistered = true; _chatPersist(prof); } }
  renderContactsScreen();
 }
 function closeMessaging(){
@@ -134,13 +148,11 @@ async function renderContactsScreen(){
   return;
  }
  let html = '';
- // Mon code ami à partager
  html += '<div style="background:rgba(52,152,219,.1);border:1px solid rgba(52,152,219,.35);border-radius:10px;padding:10px 12px;margin-bottom:12px;">'
   + '<p style="margin:0 0 2px;font-size:.74em;color:#bdc3c7;">Ton code ami (à donner pour être ajouté) :</p>'
   + '<div style="display:flex;align-items:center;gap:8px;"><span style="font-family:monospace;font-size:1.1em;font-weight:700;letter-spacing:1px;color:#5dade2;">'+_e(myCode)+'</span>'
   + '<button onclick="chatCopyCode()" style="font-size:.72em;padding:4px 8px;">📋 Copier</button></div></div>';
 
- // Demandes reçues (acceptation protégée par code parent)
  const inc = data.incoming || [];
  if(inc.length && !_msgReadOnly){
   html += '<p style="font-size:.78em;font-weight:700;color:#f1c40f;margin:6px 0;">📨 Demandes reçues</p>';
@@ -153,12 +165,10 @@ async function renderContactsScreen(){
   });
  }
 
- // Latest pour les pastilles non-lus
  let latest = {};
  try{ const l = await chatMsgLatest(prof); if(l && l.latest) latest = l.latest; }catch(e){}
  const seen = _chatSeen(prof);
 
- // Contacts
  const contacts = data.contacts || [];
  html += '<p style="font-size:.78em;font-weight:700;color:#bdc3c7;margin:12px 0 6px;">👥 Mes amis</p>';
  if(!contacts.length){
@@ -169,21 +179,21 @@ async function renderContactsScreen(){
    const unread = (latest[c.id]||0) > (seen[c.id]||0);
    html += '<div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);border-radius:10px;padding:10px 12px;margin:4px 0;cursor:pointer;" onclick="chatOpenConv(\''+cid+'\',\''+cn.replace(/'/g,"\\'")+'\')">'
     + '<span style="flex:1;font-size:.95em;font-weight:600;">'+cn+'</span>'
-    + (unread ? '<span style="background:#e74c3c;color:#fff;border-radius:10px;min-width:10px;height:10px;display:inline-block;"></span>' : '')
+    + (unread ? '<span style="background:#e74c3c;border-radius:50%;width:10px;height:10px;display:inline-block;"></span>' : '')
     + '<button onclick="event.stopPropagation();chatRemoveContact(\''+cid+'\',\''+cn.replace(/'/g,"\\'")+'\')" style="background:transparent;border:none;color:#7f8c8d;font-size:1em;cursor:pointer;" title="Retirer">✕</button>'
     + '<span style="color:#7f8c8d;">›</span></div>';
   });
  }
 
- // Ajouter un ami (pas en lecture seule)
  if(!_msgReadOnly){
   html += '<div style="margin-top:14px;border-top:1px solid rgba(255,255,255,.1);padding-top:12px;">'
    + '<p style="font-size:.78em;font-weight:700;color:#2ecc71;margin:0 0 6px;">➕ Ajouter un ami</p>'
    + '<input type="text" id="msg-addcode" placeholder="Code ami (ex: 7K2P-9QXM)" style="width:70%;text-transform:uppercase;font-family:monospace;letter-spacing:1px;">'
    + '<button onclick="chatAddFriend()" style="background:#27ae60;font-size:.82em;margin-left:4px;">Envoyer</button>'
    + '<p id="msg-add-msg" style="font-size:.76em;margin-top:6px;"></p></div>';
+ } else {
+  html += '<p style="font-size:.74em;color:#7f8c8d;text-align:center;margin-top:14px;">👁 Visualisation parentale (lecture seule)</p>';
  }
-
  body.innerHTML = html;
 }
 
@@ -209,10 +219,8 @@ async function chatAddFriend(){
   if(msg){ msg.innerText='❌ '+m; msg.style.color='#e74c3c'; }
  }
 }
-// Acceptation d'un contact — protégée par le code parent
 async function chatAcceptContact(from){
- const ok = _chatParentGate();
- if(!ok) return;
+ if(!_chatParentGate()) return;
  const res = await chatFriendAccept(_msgProf, from);
  if(res && res.ok){ if(typeof toast==='function') toast('✅ Ami ajouté !',2000); renderContactsScreen(); }
  else if(typeof toast==='function') toast('Échec de l\u2019ajout.',2000);
@@ -226,9 +234,8 @@ async function chatRemoveContact(other, name){
  const res = await chatFriendRemove(_msgProf, other);
  if(res && res.ok){ if(typeof toast==='function') toast('Contact retiré.',1800); renderContactsScreen(); }
 }
-// Garde parental : demande le code parent (sauf si parent déjà authentifié en lecture seule)
 function _chatParentGate(){
- if(_msgReadOnly) return true; // déjà dans l'espace parent
+ if(_msgReadOnly) return true;
  const pin = prompt('Validation parentale\n\nEntre le code parent pour accepter ce contact :');
  if(pin===null) return false;
  if(typeof checkStoredPin==='function' && checkStoredPin(String(pin).trim())) return true;
@@ -283,10 +290,8 @@ async function _convFetch(reset){
    _convCache = _convCache.concat(res.messages);
    _msgConv.lastId = _convCache[_convCache.length-1].id;
    _renderBubbles(_convCache);
-   _chatMarkSeen(_msgProf, _msgConv.id, _msgConv.lastId); // ouvrir = tout lu
-  } else if(reset){
-   _renderBubbles([]);
-  }
+   _chatMarkSeen(_msgProf, _msgConv.id, _msgConv.lastId);
+  } else if(reset){ _renderBubbles([]); }
  } else if(reset){
   const thread = document.getElementById('msg-thread');
   if(thread) thread.innerHTML = '<p style="color:#e74c3c;font-size:.82em;text-align:center;">Connexion impossible.</p>';
@@ -314,17 +319,15 @@ function _stopConvPoll(){ if(_msgConvTimer){ clearInterval(_msgConvTimer); _msgC
 
 // ═══════════════════════════════════════════════════════
 // PASTILLES NON-LUS + POINTS D'ACCÈS
+// (bouton menu TOUJOURS visible ; icône HUD visible si activée)
 // ═══════════════════════════════════════════════════════
 async function chatRefreshBadges(){
- const prof = (typeof P!=='undefined') ? P : null;
- const enabled = chatIsEnabled(prof);
- const show = (elId, n) => {
-  const el = document.getElementById(elId); if(!el) return;
-  el.classList.toggle('hidden', !enabled);
- };
- show('menu-msg-btn'); show('hud-msg');
- if(!enabled || !prof) { _setBadge('menu-msg-badge',0); _setBadge('hud-msg-badge',0); return; }
- ensureChatIdentity(prof);
+ const name = _curName();
+ const prof = name ? _chatLoad(name) : null;
+ const enabled = !!(prof && prof.chatEnabled);
+ const menuBtn = document.getElementById('menu-msg-btn'); if(menuBtn) menuBtn.classList.remove('hidden'); // fixe
+ const hud = document.getElementById('hud-msg'); if(hud) hud.classList.toggle('hidden', !enabled);
+ if(!enabled || !prof || !prof.chatId){ _setBadge('menu-msg-badge',0); _setBadge('hud-msg-badge',0); return; }
  const l = await chatMsgLatest(prof);
  const n = (l && l.latest) ? chatUnreadCount(prof, l.latest) : 0;
  _setBadge('menu-msg-badge', n); _setBadge('hud-msg-badge', n);
@@ -345,29 +348,30 @@ function chatStartBadgePoll(){
 // ═══════════════════════════════════════════════════════
 function renderOptMessaging(name){
  const box = document.getElementById('opt-messaging'); if(!box) return;
- const prof = _readProfile(name); if(!prof){ box.innerHTML=''; return; }
- const on = chatIsEnabled(prof);
+ if(!name){ box.innerHTML=''; return; }
+ const prof = _chatLoad(name);
+ const on = !!prof.chatEnabled;
  const code = prof.chatId || '(généré à l\u2019activation)';
+ const nEsc = _e(name).replace(/'/g,"\\'");
  box.innerHTML =
   '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">'
   + '<span style="font-size:.85em;">Activer la messagerie pour ce profil</span>'
-  + '<button onclick="optToggleMessaging(\''+_e(name).replace(/'/g,"\\'")+'\')" style="background:'+(on?'#27ae60':'#7f8c8d')+';font-size:.78em;padding:5px 12px;">'+(on?'Activée ✓':'Désactivée')+'</button>'
+  + '<button onclick="optToggleMessaging(\''+nEsc+'\')" style="background:'+(on?'#27ae60':'#7f8c8d')+';font-size:.78em;padding:5px 12px;">'+(on?'Activée ✓':'Désactivée')+'</button>'
   + '</div>'
   + (on
      ? ('<p style="font-size:.72em;color:#bdc3c7;margin:0 0 6px;">Code ami : <span style="font-family:monospace;color:#5dade2;">'+_e(code)+'</span></p>'
-        + '<button onclick="openMessaging(\''+_e(name).replace(/'/g,"\\'")+'\')" style="background:#2980b9;font-size:.8em;">👁 Voir les conversations</button>')
+        + '<button onclick="openMessaging(\''+nEsc+'\')" style="background:#2980b9;font-size:.8em;">👁 Voir les conversations</button>')
      : '<p style="font-size:.72em;color:#7f8c8d;margin:0;">Désactivée par défaut. Active-la pour permettre à cet enfant d\u2019échanger avec des contacts validés.</p>');
 }
 async function optToggleMessaging(name){
- const prof = _readProfile(name); if(!prof) return;
- if(chatIsEnabled(prof)){
+ const prof = _chatLoad(name);
+ if(prof.chatEnabled){
   if(!confirm('Désactiver la messagerie pour '+name+' ?')) return;
   chatDisableForProfile(name);
   if(typeof toast==='function') toast('Messagerie désactivée.',1800);
  } else {
   if(typeof toast==='function') toast('Activation\u2026',1500);
   const res = await chatEnableForProfile(name);
-  // L'activation reste effective même si le serveur n'a pas encore répondu (enregistrement réessayé à l'ouverture).
   if(res && res.ok){ if(typeof toast==='function') toast('✅ Messagerie activée !',2000); }
   else { if(typeof toast==='function') toast('✅ Activée. Le code se synchronisera à la prochaine ouverture de la messagerie.',3500); }
  }
@@ -375,5 +379,5 @@ async function optToggleMessaging(name){
  if(typeof chatRefreshBadges==='function') chatRefreshBadges();
 }
 
-// Démarrage : lance le suivi des pastilles quand le module est chargé
+// Démarrage : suivi des pastilles + affichage du bouton menu (fixe)
 try{ if(typeof window!=='undefined'){ setTimeout(()=>{ if(typeof chatStartBadgePoll==='function') chatStartBadgePoll(); }, 1500); } }catch(e){}
