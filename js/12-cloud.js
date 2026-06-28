@@ -137,6 +137,7 @@ async function pushProfileToCloud(forceFirst=false){
   // On clone P pour ne pas envoyer la propriété _syncedAt côté client
   const payload = { ...P };
   delete payload._syncedAt;
+  if(typeof chatExportFor==='function'){ const _c = chatExportFor(P.name); if(_c) payload._chat = _c; }
   const resp = await _cloudFetch(`${CLOUD_API}/profile/${code}`, {
    method: 'POST',
    headers: { 'Content-Type': 'application/json' },
@@ -196,6 +197,7 @@ async function pullProfileFromCloud(code){
 // Import d'un profil serveur dans le profil actif courant
 async function _importProfileFromServer(serverProfile){
  if(!serverProfile || !serverProfile.name) return false;
+ if(serverProfile._chat && typeof chatMergeFromCloud==='function') chatMergeFromCloud(serverProfile.name, serverProfile._chat);
  // Migration + validation (réutilise les fonctions de 05-profile.js)
  let imported = serverProfile;
  if(typeof migrateProfile==='function') imported = migrateProfile(imported);
@@ -208,6 +210,7 @@ async function _importProfileFromServer(serverProfile){
  imported.cloudEnabled = P.cloudEnabled;
  // Remplace le profil en mémoire et sauvegarde local
  Object.assign(P, imported);
+ if(P._chat) delete P._chat;
  if(typeof saveProfileNow==='function') saveProfileNow();
  if(typeof updateMenuUI==='function') updateMenuUI();
  return true;
@@ -225,6 +228,7 @@ async function restoreProfileByCode(code){
  if(!cloudProfile.name){
   return { ok:false, error:'invalid_profile' };
  }
+ if(cloudProfile._chat && typeof chatMergeFromCloud==='function') chatMergeFromCloud(cloudProfile.name, cloudProfile._chat);
  // Migration + validation
  let prof = cloudProfile;
  if(typeof migrateProfile==='function') prof = migrateProfile(prof);
@@ -233,6 +237,7 @@ async function restoreProfileByCode(code){
  // Active le cloud sync sur le profil restauré
  prof.cloudCode = code.toUpperCase();
  prof.cloudEnabled = true;
+ if(prof._chat) delete prof._chat;
  // Sauvegarde locale
  try{
   localStorage.setItem('user_' + prof.name, JSON.stringify(prof));
@@ -294,6 +299,7 @@ async function forceRestoreFromCloud(code){
  }
  _diagLog('FORCE-RESTORE: profil reçu name='+cloudProfile.name+' xp='+cloudProfile.xp+' cloudCode='+cloudProfile.cloudCode);
 
+ if(cloudProfile._chat && typeof chatMergeFromCloud==='function') chatMergeFromCloud(cloudProfile.name, cloudProfile._chat);
  // 3. Migration + validation
  let prof = cloudProfile;
  if(typeof migrateProfile==='function') prof = migrateProfile(prof);
@@ -312,6 +318,7 @@ async function forceRestoreFromCloud(code){
  // 5. ÉCRASER en local SANS CONDITION : on supprime d'abord
  //    l'ancien profil de ce nom (qui pourrait avoir un autre code).
  try{
+  if(prof._chat) delete prof._chat;
   localStorage.removeItem('user_' + prof.name);
   localStorage.setItem('user_' + prof.name, JSON.stringify(prof));
  }catch(e){
@@ -495,6 +502,7 @@ function _cloudSyncBeacon(){
   const code = encodeURIComponent(P.cloudCode);
   const payload = { ...P };
   delete payload._syncedAt;
+  if(typeof chatExportFor==='function'){ const _c = chatExportFor(P.name); if(_c) payload._chat = _c; }
   // sendBeacon = requête garantie d'aboutir même après la fermeture de la page.
   // Pas de réponse récupérable mais c'est ce qu'on veut ici.
   if(navigator.sendBeacon){

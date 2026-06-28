@@ -81,6 +81,7 @@ async function chatEnableForProfile(name){
  let res = await chatRegister(prof);
  if(res && res.error === 'taken'){ prof.chatId = _chatGenId(); _chatPersist(prof); res = await chatRegister(prof); }
  if(res && res.ok){ prof.chatRegistered = true; _chatPersist(prof); }
+ if(typeof scheduleCloudSync==='function'){ try{ scheduleCloudSync(); }catch(e){} } // fait voyager l'identité via le cloud
  return res || { error:'network' };
 }
 function chatDisableForProfile(name){
@@ -377,6 +378,24 @@ async function optToggleMessaging(name){
  }
  renderOptMessaging(name);
  if(typeof chatRefreshBadges==='function') chatRefreshBadges();
+}
+
+// ── Synchronisation de l'identité via le cloud (fusion NON destructive) ──
+function chatExportFor(name){ if(!name) return null; return _chatStore()[name] || null; }
+function _chatMergeSeen(a,b){ const o=Object.assign({}, a||{}); const bb=b||{}; for(const k in bb){ if((bb[k]||0)>(o[k]||0)) o[k]=bb[k]; } return o; }
+function chatMergeFromCloud(name, cloudChat){
+ if(!name || !cloudChat || typeof cloudChat!=='object') return;
+ const s=_chatStore(); const local=s[name]||{};
+ const adoptId = (!local.id && !!cloudChat.id);
+ s[name]={
+  id: local.id || cloudChat.id || null,
+  secret: local.secret || cloudChat.secret || null,
+  enabled: !!(local.enabled || cloudChat.enabled),        // activé quelque part → activé partout (jamais désactivé par une synchro)
+  registered: adoptId ? false : !!(local.registered || cloudChat.registered), // identité adoptée → (re)enregistrement au prochain accès
+  seen: _chatMergeSeen(local.seen, cloudChat.seen)
+ };
+ _chatSaveStore(s);
+ if(typeof chatRefreshBadges==='function'){ try{ chatRefreshBadges(); }catch(e){} }
 }
 
 // Démarrage : suivi des pastilles + affichage du bouton menu (fixe)
