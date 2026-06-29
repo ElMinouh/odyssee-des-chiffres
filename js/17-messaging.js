@@ -57,7 +57,8 @@ async function _chatApi(path, body){
  }catch(e){ return { error:'network' }; }
 }
 function _chatAuth(prof){ return { id: prof.chatId, secret: prof.chatSecret }; }
-async function chatRegister(prof){ ensureChatIdentity(prof); return _chatApi('/register', { id:prof.chatId, secret:prof.chatSecret, name:prof.name }); }
+function _chatProfileAvatar(name){ try{ const gp=(typeof P!=='undefined' && P && P.name===name) ? P : (typeof _readProfile==='function' ? _readProfile(name) : null); return (gp && gp.avatar) || '\uD83E\uDDD9'; }catch(e){ return '\uD83E\uDDD9'; } }
+async function chatRegister(prof){ ensureChatIdentity(prof); return _chatApi('/register', { id:prof.chatId, secret:prof.chatSecret, name:prof.name, avatar:_chatProfileAvatar(prof.name) }); }
 async function chatFriendRequest(prof, code){ return _chatApi('/friend/request', Object.assign(_chatAuth(prof), { code })); }
 async function chatFriendList(prof){ return _chatApi('/friend/list', _chatAuth(prof)); }
 async function chatFriendAccept(prof, from){ return _chatApi('/friend/accept', Object.assign(_chatAuth(prof), { from })); }
@@ -125,7 +126,11 @@ async function openMessaging(readOnlyName){
  ensureChatIdentity(prof);
  _msgProf = prof; _msgReadOnly = ro; _msgConv = null;
  const ov = _msgEl(); if(ov) ov.classList.remove('hidden');
- if(!ro && !prof.chatRegistered){ const r = await chatRegister(prof); if(r && r.ok){ prof.chatRegistered = true; _chatPersist(prof); } }
+ if(typeof _msgFabUpdate==='function') _msgFabUpdate();
+ if(!ro){
+  if(!prof.chatRegistered){ const r = await chatRegister(prof); if(r && r.ok){ prof.chatRegistered = true; _chatPersist(prof); } }
+  else { try{ chatRegister(prof).catch(function(){}); }catch(e){} } // rafraîchit prénom+avatar en arrière-plan
+ }
  renderContactsScreen();
 }
 function closeMessaging(){
@@ -320,19 +325,117 @@ function _startConvPoll(){ _stopConvPoll(); _msgConvTimer = setInterval(()=>{ _c
 function _stopConvPoll(){ if(_msgConvTimer){ clearInterval(_msgConvTimer); _msgConvTimer=null; } }
 
 // ═══════════════════════════════════════════════════════
-// PASTILLES NON-LUS + POINTS D'ACCÈS
-// (bouton menu TOUJOURS visible ; icône HUD visible si activée)
+// ENVELOPPE FLOTTANTE UNIQUE (partout) + PASTILLE + BANDEAU
+// Une seule enveloppe en coin, présente sur tous les écrans,
+// masquée pendant une question (vue v-game) et quand la
+// messagerie est ouverte. Remplace l'ancien bouton menu + HUD.
 // ═══════════════════════════════════════════════════════
+function _msgEnsureFab(){
+ if(!document.getElementById('msg-fab-style')){
+  const st=document.createElement('style'); st.id='msg-fab-style';
+  st.textContent=''
+   +'#msg-fab{position:fixed;right:14px;bottom:16px;width:52px;height:52px;border-radius:50%;background:#fff;border:1px solid #e7ddcd;box-shadow:0 3px 10px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;z-index:9000;transition:transform .15s;}'
+   +'#msg-fab:active{transform:scale(.92);}#msg-fab.hidden{display:none;}'
+   +'#msg-fab-badge{position:absolute;top:-3px;right:-3px;min-width:20px;height:20px;line-height:20px;background:#e74c3c;color:#fff;font-size:.7rem;font-weight:700;border-radius:10px;text-align:center;padding:0 5px;box-shadow:0 1px 3px rgba(0,0,0,.3);}'
+   +'#msg-fab-badge.hidden{display:none;}#msg-fab.msg-fab-pop{animation:msgFabPop .55s;}'
+   +'@keyframes msgFabPop{0%{transform:scale(1);}25%{transform:scale(1.18) rotate(-9deg);}55%{transform:scale(.95) rotate(7deg);}100%{transform:scale(1) rotate(0);}}'
+   +'#msg-toast{position:fixed;left:50%;top:14px;transform:translateX(-50%) translateY(-140%);max-width:340px;width:calc(100% - 28px);background:#fff;border:1px solid #e7ddcd;border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,.22);padding:10px 14px;display:flex;align-items:center;gap:10px;z-index:9500;cursor:pointer;transition:transform .38s cubic-bezier(.2,.8,.2,1.15);}'
+   +'#msg-toast.msg-toast-show{transform:translateX(-50%) translateY(0);}#msg-toast.hidden{display:none;}';
+  document.head.appendChild(st);
+ }
+ if(!document.getElementById('msg-fab')){
+  const fab=document.createElement('div');
+  fab.id='msg-fab'; fab.className='hidden'; fab.setAttribute('role','button'); fab.setAttribute('aria-label','Messagerie');
+  fab.onclick=function(){ try{ openMessaging(); }catch(e){} };
+  fab.innerHTML='\u2709\uFE0F<span id="msg-fab-badge" class="hidden"></span>';
+  document.body.appendChild(fab);
+ }
+ if(!document.getElementById('msg-toast')){
+  const t=document.createElement('div'); t.id='msg-toast'; t.className='hidden';
+  document.body.appendChild(t);
+ }
+}
+function _msgGameViewActive(){ const g=document.getElementById('v-game'); return !!(g && !g.classList.contains('hidden')); }
+function _msgOverlayOpen(){ const ov=document.getElementById('msg-overlay'); return !!(ov && !ov.classList.contains('hidden')); }
+function _msgFabUpdate(){
+ _msgEnsureFab();
+ const fab=document.getElementById('msg-fab'); if(!fab) return;
+ const name=_curName(); const prof=name?_chatLoad(name):null;
+ const show = !!(prof && prof.chatEnabled && prof.chatId) && !_msgGameViewActive() && !_msgOverlayOpen();
+ fab.classList.toggle('hidden', !show);
+}
+function _msgWrapShowView(){
+ if(typeof showView!=='function' || showView._msgWrapped) return;
+ const orig=showView;
+ showView=function(){ orig.apply(this, arguments); try{ _msgFabUpdate(); }catch(e){} };
+ showView._msgWrapped=true;
+}
+
+// Détection d'un nouveau message entrant → enveloppe qui tressaute + son + bandeau.
+var _chatLastLatest = {};
+var _chatLatestInit = false;
+var _chatContactCache = {}; // id -> {name, avatar}
+var _msgToastTimer = null;
+async function _chatMaybeNotify(prof, latest){
+ const seen = _chatSeen(prof);
+ if(!_chatLatestInit){ _chatLatestInit = true; _chatLastLatest = Object.assign({}, latest); return; } // 1re passe : pas de notif
+ const newcomers=[];
+ for(const cid in latest){
+  const cur=latest[cid]||0, prev=_chatLastLatest[cid]||0;
+  const isOpen=_msgOverlayOpen() && _msgConv && _msgConv.id===cid;
+  if(cur>prev && cur>(seen[cid]||0) && !isOpen) newcomers.push(cid);
+ }
+ _chatLastLatest = Object.assign({}, latest);
+ if(!newcomers.length) return;
+ const fab=document.getElementById('msg-fab');
+ if(fab && !fab.classList.contains('hidden')){ fab.classList.remove('msg-fab-pop'); void fab.offsetWidth; fab.classList.add('msg-fab-pop'); }
+ try{ beep(660,'sine',.12,.07); setTimeout(()=>{ try{ beep(880,'sine',.12,.07); }catch(e){} },130); }catch(e){}
+ const cid=newcomers[newcomers.length-1];
+ let info=_chatContactCache[cid];
+ if(!info){
+  try{ const fl=await chatFriendList(prof); if(fl&&fl.ok&&Array.isArray(fl.contacts)){ fl.contacts.forEach(c=>{ _chatContactCache[c.id]={name:c.name,avatar:c.avatar}; }); info=_chatContactCache[cid]; } }catch(e){}
+ }
+ _msgShowToast(cid, info);
+}
+function _msgShowToast(cid, info){
+ _msgEnsureFab();
+ const t=document.getElementById('msg-toast'); if(!t) return;
+ const name=(info&&info.name)||'un ami';
+ const av=(info&&info.avatar)||'\uD83D\uDC64';
+ t.innerHTML='<div style="width:34px;height:34px;border-radius:50%;background:#f1ece2;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">'+_e(av)+'</div>'
+  +'<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:#2c2c2a;">\uD83D\uDCE9 Nouveau message</div>'
+  +'<div style="font-size:12px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">de '+_e(name)+'</div></div>';
+ t.onclick=function(){ _msgHideToast(); _msgOpenConvFromNotif(cid, name); };
+ t.classList.remove('hidden'); void t.offsetWidth; t.classList.add('msg-toast-show');
+ if(_msgToastTimer) clearTimeout(_msgToastTimer);
+ _msgToastTimer=setTimeout(_msgHideToast, 4500);
+}
+function _msgHideToast(){
+ const t=document.getElementById('msg-toast'); if(!t) return;
+ t.classList.remove('msg-toast-show');
+ if(_msgToastTimer) clearTimeout(_msgToastTimer);
+ _msgToastTimer=setTimeout(()=>{ if(t) t.classList.add('hidden'); }, 400);
+}
+async function _msgOpenConvFromNotif(cid, name){
+ try{ await openMessaging(); }catch(e){}
+ setTimeout(()=>{ try{ chatOpenConv(cid, name); }catch(e){} }, 280);
+}
+
 async function chatRefreshBadges(){
+ _msgEnsureFab();
  const name = _curName();
  const prof = name ? _chatLoad(name) : null;
  const enabled = !!(prof && prof.chatEnabled);
- const menuBtn = document.getElementById('menu-msg-btn'); if(menuBtn) menuBtn.classList.remove('hidden'); // fixe
- const hud = document.getElementById('hud-msg'); if(hud) hud.classList.toggle('hidden', !enabled);
- if(!enabled || !prof || !prof.chatId){ _setBadge('menu-msg-badge',0); _setBadge('hud-msg-badge',0); return; }
+ // anciennes entrées remplacées par l'enveloppe flottante unique
+ const menuBtn = document.getElementById('menu-msg-btn'); if(menuBtn) menuBtn.classList.add('hidden');
+ const hud = document.getElementById('hud-msg'); if(hud) hud.classList.add('hidden');
+ _msgFabUpdate();
+ if(!enabled || !prof || !prof.chatId){ _setBadge('msg-fab-badge',0); _setBadge('menu-msg-badge',0); _setBadge('hud-msg-badge',0); _chatLastLatest={}; _chatLatestInit=false; return; }
  const l = await chatMsgLatest(prof);
- const n = (l && l.latest) ? chatUnreadCount(prof, l.latest) : 0;
- _setBadge('menu-msg-badge', n); _setBadge('hud-msg-badge', n);
+ const latest = (l && l.latest) ? l.latest : {};
+ const n = chatUnreadCount(prof, latest);
+ _setBadge('msg-fab-badge', n); _setBadge('menu-msg-badge', n); _setBadge('hud-msg-badge', n);
+ try{ await _chatMaybeNotify(prof, latest); }catch(e){}
 }
 function _setBadge(id, n){
  const el = document.getElementById(id); if(!el) return;
@@ -366,6 +469,7 @@ async function chatSyncTick(){
  chatRefreshBadges();
 }
 function chatStartBadgePoll(){
+ _msgEnsureFab(); _msgWrapShowView();
  if(_msgBadgePoll) clearInterval(_msgBadgePoll);
  chatSyncTick();
  _msgBadgePoll = setInterval(chatSyncTick, 25000);
