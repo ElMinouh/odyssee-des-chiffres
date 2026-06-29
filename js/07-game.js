@@ -110,7 +110,7 @@ function _setSubjectLogos(){
  try{
   const fr = (typeof GM!=='undefined' && GM && GM.subject==='fr');
   document.querySelectorAll('img.subj-logo').forEach(function(im){
-   im.src = fr ? 'assets/logo-mots.webp?v=1033' : 'assets/logo-main.webp?v=1033';
+   im.src = fr ? 'assets/logo-mots.webp?v=1034' : 'assets/logo-main.webp?v=1034';
    im.alt = fr ? "L'Odyssée des Mots" : "L'Odyssée des Chiffres";
   });
   const lbl = document.getElementById('ody-btn-label');
@@ -1202,7 +1202,7 @@ function renderMap(){
   // Marqueur de fierté permanent sur la carte mondiale.
   const trophyHtml = done ? `<div class="archipel-zone-trophy" title="Boss vaincu : ${z.bossName||'Inconnu'}">${z.boss||'🏆'}</div>` : '';
   const lockHtml = (!canPlay && !done) ? `<div class="archipel-zone-lock">🔒</div>` : '';
-  const reqHtml = (!canPlay && !done && prev) ? `<div class="archipel-zone-req">${z.starsReq}★</div>` : '';
+  const reqHtml = ''; // progression linéaire : plus de seuil d'étoiles affiché
   const onclick = (canPlay || done) ? `onclick="requestZoneOpen('${z.id}')"` : ''; // 'done' : zone conquise toujours re-jouable
   return `
    <div class="${cls}" style="left:${p.xPct.toFixed(1)}%;top:${p.y}px;" data-zone-id="${z.id}" ${onclick}>
@@ -6013,14 +6013,18 @@ function _regionConquered(regionId){
 // conquise, la 1re zone de la région suivante est TOUJOURS jouable, sans exiger
 // le palier d'étoiles (sinon un joueur peu scoreur reste bloqué entre deux îles).
 function _zoneReachable(p, beaten, starsTotal){
+ // Progression LINÉAIRE : plus de verrou par étoiles. Un lieu est accessible dès que
+ // le lieu précédent est réussi ; le 1er lieu d'un nouvel îlot dès que l'îlot précédent
+ // est entièrement conquis. Les étoiles ne servent plus qu'à la collection / la boutique.
  try{
   const idx = p.zoneIdx;
-  const prevZone = idx > 0 ? MAP_ZONES[idx-1] : null;
-  const prev = idx === 0 || (prevZone && beaten.includes(prevZone.id));
-  if(!prev) return false;
-  if(starsTotal >= p.zone.starsReq) return true;
-  if(prevZone && prevZone.region && p.zone.region && prevZone.region !== p.zone.region && _regionConquered(prevZone.region)) return true;
-  return false;
+  if(idx === 0) return true;
+  const prevZone = MAP_ZONES[idx-1];
+  if(!prevZone || !beaten.includes(prevZone.id)) return false;
+  if(prevZone.region && p.zone.region && prevZone.region !== p.zone.region){
+   return _regionConquered(prevZone.region);
+  }
+  return true;
  }catch(e){ return false; }
 }
 // Déclencheur principal : prologue, puis victoire de Cristal, puis épilogue, puis chapitre d'entrée.
