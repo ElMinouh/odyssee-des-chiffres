@@ -389,7 +389,10 @@ function renderOptMessaging(name){
   + (on
      ? ('<p style="font-size:.72em;color:#bdc3c7;margin:0 0 6px;">Code ami : <span style="font-family:monospace;color:#5dade2;">'+_e(code)+'</span></p>'
         + '<button onclick="openMessaging(\''+nEsc+'\')" style="background:#2980b9;font-size:.8em;">👁 Voir les conversations</button>'
-        + '<button onclick="chatAdoptCloudIdentity(\''+nEsc+'\')" style="background:#16a085;font-size:.78em;margin-left:4px;">🔁 Aligner le code ami sur les autres appareils</button>')
+        + '<button onclick="chatAdoptCloudIdentity(\''+nEsc+'\')" style="background:#16a085;font-size:.78em;margin-left:4px;">🔁 Aligner le code ami sur les autres appareils</button>'
+        + '<div style="margin-top:8px;font-size:.7em;color:#9aa6b2;">Forcer le même code ami (transfert manuel d\u2019un appareil à l\u2019autre) :</div>'
+        + '<button onclick="chatExportIdentityCode(\''+nEsc+'\')" style="background:#7f8c8d;font-size:.76em;">📤 Exporter le code</button>'
+        + '<button onclick="chatImportIdentityCode(\''+nEsc+'\')" style="background:#7f8c8d;font-size:.76em;margin-left:4px;">📥 Importer un code</button>')
      : '<p style="font-size:.72em;color:#7f8c8d;margin:0;">Désactivée par défaut. Active-la pour permettre à cet enfant d\u2019échanger avec des contacts validés.</p>');
 }
 async function optToggleMessaging(name){
@@ -483,6 +486,30 @@ async function chatAdoptCloudIdentity(name){
  _chatSaveStore(s);
  try{ const p=_chatLoad(name); const rr=await chatRegister(p); if(rr&&rr.ok){ p.chatRegistered=true; _chatPersist(p); } }catch(e){}
  if(typeof toast==='function') toast('✅ Code ami aligné ('+cloudChat.id+'). Amis et historique communs récupérés.',5000);
+ if(typeof renderOptMessaging==='function') renderOptMessaging(name);
+ if(typeof chatRefreshBadges==='function') chatRefreshBadges();
+}
+
+// ── Transfert MANUEL du code de messagerie (force le même code ami entre appareils) ──
+function chatExportIdentityCode(name){
+ const p = _chatLoad(name);
+ if(!p.chatId || !p.chatSecret){ if(typeof toast==='function') toast('Active d\u2019abord la messagerie pour ce profil.',3000); return; }
+ let code=''; try{ code = btoa(JSON.stringify({ v:1, id:p.chatId, secret:p.chatSecret })); }catch(e){ code=''; }
+ if(!code){ if(typeof toast==='function') toast('Erreur d\u2019export.',2500); return; }
+ try{ if(navigator && navigator.clipboard) navigator.clipboard.writeText(code); }catch(e){}
+ if(typeof prompt==='function') prompt('Code de messagerie de '+name+' (déjà copié).\nColle-le sur l\u2019autre appareil via « Importer un code » :', code);
+ return code;
+}
+async function chatImportIdentityCode(name){
+ const code = (typeof prompt==='function') ? prompt('Colle le code de messagerie de '+name+' (exporté depuis l\u2019appareil de référence) :') : null;
+ if(!code) return;
+ let data=null; try{ data = JSON.parse(atob(String(code).trim())); }catch(e){}
+ if(!data || !data.id || !data.secret){ if(typeof toast==='function') toast('Code invalide.',3000); return; }
+ const s=_chatStore();
+ s[name] = { id:data.id, secret:data.secret, enabled:true, registered:false, seen:(s[name]&&s[name].seen)||{}, ts:Date.now() };
+ _chatSaveStore(s);
+ try{ const p=_chatLoad(name); const rr=await chatRegister(p); if(rr&&rr.ok){ p.chatRegistered=true; _chatPersist(p); } }catch(e){}
+ if(typeof toast==='function') toast('✅ Code ami importé ('+data.id+'). Amis et historique récupérés.',5000);
  if(typeof renderOptMessaging==='function') renderOptMessaging(name);
  if(typeof chatRefreshBadges==='function') chatRefreshBadges();
 }
