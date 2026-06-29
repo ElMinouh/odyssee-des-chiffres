@@ -14,12 +14,12 @@ function _chatStore(){ try{ return JSON.parse(localStorage.getItem('chatProfiles
 function _chatSaveStore(s){ try{ localStorage.setItem('chatProfiles', JSON.stringify(s)); }catch(e){} }
 function _chatLoad(name){
  const s = _chatStore(); const e = s[name] || {};
- return { name, chatId:e.id||null, chatSecret:e.secret||null, chatEnabled:!!e.enabled, chatRegistered:!!e.registered, chatSeen:e.seen||{} };
+ return { name, chatId:e.id||null, chatSecret:e.secret||null, chatEnabled:!!e.enabled, chatRegistered:!!e.registered, chatSeen:e.seen||{}, ts:e.ts||0 };
 }
 function _chatPersist(prof){
  if(!prof || !prof.name) return;
  const s = _chatStore();
- s[prof.name] = { id:prof.chatId||null, secret:prof.chatSecret||null, enabled:!!prof.chatEnabled, registered:!!prof.chatRegistered, seen:prof.chatSeen||{} };
+ s[prof.name] = { id:prof.chatId||null, secret:prof.chatSecret||null, enabled:!!prof.chatEnabled, registered:!!prof.chatRegistered, seen:prof.chatSeen||{}, ts:prof.ts||0 };
  _chatSaveStore(s);
 }
 
@@ -77,7 +77,7 @@ async function chatEnableForProfile(name){
  if(!name) return { error:'no_profile' };
  const prof = _chatLoad(name);
  ensureChatIdentity(prof);
- prof.chatEnabled = true; _chatPersist(prof);     // état LOCAL d'abord (jamais annulé sur échec réseau)
+ prof.chatEnabled = true; prof.ts = Date.now(); _chatPersist(prof);     // état LOCAL d'abord (jamais annulé sur échec réseau)
  let res = await chatRegister(prof);
  if(res && res.error === 'taken'){ prof.chatId = _chatGenId(); _chatPersist(prof); res = await chatRegister(prof); }
  if(res && res.ok){ prof.chatRegistered = true; _chatPersist(prof); }
@@ -86,7 +86,7 @@ async function chatEnableForProfile(name){
 }
 function chatDisableForProfile(name){
  if(!name) return;
- const prof = _chatLoad(name); prof.chatEnabled = false; _chatPersist(prof);
+ const prof = _chatLoad(name); prof.chatEnabled = false; prof.ts = Date.now(); _chatPersist(prof);
  if(typeof chatRefreshBadges==='function') chatRefreshBadges();
 }
 
@@ -388,7 +388,8 @@ function renderOptMessaging(name){
   + '</div>'
   + (on
      ? ('<p style="font-size:.72em;color:#bdc3c7;margin:0 0 6px;">Code ami : <span style="font-family:monospace;color:#5dade2;">'+_e(code)+'</span></p>'
-        + '<button onclick="openMessaging(\''+nEsc+'\')" style="background:#2980b9;font-size:.8em;">👁 Voir les conversations</button>')
+        + '<button onclick="openMessaging(\''+nEsc+'\')" style="background:#2980b9;font-size:.8em;">👁 Voir les conversations</button>'
+        + '<button onclick="chatAdoptCloudIdentity(\''+nEsc+'\')" style="background:#16a085;font-size:.78em;margin-left:4px;">🔁 Aligner le code ami sur les autres appareils</button>')
      : '<p style="font-size:.72em;color:#7f8c8d;margin:0;">Désactivée par défaut. Active-la pour permettre à cet enfant d\u2019échanger avec des contacts validés.</p>');
 }
 async function optToggleMessaging(name){
@@ -414,12 +415,17 @@ function chatMergeFromCloud(name, cloudChat){
  if(!name || !cloudChat || typeof cloudChat!=='object') return;
  const s=_chatStore(); const local=s[name]||{};
  const adoptId = (!local.id && !!cloudChat.id);
+ const lt = local.ts||0, ct = cloudChat.ts||0;
+ let enabled;
+ if(lt===0 && ct===0) enabled = !!(local.enabled || cloudChat.enabled); // compat : aucun horodatage → OU
+ else enabled = (ct > lt) ? !!cloudChat.enabled : !!local.enabled;       // le réglage le plus récent gagne (désactivation ne rebondit plus)
  s[name]={
   id: local.id || cloudChat.id || null,
   secret: local.secret || cloudChat.secret || null,
-  enabled: !!(local.enabled || cloudChat.enabled),        // activé quelque part → activé partout (jamais désactivé par une synchro)
-  registered: adoptId ? false : !!(local.registered || cloudChat.registered), // identité adoptée → (re)enregistrement au prochain accès
-  seen: _chatMergeSeen(local.seen, cloudChat.seen)
+  enabled: enabled,
+  registered: adoptId ? false : !!(local.registered || cloudChat.registered),
+  seen: _chatMergeSeen(local.seen, cloudChat.seen),
+  ts: Math.max(lt, ct)
  };
  _chatSaveStore(s);
  if(typeof chatRefreshBadges==='function'){ try{ chatRefreshBadges(); }catch(e){} }
@@ -440,7 +446,7 @@ async function chatForceSyncMessaging(){
   try{ const r = await pullProfileFromCloud(cc); if(r && r.ok && r.profile) base = r.profile; }catch(e){}
   const payload = Object.assign({}, base);
   delete payload._syncedAt;
-  payload._chat = { id:local.chatId, secret:local.chatSecret, enabled:true, registered:!!local.chatRegistered, seen:local.chatSeen||{} };
+  payload._chat = { id:local.chatId, secret:local.chatSecret, enabled:true, registered:!!local.chatRegistered, seen:local.chatSeen||{}, ts:local.ts||Date.now() };
   try{
    const r = await fetch(`${CLOUD_API}/profile/${encodeURIComponent(cc)}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
    if(r.ok){ okN++; } else { fail++; }
@@ -460,6 +466,25 @@ async function chatPullAllIdentities(){
   const cc = prof && prof.cloudCode; if(!cc) continue;
   try{ const r = await pullProfileFromCloud(cc); if(r && r.ok && r.profile && r.profile._chat){ chatMergeFromCloud(n, r.profile._chat); } }catch(e){}
  }
+}
+
+// Aligne volontairement l'identité de CE profil sur celle, commune, du cloud (remplace l'identité locale).
+async function chatAdoptCloudIdentity(name){
+ let prof=null; try{ prof = (typeof P!=='undefined' && P && P.name===name) ? P : _readProfile(name); }catch(e){}
+ const cc = prof && prof.cloudCode;
+ if(!cc){ if(typeof toast==='function') toast('Ce profil n\u2019est pas en sauvegarde cloud.',3000); return; }
+ if(!confirm('Aligner le code ami de '+name+' sur celui des autres appareils ?\n\nLe code ami actuel de CET appareil sera remplacé par le code commun (cloud). Tu retrouveras alors les amis et l\u2019historique communs.')) return;
+ if(typeof toast==='function') toast('Récupération\u2026',1500);
+ let cloudChat=null;
+ try{ const r = await pullProfileFromCloud(cc); if(r && r.ok && r.profile && r.profile._chat) cloudChat = r.profile._chat; }catch(e){}
+ if(!cloudChat || !cloudChat.id){ if(typeof toast==='function') toast('Aucune identité commune trouvée sur le cloud. Lance d\u2019abord « Forcer la synchro » depuis l\u2019appareil de référence.',5000); return; }
+ const s=_chatStore();
+ s[name]={ id:cloudChat.id, secret:cloudChat.secret, enabled:true, registered:false, seen:cloudChat.seen||{}, ts:cloudChat.ts||Date.now() };
+ _chatSaveStore(s);
+ try{ const p=_chatLoad(name); const rr=await chatRegister(p); if(rr&&rr.ok){ p.chatRegistered=true; _chatPersist(p); } }catch(e){}
+ if(typeof toast==='function') toast('✅ Code ami aligné ('+cloudChat.id+'). Amis et historique communs récupérés.',5000);
+ if(typeof renderOptMessaging==='function') renderOptMessaging(name);
+ if(typeof chatRefreshBadges==='function') chatRefreshBadges();
 }
 
 // Démarrage : suivi des pastilles + affichage du bouton menu (fixe)
