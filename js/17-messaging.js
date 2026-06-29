@@ -154,6 +154,7 @@ async function renderContactsScreen(){
    + '<div style="text-align:center;"><button onclick="renderContactsScreen()" style="font-size:.85em;">Réessayer</button></div>';
   return;
  }
+ try{ (data.contacts||[]).forEach(c=>{ _chatContactCache[c.id]={name:c.name,avatar:c.avatar}; }); }catch(e){}
  let html = '';
  html += '<div style="background:rgba(52,152,219,.1);border:1px solid rgba(52,152,219,.35);border-radius:10px;padding:10px 12px;margin-bottom:12px;">'
   + '<p style="margin:0 0 2px;font-size:.74em;color:#bdc3c7;">Ton code ami (à donner pour être ajouté) :</p>'
@@ -164,8 +165,9 @@ async function renderContactsScreen(){
  if(inc.length && !_msgReadOnly){
   html += '<p style="font-size:.78em;font-weight:700;color:#f1c40f;margin:6px 0;">📨 Demandes reçues</p>';
   inc.forEach(c => {
-   const cid=_e(c.id), cn=_e(c.name||c.id);
+   const cid=_e(c.id), cn=_e(c.name||c.id), av=_e(c.avatar||'\uD83E\uDDD9');
    html += '<div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);border-radius:10px;padding:8px 10px;margin:4px 0;">'
+    + '<span style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">'+av+'</span>'
     + '<span style="flex:1;font-size:.9em;">'+cn+'</span>'
     + '<button onclick="chatAcceptContact(\''+cid+'\')" style="background:#27ae60;font-size:.76em;padding:5px 10px;">✅ Accepter</button>'
     + '<button onclick="chatDeclineContact(\''+cid+'\')" style="background:#7f8c8d;font-size:.76em;padding:5px 10px;">✕</button></div>';
@@ -179,16 +181,20 @@ async function renderContactsScreen(){
  const contacts = data.contacts || [];
  html += '<p style="font-size:.78em;font-weight:700;color:#bdc3c7;margin:12px 0 6px;">👥 Mes amis</p>';
  if(!contacts.length){
-  html += '<p style="font-size:.8em;color:#7f8c8d;margin:6px 0;">Aucun ami pour l\u2019instant. Échange ton code ami pour vous ajouter.</p>';
+  html += '<div style="text-align:center;border:2px dashed rgba(255,255,255,.18);border-radius:14px;padding:16px;margin:6px 0;">'
+   + '<div style="font-size:30px;">🤝</div>'
+   + '<p style="font-size:.82em;color:#9aa6b2;margin:6px 0 0;">Pas encore d\u2019amis ?<br>Partage ton code ami pour vous ajouter !</p></div>';
  } else {
   contacts.forEach(c => {
-   const cid=_e(c.id), cn=_e(c.name||c.id);
+   const cid=_e(c.id), cn=_e(c.name||c.id), av=_e(c.avatar||'\uD83E\uDDD9');
+   const nameArg=(c.name||c.id).replace(/'/g,"\\'"), avArg=(c.avatar||'').replace(/'/g,"\\'");
    const unread = (latest[c.id]||0) > (seen[c.id]||0);
-   html += '<div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);border-radius:10px;padding:10px 12px;margin:4px 0;cursor:pointer;" onclick="chatOpenConv(\''+cid+'\',\''+cn.replace(/'/g,"\\'")+'\')">'
+   html += '<div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.06);border-radius:12px;padding:10px 12px;margin:5px 0;cursor:pointer;" onclick="chatOpenConv(\''+cid+'\',\''+nameArg+'\',\''+avArg+'\')">'
+    + '<span style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0;">'+av+'</span>'
     + '<span style="flex:1;font-size:.95em;font-weight:600;">'+cn+'</span>'
-    + (unread ? '<span style="background:#e74c3c;border-radius:50%;width:10px;height:10px;display:inline-block;"></span>' : '')
-    + '<button onclick="event.stopPropagation();chatRemoveContact(\''+cid+'\',\''+cn.replace(/'/g,"\\'")+'\')" style="background:transparent;border:none;color:#7f8c8d;font-size:1em;cursor:pointer;" title="Retirer">✕</button>'
-    + '<span style="color:#7f8c8d;">›</span></div>';
+    + (unread ? '<span style="background:#e74c3c;border-radius:50%;width:11px;height:11px;display:inline-block;"></span>' : '')
+    + '<button onclick="event.stopPropagation();chatRemoveContact(\''+cid+'\',\''+nameArg+'\')" style="background:transparent;border:none;color:#7f8c8d;font-size:1em;cursor:pointer;" title="Retirer">\u2715</button>'
+    + '<span style="color:#7f8c8d;">\u203A</span></div>';
   });
  }
 
@@ -253,40 +259,66 @@ function _chatParentGate(){
 // ═══════════════════════════════════════════════════════
 // ÉCRAN CONVERSATION
 // ═══════════════════════════════════════════════════════
-async function chatOpenConv(id, name){
- _msgConv = { id, name, lastId:0 };
+async function chatOpenConv(id, name, avatar){
+ const cached = _chatContactCache[id];
+ _msgConv = { id, name, avatar: avatar || (cached && cached.avatar) || null, lastId:0 };
  renderConvShell(name);
  await _convFetch(true);
  if(!_msgReadOnly) _startConvPoll();
 }
 function renderConvShell(name){
  const body = document.getElementById('msg-body'); if(!body) return;
+ const av = (_msgConv && _msgConv.avatar) || '\uD83E\uDDD9';
  body.innerHTML =
   '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'
-  + '<button onclick="renderContactsScreen()" style="background:#444;font-size:.82em;padding:5px 10px;">‹ Retour</button>'
+  + '<button onclick="renderContactsScreen()" style="background:#444;font-size:.82em;padding:5px 10px;">\u2039 Retour</button>'
+  + '<span style="width:30px;height:30px;border-radius:50%;background:#f1ece2;display:flex;align-items:center;justify-content:center;font-size:16px;">'+_e(av)+'</span>'
   + '<span style="font-weight:700;font-size:1em;">'+_e(name)+'</span></div>'
-  + '<div id="msg-thread" style="height:46vh;overflow-y:auto;background:rgba(0,0,0,.2);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px;"></div>'
+  + '<div style="position:relative;">'
+  + '<div id="msg-thread" onscroll="_msgThreadScroll()" style="height:46vh;overflow-y:auto;background:rgba(0,0,0,.2);border-radius:10px;padding:10px;"></div>'
+  + '<button id="msg-jump" class="hidden" onclick="_msgJumpToBottom()">\u2193 nouveau message</button>'
+  + '</div>'
   + (_msgReadOnly
-     ? '<p style="font-size:.74em;color:#7f8c8d;text-align:center;margin-top:8px;">👁 Lecture seule (espace parent)</p>'
+     ? '<p style="font-size:.74em;color:#7f8c8d;text-align:center;margin-top:8px;">\uD83D\uDC41 Lecture seule (espace parent)</p>'
      : ('<div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap;">'
-        + ['😀','😂','❤️','👍','🎉','😢','😮','🌟'].map(em=>'<button onclick="chatInsertEmoji(\''+em+'\')" style="font-size:1.1em;padding:2px 6px;background:rgba(255,255,255,.08);">'+em+'</button>').join('')
+        + ['\uD83D\uDE00','\uD83D\uDE02','\u2764\uFE0F','\uD83D\uDC4D','\uD83C\uDF89','\uD83D\uDE22','\uD83D\uDE2E','\uD83C\uDF1F'].map(em=>'<button onclick="chatInsertEmoji(\''+em+'\')" style="font-size:1.1em;padding:2px 6px;background:rgba(255,255,255,.08);">'+em+'</button>').join('')
         + '</div>'
         + '<div style="display:flex;gap:6px;margin-top:6px;">'
         + '<input type="text" id="msg-input" maxlength="1000" placeholder="Ton message\u2026" style="flex:1;" onkeydown="if(event.key===\'Enter\')chatSendCurrent()">'
         + '<button onclick="chatSendCurrent()" style="background:#27ae60;">Envoyer</button></div>'));
 }
+function _fmtTime(ts){ if(!ts) return ''; try{ const d=new Date(ts); const h=d.getHours(), m=d.getMinutes(); return h+':'+(m<10?'0':'')+m; }catch(e){ return ''; } }
+function _msgSpeakIdx(i){ const m=_convCache[i]; if(m && typeof speak==='function'){ try{ speak(m.body); }catch(e){} } }
+function _msgShowJump(){ const b=document.getElementById('msg-jump'); if(b) b.classList.remove('hidden'); }
+function _msgHideJump(){ const b=document.getElementById('msg-jump'); if(b) b.classList.add('hidden'); }
+function _msgJumpToBottom(){ const th=document.getElementById('msg-thread'); if(th) th.scrollTop = th.scrollHeight; _msgHideJump(); }
+function _msgThreadScroll(){ const th=document.getElementById('msg-thread'); if(th && (th.scrollHeight - th.scrollTop - th.clientHeight) < 40) _msgHideJump(); }
 function _renderBubbles(messages){
  const thread = document.getElementById('msg-thread'); if(!thread) return;
  const mine = _msgProf.chatId;
- thread.innerHTML = messages.map(m => {
+ const av = (_msgConv && _msgConv.avatar) || '\uD83E\uDDD9';
+ const atBottom = !thread.innerHTML || (thread.scrollHeight - thread.scrollTop - thread.clientHeight) < 40;
+ const prevTop = thread.scrollTop;
+ const lastIdx = messages.length - 1;
+ thread.innerHTML = messages.map((m, i) => {
   const isMine = (m.sender === mine);
-  const side = isMine ? 'flex-end' : 'flex-start';
-  const bg = isMine ? '#2980b9' : 'rgba(255,255,255,.12)';
-  return '<div style="align-self:'+side+';max-width:78%;background:'+bg+';color:#fff;padding:7px 11px;border-radius:14px;font-size:.92em;word-break:break-word;">'+_e(m.body)+'</div>';
+  const t = _fmtTime(m.ts);
+  if(isMine){
+   const pop = (_msgJustSent && i===lastIdx) ? ' msg-pop' : '';
+   return '<div class="msg-row msg-out"><div class="msg-bub msg-bub-out'+pop+'">'
+    + '<div>'+_e(m.body)+'</div>'
+    + '<div class="msg-meta msg-meta-out"><span>'+t+'</span><span class="msg-ck">\u2713</span></div></div></div>';
+  }
+  return '<div class="msg-row msg-in"><div class="msg-av">'+_e(av)+'</div>'
+   + '<div class="msg-bub msg-bub-in"><div>'+_e(m.body)+'</div>'
+   + '<div class="msg-meta"><span>'+t+'</span><span class="msg-spk" onclick="_msgSpeakIdx('+i+')">\uD83D\uDD0A</span></div></div></div>';
  }).join('');
- thread.scrollTop = thread.scrollHeight;
+ _msgJustSent = false;
+ if(atBottom){ thread.scrollTop = thread.scrollHeight; _msgHideJump(); }
+ else { thread.scrollTop = prevTop; _msgShowJump(); }
 }
 var _convCache = [];
+var _msgJustSent = false;
 async function _convFetch(reset){
  if(!_msgConv) return;
  if(reset) _convCache = [];
@@ -314,6 +346,7 @@ async function chatSendCurrent(){
  if(res && res.ok){
   _convCache.push({ id:res.id, sender:_msgProf.chatId, body:txt, ts:res.ts });
   _msgConv.lastId = res.id || _msgConv.lastId;
+  _msgJustSent = true;
   _renderBubbles(_convCache);
   _chatMarkSeen(_msgProf, _msgConv.id, _msgConv.lastId);
  } else {
@@ -340,7 +373,16 @@ function _msgEnsureFab(){
    +'#msg-fab-badge.hidden{display:none;}#msg-fab.msg-fab-pop{animation:msgFabPop .55s;}'
    +'@keyframes msgFabPop{0%{transform:scale(1);}25%{transform:scale(1.18) rotate(-9deg);}55%{transform:scale(.95) rotate(7deg);}100%{transform:scale(1) rotate(0);}}'
    +'#msg-toast{position:fixed;left:50%;top:14px;transform:translateX(-50%) translateY(-140%);max-width:340px;width:calc(100% - 28px);background:#fff;border:1px solid #e7ddcd;border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,.22);padding:10px 14px;display:flex;align-items:center;gap:10px;z-index:9500;cursor:pointer;transition:transform .38s cubic-bezier(.2,.8,.2,1.15);}'
-   +'#msg-toast.msg-toast-show{transform:translateX(-50%) translateY(0);}#msg-toast.hidden{display:none;}';
+   +'#msg-toast.msg-toast-show{transform:translateX(-50%) translateY(0);}#msg-toast.hidden{display:none;}'
+   +'.msg-row{display:flex;align-items:flex-end;gap:6px;margin-bottom:8px;}.msg-row.msg-out{justify-content:flex-end;}'
+   +'.msg-av{width:26px;height:26px;border-radius:50%;background:#f1ece2;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}'
+   +'.msg-bub{max-width:76%;padding:7px 11px;border-radius:14px;font-size:.92em;word-break:break-word;}'
+   +'.msg-bub-in{background:#fff;color:#2c2c2a;border:1px solid #eee;border-bottom-left-radius:4px;}'
+   +'.msg-bub-out{background:#cdeafc;color:#0c447c;border-bottom-right-radius:4px;}'
+   +'.msg-meta{display:flex;align-items:center;gap:6px;margin-top:3px;font-size:.62rem;color:#9aa6b2;}.msg-meta-out{justify-content:flex-end;color:#5a86a8;}'
+   +'.msg-spk{cursor:pointer;font-size:.85rem;}.msg-ck{font-weight:700;}'
+   +'.msg-pop{animation:msgBubPop .28s ease-out;}@keyframes msgBubPop{0%{transform:scale(.6) translateY(6px);opacity:0;}100%{transform:scale(1) translateY(0);opacity:1;}}'
+   +'#msg-jump{position:absolute;left:50%;transform:translateX(-50%);bottom:14px;background:#1d9e75;color:#fff;border:none;border-radius:14px;padding:6px 14px;font-size:.78rem;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25);z-index:20;}#msg-jump.hidden{display:none;}';
   document.head.appendChild(st);
  }
  if(!document.getElementById('msg-fab')){
