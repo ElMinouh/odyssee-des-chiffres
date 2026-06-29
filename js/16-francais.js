@@ -829,6 +829,28 @@ function _playCri(animal){
   if(p&&p.catch) p.catch(()=>{ _synthCri(c.w); });
  }catch(e){ _synthCri(c.w); }
 }
+// Lit la CONSIGNE (TTS) puis joue le cri À LA FIN (pas de superposition).
+// (Rétablie : elle était appelée par 07-game.js mais n'existait plus → le cri ne se jouait plus.)
+function _speakThenCri(q){
+ const sound = q && q.sound;
+ const cue = (q && q.speakText) || 'Quel animal fait ce cri ?';
+ const playCry = ()=>{ try{ _playCri(sound); }catch(e){} };
+ try{
+  const voiceOn = (typeof $==='function') && $('voiceToggle') && $('voiceToggle').checked;
+  if(voiceOn && window.speechSynthesis){
+   window.speechSynthesis.cancel();
+   const m = new SpeechSynthesisUtterance(typeof _humanizeForSpeech==='function' ? _humanizeForSpeech(cue) : cue);
+   m.lang='fr-FR'; m.rate=0.95; m.pitch=1;
+   if(typeof _frVoice!=='undefined' && _frVoice) m.voice=_frVoice;
+   let done=false; const fire=()=>{ if(done) return; done=true; setTimeout(playCry,150); };
+   m.onend=fire; m.onerror=fire;
+   window.speechSynthesis.speak(m);
+   setTimeout(()=>{ if(!done){ done=true; playCry(); } }, 2600); // filet si onend muet
+  } else {
+   playCry(); // pas de voix → on joue le cri directement
+  }
+ }catch(e){ playCry(); }
+}
 const FR_RIMES = [
  {e:'🐱',w:'chat',   ok:{e:'🐀',w:'rat'},     bad:[{e:'🌙',w:'lune'},{e:'🌸',w:'fleur'}]},
  {e:'🐰',w:'lapin',  ok:{e:'🌲',w:'sapin'},   bad:[{e:'🍎',w:'pomme'},{e:'🐮',w:'vache'}]},

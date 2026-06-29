@@ -110,7 +110,7 @@ function _setSubjectLogos(){
  try{
   const fr = (typeof GM!=='undefined' && GM && GM.subject==='fr');
   document.querySelectorAll('img.subj-logo').forEach(function(im){
-   im.src = fr ? 'assets/logo-mots.webp?v=1032' : 'assets/logo-main.webp?v=1032';
+   im.src = fr ? 'assets/logo-mots.webp?v=1033' : 'assets/logo-main.webp?v=1033';
    im.alt = fr ? "L'Odyssée des Mots" : "L'Odyssée des Chiffres";
   });
   const lbl = document.getElementById('ody-btn-label');
@@ -276,6 +276,7 @@ function startMapStep(zoneId, stepIdx){
  if(!zone || !Array.isArray(zone.steps)) return;
  const step = zone.steps[stepIdx];
  if(!step) return;
+ if(typeof _setAvatarZone==='function') _setAvatarZone(zoneId); // avatar mémorisé sur la zone jouée
  const prog = (P.zoneProgress && P.zoneProgress[zoneId]) || { stepsCompleted:0 };
  // Étape verrouillée ? On refuse silencieusement
  if(stepIdx > prog.stepsCompleted) return;
@@ -374,6 +375,7 @@ function returnToModule(){
  GM.mapStep = null;
  gameActive = false;
  clearPendingTimers();
+ if(typeof _setAvatarZone==='function') _setAvatarZone(zoneId); // avatar déjà sur place → pas de marche depuis le 1er lieu
  if(typeof navTo === 'function') navTo('v-map'); else showView('v-map');
  renderMap();
  setTimeout(()=>{
@@ -1201,7 +1203,7 @@ function renderMap(){
   const trophyHtml = done ? `<div class="archipel-zone-trophy" title="Boss vaincu : ${z.bossName||'Inconnu'}">${z.boss||'🏆'}</div>` : '';
   const lockHtml = (!canPlay && !done) ? `<div class="archipel-zone-lock">🔒</div>` : '';
   const reqHtml = (!canPlay && !done && prev) ? `<div class="archipel-zone-req">${z.starsReq}★</div>` : '';
-  const onclick = canPlay ? `onclick="requestZoneOpen('${z.id}')"` : '';
+  const onclick = (canPlay || done) ? `onclick="requestZoneOpen('${z.id}')"` : ''; // 'done' : zone conquise toujours re-jouable
   return `
    <div class="${cls}" style="left:${p.xPct.toFixed(1)}%;top:${p.y}px;" data-zone-id="${z.id}" ${onclick}>
     <div class="archipel-zone-circle">${z.emoji}${checkHtml}${lockHtml}</div>
