@@ -1280,6 +1280,7 @@ function pmAddProfile(){
  if(!n) return;
  if(typeof addToRoster!=='function') return;
  if(!addToRoster(n)){ if(typeof toast==='function')toast('Ce profil existe déjà.',2000); return; }
+ if(typeof chatEnableForProfile==='function'){ try{ chatEnableForProfile(n); }catch(e){} } // messagerie activée par défaut (contacts validés par les parents)
  i.value='';
  renderProfileManager();
  if(typeof fillPlayerSelect==='function') fillPlayerSelect();

@@ -64,6 +64,8 @@ async function chatFriendList(prof){ return _chatApi('/friend/list', _chatAuth(p
 async function chatFriendAccept(prof, from){ return _chatApi('/friend/accept', Object.assign(_chatAuth(prof), { from })); }
 async function chatFriendDecline(prof, from){ return _chatApi('/friend/decline', Object.assign(_chatAuth(prof), { from })); }
 async function chatFriendRemove(prof, other){ return _chatApi('/friend/remove', Object.assign(_chatAuth(prof), { other })); }
+async function chatFriendBlock(prof, other){ return _chatApi('/friend/block', Object.assign(_chatAuth(prof), { other })); }
+async function chatFriendUnblock(prof, other){ return _chatApi('/friend/unblock', Object.assign(_chatAuth(prof), { other })); }
 async function chatMsgSend(prof, to, txt){ return _chatApi('/msg/send', Object.assign(_chatAuth(prof), { to, body:txt })); }
 async function chatMsgFetch(prof, withId, since){ return _chatApi('/msg/fetch', Object.assign(_chatAuth(prof), { with:withId, since:since||0 })); }
 async function chatMsgLatest(prof){ return _chatApi('/msg/latest', _chatAuth(prof)); }
@@ -565,6 +567,69 @@ function chatStartBadgePoll(){
 // ═══════════════════════════════════════════════════════
 // SECTION « MESSAGERIE » DANS LE PANNEAU PROFIL (espace parent)
 // ═══════════════════════════════════════════════════════
+// Actions parent : bloquer/débloquer un contact, accepter/refuser une demande (déjà dans l'espace parent).
+async function chatBlockContact(name, otherId, otherName){
+ if(!confirm('Bloquer '+(otherName||otherId)+' ?\n\nCe contact ne pourra plus échanger avec '+name+' et ses messages seront ignorés. Tu pourras le débloquer plus tard.')) return;
+ const prof=_chatLoad(name); if(!prof.chatId) return;
+ const r=await chatFriendBlock(prof, otherId);
+ if(typeof toast==='function') toast((r&&r.ok)?'\uD83D\uDEAB Contact bloqué.':'Échec du blocage.',2000);
+ _renderOptMsgManage(name); if(typeof chatRefreshBadges==='function') chatRefreshBadges();
+}
+async function chatUnblockContact(name, otherId){
+ const prof=_chatLoad(name); if(!prof.chatId) return;
+ const r=await chatFriendUnblock(prof, otherId);
+ if(r&&r.ok && typeof toast==='function') toast('Contact débloqué.',1600);
+ _renderOptMsgManage(name); if(typeof chatRefreshBadges==='function') chatRefreshBadges();
+}
+async function optAcceptPending(name, fromId){
+ const prof=_chatLoad(name); if(!prof.chatId) return;
+ const r=await chatFriendAccept(prof, fromId);
+ if(r&&r.ok && typeof toast==='function') toast('\u2705 Contact accepté.',1600);
+ _renderOptMsgManage(name); if(typeof chatRefreshBadges==='function') chatRefreshBadges();
+}
+async function optDeclinePending(name, fromId){
+ const prof=_chatLoad(name); if(!prof.chatId) return;
+ await chatFriendDecline(prof, fromId);
+ if(typeof toast==='function') toast('Demande refusée.',1500);
+ _renderOptMsgManage(name);
+}
+// Sous-panneau parent : demandes en attente + contacts (bloquer) + bloqués (débloquer).
+async function _renderOptMsgManage(name){
+ const box=document.getElementById('opt-msg-manage'); if(!box) return;
+ const prof=_chatLoad(name);
+ if(!prof.chatEnabled || !prof.chatId){ box.innerHTML=''; return; }
+ box.innerHTML='<p style="font-size:.72em;color:#7f8c8d;margin:8px 0 4px;">Chargement\u2026</p>';
+ let fl=null; try{ fl=await chatFriendList(prof); }catch(e){}
+ if(!fl || !fl.ok){ box.innerHTML='<p style="font-size:.72em;color:#7f8c8d;margin:8px 0;">Contacts indisponibles (hors-ligne ?).</p>'; return; }
+ const nEsc=_e(name).replace(/'/g,"\\'");
+ const av=c=>_e(c.avatar||'\uD83E\uDDD9'), nm=c=>_e(c.name||c.id), idOf=c=>_e(c.id);
+ const avat=v=>'<span style="width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">'+v+'</span>';
+ let h='';
+ const inc=fl.incoming||[];
+ if(inc.length){
+  h+='<div style="margin-top:10px;font-size:.74em;font-weight:700;color:#f39c12;">\uD83D\uDCE5 Demandes en attente ('+inc.length+')</div>';
+  inc.forEach(c=>{ h+='<div style="display:flex;align-items:center;gap:8px;margin:5px 0;">'+avat(av(c))
+    +'<span style="flex:1;font-size:.82em;">'+nm(c)+'</span>'
+    +'<button onclick="optAcceptPending(\''+nEsc+'\',\''+idOf(c)+'\')" style="background:#27ae60;font-size:.72em;padding:4px 9px;">Accepter</button>'
+    +'<button onclick="optDeclinePending(\''+nEsc+'\',\''+idOf(c)+'\')" style="background:#7f8c8d;font-size:.72em;padding:4px 9px;">Refuser</button></div>'; });
+ }
+ const contacts=fl.contacts||[];
+ h+='<div style="margin-top:10px;font-size:.74em;font-weight:700;color:#bdc3c7;">\uD83D\uDC65 Contacts ('+contacts.length+')</div>';
+ if(!contacts.length) h+='<p style="font-size:.72em;color:#7f8c8d;margin:4px 0;">Aucun contact.</p>';
+ contacts.forEach(c=>{ const cnArg=(c.name||c.id).replace(/'/g,"\\'");
+  h+='<div style="display:flex;align-items:center;gap:8px;margin:5px 0;">'+avat(av(c))
+   +'<span style="flex:1;font-size:.82em;">'+nm(c)+'</span>'
+   +'<button onclick="chatBlockContact(\''+nEsc+'\',\''+idOf(c)+'\',\''+cnArg+'\')" style="background:#c0392b;font-size:.72em;padding:4px 9px;">\uD83D\uDEAB Bloquer</button></div>'; });
+ const blocked=fl.blocked||[];
+ if(blocked.length){
+  h+='<div style="margin-top:10px;font-size:.74em;font-weight:700;color:#e74c3c;">\uD83D\uDEAB Bloqués ('+blocked.length+')</div>';
+  blocked.forEach(c=>{ h+='<div style="display:flex;align-items:center;gap:8px;margin:5px 0;opacity:.7;">'+avat(av(c))
+    +'<span style="flex:1;font-size:.82em;">'+nm(c)+'</span>'
+    +'<button onclick="chatUnblockContact(\''+nEsc+'\',\''+idOf(c)+'\')" style="background:#7f8c8d;font-size:.72em;padding:4px 9px;">Débloquer</button></div>'; });
+ }
+ box.innerHTML=h;
+}
+
 function renderOptMessaging(name){
  const box = document.getElementById('opt-messaging'); if(!box) return;
  if(!name){ box.innerHTML=''; return; }
@@ -574,29 +639,31 @@ function renderOptMessaging(name){
  const nEsc = _e(name).replace(/'/g,"\\'");
  box.innerHTML =
   '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">'
-  + '<span style="font-size:.85em;">Activer la messagerie pour ce profil</span>'
-  + '<button onclick="optToggleMessaging(\''+nEsc+'\')" style="background:'+(on?'#27ae60':'#7f8c8d')+';font-size:.78em;padding:5px 12px;">'+(on?'Activée ✓':'Désactivée')+'</button>'
+  + '<span style="font-size:.85em;">Messagerie : <b style="color:'+(on?'#2ecc71':'#e67e22')+';">'+(on?'active':'suspendue')+'</b></span>'
+  + '<button onclick="optToggleMessaging(\''+nEsc+'\')" style="background:'+(on?'#e67e22':'#27ae60')+';font-size:.78em;padding:5px 12px;">'+(on?'\u23F8 Suspendre':'\u25B6 Réactiver')+'</button>'
   + '</div>'
   + (on
      ? ('<p style="font-size:.72em;color:#bdc3c7;margin:0 0 6px;">Code ami : <span style="font-family:monospace;color:#5dade2;">'+_e(code)+'</span></p>'
-        + '<button onclick="openMessaging(\''+nEsc+'\')" style="background:#2980b9;font-size:.8em;">👁 Voir les conversations</button>'
-        + '<button onclick="chatAdoptCloudIdentity(\''+nEsc+'\')" style="background:#16a085;font-size:.78em;margin-left:4px;">🔁 Aligner le code ami sur les autres appareils</button>'
+        + '<button onclick="openMessaging(\''+nEsc+'\')" style="background:#2980b9;font-size:.8em;">\uD83D\uDC41 Voir les conversations</button>'
+        + '<button onclick="chatAdoptCloudIdentity(\''+nEsc+'\')" style="background:#16a085;font-size:.78em;margin-left:4px;">\uD83D\uDD01 Aligner le code ami sur les autres appareils</button>'
         + '<div style="margin-top:8px;font-size:.7em;color:#9aa6b2;">Forcer le même code ami (transfert manuel d\u2019un appareil à l\u2019autre) :</div>'
-        + '<button onclick="chatExportIdentityCode(\''+nEsc+'\')" style="background:#7f8c8d;font-size:.76em;">📤 Exporter le code</button>'
-        + '<button onclick="chatImportIdentityCode(\''+nEsc+'\')" style="background:#7f8c8d;font-size:.76em;margin-left:4px;">📥 Importer un code</button>')
-     : '<p style="font-size:.72em;color:#7f8c8d;margin:0;">Désactivée par défaut. Active-la pour permettre à cet enfant d\u2019échanger avec des contacts validés.</p>');
+        + '<button onclick="chatExportIdentityCode(\''+nEsc+'\')" style="background:#7f8c8d;font-size:.76em;">\uD83D\uDCE4 Exporter le code</button>'
+        + '<button onclick="chatImportIdentityCode(\''+nEsc+'\')" style="background:#7f8c8d;font-size:.76em;margin-left:4px;">\uD83D\uDCE5 Importer un code</button>'
+        + '<div id="opt-msg-manage"></div>')
+     : '<p style="font-size:.72em;color:#7f8c8d;margin:0;">Suspendue : le code ami, les amis et l\u2019historique sont <b>conservés</b>. Réactive quand tu veux pour reprendre avec le même code.</p>');
+ if(on){ try{ _renderOptMsgManage(name); }catch(e){} }
 }
 async function optToggleMessaging(name){
  const prof = _chatLoad(name);
  if(prof.chatEnabled){
-  if(!confirm('Désactiver la messagerie pour '+name+' ?')) return;
+  if(!confirm('Suspendre la messagerie pour '+name+' ?\n\nLe code ami, les amis et l\u2019historique sont conservés. Tu pourras réactiver à tout moment avec le même code.')) return;
   chatDisableForProfile(name);
-  if(typeof toast==='function') toast('Messagerie désactivée.',1800);
+  if(typeof toast==='function') toast('\u23F8 Messagerie suspendue (identité conservée).',2200);
  } else {
-  if(typeof toast==='function') toast('Activation\u2026',1500);
+  if(typeof toast==='function') toast('Réactivation\u2026',1500);
   const res = await chatEnableForProfile(name);
-  if(res && res.ok){ if(typeof toast==='function') toast('✅ Messagerie activée !',2000); }
-  else { if(typeof toast==='function') toast('✅ Activée. Le code se synchronisera à la prochaine ouverture de la messagerie.',3500); }
+  if(res && res.ok){ if(typeof toast==='function') toast('\u25B6 Messagerie réactivée !',2000); }
+  else { if(typeof toast==='function') toast('\u25B6 Réactivée. Le code se synchronisera à la prochaine ouverture.',3200); }
  }
  renderOptMessaging(name);
  if(typeof chatRefreshBadges==='function') chatRefreshBadges();
