@@ -280,10 +280,13 @@ function renderConvShell(name){
   + '</div>'
   + (_msgReadOnly
      ? '<p style="font-size:.74em;color:#7f8c8d;text-align:center;margin-top:8px;">\uD83D\uDC41 Lecture seule (espace parent)</p>'
-     : ('<div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap;">'
-        + ['\uD83D\uDE00','\uD83D\uDE02','\u2764\uFE0F','\uD83D\uDC4D','\uD83C\uDF89','\uD83D\uDE22','\uD83D\uDE2E','\uD83C\uDF1F'].map(em=>'<button onclick="chatInsertEmoji(\''+em+'\')" style="font-size:1.1em;padding:2px 6px;background:rgba(255,255,255,.08);">'+em+'</button>').join('')
+     : ('<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">'
+        + CHAT_PHRASES.map(s=>'<button onclick="chatQuickSend(\''+s.replace(/'/g,"\\'")+'\')" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:6px 11px;font-size:.82em;">'+_e(s)+'</button>').join('')
         + '</div>'
-        + '<div style="display:flex;gap:6px;margin-top:6px;">'
+        + '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">'
+        + CHAT_STICKERS.map(s=>'<button onclick="chatQuickSend(\''+s+'\')" style="background:rgba(255,255,255,.08);border-radius:50%;width:38px;height:38px;font-size:19px;padding:0;line-height:1;">'+s+'</button>').join('')
+        + '</div>'
+        + '<div style="display:flex;gap:6px;margin-top:8px;">'
         + '<input type="text" id="msg-input" maxlength="1000" placeholder="Ton message\u2026" style="flex:1;" onkeydown="if(event.key===\'Enter\')chatSendCurrent()">'
         + '<button onclick="chatSendCurrent()" style="background:#27ae60;">Envoyer</button></div>'));
 }
@@ -297,6 +300,8 @@ function _renderBubbles(messages){
  const thread = document.getElementById('msg-thread'); if(!thread) return;
  const mine = _msgProf.chatId;
  const av = (_msgConv && _msgConv.avatar) || '\uD83E\uDDD9';
+ const pend = _chatPendingFor(_msgConv && _msgConv.id).map(q=>({ sender:mine, body:q.body, ts:q.ts, pending:true }));
+ messages = (messages||[]).concat(pend);
  const atBottom = !thread.innerHTML || (thread.scrollHeight - thread.scrollTop - thread.clientHeight) < 40;
  const prevTop = thread.scrollTop;
  const lastIdx = messages.length - 1;
@@ -307,7 +312,7 @@ function _renderBubbles(messages){
    const pop = (_msgJustSent && i===lastIdx) ? ' msg-pop' : '';
    return '<div class="msg-row msg-out"><div class="msg-bub msg-bub-out'+pop+'">'
     + '<div>'+_e(m.body)+'</div>'
-    + '<div class="msg-meta msg-meta-out"><span>'+t+'</span><span class="msg-ck">\u2713</span></div></div></div>';
+    + '<div class="msg-meta msg-meta-out"><span>'+t+'</span><span class="msg-ck">'+(m.pending?'\u23F3':'\u2713')+'</span></div></div></div>';
   }
   return '<div class="msg-row msg-in"><div class="msg-av">'+_e(av)+'</div>'
    + '<div class="msg-bub msg-bub-in"><div>'+_e(m.body)+'</div>'
@@ -317,9 +322,58 @@ function _renderBubbles(messages){
  if(atBottom){ thread.scrollTop = thread.scrollHeight; _msgHideJump(); }
  else { thread.scrollTop = prevTop; _msgShowJump(); }
 }
+// ── Phrases toutes prêtes + autocollants (non-lecteurs) + file d'attente hors-ligne ──
+var CHAT_PHRASES = ['Coucou !','Bravo !','Tu joues ?','Merci !','À bientôt !'];
+var CHAT_STICKERS = ['\uD83D\uDC4D','\u2B50','\uD83C\uDF89','\u2764\uFE0F','\uD83D\uDE00','\uD83D\uDC36','\uD83E\uDD84'];
+function _chatQueueLoad(){ try{ return JSON.parse(localStorage.getItem('chatQueue')||'[]'); }catch(e){ return []; } }
+function _chatQueueSave(q){ try{ localStorage.setItem('chatQueue', JSON.stringify(q)); }catch(e){} }
+function _chatEnqueue(prof,to,body){ const q=_chatQueueLoad(); const it={ sender:prof.chatId, to:to, body:body, ts:Date.now(), tmpId:'q'+Math.random().toString(36).slice(2,9) }; q.push(it); _chatQueueSave(q); return it; }
+function _chatQueueRemove(tmpId){ _chatQueueSave(_chatQueueLoad().filter(x=>x.tmpId!==tmpId)); }
+function _chatPendingFor(to){ if(!to||!_msgProf||!_msgProf.chatId) return []; return _chatQueueLoad().filter(x=>x.sender===_msgProf.chatId && x.to===to); }
+var _chatFlushing=false;
+async function _chatFlushQueue(prof){
+ if(_chatFlushing || !prof || !prof.chatId) return 0;
+ const mine=_chatQueueLoad().filter(x=>x.sender===prof.chatId);
+ if(!mine.length) return 0;
+ _chatFlushing=true; let sent=0;
+ try{
+  for(const it of mine){
+   try{
+    const r=await chatMsgSend(prof, it.to, it.body);
+    if(r && r.ok){ _chatQueueRemove(it.tmpId); sent++; }
+    else if(r && (r.error==='not_contact'||r.error==='blocked'||r.error==='empty')){ _chatQueueRemove(it.tmpId); } // jamais envoyable → on retire
+    else { break; } // réseau/serveur KO → on garde et on réessaiera
+   }catch(e){ break; }
+  }
+ } finally { _chatFlushing=false; }
+ return sent;
+}
+async function _chatSend(body){
+ if(!_msgConv) return;
+ body=String(body==null?'':body).trim(); if(!body) return;
+ const res = await chatMsgSend(_msgProf, _msgConv.id, body);
+ if(res && res.ok){
+  _convCache.push({ id:res.id, sender:_msgProf.chatId, body:body, ts:res.ts });
+  _msgConv.lastId = res.id || _msgConv.lastId;
+  _msgJustSent = true;
+  _chatMarkSeen(_msgProf, _msgConv.id, _msgConv.lastId);
+  _renderBubbles(_convCache);
+ } else if(res && (res.error==='not_contact'||res.error==='blocked'||res.error==='empty')){
+  const m = res.error==='not_contact' ? 'Vous n\u2019êtes plus amis.' : (res.error==='blocked' ? 'Ce contact est bloqué.' : 'Message vide.');
+  if(typeof toast==='function') toast('\u274C '+m, 2500);
+ } else {
+  _chatEnqueue(_msgProf, _msgConv.id, body); // hors-ligne → file d'attente
+  _msgJustSent = true;
+  _renderBubbles(_convCache);
+  if(typeof toast==='function') toast('Hors-ligne : message en attente d\u2019envoi.', 2400);
+ }
+}
+function chatQuickSend(text){ _chatSend(text); }
+
 var _convCache = [];
 var _msgJustSent = false;
 async function _convFetch(reset){
+ if(!reset && !_msgReadOnly){ try{ await _chatFlushQueue(_msgProf); }catch(e){} }
  if(!_msgConv) return;
  if(reset) _convCache = [];
  const since = reset ? 0 : _msgConv.lastId;
@@ -341,18 +395,8 @@ async function chatSendCurrent(){
  const inp = document.getElementById('msg-input'); if(!inp) return;
  const txt = inp.value.trim(); if(!txt) return;
  inp.value=''; inp.disabled=true;
- const res = await chatMsgSend(_msgProf, _msgConv.id, txt);
+ await _chatSend(txt);
  inp.disabled=false; inp.focus();
- if(res && res.ok){
-  _convCache.push({ id:res.id, sender:_msgProf.chatId, body:txt, ts:res.ts });
-  _msgConv.lastId = res.id || _msgConv.lastId;
-  _msgJustSent = true;
-  _renderBubbles(_convCache);
-  _chatMarkSeen(_msgProf, _msgConv.id, _msgConv.lastId);
- } else {
-  const m = (res && res.error==='not_contact') ? 'Vous n\u2019êtes plus amis.' : 'Échec de l\u2019envoi.';
-  if(typeof toast==='function') toast('❌ '+m, 2000);
- }
 }
 function _startConvPoll(){ _stopConvPoll(); _msgConvTimer = setInterval(()=>{ _convFetch(false); }, 4000); }
 function _stopConvPoll(){ if(_msgConvTimer){ clearInterval(_msgConvTimer); _msgConvTimer=null; } }
@@ -502,6 +546,7 @@ async function chatSyncTick(){
  if(name){
   await chatSyncIdentityFromCloud(name);              // adopte l'identité du cloud si dispo (tablette/téléphone)
   const prof = _chatLoad(name);
+  if(prof.chatEnabled && prof.chatId){ try{ await _chatFlushQueue(prof); }catch(e){} } // ré-essaie les messages hors-ligne
   if(prof.chatEnabled && prof.chatId && !_chatPushedOnce){ // s'assure que l'appareil déjà activé pousse son identité
    _chatPushedOnce = true;
    try{ if(typeof scheduleCloudSync==='function') scheduleCloudSync(); }catch(e){}
