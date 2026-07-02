@@ -16,7 +16,7 @@
 <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="stylesheet" href="assets/fonts/google-fonts.css">
-<link rel="stylesheet" href="css/styles.css?v=1038">
+<link rel="stylesheet" href="css/styles.css?v=1039">
 </head>
 <body id="BODY">
 <!-- ═══ SPLASH SCREEN (Chantier v8.5.1 — durée 10s narrative) ═══
@@ -40,9 +40,9 @@
        donc parfaitement adaptés quel que soit l'écran (PC large ou Android portrait). -->
   <div id="splash-stage">
    <!-- 1. La carte parchemin (fond de la scène) -->
-   <img src="assets/logo-main.webp?v=1038" alt="L'Odyssée des Chiffres" id="splash-logo">
+   <img src="assets/logo-main.webp?v=1039" alt="L'Odyssée des Chiffres" id="splash-logo">
    <!-- 2. La boussole : grosse au centre écran puis converge vers sa place sur la carte -->
-   <img src="assets/icon-512.png?v=1038" alt="" id="splash-compass" aria-hidden="true">
+   <img src="assets/icon-512.png?v=1039" alt="" id="splash-compass" aria-hidden="true">
    <!-- 3. Chiffres et symboles math qui volent en chaotique -->
    <div id="splash-orbits" aria-hidden="true">
     <span class="splash-item splash-num" style="--i:0">3</span>
@@ -149,7 +149,7 @@
  <!-- ═══ MENU ═══ -->
  <!-- ═══ ÉCRAN 1 : QUI JOUE ? ═══ -->
  <div id="v-menu">
-  <img src="assets/logo-main.webp?v=1038" alt="L'Odyssée des Chiffres" class="game-logo" id="game-logo-menu" loading="eager" decoding="async" style="max-width:min(110px,34%);width:100%;height:auto;display:block;margin:0 auto 10px;">
+  <img src="assets/logo-main.webp?v=1039" alt="L'Odyssée des Chiffres" class="game-logo" id="game-logo-menu" loading="eager" decoding="async" style="max-width:min(110px,34%);width:100%;height:auto;display:block;margin:0 auto 10px;">
 
   <!-- Aperçu du joueur sélectionné -->
   <div id="menu1-playercard" style="background:linear-gradient(135deg,rgba(241,196,15,.12),rgba(241,196,15,.03));border:1px solid rgba(241,196,15,.35);border-radius:16px;padding:16px;margin:0 auto 14px;max-width:420px;">
@@ -302,8 +302,9 @@
 
  <!-- ═══ ÉCRAN 2 : CHOISIS TON AVENTURE ═══ -->
  <div id="v-menu2" class="hidden">
+  <div class="back-top-bar" style="display:flex;justify-content:space-between;align-items:center;"><button class="back-top-btn" onclick="navBack()">&#8592; Retour</button><button class="back-top-btn" onclick="goHome()" style="background:#16a085;">&#127968; Accueil</button></div>
   <!-- Logo tout en haut, plus gros -->
-  <img src="assets/logo-main.webp?v=1038" alt="L'Odyssée des Chiffres" class="game-logo subj-logo" loading="eager" decoding="async" style="max-width:min(150px,42%);width:100%;height:auto;display:block;margin:6px auto 14px;">
+  <img src="assets/logo-main.webp?v=1039" alt="L'Odyssée des Chiffres" class="game-logo subj-logo" loading="eager" decoding="async" style="max-width:min(150px,42%);width:100%;height:auto;display:block;margin:6px auto 14px;">
 
   <!-- Barre : joueur (gauche, plus bas) · tableau de bord + étoiles (droite) -->
   <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;width:100%;max-width:560px;margin:8px auto 14px;flex-wrap:wrap;">
@@ -353,11 +354,9 @@
    <div id="hw-text" style="font-size:.75em;color:#bdc3c7;margin-top:3px;"></div>
   </div>
 
-  <!-- Bas : Retour (gauche) · Vue Parent (centre) · Accueil (droite) -->
-  <div style="display:flex;justify-content:space-between;align-items:center;width:100%;max-width:540px;margin:16px auto 0;">
-   <button onclick="navBack()" style="background:#555;font-size:.8em;padding:7px 14px;">&#8592; Retour</button>
+  <!-- Bas : Vue Parent (centré) — Retour/Accueil déplacés en haut -->
+  <div style="display:flex;justify-content:center;align-items:center;width:100%;max-width:540px;margin:16px auto 0;">
    <button onclick="openParent()" style="background:#555;font-size:.78em;padding:6px 12px;">&#128106; Vue Parent</button>
-   <button onclick="goHome()" style="background:#16a085;font-size:.8em;padding:7px 14px;">&#127968; Accueil</button>
   </div>
  </div>
 
@@ -441,7 +440,7 @@
  <!-- ═══ CHOIX DE L'AVENTURE (3 niveaux) — v10.1.0 ═══ -->
  <div id="v-odyssey-select" class="hidden">
   <div class="back-top-bar"><button class="back-top-btn" onclick="navBack()">&#8592; Retour</button></div>
-  <img src="assets/logo-main.webp?v=1038" alt="L'Odyssée des Chiffres" class="game-logo subj-logo" loading="eager" decoding="async" style="max-width:min(140px,40%);width:100%;height:auto;display:block;margin:6px auto 6px;">
+  <img src="assets/logo-main.webp?v=1039" alt="L'Odyssée des Chiffres" class="game-logo subj-logo" loading="eager" decoding="async" style="max-width:min(140px,40%);width:100%;height:auto;display:block;margin:6px auto 6px;">
   <h2 id="ody-sel-title" style="margin:2px 0 2px;">L'Odyssée : l'aventure mathématique</h2>
   <p id="ody-sel-sub" style="color:#bdc3c7;font-size:.9em;margin:0 0 14px;">Choisis ton aventure</p>
 
@@ -531,17 +530,13 @@
    <button class="back-top-btn" onclick="goHome()" style="background:#16a085;">&#127968; Accueil</button>
   </div>
   
-  <img src="assets/logo-circle.webp?v=1038" alt="" class="page-logo-circle" aria-hidden="true">
+  <img src="assets/logo-circle.webp?v=1039" alt="" class="page-logo-circle" aria-hidden="true">
   <h3>&#128202; Tableau de Bord &mdash; <span id="dash-player-name" style="color:#f1c40f;"></span></h3>
   <div class="tabs" id="stabs">
-   <button class="tab active" onclick="stab('hero')"><span class="tab-wrap"><span>&#129464;</span><span class="tab-lbl">Héros</span></span></button>
-   <button class="tab" onclick="stab('scores')"><span class="tab-wrap"><span>&#127942;</span><span class="tab-lbl">Classement</span></span></button>
-   <button class="tab" onclick="stab('stats')"><span class="tab-wrap"><span>&#128200;</span><span class="tab-lbl">Stats</span></span></button>
-   <button class="tab" onclick="stab('milestones')"><span class="tab-wrap"><span>&#127942;</span><span class="tab-lbl">Paliers</span></span></button>
-   <button class="tab" onclick="stab('levels')"><span class="tab-wrap"><span>&#128274;</span><span class="tab-lbl">Niveaux</span></span></button>
-   <button class="tab" onclick="stab('revision')"><span class="tab-wrap"><span>&#128214;</span><span class="tab-lbl">Révision</span></span></button>
-   <button class="tab" onclick="stab('avatar')"><span class="tab-wrap"><span>&#127912;</span><span class="tab-lbl">Style</span></span></button>
-   <button class="tab" onclick="stab('figurines')"><span class="tab-wrap"><span>&#128167;</span><span class="tab-lbl">Ma collection</span></span></button>
+   <button class="tab active" onclick="stab('hero')"><span class="tab-wrap"><span>🧙</span><span class="tab-lbl">Héros et style</span></span></button>
+   <button class="tab" onclick="stab('figurines')"><span class="tab-wrap"><span>🎴</span><span class="tab-lbl">Ma collection</span></span></button>
+   <button class="tab" onclick="stab('milestones')"><span class="tab-wrap"><span>🏆</span><span class="tab-lbl">Révisions et paliers</span></span></button>
+   <button class="tab" onclick="stab('stats')"><span class="tab-wrap"><span>📈</span><span class="tab-lbl">Classement et stats</span></span></button>
   </div>
   <div id="tab-hero">
    <div id="tab-hero-header">
@@ -550,78 +545,50 @@
     <div class="hero-stat"><div class="hero-stat-val" id="th-figs">0</div><div class="hero-stat-lbl">🎴 Figurines</div></div>
     <div class="hero-stat"><div class="hero-stat-val" id="th-badges">0</div><div class="hero-stat-lbl">🏅 Badges</div></div>
    </div>
-   <button class="accordion">&#127922; Boutique</button>
-   <div class="panel">
-    <div style="font-size:.82em;font-weight:700;color:#f1c40f;margin:4px 0 6px;">&#10024; Améliorations de Héros</div>
-    <div id="p-skills"></div>
-    <div style="font-size:.82em;font-weight:700;color:#f1c40f;margin:14px 0 6px;border-top:1px solid rgba(255,255,255,.1);padding-top:10px;">&#129513; Objets consommables</div>
-    <div class="skill-item" style="flex-direction:column;align-items:flex-start;gap:2px;">
-      <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
-        <span>&#129514; Potion de Vie</span><button onclick="buyItem('potion',10)">10 &#11088;</button>
-      </div>
-      <div style="font-size:.68em;color:rgba(255,255,255,.55);line-height:1.3;">Restaure <b>+1 ❤️ de vie</b> immédiatement pendant une partie. Utilise le bouton 🧪 en jeu.</div>
-    </div>
-    <div class="skill-item" style="flex-direction:column;align-items:flex-start;gap:2px;">
-      <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
-        <span>&#128163; Bombe Réponse</span><button onclick="buyItem('bomb',20)">20 &#11088;</button>
-      </div>
-      <div style="font-size:.68em;color:rgba(255,255,255,.55);line-height:1.3;">Répond <b>automatiquement et correctement</b> à la question en cours. Utilise le bouton 💣 en jeu.</div>
-    </div>
-   </div>
-   <button class="accordion" onclick="renderFigurinesShop('none');_shopSearch='';">&#128167; Figurines à collectionner</button>
-   <div class="panel"><div id="p-figurines"><div style="color:rgba(255,255,255,.4);font-size:.8em;text-align:center;padding:10px;">Clique sur l'accordéon pour voir les figurines</div></div></div>
-   <button class="accordion">&#127941; Badges</button>
-   <div class="panel" id="p-badges"></div>
-   <button class="accordion">&#128197; Quêtes du Jour</button>
-   <div class="panel" id="p-quests"></div>
-  </div>
-  <div id="tab-scores" class="hidden">
-   <h3 style="margin:6px 0;">&#127942; Classement</h3><div id="p-lb"></div>
-   <h3 style="margin:10px 0 6px;">&#129351; Mes Records</h3><div id="p-records"></div>
-  </div>
-  <div id="tab-stats" class="hidden">
-   <h3 style="margin:6px 0;">&#128200; 7 dernières parties</h3>
-   <div id="p-chart" class="chart-container"></div>
-   <div id="p-opstats" style="margin-top:8px;font-size:.83em;"></div>
-   <hr style="border:0;border-top:1px solid rgba(255,255,255,.1);margin:14px 0;">
-   <h3 style="margin:6px 0;">&#128220; Historique détaillé</h3>
-   <div id="p-history"></div>
-  </div>
-  <div id="tab-milestones" class="hidden">
-   <h3 style="margin:6px 0;">&#127942; Paliers à conquérir</h3>
-   <p style="font-size:.8em;color:#bdc3c7;margin:3px 0 10px;">Objectifs long terme pour progresser au fil des parties !</p>
-   <div id="milestones-list"></div>
-  </div>
-  <div id="tab-levels" class="hidden">
-   <h3 style="margin:6px 0;">&#128274; Progression des Niveaux</h3>
-   <div id="p-levels"></div>
-  </div>
-  <div id="tab-revision" class="hidden">
-   <h3 style="margin:6px 0;">&#128214; Erreurs récentes</h3>
-   <div id="p-errors"></div>
-   <button onclick="startRevision()" id="btn-revision" class="hidden" style="margin-top:8px;width:100%;background:#c0392b;">&#128257; Rejouer mes erreurs</button>
-   <hr style="border:0;border-top:1px solid rgba(255,255,255,.1);margin:14px 0;">
-   <h3 style="margin:6px 0;">&#10006;&#65039; Tables de multiplication</h3>
-   <p style="font-size:.8em;color:#bdc3c7;margin:3px 0 8px;">Réviser les tables de multiplication de 1 à 10.</p>
-   <button onclick="openMultTable()" style="width:100%;background:#2980b9;">&#10006;&#65039; Ouvrir les tables de multiplication</button>
-  </div>
-  <div id="tab-avatar" class="hidden">
-   <h3 style="margin:6px 0;">&#127912; Personnalisation</h3>
-   <div id="p-ava-disp" style="margin:8px 0;font-size:2.5em;"></div>
-   <div id="p-title-disp" style="font-size:.85em;color:#f1c40f;margin-bottom:8px;"></div>
-   <button class="accordion">&#128512; Avatar</button>
+   <div style="text-align:right;margin:4px 0;"><button onclick="dashCollapseAll('tab-hero')" style="background:rgba(255,255,255,.1);font-size:.72em;padding:4px 10px;">⬍ Tout replier</button></div>
+   <div id="p-ava-disp" style="margin:4px 0;font-size:2.2em;text-align:center;"></div>
+   <div id="p-title-disp" style="font-size:.85em;color:#f1c40f;text-align:center;margin-bottom:6px;"></div>
+   <button class="accordion" onclick="renderFigurinesShop('none');_shopSearch='';">🧩 Boutique de figurines<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Échange tes étoiles contre des figurines</span></button>
+   <div class="panel"><div id="p-figurines"><div style="color:rgba(255,255,255,.4);font-size:.8em;text-align:center;padding:10px;">Clique pour voir les figurines</div></div></div>
+   <button class="accordion">😀 Avatar<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Choisis ton personnage</span></button>
    <div class="panel" id="p-avatars"></div>
-   <button class="accordion">&#128266; Son de Victoire</button>
+   <button class="accordion">🔊 Son de victoire<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Ta petite musique quand tu gagnes</span></button>
    <div class="panel" id="p-vsounds"></div>
-   <button class="accordion">&#128126; Skins de Monstres</button>
+   <button class="accordion">👾 Skins de monstres<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Change l'allure des monstres</span></button>
    <div class="panel" id="p-skins"></div>
-   <button class="accordion">&#127941; Titres de Héros</button>
+   <button class="accordion">🏵️ Titres de héros<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Débloque des titres à afficher</span></button>
    <div class="panel" id="p-titles"></div>
   </div>
   <div id="tab-figurines" class="hidden">
-   <h3 style="margin:6px 0;">&#128167; Ma Collection de Figurines</h3>
+   <h3 style="margin:6px 0;">🎴 Ma collection de figurines</h3>
    <div id="fig-count-hdr" class="fig-count"></div>
    <div id="p-col-figurines"></div>
+  </div>
+  <div id="tab-milestones" class="hidden">
+   <div style="text-align:right;margin:4px 0;"><button onclick="dashCollapseAll('tab-milestones')" style="background:rgba(255,255,255,.1);font-size:.72em;padding:4px 10px;">⬍ Tout replier</button></div>
+   <button class="accordion">📖 Révisions<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Rejoue tes erreurs récentes</span></button>
+   <div class="panel"><div id="p-errors"></div><button onclick="startRevision()" id="btn-revision" class="hidden" style="margin-top:8px;width:100%;background:#c0392b;">🔁 Rejouer mes erreurs</button></div>
+   <button class="accordion">✖️ Tables de multiplication<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Entraîne-toi aux tables de 1 à 10</span></button>
+   <div class="panel"><button onclick="openMultTable()" style="width:100%;background:#2980b9;">✖️ Ouvrir les tables de multiplication</button></div>
+   <button class="accordion">🔒 Niveaux<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Ta progression de niveau en niveau</span></button>
+   <div class="panel" id="p-levels"></div>
+   <button class="accordion">🏆 Paliers à conquérir<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Objectifs long terme</span></button>
+   <div class="panel"><div id="milestones-list"></div></div>
+   <button class="accordion">🏅 Badges<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Tes récompenses débloquées</span></button>
+   <div class="panel" id="p-badges"></div>
+  </div>
+  <div id="tab-stats" class="hidden">
+   <div style="text-align:right;margin:4px 0;"><button onclick="dashCollapseAll('tab-stats')" style="background:rgba(255,255,255,.1);font-size:.72em;padding:4px 10px;">⬍ Tout replier</button></div>
+   <button class="accordion">📅 Quêtes du jour<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Tes défis du jour</span></button>
+   <div class="panel" id="p-quests"></div>
+   <button class="accordion">🏆 Classement<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Compare-toi aux autres joueurs</span></button>
+   <div class="panel" id="p-lb"></div>
+   <button class="accordion">🥇 Mes records<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Tes meilleurs scores</span></button>
+   <div class="panel" id="p-records"></div>
+   <button class="accordion">📊 7 dernières parties<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Ta courbe de progression</span></button>
+   <div class="panel"><div id="p-chart" class="chart-container"></div><div id="p-opstats" style="margin-top:8px;font-size:.83em;"></div></div>
+   <button class="accordion">📜 Historique détaillé<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Le détail de tes parties</span></button>
+   <div class="panel" id="p-history"></div>
   </div>
  </div>
 
@@ -714,7 +681,7 @@
  <div id="v-parent" class="hidden">
   <div class="back-top-bar" style="display:flex;justify-content:space-between;align-items:center;"><button class="back-top-btn" onclick="navBack()">&#8592; Retour</button><button class="back-top-btn" onclick="goHome()" style="background:#16a085;">&#127968; Accueil</button></div>
   
-  <img src="assets/logo-circle.webp?v=1038" alt="" class="page-logo-circle" aria-hidden="true">
+  <img src="assets/logo-circle.webp?v=1039" alt="" class="page-logo-circle" aria-hidden="true">
   <h2>&#128106; Vue Parent</h2>
   <div id="parent-lock">
    <p style="font-size:.9em;margin:4px 0;">Code parent :</p>
@@ -976,7 +943,7 @@
 <script src="js/14-primaire.js"></script>
   <script src="js/15-college.js"></script>
 <script src="js/17-messaging.js"></script>
-<script src="js/11-init.js?v=1038"></script>
+<script src="js/11-init.js?v=1039"></script>
 
 <!-- Enregistrement du Service Worker (mode hors-ligne + installation PWA) -->
 <script>

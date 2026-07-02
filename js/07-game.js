@@ -110,7 +110,7 @@ function _setSubjectLogos(){
  try{
   const fr = (typeof GM!=='undefined' && GM && GM.subject==='fr');
   document.querySelectorAll('img.subj-logo').forEach(function(im){
-   im.src = fr ? 'assets/logo-mots.webp?v=1038' : 'assets/logo-main.webp?v=1038';
+   im.src = fr ? 'assets/logo-mots.webp?v=1039' : 'assets/logo-main.webp?v=1039';
    im.alt = fr ? "L'Odyssée des Mots" : "L'Odyssée des Chiffres";
   });
   const lbl = document.getElementById('ody-btn-label');
@@ -2166,6 +2166,7 @@ function animP(){
 // SKILLS / BOUTIQUE
 // ═══════════════════════════════════════════════════════
 function renderSkills(){
+ if(!$('p-skills'))return;
  $('p-skills').innerHTML=[['shield','🛡️ Armure (+1 ❤️ max)'],['sword','⚔️ Puissance (+2 pts/rép.)'],['clock','⏳ Sablier (+5s/question)']].map(([s,label])=>{
   const lvl=P.skills[s]||0,price=(lvl+1)*40;
   return `<div class="skill-item"><span>${label} Niv.${lvl}</span><button onclick="buySkill('${s}')"${lvl>=3?' disabled':''}>${lvl>=3?'MAX':price+' ⭐'}</button></div>`;

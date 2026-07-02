@@ -353,12 +353,12 @@ function goHome(){
 function toggleSettings(){
  const open=!$('v-settings').classList.contains('hidden');
  if(open){navBack();}
- else{navTo('v-settings');if($('dash-player-name'))$('dash-player-name').textContent=P.name||'';stab('hero');if($('th-stars'))$('th-stars').textContent=P.stars||0;if($('th-figs'))$('th-figs').textContent=(P.ownedFigurines||[]).length;if($('th-badges'))$('th-badges').textContent=(P.badgesEarned||[]).length;renderSkills();renderBadges();renderQuests();}
+ else{navTo('v-settings');if($('dash-player-name'))$('dash-player-name').textContent=P.name||'';stab('hero');if($('th-stars'))$('th-stars').textContent=P.stars||0;if($('th-figs'))$('th-figs').textContent=(P.ownedFigurines||[]).length;if($('th-badges'))$('th-badges').textContent=(P.badgesEarned||[]).length;}
 }
 function closeSettings(){navBack();}
 function stab(name){
- const ts=['hero','scores','stats','milestones','levels','revision','avatar','figurines'];
- ts.forEach(t=>$('tab-'+t).classList.toggle('hidden',t!==name));
+ const ts=['hero','figurines','milestones','stats'];
+ ts.forEach(t=>$('tab-'+t)&&$('tab-'+t).classList.toggle('hidden',t!==name));
  $('stabs').querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',ts[i]===name));
  if(name==='hero'){
   if($('dash-player-name'))$('dash-player-name').textContent=P.name||'';
@@ -366,15 +366,14 @@ function stab(name){
   if($('th-lvl')){const xp=P.xp||0;let lvl=1;for(let i=0;i<XP_TABLE.length;i++){if(xp>=XP_TABLE[i])lvl=i+2;else break;}$('th-lvl').textContent=lvl;}
   if($('th-figs'))$('th-figs').textContent=(P.ownedFigurines||[]).length;
   if($('th-badges'))$('th-badges').textContent=(P.badgesEarned||[]).length;
+  renderAvatars();renderVSounds();renderSkins();renderTitles();       // « Héros et style »
  }
- if(name==='revision')renderErrors();
- if(name==='avatar'){renderAvatars();renderVSounds();renderSkins();renderTitles();}
- if(name==='scores'){renderLB();renderRecords();}
- if(name==='stats'){renderChart();renderOpStats();if(typeof renderHistory==='function')renderHistory();}
- if(name==='levels')renderLevelUnlocks();
- if(name==='milestones')renderMilestones();
- if(name==='figurines')renderFigCollection();
+ if(name==='figurines')renderFigCollection();                          // « Ma collection »
+ if(name==='milestones'){ renderErrors();renderLevelUnlocks();renderMilestones();renderBadges(); } // « Révisions et paliers »
+ if(name==='stats'){ renderQuests();renderLB();renderRecords();renderChart();renderOpStats();if(typeof renderHistory==='function')renderHistory(); } // « Classement et stats »
 }
+// Replie tous les panneaux d'accordéon d'un onglet.
+function dashCollapseAll(tabId){ const t=$(tabId); if(!t)return; t.querySelectorAll('.panel').forEach(p=>{ p.style.display='none'; }); }
 function returnMenu(){
  gameActive=false;clearPendingTimers();clearMonsterSpeech();
  // v8.7.9 (O1) : annuler aussi les boucles requestAnimationFrame en cours
