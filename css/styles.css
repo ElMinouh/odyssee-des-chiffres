@@ -1672,7 +1672,9 @@ html[data-appearance="light"] .wr-advice h4{color:#7d3c98 !important;}
  margin: 0 auto 6px;
  user-select: none;
  -webkit-user-drag: none;
- filter: drop-shadow(0 4px 20px rgba(0,0,0,.5));
+ -webkit-mask-image: radial-gradient(125% 125% at 50% 48%, #000 60%, transparent 100%);
+ mask-image: radial-gradient(125% 125% at 50% 48%, #000 60%, transparent 100%);
+ filter: drop-shadow(0 3px 14px rgba(255,241,204,.6)) drop-shadow(0 6px 18px rgba(20,60,90,.3));
  animation: logoFloat 6s ease-in-out infinite;
 }
 

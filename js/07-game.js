@@ -108,13 +108,13 @@ function _setAvatarZone(id){
 // « L'Odyssée des Chiffres » en maths. Les <img class="subj-logo"> sont basculées.
 function _setSubjectLogos(){
  try{
-  const fr = (typeof GM!=='undefined' && GM && GM.subject==='fr');
+  const isMath = !(typeof GM!=='undefined' && GM && GM.subject && GM.subject!=='math'); // maths ou défaut
   document.querySelectorAll('img.subj-logo').forEach(function(im){
-   im.src = fr ? 'assets/logo-mots.webp?v=1040' : 'assets/logo-main.webp?v=1040';
-   im.alt = fr ? "L'Odyssée des Mots" : "L'Odyssée des Chiffres";
+   im.src = isMath ? 'assets/logo-main.webp?v=1041' : 'assets/logo-savoir.webp?v=1041';
+   im.alt = isMath ? "L'Odyssée des Chiffres" : "L'Odyssée du Savoir";
   });
   const lbl = document.getElementById('ody-btn-label');
-  if(lbl) lbl.textContent = fr ? "L'ODYSSÉE : L'AVENTURE LITTÉRAIRE" : "L'ODYSSÉE : L'AVENTURE MATHÉMATIQUE";
+  if(lbl) lbl.textContent = isMath ? "L'ODYSSÉE : L'AVENTURE MATHÉMATIQUE" : "L'ODYSSÉE DU SAVOIR";
  }catch(e){}
 }
 function openOdysseeSelect(){
