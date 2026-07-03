@@ -30,12 +30,19 @@ function checkPin(){
  }
 }
 function ptab(name){
- ['rapport','objectifs','controles','options','figurines'].forEach(t=>$('ptab-'+t).classList.toggle('hidden',t!==name));
- document.querySelectorAll('#v-parent .tab').forEach((b,i)=>b.classList.toggle('active',['rapport','objectifs','controles','options','figurines'][i]===name));
- if(name==='rapport'){renderReport();renderReportView();}
- if(name==='controles'){loadBlockSettings();loadFilterSettings();if(typeof onFilterSubjectChange==='function')onFilterSubjectChange();if(typeof loadBlockedSubjects==='function')loadBlockedSubjects();}
- if(name==='objectifs'){ if(typeof onHwLevelChange==='function') onHwLevelChange(); if(typeof loadHomework==='function') loadHomework(); }
- if(name==='options'){setTimeout(()=>{if(typeof optFillProfiles==='function')optFillProfiles(); if(typeof renderProfileManager==='function')renderProfileManager();},60);}
+ const ts=['suivi','encadrement','comptes','figurines','avance'];
+ ts.forEach(t=>$('ptab-'+t)&&$('ptab-'+t).classList.toggle('hidden',t!==name));
+ document.querySelectorAll('#v-parent .tab').forEach((b,i)=>b.classList.toggle('active',ts[i]===name));
+ if(name==='suivi'){renderReport();renderReportView();}
+ if(name==='encadrement'){
+  if(typeof onHwLevelChange==='function')onHwLevelChange();
+  if(typeof loadHomework==='function')loadHomework();
+  loadBlockSettings();loadFilterSettings();
+  if(typeof onFilterSubjectChange==='function')onFilterSubjectChange();
+  if(typeof loadBlockedSubjects==='function')loadBlockedSubjects();
+  _encFillMsgPlayer();
+ }
+ if(name==='comptes'){setTimeout(()=>{ if(typeof optFillProfiles==='function')optFillProfiles(); if(typeof renderProfileManager==='function')renderProfileManager(); _fillRenamePlayer(); },60);}
  if(name==='figurines'){
   const sel=$('pfig-player');if(!sel)return;
   const cu=localStorage.getItem('customPlayerName');
@@ -46,6 +53,80 @@ function ptab(name){
   renderParentFigurines();
  }
 }
+// Sélecteur d'enfant pour la messagerie dans l'onglet Encadrement.
+function _encFillMsgPlayer(){
+ const sel=$('enc-msg-player'); if(!sel) return;
+ const names=getRoster();
+ sel.innerHTML=names.map(n=>`<option>${n}</option>`).join('');
+ const cur=(P&&P.name&&names.includes(P.name))?P.name:(names[0]||'');
+ if(cur){ sel.value=cur; if(typeof renderOptMessaging==='function') renderOptMessaging(cur); }
+ else if($('opt-messaging')){ $('opt-messaging').innerHTML='<span style="font-size:.78em;color:#bdc3c7;">Ajoute un profil dans « Comptes ».</span>'; }
+}
+function _fillRenamePlayer(){
+ const sel=$('rename-player'); if(!sel) return;
+ const names=getRoster();
+ sel.innerHTML=names.map(n=>`<option>${n}</option>`).join('');
+ if(P&&P.name&&names.includes(P.name)) sel.value=P.name;
+}
+// ── Renommer un profil (migre toutes les données liées au nom) ──
+function renameProfileUI(){
+ const sel=$('rename-player'), inp=$('rename-new'), msg=$('rename-msg');
+ if(!sel||!inp) return;
+ const oldN=sel.value, newN=(inp.value||'').trim();
+ const say=(ok,t)=>{ if(msg){ msg.style.color=ok?'#2ecc71':'#e74c3c'; msg.textContent=t; } };
+ if(!oldN) return say(false,'Choisis un profil.');
+ if(!newN) return say(false,'Entre un nouveau prénom.');
+ if(newN===oldN) return say(false,'C\u2019est déjà ce prénom.');
+ const r=renameProfile(oldN,newN);
+ say(r.ok,r.msg);
+ if(r.ok){ inp.value=''; _fillRenamePlayer(); if(typeof optFillProfiles==='function')optFillProfiles(); if(typeof renderProfileManager==='function')renderProfileManager(); if(typeof fillPlayerSelect==='function')fillPlayerSelect(); }
+}
+function renameProfile(oldN,newN){
+ try{
+  const roster=getRoster();
+  const idx=roster.findIndex(x=>x===oldN);
+  if(idx<0) return {ok:false,msg:'Profil introuvable.'};
+  if(roster.some(x=>x.toLowerCase()===newN.toLowerCase())) return {ok:false,msg:'Ce prénom existe déjà.'};
+  // clés par-nom : user_ (profil complet) + block_ (horaires)
+  ['user_','block_'].forEach(pre=>{ const v=localStorage.getItem(pre+oldN); if(v!=null){ localStorage.setItem(pre+newN,v); localStorage.removeItem(pre+oldN); } });
+  // nom interne au profil
+  try{ const raw=localStorage.getItem('user_'+newN); if(raw){ const d=JSON.parse(raw); d.name=newN; localStorage.setItem('user_'+newN,JSON.stringify(d)); } }catch(e){}
+  // roster (même position)
+  roster[idx]=newN; setRoster(roster);
+  // anniversaire
+  try{ const bd=getBirthdays(); if(bd[oldN]){ setBirthday(newN,bd[oldN].m,bd[oldN].d); setBirthday(oldN,0,0); } }catch(e){}
+  // identité messagerie
+  try{ const cp=JSON.parse(localStorage.getItem('chatProfiles')||'{}'); if(cp[oldN]){ cp[newN]=cp[oldN]; delete cp[oldN]; localStorage.setItem('chatProfiles',JSON.stringify(cp)); } }catch(e){}
+  // profil courant + nom personnalisé
+  if(typeof P!=='undefined' && P && P.name===oldN){ P.name=newN; if(typeof saveProfileNow==='function') saveProfileNow(); }
+  if(localStorage.getItem('customPlayerName')===oldN) localStorage.setItem('customPlayerName',newN);
+  return {ok:true,msg:'\u2705 Profil renommé : '+newN};
+ }catch(e){ return {ok:false,msg:'Erreur lors du renommage.'}; }
+}
+// ── Guides « pas à pas » (icône ⓘ) ──
+var PARENT_GUIDES = {
+ objectifs:{t:'📚 Devoir du jour',s:['Choisis l\u2019enfant concerné.','Choisis la matière, le type de questions et le niveau.','Choisis le nombre de questions et la récompense en étoiles.','Touche « Donner » : l\u2019enfant verra le devoir sur son écran d\u2019accueil.']},
+ horaire:{t:'⏰ Horaires autorisés',s:['Choisis l\u2019enfant.','Règle l\u2019heure de début et de fin autorisées.','Coche « Activer le blocage horaire ».','Touche « Enregistrer » : en dehors de ces heures, le jeu sera bloqué.']},
+ filtres:{t:'🔢 Types de questions',s:['Choisis l\u2019enfant, puis la matière.','Décoche les types de questions à retirer (ex. divisions).','Touche « Enregistrer » : ces questions ne seront plus posées.']},
+ matieres:{t:'📖 Matières autorisées',s:['Choisis l\u2019enfant.','Coche les matières à interdire (ex. ne garder que les maths).','Touche « Enregistrer ».']},
+ cloud:{t:'☁️ Sauvegarde en ligne',s:['Sur l\u2019appareil principal : un code s\u2019affiche pour ce profil. Note-le.','Sur un autre appareil : ouvre cette même section.','Entre le code dans « Récupérer depuis un code » puis touche « Récupérer ».','Le profil apparaît alors sur ce nouvel appareil.']},
+ fichier:{t:'💾 Sauvegarde fichier',s:['Touche « Télécharger le fichier » : un fichier .json est enregistré.','Range ce fichier en lieu sûr (clé USB, cloud perso…).','Pour restaurer : touche « Importer un fichier » et choisis-le.']},
+ messagerie:{t:'✉️ Messagerie',s:['Choisis l\u2019enfant.','« Suspendre » met en pause sans perdre le code ni les amis ; « Réactiver » reprend.','« Voir les conversations » permet de surveiller les échanges.','Dans la liste des contacts, « Bloquer » empêche un contact d\u2019écrire.','Les demandes d\u2019ami en attente s\u2019acceptent ou se refusent ici.']},
+ profils:{t:'👥 Profils',s:['Ajoute un enfant en tapant son prénom puis « Ajouter ».','Pour renommer : choisis le profil, tape le nouveau prénom, touche « Renommer » (amis et progression sont conservés).','Pour retirer un profil, utilise la croix (sa progression reste sur l\u2019appareil).']},
+ synchro:{t:'🔄 Réparer la synchronisation',s:['Va sur l\u2019appareil principal (celui qui a les bonnes données, en général le PC).','Touche « Envoyer vers les autres appareils ».','Sur les autres appareils (tablette, téléphone), ferme puis rouvre le jeu.','Les profils et messages sont alors identiques partout.']},
+ diagnostic:{t:'🩺 Diagnostic',s:['Touche « Afficher le diagnostic » : un rapport technique apparaît.','Touche « Tout copier ».','Colle ce rapport dans un message si tu demandes de l\u2019aide.']}
+};
+function pGuide(key){
+ const g=PARENT_GUIDES[key]; if(!g) return;
+ let ov=document.getElementById('p-guide-ov');
+ if(!ov){ ov=document.createElement('div'); ov.id='p-guide-ov'; ov.className='p-guide-ov hidden'; ov.onclick=function(e){ if(e.target===ov) pGuideClose(); }; document.body.appendChild(ov); }
+ ov.innerHTML='<div class="p-guide-box">'
+  +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span style="font-weight:700;color:#7fd4f0;">'+g.t+' — pas à pas</span><span onclick="pGuideClose()" style="cursor:pointer;font-size:1.2em;color:#9fc3cf;">\u2715</span></div>'
+  +g.s.map((st,i)=>'<div class="p-guide-step"><span class="p-guide-num">'+(i+1)+'</span><span>'+st+'</span></div>').join('')
+  +'<button onclick="pGuideClose()" style="margin-top:8px;width:100%;background:#3aa0c4;">J\u2019ai compris</button></div>';
+ ov.classList.remove('hidden');
+}
+function pGuideClose(){ const ov=document.getElementById('p-guide-ov'); if(ov) ov.classList.add('hidden'); }
 function renderParentFigurines(){
  // Précharge les portraits si pas déjà fait. Re-rend une fois prêt.
  if(typeof loadPortraits==='function'&&!_portraitsLoaded){
@@ -1321,7 +1402,6 @@ function optSelectProfile(){
  if(typeof renderCloudPanel==='function') renderCloudPanel();
  renderOptBirthday(name);
  renderOptResetOne(name);
- if(typeof renderOptMessaging==="function") renderOptMessaging(name);
 }
 function renderOptBirthday(name){
  const box=$('opt-birthday'); if(!box) return;
