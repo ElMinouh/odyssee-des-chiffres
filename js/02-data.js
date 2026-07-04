@@ -886,6 +886,12 @@ const HERO_TITLES=[
  {id:'sage',     label:'Sage des Fractions',   ok:p=>(p.badgesEarned||[]).includes('fractions'),col:'#2ecc71'},
  {id:'legende',  label:'Légende Mathématique', ok:p=>(p.stars||0)>=500,                      col:'#f1c40f'},
  {id:'maitre',   label:"Maître de l'Odyssée",  ok:p=>(p.history||[]).length>=20,             col:'#e74c3c'},
+ {id:'explorateur',label:'Explorateur du Savoir',ok:p=>(p.history||[]).length>=40,            col:'#1abc9c'},
+ {id:'erudit',     label:'Érudit Polyvalent',   ok:p=>(p.stars||0)>=1000,                     col:'#16a085'},
+ {id:'stratege',   label:'Stratège Aguerri',    ok:p=>((p.badgesEarned||[]).length)>=8,       col:'#8e44ad'},
+ {id:'virtuose',   label:'Virtuose des Nombres',ok:p=>(p.badgesEarned||[]).includes('score100'),col:'#d35400'},
+ {id:'conquerant', label:'Conquérant des Îles', ok:p=>(p.stars||0)>=2000,                     col:'#c0392b'},
+ {id:'grandmaitre',label:'Grand Maître du Savoir',ok:p=>(p.stars||0)>=5000&&(p.history||[]).length>=60,col:'#f39c12'},
 ];
 const SKINS=[
  {id:'default',label:'Classiques',  prv:'👾🧟🐉',price:0,  m:{n:['👾','🧟','🐉','🦄','🤖','🧌'],b:['👹','💀','🔥','🐲'],g:['✨','🌟','💎','👑']}},
@@ -893,13 +899,31 @@ const SKINS=[
  {id:'space',  label:'Espace 🚀',   prv:'👽🤖🛸',price:160,m:{n:['👽','🛸','☄️','🌑','💫','🌀'],b:['⚫','🌌','🔭'],g:['⭐','🌟','💫']}},
  {id:'food',   label:'Gourmand 🍕', prv:'🍕🍟🍩',price:120,m:{n:['🍕','🍟','🍩','🌮','🍔','🍦'],b:['🎂','🍰','🧁'],g:['🍭','🍬','🍫']}},
  {id:'horror', label:'Horreur 💀',  prv:'💀👻🕷️',price:200,m:{n:['💀','👻','🕷️','🦇','🕸️','☠️'],b:['🧟','🧛','👹'],g:['💎','🔮','🩸']}},
+ {id:'ocean',  label:'Océan 🌊',   prv:'🐙🦑🐠',price:150,m:{n:['🐙','🦑','🐠','🦀','🐡','🦞'],b:['🐋','🦈','🐊'],g:['🐚','🪸','💠']}},
+ {id:'mythic', label:'Mythique 🐉',prv:'🐉🦅🦂',price:220,m:{n:['🐉','🦅','🦂','🐍','🦎','🕊️'],b:['🐲','🦖','🦕'],g:['🔱','⚜️','🗿']}},
+ {id:'ice',    label:'Glace ❄️',   prv:'☃️🧊🐧',price:150,m:{n:['☃️','🧊','🐧','🦭','🐻‍❄️','❄️'],b:['🥶','🧟','🌬️'],g:['💎','🔷','🩵']}},
+ {id:'robot',  label:'Cyborg 🤖',  prv:'🤖⚙️🔧',price:180,m:{n:['🤖','⚙️','🔧','🛠️','🔩','💻'],b:['🦾','🦿','🛰️'],g:['🔋','💡','⚡']}},
+ {id:'party',  label:'Fête 🎉',    prv:'🎉🎈🎁',price:130,m:{n:['🎉','🎈','🎁','🎊','🪅','🎯'],b:['🎆','🎇','🧨'],g:['🏆','🥳','🎖️']}},
 ];
 const VSOUNDS=[
- {id:'fanfare', label:'Fanfare 🎺', play:ctx=>{[523,659,784,1047].forEach((f,i)=>setTimeout(()=>pNote(ctx,f,'square',.25,.12),i*120));}},
- {id:'bells',   label:'Cloches 🔔', play:ctx=>{[880,1100,1320,880].forEach((f,i)=>setTimeout(()=>pNote(ctx,f,'sine',.4,.1),i*200));}},
- {id:'laser',   label:'Laser ⚡',   play:ctx=>{const o=ctx.createOscillator(),g=ctx.createGain();o.frequency.setValueAtTime(200,ctx.currentTime);o.frequency.exponentialRampToValueAtTime(1200,ctx.currentTime+.5);o.type='sawtooth';g.gain.setValueAtTime(.15,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.5);o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+.5);}},
- {id:'chiptune',label:'Chiptune 🎮',play:ctx=>{[262,330,392,523,659].forEach((f,i)=>setTimeout(()=>pNote(ctx,f,'square',.15,.08),i*80));}},
- {id:'zen',     label:'Zen 🎵',     play:ctx=>{[528,660,792].forEach((f,i)=>setTimeout(()=>pNote(ctx,f,'sine',.8,.08),i*300));}},
+ {id:'fanfare', label:'Fanfare 🎺', price:0, play:ctx=>{[523,659,784,1047].forEach((f,i)=>setTimeout(()=>pNote(ctx,f,'square',.25,.12),i*120));}},
+ {id:'bells',   label:'Cloches 🔔', price:0, play:ctx=>{[880,1100,1320,880].forEach((f,i)=>setTimeout(()=>pNote(ctx,f,'sine',.4,.1),i*200));}},
+ {id:'laser',   label:'Laser ⚡',   price:0, play:ctx=>{const o=ctx.createOscillator(),g=ctx.createGain();o.frequency.setValueAtTime(200,ctx.currentTime);o.frequency.exponentialRampToValueAtTime(1200,ctx.currentTime+.5);o.type='sawtooth';g.gain.setValueAtTime(.15,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.5);o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+.5);}},
+ {id:'chiptune',label:'Chiptune 🎮',price:0, play:ctx=>{[262,330,392,523,659].forEach((f,i)=>setTimeout(()=>pNote(ctx,f,'square',.15,.08),i*80));}},
+ {id:'zen',     label:'Zen 🎵',     price:0, play:ctx=>{[528,660,792].forEach((f,i)=>setTimeout(()=>pNote(ctx,f,'sine',.8,.08),i*300));}},
+ {id:'epic',    label:'Épique 🎬', price:150, play:ctx=>{[392,523,659,784,1047].forEach((f,i)=>setTimeout(()=>pNote(ctx,f,'sawtooth',.3,.1),i*130));}},
+ {id:'magic',   label:'Magie ✨',  price:150, play:ctx=>{[659,880,1047,1319,1047,880].forEach((f,i)=>setTimeout(()=>pNote(ctx,f,'triangle',.35,.09),i*90));}},
+ {id:'triomphe',label:'Triomphe 🏆',price:150, play:ctx=>{[523,523,659,784,1047,784,1047].forEach((f,i)=>setTimeout(()=>pNote(ctx,f,'square',.28,.11),i*110));}},
+];
+const MUSICS=[
+ {id:'theme',    label:'Thème Odyssée',           file:'music/music-theme.mp3',     price:0},
+ {id:'voyage',   label:'Le Premier Voyage',        file:'music/music-voyage.mp3',    price:300},
+ {id:'clarte',   label:"La Clarté de l'Esprit",     file:'music/music-clarte.mp3',    price:300},
+ {id:'murmure',  label:'Le Murmure du Passé',      file:'music/music-murmure.mp3',   price:300},
+ {id:'verite',   label:'La Quête de la Vérité',    file:'music/music-verite.mp3',    price:300},
+ {id:'souffle',  label:"Le Souffle de l'Aventure",  file:'music/music-souffle.mp3',   price:300},
+ {id:'eveil',    label:"L'Esprit en Éveil",         file:'music/music-eveil.mp3',     price:300},
+ {id:'reflexion',label:'Les Chemins de la Réflexion',file:'music/music-reflexion.mp3',price:300},
 ];
 const POWERS=[
  {id:'shield',emoji:'🛡️',label:'Bouclier',     recharge:4,effect:'shield'},

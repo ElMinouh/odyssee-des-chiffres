@@ -110,9 +110,9 @@ function _setSubjectLogos(){
  try{
   const subj = (typeof GM!=='undefined' && GM && GM.subject) ? GM.subject : 'math';
   let src, alt, lbl;
-  if(subj==='fr'){ src='assets/logo-mots.webp?v=1049'; alt="L'Odyssée des Mots"; lbl="L'ODYSSÉE : L'AVENTURE LITTÉRAIRE"; }
-  else if(subj==='math'){ src='assets/logo-main.webp?v=1049'; alt="L'Odyssée des Chiffres"; lbl="L'ODYSSÉE : L'AVENTURE MATHÉMATIQUE"; }
-  else { src='assets/logo-savoir.webp?v=1049'; alt="L'Odyssée du Savoir"; lbl="L'ODYSSÉE DU SAVOIR"; }
+  if(subj==='fr'){ src='assets/logo-mots.webp?v=1050'; alt="L'Odyssée des Mots"; lbl="L'ODYSSÉE : L'AVENTURE LITTÉRAIRE"; }
+  else if(subj==='math'){ src='assets/logo-main.webp?v=1050'; alt="L'Odyssée des Chiffres"; lbl="L'ODYSSÉE : L'AVENTURE MATHÉMATIQUE"; }
+  else { src='assets/logo-savoir.webp?v=1050'; alt="L'Odyssée du Savoir"; lbl="L'ODYSSÉE DU SAVOIR"; }
   document.querySelectorAll('img.subj-logo').forEach(function(im){ im.src=src; im.alt=alt; });
   const el = document.getElementById('ody-btn-label');
   if(el) el.textContent = lbl;
@@ -2109,29 +2109,15 @@ function startMapBoss(zoneId){
 // ═══════════════════════════════════════════════════════
 // MUSIQUE
 // ═══════════════════════════════════════════════════════
+var _bgAudio=null;
 function startMusic(){
- stopMusic();const ctx=getAudio();
- const th={
-  standard:[261,329,392,523,392,329],
-  espace:[220,277,330,440,330,277,196],
-  foret:[293,349,440,587,440,349,293,392],
-  volcan:[233,277,311,466,311,233,392],
- };
- const t=(([...document.body.classList].find(c=>c.indexOf('theme-')===0)||'').replace('theme-',''))||'standard';
- const notes=th[t]||th.standard;
- let step=0;
- function loop(){
-  if(!musicOn)return;
-  const f=notes[step%notes.length];
-  pNote(ctx,f,'sine',1.4,.04);
-  if(Math.random()>.55)pNote(ctx,f*1.5,'sine',1.2,.02);
-  if(Math.random()>.75)pNote(ctx,f*2,'triangle',.8,.015);
-  step++;
-  musicTimer=setTimeout(loop,900+ri(0,500));
- }
- loop();const _mv=$('music-viz');if(_mv)_mv.classList.add('viz-anim');
+ stopMusic();
+ const m=(typeof MUSICS!=='undefined')?(MUSICS.find(x=>x.id===((P&&P.music)||'theme'))||MUSICS[0]):null;
+ if(!m)return;
+ try{ _bgAudio=new Audio('assets/'+m.file); _bgAudio.loop=true; _bgAudio.volume=.4; _bgAudio.play().catch(function(){}); }catch(e){}
+ const _mv=$('music-viz');if(_mv)_mv.classList.add('viz-anim');
 }
-function stopMusic(){clearTimeout(musicTimer);musicTimer=null;const _mv=$('music-viz');if(_mv)_mv.classList.remove('viz-anim');}
+function stopMusic(){ if(_bgAudio){ try{_bgAudio.pause();}catch(e){} _bgAudio=null; } clearTimeout(musicTimer);musicTimer=null;const _mv=$('music-viz');if(_mv)_mv.classList.remove('viz-anim'); }
 function toggleMusic(){const _mt=$('musicToggle');musicOn=_mt?_mt.checked:false;if(musicOn)startMusic();else stopMusic();}
 function playVS(){const s=VSOUNDS.find(v=>v.id===(P.victorySound||'fanfare'))||VSOUNDS[0];try{s.play(getAudio());}catch(e){}}
 

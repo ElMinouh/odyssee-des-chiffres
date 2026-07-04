@@ -100,13 +100,40 @@ function renderAvatars(){
 }
 function selectAvatar(a){P.avatar=a;saveProfileNow();renderAvatars();updateMenuUI();toast('Avatar : '+a);}
 function renderVSounds(){
- $('p-vsounds').innerHTML=VSOUNDS.map(s=>`<div style="display:flex;align-items:center;gap:8px;margin:5px 0;">
-  <button class="vsnd-btn${s.id===(P.victorySound||'fanfare')?' sel':''}" onclick="selectVS('${s.id}')">${s.label}</button>
-  <button onclick="testVS('${s.id}')" style="padding:5px 10px;font-size:.8em;background:#2c3e50;">▶ Test</button>
- </div>`).join('');
+ $('p-vsounds').innerHTML=VSOUNDS.map(s=>{
+  const owned=(P.ownedSounds||[]).includes(s.id)||!s.price;
+  const sel=s.id===(P.victorySound||'fanfare');
+  return `<div style="display:flex;align-items:center;gap:8px;margin:5px 0;">
+   <button class="vsnd-btn${sel?' sel':''}" onclick="${owned?`selectVS('${s.id}')`:`buySound('${s.id}',${s.price})`}">${s.label}${owned?'':' · '+s.price+' ⭐'}</button>
+   <button onclick="testVS('${s.id}')" style="padding:5px 10px;font-size:.8em;background:#2c3e50;">▶ Test</button>
+  </div>`;
+ }).join('');
 }
+function buySound(id,p){spend(p,()=>{P.ownedSounds=[...(P.ownedSounds||[]),id];renderVSounds();toast('Son acheté !');});}
 function selectVS(id){P.victorySound=id;saveProfileNow();renderVSounds();toast('Son : '+VSOUNDS.find(s=>s.id===id)?.label);}
 function testVS(id){const s=VSOUNDS.find(v=>v.id===id);if(s)try{s.play(getAudio());}catch(e){}}
+// ── Rayon Musiques (achat + choix, à la manière des skins) ──
+function renderMusics(){
+ const el=$('p-musics'); if(!el) return;
+ el.innerHTML=MUSICS.map(s=>{
+  const owned=(P.ownedMusics||['theme']).includes(s.id)||s.price===0;
+  const cur=(P.music||'theme')===s.id;
+  return `<div class="skin-row"><span style="font-size:1.3em;width:34px;">🎵</span>
+   <div style="flex:1;text-align:left;"><div style="font-weight:700;">${s.label}</div><div style="font-size:.75em;color:#bdc3c7;">${s.price===0?'Gratuit':s.price+' ⭐'}</div></div>
+   <button onclick="testMusic('${s.id}')" style="font-size:.8em;padding:5px 8px;background:#2c3e50;" title="Aperçu">▶</button>
+   ${owned?`<button onclick="selectMusic('${s.id}')" style="font-size:.8em;padding:5px 10px;margin-left:4px;background:${cur?'#27ae60':'#2c3e50'};">${cur?'✅ Choisie':'Choisir'}</button>`:
+            `<button onclick="buyMusic('${s.id}',${s.price})" style="font-size:.8em;padding:5px 10px;margin-left:4px;">Acheter</button>`}
+  </div>`;
+ }).join('');
+}
+function buyMusic(id,p){spend(p,()=>{P.ownedMusics=[...(P.ownedMusics||['theme']),id];renderMusics();toast('Musique achetée !');});}
+function selectMusic(id){P.music=id;saveProfileNow();renderMusics();toast('Musique choisie !');try{ if(typeof musicOn!=='undefined'&&musicOn){stopMusic();startMusic();} }catch(e){}}
+var _musPrev=null;
+function testMusic(id){
+ try{ if(_musPrev){_musPrev.pause();_musPrev=null;} }catch(e){}
+ const m=(typeof MUSICS!=='undefined')?MUSICS.find(x=>x.id===id):null; if(!m)return;
+ try{ _musPrev=new Audio('assets/'+m.file); _musPrev.volume=.5; _musPrev.play().catch(function(){}); setTimeout(function(){ if(_musPrev){try{_musPrev.pause();}catch(e){}} },12000); }catch(e){}
+}
 function renderSkins(){
  $('p-skins').innerHTML=SKINS.map(s=>{
   const owned=(P.ownedSkins||[]).includes(s.id)||s.price===0;

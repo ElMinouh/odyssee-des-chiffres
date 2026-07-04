@@ -150,6 +150,9 @@ function validateProfile(raw, defaultName){
   avatar: _safeStr(raw.avatar, 8, '🧙'),
   heroTitle: _safeStr(raw.heroTitle, 30, 'novice'),
   ownedSkins: _safeArr(raw.ownedSkins).filter(s => typeof s === 'string'),
+  ownedMusics: (function(){var a=_safeArr(raw.ownedMusics).filter(s=>typeof s==='string');return a.includes('theme')?a:['theme'].concat(a);})(),
+  music: (typeof raw.music==='string'?raw.music:'theme'),
+  ownedSounds: _safeArr(raw.ownedSounds).filter(s => typeof s === 'string'),
   equippedSkin: _safeStr(raw.equippedSkin, 30, null),
   victorySound: _safeStr(raw.victorySound, 20, 'fanfare'),
   ownedFigurines: _safeArr(raw.ownedFigurines).filter(f => typeof f === 'string').slice(0, 500),
@@ -201,7 +204,7 @@ function defProfile(name){
   prefs:{level:'CP',mode2:'normal',mode:'keyboard',theme:'standard'},
   sessionMinutes:0,weeklyChallenge:null,wcDate:null,
   objective:0,objectiveDone:0,objDate:null,
-  avatar:'🧙',heroTitle:'novice',ownedSkins:[],equippedSkin:null,victorySound:'fanfare',ownedFigurines:[],
+  avatar:'🧙',heroTitle:'novice',ownedSkins:[],equippedSkin:null,victorySound:'fanfare',ownedMusics:['theme'],music:'theme',ownedSounds:[],ownedFigurines:[],
   opFilters:{add:true,sub:true,mult:true,div:true,miss:true,frac:true,geo:true},
   heroStageId:'oeuf',
   cloudCode:null,cloudEnabled:false};

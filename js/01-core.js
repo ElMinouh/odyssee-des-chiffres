@@ -366,7 +366,7 @@ function stab(name){
   if($('th-lvl')){const xp=P.xp||0;let lvl=1;for(let i=0;i<XP_TABLE.length;i++){if(xp>=XP_TABLE[i])lvl=i+2;else break;}$('th-lvl').textContent=lvl;}
   if($('th-figs'))$('th-figs').textContent=(P.ownedFigurines||[]).length;
   if($('th-badges'))$('th-badges').textContent=(P.badgesEarned||[]).length;
-  renderAvatars();renderVSounds();renderSkins();renderTitles();       // « Héros et style »
+  renderAvatars();renderVSounds();renderSkins();renderTitles();renderMusics();  // « Héros et style »
  }
  if(name==='figurines')renderFigCollection();                          // « Ma collection »
  if(name==='milestones'){ renderErrors();renderLevelUnlocks();renderMilestones();renderBadges(); } // « Révisions et paliers »
