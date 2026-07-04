@@ -16,7 +16,7 @@
 <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="stylesheet" href="assets/fonts/google-fonts.css">
-<link rel="stylesheet" href="css/styles.css?v=1050">
+<link rel="stylesheet" href="css/styles.css?v=1051">
 </head>
 <body id="BODY">
 <!-- ═══ SPLASH SCREEN (Chantier v8.5.1 — durée 10s narrative) ═══
@@ -36,7 +36,7 @@
 <div id="splash-screen">
  <div id="splash-content">
   <video id="intro-video" playsinline preload="auto">
-   <source src="assets/intro.mp4?v=1050" type="video/mp4">
+   <source src="assets/intro.mp4?v=1051" type="video/mp4">
   </video>
   <button id="intro-mute" aria-label="Couper le son">🔊</button>
   <div id="intro-continue" class="hidden">✨ Appuie pour continuer</div>
@@ -128,7 +128,7 @@
  <!-- ═══ ÉCRAN 1 : QUI JOUE ? ═══ -->
  <div id="v-menu">
   <div id="app-version">v11.0.0</div>
-  <img src="assets/logo-savoir.webp?v=1050" alt="L'Odyssée du Savoir" class="game-logo" id="game-logo-menu" loading="eager" decoding="async" style="max-width:min(110px,34%);width:100%;height:auto;display:block;margin:0 auto 10px;">
+  <img src="assets/logo-savoir.webp?v=1051" alt="L'Odyssée du Savoir" class="game-logo" id="game-logo-menu" loading="eager" decoding="async" style="max-width:min(110px,34%);width:100%;height:auto;display:block;margin:0 auto 10px;">
 
   <!-- Aperçu du joueur sélectionné -->
   <div id="menu1-playercard" style="background:linear-gradient(135deg,rgba(241,196,15,.12),rgba(241,196,15,.03));border:1px solid rgba(241,196,15,.35);border-radius:16px;padding:16px;margin:0 auto 14px;max-width:420px;">
@@ -419,7 +419,7 @@
  <!-- ═══ CHOIX DE L'AVENTURE (3 niveaux) — v10.1.0 ═══ -->
  <div id="v-odyssey-select" class="hidden">
   <div class="back-top-bar"><button class="back-top-btn" onclick="navBack()">&#8592; Retour</button></div>
-  <img src="assets/logo-main.webp?v=1050" alt="L'Odyssée des Chiffres" class="game-logo subj-logo" loading="eager" decoding="async" style="max-width:min(140px,40%);width:100%;height:auto;display:block;margin:6px auto 6px;">
+  <img src="assets/logo-main.webp?v=1051" alt="L'Odyssée des Chiffres" class="game-logo subj-logo" loading="eager" decoding="async" style="max-width:min(140px,40%);width:100%;height:auto;display:block;margin:6px auto 6px;">
   <h2 id="ody-sel-title" style="margin:2px 0 2px;">L'Odyssée : l'aventure mathématique</h2>
   <p id="ody-sel-sub" style="color:#bdc3c7;font-size:.9em;margin:0 0 14px;">Choisis ton aventure</p>
 
@@ -509,7 +509,7 @@
    <button class="back-top-btn" onclick="goHome()" style="background:#16a085;">&#127968; Accueil</button>
   </div>
   
-  <img src="assets/logo-circle.webp?v=1050" alt="" class="page-logo-circle" aria-hidden="true">
+  <img src="assets/logo-circle.webp?v=1051" alt="" class="page-logo-circle" aria-hidden="true">
   <h3>&#128202; Tableau de Bord &mdash; <span id="dash-player-name" style="color:#f1c40f;"></span></h3>
   <div id="p-ava-disp" style="font-size:2.6em;text-align:center;margin:8px 0 0;"></div>
   <div id="p-title-disp" style="font-size:.9em;color:#f1c40f;text-align:center;margin-bottom:8px;"></div>
@@ -662,7 +662,7 @@
  <div id="v-parent" class="hidden">
   <div class="back-top-bar" style="display:flex;justify-content:space-between;align-items:center;"><button class="back-top-btn" onclick="navBack()">&#8592; Retour</button><button class="back-top-btn" onclick="goHome()" style="background:#16a085;">&#127968; Accueil</button></div>
   
-  <img src="assets/logo-circle.webp?v=1050" alt="" class="page-logo-circle" aria-hidden="true">
+  <img src="assets/logo-circle.webp?v=1051" alt="" class="page-logo-circle" aria-hidden="true">
   <h2>&#128106; Vue Parent</h2>
   <div id="parent-lock">
    <p style="font-size:.9em;margin:4px 0;">Code parent :</p>
@@ -684,8 +684,9 @@
     <p class="ptab-intro">Regarde comment ton enfant progresse.</p>
     <p class="ptab-sel-lbl">👤 Pour quel enfant&nbsp;?</p>
     <select id="parent-player" onchange="renderReport();renderReportView();" style="width:92%;margin-bottom:10px;"></select>
-    <div id="report-content"></div>
-    <button class="accordion">📈 Rapport détaillé<span class="acc-sub">La semaine, ou les opérations ratées</span></button>
+    <button class="accordion">📈 Progression<span class="acc-sub">Niveau, zones conquises, étoiles, badges</span></button>
+    <div class="panel"><div id="report-content"></div></div>
+    <button class="accordion">📊 Statistiques<span class="acc-sub">Parties, précision, opérations ratées</span></button>
     <div class="panel">
      <select id="report-view-mode" onchange="renderReportView()" style="width:95%;margin-bottom:10px;font-weight:700;">
       <option value="weekly">📊 Rapport hebdomadaire</option>
@@ -693,9 +694,8 @@
      </select>
      <div id="report-view-weekly"><p style="font-size:.88em;font-weight:700;color:#f1c40f;">🚧 Rapport hebdomadaire</p><div id="weekly-summary-zone"></div></div>
      <div id="report-view-errors" class="hidden"><p style="font-size:.88em;font-weight:700;color:#e74c3c;">❌ Opérations ratées (les plus récentes)</p><div id="errors-list-zone"></div></div>
+     <button onclick="exportPDF()" style="width:100%;margin-top:10px;background:#2c3e50;border:1px solid #f1c40f;">📄 Exporter un bilan PDF</button>
     </div>
-    <button class="accordion">📄 Exporter un bilan PDF<span class="acc-sub">Enregistre le rapport dans un fichier PDF</span></button>
-    <div class="panel"><button onclick="exportPDF()" style="width:100%;background:#2c3e50;border:1px solid #f1c40f;">📄 Exporter en PDF</button></div>
    </div>
 
    <div id="ptab-encadrement" class="hidden">
@@ -942,7 +942,7 @@
 <script src="js/14-primaire.js"></script>
   <script src="js/15-college.js"></script>
 <script src="js/17-messaging.js"></script>
-<script src="js/11-init.js?v=1050"></script>
+<script src="js/11-init.js?v=1051"></script>
 
 <!-- Enregistrement du Service Worker (mode hors-ligne + installation PWA) -->
 <script>

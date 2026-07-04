@@ -80,7 +80,7 @@ function renderStageProgress(stage){
 
 function renderAvatars(){
  $('p-ava-disp').innerText=P.avatar||'🧙';
- const t=getTopTitle();$('p-title-disp').innerHTML=`<span style="color:${t.col}">${t.label}</span>`;
+ const t=(typeof HERO_TITLES!=='undefined'&&HERO_TITLES.find(x=>x.id===P.heroTitle))||getTopTitle();$('p-title-disp').innerHTML=`<span style="color:${t.col}">${t.label}</span>`;
 // Chantier B2 : afficher uniquement les avatars du stade actuel + précédents
  const unlocked = (typeof getUnlockedAvatars==='function') ? getUnlockedAvatars() : AVATAR_LIST;
  const stage = (typeof getHeroStage==='function') ? getHeroStage() : null;
