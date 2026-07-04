@@ -4860,9 +4860,9 @@ body.mat-mode #v-game{
  position:relative;
  border-radius:14px;
  overflow:hidden;
- background-size: cover, contain;
- background-position: center, top center;
- background-repeat: no-repeat, no-repeat;
+ background-size: contain;
+ background-position: top center;
+ background-repeat: no-repeat;
  padding:10px 12px 14px;
  margin:0 auto 8px;
  max-width:600px;
@@ -4878,3 +4878,10 @@ body.mat-mode #v-game{
 #intro-continue{ position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); color:#fff; font-size:clamp(18px,4vw,30px); font-weight:800; text-shadow:0 2px 12px rgba(0,0,0,.85); letter-spacing:1px; text-align:center; pointer-events:none; z-index:3; animation:introPulse 1.4s ease-in-out infinite; }
 #intro-continue.hidden{ display:none; }
 @keyframes introPulse{ 0%,100%{opacity:.65;transform:translate(-50%,-50%) scale(1);} 50%{opacity:1;transform:translate(-50%,-50%) scale(1.06);} }
+
+/* Intro : la vidéo va jusqu'à son terme (plus de fondu auto) */
+#splash-screen{ animation:none !important; }
+/* Accueil : déroulants + carte profil opaques */
+#v-menu select{ background-color:#14313f !important; color:#fff !important; }
+#menu1-playercard{ background:#153847 !important; border-color:rgba(241,196,15,.5) !important; }
+#app-version{ position:absolute; top:8px; left:10px; font-size:.6em; color:rgba(255,255,255,.5); z-index:5; letter-spacing:.5px; }
