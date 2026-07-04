@@ -110,12 +110,14 @@ function _setSubjectLogos(){
  try{
   const subj = (typeof GM!=='undefined' && GM && GM.subject) ? GM.subject : 'math';
   let src, alt, lbl;
-  if(subj==='fr'){ src='assets/logo-mots.webp?v=1046'; alt="L'Odyssée des Mots"; lbl="L'ODYSSÉE : L'AVENTURE LITTÉRAIRE"; }
-  else if(subj==='math'){ src='assets/logo-main.webp?v=1046'; alt="L'Odyssée des Chiffres"; lbl="L'ODYSSÉE : L'AVENTURE MATHÉMATIQUE"; }
-  else { src='assets/logo-savoir.webp?v=1046'; alt="L'Odyssée du Savoir"; lbl="L'ODYSSÉE DU SAVOIR"; }
+  if(subj==='fr'){ src='assets/logo-mots.webp?v=1047'; alt="L'Odyssée des Mots"; lbl="L'ODYSSÉE : L'AVENTURE LITTÉRAIRE"; }
+  else if(subj==='math'){ src='assets/logo-main.webp?v=1047'; alt="L'Odyssée des Chiffres"; lbl="L'ODYSSÉE : L'AVENTURE MATHÉMATIQUE"; }
+  else { src='assets/logo-savoir.webp?v=1047'; alt="L'Odyssée du Savoir"; lbl="L'ODYSSÉE DU SAVOIR"; }
   document.querySelectorAll('img.subj-logo').forEach(function(im){ im.src=src; im.alt=alt; });
   const el = document.getElementById('ody-btn-label');
   if(el) el.textContent = lbl;
+  const hdr = document.getElementById('menu2-header'); // logo de la matière en fond de l'en-tête + voile (comme l'accueil)
+  if(hdr){ hdr.style.backgroundImage = "linear-gradient(rgba(12,30,52,.58),rgba(12,30,52,.72)), url('"+src+"')"; }
  }catch(e){}
 }
 function openOdysseeSelect(){
