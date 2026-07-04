@@ -4851,7 +4851,7 @@ body.mat-mode #v-game{
  background-size: cover, contain;
  background-position: center, top center;
  background-repeat: no-repeat, no-repeat;
- padding-top:14px;
+ padding-top: clamp(150px, 42vw, 340px);
 }
 #game-logo-menu{ display:none !important; } /* la vignette du haut est remplacée par le fond */
 
@@ -4867,3 +4867,14 @@ body.mat-mode #v-game{
  margin:0 auto 8px;
  max-width:600px;
 }
+
+/* Médaillon Odyssée du Savoir agrandi (tableau de bord + vue parent) */
+.page-logo-circle{ width:150px !important; height:150px !important; }
+
+/* Intro vidéo */
+#intro-video{ max-width:100%; max-height:100vh; display:block; margin:auto; }
+#intro-mute{ position:fixed; bottom:14px; right:14px; background:rgba(0,0,0,.35); color:#fff; border:none; border-radius:50%; width:36px; height:36px; font-size:17px; cursor:pointer; opacity:.45; z-index:3; }
+#intro-mute:hover{ opacity:1; }
+#intro-continue{ position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); color:#fff; font-size:clamp(18px,4vw,30px); font-weight:800; text-shadow:0 2px 12px rgba(0,0,0,.85); letter-spacing:1px; text-align:center; pointer-events:none; z-index:3; animation:introPulse 1.4s ease-in-out infinite; }
+#intro-continue.hidden{ display:none; }
+@keyframes introPulse{ 0%,100%{opacity:.65;transform:translate(-50%,-50%) scale(1);} 50%{opacity:1;transform:translate(-50%,-50%) scale(1.06);} }

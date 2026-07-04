@@ -16,7 +16,7 @@
 <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="stylesheet" href="assets/fonts/google-fonts.css">
-<link rel="stylesheet" href="css/styles.css?v=1047">
+<link rel="stylesheet" href="css/styles.css?v=1048">
 </head>
 <body id="BODY">
 <!-- ═══ SPLASH SCREEN (Chantier v8.5.1 — durée 10s narrative) ═══
@@ -35,33 +35,11 @@
 -->
 <div id="splash-screen">
  <div id="splash-content">
-  <!-- Conteneur "scène" : prend la taille/ratio de la carte finale.
-       Tous les éléments (boussole, sparkles) sont positionnés en % de CE conteneur,
-       donc parfaitement adaptés quel que soit l'écran (PC large ou Android portrait). -->
-  <div id="splash-stage">
-   <!-- 1. La carte parchemin (fond de la scène) -->
-   <img src="assets/logo-savoir.webp?v=1047" alt="L'Odyssée du Savoir" id="splash-logo">
-   <!-- 2. La boussole : grosse au centre écran puis converge vers sa place sur la carte -->
-   <img src="assets/icon-512.png?v=1047" alt="" id="splash-compass" aria-hidden="true">
-   <!-- 3. Chiffres et symboles math qui volent en chaotique -->
-   <div id="splash-orbits" aria-hidden="true">
-    <span class="splash-item splash-num" style="--i:0">3</span>
-    <span class="splash-item splash-num" style="--i:1">5</span>
-    <span class="splash-item splash-num" style="--i:2">2</span>
-    <span class="splash-item splash-num" style="--i:3">7</span>
-    <span class="splash-item splash-sym" style="--i:4">+</span>
-    <span class="splash-item splash-sym splash-sym-mul" style="--i:5">×</span>
-    <span class="splash-item splash-sym splash-sym-div" style="--i:6">÷</span>
-   </div>
-   <!-- 4. Scintillements sur le coffre : positions en % de la CARTE (pas de l'écran) -->
-   <div id="splash-sparkles" aria-hidden="true">
-    <span class="sparkle" style="--sx:68%;--sy:73%;--sd:8.2s"></span>
-    <span class="sparkle" style="--sx:72%;--sy:77%;--sd:8.5s"></span>
-    <span class="sparkle" style="--sx:70%;--sy:80%;--sd:8.8s"></span>
-    <span class="sparkle" style="--sx:75%;--sy:72%;--sd:9.1s"></span>
-    <span class="sparkle" style="--sx:77%;--sy:76%;--sd:9.4s"></span>
-   </div>
-  </div>
+  <video id="intro-video" playsinline preload="auto">
+   <source src="assets/intro.mp4?v=1048" type="video/mp4">
+  </video>
+  <button id="intro-mute" aria-label="Couper le son">🔊</button>
+  <div id="intro-continue" class="hidden">✨ Appuie pour continuer</div>
  </div>
 </div>
 <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;pointer-events:none;z-index:150;"></canvas>
@@ -149,7 +127,7 @@
  <!-- ═══ MENU ═══ -->
  <!-- ═══ ÉCRAN 1 : QUI JOUE ? ═══ -->
  <div id="v-menu">
-  <img src="assets/logo-savoir.webp?v=1047" alt="L'Odyssée du Savoir" class="game-logo" id="game-logo-menu" loading="eager" decoding="async" style="max-width:min(110px,34%);width:100%;height:auto;display:block;margin:0 auto 10px;">
+  <img src="assets/logo-savoir.webp?v=1048" alt="L'Odyssée du Savoir" class="game-logo" id="game-logo-menu" loading="eager" decoding="async" style="max-width:min(110px,34%);width:100%;height:auto;display:block;margin:0 auto 10px;">
 
   <!-- Aperçu du joueur sélectionné -->
   <div id="menu1-playercard" style="background:linear-gradient(135deg,rgba(241,196,15,.12),rgba(241,196,15,.03));border:1px solid rgba(241,196,15,.35);border-radius:16px;padding:16px;margin:0 auto 14px;max-width:420px;">
@@ -440,7 +418,7 @@
  <!-- ═══ CHOIX DE L'AVENTURE (3 niveaux) — v10.1.0 ═══ -->
  <div id="v-odyssey-select" class="hidden">
   <div class="back-top-bar"><button class="back-top-btn" onclick="navBack()">&#8592; Retour</button></div>
-  <img src="assets/logo-main.webp?v=1047" alt="L'Odyssée des Chiffres" class="game-logo subj-logo" loading="eager" decoding="async" style="max-width:min(140px,40%);width:100%;height:auto;display:block;margin:6px auto 6px;">
+  <img src="assets/logo-main.webp?v=1048" alt="L'Odyssée des Chiffres" class="game-logo subj-logo" loading="eager" decoding="async" style="max-width:min(140px,40%);width:100%;height:auto;display:block;margin:6px auto 6px;">
   <h2 id="ody-sel-title" style="margin:2px 0 2px;">L'Odyssée : l'aventure mathématique</h2>
   <p id="ody-sel-sub" style="color:#bdc3c7;font-size:.9em;margin:0 0 14px;">Choisis ton aventure</p>
 
@@ -530,8 +508,16 @@
    <button class="back-top-btn" onclick="goHome()" style="background:#16a085;">&#127968; Accueil</button>
   </div>
   
-  <img src="assets/logo-circle.webp?v=1047" alt="" class="page-logo-circle" aria-hidden="true">
+  <img src="assets/logo-circle.webp?v=1048" alt="" class="page-logo-circle" aria-hidden="true">
   <h3>&#128202; Tableau de Bord &mdash; <span id="dash-player-name" style="color:#f1c40f;"></span></h3>
+  <div id="p-ava-disp" style="font-size:2.6em;text-align:center;margin:8px 0 0;"></div>
+  <div id="p-title-disp" style="font-size:.9em;color:#f1c40f;text-align:center;margin-bottom:8px;"></div>
+  <div id="tab-hero-header">
+   <div class="hero-stat"><div class="hero-stat-val" id="th-stars">0</div><div class="hero-stat-lbl">⭐ Étoiles</div></div>
+   <div class="hero-stat"><div class="hero-stat-val" id="th-lvl">1</div><div class="hero-stat-lbl">🎖 Niveau</div></div>
+   <div class="hero-stat"><div class="hero-stat-val" id="th-figs">0</div><div class="hero-stat-lbl">🎴 Figurines</div></div>
+   <div class="hero-stat"><div class="hero-stat-val" id="th-badges">0</div><div class="hero-stat-lbl">🏅 Badges</div></div>
+  </div>
   <div class="tabs" id="stabs">
    <button class="tab active" onclick="stab('hero')"><span class="tab-wrap"><span>🧙</span><span class="tab-lbl">Héros et style</span></span></button>
    <button class="tab" onclick="stab('figurines')"><span class="tab-wrap"><span>🎴</span><span class="tab-lbl">Ma collection</span></span></button>
@@ -539,15 +525,7 @@
    <button class="tab" onclick="stab('stats')"><span class="tab-wrap"><span>📈</span><span class="tab-lbl">Classement et stats</span></span></button>
   </div>
   <div id="tab-hero">
-   <div id="tab-hero-header">
-    <div class="hero-stat"><div class="hero-stat-val" id="th-stars">0</div><div class="hero-stat-lbl">⭐ Étoiles</div></div>
-    <div class="hero-stat"><div class="hero-stat-val" id="th-lvl">1</div><div class="hero-stat-lbl">🎖 Niveau</div></div>
-    <div class="hero-stat"><div class="hero-stat-val" id="th-figs">0</div><div class="hero-stat-lbl">🎴 Figurines</div></div>
-    <div class="hero-stat"><div class="hero-stat-val" id="th-badges">0</div><div class="hero-stat-lbl">🏅 Badges</div></div>
-   </div>
    <div style="text-align:right;margin:4px 0;"><button onclick="dashCollapseAll('tab-hero')" style="background:rgba(255,255,255,.1);font-size:.72em;padding:4px 10px;">⬍ Tout replier</button></div>
-   <div id="p-ava-disp" style="margin:4px 0;font-size:2.2em;text-align:center;"></div>
-   <div id="p-title-disp" style="font-size:.85em;color:#f1c40f;text-align:center;margin-bottom:6px;"></div>
    <button class="accordion" onclick="renderFigurinesShop('none');_shopSearch='';">🧩 Boutique de figurines<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Échange tes étoiles contre des figurines</span></button>
    <div class="panel"><div id="p-figurines"><div style="color:rgba(255,255,255,.4);font-size:.8em;text-align:center;padding:10px;">Clique pour voir les figurines</div></div></div>
    <button class="accordion">😀 Avatar<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Choisis ton personnage</span></button>
@@ -681,7 +659,7 @@
  <div id="v-parent" class="hidden">
   <div class="back-top-bar" style="display:flex;justify-content:space-between;align-items:center;"><button class="back-top-btn" onclick="navBack()">&#8592; Retour</button><button class="back-top-btn" onclick="goHome()" style="background:#16a085;">&#127968; Accueil</button></div>
   
-  <img src="assets/logo-circle.webp?v=1047" alt="" class="page-logo-circle" aria-hidden="true">
+  <img src="assets/logo-circle.webp?v=1048" alt="" class="page-logo-circle" aria-hidden="true">
   <h2>&#128106; Vue Parent</h2>
   <div id="parent-lock">
    <p style="font-size:.9em;margin:4px 0;">Code parent :</p>
@@ -961,7 +939,7 @@
 <script src="js/14-primaire.js"></script>
   <script src="js/15-college.js"></script>
 <script src="js/17-messaging.js"></script>
-<script src="js/11-init.js?v=1047"></script>
+<script src="js/11-init.js?v=1048"></script>
 
 <!-- Enregistrement du Service Worker (mode hors-ligne + installation PWA) -->
 <script>

@@ -31,25 +31,35 @@ adjustGameLogoSize();
 (function handleSplash(){
  const splash = document.getElementById('splash-screen');
  if(!splash) return;
- // Si déjà vu cette session, on cache immédiatement
  let alreadySeen = false;
  try{ alreadySeen = sessionStorage.getItem('splashSeen') === '1'; }catch(e){}
- if(alreadySeen){
-  splash.classList.add('skipped');
-  return;
- }
- // Marquer comme vu dès maintenant pour éviter rebond si l'utilisateur recharge vite
+ if(alreadySeen){ splash.classList.add('skipped'); return; }
  try{ sessionStorage.setItem('splashSeen', '1'); }catch(e){}
- // Permettre de skipper le splash en cliquant/touchant
+ const vid = document.getElementById('intro-video');
+ const cont = document.getElementById('intro-continue');
+ const muteBtn = document.getElementById('intro-mute');
+ let done = false;
  const skip = () => {
+  if(done) return; done = true;
+  try{ if(vid) vid.pause(); }catch(e){}
   splash.style.transition = 'opacity .4s';
   splash.style.opacity = '0';
   setTimeout(() => { splash.classList.add('skipped'); }, 400);
  };
- splash.addEventListener('click', skip, { once: true });
- splash.addEventListener('touchstart', skip, { once: true, passive: true });
- // Retrait automatique du DOM après l'animation complète (10s + 0.6s fade + marge)
- setTimeout(() => { splash.classList.add('skipped'); }, 11800);
+ splash.addEventListener('click', skip);
+ splash.addEventListener('touchstart', skip, { passive: true });
+ if(vid){
+  vid.muted = false;                                   // musique dès le début
+  const pr = vid.play();
+  if(pr && pr.catch){ pr.catch(() => { vid.muted = true; if(muteBtn) muteBtn.textContent = '🔇'; vid.play().catch(()=>{}); }); } // repli si autoplay sonore bloqué
+  if(muteBtn){
+   muteBtn.addEventListener('click', (e) => { e.stopPropagation(); vid.muted = !vid.muted; muteBtn.textContent = vid.muted ? '🔇' : '🔊'; });
+   muteBtn.addEventListener('touchstart', (e) => { e.stopPropagation(); }, { passive: true });
+  }
+  vid.addEventListener('ended', () => { if(cont) cont.classList.remove('hidden'); });  // fige + texte
+ } else {
+  setTimeout(() => { splash.classList.add('skipped'); }, 1500);
+ }
 })();
 
 // ═══════════════════════════════════════════════════════
