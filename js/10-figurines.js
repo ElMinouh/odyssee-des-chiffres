@@ -52,6 +52,8 @@ function _renderFigurinesShop(filter){
   {k:'co',label:'🔫 Cobra'},
   {k:'al',label:'☠️ Albator'},
   {k:'sx',label:'🎂 Saisonnier'},
+  {k:'kp',label:'🎤 K-pop Demon Hunters'},
+  {k:'cy',label:'🚴 Tour de France'},
  ];
 
  const searchId='shop-search-'+Math.random().toString(36).slice(2,6);
@@ -193,7 +195,7 @@ const UNIVERS_LIST=[
  {k:'mi',label:'Miraculous'},{k:'pj',label:'Pyjamasques'},{k:'ot',label:'Olive & Tom'},
  {k:'co',label:'Cobra'},{k:'al',label:'Albator'},{k:'tu',label:'Tortues Ninja'},
  {k:'sm',label:'Sailor Moon'},{k:'sp',label:'Totally Spies'},{k:'bl',label:'Bluey'},{k:'dr',label:'Dragons'},
- {k:'sx',label:'✨ Saisonnier (exclusif)'}
+ {k:'sx',label:'✨ Saisonnier (exclusif)'},{k:'kp',label:'K-pop Demon Hunters'},{k:'cy',label:'Tour de France'}
 ];
 
 function renderFigCollection(){
