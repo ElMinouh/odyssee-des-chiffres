@@ -110,9 +110,9 @@ function _setSubjectLogos(){
  try{
   const subj = (typeof GM!=='undefined' && GM && GM.subject) ? GM.subject : 'math';
   let src, alt, lbl;
-  if(subj==='fr'){ src='assets/logo-mots.webp?v=1051'; alt="L'Odyssée des Mots"; lbl="L'ODYSSÉE : L'AVENTURE LITTÉRAIRE"; }
-  else if(subj==='math'){ src='assets/logo-main.webp?v=1051'; alt="L'Odyssée des Chiffres"; lbl="L'ODYSSÉE : L'AVENTURE MATHÉMATIQUE"; }
-  else { src='assets/logo-savoir.webp?v=1051'; alt="L'Odyssée du Savoir"; lbl="L'ODYSSÉE DU SAVOIR"; }
+  if(subj==='fr'){ src='assets/logo-mots.webp?v=1052'; alt="L'Odyssée des Mots"; lbl="L'ODYSSÉE : L'AVENTURE LITTÉRAIRE"; }
+  else if(subj==='math'){ src='assets/logo-main.webp?v=1052'; alt="L'Odyssée des Chiffres"; lbl="L'ODYSSÉE : L'AVENTURE MATHÉMATIQUE"; }
+  else { src='assets/logo-savoir.webp?v=1052'; alt="L'Odyssée du Savoir"; lbl="L'ODYSSÉE DU SAVOIR"; }
   document.querySelectorAll('img.subj-logo').forEach(function(im){ im.src=src; im.alt=alt; });
   const el = document.getElementById('ody-btn-label');
   if(el) el.textContent = lbl;
@@ -2110,6 +2110,7 @@ function startMapBoss(zoneId){
 // MUSIQUE
 // ═══════════════════════════════════════════════════════
 var _bgAudio=null;
+function _musicDuck(on){ if(_bgAudio){ try{ _bgAudio.volume = on ? 0.06 : 0.4; }catch(e){} } } // baisse la musique pendant la voix
 function startMusic(){
  stopMusic();
  const m=(typeof MUSICS!=='undefined')?(MUSICS.find(x=>x.id===((P&&P.music)||'theme'))||MUSICS[0]):null;
@@ -3112,8 +3113,8 @@ function endGame(won){
  const heart=$('timer-heart');if(heart)heart.style.display='none';
  P.sessionMinutes=(P.sessionMinutes||0)+Math.round((Date.now()-GS.sessionStart)/60000);
  const fl=GM.mode2==='combat'?combatPlayers.map(p=>p.level).join('+'):GM.level;
- P.history=([...(P.history||[]),{date:fmtDate(),timestamp:Date.now(),score:GS.score,mode:GM.mode2,level:fl,won}]).slice(-50);
- P.historyDetailed=([...(P.historyDetailed||[]),{date:fmtDate(),timestamp:Date.now(),score:GS.score,mode:GM.mode2,level:fl,won,maxCombo:GS.maxCombo,errorsCount:GS.errInGame}]).slice(-60);
+ P.history=([...(P.history||[]),{date:fmtDate(),timestamp:Date.now(),score:GS.score,mode:GM.mode2,level:fl,won,subject:(typeof GM!=='undefined'&&GM.subject)||'math'}]).slice(-50);
+ P.historyDetailed=([...(P.historyDetailed||[]),{date:fmtDate(),timestamp:Date.now(),score:GS.score,mode:GM.mode2,level:fl,won,maxCombo:GS.maxCombo,errorsCount:GS.errInGame,subject:(typeof GM!=='undefined'&&GM.subject)||'math'}]).slice(-60);
  // v8.7.0 : gains d'étoiles ×1.5 (beaucoup de figurines à collectionner,
  // éviter la frustration). Math.round pour garder des entiers.
  const _starsGain = Math.round(GS.score * 1.5);

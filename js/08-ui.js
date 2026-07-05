@@ -159,12 +159,19 @@ function setTitle(id){P.heroTitle=id;saveProfile();renderTitles();updateMenuUI()
 // ═══════════════════════════════════════════════════════
 // HISTORIQUE
 // ═══════════════════════════════════════════════════════
+var _histSubj='all';
+function setHistSubj(s){_histSubj=s;renderHistory();}
 function renderHistory(){
- const h=(P.historyDetailed||[]).slice(-20).reverse();const el=$('p-history');
- if(!h.length){el.innerHTML='<span style="color:#bdc3c7;">Aucune partie enregistrée.</span>';return;}
- el.innerHTML=h.map((g,i)=>`
+ const SL={math:'🔢 Maths',fr:'📖 Français'};
+ const el=$('p-history');
+ const bar='<div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">'+['all','math','fr'].map(s=>`<button onclick="setHistSubj('${s}')" style="font-size:.72em;padding:4px 10px;border-radius:8px;background:${_histSubj===s?'#27ae60':'#2c3e50'};">${s==='all'?'🌐 Toutes':SL[s]}</button>`).join('')+'</div>';
+ let h=(P.historyDetailed||[]).map(g=>Object.assign({},g,{subject:g.subject||'math'}));
+ if(_histSubj!=='all') h=h.filter(g=>g.subject===_histSubj);
+ h=h.slice(-20).reverse();
+ if(!h.length){el.innerHTML=bar+'<span style="color:#bdc3c7;">Aucune partie pour cette matière.</span>';return;}
+ el.innerHTML=bar+h.map((g,i)=>`
   <div class="hist-row ${g.won?'won':'lost'}" onclick="toggleHD(${i})">
-   ${g.won?'🏆':'💀'} ${g.date} · ${g.level} · ${g.mode} · ${g.score}pts · Combo×${g.maxCombo||0}
+   ${g.won?'🏆':'💀'} ${SL[g.subject]||'🔢 Maths'} · ${g.date} · ${g.level} · ${g.mode} · ${g.score}pts · Combo×${g.maxCombo||0}
   </div>
   <div class="hist-detail" id="hd-${i}"><div style="margin-top:4px;color:${g.won?'#2ecc71':'#e74c3c'};">${g.errorsCount||0} erreur(s) · ${g.won?'Victoire':'Défaite'}</div></div>`).join('');
 }

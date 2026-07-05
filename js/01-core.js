@@ -159,7 +159,10 @@ function speak(t){
  m.rate=0.95; // légèrement ralenti pour les petits
  m.pitch=1;
  if(_frVoice)m.voice=_frVoice;
- try{window.speechSynthesis.speak(m);}catch(e){}
+ if(typeof _musicDuck==='function') _musicDuck(true);           // baisse la musique
+ const _un=function(){ if(typeof _musicDuck==='function') _musicDuck(false); };
+ m.onend=_un; m.onerror=_un;
+ try{window.speechSynthesis.speak(m);}catch(e){ _un(); }
 }
 
 // ═══════════════════════════════════════════════════════

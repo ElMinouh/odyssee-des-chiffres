@@ -834,7 +834,8 @@ function _playCri(animal){
 function _speakThenCri(q){
  const sound = q && q.sound;
  const cue = (q && q.speakText) || 'Quel animal fait ce cri ?';
- const playCry = ()=>{ try{ _playCri(sound); }catch(e){} };
+ if(typeof _musicDuck==='function') _musicDuck(true);
+ const playCry = ()=>{ try{ _playCri(sound); }catch(e){} setTimeout(function(){ if(typeof _musicDuck==='function') _musicDuck(false); }, 1800); };
  try{
   const voiceOn = (typeof $==='function') && $('voiceToggle') && $('voiceToggle').checked;
   if(voiceOn && window.speechSynthesis){
