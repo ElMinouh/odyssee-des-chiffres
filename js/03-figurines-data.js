@@ -164,6 +164,15 @@ const FIG_IMG_PRELOAD = [
   'ot08', 'ot09', 'ot10', 'ot11', 'ot12', 'ot13', 'ot14',
   'ot15', 'ot16', 'ot17', 'ot18', 'ot19', 'ot20', 'ot21',
   'ot22', 'ot23',
+  // K-pop Demon Hunters (12)
+  'kp01', 'kp02', 'kp03', 'kp04', 'kp05', 'kp06', 'kp07',
+  'kp08', 'kp09', 'kp10', 'kp11', 'kp12',
+  // Tour de France (32)
+  'cy01', 'cy02', 'cy03', 'cy04', 'cy05', 'cy06', 'cy07',
+  'cy08', 'cy09', 'cy10', 'cy11', 'cy12', 'cy13', 'cy14',
+  'cy15', 'cy16', 'cy17', 'cy18', 'cy19', 'cy20', 'cy21',
+  'cy22', 'cy23', 'cy24', 'cy25', 'cy26', 'cy27', 'cy28',
+  'cy29', 'cy30', 'cy31', 'cy32',
 ];
 // Marque immédiatement comme disponibles + précharge
 if(typeof window !== 'undefined'){

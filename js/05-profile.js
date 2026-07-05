@@ -419,7 +419,7 @@ function onPlayerChange(){
  if(v!=='Autre')loadProfile();
 }
 function applyCustom(){const n=$('customInput').value.trim();if(n)localStorage.setItem('customPlayerName',n);loadProfile();}
-function isUnlocked(lvl){return UNLOCK_REQ[lvl]===0||prevWins(lvl)>=UNLOCK_REQ[lvl];}
+function isUnlocked(lvl,subj){return UNLOCK_REQ[lvl]===0||prevWins(lvl,subj)>=UNLOCK_REQ[lvl];}
 // v9.0.8 : deux cursus de déblocage indépendants (Primaire / Collège).
 // Le « niveau précédent » d'un niveau est celui qui le précède DANS SON propre groupe ;
 // CP et 6ᵉ sont chacun en tête de leur cursus (aucun prérequis).
@@ -430,14 +430,15 @@ function _levelGroupArr(lvl){
 }
 // Victoires du niveau pour la MATIÈRE en cours (déblocage indépendant par matière).
 // Hors contexte de matière (profil, héros…), on retombe sur les maths.
-function _subjWinsKey(){ return (typeof GM!=='undefined' && GM.subject) || 'math'; }
-function _subjWins(lvl){
+// v11.1.1 : accepte un paramètre subj explicite (sélecteur dashboard), sinon GM.subject.
+function _subjWinsKey(subj){ return subj || (typeof GM!=='undefined' && GM.subject) || 'math'; }
+function _subjWins(lvl,subj){
  const byS = P && P.levelWinsBySubj;
- const m = byS && byS[_subjWinsKey()];
+ const m = byS && byS[_subjWinsKey(subj)];
  if(m) return m[lvl]||0;
  return (P && P.levelWins && P.levelWins[lvl]) || 0;
 }
-function prevWins(lvl){ const g=_levelGroupArr(lvl); const i=g.indexOf(lvl); return i<=0?0:_subjWins(g[i-1]); }
+function prevWins(lvl,subj){ const g=_levelGroupArr(lvl); const i=g.indexOf(lvl); return i<=0?0:_subjWins(g[i-1],subj); }
 function applyTheme(t){
  // v8.7.5 : ne plus écraser TOUTES les classes du body (préserver
  // no-parallax, mode clair/sombre, etc.). On retire seulement les
