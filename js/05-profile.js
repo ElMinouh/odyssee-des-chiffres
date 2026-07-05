@@ -86,6 +86,7 @@ function validateProfile(raw, defaultName){
   quests: raw.quests ?? null,
   questsDate: _safeStr(raw.questsDate, 12, null),
   opStats: { ...def.opStats, ...(raw.opStats || {}) },
+  opStatsFr: { ...def.opStatsFr, ...(raw.opStatsFr || {}) },
   levelWins: {
    PS:  _clampNum(raw.levelWins?.PS,  0, 9999, 0),
    MS:  _clampNum(raw.levelWins?.MS,  0, 9999, 0),
@@ -199,6 +200,7 @@ function defProfile(name){
  return{_v:SAVE_VERSION,name,stars:0,xp:0,skills:{shield:0,sword:0,clock:0},inventory:{potion:0,bomb:0},
   history:[],historyDetailed:[],errors:[],errorLog:[],badgesEarned:[],milestonesClaimed:[],_bestCombo:0,_totalStarsEarned:0,
   quests:null,questsDate:null,opStats:{'+':{ ok:0,fail:0},'-':{ok:0,fail:0},'x':{ok:0,fail:0},'/':{ ok:0,fail:0},'geo':{ok:0,fail:0}},
+  opStatsFr:{'conj':{ok:0,fail:0},'orth':{ok:0,fail:0},'gram':{ok:0,fail:0},'vocab':{ok:0,fail:0}},
   levelWins:{CP:0,CE1:0,CE2:0,CM1:0,CM2:0},levelWinsBySubj:{math:{},fr:{}},mapBossBeaten:[],mapAvatarZone:'plaine',
   // v8.7.8 (O1) : progression sous-niveaux par zone (5 étapes par zone)
   zoneProgress:(function(){const o={};if(typeof MAP_ZONES!=='undefined'&&Array.isArray(MAP_ZONES))MAP_ZONES.forEach(z=>{o[z.id]={stepsCompleted:0,completed:false};});return o;})(),

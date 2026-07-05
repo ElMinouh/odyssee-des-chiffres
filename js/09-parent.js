@@ -1286,7 +1286,7 @@ async function doForceCloudRestore(){
   return;
  }
  msg.style.color='#2ecc71';
- msg.innerHTML=`✅ Profil <b>"${result.name}"</b> récupéré avec succès !<br>Rechargement de la page…`;
+ msg.innerHTML=`✅ Profil <b>"${esc(result.name)}"</b> récupéré avec succès !<br>Rechargement de la page…`;
  input.value='';
  // Recharge complète après 2s pour un état 100% propre
  setTimeout(() => {

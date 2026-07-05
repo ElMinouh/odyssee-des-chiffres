@@ -110,9 +110,9 @@ function _setSubjectLogos(){
  try{
   const subj = (typeof GM!=='undefined' && GM && GM.subject) ? GM.subject : 'math';
   let src, alt, lbl;
-  if(subj==='fr'){ src='assets/logo-mots.webp?v=1055'; alt="L'Odyssée des Mots"; lbl="L'ODYSSÉE : L'AVENTURE LITTÉRAIRE"; }
-  else if(subj==='math'){ src='assets/logo-main.webp?v=1055'; alt="L'Odyssée des Chiffres"; lbl="L'ODYSSÉE : L'AVENTURE MATHÉMATIQUE"; }
-  else { src='assets/logo-savoir.webp?v=1055'; alt="L'Odyssée du Savoir"; lbl="L'ODYSSÉE DU SAVOIR"; }
+  if(subj==='fr'){ src='assets/logo-mots.webp?v=1056'; alt="L'Odyssée des Mots"; lbl="L'ODYSSÉE : L'AVENTURE LITTÉRAIRE"; }
+  else if(subj==='math'){ src='assets/logo-main.webp?v=1056'; alt="L'Odyssée des Chiffres"; lbl="L'ODYSSÉE : L'AVENTURE MATHÉMATIQUE"; }
+  else { src='assets/logo-savoir.webp?v=1056'; alt="L'Odyssée du Savoir"; lbl="L'ODYSSÉE DU SAVOIR"; }
   document.querySelectorAll('img.subj-logo').forEach(function(im){ im.src=src; im.alt=alt; });
   const el = document.getElementById('ody-btn-label');
   if(el) el.textContent = lbl;
@@ -2761,6 +2761,7 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
   const pw=powers[P.name];if(pw?.dbl){pts*=2;pw.dbl=false;toast('⚡ Double !');}
   GS.score+=pts;
   const opK=q.opKey||'+';P.opStats[opK]=P.opStats[opK]||{ok:0,fail:0};P.opStats[opK].ok++;
+  if(GM.subject==='fr' && typeof _frCatOf==='function'){ const c=_frCatOf(q.opKey); P.opStatsFr[c]=P.opStatsFr[c]||{ok:0,fail:0}; P.opStatsFr[c].ok++; }
   if(typeof _progUpdate==="function") _progUpdate(GM.level, true);
   if(typeof _classStatUpdate==="function") _classStatUpdate(GM.level, q.opKey, true);
   // Chantier 1.2 : si c'était une question de révision et que l'enfant a réussi → on réduit sa présence
@@ -2851,6 +2852,7 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
  }else{
 GS.errInGame++;GS.combo=0;GS.opCombo=0;GS.lastOpKey=null;$('gc').classList.remove('combo-breaker');
   const opK=q.opKey||'+';P.opStats[opK]=P.opStats[opK]||{ok:0,fail:0};P.opStats[opK].fail++;
+  if(GM.subject==='fr' && typeof _frCatOf==='function'){ const c=_frCatOf(q.opKey); P.opStatsFr[c]=P.opStatsFr[c]||{ok:0,fail:0}; P.opStatsFr[c].fail++; }
   if(typeof _progUpdate==="function") _progUpdate(GM.level, false);
   if(typeof _classStatUpdate==="function") _classStatUpdate(GM.level, q.opKey, false);
   if(q.display&&q.res!==undefined){

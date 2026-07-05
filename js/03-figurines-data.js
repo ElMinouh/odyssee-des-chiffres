@@ -2251,6 +2251,190 @@ Object.assign(FIG_PAGES, {
   "Entre tendresse, surprises et gourmandises, c'est un moment de bonheur partagé. Le Gâteau de Maman est un clin d'œil plein d'amour.",
  ],
 });
+// ─── LOT : K-pop Demon Hunters ───
+Object.assign(FIG_PAGES, {
+ kp01: [
+  "Rumi est la leader du trio d'idoles Huntr/x. Le jour, elle enflamme les scènes du monde entier avec une voix capable de faire vibrer des stades entiers ; la nuit, elle traque les démons qui rôdent dans l'ombre, une lame à la main. Peu de gens savent qui elle est vraiment derrière les projecteurs.",
+  "Rumi porte un lourd secret : une part d'elle-même est liée au monde des ténèbres qu'elle combat. Ce déchirement intérieur la rend plus humaine que jamais — elle doute, elle a peur de décevoir son groupe, mais elle refuse d'abandonner ceux qu'elle protège. Sa détermination sans faille fait d'elle une chanteuse aussi bouleversante qu'une guerrière redoutable.",
+ ],
+ kp02: [
+  "Zoey est le tourbillon d'énergie du groupe Huntr/x. Rappeuse hors pair, elle lance des punchlines aussi tranchantes que ses coups de pied, et adore transformer chaque concert en show explosif. Son insolence et son humour détendent l'ambiance, même dans les pires moments de tension.",
+  "Sous ses airs de fêtarde, Zoey est une combattante précise et sans peur. Elle fonce toujours la première dans la bataille, portée par une joie de vivre communicative. Fidèle entre toutes, elle veille sur ses deux amies avec un dévouement total, dissimulé derrière ses blagues et ses regards malicieux.",
+ ],
+ kp03: [
+  "Mira est la danseuse du trio, tout en grâce et en maîtrise. Chaque mouvement de chorégraphie qu'elle exécute sur scène se transforme en enchaînement de combat d'une précision chirurgicale dès que les démons surgissent. Son calme apparent cache une concentration de tous les instants.",
+  "Discrète et réfléchie, Mira observe avant d'agir, ce qui en fait la stratège discrète du groupe. Elle porte elle aussi les cicatrices invisibles d'un lourd passé, qu'elle a choisi de transformer en force plutôt qu'en faiblesse. Sa loyauté envers Rumi et Zoey ne faiblit jamais, même face au danger.",
+ ],
+ kp04: [
+  "Jinu est le leader charismatique des Saja Boys, le boys band surgi tout droit des ténèbres. Sa voix envoûtante et son magnétisme font chavirer les foules autant que les cœurs, mais derrière ce charme redoutable se cache un manipulateur redouté, capable de retourner une salle entière contre son gré.",
+  "Ce qui rend Jinu fascinant, c'est sa part d'ombre plus complexe qu'il n'y paraît : tiraillé entre son allégeance aux forces obscures et un désir enfoui de rédemption, il devient un rival aussi inquiétant qu'attachant pour Rumi. Un personnage qui prouve que même les êtres les plus sombres portent en eux une lueur de doute.",
+ ],
+ kp05: [
+  "Romance est l'un des membres les plus envoûtants des Saja Boys. Son sourire parfait et sa voix suave font fondre les foules dès les premières notes. Sur scène, il joue de son charme comme d'une arme, hypnotisant son public en quelques secondes à peine.",
+  "Derrière cette image lisse se cache une aura mystérieuse : Romance ne dévoile jamais vraiment ce qu'il pense. Ce mystère entretenu fascine autant qu'il inquiète, et fait de lui l'un des membres les plus intrigants du groupe venu de l'ombre.",
+ ],
+ kp06: [
+  "Abby est la force tranquille des Saja Boys. Imposant et posé, il dégage une présence rassurante qui contraste avec l'énergie électrique du reste du groupe. Sur scène comme au combat, il avance sans jamais se précipiter, sûr de sa force.",
+  "Peu bavard mais fiable, Abby est du genre à agir plutôt qu'à parler. Cette stabilité fait de lui un pilier discret du boys band, un roc sur lequel les autres membres savent pouvoir compter en toutes circonstances.",
+ ],
+ kp07: [
+  "Mystery porte bien son nom : personne, pas même ses fans les plus dévoués, ne sait ce qui se cache derrière son masque. Chacune de ses apparitions publiques déclenche une vague de rumeurs et de spéculations sur sa véritable identité.",
+  "Ce voile de mystère n'est pas qu'un simple argument marketing : il semble receler un secret bien plus profond, lié à l'origine même des Saja Boys. Insaisissable et silencieux, il ajoute une note d'inquiétude à chaque prestation du groupe.",
+ ],
+ kp08: [
+  "Baby est le benjamin du groupe, avec sa bouille ronde et son air adorable qui fait immédiatement craquer le public. Son énergie enfantine et ses mimiques attendrissantes contrastent avec l'ambiance ténébreuse des Saja Boys.",
+  "Mais gare aux apparences trompeuses : sous ses airs candides, Baby cache une force surprenante. Ce mélange entre innocence apparente et puissance inattendue en fait l'un des membres les plus attachants et les plus imprévisibles du boys band.",
+ ],
+ kp09: [
+  "Derpy est le clown de la bande, toujours légèrement en décalage avec la chorégraphie du reste du groupe. Ses pas de travers et ses mimiques improvisées, censés être des erreurs, sont devenus malgré lui la signature préférée des fans.",
+  "Ce grain de folie assumé cache en réalité une personnalité chaleureuse et généreuse. Derpy fait rire, détend l'atmosphère et rappelle à tous, même au cœur des combats les plus sombres, qu'il reste toujours une place pour la légèreté.",
+ ],
+ kp10: [
+  "Sussie apparaît toujours là où on ne l'attend pas, avec un sourire espiègle et un brin de folie dans le regard. Imprévisible par nature, elle aime brouiller les repères et surprendre son monde, sur scène comme en dehors.",
+  "Ce grain de folie n'est pas que de la fantaisie : Sussie apporte au groupe une énergie chaotique et rafraîchissante, capable de retourner une situation tendue en un instant. Difficile de prévoir ce qu'elle fera l'instant d'après.",
+ ],
+ kp11: [
+  "Huntr/x, c'est le trio Rumi, Zoey et Mira réunies au sommet de leur art. Ensemble, leurs voix se mêlent en une mélodie si pure qu'elle tisse un véritable bouclier de lumière, capable de repousser les démons les plus puissants qui menacent le monde.",
+  "Ce qui fait la force du groupe, ce n'est pas seulement le talent individuel de chacune, mais le lien indéfectible qui les unit. Sur scène comme au combat, Huntr/x avance toujours unie, prouvant que l'amitié peut devenir la plus belle des armes.",
+ ],
+ kp12: [
+  "Les Saja Boys forment le boys band venu tout droit des ténèbres, réunis au grand complet autour de leur leader Jinu. Charismatiques, magnétiques et redoutablement doués, ils savent enflammer une foule entière en quelques mesures à peine.",
+  "Derrière les paillettes et les chorégraphies impeccables se cache une intention bien plus sombre : chaque concert, chaque single, chaque acclamation nourrit une cause obscure. Un groupe aussi fascinant que dangereux, qui brouille la frontière entre idoles et menaces.",
+ ],
+});
+
+// ─── LOT : Tour de France ───
+Object.assign(FIG_PAGES, {
+ cy01: [
+  "Tadej Pogačar est un coureur slovène considéré comme l'un des plus grands talents de sa génération. Grimpeur, rouleur et puncheur à la fois, il attaque souvent là où on ne l'attend pas, avec une aisance déconcertante et un sourire qui ne le quitte presque jamais, même dans l'effort.",
+  "Multiple vainqueur du Tour de France et de nombreuses classiques, il impressionne par sa capacité à briller sur tous les types de terrain. Son style de course offensif, loin des calculs prudents, a redonné du panache aux grandes courses par étapes du cyclisme moderne.",
+ ],
+ cy02: [
+  "Jonas Vingegaard est un grimpeur danois discret mais redoutable, capable de faire exploser le peloton dans les cols les plus difficiles. Sa condition physique hors norme et sa capacité à encaisser l'effort en font l'un des meilleurs coureurs de courses à étapes de sa génération.",
+  "Peu démonstratif en dehors du vélo, il laisse ses jambes parler à sa place sur les pentes des Alpes ou des Pyrénées. Vainqueur du Tour de France, il a livré certains des duels de montagne les plus intenses de l'histoire récente de la Grande Boucle.",
+ ],
+ cy03: [
+  "Paul Seixas est un jeune coureur français au talent précoce, considéré comme l'un des grands espoirs du cyclisme tricolore pour les années à venir. Polyvalent, il sait aussi bien grimper que rouler vite contre la montre.",
+  "Son ambition et sa maturité malgré son jeune âge impressionnent déjà observateurs et coureurs plus expérimentés. Beaucoup y voient un futur candidat aux plus grandes courses du calendrier international.",
+ ],
+ cy04: [
+  "Mathieu van der Poel est un coureur néerlandais explosif, aussi à l'aise sur les pavés des classiques que sur un vélo de cyclo-cross en plein hiver. Sa puissance et son sens du timing en font l'un des finisseurs les plus craints du peloton.",
+  "Petit-fils du légendaire Raymond Poulidor, il porte un nom qui évoque déjà l'histoire du cyclisme, mais s'est forgé sa propre légende à coups de victoires spectaculaires sur le Tour des Flandres ou Paris-Roubaix.",
+ ],
+ cy05: [
+  "Remco Evenepoel est un prodige belge, révélé très jeune par des performances impressionnantes contre la montre. Sa capacité à rouler à très haute vitesse en solitaire en fait l'un des spécialistes du chrono les plus redoutés du peloton.",
+  "Champion précoce et déjà auréolé de titres prestigieux, il vise aujourd'hui les plus grandes courses par étapes, où sa combinaison rare de puissance et de légèreté en montagne pourrait faire de lui l'un des grands champions à venir.",
+ ],
+ cy06: [
+  "Julian Alaphilippe est un puncheur français flamboyant, connu pour ses attaques rageuses dans les derniers kilomètres des courses vallonnées. Sa panache et son style de course spectaculaire ont conquis le public bien au-delà des frontières françaises.",
+  "Double champion du monde sur route, il a porté le maillot arc-en-ciel avec un enthousiasme communicatif. Son tempérament fougueux, parfois imprévisible, en fait l'un des coureurs les plus attachants du peloton.",
+ ],
+ cy07: [
+  "Thibaut Pinot est un grimpeur français au grand cœur, longtemps porté par une ferveur populaire immense lors de ses envolées en montagne. Sensible et sincère, il n'a jamais caché ses émotions, ce qui a renforcé le lien avec ses nombreux supporters.",
+  "Sur les pentes des Vosges, des Alpes ou des Pyrénées, il a livré des exploits qui ont fait vibrer des millions de Français devant leur télévision, incarnant à lui seul la passion populaire pour le Tour de France.",
+ ],
+ cy08: [
+  "Paul Magnier est un jeune sprinteur français plein de promesses, remarqué pour sa pointe de vitesse impressionnante dans les derniers mètres des arrivées massives. Son audace dans le peloton laisse présager un bel avenir.",
+  "Encore en plein apprentissage au plus haut niveau, il progresse course après course et vise déjà les plus grandes lignes d'arrivée du calendrier international, avec l'ambition de représenter dignement le sprint français.",
+ ],
+ cy09: [
+  "Wout van Aert est un coureur belge d'une polyvalence rare : à l'aise au sprint, dans les bosses, contre la montre ou sur les pavés des classiques, il incarne le véritable couteau suisse du peloton moderne.",
+  "Capable de gagner une étape de sprint un jour et de briller en montagne le lendemain, il est aussi un équipier précieux, souvent au service de ses leaders sur les grands tours, avant de viser ses propres victoires sur les classiques.",
+ ],
+ cy10: [
+  "Romain Grégoire est un jeune coureur français prometteur, apprécié pour sa régularité et son tempérament combatif. Il s'illustre aussi bien dans les échappées que dans les arrivées disputées en petit comité.",
+  "Formé dans les rangs français, il représente une nouvelle génération de coureurs sur laquelle le cyclisme tricolore fonde de grands espoirs pour les années à venir, entre classiques vallonnées et grands tours.",
+ ],
+ cy11: [
+  "Kévin Vauquelin est un jeune coureur français offensif, à l'aise aussi bien dans les échappées lointaines que sur les terrains vallonnés qui récompensent les attaquants. Sa combativité ne passe jamais inaperçue dans le peloton.",
+  "Sa progression rapide au plus haut niveau en fait l'une des valeurs montantes du cyclisme français, capable de viser des victoires d'étapes sur les plus grandes courses par étapes du calendrier.",
+ ],
+ cy12: [
+  "Lenny Martinez est un jeune grimpeur français, léger comme une plume, qui brille dès que la route s'élève vers les sommets. Issu d'une famille de cyclistes, il a grandi avec le vélo comme héritage naturel.",
+  "Sa légèreté et son aisance en montagne rappellent les grands grimpeurs du passé, et beaucoup voient déjà en lui un futur porteur du maillot à pois sur les plus grands cols du Tour de France.",
+ ],
+ cy13: [
+  "Mads Pedersen est un coureur danois puissant, ancien champion du monde sur route, redoutable sur les pavés et les classiques nordiques. Sa robustesse physique impressionne autant que sa capacité à sprinter après des courses très usantes.",
+  "Rarement épuisé même après des kilomètres d'efforts sur des routes difficiles, il conserve une pointe de vitesse suffisante pour lever les bras à l'arrivée, ce qui en fait l'un des finisseurs les plus complets du peloton.",
+ ],
+ cy14: [
+  "Isaac Del Toro est un jeune talent mexicain qui porte les espoirs du cyclisme latino-américain sur les routes européennes. Combatif et ambitieux, il n'hésite jamais à se montrer dans les moments clés d'une course.",
+  "Sa progression rapide dans le peloton international témoigne d'un talent précoce et d'une envie farouche de s'imposer parmi les meilleurs, ouvrant la voie à toute une nouvelle génération de coureurs venus d'Amérique latine.",
+ ],
+ cy15: [
+  "Tim Merlier est un sprinteur belge explosif, spécialiste redouté des arrivées massives où tout se joue dans les derniers mètres. Sa pointe de vitesse impressionnante en fait l'un des finisseurs les plus craints du peloton.",
+  "Toujours bien placé dans le sillage des trains de sprint, il sait attendre patiemment le bon moment avant de lancer son effort final, avec une explosivité qui laisse souvent ses adversaires sans réponse.",
+ ],
+ cy16: [
+  "Christophe Laporte est un coureur français complet et généreux, aussi précieux comme équipier fidèle que comme vainqueur d'étapes en solo. Sa rapidité et sa capacité d'adaptation en font un atout polyvalent pour son équipe.",
+  "Loyal et discret, il met souvent son talent au service de ses leaders sur les grands tours, tout en sachant saisir sa chance lorsque l'occasion se présente, avec une régularité qui force le respect du peloton.",
+ ],
+ cy17: [
+  "Benoît Cosnefroy est un puncheur français accrocheur, particulièrement à l'aise sur les parcours vallonnés où les bosses répétées usent les organismes les plus solides. Il sait saisir sa chance dans les moments décisifs.",
+  "Toujours prêt à attaquer dans les derniers kilomètres d'une classique exigeante, il incarne la combativité chère au cyclisme français, glanant régulièrement des victoires sur des terrains taillés pour les baroudeurs.",
+ ],
+ cy18: [
+  "Primož Roglič est un grand coureur slovène de courses par étapes, venu du saut à ski avant de se révéler sur les routes du cyclisme. Cette reconversion tardive mais spectaculaire en a fait l'un des coureurs les plus réguliers du peloton.",
+  "Coriace et rarement découragé, même après des chutes ou des malchances, il a collectionné les victoires sur les plus grands tours du calendrier, prouvant que la persévérance paie autant que le talent brut.",
+ ],
+ cy19: [
+  "Juan Ayuso est un jeune grimpeur espagnol très prometteur, remarqué pour son élégance dans les cols et son endurance impressionnante pour son âge. Il vise déjà les sommets des plus grandes courses par étapes.",
+  "Formé au sein d'équipes de haut niveau dès son plus jeune âge, il incarne une nouvelle génération de talents ibériques, avec l'ambition affichée de rejoindre un jour le cercle très fermé des vainqueurs de grands tours.",
+ ],
+ cy20: [
+  "Tom Pidcock est un coureur britannique surdoué et incroyablement polyvalent, à l'aise en VTT, en cyclo-cross comme sur la route. Champion olympique de VTT, il possède un sens de la descente hors du commun.",
+  "Capable de dévaler les routes de montagne à une vitesse qui impressionne ses adversaires, il apporte au peloton un style de course audacieux, hérité de ses années passées à dompter les sentiers les plus techniques.",
+ ],
+ cy21: [
+  "Mark Cavendish est un sprinteur britannique de légende, recordman du nombre de victoires d'étapes sur le Tour de France. Sa lecture de course et ses réflexes hors normes lui ont permis de dominer les arrivées massives pendant près de deux décennies.",
+  "Surnommé « la fusée de l'île de Man », il a su repousser année après année les limites de sa propre carrière, ajoutant victoire après victoire à un palmarès qui restera l'un des plus impressionnants de l'histoire du sprint.",
+ ],
+ cy22: [
+  "Alberto Contador est un grand champion espagnol, grimpeur explosif et multiple vainqueur de grands tours dans les années 2000 et 2010. Son style d'attaque fulgurant, surnommé le « coup de pistolero », est resté célèbre auprès des amateurs de cyclisme.",
+  "Toujours prêt à porter l'estocade dans la première rampe difficile venue, il a livré des duels mémorables face aux plus grands coureurs de son époque, marquant durablement l'histoire des courses par étapes.",
+ ],
+ cy23: [
+  "Philippe Gilbert est un coureur belge spécialiste des classiques, ancien champion du monde sur route. Puncheur rusé et intelligent dans sa lecture de course, il a remporté certaines des plus prestigieuses courses d'un jour du calendrier.",
+  "Sa capacité à choisir le bon moment pour attaquer, souvent loin de l'arrivée, a fait de lui l'un des coureurs les plus complets et respectés de sa génération, aussi bien sur les pavés que sur les routes vallonnées.",
+ ],
+ cy24: [
+  "Peter Sagan est un showman slovaque, multiple champion du monde et roi incontesté du maillot vert sur le Tour de France pendant de nombreuses années. Sprinteur-puncheur spectaculaire, il aime autant gagner que divertir le public.",
+  "Ses célébrations extravagantes à l'arrivée et son charisme unique en ont fait l'un des coureurs les plus populaires du peloton, capable de briller aussi bien au sprint que sur les terrains accidentés des classiques.",
+ ],
+ cy25: [
+  "Laurent Jalabert est un grand champion français des années 1990, vainqueur de nombreuses courses sur l'ensemble de sa carrière. Coureur complet, à l'aise en sprint comme en montagne, il a longtemps occupé la première place du classement mondial.",
+  "Sa polyvalence rare pour l'époque lui a permis de briller sur tous les types de terrain, du contre-la-montre aux arrivées en côte, faisant de lui l'un des cyclistes français les plus titrés de sa génération.",
+ ],
+ cy26: [
+  "Miguel Indurain est un géant espagnol du cyclisme, vainqueur de cinq Tours de France consécutifs entre 1991 et 1995, un exploit rarissime dans l'histoire de la course. Sa puissance tranquille impressionnait autant que ses adversaires.",
+  "Maître absolu du contre-la-montre, il roulait avec une régularité et un calme olympien qui décourageaient toute tentative de attaque adverse. Son mental de fer en a fait l'un des plus grands champions de l'histoire du Tour.",
+ ],
+ cy27: [
+  "Laurent Fignon est un double vainqueur du Tour de France dans les années 1980, immédiatement reconnaissable à ses lunettes rondes et sa queue de cheval blonde. Coureur au tempérament affirmé, il ne mâchait jamais ses mots.",
+  "Son duel légendaire contre Greg LeMond, perdu pour huit secondes lors du contre-la-montre final de 1989, reste l'un des dénouements les plus dramatiques de l'histoire du Tour de France, symbole du panache à la française.",
+ ],
+ cy28: [
+  "Bernard Hinault, surnommé « le Blaireau », est un quintuple vainqueur du Tour de France et le dernier coureur français à l'avoir remporté. Son tempérament de feu et son refus de céder un pouce de terrain en ont fait une légende vivante.",
+  "Combatif jusqu'à l'excès, capable de foncer dans la neige ou de défendre bec et ongles son maillot jaune, il incarne à lui seul l'esprit conquérant du cyclisme français des années 1970 et 1980.",
+ ],
+ cy29: [
+  "Richard Virenque est un grimpeur français très populaire dans les années 1990 et 2000, recordman du nombre de maillots à pois de meilleur grimpeur sur le Tour de France. Sa fougue dans les cols enflammait les foules massées sur les routes de montagne.",
+  "Idole incontestée des Pyrénées et des Alpes, il transformait chaque ascension en spectacle, portée par le soutien inconditionnel du public français massé au bord des routes pour l'encourager.",
+ ],
+ cy30: [
+  "Raymond Poulidor, surnommé affectueusement « Poupou », est l'éternel second le plus aimé de l'histoire du Tour de France. Jamais vainqueur de l'épreuve, il n'en est pas moins devenu l'un des cyclistes préférés des Français.",
+  "Sa combativité de tous les instants et sa gentillesse naturelle ont forgé une icône populaire durable, prouvant qu'on peut marquer l'histoire d'un sport sans jamais en remporter le trophée suprême.",
+ ],
+ cy31: [
+  "Jacques Anquetil est le premier coureur à avoir remporté cinq fois le Tour de France, un exploit qu'il réalisa dans les années 1950 et 1960. Virtuose absolu du contre-la-montre, il roulait avec une élégance et une régularité rares.",
+  "Racé et sûr de lui, il fut l'un des pionniers des géants de la route modernes, ouvrant la voie à une nouvelle ère de domination sportive fondée sur la précision tactique autant que sur la puissance brute.",
+ ],
+ cy32: [
+  "Eddy Merckx, surnommé « le Cannibale », est considéré par beaucoup comme le plus grand cycliste de tous les temps. Quintuple vainqueur du Tour de France, il ne se contentait jamais de gagner : il dominait chaque course du début à la fin.",
+  "Son appétit de victoire était tel qu'il remportait aussi bien les étapes de plaine que de montagne, les classiques d'un jour et les grands tours, laissant un palmarès si impressionnant qu'il reste, encore aujourd'hui, la référence absolue du cyclisme mondial.",
+ ],
+});
+
 try{
  if(typeof FIGURINES !== 'undefined' && Array.isArray(FIGURINES)){
   FIGURINES.forEach(f => { if(FIG_PAGES[f.id]) f.pages = FIG_PAGES[f.id]; });

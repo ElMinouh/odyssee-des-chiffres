@@ -23,7 +23,25 @@ function renderChart(){
  const h=(P.history||[]).slice(-7);const el=$('p-chart');
  if(!h.length){el.innerHTML='<span style="color:#bdc3c7;align-self:center;">Aucune partie encore !</span>';return;}
  const mx=Math.max(...h.map(x=>x.score),1);
- el.innerHTML=h.map(x=>`<div class="chart-bar-wrap"><div class="chart-bar" style="height:${Math.round(x.score/mx*70)}px"></div><span class="chart-label">${x.date}<br>${x.score}⭐</span></div>`).join('');
+ const ic=s=>s==='fr'?'📖':'🔢';
+ el.innerHTML=h.map(x=>`<div class="chart-bar-wrap"><div class="chart-bar" style="height:${Math.round(x.score/mx*70)}px"></div><span class="chart-label">${ic(x.subject)} ${x.date}<br>${x.score}⭐</span></div>`).join('');
+}
+var _opStatSubj='math';
+function setOpStatSubj(s){_opStatSubj=s;renderOpStats();}
+function renderOpStats(){
+ const bar='<div style="display:flex;gap:6px;margin-bottom:8px;">'+[['math','🔢 Maths'],['fr','📖 Français']].map(a=>`<button onclick="setOpStatSubj('${a[0]}')" style="font-size:.72em;padding:4px 10px;border-radius:8px;background:${_opStatSubj===a[0]?'#27ae60':'#2c3e50'};">${a[1]}</button>`).join('')+'</div>';
+ if(_opStatSubj==='fr'){
+  const names={conj:'Conjugaison',orth:'Orthographe',gram:'Grammaire',vocab:'Vocabulaire'};
+  const cats=['conj','orth','gram','vocab'];
+  $('p-opstats').innerHTML=bar+'<strong>📊 Par catégorie :</strong><br>'+
+   cats.map(c=>{const s=(P.opStatsFr||{})[c]||{ok:0,fail:0};const t=s.ok+s.fail;if(!t)return'';const pct=Math.round(s.ok/t*100);const col=pct>=80?'#2ecc71':pct>=60?'#f1c40f':'#e74c3c';
+   return`<div class="op-stat-row"><span style="width:90px;text-align:left;font-size:.82em;">${names[c]}</span><div class="op-stat-bar"><div class="op-stat-fill" style="width:${pct}%;background:${col};"></div></div><span style="color:${col};font-weight:700;margin-left:6px;font-size:.82em;">${pct}%</span></div>`;}).filter(Boolean).join('')||'<span style="color:#bdc3c7;">Pas encore de données en français.</span>';
+  return;
+ }
+ const ops=['+','-','x','/','geo'];const names={'+':"Addition",'-':"Soustraction",'x':"Multiplication",'/':'Division','geo':'Géométrie'};
+ $('p-opstats').innerHTML=bar+'<strong>📊 Par opération :</strong><br>'+
+  ops.map(op=>{const s=P.opStats[op]||{ok:0,fail:0};const t=s.ok+s.fail;if(!t)return'';const pct=Math.round(s.ok/t*100);const col=pct>=80?'#2ecc71':pct>=60?'#f1c40f':'#e74c3c';
+  return`<div class="op-stat-row"><span style="width:90px;text-align:left;font-size:.82em;">${names[op]}</span><div class="op-stat-bar"><div class="op-stat-fill" style="width:${pct}%;background:${col};"></div></div><span style="color:${col};font-weight:700;margin-left:6px;font-size:.82em;">${pct}%</span></div>`;}).filter(Boolean).join('')||'<span style="color:#bdc3c7;">Pas encore de données.</span>';
 }
 var _revSubj='math';
 function setRevSubj(s){_revSubj=s;renderErrors();}
@@ -51,12 +69,6 @@ function renderLB(){
  const rows=[];all.forEach(n=>{try{const d=JSON.parse(localStorage.getItem('user_'+n)||'null');if(d&&((d.stars||0)>0||(d.history||[]).length))rows.push({name:n,stars:d.stars||0,xp:d.xp||0});}catch(e){}});
  rows.sort((a,b)=>b.xp-a.xp);const m=['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣'];
  $('p-lb').innerHTML=rows.length?rows.map((r,i)=>`<div class="lb-row"><span>${m[i]||'•'}</span><span class="lb-name">${esc(r.name)}${r.name===P.name?' (moi)':''}</span><span class="lb-score">Niv.${levelFromXP(r.xp)} · ${r.stars}⭐</span></div>`).join(''):'<span style="color:#bdc3c7;">Aucune donnée.</span>';
-}
-function renderOpStats(){
- const ops=['+','-','x','/','geo'];const names={'+':"Addition",'-':"Soustraction",'x':"Multiplication",'/':'Division','geo':'Géométrie'};
- $('p-opstats').innerHTML='<strong>📊 Par opération :</strong><br>'+
-  ops.map(op=>{const s=P.opStats[op]||{ok:0,fail:0};const t=s.ok+s.fail;if(!t)return'';const pct=Math.round(s.ok/t*100);const col=pct>=80?'#2ecc71':pct>=60?'#f1c40f':'#e74c3c';
-  return`<div class="op-stat-row"><span style="width:90px;text-align:left;font-size:.82em;">${names[op]}</span><div class="op-stat-bar"><div class="op-stat-fill" style="width:${pct}%;background:${col};"></div></div><span style="color:${col};font-weight:700;margin-left:6px;font-size:.82em;">${pct}%</span></div>`;}).filter(Boolean).join('')||'<span style="color:#bdc3c7;">Pas encore de données.</span>';
 }
 
 // ═══════════════════════════════════════════════════════

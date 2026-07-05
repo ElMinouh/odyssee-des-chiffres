@@ -94,6 +94,15 @@ function _frSample(arr,n,excludeIds){
 }
 // Construit l'objet QCM : choix [{val,label,html}], res=val du bon choix.
 function _frStrip(h){ return String(h).replace(/<br\s*\/?>/gi,' ').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim(); }
+// Regroupe les dizaines d'opKey français précis (fr-conj, fr6-fonc, frm-syll...)
+// en 4 grandes catégories pour un suivi bi-matière lisible (chantier v11.1.0).
+function _frCatOf(opKey){
+ const k = String(opKey||'');
+ if(/conj|temps|mode/.test(k)) return 'conj';
+ if(/dictee|mbp|pp|plur|accord|graph|orth|lettre/.test(k)) return 'orth';
+ if(/nature|fonc|ptype|phrase|cod|rel|comp|val|voix|sub|agent|conn|lien|nat$/.test(k)) return 'gram';
+ return 'vocab'; // syn, opp, pref, fam, homo, sens, etym, reg, fig, cat, intrus, syll, son, ecoute...
+}
 function _frQ(display, correctHtml, distractorHtmls, opKey, hint){
  const items=_frShuffle([{html:correctHtml,ok:true}].concat(distractorHtmls.map(h=>({html:h,ok:false}))));
  let res=1;
