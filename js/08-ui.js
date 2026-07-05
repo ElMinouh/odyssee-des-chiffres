@@ -25,11 +25,21 @@ function renderChart(){
  const mx=Math.max(...h.map(x=>x.score),1);
  el.innerHTML=h.map(x=>`<div class="chart-bar-wrap"><div class="chart-bar" style="height:${Math.round(x.score/mx*70)}px"></div><span class="chart-label">${x.date}<br>${x.score}⭐</span></div>`).join('');
 }
+var _revSubj='math';
+function setRevSubj(s){_revSubj=s;renderErrors();}
 function renderErrors(){
+ const el=$('p-errors'),btn=$('btn-revision');
+ const bar='<div style="display:flex;gap:6px;margin-bottom:8px;">'+[['math','🔢 Maths'],['fr','📖 Français']].map(a=>`<button onclick="setRevSubj('${a[0]}')" style="font-size:.72em;padding:4px 10px;border-radius:8px;background:${_revSubj===a[0]?'#27ae60':'#2c3e50'};">${a[1]}</button>`).join('')+'</div>';
+ if(_revSubj==='fr'){
+  const u=(P.errorsFr||[]).slice(-12).reverse();
+  el.innerHTML=bar+(u.length?u.map(e=>`<div class="revision-q"><span>${e.q}</span><strong style="color:#f1c40f;">${e.ok||''}</strong></div>`).join(''):'<span style="color:#2ecc71;">✅ Aucune erreur en français !</span>');
+  if(btn)btn.classList.add('hidden');
+  return;
+ }
  const u=[...new Set(P.errors||[])].slice(-10);
- if(!u.length){$('p-errors').innerHTML='<span style="color:#2ecc71;">✅ Aucune erreur !</span>';$('btn-revision').classList.add('hidden');return;}
- $('p-errors').innerHTML=u.map(e=>{const m=e.match(/^(.+?)([+\-x×\/÷])(.+?)=(\d+)$/);return m?`<div class="revision-q"><span>${m[1]} ${m[2]} ${m[3]} = ?</span><strong style="color:#f1c40f;">${m[4]}</strong></div>`:`<div class="revision-q">${e}</div>`;}).join('');
- $('btn-revision').classList.remove('hidden');
+ if(!u.length){el.innerHTML=bar+'<span style="color:#2ecc71;">✅ Aucune erreur en maths !</span>';if(btn)btn.classList.add('hidden');return;}
+ el.innerHTML=bar+u.map(e=>{const m=e.match(/^(.+?)([+\-x×\/÷])(.+?)=(\d+)$/);return m?`<div class="revision-q"><span>${m[1]} ${m[2]} ${m[3]} = ?</span><strong style="color:#f1c40f;">${m[4]}</strong></div>`:`<div class="revision-q">${e}</div>`;}).join('');
+ if(btn)btn.classList.remove('hidden');
 }
 function renderRecords(){
  const h=P.history||[];const best=h.length?Math.max(...h.map(x=>x.score)):0;

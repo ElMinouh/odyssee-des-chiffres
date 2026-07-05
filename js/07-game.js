@@ -110,9 +110,9 @@ function _setSubjectLogos(){
  try{
   const subj = (typeof GM!=='undefined' && GM && GM.subject) ? GM.subject : 'math';
   let src, alt, lbl;
-  if(subj==='fr'){ src='assets/logo-mots.webp?v=1052'; alt="L'Odyssée des Mots"; lbl="L'ODYSSÉE : L'AVENTURE LITTÉRAIRE"; }
-  else if(subj==='math'){ src='assets/logo-main.webp?v=1052'; alt="L'Odyssée des Chiffres"; lbl="L'ODYSSÉE : L'AVENTURE MATHÉMATIQUE"; }
-  else { src='assets/logo-savoir.webp?v=1052'; alt="L'Odyssée du Savoir"; lbl="L'ODYSSÉE DU SAVOIR"; }
+  if(subj==='fr'){ src='assets/logo-mots.webp?v=1053'; alt="L'Odyssée des Mots"; lbl="L'ODYSSÉE : L'AVENTURE LITTÉRAIRE"; }
+  else if(subj==='math'){ src='assets/logo-main.webp?v=1053'; alt="L'Odyssée des Chiffres"; lbl="L'ODYSSÉE : L'AVENTURE MATHÉMATIQUE"; }
+  else { src='assets/logo-savoir.webp?v=1053'; alt="L'Odyssée du Savoir"; lbl="L'ODYSSÉE DU SAVOIR"; }
   document.querySelectorAll('img.subj-logo').forEach(function(im){ im.src=src; im.alt=alt; });
   const el = document.getElementById('ody-btn-label');
   if(el) el.textContent = lbl;
@@ -2853,7 +2853,15 @@ GS.errInGame++;GS.combo=0;GS.opCombo=0;GS.lastOpKey=null;$('gc').classList.remov
   const opK=q.opKey||'+';P.opStats[opK]=P.opStats[opK]||{ok:0,fail:0};P.opStats[opK].fail++;
   if(typeof _progUpdate==="function") _progUpdate(GM.level, false);
   if(typeof _classStatUpdate==="function") _classStatUpdate(GM.level, q.opKey, false);
-  if(q.display&&q.res!==undefined)P.errors=([...(P.errors||[])]).concat(`${q.a||'?'}${q.op||'?'}${q.b||'?'}=${q.res}`).slice(-60);
+  if(q.display&&q.res!==undefined){
+   if((q.subj==='fr')||(typeof GM!=='undefined'&&GM.subject==='fr')){
+    const _qd=String(q.display||'').replace(/<[^>]+>/g,'').trim();
+    const _ans=String(q.hint||'').replace(/^R[eé]ponse\s*:\s*/i,'').trim();
+    if(_qd) P.errorsFr=([...(P.errorsFr||[])]).concat({q:_qd,ok:_ans}).slice(-60);
+   } else {
+    P.errors=([...(P.errors||[])]).concat(`${q.a||'?'}${q.op||'?'}${q.b||'?'}=${q.res}`).slice(-60);
+   }
+  }
   // Chantier 1.2 : log dans le registre de révision espacée
   if(typeof logError==="function" && q.display && q.res!==undefined) logError(q.display, q.res, q);
   // v10.0.0 (C2) : liste de session propre pour le récap de fin de partie
