@@ -624,7 +624,7 @@ const _COL_PH = {
  _colPuissance10:2, _colPGCD:2, _colPremier:2, _colAlgoVar:2,
  _colNotationSci:3, _colAlgoBoucle:3,
 };
-for(const name in _COL_PH){ try{ const f = eval(name); if(typeof f === 'function') f.ph = _COL_PH[name]; }catch(e){} }
+for(const name in _COL_PH){ try{ const f = window[name]; if(typeof f === 'function') f.ph = _COL_PH[name]; }catch(e){} }
 
 // ── Pools par niveau (6e = cycle 3, pas de relatifs → rempli plus tard) ──
 const _COL_POOL = {

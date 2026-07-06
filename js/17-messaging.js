@@ -115,6 +115,7 @@ var _msgConvTimer = null;
 var _msgBadgePoll = null;
 
 function _e(s){ return (typeof esc==='function') ? esc(s) : String(s==null?'':s); }
+function _jsAttr(s){ return _e(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
 function _msgEl(){ return document.getElementById('msg-overlay'); }
 function _curName(){ return (typeof P!=='undefined' && P) ? P.name : null; }
 
@@ -189,7 +190,7 @@ async function renderContactsScreen(){
  } else {
   contacts.forEach(c => {
    const cid=_e(c.id), cn=_e(c.name||c.id), av=_e(c.avatar||'\uD83E\uDDD9');
-   const nameArg=(c.name||c.id).replace(/'/g,"\\'"), avArg=(c.avatar||'').replace(/'/g,"\\'");
+   const nameArg=_jsAttr(c.name||c.id), avArg=_jsAttr(c.avatar||'');
    const unread = (latest[c.id]||0) > (seen[c.id]||0);
    html += '<div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.06);border-radius:12px;padding:10px 12px;margin:5px 0;cursor:pointer;" onclick="chatOpenConv(\''+cid+'\',\''+nameArg+'\',\''+avArg+'\')">'
     + '<span style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0;">'+av+'</span>'
@@ -283,7 +284,7 @@ function renderConvShell(name){
   + (_msgReadOnly
      ? '<p style="font-size:.74em;color:#7f8c8d;text-align:center;margin-top:8px;">\uD83D\uDC41 Lecture seule (espace parent)</p>'
      : ('<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">'
-        + CHAT_PHRASES.map(s=>'<button onclick="chatQuickSend(\''+s.replace(/'/g,"\\'")+'\')" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:6px 11px;font-size:.82em;">'+_e(s)+'</button>').join('')
+        + CHAT_PHRASES.map(s=>'<button onclick="chatQuickSend(\''+_jsAttr(s)+'\')" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:6px 11px;font-size:.82em;">'+_e(s)+'</button>').join('')
         + '</div>'
         + '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">'
         + CHAT_STICKERS.map(s=>'<button onclick="chatQuickSend(\''+s+'\')" style="background:rgba(255,255,255,.08);border-radius:50%;width:38px;height:38px;font-size:19px;padding:0;line-height:1;">'+s+'</button>').join('')
@@ -601,7 +602,7 @@ async function _renderOptMsgManage(name){
  box.innerHTML='<p style="font-size:.72em;color:#7f8c8d;margin:8px 0 4px;">Chargement\u2026</p>';
  let fl=null; try{ fl=await chatFriendList(prof); }catch(e){}
  if(!fl || !fl.ok){ box.innerHTML='<p style="font-size:.72em;color:#7f8c8d;margin:8px 0;">Contacts indisponibles (hors-ligne ?).</p>'; return; }
- const nEsc=_e(name).replace(/'/g,"\\'");
+ const nEsc=_jsAttr(name);
  const av=c=>_e(c.avatar||'\uD83E\uDDD9'), nm=c=>_e(c.name||c.id), idOf=c=>_e(c.id);
  const avat=v=>'<span style="width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">'+v+'</span>';
  let h='';
@@ -616,7 +617,7 @@ async function _renderOptMsgManage(name){
  const contacts=fl.contacts||[];
  h+='<div style="margin-top:10px;font-size:.74em;font-weight:700;color:#bdc3c7;">\uD83D\uDC65 Contacts ('+contacts.length+')</div>';
  if(!contacts.length) h+='<p style="font-size:.72em;color:#7f8c8d;margin:4px 0;">Aucun contact.</p>';
- contacts.forEach(c=>{ const cnArg=(c.name||c.id).replace(/'/g,"\\'");
+ contacts.forEach(c=>{ const cnArg=_jsAttr(c.name||c.id);
   h+='<div style="display:flex;align-items:center;gap:8px;margin:5px 0;">'+avat(av(c))
    +'<span style="flex:1;font-size:.82em;">'+nm(c)+'</span>'
    +'<button onclick="chatBlockContact(\''+nEsc+'\',\''+idOf(c)+'\',\''+cnArg+'\')" style="background:#c0392b;font-size:.72em;padding:4px 9px;">\uD83D\uDEAB Bloquer</button></div>'; });
@@ -636,7 +637,7 @@ function renderOptMessaging(name){
  const prof = _chatLoad(name);
  const on = !!prof.chatEnabled;
  const code = prof.chatId || '(généré à l\u2019activation)';
- const nEsc = _e(name).replace(/'/g,"\\'");
+ const nEsc = _jsAttr(name);
  box.innerHTML =
   '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">'
   + '<span style="font-size:.85em;">Messagerie : <b style="color:'+(on?'#2ecc71':'#e67e22')+';">'+(on?'active':'suspendue')+'</b></span>'

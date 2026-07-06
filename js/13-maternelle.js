@@ -487,5 +487,5 @@ function _matSpeakAnim(text){
   _matAssocie:2,_matRanger:2,_matChiffreColl:2,_matApres:2,_matAddition:2,_matNombreManque:2,
   _matDecompose:3,_matComplement:3,_matRetrait:3,_matProbleme:3,_matPartage:3
  };
- for(const name in PH){ try{ const f=eval(name); if(typeof f==='function') f.ph=PH[name]; }catch(e){} }
+ for(const name in PH){ try{ const f=window[name]; if(typeof f==='function') f.ph=PH[name]; }catch(e){} }
 })();

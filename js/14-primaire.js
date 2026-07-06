@@ -542,5 +542,5 @@ function _primEnrich(level){
   _primStrategie:3,_primArrondi:3,_primFracCompare:3,_primAire:3,_primCartesien:3,
   _primFracDecimal:3,_primDecimalFrac:3,_primFracEquiv:3,_primAngle:3,_primProportion:3,_primProblemeFois:3
  };
- for(const name in PH){ try{ const f=eval(name); if(typeof f==='function') f.ph=PH[name]; }catch(e){} }
+ for(const name in PH){ try{ const f=window[name]; if(typeof f==='function') f.ph=PH[name]; }catch(e){} }
 })();
