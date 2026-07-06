@@ -944,6 +944,14 @@ const MUSICS=[
  {id:'aubemonde',    label:"L'Aube d'un Nouveau Monde",      file:'music/music-aubemonde.mp3',    price:300},
  {id:'infini',       label:"L'Infini des Possibles",         file:'music/music-infini.mp3',       price:300},
  {id:'etoiconn',     label:'Les Étoiles de la Connaissance', file:'music/music-etoiconn.mp3',     price:300},
+ {id:'demain',       label:'Demain Sera Meilleur',           file:'music/music-demain.mp3',       price:300},
+ {id:'chemincontinue',label:'Le Chemin Continue',            file:'music/music-chemincontinue.mp3',price:300},
+ {id:'etoilesucces', label:"L'Étoile du Succès",             file:'music/music-etoilesucces.mp3', price:300},
+ {id:'pasexplo',     label:'Le Pas des Explorateurs',        file:'music/music-pasexplo.mp3',     price:300},
+ {id:'choixapproche',label:'Le Choix Approche',              file:'music/music-choixapproche.mp3',price:300},
+ {id:'battement',    label:'Le Battement du Temps',          file:'music/music-battement.mp3',    price:300},
+ {id:'terrenuages',  label:'Entre Terre et Nuages',          file:'music/music-terrenuages.mp3',  price:300},
+ {id:'explocurieux', label:"L'Explorateur Curieux",          file:'music/music-explocurieux.mp3', price:300},
 ];
 const POWERS=[
  {id:'shield',emoji:'🛡️',label:'Bouclier',     recharge:4,effect:'shield'},

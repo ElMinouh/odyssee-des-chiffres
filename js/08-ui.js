@@ -136,7 +136,12 @@ function renderVSounds(){
 }
 function buySound(id,p){spend(p,()=>{P.ownedSounds=[...(P.ownedSounds||[]),id];renderVSounds();toast('Son acheté !');});}
 function selectVS(id){P.victorySound=id;saveProfileNow();renderVSounds();toast('Son : '+VSOUNDS.find(s=>s.id===id)?.label);}
-function testVS(id){const s=VSOUNDS.find(v=>v.id===id);if(s)try{s.play(getAudio());}catch(e){}}
+function testVS(id){
+ const s=VSOUNDS.find(v=>v.id===id); if(!s) return;
+ if(typeof _musicDuck==='function') _musicDuck(true);
+ try{ s.play(getAudio()); }catch(e){}
+ setTimeout(function(){ if(typeof _musicDuck==='function') _musicDuck(false); }, 2000);
+}
 // ── Rayon Musiques (achat + choix, à la manière des skins) ──
 function renderMusics(){
  const el=$('p-musics'); if(!el) return;
@@ -154,10 +159,12 @@ function renderMusics(){
 function buyMusic(id,p){spend(p,()=>{P.ownedMusics=[...(P.ownedMusics||['theme']),id];renderMusics();toast('Musique achetée !');});}
 function selectMusic(id){P.music=id;saveProfileNow();renderMusics();toast('Musique choisie !');try{ if(typeof musicOn!=='undefined'&&musicOn){stopMusic();startMusic();} }catch(e){}}
 var _musPrev=null;
+function _stopTestMusic(){ try{ if(_musPrev){_musPrev.pause();_musPrev=null;} }catch(e){} if(typeof _musicDuck==='function') _musicDuck(false); }
 function testMusic(id){
- try{ if(_musPrev){_musPrev.pause();_musPrev=null;} }catch(e){}
+ _stopTestMusic();
  const m=(typeof MUSICS!=='undefined')?MUSICS.find(x=>x.id===id):null; if(!m)return;
- try{ _musPrev=new Audio('assets/'+m.file); _musPrev.volume=.5; _musPrev.play().catch(function(){}); setTimeout(function(){ if(_musPrev){try{_musPrev.pause();}catch(e){}} },12000); }catch(e){}
+ if(typeof _musicDuck==='function') _musicDuck(true);
+ try{ _musPrev=new Audio('assets/'+m.file); _musPrev.volume=.5; _musPrev.onended=_stopTestMusic; _musPrev.play().catch(_stopTestMusic); setTimeout(_stopTestMusic,12000); }catch(e){ _stopTestMusic(); }
 }
 function renderSkins(){
  $('p-skins').innerHTML=SKINS.map(s=>{
