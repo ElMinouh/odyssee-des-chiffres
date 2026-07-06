@@ -953,8 +953,8 @@ function _pickNarratorVoice(){
   return fr[0];
  }catch(e){ return null; }
 }
-function _narrateStop(){ try{ window.speechSynthesis.cancel(); }catch(e){} _storyUtter = null; }
-function _narratePause(){ try{ if(window.speechSynthesis.speaking && !window.speechSynthesis.paused) window.speechSynthesis.pause(); }catch(e){} }
+function _narrateStop(){ try{ window.speechSynthesis.cancel(); }catch(e){} if(typeof _musicDuck==='function') _musicDuck(false); _storyUtter = null; }
+function _narratePause(){ try{ if(window.speechSynthesis.speaking && !window.speechSynthesis.paused){ window.speechSynthesis.pause(); if(typeof _musicDuck==='function') _musicDuck(false); } }catch(e){} }
 function _narrateStory(rawHtml){
  if(!window.speechSynthesis) return;
  try{
@@ -972,9 +972,12 @@ function _narrateStory(rawHtml){
   u.pitch = 1.05;  // chaleureux
   u.volume = 1;
   const v = _pickNarratorVoice(); if(v) u.voice = v;
+  if(typeof _musicDuck==='function') _musicDuck(true);
+  const _un=function(){ if(typeof _musicDuck==='function') _musicDuck(false); };
+  u.onend=_un; u.onerror=_un;
   _storyUtter = u;
   window.speechSynthesis.speak(u);
- }catch(e){}
+ }catch(e){ if(typeof _musicDuck==='function') _musicDuck(false); }
 }
 
 function _showStoryModal(chapter, onDone){
@@ -988,7 +991,7 @@ function _showStoryModal(chapter, onDone){
  function _bSyncPlay(){ const pl = overlay.querySelector('.snarr-play'); if(pl) pl.classList.toggle('reading', !!_readActive); }
  function _bSpeak(idx){
   if(!window.speechSynthesis){ _readActive=false; return; }
-  if(idx >= chapter.pages.length){ _readActive=false; _bSyncPlay(); return; }
+  if(idx >= chapter.pages.length){ _readActive=false; _bSyncPlay(); if(typeof _musicDuck==='function') _musicDuck(false); return; }
   page = idx; render();                                   // défilement visuel synchronisé
   const tmp = document.createElement('div'); tmp.innerHTML = _storyText(chapter.pages[idx].text || '');
   const plain = (tmp.textContent || tmp.innerText || '').replace(/\s+/g,' ').trim();
@@ -997,18 +1000,19 @@ function _showStoryModal(chapter, onDone){
   const u = new SpeechSynthesisUtterance(hum);
   u.lang='fr-FR'; u.rate=0.84; u.pitch=1.05; u.volume=1;
   try{ const v=_pickNarratorVoice(); if(v) u.voice=v; }catch(e){}
-  u.onend = ()=>{ if(_readActive && _readUtter===u) _bSpeak(idx+1); };   // enchaîne la page suivante
+  u.onend = ()=>{ if(_readActive && _readUtter===u) _bSpeak(idx+1); else if(typeof _musicDuck==='function') _musicDuck(false); };   // enchaîne la page suivante
   _readUtter = u; _storyUtter = u;
-  try{ window.speechSynthesis.speak(u); }catch(e){ _readActive=false; }
+  try{ window.speechSynthesis.speak(u); }catch(e){ _readActive=false; if(typeof _musicDuck==='function') _musicDuck(false); }
  }
  function _bPlay(){
   if(!window.speechSynthesis) return;
-  try{ if(window.speechSynthesis.paused){ window.speechSynthesis.resume(); _bSyncPlay(); return; } }catch(e){}
+  try{ if(window.speechSynthesis.paused){ window.speechSynthesis.resume(); _bSyncPlay(); if(typeof _musicDuck==='function') _musicDuck(true); return; } }catch(e){}
   try{ window.speechSynthesis.cancel(); }catch(e){}
+  if(typeof _musicDuck==='function') _musicDuck(true);
   _readActive = true; _bSpeak(page); _bSyncPlay();         // démarre à la page courante puis enchaîne
  }
- function _bPause(){ try{ if(window.speechSynthesis.speaking && !window.speechSynthesis.paused){ window.speechSynthesis.pause(); _bSyncPlay(); } }catch(e){} }
- function _bStop(){ _readActive=false; _readUtter=null; try{ window.speechSynthesis.cancel(); }catch(e){} _bSyncPlay(); }
+ function _bPause(){ try{ if(window.speechSynthesis.speaking && !window.speechSynthesis.paused){ window.speechSynthesis.pause(); _bSyncPlay(); if(typeof _musicDuck==='function') _musicDuck(false); } }catch(e){} }
+ function _bStop(){ _readActive=false; _readUtter=null; try{ window.speechSynthesis.cancel(); }catch(e){} if(typeof _musicDuck==='function') _musicDuck(false); _bSyncPlay(); }
  function close(){
   _bStop();
   overlay.classList.add('story-out');

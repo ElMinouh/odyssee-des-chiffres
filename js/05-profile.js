@@ -462,7 +462,10 @@ function applyTheme(t){
  const b=document.body;
  [...b.classList].forEach(c=>{ if(c.indexOf('theme-')===0) b.classList.remove(c); });
  if(t && t!=='standard') b.classList.add('theme-'+t);
- if(musicOn){stopMusic();startMusic();}
+ // v11.1.8 : le changement de thème (visuel, appelé à chaque navigation/zone/étape)
+ // ne doit plus jamais couper/relancer la musique. La musique ne doit être
+ // affectée que par un choix explicite (selectMusic) ou une (dés)activation
+ // volontaire (toggleMusic) — jamais par le simple fait de naviguer dans le jeu.
 }
 
 // v8.7.6 : sauvegarde IMMÉDIATE du thème (sans debounce) + clé globale

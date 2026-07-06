@@ -394,16 +394,17 @@ function _figSpeakFrom(idx){
  const u = new SpeechSynthesisUtterance(hum);
  u.lang='fr-FR'; u.rate=0.84; u.pitch=1.05; u.volume=1;
  try{ const v = (typeof _pickNarratorVoice==='function') ? _pickNarratorVoice() : null; if(v) u.voice=v; }catch(e){}
- u.onend = ()=>{ if(_figReadActive && _figUtter===u) _figSpeakFrom(idx+1); };  // enchaîne la page suivante
+ u.onend = ()=>{ if(_figReadActive && _figUtter===u) _figSpeakFrom(idx+1); else if(typeof _musicDuck==='function') _musicDuck(false); };  // enchaîne la page suivante
  _figUtter = u;
- try{ window.speechSynthesis.speak(u); }catch(e){ _figReadActive=false; _figSetPlaying(false); }
+ try{ window.speechSynthesis.speak(u); }catch(e){ _figReadActive=false; _figSetPlaying(false); if(typeof _musicDuck==='function') _musicDuck(false); }
 }
 function figReadPlay(){
  if(!window.speechSynthesis){ try{ if(typeof toast==='function') toast('🔇 Lecture vocale non disponible sur cet appareil.'); }catch(e){} return; }
  _figFaceBack();                                                // dos à plat pendant la lecture
  // Reprise si en pause
- try{ if(window.speechSynthesis.paused && window.speechSynthesis.speaking){ window.speechSynthesis.resume(); _figSetPlaying(true); return; } }catch(e){}
+ try{ if(window.speechSynthesis.paused && window.speechSynthesis.speaking){ window.speechSynthesis.resume(); _figSetPlaying(true); if(typeof _musicDuck==='function') _musicDuck(true); return; } }catch(e){}
  _figReadActive = true; _figSetPlaying(true);
+ if(typeof _musicDuck==='function') _musicDuck(true);
  // Android : cancel() suivi d'un speak() immédiat annule la nouvelle lecture.
  // On démarre directement si rien ne parle, sinon on annule puis on diffère.
  const startNow = ()=>{ _figSpeakFrom(_fvPageIdx); };
@@ -412,11 +413,12 @@ function figReadPlay(){
  else { startNow(); }
 }
 function figReadPause(){
- try{ if(window.speechSynthesis.speaking && !window.speechSynthesis.paused){ window.speechSynthesis.pause(); _figSetPlaying(false); } }catch(e){}
+ try{ if(window.speechSynthesis.speaking && !window.speechSynthesis.paused){ window.speechSynthesis.pause(); _figSetPlaying(false); if(typeof _musicDuck==='function') _musicDuck(false); } }catch(e){}
 }
 function figReadStop(){
  _figReadActive = false; _figUtter = null;
  try{ window.speechSynthesis.cancel(); }catch(e){}
+ if(typeof _musicDuck==='function') _musicDuck(false);
  _figSetPlaying(false);
 }
 

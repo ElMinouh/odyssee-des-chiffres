@@ -228,8 +228,11 @@ function speakAs(text, monster){
   m.pitch = prof.pitch;
   m.rate = Math.min(prof.rate || 0.9, 0.9);
   if(_frVoice) m.voice=_frVoice;
+  if(typeof _musicDuck==='function') _musicDuck(true);           // baisse la musique pendant la voix du monstre
+  const _un=function(){ if(typeof _musicDuck==='function') _musicDuck(false); };
+  m.onend=_un; m.onerror=_un;
   window.speechSynthesis.speak(m);
- }catch(e){}
+ }catch(e){ if(typeof _musicDuck==='function') _musicDuck(false); }
 }
 function saveVoice(){
  const t=$('voiceToggle');if(!t)return;
@@ -298,7 +301,10 @@ function repeatQuestion(){
  window.speechSynthesis.cancel();
  const m=new SpeechSynthesisUtterance(_humanizeForSpeech(txt));
  m.lang='fr-FR';m.rate=0.95;if(_frVoice)m.voice=_frVoice;
- try{window.speechSynthesis.speak(m);}catch(e){}
+ if(typeof _musicDuck==='function') _musicDuck(true);
+ const _un=function(){ if(typeof _musicDuck==='function') _musicDuck(false); };
+ m.onend=_un; m.onerror=_un;
+ try{window.speechSynthesis.speak(m);}catch(e){ _un(); }
 }
 let toastT=null;
 function toast(msg,dur=2200){const el=$('toast');el.innerText=msg;el.classList.remove('hidden');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.add('hidden'),dur);}
@@ -455,11 +461,11 @@ function quitGame(dest){
   _currentZoneId = zid;
   if(typeof renderZoneMap==='function') renderZoneMap();
   showView('v-zone');
-  if(typeof stopMusic==='function') stopMusic();
   return;
  }
  if(typeof GM!=='undefined'){GM.homework=false;GM.homeworkConfig=null;}
- if(typeof stopMusic==='function') stopMusic();
+ // v11.1.8 : abandonner une partie (Retour/Accueil) ne doit plus couper la musique —
+ // la navigation ne doit jamais influencer le cours de la musique.
  if(dest==='home'){
   if(typeof goHome==='function') goHome(); else { showView('v-menu'); if(typeof loadProfile==='function') loadProfile(); }
  }else{
@@ -639,6 +645,7 @@ function clearMonsterSpeech(){
  // v8.7.0 : couper aussi la synthèse vocale en cours (sinon le monstre
  // continue de parler après la fin de la partie / changement d'écran)
  try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
+ if(typeof _musicDuck==='function') _musicDuck(false); // sécurité : ne pas laisser la musique en sourdine si on coupe la parole
  if(_speechBubble){_speechBubble.remove();_speechBubble=null;}
 }
 // ═══════════════════════════════════════════════════════
