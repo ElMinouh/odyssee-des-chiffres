@@ -122,16 +122,25 @@ function validateProfile(raw, defaultName){
   zoneProgress: (function(){
    const src = (raw.zoneProgress && typeof raw.zoneProgress === 'object') ? raw.zoneProgress : {};
    const out = {};
-   // Garder uniquement les zones connues, sanitiser les valeurs
+   // Plafond d'étapes par zone connue (zones de la matière courante uniquement)
+   const maxById = {};
    if(typeof MAP_ZONES !== 'undefined' && Array.isArray(MAP_ZONES)){
-    MAP_ZONES.forEach(z=>{
-     const s = src[z.id] || {};
-     const max = (Array.isArray(z.steps) ? z.steps.length : 5);
-     out[z.id] = {
-      stepsCompleted: _clampNum(s.stepsCompleted, 0, max, 0),
-      completed: !!s.completed
-     };
-    });
+    MAP_ZONES.forEach(z=>{ maxById[z.id] = (Array.isArray(z.steps) ? z.steps.length : 5); });
+   }
+   // Conserver TOUTES les zones déjà enregistrées, y compris celles des autres
+   // matières (absentes du MAP_ZONES courant) : sinon leur progression est effacée
+   // au changement de matière. On sanitise, sans plafonner les zones inconnues.
+   Object.keys(src).forEach(zid=>{
+    const s = src[zid] || {};
+    const max = (typeof maxById[zid] === 'number') ? maxById[zid] : 999;
+    out[zid] = {
+     stepsCompleted: _clampNum(s.stepsCompleted, 0, max, 0),
+     completed: !!s.completed
+    };
+   });
+   // Garantir une entrée par défaut pour les zones de la matière courante.
+   if(typeof MAP_ZONES !== 'undefined' && Array.isArray(MAP_ZONES)){
+    MAP_ZONES.forEach(z=>{ if(!out[z.id]) out[z.id] = { stepsCompleted:0, completed:false }; });
    }
    return out;
   })(),
