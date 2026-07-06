@@ -109,9 +109,9 @@ function _setSubjectLogos(){
  try{
   const subj = (typeof GM!=='undefined' && GM && GM.subject) ? GM.subject : 'math';
   let src, alt, lbl;
-  if(subj==='fr'){ src='assets/logo-mots.webp?v=1059'; alt="L'Odyssée des Mots"; lbl="L'ODYSSÉE : L'AVENTURE LITTÉRAIRE"; }
-  else if(subj==='math'){ src='assets/logo-main.webp?v=1059'; alt="L'Odyssée des Chiffres"; lbl="L'ODYSSÉE : L'AVENTURE MATHÉMATIQUE"; }
-  else { src='assets/logo-savoir.webp?v=1059'; alt="L'Odyssée du Savoir"; lbl="L'ODYSSÉE DU SAVOIR"; }
+  if(subj==='fr'){ src='assets/logo-mots.webp?v=1060'; alt="L'Odyssée des Mots"; lbl="L'ODYSSÉE : L'AVENTURE LITTÉRAIRE"; }
+  else if(subj==='math'){ src='assets/logo-main.webp?v=1060'; alt="L'Odyssée des Chiffres"; lbl="L'ODYSSÉE : L'AVENTURE MATHÉMATIQUE"; }
+  else { src='assets/logo-savoir.webp?v=1060'; alt="L'Odyssée du Savoir"; lbl="L'ODYSSÉE DU SAVOIR"; }
   document.querySelectorAll('img.subj-logo').forEach(function(im){ im.src=src; im.alt=alt; });
   const el = document.getElementById('ody-btn-label');
   if(el) el.textContent = lbl;
@@ -1148,6 +1148,23 @@ function requestStepStart(zoneId, stepIdx){
 function renderMap(){
  const beaten = P.mapBossBeaten || [];
  const starsTotal = P.stars || 0;
+ // Une zone déjà conquise (boss battu) = toutes ses étapes réputées réussies.
+ // Évite de refaire les étapes d'un module déjà terminé, et répare les profils
+ // dont la progression d'étapes avait été perdue.
+ try{
+  P.zoneProgress = P.zoneProgress || {};
+  if(typeof MAP_ZONES!=='undefined' && Array.isArray(MAP_ZONES)){
+   MAP_ZONES.forEach(z=>{
+    if(beaten.indexOf(z.id) >= 0){
+     const total = (Array.isArray(z.steps) ? z.steps.length : 5);
+     const cur = P.zoneProgress[z.id] || { stepsCompleted:0, completed:false };
+     if(cur.stepsCompleted < total || !cur.completed){
+      P.zoneProgress[z.id] = { stepsCompleted: total, completed: true };
+     }
+    }
+   });
+  }
+ }catch(e){}
  // Vérifier que l'avatar pointe vers une zone existante
  let avatarZoneId = _getAvatarZone();
  // Calculer le layout

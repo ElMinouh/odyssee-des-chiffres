@@ -118,6 +118,13 @@ function validateProfile(raw, defaultName){
   storySeen: _safeArr(raw.storySeen).filter(s => typeof s === 'string'),
   // O3 — Position du mini-personnage sur la carte régionalisée
   mapAvatarZone: (typeof raw.mapAvatarZone==='string' && raw.mapAvatarZone) ? raw.mapAvatarZone : 'plaine',
+  // Position de l'avatar mémorisée séparément par aventure/matière.
+  mapAvatarZoneByAdv: (function(){
+   const src = (raw.mapAvatarZoneByAdv && typeof raw.mapAvatarZoneByAdv === 'object') ? raw.mapAvatarZoneByAdv : {};
+   const out = {};
+   Object.keys(src).forEach(k=>{ if(typeof src[k]==='string' && src[k]) out[k] = src[k]; });
+   return out;
+  })(),
   // v8.7.8 (O1) : progression dans chaque zone (sous-niveaux)
   zoneProgress: (function(){
    const src = (raw.zoneProgress && typeof raw.zoneProgress === 'object') ? raw.zoneProgress : {};
@@ -210,7 +217,7 @@ function defProfile(name){
   history:[],historyDetailed:[],errors:[],errorLog:[],badgesEarned:[],milestonesClaimed:[],_bestCombo:0,_totalStarsEarned:0,
   quests:null,questsDate:null,opStats:{'+':{ ok:0,fail:0},'-':{ok:0,fail:0},'x':{ok:0,fail:0},'/':{ ok:0,fail:0},'geo':{ok:0,fail:0}},
   opStatsFr:{'conj':{ok:0,fail:0},'orth':{ok:0,fail:0},'gram':{ok:0,fail:0},'vocab':{ok:0,fail:0}},
-  levelWins:{CP:0,CE1:0,CE2:0,CM1:0,CM2:0},levelWinsBySubj:{math:{},fr:{}},mapBossBeaten:[],mapAvatarZone:'plaine',
+  levelWins:{CP:0,CE1:0,CE2:0,CM1:0,CM2:0},levelWinsBySubj:{math:{},fr:{}},mapBossBeaten:[],mapAvatarZone:'plaine',mapAvatarZoneByAdv:{},
   // v8.7.8 (O1) : progression sous-niveaux par zone (5 étapes par zone)
   zoneProgress:(function(){const o={};if(typeof MAP_ZONES!=='undefined'&&Array.isArray(MAP_ZONES))MAP_ZONES.forEach(z=>{o[z.id]={stepsCompleted:0,completed:false};});return o;})(),
   prefs:{level:'CP',mode2:'normal',mode:'keyboard',theme:'standard'},
