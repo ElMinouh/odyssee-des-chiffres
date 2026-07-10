@@ -109,33 +109,39 @@ function _histCP_avantApres(){
   askOld ? `${p.ancien} existait avant ${p.moderne}` : `${p.moderne} existe après ${p.ancien}`
  );
 }
-// Ranger dans le temps : 2 moments d'une même séquence, dire lequel vient en 1er
-const HIST_CP_SEQ = [
- {q:'Que fait-on le matin, au réveil ?', tot:'Se réveiller 🌅', tard:'Aller dormir 🌙'},
- {q:'Que fait-on d\u2019abord ?', tot:'Mettre ses chaussettes 🧦', tard:'Mettre ses chaussures 👟'},
- {q:'Que fait-on en premier pour manger une banane ?', tot:'Éplucher la banane 🍌', tard:'Manger la banane 😋'},
- {q:'Que fait-on d\u2019abord au jardin ?', tot:'Planter la graine 🌱', tard:'Cueillir la fleur 🌸'},
- {q:'Que se passe-t-il en premier ?', tot:'Un bébé 👶', tard:'Une grande personne 🧑'},
- {q:'Quel moment vient en premier dans la journée ?', tot:'Le petit-déjeuner 🥐', tard:'Le dîner 🍽️'},
- {q:'Quelle saison vient après l\u2019hiver ?', tot:'Le printemps 🌷', tard:'', mode:'apres', avant:'L\u2019hiver ❄️', bad:'L\u2019automne 🍂'},
- {q:'Que fait-on d\u2019abord pour dessiner ?', tot:'Prendre le crayon ✏️', tard:'Ranger le crayon 📥'},
- {q:'Que fait-on en premier ?', tot:'Allumer la bougie 🕯️', tard:'Souffler la bougie 💨'},
- {q:'Quel moment vient en premier ?', tot:'Le lever du soleil 🌅', tard:'Le coucher du soleil 🌇'},,
- {q:'Que fait-on d\u2019abord avant de traverser la rue ?', tot:'Regarder à droite et à gauche 👀', tard:'Traverser 🚶'},
- {q:'Que fait-on en premier le matin à l\u2019école ?', tot:'Ranger son cartable 🎒', tard:'Rentrer à la maison 🏠'}
+// Repérage temporel réellement historique : générations familiales (qui est né
+// avant qui) + grandes étapes d'une vie humaine (ce qui vient avant/après).
+const HIST_CP_GENER = [
+ {plusVieux:'L\u2019arrière-grand-père 👴', plusJeune:'Le petit-enfant 👶'},
+ {plusVieux:'La grand-mère 👵', plusJeune:'La maman 👩'},
+ {plusVieux:'Le grand-père 👴', plusJeune:'Le papa 👨'},
+ {plusVieux:'Les arrière-grands-parents 👴👵', plusJeune:'Les parents 👨\u200d👩'},
+ {plusVieux:'La maman 👩', plusJeune:'Le bébé 👶'},
+ {plusVieux:'Le grand-père 👴', plusJeune:'Le petit-fils 👦'},
+ {plusVieux:'L\u2019arrière-grand-mère 👵', plusJeune:'La petite-fille 👧'},
 ];
-function _histCP_ranger(){
- const s = _histPick(HIST_CP_SEQ);
- if(s.mode==='apres'){
-  return _histQ(s.q, s.tot, [s.bad, s.avant], 'hist-temps', s.tot);
+const HIST_CP_ETAPES_VIE = [
+ {tot:'Apprendre à marcher 👣', tard:'Aller à l\u2019école 🎒'},
+ {tot:'Naître 👶', tard:'Devenir grand-parent 👴'},
+ {tot:'Être un enfant 🧒', tard:'Être une personne âgée 👵'},
+ {tot:'Apprendre à lire 📖', tard:'Avoir un métier 💼'},
+ {tot:'Être un bébé 👶', tard:'Apprendre à marcher 👣'},
+ {tot:'Aller à l\u2019école primaire 🎒', tard:'Devenir adulte 🧑'},
+ {tot:'Naître 👶', tard:'Devenir un grand frère ou une grande sœur 🧒'},
+];
+function _histCP_temps(){
+ if(Math.random()<0.5){
+  const g = _histPick(HIST_CP_GENER);
+  return _histQ('Qui est né en premier ?', g.plusVieux, [g.plusJeune], 'hist-temps', `${g.plusVieux} est né avant ${g.plusJeune}.`);
  }
+ const e = _histPick(HIST_CP_ETAPES_VIE);
  const askFirst = Math.random()<0.6;
  return _histQ(
-  askFirst ? s.q : s.q.replace('en premier','en dernier').replace('d\u2019abord','à la fin'),
-  askFirst ? s.tot : s.tard,
-  [askFirst ? s.tard : s.tot],
+  'Que se passe-t-il en premier dans la vie d\u2019une personne ?',
+  askFirst ? e.tot : e.tard,
+  [askFirst ? e.tard : e.tot],
   'hist-temps',
-  askFirst ? `D\u2019abord : ${s.tot}` : `À la fin : ${s.tard}`
+  `D\u2019abord : ${e.tot}, puis : ${e.tard}.`
  );
 }
 // La vie d'autrefois : QCM imagé, 1 bon + 2 mauvais
@@ -178,9 +184,9 @@ function genQ_HIST_CP(boss,_d){
  _d=_d||0;
  const phase=(typeof _progPhase==='function')?_progPhase('CP'):1;
  let pool;
- if(phase<=1)       pool=[_histCP_avantApres, _histCP_ranger, _histCP_vie];
- else if(phase===2) pool=[_histCP_avantApres, _histCP_ranger, _histCP_vie, _histCP_reconnaitre];
- else               pool=[_histCP_avantApres, _histCP_ranger, _histCP_vie, _histCP_reconnaitre];
+ if(phase<=1)       pool=[_histCP_avantApres, _histCP_temps, _histCP_vie];
+ else if(phase===2) pool=[_histCP_avantApres, _histCP_temps, _histCP_vie, _histCP_reconnaitre];
+ else               pool=[_histCP_avantApres, _histCP_temps, _histCP_vie, _histCP_reconnaitre];
  const q=_histUnique(_histPick(pool)());
  if(!q){ if(_d>16) return _histCP_vie(); return genQ_HIST_CP(boss,_d+1); }
  return q;
