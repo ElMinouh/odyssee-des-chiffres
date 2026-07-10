@@ -10,7 +10,7 @@ var _lvlSubj='math';
 function setLvlSubj(s){_lvlSubj=s;renderLevelUnlocks();}
 function renderLevelUnlocks(){
  const lab=(l)=>(typeof _levelLabel==='function')?_levelLabel(l):l;
- const bar='<div style="display:flex;gap:6px;margin-bottom:8px;">'+[['math','🔢 Maths'],['fr','📖 Français']].map(a=>`<button onclick="setLvlSubj('${a[0]}')" style="font-size:.72em;padding:4px 10px;border-radius:8px;background:${_lvlSubj===a[0]?'#27ae60':'#2c3e50'};">${a[1]}</button>`).join('')+'</div>';
+ const bar='<div style="display:flex;gap:6px;margin-bottom:8px;">'+[['math','🔢 Maths'],['fr','📖 Français'],['hist','🏛️ Histoire']].map(a=>`<button onclick="setLvlSubj('${a[0]}')" style="font-size:.72em;padding:4px 10px;border-radius:8px;background:${_lvlSubj===a[0]?'#27ae60':'#2c3e50'};">${a[1]}</button>`).join('')+'</div>';
  const row=(lvl,icon)=>{
   const ok=isUnlocked(lvl,_lvlSubj),pW=prevWins(lvl,_lvlSubj),req=UNLOCK_REQ[lvl];
   return `<div class="level-lock ${ok?'unlocked':'locked'}"><span>${icon} ${lab(lvl)}</span><span style="font-size:.78em;color:${ok?'#2ecc71':'#e74c3c'};">${ok?'✅ Débloqué':'🔒 '+pW+'/'+req+' victoires'}</span></div>`;
@@ -26,19 +26,27 @@ function renderChart(){
  const h=(P.history||[]).slice(-7);const el=$('p-chart');
  if(!h.length){el.innerHTML='<span style="color:#bdc3c7;align-self:center;">Aucune partie encore !</span>';return;}
  const mx=Math.max(...h.map(x=>x.score),1);
- const ic=s=>s==='fr'?'📖':'🔢';
+ const ic=s=>s==='fr'?'📖':s==='hist'?'🏛️':'🔢';
  el.innerHTML=h.map(x=>`<div class="chart-bar-wrap"><div class="chart-bar" style="height:${Math.round(x.score/mx*70)}px"></div><span class="chart-label">${ic(x.subject)} ${x.date}<br>${x.score}⭐</span></div>`).join('');
 }
 var _opStatSubj='math';
 function setOpStatSubj(s){_opStatSubj=s;renderOpStats();}
 function renderOpStats(){
- const bar='<div style="display:flex;gap:6px;margin-bottom:8px;">'+[['math','🔢 Maths'],['fr','📖 Français']].map(a=>`<button onclick="setOpStatSubj('${a[0]}')" style="font-size:.72em;padding:4px 10px;border-radius:8px;background:${_opStatSubj===a[0]?'#27ae60':'#2c3e50'};">${a[1]}</button>`).join('')+'</div>';
+ const bar='<div style="display:flex;gap:6px;margin-bottom:8px;">'+[['math','🔢 Maths'],['fr','📖 Français'],['hist','🏛️ Histoire']].map(a=>`<button onclick="setOpStatSubj('${a[0]}')" style="font-size:.72em;padding:4px 10px;border-radius:8px;background:${_opStatSubj===a[0]?'#27ae60':'#2c3e50'};">${a[1]}</button>`).join('')+'</div>';
  if(_opStatSubj==='fr'){
   const names={conj:'Conjugaison',orth:'Orthographe',gram:'Grammaire',vocab:'Vocabulaire'};
   const cats=['conj','orth','gram','vocab'];
   $('p-opstats').innerHTML=bar+'<strong>📊 Par catégorie :</strong><br>'+
    cats.map(c=>{const s=(P.opStatsFr||{})[c]||{ok:0,fail:0};const t=s.ok+s.fail;if(!t)return'';const pct=Math.round(s.ok/t*100);const col=pct>=80?'#2ecc71':pct>=60?'#f1c40f':'#e74c3c';
    return`<div class="op-stat-row"><span style="width:90px;text-align:left;font-size:.82em;">${names[c]}</span><div class="op-stat-bar"><div class="op-stat-fill" style="width:${pct}%;background:${col};"></div></div><span style="color:${col};font-weight:700;margin-left:6px;font-size:.82em;">${pct}%</span></div>`;}).filter(Boolean).join('')||'<span style="color:#bdc3c7;">Pas encore de données en français.</span>';
+  return;
+ }
+ if(_opStatSubj==='hist'){
+  const names={frise:'Frises & repères',personnages:'Personnages',evenements:'Événements',civilisation:'Vie & civilisation'};
+  const cats=['frise','personnages','evenements','civilisation'];
+  $('p-opstats').innerHTML=bar+'<strong>📊 Par catégorie :</strong><br>'+
+   cats.map(c=>{const s=(P.opStatsHist||{})[c]||{ok:0,fail:0};const t=s.ok+s.fail;if(!t)return'';const pct=Math.round(s.ok/t*100);const col=pct>=80?'#2ecc71':pct>=60?'#f1c40f':'#e74c3c';
+   return`<div class="op-stat-row"><span style="width:90px;text-align:left;font-size:.82em;">${names[c]}</span><div class="op-stat-bar"><div class="op-stat-fill" style="width:${pct}%;background:${col};"></div></div><span style="color:${col};font-weight:700;margin-left:6px;font-size:.82em;">${pct}%</span></div>`;}).filter(Boolean).join('')||'<span style="color:#bdc3c7;">Pas encore de données en histoire.</span>';
   return;
  }
  const ops=['+','-','x','/','geo'];const names={'+':"Addition",'-':"Soustraction",'x':"Multiplication",'/':'Division','geo':'Géométrie'};
@@ -50,10 +58,16 @@ var _revSubj='math';
 function setRevSubj(s){_revSubj=s;renderErrors();}
 function renderErrors(){
  const el=$('p-errors'),btn=$('btn-revision');
- const bar='<div style="display:flex;gap:6px;margin-bottom:8px;">'+[['math','🔢 Maths'],['fr','📖 Français']].map(a=>`<button onclick="setRevSubj('${a[0]}')" style="font-size:.72em;padding:4px 10px;border-radius:8px;background:${_revSubj===a[0]?'#27ae60':'#2c3e50'};">${a[1]}</button>`).join('')+'</div>';
+ const bar='<div style="display:flex;gap:6px;margin-bottom:8px;">'+[['math','🔢 Maths'],['fr','📖 Français'],['hist','🏛️ Histoire']].map(a=>`<button onclick="setRevSubj('${a[0]}')" style="font-size:.72em;padding:4px 10px;border-radius:8px;background:${_revSubj===a[0]?'#27ae60':'#2c3e50'};">${a[1]}</button>`).join('')+'</div>';
  if(_revSubj==='fr'){
   const u=(P.errorsFr||[]).slice(-12).reverse();
   el.innerHTML=bar+(u.length?u.map(e=>`<div class="revision-q"><span>${e.q}</span><strong style="color:#f1c40f;">${e.ok||''}</strong></div>`).join(''):'<span style="color:#2ecc71;">✅ Aucune erreur en français !</span>');
+  if(btn)btn.classList.add('hidden');
+  return;
+ }
+ if(_revSubj==='hist'){
+  const u=(P.errorsHist||[]).slice(-12).reverse();
+  el.innerHTML=bar+(u.length?u.map(e=>`<div class="revision-q"><span>${e.q}</span><strong style="color:#f1c40f;">${e.ok||''}</strong></div>`).join(''):'<span style="color:#2ecc71;">✅ Aucune erreur en histoire !</span>');
   if(btn)btn.classList.add('hidden');
   return;
  }

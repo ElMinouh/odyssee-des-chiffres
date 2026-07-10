@@ -87,6 +87,7 @@ function validateProfile(raw, defaultName){
   questsDate: _safeStr(raw.questsDate, 12, null),
   opStats: { ...def.opStats, ...(raw.opStats || {}) },
   opStatsFr: { ...def.opStatsFr, ...(raw.opStatsFr || {}) },
+  opStatsHist: { ...def.opStatsHist, ...(raw.opStatsHist || {}) },
   levelWins: {
    PS:  _clampNum(raw.levelWins?.PS,  0, 9999, 0),
    MS:  _clampNum(raw.levelWins?.MS,  0, 9999, 0),
@@ -104,9 +105,10 @@ function validateProfile(raw, defaultName){
   // Victoires PAR MATIÈRE → déblocage indépendant des niveaux.
   // Migration : l'historique global est attribué aux maths ; le français (et les
   // autres matières) repartent à zéro, donc seuls PS/CP/6e y sont accessibles d'office.
-  levelWinsBySubj: (raw.levelWinsBySubj && typeof raw.levelWinsBySubj==='object')
-    ? raw.levelWinsBySubj
-    : { math: Object.assign({}, raw.levelWins||{}), fr: {} },
+  levelWinsBySubj: Object.assign(
+    { math: Object.assign({}, raw.levelWins||{}), fr: {}, hist: {} },
+    (raw.levelWinsBySubj && typeof raw.levelWinsBySubj==='object') ? raw.levelWinsBySubj : {}
+  ),
   // M (bilan parent) : réussites par monde maternelle { PS:{ok,total}, MS:..., GS:... }
   matStats: (raw.matStats && typeof raw.matStats === 'object') ? raw.matStats : {},
   // P9.1 : stats par classe et par type d'exercice { CE2:{'+':{ok,fail},'frac':{ok,fail}}, ... }
@@ -171,6 +173,7 @@ function validateProfile(raw, defaultName){
   music: (typeof raw.music==='string'?raw.music:'theme'),
   ownedSounds: _safeArr(raw.ownedSounds).filter(s => typeof s === 'string'),
   errorsFr: _safeArr(raw.errorsFr).filter(e => e && typeof e === 'object'),
+  errorsHist: _safeArr(raw.errorsHist).filter(e => e && typeof e === 'object'),
   equippedSkin: _safeStr(raw.equippedSkin, 30, null),
   victorySound: _safeStr(raw.victorySound, 20, 'fanfare'),
   ownedFigurines: _safeArr(raw.ownedFigurines).filter(f => typeof f === 'string').slice(0, 500),
@@ -217,13 +220,14 @@ function defProfile(name){
   history:[],historyDetailed:[],errors:[],errorLog:[],badgesEarned:[],milestonesClaimed:[],_bestCombo:0,_totalStarsEarned:0,
   quests:null,questsDate:null,opStats:{'+':{ ok:0,fail:0},'-':{ok:0,fail:0},'x':{ok:0,fail:0},'/':{ ok:0,fail:0},'geo':{ok:0,fail:0}},
   opStatsFr:{'conj':{ok:0,fail:0},'orth':{ok:0,fail:0},'gram':{ok:0,fail:0},'vocab':{ok:0,fail:0}},
-  levelWins:{CP:0,CE1:0,CE2:0,CM1:0,CM2:0},levelWinsBySubj:{math:{},fr:{}},mapBossBeaten:[],mapAvatarZone:'plaine',mapAvatarZoneByAdv:{},
+  opStatsHist:{'frise':{ok:0,fail:0},'personnages':{ok:0,fail:0},'evenements':{ok:0,fail:0},'civilisation':{ok:0,fail:0}},
+  levelWins:{CP:0,CE1:0,CE2:0,CM1:0,CM2:0},levelWinsBySubj:{math:{},fr:{},hist:{}},mapBossBeaten:[],mapAvatarZone:'plaine',mapAvatarZoneByAdv:{},
   // v8.7.8 (O1) : progression sous-niveaux par zone (5 étapes par zone)
   zoneProgress:(function(){const o={};if(typeof MAP_ZONES!=='undefined'&&Array.isArray(MAP_ZONES))MAP_ZONES.forEach(z=>{o[z.id]={stepsCompleted:0,completed:false};});return o;})(),
   prefs:{level:'CP',mode2:'normal',mode:'keyboard',theme:'standard'},
   sessionMinutes:0,weeklyChallenge:null,wcDate:null,
   objective:0,objectiveDone:0,objDate:null,
-  avatar:'🧙',heroTitle:'novice',ownedSkins:[],equippedSkin:null,victorySound:'fanfare',ownedMusics:['theme'],music:'theme',ownedSounds:[],errorsFr:[],ownedFigurines:[],
+  avatar:'🧙',heroTitle:'novice',ownedSkins:[],equippedSkin:null,victorySound:'fanfare',ownedMusics:['theme'],music:'theme',ownedSounds:[],errorsFr:[],errorsHist:[],ownedFigurines:[],
   opFilters:{add:true,sub:true,mult:true,div:true,miss:true,frac:true,geo:true},
   heroStageId:'oeuf',
   cloudCode:null,cloudEnabled:false};

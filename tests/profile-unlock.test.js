@@ -75,6 +75,9 @@ describe('migration levelWinsBySubj (validateProfile)', () => {
   it('un profil récent conserve son levelWinsBySubj existant', () => {
     const raw = { name: 'Zoé', levelWins: { CP: 1 }, levelWinsBySubj: { math: { CP: 4 }, fr: { CP: 4 } } };
     const out = api.validateProfile(raw, 'Zoé');
-    expect(out.levelWinsBySubj).toEqual({ math: { CP: 4 }, fr: { CP: 4 } });
+    // v11.2.0 : hist:{} est désormais garanti par défaut (même sur un profil
+    // qui avait déjà levelWinsBySubj mais pas encore joué à l'histoire) —
+    // évite un repli erroné sur les compteurs maths via _subjWins('hist').
+    expect(out.levelWinsBySubj).toEqual({ math: { CP: 4 }, fr: { CP: 4 }, hist: {} });
   });
 });

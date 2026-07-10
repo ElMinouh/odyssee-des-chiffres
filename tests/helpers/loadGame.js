@@ -135,6 +135,9 @@ export function loadGame(files, initialStorage = {}) {
   // --- échappement (v11.1.10 : _jsAttr mutualisée dans 01-core.js) ---
   esc:      (typeof esc==='function')     ? esc     : undefined,
   _jsAttr:  (typeof _jsAttr==='function') ? _jsAttr : undefined,
+  // --- histoire (v11.2.0) ---
+  _histCatOf: (typeof _histCatOf==='function') ? _histCatOf : undefined,
+  GEN_HIST:   (typeof GEN_HIST!=='undefined')  ? GEN_HIST   : undefined,
   // --- accès au localStorage factice pour les assertions ---
   _ls: (typeof localStorage!=='undefined') ? localStorage : undefined,
   // --- accesseurs pour piloter l'état global depuis les tests ---

@@ -947,6 +947,10 @@ function chooseSubject(key){
   GM.subject='fr';
   try{ if(typeof beep==='function') beep(660,'sine',.12); }catch(e){}
   gotoMenu2();
+ }else if(key==='hist'){
+  GM.subject='hist';
+  try{ if(typeof beep==='function') beep(660,'sine',.12); }catch(e){}
+  gotoMenu2();
  }else{
   if(typeof toast==='function') toast('🔒 '+(SUBJECT_LABELS[key]||'Cette matière')+' — bientôt disponible !');
   try{ if(typeof beep==='function') beep(220,'sine',.12); }catch(e){}

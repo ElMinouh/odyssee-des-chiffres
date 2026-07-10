@@ -478,6 +478,15 @@ function nextTurn(){
   showMonsterIntro(_currentMonster,renderQ);
  }else renderQ();
 }
+// v11.2.0 : table de générateurs par matière — GEN (maths, défaut), GEN_FR (français),
+// GEN_HIST (histoire). Ajouter une nouvelle matière = ajouter une entrée ici, rien d'autre
+// à toucher dans generateQ()/nextCombat().
+function _subjGen(){
+ const s = typeof GM!=='undefined' ? GM.subject : null;
+ if(s==='fr' && typeof GEN_FR!=='undefined') return GEN_FR;
+ if(s==='hist' && typeof GEN_HIST!=='undefined') return GEN_HIST;
+ return GEN;
+}
 function generateQ(){
  if(isRevision&&revQueue.length>0){
   const e=revQueue.shift();
@@ -498,7 +507,7 @@ function generateQ(){
  if((GM.subject==='math'||!GM.subject) && GM.mode2==='normal' && !GS.isBoss && typeof _collEnrich==='function' && typeof _COL_LEVELS!=='undefined' && _COL_LEVELS.includes(GM.level) && Math.random()<0.33){
   const ce=_collEnrich(GM.level); if(ce) return ce;
  }
- const _GS=(typeof GM!=='undefined'&&GM.subject==='fr'&&typeof GEN_FR!=='undefined')?GEN_FR:GEN;
+ const _GS=_subjGen();
  const fn=_GS[GM.level]||_GS.CP||GEN.CP;let q=fn(GS.isBoss);
  if(GS.activeEvent?.effect==='next_golden'){GS.isGolden=true;GS.activeEvent=null;}
  return q;
@@ -659,6 +668,7 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
   GS.score+=pts;
   const opK=q.opKey||'+';P.opStats[opK]=P.opStats[opK]||{ok:0,fail:0};P.opStats[opK].ok++;
   if(GM.subject==='fr' && typeof _frCatOf==='function'){ const c=_frCatOf(q.opKey); P.opStatsFr[c]=P.opStatsFr[c]||{ok:0,fail:0}; P.opStatsFr[c].ok++; }
+  if(GM.subject==='hist' && typeof _histCatOf==='function'){ const c=_histCatOf(q.opKey); P.opStatsHist=P.opStatsHist||{}; P.opStatsHist[c]=P.opStatsHist[c]||{ok:0,fail:0}; P.opStatsHist[c].ok++; }
   if(typeof _progUpdate==="function") _progUpdate(GM.level, true);
   if(typeof _classStatUpdate==="function") _classStatUpdate(GM.level, q.opKey, true);
   // Chantier 1.2 : si c'était une question de révision et que l'enfant a réussi → on réduit sa présence
@@ -750,6 +760,7 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
 GS.errInGame++;GS.combo=0;GS.opCombo=0;GS.lastOpKey=null;$('gc').classList.remove('combo-breaker');
   const opK=q.opKey||'+';P.opStats[opK]=P.opStats[opK]||{ok:0,fail:0};P.opStats[opK].fail++;
   if(GM.subject==='fr' && typeof _frCatOf==='function'){ const c=_frCatOf(q.opKey); P.opStatsFr[c]=P.opStatsFr[c]||{ok:0,fail:0}; P.opStatsFr[c].fail++; }
+  if(GM.subject==='hist' && typeof _histCatOf==='function'){ const c=_histCatOf(q.opKey); P.opStatsHist=P.opStatsHist||{}; P.opStatsHist[c]=P.opStatsHist[c]||{ok:0,fail:0}; P.opStatsHist[c].fail++; }
   if(typeof _progUpdate==="function") _progUpdate(GM.level, false);
   if(typeof _classStatUpdate==="function") _classStatUpdate(GM.level, q.opKey, false);
   if(q.display&&q.res!==undefined){
@@ -757,6 +768,10 @@ GS.errInGame++;GS.combo=0;GS.opCombo=0;GS.lastOpKey=null;$('gc').classList.remov
     const _qd=String(q.display||'').replace(/<[^>]+>/g,'').trim();
     const _ans=String(q.hint||'').replace(/^R[eé]ponse\s*:\s*/i,'').trim();
     if(_qd) P.errorsFr=([...(P.errorsFr||[])]).concat({q:_qd,ok:_ans}).slice(-60);
+   } else if((q.subj==='hist')||(typeof GM!=='undefined'&&GM.subject==='hist')){
+    const _qd=String(q.display||'').replace(/<[^>]+>/g,'').trim();
+    const _ans=String(q.hint||'').replace(/^R[eé]ponse\s*:\s*/i,'').trim();
+    if(_qd) P.errorsHist=([...(P.errorsHist||[])]).concat({q:_qd,ok:_ans}).slice(-60);
    } else {
     P.errors=([...(P.errors||[])]).concat(`${q.a||'?'}${q.op||'?'}${q.b||'?'}=${q.res}`).slice(-60);
    }
@@ -910,7 +925,7 @@ function nextCombat(){
  GS.qCount++;GS.isGolden=Math.random()<.15;GS.frozen=false;
  GM.level=combatPlayers[combatIdx].level;
  GS.monsterMaxHP=HP_LVL[GM.level]||1;GS.monsterHP=GS.monsterMaxHP;
- GS.q=((typeof GM!=='undefined'&&GM.subject==='fr'&&typeof GEN_FR!=='undefined'?GEN_FR:GEN)[GM.level]||GEN.CP)(false);$('correction').classList.add('hidden');renderQ();
+ GS.q=((_subjGen())[GM.level]||GEN.CP)(false);$('correction').classList.add('hidden');renderQ();
  const cp = combatPlayers[combatIdx];
  $('quest-title').innerHTML=`⚔️ Tour de <strong>${cp.avatar||'🧙'} ${esc(cp.name)}</strong> <span class="mode-badge m-combat">combat</span>`;
  // Chantier A2 v1 : annonce du tour avec toast + son distinctif
