@@ -90,7 +90,13 @@ const HIST_CP_PAIRES = [
  {ancien:'Disque vinyle 💿', moderne:'Musique en ligne 🎧'},
  {ancien:'Balai de paille 🧹', moderne:'Aspirateur 🌀'},
  {ancien:'Charrue tirée par un bœuf 🐂', moderne:'Tracteur 🚜'},
- {ancien:'Montgolfière 🎈', moderne:'Avion ✈️'},
+ {ancien:'Montgolfière 🎈', moderne:'Avion ✈️'},,
+ {ancien:'Machine à écrire ⌨️', moderne:'Ordinateur portable 💻'},
+ {ancien:'Poste de radio à lampes 📻', moderne:'Enceinte connectée 🔊'},
+ {ancien:'Fer à repasser à charbon 🔥', moderne:'Fer à repasser électrique 🔌'},
+ {ancien:'Calèche tirée par des chevaux 🐴', moderne:'Bus 🚌'},
+ {ancien:'Puits et seau 🪣', moderne:'Château d\u2019eau et robinet 🚰'},
+ {ancien:'Abaque à boules 🧮', moderne:'Calculatrice 🔢'}
 ];
 function _histCP_avantApres(){
  const p = _histPick(HIST_CP_PAIRES);
@@ -114,7 +120,9 @@ const HIST_CP_SEQ = [
  {q:'Quelle saison vient après l\u2019hiver ?', tot:'Le printemps 🌷', tard:'', mode:'apres', avant:'L\u2019hiver ❄️', bad:'L\u2019automne 🍂'},
  {q:'Que fait-on d\u2019abord pour dessiner ?', tot:'Prendre le crayon ✏️', tard:'Ranger le crayon 📥'},
  {q:'Que fait-on en premier ?', tot:'Allumer la bougie 🕯️', tard:'Souffler la bougie 💨'},
- {q:'Quel moment vient en premier ?', tot:'Le lever du soleil 🌅', tard:'Le coucher du soleil 🌇'},
+ {q:'Quel moment vient en premier ?', tot:'Le lever du soleil 🌅', tard:'Le coucher du soleil 🌇'},,
+ {q:'Que fait-on d\u2019abord avant de traverser la rue ?', tot:'Regarder à droite et à gauche 👀', tard:'Traverser 🚶'},
+ {q:'Que fait-on en premier le matin à l\u2019école ?', tot:'Ranger son cartable 🎒', tard:'Rentrer à la maison 🏠'}
 ];
 function _histCP_ranger(){
  const s = _histPick(HIST_CP_SEQ);
@@ -141,7 +149,9 @@ const HIST_CP_VIE = [
  {q:'Comment envoyait-on un message à quelqu\u2019un de loin autrefois ?', ok:'Par une lettre ✉️', bad:['Par un email 📧','Par un SMS 📱']},
  {q:'Avec quoi allait-on chercher de l\u2019eau autrefois ?', ok:'Un seau au puits 🪣', bad:['Un robinet 🚰','Une bouteille en plastique 🍶']},
  {q:'Comment se chauffait-on autrefois dans les maisons ?', ok:'Avec un feu de bois 🔥', bad:['Avec un radiateur électrique ⚡','Avec une climatisation ❄️']},
- {q:'Avec quoi labourait-on les champs autrefois ?', ok:'Une charrue et un bœuf 🐂', bad:['Un tracteur 🚜','Une moissonneuse 🌾']},
+ {q:'Avec quoi labourait-on les champs autrefois ?', ok:'Une charrue et un bœuf 🐂', bad:['Un tracteur 🚜','Une moissonneuse 🌾']},,
+ {q:'Comment se déplaçait-on sur de longues distances avant le train ?', ok:'À cheval ou en calèche 🐴', bad:['En avion ✈️','En métro 🚇']},
+ {q:'Comment comptait-on avant la calculatrice ?', ok:'Avec un boulier 🧮', bad:['Avec un ordinateur 💻','Avec un GPS 🛰️']}
 ];
 function _histCP_vie(){
  const f = _histPick(HIST_CP_VIE);
@@ -156,7 +166,9 @@ const HIST_CP_ANCIEN = [
  {ok:'Lampe à huile 🏮', bad:['Ampoule 💡','Néon 💡']},
  {ok:'Moulin à vent 🌬️', bad:['Éolienne moderne 🌀','Centrale électrique ⚡']},
  {ok:'Bateau à voile ⛵', bad:['Sous-marin 🤿','Ferry 🛳️']},
- {ok:'Roue de charrette 🛞', bad:['Pneu de vélo 🚲','Roue de moto 🏍️']},
+ {ok:'Roue de charrette 🛞', bad:['Pneu de vélo 🚲','Roue de moto 🏍️']},,
+ {ok:'Machine à écrire ⌨️', bad:['Ordinateur portable 💻','Tablette tactile 📱']},
+ {ok:'Poste de radio à lampes 📻', bad:['Enceinte connectée 🔊','Casque sans fil 🎧']}
 ];
 function _histCP_reconnaitre(){
  const f = _histPick(HIST_CP_ANCIEN);
@@ -189,7 +201,17 @@ const HIST_CE1_OBJETS = [
  {obj:'Voiture', e:'🚗', epoque:"Aujourd'hui"},
  {obj:'Avion', e:'✈️', epoque:"Aujourd'hui"},
  {obj:'Ordinateur', e:'💻', epoque:"Aujourd'hui"},
- {obj:'Télévision', e:'📺', epoque:"Aujourd'hui"},
+ {obj:'Télévision', e:'📺', epoque:"Aujourd'hui"},,
+ {obj:'Biface (outil taillé)', e:'🪨', epoque:'Préhistoire'},
+ {obj:'Abri sous roche', e:'⛰️', epoque:'Préhistoire'},
+ {obj:'Vêtement en peau de bête', e:'🦌', epoque:'Préhistoire'},
+ {obj:'Sagaie (arme de chasse)', e:'🏹', epoque:'Préhistoire'},
+ {obj:'Statuette en argile', e:'🗿', epoque:'Préhistoire'},
+ {obj:'Console de jeux vidéo', e:'🎮', epoque:"Aujourd'hui"},
+ {obj:'Fusée spatiale', e:'🚀', epoque:"Aujourd'hui"},
+ {obj:'Vélo électrique', e:'🚲', epoque:"Aujourd'hui"},
+ {obj:'Casque de réalité virtuelle', e:'🥽', epoque:"Aujourd'hui"},
+ {obj:'Robot ménager', e:'🤖', epoque:"Aujourd'hui"}
 ];
 function _histCE1_objetEpoque(){
  const o = _histPick(HIST_CE1_OBJETS);
@@ -210,7 +232,17 @@ const HIST_CE1_VRAIFAUX = [
  {aff:'Les hommes préhistoriques utilisaient des téléphones.', ok:'Faux'},
  {aff:'Les hommes de la Préhistoire fabriquaient des outils en pierre.', ok:'Vrai'},
  {aff:'La Préhistoire, c\u2019est la période avant l\u2019invention de l\u2019écriture.', ok:'Vrai'},
- {aff:'Les hommes préhistoriques avaient déjà des écoles comme les nôtres.', ok:'Faux'},
+ {aff:'Les hommes préhistoriques avaient déjà des écoles comme les nôtres.', ok:'Faux'},,
+ {aff:'Les hommes préhistoriques se déplaçaient à pied sur de longues distances.', ok:'Vrai'},
+ {aff:'Les premiers hommes préhistoriques savaient déjà construire des fusées.', ok:'Faux'},
+ {aff:'Les hommes préhistoriques fabriquaient des bijoux avec des coquillages.', ok:'Vrai'},
+ {aff:'La Préhistoire est la période la plus récente de l\u2019Histoire.', ok:'Faux'},
+ {aff:'Les hommes préhistoriques chassaient parfois de très grands animaux comme le mammouth.', ok:'Vrai'},
+ {aff:'Les grottes préhistoriques servaient de garage à voitures.', ok:'Faux'},
+ {aff:'On appelle Préhistoire la période avant l\u2019invention de l\u2019écriture.', ok:'Vrai'},
+ {aff:'Les hommes de la Préhistoire cuisinaient avec un four à micro-ondes.', ok:'Faux'},
+ {aff:'Les premiers outils préhistoriques étaient taillés dans la pierre.', ok:'Vrai'},
+ {aff:'Les hommes de la Préhistoire vivaient déjà dans des gratte-ciel.', ok:'Faux'}
 ];
 function _histCE1_vraifaux(){
  const f = _histPick(HIST_CE1_VRAIFAUX);
@@ -222,7 +254,15 @@ const HIST_CE1_VIE = [
  {q:'Comment les hommes préhistoriques se procuraient-ils de la nourriture ?', ok:'En chassant et en cueillant', bad:['Au supermarché','En livraison à domicile']},
  {q:'Quelle grande découverte a beaucoup aidé les hommes de la Préhistoire ?', ok:'La maîtrise du feu', bad:['L\u2019électricité','L\u2019imprimante']},
  {q:'Avec quelle matière fabriquaient-ils leurs premiers outils ?', ok:'La pierre', bad:['Le plastique','L\u2019acier inoxydable']},
- {q:'Que dessinaient les hommes préhistoriques sur les murs des grottes ?', ok:'Des animaux', bad:['Des voitures','Des fusées']},
+ {q:'Que dessinaient les hommes préhistoriques sur les murs des grottes ?', ok:'Des animaux', bad:['Des voitures','Des fusées']},,
+ {q:'Comment appelle-t-on l\u2019endroit où les hommes préhistoriques peignaient des animaux ?', ok:'Sur les parois des grottes', bad:['Sur des feuilles de papier','Sur des écrans']},
+ {q:'Avec quoi les hommes préhistoriques taillaient-ils leurs outils ?', ok:'Avec de la pierre (le silex)', bad:['Avec du plastique','Avec de l\u2019acier inoxydable']},
+ {q:'Comment les hommes préhistoriques se protégeaient-ils du froid ?', ok:'Avec des peaux de bêtes', bad:['Avec des doudounes','Avec des radiateurs']},
+ {q:'Que chassaient parfois les hommes de la Préhistoire pour se nourrir ?', ok:'Le mammouth', bad:['Le dinosaure','Le kangourou']},
+ {q:'Comment appelle-t-on un outil préhistorique taillé des deux côtés ?', ok:'Un biface', bad:['Un smartphone','Un boomerang']},
+ {q:'Où dormaient souvent les hommes de la Préhistoire ?', ok:'Dans des grottes ou des abris', bad:['Dans des hôtels','Dans des avions']},
+ {q:'Avec quoi les hommes préhistoriques fabriquaient-ils des colliers ?', ok:'Avec des coquillages', bad:['Avec des billets de banque','Avec du plastique']},
+ {q:'Qu\u2019est-ce qui a beaucoup changé la vie des hommes préhistoriques ?', ok:'La maîtrise du feu', bad:['L\u2019invention du train','L\u2019invention d\u2019internet']}
 ];
 function _histCE1_vie(){
  const f=_histPick(HIST_CE1_VIE);
@@ -309,7 +349,13 @@ const HIST_CM1_PERSO = [
  {nom:'Hugues Capet', indices:['Je suis devenu roi en 987.','J\u2019ai fondé une nouvelle dynastie de rois.','Mes descendants ont régné longtemps sur la France.']},
  {nom:'Jeanne d\u2019Arc', indices:['Je suis une jeune paysanne de Lorraine.','J\u2019ai mené une armée pour libérer Orléans.','Je suis morte brûlée à Rouen.']},
  {nom:'Saint Louis', indices:['Je suis un roi de France très religieux.','On raconte que je rendais la justice sous un chêne.','J\u2019ai participé aux croisades.']},
- {nom:'Guillaume le Conquérant', indices:['Je suis un duc de Normandie.','En 1066, j\u2019ai conquis l\u2019Angleterre.','J\u2019ai gagné la bataille de Hastings.']},
+ {nom:'Guillaume le Conquérant', indices:['Je suis un duc de Normandie.','En 1066, j\u2019ai conquis l\u2019Angleterre.','J\u2019ai gagné la bataille de Hastings.']},,
+ {nom:'Aliénor d\u2019Aquitaine', indices:['J\u2019ai été reine de France, puis reine d\u2019Angleterre.','J\u2019étais l\u2019une des femmes les plus puissantes de mon époque.','J\u2019ai accompagné mes fils dans leurs batailles.']},
+ {nom:'Philippe Auguste', indices:['Je suis un roi de France du Moyen Âge.','J\u2019ai agrandi le royaume de France.','J\u2019ai gagné la bataille de Bouvines en 1214.']},
+ {nom:'Bertrand du Guesclin', indices:['Je suis un grand chef de guerre français.','J\u2019ai combattu pendant la guerre de Cent Ans.','On m\u2019a nommé connétable de France.']},
+ {nom:'Godefroy de Bouillon', indices:['Je suis un chevalier et seigneur du Moyen Âge.','J\u2019ai participé à la première croisade.','J\u2019ai pris part à la prise de Jérusalem en 1099.']},
+ {nom:'Blanche de Castille', indices:['J\u2019ai été reine de France au Moyen Âge.','J\u2019ai gouverné le royaume pendant la jeunesse de mon fils.','Mon fils est devenu Saint Louis.']},
+ {nom:'Philippe le Bel', indices:['Je suis un roi de France du Moyen Âge.','J\u2019ai renforcé le pouvoir royal face aux seigneurs.','J\u2019ai fait arrêter les chevaliers du Temple.']}
 ];
 function _histCM1_personnage(){
  const p = _histPick(HIST_CM1_PERSO);
@@ -333,7 +379,17 @@ const HIST_CM1_VOCAB = [
  {q:'Qui recopiait les livres à la main dans les monastères ?', ok:'Les moines', bad:['Les pharaons','Les cosmonautes']},
  {q:'Comment appelle-t-on la haute tour d\u2019un château fort ?', ok:'Le donjon', bad:['La pyramide','Le gratte-ciel']},
  {q:'Qu\u2019est-ce qu\u2019un croisade au Moyen Âge ?', ok:'Une expédition religieuse lointaine', bad:['Un tournoi de chevaliers','Une fête de village']},
- {q:'Comment se protégeait un chevalier au combat ?', ok:'Avec une armure et un bouclier', bad:['Avec un gilet pare-balles','Avec un casque de moto']},
+ {q:'Comment se protégeait un chevalier au combat ?', ok:'Avec une armure et un bouclier', bad:['Avec un gilet pare-balles','Avec un casque de moto']},,
+ {q:'Comment appelle-t-on la société où les seigneurs se partagent le pouvoir avec le roi ?', ok:'La féodalité', bad:['La République','L\u2019Empire romain']},
+ {q:'Comment appelle-t-on la fenêtre colorée qu\u2019on voit dans les cathédrales ?', ok:'Un vitrail', bad:['Une fresque égyptienne','Une mosaïque romaine']},
+ {q:'Comment appelle-t-on l\u2019arme principale d\u2019un chevalier au combat ?', ok:'L\u2019épée', bad:['Le fusil','L\u2019arc à poulies']},
+ {q:'Comment appelle-t-on le repas de fête organisé par un seigneur dans son château ?', ok:'Un banquet', bad:['Un sacre','Un tournoi']},
+ {q:'Comment appelle-t-on la guerre qui a opposé la France et l\u2019Angleterre pendant plus de 100 ans ?', ok:'La guerre de Cent Ans', bad:['Les croisades','La Révolution']},
+ {q:'Comment appelle-t-on la lettre décorée à la main dans les livres du Moyen Âge ?', ok:'Une enluminure', bad:['Une photographie','Un hiéroglyphe']},
+ {q:'Qui recopiait les livres à la main avant l\u2019invention de l\u2019imprimerie ?', ok:'Les moines dans les monastères', bad:['Les chevaliers','Les paysans']},
+ {q:'Comment s\u2019appelle le fossé rempli d\u2019eau autour d\u2019un château fort ?', ok:'Les douves', bad:['Le donjon','Le tournoi']},
+ {q:'Comment appelle-t-on le pont qui se relève pour protéger un château fort ?', ok:'Le pont-levis', bad:['Le viaduc','L\u2019aqueduc']},
+ {q:'Comment appelle-t-on le marché où les paysans vendaient leurs produits ?', ok:'La foire ou le marché du village', bad:['Le supermarché en ligne','Le centre commercial']}
 ];
 function _histCM1_vocab(){
  const f=_histPick(HIST_CM1_VOCAB);
@@ -347,7 +403,17 @@ const HIST_CM1_VRAIFAUX = [
  {aff:'Au Moyen Âge, tout le monde savait lire et écrire.', ok:'Faux'},
  {aff:'Les cathédrales sont de grandes églises du Moyen Âge.', ok:'Vrai'},
  {aff:'Jeanne d\u2019Arc a aidé à libérer la ville d\u2019Orléans.', ok:'Vrai'},
- {aff:'La peste noire était une maladie qui a beaucoup touché le Moyen Âge.', ok:'Vrai'},
+ {aff:'La peste noire était une maladie qui a beaucoup touché le Moyen Âge.', ok:'Vrai'},,
+ {aff:'Le système féodal organisait la société autour des liens entre seigneurs et vassaux.', ok:'Vrai'},
+ {aff:'Les chevaliers combattaient toujours à pied, jamais à cheval.', ok:'Faux'},
+ {aff:'Les cathédrales du Moyen Âge étaient construites en pierre.', ok:'Vrai'},
+ {aff:'La guerre de Cent Ans a opposé la France et l\u2019Angleterre.', ok:'Vrai'},
+ {aff:'Bertrand du Guesclin était un roi d\u2019Égypte.', ok:'Faux'},
+ {aff:'Aliénor d\u2019Aquitaine a été reine de France puis reine d\u2019Angleterre.', ok:'Vrai'},
+ {aff:'Au Moyen Âge, on utilisait déjà l\u2019électricité pour s\u2019éclairer.', ok:'Faux'},
+ {aff:'Le pont-levis permettait de protéger l\u2019entrée d\u2019un château fort.', ok:'Vrai'},
+ {aff:'Les moines copiaient les livres à la main dans les monastères.', ok:'Vrai'},
+ {aff:'Philippe Auguste a agrandi le royaume de France.', ok:'Vrai'}
 ];
 function _histCM1_vraifaux(){
  const f=_histPick(HIST_CM1_VRAIFAUX);
@@ -379,7 +445,18 @@ const HIST_CM2_CAUSES = [
  {q:'Que réclamaient les Français pendant la Révolution ?', ok:'Liberté, égalité et fraternité', bad:['Un nouveau roi tout-puissant','Le retour au Moyen Âge']},
  {q:'Pourquoi Christophe Colomb est-il célèbre ?', ok:'Il a atteint l\u2019Amérique en 1492', bad:['Il a inventé l\u2019avion','Il a construit la tour Eiffel']},
  {q:'Qu\u2019est-ce qui a changé pour les rois après la Révolution française ?', ok:'Le roi n\u2019avait plus tous les pouvoirs', bad:['Le roi est devenu immortel','Il y a eu beaucoup plus de rois']},
- {q:'Pourquoi le 11 novembre est-il un jour important en France ?', ok:'Il marque la fin de la Première Guerre mondiale', bad:['C\u2019est la fête de la musique','C\u2019est le début de la Révolution']},
+ {q:'Pourquoi le 11 novembre est-il un jour important en France ?', ok:'Il marque la fin de la Première Guerre mondiale', bad:['C\u2019est la fête de la musique','C\u2019est le début de la Révolution']},,
+ {q:'Pourquoi Marie Curie est-elle célèbre ?', ok:'Elle a fait d\u2019importantes découvertes sur la radioactivité', bad:['Elle a construit la tour Eiffel','Elle a inventé l\u2019avion']},
+ {q:'Pourquoi la loi de Jules Ferry sur l\u2019école est-elle importante ?', ok:'Elle a rendu l\u2019école gratuite et obligatoire pour tous', bad:['Elle a créé l\u2019Union européenne','Elle a aboli la royauté']},
+ {q:'Pourquoi la Résistance s\u2019est-elle organisée pendant la Seconde Guerre mondiale ?', ok:'Pour lutter contre l\u2019occupation ennemie', bad:['Pour organiser des jeux Olympiques','Pour construire des pyramides']},
+ {q:'Pourquoi la tour Eiffel a-t-elle été construite en 1889 ?', ok:'Pour une grande exposition universelle à Paris', bad:['Pour se protéger d\u2019une guerre','Pour observer les étoiles uniquement']},
+ {q:'Pourquoi le droit de vote des femmes en 1944 est-il un événement important ?', ok:'Il a permis à toutes les femmes de voter comme les hommes', bad:['Il a supprimé les élections','Il a créé une nouvelle monnaie']},
+ {q:'Pourquoi Victor Hugo est-il un écrivain important pour la France ?', ok:'Il a écrit des romans célèbres et défendu la justice sociale', bad:['Il a inventé l\u2019imprimerie','Il a été roi de France']},
+ {q:'Pourquoi le 8 mai est-il un jour férié en France ?', ok:'Il marque la fin de la Seconde Guerre mondiale en Europe', bad:['C\u2019est la fête du travail','C\u2019est le début de la Révolution']},
+ {q:'Pourquoi Clemenceau est-il surnommé le Père la Victoire ?', ok:'Il a dirigé la France jusqu\u2019à la victoire de 1918', bad:['Il a gagné une course automobile','Il a inventé un vaccin']},
+ {q:'Pourquoi la Terreur (1793-1794) a-t-elle marqué la Révolution française ?', ok:'Ce fut une période de violence et d\u2019exécutions politiques', bad:['Ce fut une grande fête nationale','Ce fut une période de paix totale']},
+ {q:'Pourquoi Jean Moulin est-il un symbole de la Résistance ?', ok:'Il a réussi à unifier les différents groupes résistants', bad:['Il a été président de la République','Il a écrit la Marseillaise']},
+ {q:'Pourquoi Simone Veil est-elle une figure importante du XXe siècle ?', ok:'Elle a marqué l\u2019histoire par son engagement politique et européen', bad:['Elle a inventé l\u2019électricité','Elle a construit le château de Versailles']}
 ];
 function _histCM2_causes(){
  const f=_histPick(HIST_CM2_CAUSES);
@@ -391,7 +468,13 @@ const HIST_CM2_PERSO = [
  {nom:'Charles de Gaulle', indices:['J\u2019ai appelé les Français à résister pendant la guerre.','Mon appel a eu lieu le 18 juin 1940.','Je suis devenu président de la République.']},
  {nom:'Christophe Colomb', indices:['Je suis un navigateur du XVe siècle.','J\u2019ai traversé l\u2019océan Atlantique avec trois navires.','En 1492, j\u2019ai atteint l\u2019Amérique.']},
  {nom:'Louis Pasteur', indices:['Je suis un grand savant français.','J\u2019ai découvert le vaccin contre la rage.','J\u2019ai montré l\u2019importance de l\u2019hygiène.']},
- {nom:'Jules Ferry', indices:['Je suis un homme politique du XIXe siècle.','Grâce à moi, l\u2019école est devenue gratuite et obligatoire.','J\u2019ai rendu l\u2019école laïque.']},
+ {nom:'Jules Ferry', indices:['Je suis un homme politique du XIXe siècle.','Grâce à moi, l\u2019école est devenue gratuite et obligatoire.','J\u2019ai rendu l\u2019école laïque.']},,
+ {nom:'Marie Curie', indices:['Je suis une grande scientifique d\u2019origine polonaise et française.','J\u2019ai étudié la radioactivité.','J\u2019ai reçu deux prix Nobel, en physique et en chimie.']},
+ {nom:'Victor Hugo', indices:['Je suis un célèbre écrivain français du XIXe siècle.','J\u2019ai écrit le roman Les Misérables.','J\u2019ai aussi été un homme politique engagé.']},
+ {nom:'Simone Veil', indices:['Je suis une femme politique française du XXe siècle.','Enfant, j\u2019ai vécu la Seconde Guerre mondiale.','J\u2019ai été la première présidente du Parlement européen.']},
+ {nom:'Robespierre', indices:['Je suis une figure importante de la Révolution française.','J\u2019ai participé à une période très violente appelée la Terreur.','Je suis mort guillotiné en 1794.']},
+ {nom:'Georges Clemenceau', indices:['On m\u2019appelle le Père la Victoire.','J\u2019ai dirigé la France à la fin de la Première Guerre mondiale.','J\u2019ai vécu la victoire de 1918.']},
+ {nom:'Jean Moulin', indices:['Je suis un résistant français pendant la Seconde Guerre mondiale.','J\u2019ai réussi à unir différents mouvements de résistance.','Je suis mort après avoir été arrêté par l\u2019ennemi.']}
 ];
 function _histCM2_personnage(){
  const p=_histPick(HIST_CM2_PERSO);
@@ -408,7 +491,20 @@ const HIST_CM2_VOCAB = [
  {q:'Comment appelle-t-on les deux grandes guerres du XXe siècle ?', ok:'Les guerres mondiales', bad:['Les croisades','Les guerres de Gaule']},
  {q:'Quel château magnifique Louis XIV a-t-il fait construire ?', ok:'Le château de Versailles', bad:['Le château fort de Clovis','La tour Eiffel']},
  {q:'Comment appelle-t-on la grande invention de l\u2019imprimerie à la Renaissance ?', ok:'L\u2019imprimerie de Gutenberg', bad:['La machine à vapeur','L\u2019ordinateur']},
- {q:'Qui dirige la France aujourd\u2019hui, élu par les citoyens ?', ok:'Le président de la République', bad:['Le roi','L\u2019empereur']},
+ {q:'Qui dirige la France aujourd\u2019hui, élu par les citoyens ?', ok:'Le président de la République', bad:['Le roi','L\u2019empereur']},,
+ {q:'Comment appelle-t-on les tranchées où se sont battus les soldats de la Première Guerre mondiale ?', ok:'Les tranchées', bad:['Les douves','Les catacombes']},
+ {q:'Comment appelle-t-on les soldats français de la Première Guerre mondiale ?', ok:'Les poilus', bad:['Les gladiateurs','Les chevaliers']},
+ {q:'Quel jour célèbre-t-on la fin de la Première Guerre mondiale ?', ok:'Le 11 novembre', bad:['Le 14 juillet','Le 8 mai']},
+ {q:'Quel jour célèbre-t-on la fin de la Seconde Guerre mondiale en Europe ?', ok:'Le 8 mai', bad:['Le 11 novembre','Le 1er janvier']},
+ {q:'Que célèbre la fête nationale française du 14 juillet ?', ok:'Le souvenir de la Révolution française', bad:['La fête du travail','Noël']},
+ {q:'Comment appelle-t-on l\u2019hymne national de la France ?', ok:'La Marseillaise', bad:['L\u2019Ode à la joie','Le God Save the King']},
+ {q:'Comment appelle-t-on le symbole de la République française représenté en femme ?', ok:'Marianne', bad:['Jeanne d\u2019Arc','Athéna']},
+ {q:'Comment appelle-t-on l\u2019organisation qui réunit de nombreux pays d\u2019Europe aujourd\u2019hui ?', ok:'L\u2019Union européenne', bad:['Les Nations unies','L\u2019Empire romain']},
+ {q:'Comment appelle-t-on le vote qui permet aux citoyens de choisir leurs représentants ?', ok:'Une élection', bad:['Un sacre','Un tournoi']},
+ {q:'Comment appelle-t-on le grand monument parisien construit pour l\u2019exposition universelle de 1889 ?', ok:'La tour Eiffel', bad:['L\u2019Arc de Triomphe','Le Panthéon']},
+ {q:'Comment appelle-t-on la période de grands progrès techniques du XIXe siècle ?', ok:'La révolution industrielle', bad:['La Renaissance','La Préhistoire']},
+ {q:'Quelle machine a transformé les transports au XIXe siècle en roulant sur des rails ?', ok:'Le train à vapeur', bad:['La voiture électrique','L\u2019avion à réaction']},
+ {q:'Comment appelle-t-on le droit qui permet à chaque citoyen adulte de voter ?', ok:'Le suffrage universel', bad:['Le droit divin','La féodalité']}
 ];
 function _histCM2_vocab(){
  const f=_histPick(HIST_CM2_VOCAB);
