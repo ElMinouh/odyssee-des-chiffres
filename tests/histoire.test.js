@@ -51,4 +51,17 @@ describe('GEN_HIST : générateurs de questions par niveau (CP → CM2)', () => 
       expect(q.choices.some(c => c.val === q.res)).toBe(true);
     }
   });
+
+  it('300 tirages par niveau ne plantent jamais (détecte les trous de tableau type ",,")', () => {
+    const api = loadGame(FILES2);
+    api.setP({ name: 'Test' });
+    for (const lvl of LEVELS) {
+      for (let i = 0; i < 300; i++) {
+        const q = api.GEN_HIST[lvl](false);
+        expect(q).toBeTruthy();
+        expect(q.display).toBeTruthy();
+        expect(q.choices.some(c => c.val === q.res)).toBe(true);
+      }
+    }
+  });
 });
