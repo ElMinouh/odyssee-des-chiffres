@@ -40,9 +40,20 @@ function makeLocalStorage(initial = {}) {
 // Élément DOM factice minimal (aucune de nos fonctions testées ne
 // s'en sert vraiment, mais le stub évite un crash si appelé).
 function fakeEl() {
+  const cls = new Set();
   return {
     value: '', innerHTML: '', className: '', style: {},
-    classList: { add() {}, remove() {}, toggle() {}, contains() { return false; } },
+    classList: {
+      add(...c) { c.forEach((x) => cls.add(x)); },
+      remove(...c) { c.forEach((x) => cls.delete(x)); },
+      toggle(c, force) {
+        const on = force !== undefined ? force : !cls.has(c);
+        if (on) cls.add(c); else cls.delete(c);
+        return on;
+      },
+      contains(c) { return cls.has(c); },
+      [Symbol.iterator]() { return cls[Symbol.iterator](); },
+    },
     appendChild() {}, removeChild() {}, setAttribute() {}, addEventListener() {},
     querySelector() { return null; }, querySelectorAll() { return []; },
   };
@@ -85,7 +96,7 @@ export function loadGame(files, initialStorage = {}) {
     fetch: () => Promise.reject(new Error('no network in tests')),
     speechSynthesis: { speak() {}, cancel() {}, getVoices: () => [] },
     SpeechSynthesisUtterance: function () {},
-    Audio: function () { return { play() {}, pause() {}, addEventListener() {} }; },
+    Audio: function () { return { play() { return Promise.resolve(); }, pause() {}, addEventListener() {} }; },
     Image: function () { return {}; },
     requestAnimationFrame: () => 0,
     // $ est souvent utilisé dans le jeu : on renvoie un élément factice
@@ -114,6 +125,16 @@ export function loadGame(files, initialStorage = {}) {
   getRoster:  (typeof getRoster==='function')  ? getRoster  : undefined,
   setRoster:  (typeof setRoster==='function')  ? setRoster  : undefined,
   getBirthdays:(typeof getBirthdays==='function')? getBirthdays : undefined,
+  // --- musique / ducking (v11.1.10) ---
+  applyTheme:  (typeof applyTheme==='function')  ? applyTheme  : undefined,
+  startMusic:  (typeof startMusic==='function')  ? startMusic  : undefined,
+  stopMusic:   (typeof stopMusic==='function')   ? stopMusic   : undefined,
+  _musicDuck:  (typeof _musicDuck==='function')  ? _musicDuck  : undefined,
+  getBgAudioVolume: () => (typeof _bgAudio!=='undefined' && _bgAudio) ? _bgAudio.volume : undefined,
+  hasBgAudio:  () => (typeof _bgAudio!=='undefined') ? (_bgAudio !== null) : undefined,
+  // --- échappement (v11.1.10 : _jsAttr mutualisée dans 01-core.js) ---
+  esc:      (typeof esc==='function')     ? esc     : undefined,
+  _jsAttr:  (typeof _jsAttr==='function') ? _jsAttr : undefined,
   // --- accès au localStorage factice pour les assertions ---
   _ls: (typeof localStorage!=='undefined') ? localStorage : undefined,
   // --- accesseurs pour piloter l'état global depuis les tests ---

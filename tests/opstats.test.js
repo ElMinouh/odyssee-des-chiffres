@@ -62,12 +62,11 @@ describe('_frCatOf : mapping opKey français → 4 catégories', () => {
     });
   }
 
-  // Caractérisation d'une anomalie connue : "fr-opp" (antonymes) contient
-  // "pp" et tombe donc dans "orth" (participe passé) au lieu de "vocab".
-  // Ce test fige le comportement ACTUEL ; s'il casse un jour, c'est que le
-  // mapping a été corrigé volontairement — mettre à jour ce test alors.
-  it('[connu] fr-opp tombe dans orth à cause de "pp"', () => {
-    expect(api._frCatOf('fr-opp')).toBe('orth');
+  // v11.1.10 : l'anomalie "fr-opp" → "orth" (collision avec "pp") a été corrigée
+  // par une exception explicite dans _frCatOf. Ce test vérifie maintenant le
+  // comportement CORRIGÉ (auparavant il figeait le bug avec expect('orth')).
+  it('[fixé v11.1.10] fr-opp (antonymes) est bien classé en vocab', () => {
+    expect(api._frCatOf('fr-opp')).toBe('vocab');
   });
 
   it('gère les entrées vides / nulles sans planter (→ vocab par défaut)', () => {
