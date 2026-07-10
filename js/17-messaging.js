@@ -115,7 +115,7 @@ var _msgConvTimer = null;
 var _msgBadgePoll = null;
 
 function _e(s){ return (typeof esc==='function') ? esc(s) : String(s==null?'':s); }
-function _jsAttr(s){ return _e(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+// _jsAttr est désormais mutualisée dans 01-core.js (v11.1.10) — plus de définition locale ici.
 function _msgEl(){ return document.getElementById('msg-overlay'); }
 function _curName(){ return (typeof P!=='undefined' && P) ? P.name : null; }
 

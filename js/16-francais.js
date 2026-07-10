@@ -98,6 +98,10 @@ function _frStrip(h){ return String(h).replace(/<br\s*\/?>/gi,' ').replace(/<[^>
 // en 4 grandes catégories pour un suivi bi-matière lisible (chantier v11.1.0).
 function _frCatOf(opKey){
  const k = String(opKey||'');
+ // v11.1.10 : 'fr-opp' (contraires/antonymes) matchait par erreur la regex orth
+ // à cause de la sous-chaîne "pp" (ex. participe passé). Exception explicite avant
+ // la regex générale, sans toucher au reste de la logique.
+ if(k==='fr-opp') return 'vocab';
  if(/conj|temps|mode/.test(k)) return 'conj';
  if(/dictee|mbp|pp|plur|accord|graph|orth|lettre/.test(k)) return 'orth';
  if(/nature|fonc|ptype|phrase|cod|rel|comp|val|voix|sub|agent|conn|lien|nat$/.test(k)) return 'gram';

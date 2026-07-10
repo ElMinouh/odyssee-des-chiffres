@@ -1149,7 +1149,7 @@ function renderCloudPanel(){
  // v9.4.16 : nom échappé pour le HTML (esc) et pour les onclick (apostrophes) —
  // un prénom comme « L'éa » cassait les boutons cloud.
  const _nH = esc(prof.name);
- const _nJ = String(prof.name).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+ const _nJ = _jsAttr(prof.name); // v11.1.10 : mutualisée dans 01-core.js (auparavant inline ici)
  container.innerHTML = `
   <div style="background:rgba(52,152,219,.08);border:1px solid rgba(52,152,219,.3);border-radius:8px;padding:10px;margin-top:6px;">
    <p style="font-size:.78em;color:#bdc3c7;margin:0 0 4px;">Code de sauvegarde de <strong style="color:#fff;">${_nH}</strong> :</p>
