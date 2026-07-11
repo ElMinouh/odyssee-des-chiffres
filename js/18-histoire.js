@@ -1,7 +1,9 @@
 // ═══════════════════════════════════════════════════════
 // HISTOIRE — Générateurs de questions (matière 'hist')
-// v11.3.1 — Primaire CP → CM2 (v11.2.1) + Maternelle PS/MS/GS (v11.3.0)
-//   + fix critique v11.3.1 : bug val/index qui inversait parfois la bonne réponse.
+// v11.4.0 — Primaire CP → CM2 (v11.2.1) + Maternelle PS/MS/GS (v11.3.0)
+//   + fix critique v11.3.1 (bug val/index) + Collège 6E/5E/4E/3E (v11.4.0)
+//   + fix v11.4.0 : anti-répétition basée sur le contenu réel, pas seulement
+//   le texte de la question (sinon la catégorie "frise" devenait injoignable).
 //   100% QCM (choix multiples), inspiré des principes neuro-éducatifs :
 //   récit avant date, ancrage concret, repérage spatial-temporel systématique,
 //   récupération active, entrelacement des types d'exercice.
@@ -38,8 +40,17 @@ let _histRecent = [];
 const _HIST_RECENT_MAX = 25;
 function _histUnique(q){
  if(!q) return q;
- if(_histRecent.indexOf(q.display)>=0) return null;
- _histRecent.push(q.display); if(_histRecent.length>_HIST_RECENT_MAX) _histRecent.shift();
+ // v11.4.0 — FIX : certains générateurs (_histOrdreQ notamment) produisent toujours
+ // le même texte de question ("Quelle rangée respecte l'ordre chronologique ?"),
+ // quel que soit le niveau ou le contenu réel. Se baser sur le seul q.display
+ // bloquait donc toute la catégorie "frise" pour TOUS les niveaux dès le premier
+ // tirage (le 2e tirage, même avec un contenu totalement différent, était rejeté
+ // à tort). On inclut le contenu réel des choix dans la clé pour distinguer les
+ // questions qui se ressemblent en surface mais diffèrent sur le fond.
+ const contenu = (q.choices||[]).map(c=>c.label||c.html||'').join('|');
+ const key = q.display+'::'+contenu;
+ if(_histRecent.indexOf(key)>=0) return null;
+ _histRecent.push(key); if(_histRecent.length>_HIST_RECENT_MAX) _histRecent.shift();
  return q;
 }
 function _histPick(arr){ return arr[ri(0,arr.length-1)]; }
@@ -533,6 +544,397 @@ function genQ_HIST_CM2(boss,_d){
  return q;
 }
 
+// ═══════════════════════════════════════════════════════
+// COLLÈGE (6E / 5E / 4E / 3E) — v11.4.0
+//   Programme stable (la réforme cycle 4 a été repoussée, vérifié juillet 2026) :
+//   6e Antiquité · 5e Moyen Âge → Renaissance · 4e XVIIIe-XIXe · 3e XXe-XXIe.
+//   Ados 11-15 ans (pensée formelle en construction, Piaget) : on introduit le
+//   raisonnement causal à plusieurs facteurs et l'interrogation élaborative
+//   ("pourquoi"), en plus de la récupération active déjà utilisée en primaire.
+//   Réutilise intégralement les briques déjà validées (_histQ, _histOrdreQ,
+//   _histPick, _histUnique) — donc AUCUN risque de récidive du bug val/index
+//   (ce bug ne pouvait exister que dans le code maternelle réinventé à part).
+//   Catégories de suivi : les 4 déjà existantes (frise/personnages/evenements/
+//   civilisation), aucune nouvelle catégorie nécessaire.
+//   Chaque fait historique ci-dessous a été vérifié individuellement avant
+//   livraison (dates, personnages, causes/conséquences) — cf. message de
+//   livraison pour le détail des points de vigilance vérifiés.
+// ═══════════════════════════════════════════════════════
+// Pioche une fenêtre contiguë de n éléments dans un tableau déjà trié
+// chronologiquement (ajoute de la variété aux exercices de frise sans jamais
+// casser l'ordre, puisqu'une sous-liste d'une liste triée reste triée).
+function _histFriseWindow(arr, n){
+ if(arr.length<=n) return arr.slice(0);
+ const start=ri(0, arr.length-n);
+ return arr.slice(start, start+n);
+}
+
+// ── 6E — Antiquité ───────────────────────────────────────
+const HIST_6E_CHRONO = [
+ {y:-3300, label:'Invention de l\u2019écriture en Mésopotamie (vers 3300 av. J.-C.)'},
+ {y:-3100, label:'Unification de l\u2019Égypte ancienne (vers 3100 av. J.-C.)'},
+ {y:-776,  label:'Premiers Jeux Olympiques en Grèce (776 av. J.-C.)'},
+ {y:-753,  label:'Fondation légendaire de Rome (753 av. J.-C.)'},
+ {y:-508,  label:'Débuts de la démocratie à Athènes (508 av. J.-C.)'},
+ {y:-490,  label:'Bataille de Marathon (490 av. J.-C.)'},
+ {y:-44,   label:'Assassinat de Jules César (44 av. J.-C.)'},
+ {y:-27,   label:'Auguste devient le premier empereur romain (27 av. J.-C.)'},
+ {y:313,   label:'Édit de Milan : le christianisme est toléré dans l\u2019Empire romain (313)'},
+ {y:476,   label:'Chute de l\u2019Empire romain d\u2019Occident (476)'}
+];
+const HIST_6E_FRISE = HIST_6E_CHRONO.map(e=>e.label);
+function _hist6E_frise(){ return _histOrdreQ(_histFriseWindow(HIST_6E_FRISE,3), 3, 'hist-frise'); }
+const HIST_6E_PERSO = [
+ {nom:'Périclès', indices:['Je suis un homme politique de la Grèce antique.','J\u2019ai dirigé la cité d\u2019Athènes au Ve siècle av. J.-C.','Sous mon nom, la démocratie athénienne connaît son âge d\u2019or.']},
+ {nom:'Jules César', indices:['Je suis un général et homme politique romain.','J\u2019ai conquis la Gaule.','J\u2019ai été assassiné en 44 av. J.-C., sans jamais devenir empereur.']},
+ {nom:'Auguste', indices:['Je suis le neveu adoptif de Jules César.','J\u2019ai mis fin aux guerres civiles à Rome.','Je suis devenu le premier empereur romain en 27 av. J.-C.']},
+ {nom:'Cléopâtre', indices:['Je suis une reine d\u2019Égypte antique.','J\u2019ai gouverné en m\u2019alliant avec des chefs romains.','Je suis la dernière grande reine de l\u2019Égypte des pharaons.']},
+ {nom:'Alexandre le Grand', indices:['Je suis un roi et conquérant grec.','J\u2019ai bâti un immense empire jusqu\u2019en Asie.','Une grande ville d\u2019Égypte porte mon nom : Alexandrie.']},
+ {nom:'Hammurabi', indices:['Je suis un roi de Mésopotamie, il y a environ 3800 ans.','J\u2019ai fait graver un des premiers codes de lois de l\u2019histoire.','Ce code de lois porte mon nom.']},
+ {nom:'Homère', indices:['On me considère comme un poète de la Grèce antique.','On m\u2019attribue deux grands récits : l\u2019Iliade et l\u2019Odyssée.','Certains historiens se demandent encore si j\u2019ai vraiment existé.']},
+ {nom:'Constantin', indices:['Je suis un empereur romain du IVe siècle.','J\u2019ai signé un édit autorisant les chrétiens à pratiquer leur religion librement, en 313.','J\u2019ai fondé une nouvelle capitale qui portera mon nom : Constantinople.']}
+];
+function _hist6E_personnage(){
+ const p=_histPick(HIST_6E_PERSO);
+ const phase=(typeof _progPhase==='function')?_progPhase('6E'):1;
+ const nInd=phase<=1?3:phase===2?2:1;
+ const indices=p.indices.slice(0,nInd).join(' ');
+ const autres=_histShuffle(HIST_6E_PERSO.filter(x=>x.nom!==p.nom).map(x=>x.nom)).slice(0,2);
+ return _histQ(`${indices} Qui suis-je ?`, p.nom, autres, 'hist-perso', `${p.nom} : ${p.indices.join(' ')}`);
+}
+const HIST_6E_CIVIL = [
+ {q:'Quelle civilisation a inventé l\u2019écriture cunéiforme ?', ok:'La Mésopotamie', bad:['La Grèce antique','La Gaule']},
+ {q:'Quelle civilisation a construit les grandes pyramides ?', ok:'L\u2019Égypte ancienne', bad:['Rome antique','La Mésopotamie']},
+ {q:'Quelle civilisation a inventé la démocratie ?', ok:'La Grèce antique (Athènes)', bad:['L\u2019Égypte ancienne','L\u2019Empire romain']},
+ {q:'Quel peuple a construit le Colisée ?', ok:'Les Romains', bad:['Les Grecs','Les Égyptiens']},
+ {q:'Quelle écriture utilisait des hiéroglyphes ?', ok:'L\u2019écriture égyptienne ancienne', bad:['Le latin','Le grec ancien']},
+ {q:'Comment appelle-t-on l\u2019assemblée des citoyens à Athènes ?', ok:'L\u2019Ecclésia (l\u2019assemblée du peuple)', bad:['Le Sénat','Le Forum']},
+ {q:'Comment appelle-t-on les combattants du cirque romain ?', ok:'Les gladiateurs', bad:['Les légionnaires','Les patriciens']},
+ {q:'Quel est le titre du chef religieux et politique de l\u2019Égypte ancienne ?', ok:'Le pharaon', bad:['Le consul','L\u2019archonte']},
+ {q:'Comment appelle-t-on une ville-État de la Grèce antique ?', ok:'Une cité (polis)', bad:['Un empire','Un royaume']},
+ {q:'Comment appelle-t-on la croyance en plusieurs dieux ?', ok:'Le polythéisme', bad:['Le monothéisme','L\u2019athéisme']},
+ {q:'Comment appelle-t-on la croyance en un seul dieu ?', ok:'Le monothéisme', bad:['Le polythéisme','Le paganisme']},
+ {q:'Comment appelle-t-on les nobles romains les plus riches ?', ok:'Les patriciens', bad:['Les plébéiens','Les esclaves']},
+ {q:'Comment appelle-t-on le peuple romain non noble ?', ok:'Les plébéiens', bad:['Les patriciens','Les sénateurs']},
+ {q:'Comment appelle-t-on un ouvrage qui transporte l\u2019eau chez les Romains ?', ok:'Un aqueduc', bad:['Un temple','Un forum']},
+ {q:'Quelle religion monothéiste apparaît en Palestine au Ier siècle ?', ok:'Le christianisme', bad:['L\u2019islam','Le bouddhisme']},
+ {q:'Comment appelle-t-on le récit légendaire de deux frères élevés par une louve, à l\u2019origine de Rome ?', ok:'La légende de Romulus et Remus', bad:['L\u2019Iliade','L\u2019épopée de Gilgamesh']},
+ {q:'Quel est le plus ancien grand récit écrit connu, venu de Mésopotamie ?', ok:'L\u2019épopée de Gilgamesh', bad:['L\u2019Odyssée','Les Métamorphoses']},
+ {q:'Comment appelle-t-on l\u2019ensemble des dieux et récits religieux d\u2019un peuple ?', ok:'Une mythologie', bad:['Une constitution','Une dynastie']},
+ {q:'Sur quel support les Égyptiens écrivaient-ils souvent ?', ok:'Le papyrus', bad:['Le papier moderne','Une tablette numérique']},
+ {q:'Comment appelle-t-on le lieu public où se réunissaient les Romains pour débattre et commercer ?', ok:'Le forum', bad:['L\u2019agora','Le Colisée']}
+];
+function _hist6E_civil(){ const f=_histPick(HIST_6E_CIVIL); return _histQ(f.q, f.ok, f.bad, 'hist-vie', f.ok); }
+const HIST_6E_CAUSES = [
+ {q:'Pourquoi Rome passe-t-elle de République à Empire vers 27 av. J.-C. ?', ok:'Après des guerres civiles, Auguste concentre tous les pouvoirs', bad:['Le Sénat a voté la fin de Rome','Les Gaulois ont envahi l\u2019Italie']},
+ {q:'Pourquoi le christianisme devient-il toléré dans l\u2019Empire romain en 313 ?', ok:'L\u2019empereur Constantin signe l\u2019édit de Milan', bad:['Tous les Romains sont devenus chrétiens du jour au lendemain','Le Sénat a interdit les autres religions']},
+ {q:'Pourquoi les Jeux Olympiques antiques sont-ils organisés ?', ok:'Pour honorer les dieux grecs lors d\u2019une grande fête sportive commune', bad:['Pour préparer les soldats à la guerre uniquement','Pour choisir le nouveau roi de Grèce']},
+ {q:'Pourquoi l\u2019Empire romain d\u2019Occident s\u2019effondre-t-il en 476 ?', ok:'Affaibli, il ne résiste plus aux invasions de peuples venus d\u2019ailleurs', bad:['Un tremblement de terre a détruit Rome','Les Romains ont décidé de partir vivre en Grèce']}
+];
+function _hist6E_causes(){ const f=_histPick(HIST_6E_CAUSES); return _histQ(f.q, f.ok, f.bad, 'hist-cause', f.ok); }
+const HIST_6E_VRAIFAUX = [
+ {aff:'Auguste a été le premier empereur romain.', ok:'Vrai'},
+ {aff:'Jules César a été le premier empereur romain.', ok:'Faux'},
+ {aff:'Les Jeux Olympiques antiques se déroulaient en Grèce.', ok:'Vrai'},
+ {aff:'Toutes les femmes pouvaient voter à Athènes.', ok:'Faux'},
+ {aff:'Les pharaons étaient considérés comme des dieux vivants.', ok:'Vrai'},
+ {aff:'Rome a toujours été un empire, depuis sa fondation.', ok:'Faux'},
+ {aff:'Les Égyptiens momifiaient leurs pharaons.', ok:'Vrai'},
+ {aff:'La Gaule faisait partie de l\u2019Empire romain.', ok:'Vrai'},
+ {aff:'L\u2019Empire romain d\u2019Occident existe encore aujourd\u2019hui.', ok:'Faux'},
+ {aff:'Le christianisme est apparu en Palestine, sous l\u2019Empire romain.', ok:'Vrai'},
+ {aff:'La Grèce antique était formée de plusieurs cités indépendantes.', ok:'Vrai'},
+ {aff:'Le latin était la langue officielle de l\u2019administration romaine.', ok:'Vrai'}
+];
+function _hist6E_vraifaux(){
+ const f=_histPick(HIST_6E_VRAIFAUX);
+ const autre=f.ok==='Vrai'?'Faux':'Vrai';
+ return _histQ(`${f.aff} Vrai ou faux ?`, f.ok, [autre], 'hist-vie', f.aff);
+}
+function genQ_HIST_6E(boss,_d){
+ _d=_d||0;
+ const phase=(typeof _progPhase==='function')?_progPhase('6E'):1;
+ let pool;
+ if(phase<=1)       pool=[_hist6E_civil, _hist6E_vraifaux, _hist6E_personnage];
+ else if(phase===2) pool=[_hist6E_civil, _hist6E_vraifaux, _hist6E_personnage, _hist6E_causes];
+ else               pool=[_hist6E_civil, _hist6E_vraifaux, _hist6E_personnage, _hist6E_causes, _hist6E_frise];
+ const q=_histUnique(_histPick(pool)());
+ if(!q){ if(_d>16) return _hist6E_civil(); return genQ_HIST_6E(boss,_d+1); }
+ return q;
+}
+
+// ── 5E — Moyen Âge → Renaissance ─────────────────────────
+const HIST_5E_CHRONO = [
+ {y:622,  label:'Hégire : départ de Mahomet de La Mecque vers Médine (622)'},
+ {y:800,  label:'Charlemagne est sacré empereur par le pape (800)'},
+ {y:843,  label:'Traité de Verdun : partage de l\u2019empire de Charlemagne (843)'},
+ {y:1096, label:'Départ de la première croisade (1096)'},
+ {y:1214, label:'Victoire de Philippe Auguste à Bouvines (1214)'},
+ {y:1337, label:'Début de la guerre de Cent Ans (1337)'},
+ {y:1429, label:'Jeanne d\u2019Arc délivre Orléans (1429)'},
+ {y:1453, label:'Fin de la guerre de Cent Ans et prise de Constantinople (1453)'},
+ {y:1492, label:'Christophe Colomb atteint l\u2019Amérique (1492)'},
+ {y:1515, label:'Victoire de François Ier à Marignan (1515)'}
+];
+const HIST_5E_FRISE = HIST_5E_CHRONO.map(e=>e.label);
+function _hist5E_frise(){ return _histOrdreQ(_histFriseWindow(HIST_5E_FRISE,3), 3, 'hist-frise'); }
+const HIST_5E_PERSO = [
+ {nom:'Charlemagne', indices:['Je suis un roi devenu empereur en l\u2019an 800.','J\u2019ai été couronné par le pape à Rome.','Mon empire s\u2019étendait sur une grande partie de l\u2019Europe de l\u2019Ouest.']},
+ {nom:'Mahomet', indices:['Je suis le prophète fondateur de l\u2019islam.','J\u2019ai quitté La Mecque pour Médine en 622.','Ce départ est appelé l\u2019Hégire.']},
+ {nom:'Aliénor d\u2019Aquitaine', indices:['J\u2019ai été reine de France, puis reine d\u2019Angleterre.','J\u2019ai apporté un immense territoire, l\u2019Aquitaine, par mon mariage.','Je suis l\u2019une des femmes les plus puissantes du Moyen Âge.']},
+ {nom:'Jeanne d\u2019Arc', indices:['Je suis une jeune paysanne devenue chef de guerre.','J\u2019ai délivré la ville d\u2019Orléans en 1429.','J\u2019ai été capturée puis jugée à Rouen.']},
+ {nom:'Saladin', indices:['Je suis un sultan musulman du XIIe siècle.','J\u2019ai repris Jérusalem aux croisés chrétiens en 1187.','Je suis resté célèbre, y compris chez mes adversaires, pour ma chevalerie.']},
+ {nom:'Christophe Colomb', indices:['Je suis un navigateur au service de l\u2019Espagne.','Je cherchais une route vers l\u2019Asie en traversant l\u2019Atlantique.','En 1492, j\u2019ai atteint un continent inconnu des Européens.']},
+ {nom:'Gutenberg', indices:['Je suis un imprimeur allemand du XVe siècle.','J\u2019ai perfectionné l\u2019imprimerie à caractères mobiles.','Grâce à moi, les livres se copient bien plus vite qu\u2019à la main.']},
+ {nom:'François Ier', indices:['Je suis roi de France au XVIe siècle.','J\u2019ai gagné la bataille de Marignan en 1515.','J\u2019ai invité des artistes italiens de la Renaissance, comme Léonard de Vinci.']},
+ {nom:'Marco Polo', indices:['Je suis un marchand et voyageur vénitien.','J\u2019ai voyagé jusqu\u2019en Chine, à la cour de l\u2019empereur mongol.','Le récit de mon voyage a fait rêver l\u2019Europe entière.']}
+];
+function _hist5E_personnage(){
+ const p=_histPick(HIST_5E_PERSO);
+ const phase=(typeof _progPhase==='function')?_progPhase('5E'):1;
+ const nInd=phase<=1?3:phase===2?2:1;
+ const indices=p.indices.slice(0,nInd).join(' ');
+ const autres=_histShuffle(HIST_5E_PERSO.filter(x=>x.nom!==p.nom).map(x=>x.nom)).slice(0,2);
+ return _histQ(`${indices} Qui suis-je ?`, p.nom, autres, 'hist-perso', `${p.nom} : ${p.indices.join(' ')}`);
+}
+const HIST_5E_CIVIL = [
+ {q:'Comment appelle-t-on le lien d\u2019obéissance entre un seigneur et son vassal ?', ok:'La féodalité (le lien féodal)', bad:['La démocratie','La République']},
+ {q:'Comment appelle-t-on la terre donnée par un seigneur à son vassal ?', ok:'Un fief', bad:['Un empire','Une colonie']},
+ {q:'Comment appelle-t-on un paysan attaché à la terre d\u2019un seigneur ?', ok:'Un serf', bad:['Un chevalier','Un évêque']},
+ {q:'Comment appelle-t-on le chef religieux de l\u2019Église catholique ?', ok:'Le pape', bad:['Le calife','L\u2019empereur']},
+ {q:'Comment appelle-t-on le chef religieux et politique dans le monde musulman médiéval ?', ok:'Le calife', bad:['Le pape','Le doge']},
+ {q:'Comment appelle-t-on les expéditions militaires chrétiennes vers Jérusalem ?', ok:'Les croisades', bad:['Les invasions barbares','Les grandes découvertes']},
+ {q:'Quel type de bâtiment religieux domine les villes au Moyen Âge ?', ok:'La cathédrale', bad:['Le temple grec','La pyramide']},
+ {q:'Comment appelle-t-on le mouvement culturel qui redécouvre l\u2019Antiquité aux XVe-XVIe siècles ?', ok:'La Renaissance', bad:['Les Lumières','La Réforme']},
+ {q:'Comment appelle-t-on l\u2019invention de Gutenberg qui permet d\u2019imprimer des livres en série ?', ok:'L\u2019imprimerie à caractères mobiles', bad:['Le papier','La boussole']},
+ {q:'Comment appelle-t-on une association de marchands ou d\u2019artisans au Moyen Âge ?', ok:'Une corporation (une guilde)', bad:['Un fief','Un royaume']},
+ {q:'Comment appelle-t-on le château fortifié typique du Moyen Âge ?', ok:'Un château fort', bad:['Un palais Renaissance','Un temple']},
+ {q:'Comment appelle-t-on un guerrier à cheval au service d\u2019un seigneur ?', ok:'Un chevalier', bad:['Un légionnaire','Un gladiateur']},
+ {q:'Quel texte sacré fonde l\u2019islam ?', ok:'Le Coran', bad:['La Bible','La Torah']},
+ {q:'Quel texte sacré fonde le judaïsme ?', ok:'La Torah', bad:['Le Coran','Les Évangiles']},
+ {q:'Quels textes sacrés fondent le christianisme ?', ok:'Les Évangiles (le Nouveau Testament)', bad:['Le Coran','La Torah']},
+ {q:'Quelle ville est un lieu de pèlerinage sacré pour juifs, chrétiens et musulmans ?', ok:'Jérusalem', bad:['Rome','La Mecque']},
+ {q:'Comment appelle-t-on une grande foire commerciale au Moyen Âge ?', ok:'Une foire commerciale', bad:['Un fief','Un concile']}
+];
+function _hist5E_civil(){ const f=_histPick(HIST_5E_CIVIL); return _histQ(f.q, f.ok, f.bad, 'hist-vie', f.ok); }
+const HIST_5E_CAUSES = [
+ {q:'Pourquoi la première croisade est-elle lancée en 1096 ?', ok:'Le pape appelle les chrétiens à délivrer Jérusalem, lieu saint', bad:['Le roi de France veut agrandir son royaume','Les marchands veulent de nouvelles routes commerciales uniquement']},
+ {q:'Quelle est une conséquence de l\u2019invention de l\u2019imprimerie ?', ok:'Les livres et les idées se diffusent beaucoup plus vite et plus largement', bad:['Plus personne ne sait lire','Les livres deviennent interdits']},
+ {q:'Pourquoi l\u2019empire de Charlemagne est-il partagé en 843 ?', ok:'Ses petits-fils se disputent l\u2019héritage et signent le traité de Verdun', bad:['Les Vikings ont détruit tout l\u2019empire','Le pape a exigé le partage']},
+ {q:'Pourquoi les grandes découvertes ont-elles lieu à la fin du Moyen Âge ?', ok:'Les Européens cherchent de nouvelles routes commerciales vers l\u2019Asie, avec de meilleurs navires', bad:['Ils voulaient fuir un climat trop froid en Europe','Le pape les a obligés à explorer le monde']}
+];
+function _hist5E_causes(){ const f=_histPick(HIST_5E_CAUSES); return _histQ(f.q, f.ok, f.bad, 'hist-cause', f.ok); }
+const HIST_5E_VRAIFAUX = [
+ {aff:'Charlemagne a été sacré empereur par le pape.', ok:'Vrai'},
+ {aff:'La guerre de Cent Ans a duré exactement cent ans.', ok:'Faux'},
+ {aff:'Jeanne d\u2019Arc a délivré la ville d\u2019Orléans.', ok:'Vrai'},
+ {aff:'Au Moyen Âge, tous les paysans étaient des chevaliers.', ok:'Faux'},
+ {aff:'L\u2019Hégire correspond au départ de Mahomet de La Mecque vers Médine.', ok:'Vrai'},
+ {aff:'La prise de Constantinople par les Ottomans a eu lieu en 1453.', ok:'Vrai'},
+ {aff:'Au Moyen Âge, l\u2019Église n\u2019avait aucune influence sur la société.', ok:'Faux'},
+ {aff:'Gutenberg a perfectionné l\u2019imprimerie à caractères mobiles en Europe.', ok:'Vrai'},
+ {aff:'La Renaissance s\u2019inspire de l\u2019Antiquité grecque et romaine.', ok:'Vrai'},
+ {aff:'Christophe Colomb savait, avant de partir, qu\u2019il allait découvrir un nouveau continent.', ok:'Faux'},
+ {aff:'Aliénor d\u2019Aquitaine a été reine de France puis reine d\u2019Angleterre.', ok:'Vrai'},
+ {aff:'Les premières universités n\u2019existaient pas encore au Moyen Âge.', ok:'Faux'}
+];
+function _hist5E_vraifaux(){
+ const f=_histPick(HIST_5E_VRAIFAUX);
+ const autre=f.ok==='Vrai'?'Faux':'Vrai';
+ return _histQ(`${f.aff} Vrai ou faux ?`, f.ok, [autre], 'hist-vie', f.aff);
+}
+function genQ_HIST_5E(boss,_d){
+ _d=_d||0;
+ const phase=(typeof _progPhase==='function')?_progPhase('5E'):1;
+ let pool;
+ if(phase<=1)       pool=[_hist5E_civil, _hist5E_vraifaux, _hist5E_personnage];
+ else if(phase===2) pool=[_hist5E_civil, _hist5E_vraifaux, _hist5E_personnage, _hist5E_causes];
+ else               pool=[_hist5E_civil, _hist5E_vraifaux, _hist5E_personnage, _hist5E_causes, _hist5E_frise];
+ const q=_histUnique(_histPick(pool)());
+ if(!q){ if(_d>16) return _hist5E_civil(); return genQ_HIST_5E(boss,_d+1); }
+ return q;
+}
+
+// ── 4E — XVIIIe-XIXe siècle ──────────────────────────────
+const HIST_4E_CHRONO = [
+ {y:1789, label:'Prise de la Bastille (14 juillet 1789)'},
+ {y:1789, label:'Déclaration des droits de l\u2019homme et du citoyen (26 août 1789)'},
+ {y:1792, label:'Proclamation de la Première République (septembre 1792)'},
+ {y:1793, label:'Exécution de Louis XVI (21 janvier 1793)'},
+ {y:1804, label:'Sacre de Napoléon Ier comme empereur (2 décembre 1804)'},
+ {y:1815, label:'Défaite de Napoléon à Waterloo (1815)'},
+ {y:1830, label:'Révolution de juillet en France (1830)'},
+ {y:1848, label:'Abolition de l\u2019esclavage dans les colonies françaises (1848)'},
+ {y:1870, label:'Proclamation de la Troisième République (1870)'}
+];
+const HIST_4E_FRISE = HIST_4E_CHRONO.map(e=>e.label);
+function _hist4E_frise(){ return _histOrdreQ(_histFriseWindow(HIST_4E_FRISE,3), 3, 'hist-frise'); }
+const HIST_4E_PERSO = [
+ {nom:'Voltaire', indices:['Je suis un philosophe français des Lumières.','J\u2019ai défendu la liberté d\u2019expression et combattu l\u2019intolérance religieuse.','Mon vrai nom est François-Marie Arouet.']},
+ {nom:'Rousseau', indices:['Je suis un philosophe des Lumières.','J\u2019ai écrit sur le contrat social entre le peuple et ses dirigeants.','Mes idées ont influencé la Révolution française.']},
+ {nom:'Louis XVI', indices:['J\u2019ai été roi de France jusqu\u2019en 1792.','J\u2019ai convoqué les États généraux en 1789.','J\u2019ai été jugé puis exécuté en 1793.']},
+ {nom:'Robespierre', indices:['Je suis une figure majeure de la Révolution française.','J\u2019ai dirigé le Comité de salut public pendant la Terreur.','Je suis moi-même mort exécuté, en 1794.']},
+ {nom:'Napoléon Bonaparte', indices:['Je suis un général devenu empereur des Français.','Je me suis couronné empereur en 1804.','J\u2019ai été définitivement vaincu à Waterloo en 1815.']},
+ {nom:'Olympe de Gouges', indices:['Je suis une femme engagée pendant la Révolution française.','J\u2019ai écrit la Déclaration des droits de la femme et de la citoyenne, en 1791.','Je suis morte exécutée, en 1793.']},
+ {nom:'Victor Schœlcher', indices:['Je suis un homme politique français du XIXe siècle.','J\u2019ai fait voter le décret d\u2019abolition de l\u2019esclavage en 1848.','Mon nom est aujourd\u2019hui donné à de nombreuses écoles et rues en France.']},
+ {nom:'Jules Ferry', indices:['Je suis un homme politique de la Troisième République.','J\u2019ai rendu l\u2019école primaire gratuite, laïque puis obligatoire, entre 1881 et 1882.','Je suis aussi connu pour avoir soutenu la colonisation française.']}
+];
+function _hist4E_personnage(){
+ const p=_histPick(HIST_4E_PERSO);
+ const phase=(typeof _progPhase==='function')?_progPhase('4E'):1;
+ const nInd=phase<=1?3:phase===2?2:1;
+ const indices=p.indices.slice(0,nInd).join(' ');
+ const autres=_histShuffle(HIST_4E_PERSO.filter(x=>x.nom!==p.nom).map(x=>x.nom)).slice(0,2);
+ return _histQ(`${indices} Qui suis-je ?`, p.nom, autres, 'hist-perso', `${p.nom} : ${p.indices.join(' ')}`);
+}
+const HIST_4E_CIVIL = [
+ {q:'Comment appelle-t-on le mouvement de pensée des philosophes du XVIIIe siècle qui défendent la raison et la liberté ?', ok:'Les Lumières', bad:['La Renaissance','Le romantisme']},
+ {q:'Comment appelle-t-on un roi dont les pouvoirs sont limités par une constitution ?', ok:'Un roi (une monarchie) constitutionnel(le)', bad:['Un roi absolu','Un empereur']},
+ {q:'Comment appelle-t-on le droit de vote réservé aux citoyens payant un impôt minimum ?', ok:'Le suffrage censitaire', bad:['Le suffrage universel','La démocratie directe']},
+ {q:'Comment appelle-t-on le droit de vote accordé à tous les citoyens adultes ?', ok:'Le suffrage universel', bad:['Le suffrage censitaire','La monarchie absolue']},
+ {q:'Comment appelle-t-on la classe sociale des commerçants et industriels enrichis au XIXe siècle ?', ok:'La bourgeoisie', bad:['La noblesse','Le clergé']},
+ {q:'Comment appelle-t-on la classe des ouvriers d\u2019usine au XIXe siècle ?', ok:'Le prolétariat (la classe ouvrière)', bad:['La bourgeoisie','Le clergé']},
+ {q:'Comment appelle-t-on la transformation des méthodes de production grâce aux machines, au XIXe siècle ?', ok:'La révolution industrielle', bad:['La Renaissance','Les Lumières']},
+ {q:'Comment appelle-t-on la prise de contrôle d\u2019un territoire par une puissance étrangère ?', ok:'La colonisation', bad:['La décolonisation','La Révolution']},
+ {q:'Comment appelle-t-on le texte de 1789 qui proclame la liberté et l\u2019égalité des citoyens ?', ok:'La Déclaration des droits de l\u2019homme et du citoyen', bad:['Le Code civil','La Constitution de l\u2019an VIII']},
+ {q:'Comment appelle-t-on le régime politique sans roi, où le pouvoir vient du peuple ?', ok:'La République', bad:['La monarchie','L\u2019empire']},
+ {q:'Comment appelle-t-on une association de travailleurs pour défendre leurs droits ?', ok:'Un syndicat', bad:['Une corporation médiévale','Un parti unique']},
+ {q:'Quel pays a connu la révolution industrielle avant la France ?', ok:'Le Royaume-Uni (l\u2019Angleterre)', bad:['L\u2019Espagne','La Russie']},
+ {q:'Comment appelle-t-on la période où les rois de France gouvernaient avant 1789 ?', ok:'L\u2019Ancien Régime', bad:['La Restauration','La Terreur']},
+ {q:'Comment appelle-t-on la période de la Révolution marquée par une forte répression des opposants (1793-1794) ?', ok:'La Terreur', bad:['Le Directoire','Le Consulat']},
+ {q:'Comment appelle-t-on le code de lois mis en place par Napoléon en 1804 ?', ok:'Le Code civil (Code Napoléon)', bad:['La Déclaration des droits de l\u2019homme','La Constitution de l\u2019an I']},
+ {q:'Comment appelle-t-on la charte accordée par le roi après la chute de Napoléon en 1814-1815 ?', ok:'La Charte constitutionnelle', bad:['Le Code civil','Le suffrage universel']},
+ {q:'Comment appelle-t-on la suppression des privilèges de la noblesse et du clergé, votée dans la nuit du 4 août 1789 ?', ok:'L\u2019abolition des privilèges', bad:['La Terreur','Le Directoire']}
+];
+function _hist4E_civil(){ const f=_histPick(HIST_4E_CIVIL); return _histQ(f.q, f.ok, f.bad, 'hist-vie', f.ok); }
+const HIST_4E_CAUSES = [
+ {q:'Quelle est une des causes de la Révolution française de 1789 ?', ok:'Le peuple supporte mal les inégalités entre les ordres et le poids des impôts', bad:['Le roi voulait rendre le pays plus pauvre exprès','Il n\u2019y avait plus aucun impôt en France']},
+ {q:'Quelle est une conséquence de la révolution industrielle ?', ok:'Une partie de la population quitte les campagnes pour travailler dans les villes et les usines', bad:['Tout le monde est devenu agriculteur','Les usines ont fermé partout']},
+ {q:'Pourquoi Napoléon se fait-il sacrer empereur en 1804 ?', ok:'Il veut asseoir durablement son pouvoir et fonder une nouvelle dynastie', bad:['Le peuple l\u2019a élu au suffrage universel direct','Le pape l\u2019a désigné sans qu\u2019il le demande']},
+ {q:'Pourquoi l\u2019esclavage est-il aboli dans les colonies françaises en 1848 ?', ok:'Sous la pression des abolitionnistes, la Deuxième République vote le décret d\u2019abolition', bad:['Il n\u2019y avait plus d\u2019esclaves depuis longtemps','Les colonies ont demandé leur indépendance']}
+];
+function _hist4E_causes(){ const f=_histPick(HIST_4E_CAUSES); return _histQ(f.q, f.ok, f.bad, 'hist-cause', f.ok); }
+const HIST_4E_VRAIFAUX = [
+ {aff:'La prise de la Bastille a eu lieu le 14 juillet 1789.', ok:'Vrai'},
+ {aff:'Napoléon a été élu empereur au suffrage universel direct, comme un président aujourd\u2019hui.', ok:'Faux'},
+ {aff:'Louis XVI a été exécuté en 1793.', ok:'Vrai'},
+ {aff:'La révolution industrielle a commencé en France avant l\u2019Angleterre.', ok:'Faux'},
+ {aff:'La Déclaration des droits de l\u2019homme et du citoyen date de 1789.', ok:'Vrai'},
+ {aff:'L\u2019esclavage a été aboli dans les colonies françaises en 1848.', ok:'Vrai'},
+ {aff:'Toutes les femmes pouvaient voter pendant la Révolution française.', ok:'Faux'},
+ {aff:'Napoléon a été définitivement vaincu à la bataille de Waterloo.', ok:'Vrai'},
+ {aff:'La Troisième République a été proclamée en 1870.', ok:'Vrai'},
+ {aff:'Le suffrage censitaire donnait le droit de vote à tous, riches ou pauvres.', ok:'Faux'},
+ {aff:'La révolution de 1830 a mis fin à la monarchie en France pour toujours.', ok:'Faux'},
+ {aff:'Jules Ferry a rendu l\u2019école primaire gratuite et obligatoire.', ok:'Vrai'}
+];
+function _hist4E_vraifaux(){
+ const f=_histPick(HIST_4E_VRAIFAUX);
+ const autre=f.ok==='Vrai'?'Faux':'Vrai';
+ return _histQ(`${f.aff} Vrai ou faux ?`, f.ok, [autre], 'hist-vie', f.aff);
+}
+function genQ_HIST_4E(boss,_d){
+ _d=_d||0;
+ const phase=(typeof _progPhase==='function')?_progPhase('4E'):1;
+ let pool;
+ if(phase<=1)       pool=[_hist4E_civil, _hist4E_vraifaux, _hist4E_personnage];
+ else if(phase===2) pool=[_hist4E_civil, _hist4E_vraifaux, _hist4E_personnage, _hist4E_causes];
+ else               pool=[_hist4E_civil, _hist4E_vraifaux, _hist4E_personnage, _hist4E_causes, _hist4E_frise];
+ const q=_histUnique(_histPick(pool)());
+ if(!q){ if(_d>16) return _hist4E_civil(); return genQ_HIST_4E(boss,_d+1); }
+ return q;
+}
+
+// ── 3E — XXe-XXIe siècle ─────────────────────────────────
+const HIST_3E_CHRONO = [
+ {y:1914, label:'Début de la Première Guerre mondiale (1914)'},
+ {y:1918, label:'Armistice : fin de la Première Guerre mondiale (11 novembre 1918)'},
+ {y:1929, label:'Krach boursier et début d\u2019une grande crise économique mondiale (1929)'},
+ {y:1933, label:'Hitler devient chancelier d\u2019Allemagne (1933)'},
+ {y:1939, label:'Début de la Seconde Guerre mondiale (1939)'},
+ {y:1944, label:'Débarquement allié en Normandie (6 juin 1944)'},
+ {y:1945, label:'Fin de la Seconde Guerre mondiale et création de l\u2019ONU (1945)'},
+ {y:1957, label:'Traité de Rome : début de la construction européenne (1957)'},
+ {y:1958, label:'Fondation de la Cinquième République par Charles de Gaulle (1958)'},
+ {y:1962, label:'Indépendance de l\u2019Algérie (1962)'},
+ {y:1989, label:'Chute du mur de Berlin (1989)'}
+];
+const HIST_3E_FRISE = HIST_3E_CHRONO.map(e=>e.label);
+function _hist3E_frise(){ return _histOrdreQ(_histFriseWindow(HIST_3E_FRISE,3), 3, 'hist-frise'); }
+const HIST_3E_PERSO = [
+ {nom:'Charles de Gaulle', indices:['Je suis un général français, chef de la France libre pendant la Seconde Guerre mondiale.','J\u2019ai lancé un appel à résister depuis Londres, le 18 juin 1940.','Je suis devenu le premier président de la Cinquième République, en 1958.']},
+ {nom:'Winston Churchill', indices:['Je suis Premier ministre du Royaume-Uni pendant la Seconde Guerre mondiale.','J\u2019ai encouragé mon pays à résister face à l\u2019Allemagne nazie.','Je suis connu pour mes discours de résistance en 1940.']},
+ {nom:'Nelson Mandela', indices:['J\u2019ai lutté contre un système de ségrégation raciale en Afrique du Sud, l\u2019apartheid.','J\u2019ai passé de nombreuses années en prison pour mes idées.','Je suis devenu président d\u2019Afrique du Sud en 1994.']},
+ {nom:'Simone Veil', indices:['Je suis une femme politique française, survivante de la déportation.','J\u2019ai été ministre de la Santé dans les années 1970.','J\u2019ai porté un engagement fort pour la construction européenne.']},
+ {nom:'Jean Monnet', indices:['Je suis un homme politique et économiste français du XXe siècle.','Je suis considéré comme l\u2019un des pères fondateurs de la construction européenne.','Mes idées ont contribué au traité instituant la Communauté européenne du charbon et de l\u2019acier, en 1951.']},
+ {nom:'Mikhaïl Gorbatchev', indices:['J\u2019ai dirigé l\u2019URSS à la fin des années 1980.','J\u2019ai lancé des réformes appelées perestroïka et glasnost.','Sous ma direction, le mur de Berlin est tombé, en 1989.']},
+ {nom:'Jean Moulin', indices:['Je suis une figure de la Résistance française pendant la Seconde Guerre mondiale.','J\u2019ai unifié plusieurs mouvements de résistance sous l\u2019autorité du général de Gaulle.','Je suis mort en 1943, après avoir été arrêté par les autorités allemandes.']},
+ {nom:'Gandhi', indices:['J\u2019ai mené le mouvement pour l\u2019indépendance de l\u2019Inde, obtenue en 1947.','Je prônais la non-violence comme moyen d\u2019action politique.','Mon exemple a inspiré d\u2019autres mouvements de décolonisation dans le monde.']}
+];
+function _hist3E_personnage(){
+ const p=_histPick(HIST_3E_PERSO);
+ const phase=(typeof _progPhase==='function')?_progPhase('3E'):1;
+ const nInd=phase<=1?3:phase===2?2:1;
+ const indices=p.indices.slice(0,nInd).join(' ');
+ const autres=_histShuffle(HIST_3E_PERSO.filter(x=>x.nom!==p.nom).map(x=>x.nom)).slice(0,2);
+ return _histQ(`${indices} Qui suis-je ?`, p.nom, autres, 'hist-perso', `${p.nom} : ${p.indices.join(' ')}`);
+}
+const HIST_3E_CIVIL = [
+ {q:'Comment appelle-t-on un régime politique où un seul parti détient tout le pouvoir et supprime les libertés ?', ok:'Un régime totalitaire (une dictature)', bad:['Une démocratie parlementaire','Une monarchie constitutionnelle']},
+ {q:'Comment appelle-t-on la destruction volontaire et organisée d\u2019un peuple ?', ok:'Un génocide', bad:['Une révolution','Une décolonisation']},
+ {q:'Comment appelle-t-on la période de tensions entre les États-Unis et l\u2019URSS après 1945, sans guerre directe entre eux ?', ok:'La guerre froide', bad:['La Grande Guerre','La drôle de guerre']},
+ {q:'Comment appelle-t-on le processus par lequel les anciennes colonies deviennent indépendantes ?', ok:'La décolonisation', bad:['La colonisation','La mondialisation']},
+ {q:'Comment appelle-t-on l\u2019organisation internationale créée en 1945 pour maintenir la paix ?', ok:'L\u2019ONU (Organisation des Nations unies)', bad:['L\u2019Union européenne','L\u2019OTAN']},
+ {q:'Comment appelle-t-on le régime politique français fondé en 1958 par de Gaulle ?', ok:'La Cinquième République', bad:['La Troisième République','Le Directoire']},
+ {q:'Comment appelle-t-on la construction progressive d\u2019une union entre pays européens après 1945 ?', ok:'La construction européenne', bad:['La guerre froide','La décolonisation']},
+ {q:'Comment appelle-t-on la diffusion massive d\u2019informations, souvent déformées, pour influencer l\u2019opinion ?', ok:'La propagande', bad:['La démocratie','La diplomatie']},
+ {q:'Comment appelle-t-on le partage du monde en deux camps (États-Unis / URSS) après 1945 ?', ok:'La bipolarisation du monde', bad:['La décolonisation','La construction européenne']},
+ {q:'Comment appelle-t-on le débarquement des forces alliées en France le 6 juin 1944 ?', ok:'Le débarquement de Normandie', bad:['La bataille de Verdun','La bataille de la Somme']},
+ {q:'Comment appelle-t-on l\u2019augmentation des échanges entre pays du monde entier ?', ok:'La mondialisation', bad:['La décolonisation','La bipolarisation']},
+ {q:'Quel traité de 1957 est à l\u2019origine de la construction européenne ?', ok:'Le traité de Rome', bad:['Le traité de Versailles','Le traité de Maastricht']},
+ {q:'Comment appelle-t-on les procès qui ont jugé les crimes nazis après la guerre, à partir de 1945 ?', ok:'Le procès de Nuremberg', bad:['Le traité de Versailles','La conférence de Yalta']},
+ {q:'Comment appelle-t-on la rencontre entre Churchill, Roosevelt et Staline en 1945 qui organise l\u2019après-guerre ?', ok:'La conférence de Yalta', bad:['Le traité de Rome','Le procès de Nuremberg']}
+];
+function _hist3E_civil(){ const f=_histPick(HIST_3E_CIVIL); return _histQ(f.q, f.ok, f.bad, 'hist-vie', f.ok); }
+const HIST_3E_CAUSES = [
+ {q:'Quel événement déclenche directement la Première Guerre mondiale en 1914 ?', ok:'L\u2019assassinat de l\u2019archiduc François-Ferdinand à Sarajevo', bad:['La chute du mur de Berlin','La crise économique de 1929']},
+ {q:'Quelles sont des causes profondes de la Première Guerre mondiale ?', ok:'Les alliances militaires, la course aux armements et les tensions nationalistes en Europe', bad:['Un désaccord sur les Jeux Olympiques','Une famine mondiale']},
+ {q:'Quelle est une conséquence de la Seconde Guerre mondiale ?', ok:'La création de l\u2019ONU et la division du monde en deux blocs', bad:['La disparition de tous les États européens','La fin définitive de toute guerre dans le monde']},
+ {q:'Pourquoi la construction européenne débute-t-elle après 1945 ?', ok:'Pour rapprocher des pays qui viennent de s\u2019affronter et éviter de nouvelles guerres en Europe', bad:['Pour créer un seul pays unique en Europe immédiatement','Pour concurrencer les Jeux Olympiques']},
+ {q:'Pourquoi le mur de Berlin est-il construit en 1961 ?', ok:'Pour empêcher les habitants de Berlin-Est de fuir vers Berlin-Ouest', bad:['Pour agrandir la ville de Berlin','Pour préparer des Jeux Olympiques']}
+];
+function _hist3E_causes(){ const f=_histPick(HIST_3E_CAUSES); return _histQ(f.q, f.ok, f.bad, 'hist-cause', f.ok); }
+const HIST_3E_VRAIFAUX = [
+ {aff:'La Première Guerre mondiale a commencé en 1914.', ok:'Vrai'},
+ {aff:'Le mur de Berlin est tombé en 1989.', ok:'Vrai'},
+ {aff:'L\u2019Algérie est devenue indépendante en 1962.', ok:'Vrai'},
+ {aff:'La Cinquième République a été fondée par Napoléon.', ok:'Faux'},
+ {aff:'La guerre froide a opposé directement les armées américaine et soviétique sur le terrain.', ok:'Faux'},
+ {aff:'L\u2019ONU a été créée en 1945.', ok:'Vrai'},
+ {aff:'Le débarquement de Normandie a eu lieu le 6 juin 1944.', ok:'Vrai'},
+ {aff:'Tous les pays d\u2019Europe ont rejoint la construction européenne dès le premier traité.', ok:'Faux'},
+ {aff:'La Seconde Guerre mondiale s\u2019est terminée avant la Première Guerre mondiale.', ok:'Faux'},
+ {aff:'Nelson Mandela est devenu président d\u2019Afrique du Sud après la fin de l\u2019apartheid.', ok:'Vrai'},
+ {aff:'La conférence de Yalta a eu lieu en 1945.', ok:'Vrai'},
+ {aff:'Le procès de Nuremberg a jugé des criminels de guerre nazis.', ok:'Vrai'}
+];
+function _hist3E_vraifaux(){
+ const f=_histPick(HIST_3E_VRAIFAUX);
+ const autre=f.ok==='Vrai'?'Faux':'Vrai';
+ return _histQ(`${f.aff} Vrai ou faux ?`, f.ok, [autre], 'hist-vie', f.aff);
+}
+function genQ_HIST_3E(boss,_d){
+ _d=_d||0;
+ const phase=(typeof _progPhase==='function')?_progPhase('3E'):1;
+ let pool;
+ if(phase<=1)       pool=[_hist3E_civil, _hist3E_vraifaux, _hist3E_personnage];
+ else if(phase===2) pool=[_hist3E_civil, _hist3E_vraifaux, _hist3E_personnage, _hist3E_causes];
+ else               pool=[_hist3E_civil, _hist3E_vraifaux, _hist3E_personnage, _hist3E_causes, _hist3E_frise];
+ const q=_histUnique(_histPick(pool)());
+ if(!q){ if(_d>16) return _hist3E_civil(); return genQ_HIST_3E(boss,_d+1); }
+ return q;
+}
+
 // Table des générateurs histoire — primaire uniquement pour l'instant (CP→CM2).
 // Les autres niveaux (maternelle, collège) retombent sur les maths tant qu'ils
 // ne sont pas écrits (cf. _subjGen() dans 07-game.js : fn=_GS[GM.level]||_GS.CP||GEN.CP).
@@ -791,4 +1193,4 @@ function genQ_HIST_GS(boss,_d){
  return q;
 }
 
-const GEN_HIST = { PS: genQ_HIST_PS, MS: genQ_HIST_MS, GS: genQ_HIST_GS, CP: genQ_HIST_CP, CE1: genQ_HIST_CE1, CE2: genQ_HIST_CE2, CM1: genQ_HIST_CM1, CM2: genQ_HIST_CM2 };
+const GEN_HIST = { PS: genQ_HIST_PS, MS: genQ_HIST_MS, GS: genQ_HIST_GS, CP: genQ_HIST_CP, CE1: genQ_HIST_CE1, CE2: genQ_HIST_CE2, CM1: genQ_HIST_CM1, CM2: genQ_HIST_CM2, '6E': genQ_HIST_6E, '5E': genQ_HIST_5E, '4E': genQ_HIST_4E, '3E': genQ_HIST_3E };

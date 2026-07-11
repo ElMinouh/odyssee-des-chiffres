@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { loadGame } from './helpers/loadGame.js';
 
-const FILES = ['01-core.js', '02-data.js', '05-profile.js', '16-francais.js', '18-histoire.js'];
+const FILES = ['01-core.js', '02-data.js', '05-profile.js', '06a-adaptive.js', '16-francais.js', '18-histoire.js'];
 
 describe('_histCatOf : mapping opKey histoire → 4 catégories', () => {
   let api;
@@ -26,7 +26,7 @@ describe('_histCatOf : mapping opKey histoire → 4 catégories', () => {
 });
 
 describe('GEN_HIST : générateurs de questions par niveau (CP → CM2)', () => {
-  const FILES2 = ['01-core.js', '02-data.js', '05-profile.js', '16-francais.js', '18-histoire.js'];
+  const FILES2 = ['01-core.js', '02-data.js', '05-profile.js', '06a-adaptive.js', '16-francais.js', '18-histoire.js'];
   const LEVELS = ['CP', 'CE1', 'CE2', 'CM1', 'CM2'];
 
   for (const lvl of LEVELS) {
@@ -69,7 +69,7 @@ describe('GEN_HIST : générateurs de questions par niveau (CP → CM2)', () => 
 });
 
 describe('GEN_HIST : générateurs maternelle (PS / MS / GS, v11.3.0)', () => {
-  const FILES3 = ['01-core.js', '02-data.js', '05-profile.js', '16-francais.js', '18-histoire.js'];
+  const FILES3 = ['01-core.js', '02-data.js', '05-profile.js', '06a-adaptive.js', '16-francais.js', '18-histoire.js'];
   const MAT_LEVELS = ['PS', 'MS', 'GS'];
 
   for (const lvl of MAT_LEVELS) {
@@ -123,7 +123,7 @@ describe('GEN_HIST : générateurs maternelle (PS / MS / GS, v11.3.0)', () => {
 // (le test structurel "choices.some(c => c.val === q.res)" passait déjà à 100% avec
 // le bug, car il ne vérifie pas QUEL choix est marqué correct).
 describe('GEN_HIST maternelle : non-régression bug val/index (v11.3.1)', () => {
-  const FILES4 = ['01-core.js', '02-data.js', '05-profile.js', '16-francais.js', '18-histoire.js'];
+  const FILES4 = ['01-core.js', '02-data.js', '05-profile.js', '06a-adaptive.js', '16-francais.js', '18-histoire.js'];
 
   it('_histMatBinaryChoices : le res pointe toujours vers le contenu correct, quel que soit le mélange (500 essais)', () => {
     const api = loadGame(FILES4);
@@ -154,6 +154,93 @@ describe('GEN_HIST maternelle : non-régression bug val/index (v11.3.1)', () => 
       expect(item).toBeTruthy();
       const picked = q.choices.find((c) => c.val === q.res);
       expect(picked.html.includes(item.ap)).toBe(true);
+    }
+  });
+});
+
+describe('GEN_HIST : générateurs Collège (6E / 5E / 4E / 3E, v11.4.0)', () => {
+  const FILES5 = ['01-core.js', '02-data.js', '05-profile.js', '06a-adaptive.js', '16-francais.js', '18-histoire.js'];
+  const COL_LEVELS = ['6E', '5E', '4E', '3E'];
+
+  for (const lvl of COL_LEVELS) {
+    it(`${lvl} : produit une question QCM valide (choix + bonne réponse cohérente, une seule bonne réponse)`, () => {
+      const api = loadGame(FILES5);
+      api.setP({ name: 'Test' });
+      const q = api.GEN_HIST[lvl](false);
+      expect(q).toBeTruthy();
+      expect(q.subj).toBe('hist');
+      expect(Array.isArray(q.choices)).toBe(true);
+      expect(q.choices.length).toBeGreaterThanOrEqual(2);
+      expect(q.choices.some((c) => c.val === q.res)).toBe(true);
+      expect(q.choices.filter((c) => c.val === q.res).length).toBe(1);
+    });
+  }
+
+  it('300 tirages par niveau Collège ne plantent jamais (détecte les trous de tableau type ",,")', () => {
+    const api = loadGame(FILES5);
+    api.setP({ name: 'Test' });
+    for (const lvl of COL_LEVELS) {
+      for (let i = 0; i < 300; i++) {
+        const q = api.GEN_HIST[lvl](false);
+        expect(q).toBeTruthy();
+        expect(q.display).toBeTruthy();
+        expect(q.choices.some((c) => c.val === q.res)).toBe(true);
+      }
+    }
+  });
+
+  it('les 4 catégories existantes (frise/personnages/evenements/civilisation) sont toutes atteignables en Collège une fois la phase de fin d\u2019année débloquée (200 tirages/niveau)', () => {
+    const api = loadGame(FILES5);
+    api.setGMsubject('hist');
+    const yearProgress = {};
+    for (const lvl of COL_LEVELS) yearProgress['hist|' + lvl] = 0.9; // phase 3 = tout débloqué
+    api.setP({ name: 'Test', yearProgress });
+    const seen = new Set();
+    for (const lvl of COL_LEVELS) {
+      for (let i = 0; i < 200; i++) {
+        const q = api.GEN_HIST[lvl](false);
+        seen.add(api._histCatOf(q.opKey));
+      }
+    }
+    expect(seen.has('frise')).toBe(true);
+    expect(seen.has('personnages')).toBe(true);
+    expect(seen.has('evenements')).toBe(true);
+    expect(seen.has('civilisation')).toBe(true);
+  });
+});
+
+// v11.4.0 — Vérification qualité spécifique au collège : les frises chronologiques
+// doivent être triées par ordre croissant de date (sinon l'exercice "quelle rangée
+// respecte l'ordre chronologique" enseignerait un ordre faux). On expose l'année
+// interne de chaque événement (HIST_XE_CHRONO) pour vérifier le tri, indépendamment
+// du texte affiché.
+describe('Collège : cohérence factuelle des frises chronologiques (qualité des données)', () => {
+  const FILES6 = ['01-core.js', '02-data.js', '05-profile.js', '06a-adaptive.js', '16-francais.js', '18-histoire.js'];
+
+  it('HIST_6E/5E/4E/3E_CHRONO sont triés par année croissante (pas de date incohérente)', () => {
+    const api = loadGame(FILES6);
+    const arrays = {
+      '6E': api.HIST_6E_CHRONO,
+      '5E': api.HIST_5E_CHRONO,
+      '4E': api.HIST_4E_CHRONO,
+      '3E': api.HIST_3E_CHRONO,
+    };
+    for (const [lvl, arr] of Object.entries(arrays)) {
+      expect(arr).toBeTruthy();
+      for (let i = 1; i < arr.length; i++) {
+        expect(arr[i].y, `${lvl}: "${arr[i].label}" doit venir après "${arr[i - 1].label}"`).toBeGreaterThanOrEqual(arr[i - 1].y);
+      }
+    }
+  });
+
+  it('chaque affirmation vrai/faux du collège a un champ ok valant strictement "Vrai" ou "Faux"', () => {
+    const api = loadGame(FILES6);
+    const arrays = [api.HIST_6E_VRAIFAUX, api.HIST_5E_VRAIFAUX, api.HIST_4E_VRAIFAUX, api.HIST_3E_VRAIFAUX];
+    for (const arr of arrays) {
+      expect(arr.length).toBeGreaterThan(0);
+      for (const item of arr) {
+        expect(['Vrai', 'Faux']).toContain(item.ok);
+      }
     }
   });
 });

@@ -143,6 +143,14 @@ export function loadGame(files, initialStorage = {}) {
   _histMatPS_avantApres: (typeof _histMatPS_avantApres==='function') ? _histMatPS_avantApres : undefined,
   HIST_MAT_PS_JOURNUIT: (typeof HIST_MAT_PS_JOURNUIT!=='undefined') ? HIST_MAT_PS_JOURNUIT : undefined,
   HIST_MAT_PS_AVANTAPRES: (typeof HIST_MAT_PS_AVANTAPRES!=='undefined') ? HIST_MAT_PS_AVANTAPRES : undefined,
+  HIST_6E_CHRONO: (typeof HIST_6E_CHRONO!=='undefined') ? HIST_6E_CHRONO : undefined,
+  HIST_5E_CHRONO: (typeof HIST_5E_CHRONO!=='undefined') ? HIST_5E_CHRONO : undefined,
+  HIST_4E_CHRONO: (typeof HIST_4E_CHRONO!=='undefined') ? HIST_4E_CHRONO : undefined,
+  HIST_3E_CHRONO: (typeof HIST_3E_CHRONO!=='undefined') ? HIST_3E_CHRONO : undefined,
+  HIST_6E_VRAIFAUX: (typeof HIST_6E_VRAIFAUX!=='undefined') ? HIST_6E_VRAIFAUX : undefined,
+  HIST_5E_VRAIFAUX: (typeof HIST_5E_VRAIFAUX!=='undefined') ? HIST_5E_VRAIFAUX : undefined,
+  HIST_4E_VRAIFAUX: (typeof HIST_4E_VRAIFAUX!=='undefined') ? HIST_4E_VRAIFAUX : undefined,
+  HIST_3E_VRAIFAUX: (typeof HIST_3E_VRAIFAUX!=='undefined') ? HIST_3E_VRAIFAUX : undefined,
   // --- accès au localStorage factice pour les assertions ---
   _ls: (typeof localStorage!=='undefined') ? localStorage : undefined,
   // --- accesseurs pour piloter l'état global depuis les tests ---
