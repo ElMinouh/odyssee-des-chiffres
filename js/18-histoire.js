@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════
 // HISTOIRE — Générateurs de questions (matière 'hist')
-// v11.2.1 — Primaire CP → CM2, contenu élargi (beaucoup d'items par type).
+// v11.3.0 — Primaire CP → CM2 (v11.2.1) + Maternelle PS/MS/GS (v11.3.0).
 //   100% QCM (choix multiples), inspiré des principes neuro-éducatifs :
 //   récit avant date, ancrage concret, repérage spatial-temporel systématique,
 //   récupération active, entrelacement des types d'exercice.
@@ -12,6 +12,10 @@
 // (miroir de _frCatOf en français, cf. 16-francais.js).
 function _histCatOf(opKey){
  const k = String(opKey||'');
+ // v11.3.0 : catégories dédiées à la maternelle (avant les règles primaire, pour ne
+ // pas être capturées par le test générique /temps/ ci-dessous).
+ if(/^histmat-temps/.test(k)) return 'temps';
+ if(/^histmat-repere/.test(k)) return 'repere';
  if(/frise|avantapres|ordre|temps/.test(k)) return 'frise';
  if(/perso/.test(k)) return 'personnages';
  if(/cause|evt/.test(k)) return 'evenements';
@@ -531,4 +535,251 @@ function genQ_HIST_CM2(boss,_d){
 // Table des générateurs histoire — primaire uniquement pour l'instant (CP→CM2).
 // Les autres niveaux (maternelle, collège) retombent sur les maths tant qu'ils
 // ne sont pas écrits (cf. _subjGen() dans 07-game.js : fn=_GS[GM.level]||_GS.CP||GEN.CP).
-const GEN_HIST = { CP: genQ_HIST_CP, CE1: genQ_HIST_CE1, CE2: genQ_HIST_CE2, CM1: genQ_HIST_CM1, CM2: genQ_HIST_CM2 };
+// ═══════════════════════════════════════════════════════
+// MATERNELLE (PS / MS / GS) — v11.3.0
+//   Pas d'« histoire » formelle à cet âge (programme cycle 1 « Explorer le monde »),
+//   mais les fondations neuro-éducatives du temps qui passe : rituels, cycles,
+//   générations, avant/après, repérage visuel. 100% imagé (aucune lecture requise
+//   en PS/MS ; de courtes légendes apparaissent en GS, pont vers le CP).
+//   2 catégories de suivi dédiées (cf. _histCatOf) : 'temps' et 'repere'.
+//   Réutilise le rendu visuel générique de la maternelle (_matRenderQ, 13-maternelle.js) :
+//   il suffit de fournir consigne/visuelHtml/choices/res + maternelle:true.
+// ═══════════════════════════════════════════════════════
+function _histMatQ(level, consigne, visuelHtml, choices, res, opKey, row){
+ const q = { maternelle:true, level, type:'mat', subj:'hist', img:'', consigne, visuelHtml:visuelHtml||'', choices, res, opKey:opKey||'histmat-temps' };
+ if(row) q.row=true;
+ return q;
+}
+function _histMatIcon(emoji){ return `<div class="mat-collection"><span class="mat-obj">${emoji}</span></div>`; }
+function _histMatIconCap(emoji, cap){ return `<div class="mat-collection"><span class="mat-obj">${emoji}</span><div style="font-size:.4em;color:var(--text-secondary,#7f8c8d);width:100%;text-align:center;margin-top:2px;">${cap}</div></div>`; }
+function _histMatRowHtml(arr){ return `<div class="mat-collection mat-rowtas">${arr.map(e=>`<span class="mat-obj" style="font-size:1.3em;">${e}</span>`).join('')}</div>`; }
+// Anti-répétition dédiée (clé = consigne + résumé du visuel + réponse)
+let _histMatRecent = [];
+const _HISTMAT_RECENT_MAX = 20;
+function _histMatUnique(q){
+ if(!q) return q;
+ const key = q.consigne+'|'+(q.visuelHtml||'').slice(0,50)+'|'+q.res;
+ if(_histMatRecent.indexOf(key)>=0) return null;
+ _histMatRecent.push(key); if(_histMatRecent.length>_HISTMAT_RECENT_MAX) _histMatRecent.shift();
+ return q;
+}
+
+// ── PS (3-4 ans) ──────────────────────────────────────────
+// Avant/après (objets d'hier → d'aujourd'hui, icône seule, aucune lecture)
+const HIST_MAT_PS_AVANTAPRES = [
+ {av:'🏮', ap:'💡'}, {av:'✉️', ap:'📱'}, {av:'🕯️', ap:'💡'}, {av:'📻', ap:'🎧'},
+ {av:'🐎', ap:'🚗'}, {av:'⛵', ap:'🛳️'}, {av:'🪶', ap:'💻'}, {av:'🧺', ap:'🌀'},
+ {av:'🔥', ap:'⚡'}, {av:'🧮', ap:'🔢'}, {av:'⌨️', ap:'💻'}, {av:'🏰', ap:'🏢'},
+ {av:'🪣', ap:'🚰'}, {av:'💿', ap:'🎧'}, {av:'🧹', ap:'🌀'}, {av:'🐴', ap:'🚌'},
+ {av:'🎈', ap:'✈️'}, {av:'🐂', ap:'🚜'}
+];
+const HIST_MAT_PS_DISTRACT = ['🍎','🐘','⚽','🎈','🦋','🐘','🌂','🎲'];
+function _histMatPS_avantApres(){
+ const p=_histPick(HIST_MAT_PS_AVANTAPRES);
+ let bad=_histPick(HIST_MAT_PS_DISTRACT); let g=0; while(bad===p.ap && g++<8) bad=_histPick(HIST_MAT_PS_DISTRACT);
+ const choices=_histShuffle([{val:1,html:_histMatIcon(p.ap)},{val:2,html:_histMatIcon(bad)}]);
+ const res=choices.findIndex(c=>c.val===1)+1;
+ return _histMatQ('PS', 'Touche ce qui vient après.', _histMatIcon(p.av), choices, res, 'histmat-temps-avantapres');
+}
+// Jour / nuit (rituels de la journée)
+const HIST_MAT_PS_JOURNUIT = [
+ {ic:'☀️', jour:true}, {ic:'🌙', jour:false}, {ic:'🏫', jour:true}, {ic:'🛏️', jour:false},
+ {ic:'🥞', jour:true}, {ic:'⭐', jour:false}, {ic:'🎠', jour:true}, {ic:'🦉', jour:false},
+ {ic:'🚲', jour:true}, {ic:'🌛', jour:false}, {ic:'🍎', jour:true}, {ic:'🧸', jour:false},
+ {ic:'🐓', jour:true}, {ic:'🦇', jour:false}, {ic:'🏖️', jour:true}, {ic:'💤', jour:false},
+ {ic:'🌤️', jour:true}, {ic:'🌌', jour:false}
+];
+function _histMatPS_jourNuit(){
+ const f=_histPick(HIST_MAT_PS_JOURNUIT);
+ const choices=_histShuffle([{val:1,html:_histMatIcon('☀️')},{val:2,html:_histMatIcon('🌙')}]);
+ const res=choices.findIndex(c=>c.val===(f.jour?1:2))+1;
+ return _histMatQ('PS', 'C\u2019est le jour ou la nuit ?', _histMatIcon(f.ic), choices, res, 'histmat-temps-journuit');
+}
+// Générations simplifiées : « touche le plus grand »
+const HIST_MAT_PS_GENER = [
+ {p:'👶', g:'🧒'}, {p:'🧒', g:'🧑'}, {p:'🧑', g:'👴'}, {p:'🐣', g:'🐔'},
+ {p:'👧', g:'👩'}, {p:'👦', g:'👨'}, {p:'🧑', g:'👵'}, {p:'👶', g:'🧑'},
+ {p:'🧒', g:'👨'}, {p:'👧', g:'👵'}, {p:'👦', g:'👴'}, {p:'👶', g:'👩'},
+ {p:'🧒', g:'👴'}, {p:'👶', g:'👨'}, {p:'👧', g:'🧑'}, {p:'👦', g:'🧑'},
+ {p:'🧒', g:'👵'}, {p:'👶', g:'👵'}
+];
+function _histMatPS_gener(){
+ const f=_histPick(HIST_MAT_PS_GENER);
+ const choices=_histShuffle([{val:1,html:_histMatIcon(f.p)},{val:2,html:_histMatIcon(f.g)}]);
+ const res=choices.findIndex(c=>c.val===2)+1;
+ return _histMatQ('PS', 'Touche le plus grand.', '', choices, res, 'histmat-temps-gener');
+}
+function genQ_HIST_PS(boss,_d){
+ _d=_d||0;
+ const phase=(typeof _progPhase==='function')?_progPhase('PS'):1;
+ let pool;
+ if(phase<=1) pool=[_histMatPS_jourNuit, _histMatPS_gener];
+ else pool=[_histMatPS_jourNuit, _histMatPS_gener, _histMatPS_avantApres];
+ const q=_histMatUnique(_histPick(pool)());
+ if(!q){ if(_d>16) return _histMatPS_jourNuit(); return genQ_HIST_PS(boss,_d+1); }
+ return q;
+}
+
+// ── MS (4-5 ans) ──────────────────────────────────────────
+// Séquences en 3 étapes : touche la rangée dans le bon ordre
+const HIST_MAT_MS_SEQ3 = [
+ ['🌅','☀️','🌙'], ['🥚','🐣','🐔'], ['🐛','🦋','🌸'], ['👶','🧒','🧑'],
+ ['🌱','🌿','🌳'], ['🍞crue'.slice(0,0)||'🌾','🍞','🥖'], ['❄️','💧','🌱'], ['🌧️','☁️','🌈'],
+ ['🕯️','🏮','💡'], ['✉️','📠','📱'], ['🐎','🚂','🚗'], ['🏺','🏛️','🏢'],
+ ['🪨','🔨','🏠'], ['🧵','👕','👗'], ['🌰','🌱','🌳'], ['🥛','🧀','🍽️'],
+ ['🧊','💧','☁️'], ['🌙','🌗','☀️'], ['🍂','❄️','🌸'], ['🎂','🕯️','🎉']
+];
+function _histMatMS_seq3(){
+ const seq=_histPick(HIST_MAT_MS_SEQ3);
+ let wrong=_histShuffle(seq); let g=0; while(wrong.join()===seq.join() && g++<10) wrong=_histShuffle(seq);
+ const choices=_histShuffle([{val:1,html:_histMatRowHtml(seq)},{val:2,html:_histMatRowHtml(wrong)}]);
+ const res=choices.findIndex(c=>c.val===1)+1;
+ return _histMatQ('MS', 'Quelle rangée est dans le bon ordre ?', '', choices, res, 'histmat-repere-seq3', true);
+}
+// Générations familiales (icônes, sans texte)
+const HIST_MAT_MS_GENER = [
+ {vieux:'👴', jeune:'👶'}, {vieux:'👵', jeune:'👧'}, {vieux:'👴', jeune:'👦'}, {vieux:'👵', jeune:'🧒'},
+ {vieux:'👨', jeune:'👶'}, {vieux:'👩', jeune:'👶'}, {vieux:'👴', jeune:'👨'}, {vieux:'👵', jeune:'👩'},
+ {vieux:'👴', jeune:'🧒'}, {vieux:'👵', jeune:'👶'}, {vieux:'👨', jeune:'🧒'}, {vieux:'👩', jeune:'👧'},
+ {vieux:'👴', jeune:'👧'}, {vieux:'👵', jeune:'👦'}, {vieux:'👨', jeune:'👦'}, {vieux:'👩', jeune:'🧒'}
+];
+function _histMatMS_gener(){
+ const f=_histPick(HIST_MAT_MS_GENER);
+ const choices=_histShuffle([{val:1,html:_histMatIcon(f.vieux)},{val:2,html:_histMatIcon(f.jeune)}]);
+ const res=choices.findIndex(c=>c.val===1)+1;
+ return _histMatQ('MS', 'Qui est né avant, qui est le plus âgé ?', '', choices, res, 'histmat-temps-gener');
+}
+// Objets anciens / modernes (icônes seules)
+const HIST_MAT_MS_ANCIEN = [
+ {old:'☎️', new:'📱'}, {old:'📻', new:'🎧'}, {old:'🕯️', new:'💡'}, {old:'✉️', new:'📧'},
+ {old:'⌨️', new:'💻'}, {old:'🐎', new:'🚗'}, {old:'⛵', new:'🛳️'}, {old:'🧮', new:'🔢'},
+ {old:'🏮', new:'💡'}, {old:'🪣', new:'🚰'}, {old:'🧺', new:'🌀'}, {old:'💿', new:'🎧'},
+ {old:'🐴', new:'🚌'}, {old:'🐂', new:'🚜'}, {old:'🎈', new:'✈️'}, {old:'🪶', new:'💻'}
+];
+function _histMatMS_ancien(){
+ const f=_histPick(HIST_MAT_MS_ANCIEN);
+ const choices=_histShuffle([{val:1,html:_histMatIcon(f.old)},{val:2,html:_histMatIcon(f.new)}]);
+ const res=choices.findIndex(c=>c.val===1)+1;
+ return _histMatQ('MS', 'Touche l\u2019objet le plus ancien.', '', choices, res, 'histmat-repere-ancien');
+}
+function genQ_HIST_MS(boss,_d){
+ _d=_d||0;
+ const phase=(typeof _progPhase==='function')?_progPhase('MS'):1;
+ let pool;
+ if(phase<=1) pool=[_histMatMS_gener, _histMatMS_ancien];
+ else pool=[_histMatMS_gener, _histMatMS_ancien, _histMatMS_seq3];
+ const q=_histMatUnique(_histPick(pool)());
+ if(!q){ if(_d>16) return _histMatMS_ancien(); return genQ_HIST_MS(boss,_d+1); }
+ return q;
+}
+
+// ── GS (5-6 ans) — pont vers le CP, courtes légendes autorisées ─────
+// Frise à 4 étapes
+const HIST_MAT_GS_FRISE4 = [
+ ['👶','🧒','🧑','👴'], ['🥚','🐣','🐤','🐔'], ['🌰','🌱','🌿','🌳'],
+ ['🕯️','🏮','📻','💡'], ['✉️','📠','☎️','📱'], ['🐎','🐴','🚂','🚗'],
+ ['🏚️','🏠','🏢','🏙️'], ['🪨','🔨','🧱','🏠'], ['🌅','☀️','🌇','🌙'], ['❄️','🌱','🌸','☀️'],
+ ['🧵','🪡','👕','🏭'], ['📜','🖋️','⌨️','💻'], ['🛶','⛵','🚢','🛳️']
+];
+function _histMatGS_frise4(){
+ let seq=_histPick(HIST_MAT_GS_FRISE4);
+ if(new Set(seq).size<4) seq=['👶','🧒','🧑','👴'];
+ let wrong=_histShuffle(seq); let g=0; while(wrong.join()===seq.join() && g++<10) wrong=_histShuffle(seq);
+ const choices=_histShuffle([{val:1,html:_histMatRowHtml(seq)},{val:2,html:_histMatRowHtml(wrong)}]);
+ const res=choices.findIndex(c=>c.val===1)+1;
+ return _histMatQ('GS', 'Quelle rangée respecte l\u2019ordre du temps ?', '', choices, res, 'histmat-repere-frise4', true);
+}
+// Avant/après : le texte de la question ET la réponse varient toujours ensemble
+// (cf. bug corrigé au CP en E.8 — vigilance systématique sur ce pattern).
+const HIST_MAT_GS_AVANTAPRES = [
+ {av:'🏮', avCap:'lampe à huile', ap:'💡', apCap:'ampoule'},
+ {av:'✉️', avCap:'lettre', ap:'📱', apCap:'téléphone'},
+ {av:'📻', avCap:'poste à lampes', ap:'🎧', apCap:'écouteurs'},
+ {av:'🐎', avCap:'cheval', ap:'🚗', apCap:'voiture'},
+ {av:'⛵', avCap:'voilier', ap:'🛳️', apCap:'paquebot'},
+ {av:'🪶', avCap:'plume', ap:'💻', apCap:'ordinateur'},
+ {av:'🧺', avCap:'lavoir', ap:'🌀', apCap:'machine à laver'},
+ {av:'🕯️', avCap:'bougie', ap:'💡', apCap:'ampoule électrique'},
+ {av:'🐴', avCap:'calèche', ap:'🚌', apCap:'bus'},
+ {av:'🐂', avCap:'charrue', ap:'🚜', apCap:'tracteur'},
+ {av:'🎈', avCap:'montgolfière', ap:'✈️', apCap:'avion'},
+ {av:'💿', avCap:'disque', ap:'🎧', apCap:'musique en ligne'},
+ {av:'🧮', avCap:'boulier', ap:'🔢', apCap:'calculatrice'},
+ {av:'⌨️', avCap:'machine à écrire', ap:'💻', apCap:'ordinateur portable'},
+ {av:'🪣', avCap:'puits', ap:'🚰', apCap:'robinet'},
+ {av:'🏰', avCap:'château fort', ap:'🏢', apCap:'immeuble'},
+ {av:'🧹', avCap:'balai', ap:'🌀', apCap:'aspirateur'},
+ {av:'🐘', avCap:'transport à dos d\u2019animal', ap:'🚚', apCap:'camion'}
+];
+function _histMatGS_avantApres(){
+ const p=_histPick(HIST_MAT_GS_AVANTAPRES);
+ const askAvant=Math.random()<0.5;
+ const choices=_histShuffle([
+  {val:1, html:_histMatIconCap(p.av,p.avCap)},
+  {val:2, html:_histMatIconCap(p.ap,p.apCap)}
+ ]);
+ const res=choices.findIndex(c=>c.val===(askAvant?1:2))+1;
+ return _histMatQ('GS', askAvant?'Touche ce qui vient d\u2019avant.':'Touche ce qui vient d\u2019après.', '', choices, res, 'histmat-temps-avantapres');
+}
+// Ancien / moderne avec légende
+const HIST_MAT_GS_ANCIEN = [
+ {old:'🕯️', oldCap:'lampe à huile', new:'💡', newCap:'ampoule'},
+ {old:'⌨️', oldCap:'machine à écrire', new:'💻', newCap:'ordinateur'},
+ {old:'🐴', oldCap:'calèche', new:'🚗', newCap:'voiture'},
+ {old:'📻', oldCap:'radio à lampes', new:'🎧', newCap:'écouteurs sans fil'},
+ {old:'✉️', oldCap:'lettre', new:'📧', newCap:'email'},
+ {old:'🧺', oldCap:'lavoir', new:'🌀', newCap:'machine à laver'},
+ {old:'🐂', oldCap:'charrue et bœuf', new:'🚜', newCap:'tracteur'},
+ {old:'🛶', oldCap:'pirogue', new:'🛳️', newCap:'paquebot'},
+ {old:'🪣', oldCap:'seau au puits', new:'🚰', newCap:'robinet'},
+ {old:'💿', oldCap:'disque vinyle', new:'🎧', newCap:'musique en ligne'},
+ {old:'🏮', oldCap:'lanterne', new:'💡', newCap:'ampoule électrique'},
+ {old:'🧮', oldCap:'boulier', new:'🔢', newCap:'calculatrice'},
+ {old:'🐎', oldCap:'diligence', new:'🚄', newCap:'train'},
+ {old:'🎈', oldCap:'montgolfière', new:'✈️', newCap:'avion'},
+ {old:'🏰', oldCap:'château fort', new:'🏢', newCap:'immeuble'},
+ {old:'🧹', oldCap:'balai', new:'🌀', newCap:'aspirateur'}
+];
+function _histMatGS_ancien(){
+ const f=_histPick(HIST_MAT_GS_ANCIEN);
+ const choices=_histShuffle([{val:1,html:_histMatIconCap(f.old,f.oldCap)},{val:2,html:_histMatIconCap(f.new,f.newCap)}]);
+ const res=choices.findIndex(c=>c.val===1)+1;
+ return _histMatQ('GS', 'Touche l\u2019objet le plus ancien.', '', choices, res, 'histmat-repere-ancien');
+}
+// Vrai / faux illustré, formulation très simple
+const HIST_MAT_GS_VRAIFAUX = [
+ {aff:'Avant, il n\u2019y avait pas d\u2019électricité.', vrai:true, ic:'🕯️'},
+ {aff:'Les dinosaures vivent avec nous aujourd\u2019hui.', vrai:false, ic:'🦕'},
+ {aff:'Avant, on écrivait avec une plume.', vrai:true, ic:'🪶'},
+ {aff:'Autrefois, tout le monde avait un téléphone portable.', vrai:false, ic:'📱'},
+ {aff:'Il y a longtemps, on voyageait à cheval.', vrai:true, ic:'🐎'},
+ {aff:'Les chevaliers portaient des baskets.', vrai:false, ic:'👟'},
+ {aff:'Avant, on lavait le linge à la main.', vrai:true, ic:'🧺'},
+ {aff:'Nos arrière-grands-parents avaient internet.', vrai:false, ic:'💻'},
+ {aff:'Autrefois, on s\u2019éclairait à la bougie.', vrai:true, ic:'🕯️'},
+ {aff:'Les hommes préhistoriques conduisaient des voitures.', vrai:false, ic:'🚗'},
+ {aff:'Il y a longtemps, les lettres arrivaient à cheval.', vrai:true, ic:'✉️'},
+ {aff:'Grand-père a toujours eu un smartphone.', vrai:false, ic:'📱'},
+ {aff:'Autrefois, on comptait avec un boulier.', vrai:true, ic:'🧮'},
+ {aff:'Les rois habitaient dans des immeubles modernes.', vrai:false, ic:'🏰'},
+ {aff:'Avant le train, on voyageait en calèche.', vrai:true, ic:'🐴'}
+];
+function _histMatGS_vraifaux(){
+ const f=_histPick(HIST_MAT_GS_VRAIFAUX);
+ const choices=[{val:1,html:_histMatIcon('👍')},{val:2,html:_histMatIcon('👎')}];
+ const res=f.vrai?1:2;
+ return _histMatQ('GS', f.aff, _histMatIcon(f.ic), choices, res, 'histmat-repere-vraifaux');
+}
+function genQ_HIST_GS(boss,_d){
+ _d=_d||0;
+ const phase=(typeof _progPhase==='function')?_progPhase('GS'):1;
+ let pool;
+ if(phase<=1) pool=[_histMatGS_avantApres, _histMatGS_ancien];
+ else if(phase===2) pool=[_histMatGS_avantApres, _histMatGS_ancien, _histMatGS_vraifaux];
+ else pool=[_histMatGS_avantApres, _histMatGS_ancien, _histMatGS_vraifaux, _histMatGS_frise4];
+ const q=_histMatUnique(_histPick(pool)());
+ if(!q){ if(_d>16) return _histMatGS_ancien(); return genQ_HIST_GS(boss,_d+1); }
+ return q;
+}
+
+const GEN_HIST = { PS: genQ_HIST_PS, MS: genQ_HIST_MS, GS: genQ_HIST_GS, CP: genQ_HIST_CP, CE1: genQ_HIST_CE1, CE2: genQ_HIST_CE2, CM1: genQ_HIST_CM1, CM2: genQ_HIST_CM2 };

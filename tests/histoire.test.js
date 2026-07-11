@@ -12,6 +12,8 @@ describe('_histCatOf : mapping opKey histoire → 4 catégories', () => {
     ['personnages', ['hist-perso']],
     ['evenements', ['hist-cause', 'hist-evt']],
     ['civilisation', ['hist-vie', 'hist-vocab', '', undefined]],
+    ['temps', ['histmat-temps', 'histmat-temps-avantapres', 'histmat-temps-gener', 'histmat-temps-journuit']],
+    ['repere', ['histmat-repere-seq3', 'histmat-repere-ancien', 'histmat-repere-frise4', 'histmat-repere-vraifaux']],
   ];
 
   for (const [attendu, cles] of cas) {
@@ -63,5 +65,53 @@ describe('GEN_HIST : générateurs de questions par niveau (CP → CM2)', () => 
         expect(q.choices.some(c => c.val === q.res)).toBe(true);
       }
     }
+  });
+});
+
+describe('GEN_HIST : générateurs maternelle (PS / MS / GS, v11.3.0)', () => {
+  const FILES3 = ['01-core.js', '02-data.js', '05-profile.js', '16-francais.js', '18-histoire.js'];
+  const MAT_LEVELS = ['PS', 'MS', 'GS'];
+
+  for (const lvl of MAT_LEVELS) {
+    it(`${lvl} : produit une question maternelle valide (consigne + choix + subj hist)`, () => {
+      const api = loadGame(FILES3);
+      api.setP({ name: 'Test' });
+      const q = api.GEN_HIST[lvl](false);
+      expect(q).toBeTruthy();
+      expect(q.maternelle).toBe(true);
+      expect(q.subj).toBe('hist');
+      expect(q.consigne).toBeTruthy();
+      expect(Array.isArray(q.choices)).toBe(true);
+      expect(q.choices.length).toBeGreaterThanOrEqual(2);
+      expect(q.choices.some(c => c.val === q.res)).toBe(true);
+      expect(q.choices.filter(c => c.val === q.res).length).toBe(1);
+    });
+  }
+
+  it('300 tirages par niveau maternelle ne plantent jamais (détecte les trous de tableau type ",,")', () => {
+    const api = loadGame(FILES3);
+    api.setP({ name: 'Test' });
+    for (const lvl of MAT_LEVELS) {
+      for (let i = 0; i < 300; i++) {
+        const q = api.GEN_HIST[lvl](false);
+        expect(q).toBeTruthy();
+        expect(q.consigne).toBeTruthy();
+        expect(q.choices.some(c => c.val === q.res)).toBe(true);
+      }
+    }
+  });
+
+  it('les catégories de suivi maternelle (temps / repere) sont bien atteintes sur 100 tirages', () => {
+    const api = loadGame(FILES3);
+    api.setP({ name: 'Test' });
+    const seen = new Set();
+    for (const lvl of MAT_LEVELS) {
+      for (let i = 0; i < 100; i++) {
+        const q = api.GEN_HIST[lvl](false);
+        seen.add(api._histCatOf(q.opKey));
+      }
+    }
+    expect(seen.has('temps')).toBe(true);
+    expect(seen.has('repere')).toBe(true);
   });
 });

@@ -220,7 +220,7 @@ function defProfile(name){
   history:[],historyDetailed:[],errors:[],errorLog:[],badgesEarned:[],milestonesClaimed:[],_bestCombo:0,_totalStarsEarned:0,
   quests:null,questsDate:null,opStats:{'+':{ ok:0,fail:0},'-':{ok:0,fail:0},'x':{ok:0,fail:0},'/':{ ok:0,fail:0},'geo':{ok:0,fail:0}},
   opStatsFr:{'conj':{ok:0,fail:0},'orth':{ok:0,fail:0},'gram':{ok:0,fail:0},'vocab':{ok:0,fail:0}},
-  opStatsHist:{'frise':{ok:0,fail:0},'personnages':{ok:0,fail:0},'evenements':{ok:0,fail:0},'civilisation':{ok:0,fail:0}},
+  opStatsHist:{'frise':{ok:0,fail:0},'personnages':{ok:0,fail:0},'evenements':{ok:0,fail:0},'civilisation':{ok:0,fail:0},'temps':{ok:0,fail:0},'repere':{ok:0,fail:0}},
   levelWins:{CP:0,CE1:0,CE2:0,CM1:0,CM2:0},levelWinsBySubj:{math:{},fr:{},hist:{}},mapBossBeaten:[],mapAvatarZone:'plaine',mapAvatarZoneByAdv:{},
   // v8.7.8 (O1) : progression sous-niveaux par zone (5 étapes par zone)
   zoneProgress:(function(){const o={};if(typeof MAP_ZONES!=='undefined'&&Array.isArray(MAP_ZONES))MAP_ZONES.forEach(z=>{o[z.id]={stepsCompleted:0,completed:false};});return o;})(),

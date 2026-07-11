@@ -42,8 +42,8 @@ function renderOpStats(){
   return;
  }
  if(_opStatSubj==='hist'){
-  const names={frise:'Frises & repères',personnages:'Personnages',evenements:'Événements',civilisation:'Vie & civilisation'};
-  const cats=['frise','personnages','evenements','civilisation'];
+  const names={frise:'Frises & repères',personnages:'Personnages',evenements:'Événements',civilisation:'Vie & civilisation',temps:'Le temps qui passe (maternelle)',repere:'Repérage visuel (maternelle)'};
+  const cats=['frise','personnages','evenements','civilisation','temps','repere'];
   $('p-opstats').innerHTML=bar+'<strong>📊 Par catégorie :</strong><br>'+
    cats.map(c=>{const s=(P.opStatsHist||{})[c]||{ok:0,fail:0};const t=s.ok+s.fail;if(!t)return'';const pct=Math.round(s.ok/t*100);const col=pct>=80?'#2ecc71':pct>=60?'#f1c40f':'#e74c3c';
    return`<div class="op-stat-row"><span style="width:90px;text-align:left;font-size:.82em;">${names[c]}</span><div class="op-stat-bar"><div class="op-stat-fill" style="width:${pct}%;background:${col};"></div></div><span style="color:${col};font-weight:700;margin-left:6px;font-size:.82em;">${pct}%</span></div>`;}).filter(Boolean).join('')||'<span style="color:#bdc3c7;">Pas encore de données en histoire.</span>';
