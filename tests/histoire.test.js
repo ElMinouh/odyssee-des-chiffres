@@ -115,3 +115,45 @@ describe('GEN_HIST : générateurs maternelle (PS / MS / GS, v11.3.0)', () => {
     expect(seen.has('repere')).toBe(true);
   });
 });
+
+// v11.3.1 — Régression sur un bug critique signalé par Cyril (captures d'écran) :
+// la « bonne » réponse était parfois marquée sur la mauvaise case après mélange
+// (val fixé avant shuffle + recherche d'index -> confusion val/position, ~1 fois sur 2).
+// Ces tests vérifient la SÉMANTIQUE de la réponse, pas seulement l'absence de crash
+// (le test structurel "choices.some(c => c.val === q.res)" passait déjà à 100% avec
+// le bug, car il ne vérifie pas QUEL choix est marqué correct).
+describe('GEN_HIST maternelle : non-régression bug val/index (v11.3.1)', () => {
+  const FILES4 = ['01-core.js', '02-data.js', '05-profile.js', '16-francais.js', '18-histoire.js'];
+
+  it('_histMatBinaryChoices : le res pointe toujours vers le contenu correct, quel que soit le mélange (500 essais)', () => {
+    const api = loadGame(FILES4);
+    for (let i = 0; i < 500; i++) {
+      const { choices, res } = api._histMatBinaryChoices('CORRECT', 'FAUX');
+      const picked = choices.find((c) => c.val === res);
+      expect(picked.html).toBe('CORRECT');
+    }
+  });
+
+  it('jour/nuit (PS) : la réponse correcte correspond bien à l\u2019icône affichée (400 tirages)', () => {
+    const api = loadGame(FILES4);
+    for (let i = 0; i < 400; i++) {
+      const q = api._histMatPS_jourNuit();
+      const item = api.HIST_MAT_PS_JOURNUIT.find((f) => q.visuelHtml.indexOf(f.ic) >= 0);
+      expect(item).toBeTruthy();
+      const expectedIcon = item.jour ? '☀️' : '🌙';
+      const picked = q.choices.find((c) => c.val === q.res);
+      expect(picked.html.includes(expectedIcon)).toBe(true);
+    }
+  });
+
+  it('avant/après (PS) : la réponse correcte correspond bien à l\u2019objet "après" attendu (400 tirages)', () => {
+    const api = loadGame(FILES4);
+    for (let i = 0; i < 400; i++) {
+      const q = api._histMatPS_avantApres();
+      const item = api.HIST_MAT_PS_AVANTAPRES.find((f) => q.visuelHtml.indexOf(f.av) >= 0);
+      expect(item).toBeTruthy();
+      const picked = q.choices.find((c) => c.val === q.res);
+      expect(picked.html.includes(item.ap)).toBe(true);
+    }
+  });
+});

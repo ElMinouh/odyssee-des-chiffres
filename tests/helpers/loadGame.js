@@ -135,9 +135,14 @@ export function loadGame(files, initialStorage = {}) {
   // --- échappement (v11.1.10 : _jsAttr mutualisée dans 01-core.js) ---
   esc:      (typeof esc==='function')     ? esc     : undefined,
   _jsAttr:  (typeof _jsAttr==='function') ? _jsAttr : undefined,
-  // --- histoire (v11.2.0) ---
+  // --- histoire (v11.2.0) + maternelle (v11.3.0/v11.3.1) ---
   _histCatOf: (typeof _histCatOf==='function') ? _histCatOf : undefined,
   GEN_HIST:   (typeof GEN_HIST!=='undefined')  ? GEN_HIST   : undefined,
+  _histMatBinaryChoices: (typeof _histMatBinaryChoices==='function') ? _histMatBinaryChoices : undefined,
+  _histMatPS_jourNuit: (typeof _histMatPS_jourNuit==='function') ? _histMatPS_jourNuit : undefined,
+  _histMatPS_avantApres: (typeof _histMatPS_avantApres==='function') ? _histMatPS_avantApres : undefined,
+  HIST_MAT_PS_JOURNUIT: (typeof HIST_MAT_PS_JOURNUIT!=='undefined') ? HIST_MAT_PS_JOURNUIT : undefined,
+  HIST_MAT_PS_AVANTAPRES: (typeof HIST_MAT_PS_AVANTAPRES!=='undefined') ? HIST_MAT_PS_AVANTAPRES : undefined,
   // --- accès au localStorage factice pour les assertions ---
   _ls: (typeof localStorage!=='undefined') ? localStorage : undefined,
   // --- accesseurs pour piloter l'état global depuis les tests ---
