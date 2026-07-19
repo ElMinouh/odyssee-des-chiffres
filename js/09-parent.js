@@ -931,20 +931,53 @@ function _hwCycle(level){
  if(['6E','5E','4E','3E'].includes(level)) return 'col';
  return 'prim';
 }
+/**
+ * v11.5.3 — Options de type de devoir pour les matières « à catégories »
+ * (français, histoire), en plus des maths gérées plus bas. Renvoie null pour
+ * les matières sans catégories dédiées (dont "math", géré par le code
+ * existant) afin qu'on retombe sur le comportement normal.
+ *
+ * CONVENTION à suivre pour toute future matière à catégories (geo/en/svt/pc) :
+ * 1. définir XXX_CAT_FILTERS (02-data.js) + getXxxCatFilters/_xxxCatAllowed
+ *    dans le fichier de la matière (mirroir de FR_CAT_FILTERS/HIST_CAT_FILTERS) ;
+ * 2. ajouter un cas ici (liste "any" + une entrée par catégorie) ;
+ * 3. ajouter le même cas dans _matchesHomework() (07-game.js) ;
+ * 4. ajouter le même cas dans _hwOpLabel() (07-game.js, renderHomework) ;
+ * 5. ajouter le bloc de filtres dans index.html + loadFilterSettings/
+ *    saveFilterSettings (06b-time-block.js), comme pour hist-filters/fr-filters.
+ * Ne JAMAIS se contenter d'un unique "any" pour une matière à catégories :
+ * c'est exactement ce raccourci qui a dû être corrigé pour hist puis fr (v11.5.1→11.5.3).
+ */
+function _hwTypeOptions(subj, level){
+ if(subj === 'fr'){
+  const cats = (typeof FR_CAT_FILTERS!=='undefined') ? FR_CAT_FILTERS : [];
+  return [['any','Tout le français']].concat(cats.map(c=>[c.key, c.label]));
+ }
+ if(subj === 'hist'){
+  const all = (typeof HIST_CAT_FILTERS!=='undefined') ? HIST_CAT_FILTERS : [];
+  // Les catégories temps/repere n'existent qu'en maternelle ; frise/personnages/
+  // evenements/civilisation n'existent qu'à partir du CP. On adapte selon le
+  // niveau choisi, exactement comme les opérations maths le font déjà (cycle).
+  const cycle = _hwCycle(level);
+  const cats = cycle === 'mat'
+   ? all.filter(c => c.key==='temps' || c.key==='repere')
+   : all.filter(c => c.key!=='temps' && c.key!=='repere');
+  return [['any', "Toute l'histoire"]].concat(cats.map(c=>[c.key, c.label]));
+ }
+ return null;
+}
 function onHwLevelChange(){
  const lvlSel = $('hw-level'), typeSel = $('hw-type');
  if(!lvlSel || !typeSel) return;
  const subj = $('hw-subject')?.value || 'math';
- if(subj !== 'math'){
-  // v11.5.1 — libellé dérivé de SUBJECT_LABELS (au lieu d'un "Tout le français"
-  // recopié pour toute matière non-maths) : reste correct pour l'histoire et
-  // toute future matière, sans nouvel oubli à corriger plus tard.
-  const nm = (typeof SUBJECT_LABELS!=='undefined' && SUBJECT_LABELS[subj]) ? SUBJECT_LABELS[subj] : 'cette matière';
-  typeSel.innerHTML = '<option value="any">Tout : '+nm+'</option>';
+ const prev = typeSel.value;
+ const custom = _hwTypeOptions(subj, lvlSel.value);
+ if(custom){
+  typeSel.innerHTML = custom.map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
+  if(custom.some(o=>o[0]===prev)) typeSel.value = prev;
   return;
  }
  const cycle = _hwCycle(lvlSel.value);
- const prev = typeSel.value;
  let opts;
  if(cycle === 'mat'){
   opts = [['any','Toutes les activités']];
@@ -962,15 +995,19 @@ function onHwLevelChange(){
 function onHwSubjectChange(){
  if(typeof onHwLevelChange === 'function') onHwLevelChange();
 }
-// Filtres (Contrôles) : bascule entre filtres maths, catégories histoire, et note français.
-// v11.5.2 — n'est plus un simple booléen isFr (qui affichait aussi la note
-// « français » pour l'histoire) : chaque matière a désormais son propre bloc.
+// Filtres (Contrôles) : bascule entre les 3 blocs de filtres par matière.
+// v11.5.3 — le français a désormais son propre bloc de filtres (fr-filters),
+// comme l'histoire ; la note "arrivera prochainement" a disparu.
+// CONVENTION pour une future matière : ajouter son <div id="xxx-filters">
+// dans index.html, puis un cas ici + dans loadFilterSettings/saveFilterSettings
+// (06b-time-block.js). Ne jamais réintroduire un simple bool isFr : la
+// matière n'est plus binaire depuis l'ajout de l'histoire (v11.5.0).
 function onFilterSubjectChange(){
  const subj = $('filter-subject')?.value || 'math';
- const note = $('filter-fr-note'), ops = $('op-filters'), hist = $('hist-filters');
- if(note) note.classList.toggle('hidden', subj !== 'fr');
- if(ops) ops.classList.toggle('hidden', subj !== 'math');
+ const ops = $('op-filters'), hist = $('hist-filters'), fr = $('fr-filters');
+ if(ops)  ops.classList.toggle('hidden',  subj !== 'math');
  if(hist) hist.classList.toggle('hidden', subj !== 'hist');
+ if(fr)   fr.classList.toggle('hidden',   subj !== 'fr');
 }
 // ── Blocage de matières entières (par joueur) ──
 const _BSUBJ_LIST = [['math','🔢 Mathématiques'],['fr','📖 Français'],['hist','🏛️ Histoire'],['geo','🌍 Géographie'],['en','🇬🇧 Anglais'],['svt','🧬 SVT'],['pc','⚗️ Physique-Chimie']];

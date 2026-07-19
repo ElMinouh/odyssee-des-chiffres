@@ -224,13 +224,31 @@ describe('Odyssée du Temps — corrections v11.5.1 (oublis "Histoire" dans l\u2
     expect(keys).toContain('hist');
   });
 
-  it('onHwLevelChange() (devoir du jour) ne dit plus "français" pour la matière histoire', () => {
+  it('onHwLevelChange() (devoir du jour) propose désormais de vraies catégories pour l\u2019histoire, plus seulement "any"', () => {
     const api = loadGame(FILES);
     api._domEl('hw-subject').value = 'hist';
+    api._domEl('hw-level').value = 'CE2';
     api.onHwLevelChange();
     const html = api._domEl('hw-type').innerHTML;
-    expect(html).toMatch(/Histoire/);
+    expect(html).toMatch(/value="frise"/);
+    expect(html).toMatch(/value="personnages"/);
     expect(html).not.toMatch(/français/i);
+  });
+
+  it('onHwLevelChange() (devoir du jour, histoire) adapte les catégories au cycle : maternelle → temps/repere, primaire/collège → les 4 autres', () => {
+    const api = loadGame(FILES);
+    api._domEl('hw-subject').value = 'hist';
+    api._domEl('hw-level').value = 'PS';
+    api.onHwLevelChange();
+    let html = api._domEl('hw-type').innerHTML;
+    expect(html).toMatch(/value="temps"/);
+    expect(html).not.toMatch(/value="frise"/);
+
+    api._domEl('hw-level').value = '5E';
+    api.onHwLevelChange();
+    html = api._domEl('hw-type').innerHTML;
+    expect(html).toMatch(/value="frise"/);
+    expect(html).not.toMatch(/value="temps"/);
   });
 
   it('renderHomework() affiche un libellé neutre ("questions") pour un devoir d\u2019histoire', () => {

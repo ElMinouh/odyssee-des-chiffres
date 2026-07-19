@@ -1304,6 +1304,31 @@ function startConfetti(){
 // ═══════════════════════════════════════════════════════
 
 /**
+ * v11.5.3 — Libellé du type de devoir, valable pour toute matière à
+ * catégories (fr/hist) en plus des maths. CONVENTION pour une future
+ * matière : ajouter un cas ici avec son XXX_CAT_FILTERS.
+ */
+function _hwOpLabel(hw){
+ const labels = {
+  any:'opérations variées', add:'additions', sub:'soustractions',
+  mult:'multiplications', div:'divisions',
+  table_2:'la table de 2', table_3:'la table de 3', table_4:'la table de 4',
+  table_5:'la table de 5', table_6:'la table de 6', table_7:'la table de 7',
+  table_8:'la table de 8', table_9:'la table de 9', table_10:'la table de 10',
+ };
+ if(hw.subject === 'fr'){
+  if(hw.type === 'any') return 'questions de français variées';
+  const c = (typeof FR_CAT_FILTERS!=='undefined'?FR_CAT_FILTERS:[]).find(x=>x.key===hw.type);
+  return c ? c.label.toLowerCase() : 'questions';
+ }
+ if(hw.subject === 'hist'){
+  if(hw.type === 'any') return "questions d'histoire variées";
+  const c = (typeof HIST_CAT_FILTERS!=='undefined'?HIST_CAT_FILTERS:[]).find(x=>x.key===hw.type);
+  return c ? c.label.toLowerCase() : 'questions';
+ }
+ return labels[hw.type] || 'questions';
+}
+/**
  * Renderer de la carte "Devoir du jour" sur l'accueil.
  * Affichée seulement si P.homework existe et !done.
  */
@@ -1313,14 +1338,7 @@ function renderHomework(){
  const hw = P?.homework;
  if(!hw || hw.done){ box.classList.add('hidden'); return; }
  box.classList.remove('hidden');
- const labels = {
-  any:'opérations variées', add:'additions', sub:'soustractions',
-  mult:'multiplications', div:'divisions',
-  table_2:'la table de 2', table_3:'la table de 3', table_4:'la table de 4',
-  table_5:'la table de 5', table_6:'la table de 6', table_7:'la table de 7',
-  table_8:'la table de 8', table_9:'la table de 9', table_10:'la table de 10',
- };
- const opLabel = (hw.subject && hw.subject !== 'math') ? 'questions' : (labels[hw.type] || 'questions');
+ const opLabel = _hwOpLabel(hw);
  $('hw-desc').innerHTML = `Réussir <strong>${hw.count}</strong> ${opLabel} (niveau ${hw.level}) · <span style="color:#f1c40f;">+${hw.reward} ⭐</span>`;
  const pct = Math.min(100, Math.round((hw.progress || 0) / hw.count * 100));
  $('hw-fill').style.width = pct + '%';
@@ -1347,14 +1365,21 @@ function startHomework(){
 /**
  * Vérifie si une question correspond au type du devoir.
  * Renvoie true si elle compte pour la progression.
+ * v11.5.3 — matières à catégories (fr/hist) : on compare désormais la
+ * catégorie réelle de la question au type choisi par le parent, au lieu de
+ * ne proposer que "any". CONVENTION pour une future matière à catégories :
+ * ajouter un cas ici avec son _xxxCatOf (cf. commentaire détaillé dans
+ * _hwTypeOptions, 09-parent.js).
  */
 function _matchesHomework(q){
  if(!GM.homework || !GM.homeworkConfig) return false;
- const type = GM.homeworkConfig.type;
+ const cfg = GM.homeworkConfig;
+ const type = cfg.type;
  if(type === 'any') return true;
- // Devoir d'une matière non-maths : seules les questions de cette matière comptent,
- // et seul le type « tout » est proposé → tout le reste ne compte pas.
- if(GM.homeworkConfig.subject && GM.homeworkConfig.subject !== 'math') return false;
+ const subj = cfg.subject || 'math';
+ if(subj === 'fr')   return (typeof _frCatOf==='function')   && _frCatOf(q.opKey)   === type;
+ if(subj === 'hist') return (typeof _histCatOf==='function') && _histCatOf(q.opKey) === type;
+ if(subj !== 'math') return false;
  if(type === 'add') return q.opKey === '+';
  if(type === 'sub') return q.opKey === '-';
  if(type === 'mult') return q.opKey === 'x' || q.opKey === '×';

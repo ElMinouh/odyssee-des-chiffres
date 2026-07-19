@@ -1093,6 +1093,16 @@ const HIST_CAT_FILTERS=[
  {key:'temps',        label:'Le temps qui passe',  affects:['PS','MS','GS']},
  {key:'repere',       label:'Repérage visuel',     affects:['PS','MS','GS']},
 ];
+// ── FILTRES CATÉGORIES FRANÇAIS (v11.5.3) ──
+// Miroir de HIST_CAT_FILTERS. Les 4 catégories couvrent tous les niveaux
+// implémentés (PS→3e) : pas de split maternelle/primaire ici (contrairement
+// à l'histoire), _frCatOf ne dépend jamais du niveau.
+const FR_CAT_FILTERS=[
+ {key:'conj',  label:'Conjugaison', affects:['PS→3e']},
+ {key:'orth',  label:'Orthographe', affects:['PS→3e']},
+ {key:'gram',  label:'Grammaire',   affects:['PS→3e']},
+ {key:'vocab', label:'Vocabulaire', affects:['PS→3e']},
+];
 
 // ── Générateurs de questions ──
 // ═══════════════════════════════════════════════════════

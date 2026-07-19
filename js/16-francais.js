@@ -120,8 +120,23 @@ const _frHtmlEmoji = o => `<span style="font-size:2em">${o.e}</span>`;          
 // (avant, seule la question IMMÉDIATEMENT précédente était bloquée → répétitions).
 let _frRecent = [];
 const _FR_RECENT_MAX = 20;
+// v11.5.3 — Filtres par catégorie (contrôle parental « Types de questions
+// autorisés »), miroir de getHistCatFilters()/getOpFilters(). Par défaut
+// (profil sans frCatFilters, ou en environnement de test), tout est autorisé.
+// CONVENTION à reproduire pour toute future matière : getXxxCatFilters() +
+// _xxxCatAllowed(q) + un appel dans _xxxUnique(q), cf. 01-core.js (section
+// "ajouter une matière").
+function getFrCatFilters(){
+ const f=(typeof P!=='undefined' && P && P.frCatFilters) || {};
+ const def={conj:true,orth:true,gram:true,vocab:true};
+ return {...def, ...f};
+}
+function _frCatAllowed(q){
+ try{ return getFrCatFilters()[_frCatOf(q && q.opKey)] !== false; }catch(e){ return true; }
+}
 function _frUnique(q){
  if(!q) return q;
+ if(!_frCatAllowed(q)) return null; // v11.5.3 : catégorie bloquée par le parent → repiocher
  if(_frRecent.indexOf(q.display)>=0) return null;       // déjà vue récemment → on repioche
  _frRecent.push(q.display); if(_frRecent.length>_FR_RECENT_MAX) _frRecent.shift();
  return q;

@@ -57,17 +57,17 @@ describe('Filtres "Types de questions autorisés" pour l\u2019histoire (v11.5.2)
     api.onFilterSubjectChange();
     expect(api._domEl('op-filters').classList.contains('hidden')).toBe(false);
     expect(api._domEl('hist-filters').classList.contains('hidden')).toBe(true);
-    expect(api._domEl('filter-fr-note').classList.contains('hidden')).toBe(true);
+    expect(api._domEl('fr-filters').classList.contains('hidden')).toBe(true);
 
     api._domEl('filter-subject').value = 'hist';
     api.onFilterSubjectChange();
     expect(api._domEl('hist-filters').classList.contains('hidden')).toBe(false);
     expect(api._domEl('op-filters').classList.contains('hidden')).toBe(true);
-    expect(api._domEl('filter-fr-note').classList.contains('hidden')).toBe(true);
+    expect(api._domEl('fr-filters').classList.contains('hidden')).toBe(true);
 
     api._domEl('filter-subject').value = 'fr';
     api.onFilterSubjectChange();
-    expect(api._domEl('filter-fr-note').classList.contains('hidden')).toBe(false);
+    expect(api._domEl('fr-filters').classList.contains('hidden')).toBe(false);
     expect(api._domEl('op-filters').classList.contains('hidden')).toBe(true);
     expect(api._domEl('hist-filters').classList.contains('hidden')).toBe(true);
   });

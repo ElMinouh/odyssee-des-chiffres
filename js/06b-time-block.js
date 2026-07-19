@@ -58,18 +58,26 @@ function loadFilterSettings(){
    <label for="histf-${op.key}">${op.label}<br><span style="font-size:.7em;color:#bdc3c7;">${op.affects.join(', ')}</span></label>
    <label class="toggle-sw"><input type="checkbox" id="histf-${op.key}" ${hf[op.key]!==false?'checked':''}><span class="toggle-slider"></span></label>
   </div>`).join('');
+ // v11.5.3 — bloc dédié aux catégories français (même principe).
+ const ff=(d&&d.frCatFilters)||{conj:true,orth:true,gram:true,vocab:true};
+ $('fr-filters').innerHTML=(typeof FR_CAT_FILTERS!=='undefined'?FR_CAT_FILTERS:[]).map(op=>`
+  <div class="op-toggle">
+   <label for="frf-${op.key}">${op.label}<br><span style="font-size:.7em;color:#bdc3c7;">${op.affects.join(', ')}</span></label>
+   <label class="toggle-sw"><input type="checkbox" id="frf-${op.key}" ${ff[op.key]!==false?'checked':''}><span class="toggle-slider"></span></label>
+  </div>`).join('');
  if(typeof onFilterSubjectChange==='function') onFilterSubjectChange();
 }
 function saveFilterSettings(){
  const name=$('filter-player').value;
  let d=null;try{d=JSON.parse(localStorage.getItem('user_'+name)||'{}');}catch(e){d={};}
  d.opFilters={};OP_FILTERS.forEach(op=>{d.opFilters[op.key]=$('opf-'+op.key)?.checked!==false;});
- // v11.5.2 — sauvegarde systématique des 2 blocs (même celui actuellement
- // masqué) : les cases à cocher existent toujours dans le DOM, seule leur
+ // v11.5.2/3 — sauvegarde systématique des 3 blocs (même ceux actuellement
+ // masqués) : les cases à cocher existent toujours dans le DOM, seule leur
  // visibilité change avec onFilterSubjectChange().
  d.histCatFilters={};(typeof HIST_CAT_FILTERS!=='undefined'?HIST_CAT_FILTERS:[]).forEach(op=>{d.histCatFilters[op.key]=$('histf-'+op.key)?.checked!==false;});
+ d.frCatFilters={};(typeof FR_CAT_FILTERS!=='undefined'?FR_CAT_FILTERS:[]).forEach(op=>{d.frCatFilters[op.key]=$('frf-'+op.key)?.checked!==false;});
  localStorage.setItem('user_'+name,JSON.stringify(d));
  $('filter-status').innerText=`✅ Filtres mis à jour pour ${name}`;
- if(P.name===name){P.opFilters=d.opFilters;P.histCatFilters=d.histCatFilters;}
+ if(P.name===name){P.opFilters=d.opFilters;P.histCatFilters=d.histCatFilters;P.frCatFilters=d.frCatFilters;}
  beep(600,'sine',.3);
 }

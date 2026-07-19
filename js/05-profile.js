@@ -195,6 +195,13 @@ function validateProfile(raw, defaultName){
    temps:        _safeBool(raw.histCatFilters?.temps,        true),
    repere:       _safeBool(raw.histCatFilters?.repere,       true),
   },
+  // v11.5.3 — filtres par catégorie pour le français (miroir de histCatFilters).
+  frCatFilters: {
+   conj:  _safeBool(raw.frCatFilters?.conj,  true),
+   orth:  _safeBool(raw.frCatFilters?.orth,  true),
+   gram:  _safeBool(raw.frCatFilters?.gram,  true),
+   vocab: _safeBool(raw.frCatFilters?.vocab, true),
+  },
   homework: (raw.homework && typeof raw.homework==='object') ? raw.homework : null,
   heroStageId: _safeStr(raw.heroStageId, 20, 'oeuf'),
   // Chantier Cloud Sync : préserver le code joueur et le statut d'activation
@@ -239,6 +246,7 @@ function defProfile(name){
   avatar:'🧙',heroTitle:'novice',ownedSkins:[],equippedSkin:null,victorySound:'fanfare',ownedMusics:['theme'],music:'theme',ownedSounds:[],errorsFr:[],errorsHist:[],ownedFigurines:[],
   opFilters:{add:true,sub:true,mult:true,div:true,miss:true,frac:true,geo:true},
   histCatFilters:{frise:true,personnages:true,evenements:true,civilisation:true,temps:true,repere:true},
+  frCatFilters:{conj:true,orth:true,gram:true,vocab:true},
   heroStageId:'oeuf',
   cloudCode:null,cloudEnabled:false};
 }

@@ -946,6 +946,30 @@ const SUBJECT_LABELS={ math:'Mathématiques', fr:'Français', hist:'Histoire', g
 // déroulants "devoir du jour"/"types de questions autorisés"...) de CETTE
 // liste plutôt que de recopier ['math','fr',...] à la main : c'est exactement
 // ainsi qu'un oubli d'« Histoire » s'est glissé dans plusieurs écrans (v11.5.0).
+//
+// v11.5.3 — CHECKLIST complète pour ajouter une nouvelle matière à catégories
+// (geo/en/svt/pc), établie après les oublis corrigés pour hist (v11.5.0-1)
+// puis fr (v11.5.3). Ne pas se contenter d'un sous-ensemble de cette liste :
+//  1. Générateur GEN_XXX (un par niveau) + _xxxCatOf(opKey) (regroupement en
+//     catégories, miroir de _histCatOf/_frCatOf).
+//  2. getXxxCatFilters()/_xxxCatAllowed(q), appelés dans _xxxUnique(q).
+//  3. XXX_CAT_FILTERS (02-data.js) + xxxCatFilters dans defProfile/
+//     validateProfile (05-profile.js), par défaut tout activé.
+//  4. Ajouter 'xxx' à IMPLEMENTED_SUBJECTS ci-dessous dès que 1-3 existent.
+//  5. Tuile de choix de matière (index.html, v-subjects) : déjà générique
+//     (chooseSubject), il suffit de retirer le verrou "bientôt disponible".
+//  6. Vue parent → "Types de questions autorisés" : un <div id="xxx-filters">
+//     (index.html) + un cas dans onFilterSubjectChange (09-parent.js) + un
+//     bloc dans loadFilterSettings/saveFilterSettings (06b-time-block.js).
+//  7. Vue parent → "Devoir du jour" : un cas dans _hwTypeOptions (09-parent.js),
+//     _matchesHomework et _hwOpLabel (07-game.js).
+//  8. Vue parent → "Matières autorisées" (_BSUBJ_LIST, déjà présent pour
+//     toutes les matières de SUBJECT_LABELS, rien à faire ici).
+//  9. Tableau de bord (08-ui.js) : ajouter dans IMPLEMENTED_SUBJECTS suffit
+//     (barres de filtre déjà génériques) + un bloc de stats par catégorie
+//     dans renderOpStats si pertinent.
+// 10. Odyssée dédiée (optionnel) : cf. startAdventure (07-map.js) et
+//     openOdysseeSelect, si une aventure spécifique est prévue.
 const IMPLEMENTED_SUBJECTS = [['math','🔢 Mathématiques'],['fr','📖 Français'],['hist','🏛️ Histoire']];
 function chooseSubject(key){
  if(key==='math'){
