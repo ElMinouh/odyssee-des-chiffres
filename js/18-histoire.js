@@ -38,8 +38,23 @@ function _histQ(display, ok, distractors, opKey, hint, visualHtml){
 // Anti-répétition (miroir de _frRecent)
 let _histRecent = [];
 const _HIST_RECENT_MAX = 25;
+// v11.5.2 — Filtres par catégorie (contrôle parental « Types de questions
+// autorisés »), miroir de getOpFilters() pour les maths. Par défaut (profil
+// sans histCatFilters, ou en environnement de test), tout est autorisé.
+function getHistCatFilters(){
+ const f=(typeof P!=='undefined' && P && P.histCatFilters) || {};
+ const def={frise:true,personnages:true,evenements:true,civilisation:true,temps:true,repere:true};
+ return {...def, ...f};
+}
+function _histCatAllowed(q){
+ try{ return getHistCatFilters()[_histCatOf(q && q.opKey)] !== false; }catch(e){ return true; }
+}
 function _histUnique(q){
  if(!q) return q;
+ // v11.5.2 : une question dont la catégorie est bloquée par le parent est
+ // traitée comme "déjà vue" → les appelants (genQ_HIST_*) retenteront un
+ // autre tirage, exactement comme pour une répétition.
+ if(!_histCatAllowed(q)) return null;
  // v11.4.0 — FIX : certains générateurs (_histOrdreQ notamment) produisent toujours
  // le même texte de question ("Quelle rangée respecte l'ordre chronologique ?"),
  // quel que soit le niveau ou le contenu réel. Se baser sur le seul q.display
@@ -973,6 +988,7 @@ let _histMatRecent = [];
 const _HISTMAT_RECENT_MAX = 20;
 function _histMatUnique(q){
  if(!q) return q;
+ if(!_histCatAllowed(q)) return null; // v11.5.2 : mêmes filtres parent que le primaire/collège
  const key = q.consigne+'|'+(q.visuelHtml||'').slice(0,50)+'|'+q.res;
  if(_histMatRecent.indexOf(key)>=0) return null;
  _histMatRecent.push(key); if(_histMatRecent.length>_HISTMAT_RECENT_MAX) _histMatRecent.shift();

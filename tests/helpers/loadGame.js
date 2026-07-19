@@ -210,6 +210,13 @@ globalThis.__api = {
   // Accesseur DOM générique : renvoie l'élément (persistant) pour un id donné,
   // pour lire ce qu'une fonction testée y a posé (textContent, innerHTML, value...).
   _domEl: (id) => { try{ return document.getElementById(id); }catch(e){ return undefined; } },
+  // --- filtres "types de questions autorisés" histoire (v11.5.2) ---
+  _histUnique: (typeof _histUnique==='function') ? _histUnique : undefined,
+  _histCatAllowed: (typeof _histCatAllowed==='function') ? _histCatAllowed : undefined,
+  getHistCatFilters: (typeof getHistCatFilters==='function') ? getHistCatFilters : undefined,
+  onFilterSubjectChange: (typeof onFilterSubjectChange==='function') ? onFilterSubjectChange : undefined,
+  loadFilterSettings: (typeof loadFilterSettings==='function') ? loadFilterSettings : undefined,
+  saveFilterSettings: (typeof saveFilterSettings==='function') ? saveFilterSettings : undefined,
 };
 `;
 

@@ -962,13 +962,15 @@ function onHwLevelChange(){
 function onHwSubjectChange(){
  if(typeof onHwLevelChange === 'function') onHwLevelChange();
 }
-// Filtres (Contrôles) : bascule entre filtres maths et note français.
+// Filtres (Contrôles) : bascule entre filtres maths, catégories histoire, et note français.
+// v11.5.2 — n'est plus un simple booléen isFr (qui affichait aussi la note
+// « français » pour l'histoire) : chaque matière a désormais son propre bloc.
 function onFilterSubjectChange(){
  const subj = $('filter-subject')?.value || 'math';
- const isFr = subj !== 'math';
- const note = $('filter-fr-note'), ops = $('op-filters');
- if(note) note.classList.toggle('hidden', !isFr);
- if(ops) ops.classList.toggle('hidden', isFr);
+ const note = $('filter-fr-note'), ops = $('op-filters'), hist = $('hist-filters');
+ if(note) note.classList.toggle('hidden', subj !== 'fr');
+ if(ops) ops.classList.toggle('hidden', subj !== 'math');
+ if(hist) hist.classList.toggle('hidden', subj !== 'hist');
 }
 // ── Blocage de matières entières (par joueur) ──
 const _BSUBJ_LIST = [['math','🔢 Mathématiques'],['fr','📖 Français'],['hist','🏛️ Histoire'],['geo','🌍 Géographie'],['en','🇬🇧 Anglais'],['svt','🧬 SVT'],['pc','⚗️ Physique-Chimie']];

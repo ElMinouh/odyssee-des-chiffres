@@ -1080,6 +1080,19 @@ const OP_FILTERS=[
  {key:'pgcd', label:'PGCD / nombres premiers', affects:['3e']},
  {key:'sqrt', label:'Racines carrées',     affects:['3e']},
 ];
+// ── FILTRES CATÉGORIES HISTOIRE (v11.5.2) ──
+// Miroir de OP_FILTERS pour la matière histoire : filtre par catégorie de
+// question plutôt que par opération. temps/repere ne concernent que la
+// maternelle (PS/MS/GS) ; les 4 autres couvrent primaire (CP→CM2) et collège
+// (6e→3e), qui réutilisent les mêmes 4 catégories (cf. section 14 du projet).
+const HIST_CAT_FILTERS=[
+ {key:'frise',        label:'Frises & repères',   affects:['CP→3e']},
+ {key:'personnages',  label:'Personnages',        affects:['CP→3e']},
+ {key:'evenements',   label:'Événements',         affects:['CP→3e']},
+ {key:'civilisation', label:'Vie & civilisation',  affects:['CP→3e']},
+ {key:'temps',        label:'Le temps qui passe',  affects:['PS','MS','GS']},
+ {key:'repere',       label:'Repérage visuel',     affects:['PS','MS','GS']},
+];
 
 // ── Générateurs de questions ──
 // ═══════════════════════════════════════════════════════

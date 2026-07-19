@@ -51,13 +51,25 @@ function loadFilterSettings(){
    <label for="opf-${op.key}">${op.label}<br><span style="font-size:.7em;color:#bdc3c7;">${op.affects.join(', ')}</span></label>
    <label class="toggle-sw"><input type="checkbox" id="opf-${op.key}" ${f[op.key]!==false?'checked':''}><span class="toggle-slider"></span></label>
   </div>`).join('');
+ // v11.5.2 — bloc dédié aux catégories histoire (miroir de op-filters).
+ const hf=(d&&d.histCatFilters)||{frise:true,personnages:true,evenements:true,civilisation:true,temps:true,repere:true};
+ $('hist-filters').innerHTML=(typeof HIST_CAT_FILTERS!=='undefined'?HIST_CAT_FILTERS:[]).map(op=>`
+  <div class="op-toggle">
+   <label for="histf-${op.key}">${op.label}<br><span style="font-size:.7em;color:#bdc3c7;">${op.affects.join(', ')}</span></label>
+   <label class="toggle-sw"><input type="checkbox" id="histf-${op.key}" ${hf[op.key]!==false?'checked':''}><span class="toggle-slider"></span></label>
+  </div>`).join('');
+ if(typeof onFilterSubjectChange==='function') onFilterSubjectChange();
 }
 function saveFilterSettings(){
  const name=$('filter-player').value;
  let d=null;try{d=JSON.parse(localStorage.getItem('user_'+name)||'{}');}catch(e){d={};}
  d.opFilters={};OP_FILTERS.forEach(op=>{d.opFilters[op.key]=$('opf-'+op.key)?.checked!==false;});
+ // v11.5.2 — sauvegarde systématique des 2 blocs (même celui actuellement
+ // masqué) : les cases à cocher existent toujours dans le DOM, seule leur
+ // visibilité change avec onFilterSubjectChange().
+ d.histCatFilters={};(typeof HIST_CAT_FILTERS!=='undefined'?HIST_CAT_FILTERS:[]).forEach(op=>{d.histCatFilters[op.key]=$('histf-'+op.key)?.checked!==false;});
  localStorage.setItem('user_'+name,JSON.stringify(d));
  $('filter-status').innerText=`✅ Filtres mis à jour pour ${name}`;
- if(P.name===name)P.opFilters=d.opFilters;
+ if(P.name===name){P.opFilters=d.opFilters;P.histCatFilters=d.histCatFilters;}
  beep(600,'sine',.3);
 }

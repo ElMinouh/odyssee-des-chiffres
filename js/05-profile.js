@@ -186,6 +186,15 @@ function validateProfile(raw, defaultName){
    frac: _safeBool(raw.opFilters?.frac, true),
    geo:  _safeBool(raw.opFilters?.geo,  true),
   },
+  // v11.5.2 — filtres par catégorie pour l'histoire (miroir de opFilters).
+  histCatFilters: {
+   frise:        _safeBool(raw.histCatFilters?.frise,        true),
+   personnages:  _safeBool(raw.histCatFilters?.personnages,  true),
+   evenements:   _safeBool(raw.histCatFilters?.evenements,   true),
+   civilisation: _safeBool(raw.histCatFilters?.civilisation, true),
+   temps:        _safeBool(raw.histCatFilters?.temps,        true),
+   repere:       _safeBool(raw.histCatFilters?.repere,       true),
+  },
   homework: (raw.homework && typeof raw.homework==='object') ? raw.homework : null,
   heroStageId: _safeStr(raw.heroStageId, 20, 'oeuf'),
   // Chantier Cloud Sync : préserver le code joueur et le statut d'activation
@@ -229,6 +238,7 @@ function defProfile(name){
   objective:0,objectiveDone:0,objDate:null,
   avatar:'🧙',heroTitle:'novice',ownedSkins:[],equippedSkin:null,victorySound:'fanfare',ownedMusics:['theme'],music:'theme',ownedSounds:[],errorsFr:[],errorsHist:[],ownedFigurines:[],
   opFilters:{add:true,sub:true,mult:true,div:true,miss:true,frac:true,geo:true},
+  histCatFilters:{frise:true,personnages:true,evenements:true,civilisation:true,temps:true,repere:true},
   heroStageId:'oeuf',
   cloudCode:null,cloudEnabled:false};
 }
