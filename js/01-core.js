@@ -938,6 +938,15 @@ function gotoSubjects(){
 }
 // Choix d'une matière. Maths → flux actuel (modes). Autres → bientôt disponibles.
 const SUBJECT_LABELS={ math:'Mathématiques', fr:'Français', hist:'Histoire', geo:'Géographie', en:'Anglais', svt:'SVT', pc:'Physique-Chimie' };
+// v11.5.1 — Matières effectivement jouables (générateur de questions réel).
+// SUBJECT_LABELS ci-dessus liste aussi des matières prévues mais pas encore
+// implémentées (geo/en/svt/pc) : NE PAS les utiliser pour peupler un filtre
+// ou un sélecteur de matière tant qu'elles n'ont pas de générateur (GEN_*).
+// TOUJOURS dériver les barres de filtre matière (dashboard, vue parent, menus
+// déroulants "devoir du jour"/"types de questions autorisés"...) de CETTE
+// liste plutôt que de recopier ['math','fr',...] à la main : c'est exactement
+// ainsi qu'un oubli d'« Histoire » s'est glissé dans plusieurs écrans (v11.5.0).
+const IMPLEMENTED_SUBJECTS = [['math','🔢 Mathématiques'],['fr','📖 Français'],['hist','🏛️ Histoire']];
 function chooseSubject(key){
  if(key==='math'){
   GM.subject='math';

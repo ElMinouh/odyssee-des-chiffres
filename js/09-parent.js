@@ -935,7 +935,14 @@ function onHwLevelChange(){
  const lvlSel = $('hw-level'), typeSel = $('hw-type');
  if(!lvlSel || !typeSel) return;
  const subj = $('hw-subject')?.value || 'math';
- if(subj !== 'math'){ typeSel.innerHTML = '<option value="any">Tout le français</option>'; return; }
+ if(subj !== 'math'){
+  // v11.5.1 — libellé dérivé de SUBJECT_LABELS (au lieu d'un "Tout le français"
+  // recopié pour toute matière non-maths) : reste correct pour l'histoire et
+  // toute future matière, sans nouvel oubli à corriger plus tard.
+  const nm = (typeof SUBJECT_LABELS!=='undefined' && SUBJECT_LABELS[subj]) ? SUBJECT_LABELS[subj] : 'cette matière';
+  typeSel.innerHTML = '<option value="any">Tout : '+nm+'</option>';
+  return;
+ }
  const cycle = _hwCycle(lvlSel.value);
  const prev = typeSel.value;
  let opts;

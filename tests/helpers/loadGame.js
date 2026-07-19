@@ -67,8 +67,24 @@ function fakeEl() {
 export function loadGame(files, initialStorage = {}) {
   const localStorage = makeLocalStorage(initialStorage);
 
+  // v11.5.1 — Registre d'éléments persistants par id : contrairement à un
+  // stub qui renvoie systématiquement null (ou un nouvel élément jetable à
+  // chaque appel), ce registre renvoie LE MÊME objet pour un id donné, ce qui
+  // permet d'écrire des tests qui appellent une fonction du jeu (ex.
+  // openOdysseeSelect()) puis vérifient le textContent qu'elle a posé sur un
+  // élément (ex. document.getElementById('ody-prim-sub').textContent).
+  const elementRegistry = new Map();
+  function registryEl(id) {
+    if (!elementRegistry.has(id)) {
+      const el = fakeEl();
+      el.id = id;
+      elementRegistry.set(id, el);
+    }
+    return elementRegistry.get(id);
+  }
+
   const documentStub = {
-    getElementById: () => null,
+    getElementById: (id) => registryEl(id),
     createElement: () => fakeEl(),
     querySelector: () => null,
     querySelectorAll: () => [],
@@ -182,6 +198,18 @@ globalThis.__api = {
   getArchRegions: () => (typeof _ARCH_REGIONS!=='undefined') ? _ARCH_REGIONS : undefined,
   getStory: () => (typeof _STORY!=='undefined') ? _STORY : undefined,
   getStoryVillain: () => (typeof STORY_VILLAIN!=='undefined') ? STORY_VILLAIN : undefined,
+  // --- correctifs v11.5.1 (oublis "Histoire" dans plusieurs écrans) ---
+  IMPLEMENTED_SUBJECTS: (typeof IMPLEMENTED_SUBJECTS!=='undefined') ? IMPLEMENTED_SUBJECTS : undefined,
+  _BSUBJ_LIST: (typeof _BSUBJ_LIST!=='undefined') ? _BSUBJ_LIST : undefined,
+  openOdysseeSelect: (typeof openOdysseeSelect==='function') ? openOdysseeSelect : undefined,
+  renderHistory: (typeof renderHistory==='function') ? renderHistory : undefined,
+  setHistSubj: (typeof setHistSubj==='function') ? setHistSubj : undefined,
+  onHwLevelChange: (typeof onHwLevelChange==='function') ? onHwLevelChange : undefined,
+  renderHomework: (typeof renderHomework==='function') ? renderHomework : undefined,
+  loadBlockedSubjects: (typeof loadBlockedSubjects==='function') ? loadBlockedSubjects : undefined,
+  // Accesseur DOM générique : renvoie l'élément (persistant) pour un id donné,
+  // pour lire ce qu'une fonction testée y a posé (textContent, innerHTML, value...).
+  _domEl: (id) => { try{ return document.getElementById(id); }catch(e){ return undefined; } },
 };
 `;
 

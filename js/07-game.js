@@ -1320,7 +1320,7 @@ function renderHomework(){
   table_5:'la table de 5', table_6:'la table de 6', table_7:'la table de 7',
   table_8:'la table de 8', table_9:'la table de 9', table_10:'la table de 10',
  };
- const opLabel = labels[hw.type] || 'questions';
+ const opLabel = (hw.subject && hw.subject !== 'math') ? 'questions' : (labels[hw.type] || 'questions');
  $('hw-desc').innerHTML = `Réussir <strong>${hw.count}</strong> ${opLabel} (niveau ${hw.level}) · <span style="color:#f1c40f;">+${hw.reward} ⭐</span>`;
  const pct = Math.min(100, Math.round((hw.progress || 0) / hw.count * 100));
  $('hw-fill').style.width = pct + '%';

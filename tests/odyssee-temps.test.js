@@ -5,7 +5,7 @@ const FILES = [
   '01-core.js', '02-data.js', '03-figurines-data.js', '04-questions.js',
   '16-francais.js', '18-histoire.js', '05-profile.js', '06a-adaptive.js',
   '06b-time-block.js', '06c-seasonal.js', '06d-cinematics.js',
-  '07-map.js', '07-game.js', '07-boss.js', '07-story.js',
+  '07-map.js', '07-game.js', '07-boss.js', '07-story.js', '08-ui.js', '09-parent.js',
 ];
 
 describe('Odyssée du Temps — histoire primaire (structure)', () => {
@@ -176,5 +176,69 @@ describe('Odyssée du Temps — histoire primaire (structure)', () => {
     expect(entries.length).toBe(13);
     expect(entries[0].kind).toBe('intro');
     expect(entries[entries.length - 1].kind).toBe('epilogue');
+  });
+});
+
+describe('Odyssée du Temps — corrections v11.5.1 (oublis "Histoire" dans l\u2019UI)', () => {
+  it('openOdysseeSelect() affiche "Les Trois Héritages" (et non "L\u2019Ombre sur Calcultopia") quand la matière est l\u2019histoire', () => {
+    const api = loadGame(FILES);
+    api.setGMsubject('hist');
+    api.openOdysseeSelect();
+    expect(api._domEl('ody-prim-sub').textContent).toBe('Les Trois Héritages');
+    expect(api._domEl('ody-sel-title').textContent).toMatch(/historique/);
+  });
+
+  it('openOdysseeSelect() reste inchangé pour les maths et le français (non-régression)', () => {
+    const api = loadGame(FILES);
+    api.setGMsubject('math');
+    api.openOdysseeSelect();
+    expect(api._domEl('ody-prim-sub').textContent).toBe("L'Ombre sur Calcultopia");
+    api.setGMsubject('fr');
+    api.openOdysseeSelect();
+    expect(api._domEl('ody-prim-sub').textContent).toBe('Le journal intime');
+  });
+
+  it('IMPLEMENTED_SUBJECTS inclut bien "hist" (source de vérité des barres de filtre matière)', () => {
+    const api = loadGame(FILES);
+    const keys = api.IMPLEMENTED_SUBJECTS.map((a) => a[0]);
+    expect(keys).toContain('hist');
+  });
+
+  it('renderHistory() (Historique détaillé) propose bien un filtre "hist" et l\u2019affiche pour une partie d\u2019histoire', () => {
+    const api = loadGame(FILES);
+    api.setP({
+      name: 'Test',
+      storySeen: [],
+      historyDetailed: [{ subject: 'hist', won: true, date: '01/01', level: 'CE2', mode: 'qcm', score: 10, maxCombo: 2 }],
+    });
+    api.renderHistory();
+    const html = api._domEl('p-history').innerHTML;
+    expect(html).toMatch(/setHistSubj\('hist'\)/);
+    expect(html).toMatch(/🏛️ Histoire/);
+    expect(html).not.toMatch(/🔢 Maths · 01\/01/); // ne doit plus retomber sur le libellé Maths par défaut
+  });
+
+  it('_BSUBJ_LIST (matières autorisées) inclut déjà "hist" — non-régression', () => {
+    const api = loadGame(FILES);
+    const keys = api._BSUBJ_LIST.map((a) => a[0]);
+    expect(keys).toContain('hist');
+  });
+
+  it('onHwLevelChange() (devoir du jour) ne dit plus "français" pour la matière histoire', () => {
+    const api = loadGame(FILES);
+    api._domEl('hw-subject').value = 'hist';
+    api.onHwLevelChange();
+    const html = api._domEl('hw-type').innerHTML;
+    expect(html).toMatch(/Histoire/);
+    expect(html).not.toMatch(/français/i);
+  });
+
+  it('renderHomework() affiche un libellé neutre ("questions") pour un devoir d\u2019histoire', () => {
+    const api = loadGame(FILES);
+    api.setP({ name: 'Test', homework: { subject: 'hist', level: 'CE2', type: 'any', count: 10, progress: 3, reward: 50 } });
+    api._domEl('hw-box').classList.remove('hidden'); // pré-requis : box doit exister (registre)
+    api.renderHomework();
+    expect(api._domEl('hw-desc').innerHTML).toMatch(/questions/);
+    expect(api._domEl('hw-desc').innerHTML).not.toMatch(/opérations variées/);
   });
 });

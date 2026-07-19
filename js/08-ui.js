@@ -10,7 +10,7 @@ var _lvlSubj='math';
 function setLvlSubj(s){_lvlSubj=s;renderLevelUnlocks();}
 function renderLevelUnlocks(){
  const lab=(l)=>(typeof _levelLabel==='function')?_levelLabel(l):l;
- const bar='<div style="display:flex;gap:6px;margin-bottom:8px;">'+[['math','🔢 Maths'],['fr','📖 Français'],['hist','🏛️ Histoire']].map(a=>`<button onclick="setLvlSubj('${a[0]}')" style="font-size:.72em;padding:4px 10px;border-radius:8px;background:${_lvlSubj===a[0]?'#27ae60':'#2c3e50'};">${a[1]}</button>`).join('')+'</div>';
+ const bar='<div style="display:flex;gap:6px;margin-bottom:8px;">'+((typeof IMPLEMENTED_SUBJECTS!=='undefined')?IMPLEMENTED_SUBJECTS:[['math','🔢 Maths'],['fr','📖 Français'],['hist','🏛️ Histoire']]).map(a=>`<button onclick="setLvlSubj('${a[0]}')" style="font-size:.72em;padding:4px 10px;border-radius:8px;background:${_lvlSubj===a[0]?'#27ae60':'#2c3e50'};">${a[1]}</button>`).join('')+'</div>';
  const row=(lvl,icon)=>{
   const ok=isUnlocked(lvl,_lvlSubj),pW=prevWins(lvl,_lvlSubj),req=UNLOCK_REQ[lvl];
   return `<div class="level-lock ${ok?'unlocked':'locked'}"><span>${icon} ${lab(lvl)}</span><span style="font-size:.78em;color:${ok?'#2ecc71':'#e74c3c'};">${ok?'✅ Débloqué':'🔒 '+pW+'/'+req+' victoires'}</span></div>`;
@@ -32,7 +32,7 @@ function renderChart(){
 var _opStatSubj='math';
 function setOpStatSubj(s){_opStatSubj=s;renderOpStats();}
 function renderOpStats(){
- const bar='<div style="display:flex;gap:6px;margin-bottom:8px;">'+[['math','🔢 Maths'],['fr','📖 Français'],['hist','🏛️ Histoire']].map(a=>`<button onclick="setOpStatSubj('${a[0]}')" style="font-size:.72em;padding:4px 10px;border-radius:8px;background:${_opStatSubj===a[0]?'#27ae60':'#2c3e50'};">${a[1]}</button>`).join('')+'</div>';
+ const bar='<div style="display:flex;gap:6px;margin-bottom:8px;">'+((typeof IMPLEMENTED_SUBJECTS!=='undefined')?IMPLEMENTED_SUBJECTS:[['math','🔢 Maths'],['fr','📖 Français'],['hist','🏛️ Histoire']]).map(a=>`<button onclick="setOpStatSubj('${a[0]}')" style="font-size:.72em;padding:4px 10px;border-radius:8px;background:${_opStatSubj===a[0]?'#27ae60':'#2c3e50'};">${a[1]}</button>`).join('')+'</div>';
  if(_opStatSubj==='fr'){
   const names={conj:'Conjugaison',orth:'Orthographe',gram:'Grammaire',vocab:'Vocabulaire'};
   const cats=['conj','orth','gram','vocab'];
@@ -58,7 +58,7 @@ var _revSubj='math';
 function setRevSubj(s){_revSubj=s;renderErrors();}
 function renderErrors(){
  const el=$('p-errors'),btn=$('btn-revision');
- const bar='<div style="display:flex;gap:6px;margin-bottom:8px;">'+[['math','🔢 Maths'],['fr','📖 Français'],['hist','🏛️ Histoire']].map(a=>`<button onclick="setRevSubj('${a[0]}')" style="font-size:.72em;padding:4px 10px;border-radius:8px;background:${_revSubj===a[0]?'#27ae60':'#2c3e50'};">${a[1]}</button>`).join('')+'</div>';
+ const bar='<div style="display:flex;gap:6px;margin-bottom:8px;">'+((typeof IMPLEMENTED_SUBJECTS!=='undefined')?IMPLEMENTED_SUBJECTS:[['math','🔢 Maths'],['fr','📖 Français'],['hist','🏛️ Histoire']]).map(a=>`<button onclick="setRevSubj('${a[0]}')" style="font-size:.72em;padding:4px 10px;border-radius:8px;background:${_revSubj===a[0]?'#27ae60':'#2c3e50'};">${a[1]}</button>`).join('')+'</div>';
  if(_revSubj==='fr'){
   const u=(P.errorsFr||[]).slice(-12).reverse();
   el.innerHTML=bar+(u.length?u.map(e=>`<div class="revision-q"><span>${e.q}</span><strong style="color:#f1c40f;">${e.ok||''}</strong></div>`).join(''):'<span style="color:#2ecc71;">✅ Aucune erreur en français !</span>');
@@ -208,9 +208,10 @@ function setTitle(id){P.heroTitle=id;saveProfile();renderTitles();updateMenuUI()
 var _histSubj='all';
 function setHistSubj(s){_histSubj=s;renderHistory();}
 function renderHistory(){
- const SL={math:'🔢 Maths',fr:'📖 Français'};
+ const SUBJ_BAR=(typeof IMPLEMENTED_SUBJECTS!=='undefined')?IMPLEMENTED_SUBJECTS:[['math','🔢 Maths'],['fr','📖 Français'],['hist','🏛️ Histoire']];
+ const SL=Object.fromEntries(SUBJ_BAR);
  const el=$('p-history');
- const bar='<div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">'+['all','math','fr'].map(s=>`<button onclick="setHistSubj('${s}')" style="font-size:.72em;padding:4px 10px;border-radius:8px;background:${_histSubj===s?'#27ae60':'#2c3e50'};">${s==='all'?'🌐 Toutes':SL[s]}</button>`).join('')+'</div>';
+ const bar='<div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">'+['all',...SUBJ_BAR.map(a=>a[0])].map(s=>`<button onclick="setHistSubj('${s}')" style="font-size:.72em;padding:4px 10px;border-radius:8px;background:${_histSubj===s?'#27ae60':'#2c3e50'};">${s==='all'?'🌐 Toutes':SL[s]}</button>`).join('')+'</div>';
  let h=(P.historyDetailed||[]).map(g=>Object.assign({},g,{subject:g.subject||'math'}));
  if(_histSubj!=='all') h=h.filter(g=>g.subject===_histSubj);
  h=h.slice(-20).reverse();

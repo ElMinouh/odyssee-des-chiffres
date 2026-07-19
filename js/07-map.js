@@ -128,11 +128,17 @@ function _setSubjectLogos(){
 }
 function openOdysseeSelect(){
  try{
-  const fr=(typeof GM!=='undefined'&&GM.subject==='fr');
-  const t=document.getElementById('ody-sel-title'); if(t) t.textContent=fr?"L'Odyssée : l'aventure littéraire":"L'Odyssée : l'aventure mathématique";
-  const su=document.getElementById('ody-sel-sub'); if(su) su.textContent=fr?"Maîtrise les secrets du langage":"Choisis ton aventure";
+  // v11.5.1 — la matière n'est plus binaire (math/fr) : l'histoire a aussi
+  // sa propre odyssée en primaire. Toujours passer par cette fonction pour
+  // les libellés de l'écran de sélection, plutôt qu'un `const fr = subject
+  // ==='fr'` isolé : c'est ce raccourci qui a laissé « L'Ombre sur
+  // Calcultopia » s'afficher pour l'histoire (v11.5.0).
+  const subj=(typeof GM!=='undefined'&&GM.subject)?GM.subject:'math';
+  const fr=(subj==='fr'), hist=(subj==='hist');
+  const t=document.getElementById('ody-sel-title'); if(t) t.textContent=fr?"L'Odyssée : l'aventure littéraire":hist?"L'Odyssée : l'aventure historique":"L'Odyssée : l'aventure mathématique";
+  const su=document.getElementById('ody-sel-sub'); if(su) su.textContent=fr?"Maîtrise les secrets du langage":hist?"Voyage à travers les époques":"Choisis ton aventure";
   const ms=document.getElementById('ody-mat-sub'); if(ms) ms.textContent=fr?"Le Grand Livre du Conteur":"Le Pays des Couleurs";
-  const ps=document.getElementById('ody-prim-sub'); if(ps) ps.textContent=fr?"Le journal intime":"L'Ombre sur Calcultopia";
+  const ps=document.getElementById('ody-prim-sub'); if(ps) ps.textContent=fr?"Le journal intime":hist?"Les Trois Héritages":"L'Ombre sur Calcultopia";
   const cs=document.getElementById('ody-col-sub'); if(cs) cs.textContent=fr?"La Bibliothèque infinie":"Le Forgeron des Étoiles";
   if(typeof _setSubjectLogos==='function') _setSubjectLogos();
  }catch(e){}
