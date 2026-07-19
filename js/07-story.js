@@ -434,6 +434,144 @@ const _PRIM_STORY_FR = {
  ]},
 };
 
+
+// ═══════════════════════════════════════════════════════════════════════
+// L'ODYSSÉE DU TEMPS — Primaire (histoire) : « Les Trois Héritages »
+// Aventure histoire pour GM.subject==='hist' en primaire. Zones isolées
+// (ids 'primhist_…') → progression séparée des maths/français. Récompense
+// par région : un Rouage (au lieu d'un Cristal), + un Livre d'époque lisible
+// (cf. section « Livres lisibles — Chroniques du Temps » plus bas).
+// Antagoniste : L'Horloger, ancien rival inventeur du grand-père Isidore,
+// en quête de sa fiancée Aline, restée piégée par une expérience ratée.
+// ═══════════════════════════════════════════════════════════════════════
+const _PRIM_VILLAIN_HIST = 'L\u2019Horloger';
+const _PRIM_KINGDOM_HIST = 'l\u2019atelier d\u2019Isidore';
+const _PRIMHIST_ZONE_LABELS = {
+ // CP — La Préhistoire
+ plaine:'La Clairière du Foyer', village:'Le Campement des Chasseurs', prairie:'La Plaine aux Mammouths', bonbons:'La Grotte aux Peintures',
+ // CE1 — L'Égypte antique
+ foret:'Les Rives du Nil', champignons:'Le Chantier de Gizeh', trolls:'La Vallée des Tombeaux', plage:'Le Port de Thèbes',
+ // CE2 — Rome antique
+ desert:'La Voie Appienne', plaines_venteuses:'Le Forum Romain', temple:'Le Circus Maximus', profondeurs:'Les Thermes de Caracalla',
+ // CM1 — Le Moyen Âge
+ glace:'Les Remparts d\u2019Hiver', marais:'Le Marécage du Fief', forteresse:'Le Château Assiégé', sakura:'La Foire Médiévale', nocturne:'La Veillée des Gardes',
+ // CM2 — Les Temps modernes
+ volcan:'Les Forges de la Révolution', espace:'Le Ciel de 1889', cimes:'Les Ateliers du Progrès', mecanique:'La Gare à Vapeur', ile:'Le Salon des Inventeurs',
+ // Final — L'Atelier d'Autrefois
+ sanctuaire:'L\u2019Atelier d\u2019Autrefois',
+};
+// Résolution explicite de la région par zone (évite tout repli ambigu sur `level`
+// pour la zone finale — cf. ADR de prudence : chaque zone porte son `region`).
+const _PRIMHIST_LEVEL_TO_REGION = {CP:'cp',CE1:'ce1',CE2:'ce2',CM1:'cm1',CM2:'cm2'};
+const PRIM_ZONES_HIST = (typeof PRIM_ZONES!=='undefined' ? PRIM_ZONES : []).map(z => Object.assign({}, z, {
+ id:'primhist_'+z.id,
+ label: _PRIMHIST_ZONE_LABELS[z.id] || z.label,
+ region: z.id==='sanctuaire' ? 'final' : (_PRIMHIST_LEVEL_TO_REGION[z.level] || null),
+ bossName: z.id==='sanctuaire' ? 'L\u2019Écho de l\u2019Instant' : z.bossName,
+ boss: z.id==='sanctuaire' ? '⏳' : z.boss,
+}));
+const _PRIM_REGIONS_HIST = [
+ { id:'cp',    label:'La Préhistoire',         levels:['CP'],    shape:'colline' },
+ { id:'ce1',   label:'L\u2019Égypte antique',   levels:['CE1'],   shape:'feuille' },
+ { id:'ce2',   label:'Rome antique',           levels:['CE2'],   shape:'dune' },
+ { id:'cm1',   label:'Le Moyen Âge',           levels:['CM1'],   shape:'citadelle' },
+ { id:'cm2',   label:'Les Temps modernes',     levels:['CM2'],   shape:'nebuleuse' },
+ { id:'final', label:'L\u2019Atelier d\u2019Autrefois', levels:['FINAL'], shape:'mandala' },
+];
+const _PRIM_STORY_HIST = {
+ intro: { id:'primhist_intro', title:'Prologue — L\u2019héritage', pages:[
+  { emoji:'📜', text:"Grand-père Isidore s\u2019en est allé un soir d\u2019automne, dans le silence de son vieil atelier encombré d\u2019engrenages, de plans jaunis et d\u2019inventions inachevées. Le notaire, un homme sec à lunettes rondes, avait convoqué les trois frères pour la lecture de son testament." },
+  { emoji:'🕰️', text:"« À Noé, l\u2019aîné, je lègue ma montre à gousset », lut le notaire, en tendant un boîtier d\u2019argent terni. « À Gaspard, mon cadet d\u2019esprit vif, je lègue ma boussole. » Gaspard reçut l\u2019objet, perplexe : son aiguille ne pointait vers aucun nord connu." },
+  { emoji:'🪡', text:"« Et à {hero}, le benjamin... » Le notaire hésita, fouilla dans une petite boîte, et en sortit une simple aiguille de métal noirci, sans manche ni écrin. « ... une aiguille. C\u2019est tout ce qui est inscrit. » Les deux aînés échangèrent un regard amusé. {hero} serra les dents." },
+  { emoji:'🌙', text:"Ce soir-là, chacun dans sa chambre inspecta son présent. Noé remonta sa montre, qui égrena une heure parfaitement juste. Gaspard fit tourner sa boussole dans tous les sens, sans succès. {hero}, désabusé, posa la petite aiguille sur la table de nuit, éteignit la lumière, et s\u2019endormit en pensant que grand-père, pour une fois, s\u2019était trompé de cadeau." },
+  { emoji:'🌘', text:"Au cœur de la nuit, un bruit sourd tira {hero} du sommeil. Une ombre, penchée sur la table de nuit, se redressa d\u2019un coup et bondit par la fenêtre entrouverte, aussi silencieuse qu\u2019un chat. En allumant la lampe, {hero} découvrit la vérité : l\u2019aiguille avait disparu." },
+  { emoji:'🏃', text:"{hero} réveilla Noé et Gaspard en pleine nuit. D\u2019abord sceptiques, les deux frères durent se rendre à l\u2019évidence : la petite aiguille de rien du tout venait bel et bien d\u2019être volée. Pourquoi s\u2019en prendre à l\u2019objet le moins précieux des trois ?" },
+  { emoji:'📖', text:"Les jours suivants furent ceux d\u2019une enquête acharnée dans l\u2019atelier poussiéreux. Sous une latte de plancher descellée, les frères trouvèrent un carnet à la reliure craquelée, couvert de l\u2019écriture serrée de leur grand-père : des plans de mécanisme, des calculs d\u2019angles, et un mot revenant sans cesse — « voyage ». Un nom, aussi, biffé avec rage sur presque chaque page : {villain}." },
+  { emoji:'🔧', text:"En creusant plus loin dans les tiroirs secrets de l\u2019établi, Noé et Gaspard comprirent : la montre et la boussole s\u2019emboîtaient l\u2019une dans l\u2019autre comme les pièces d\u2019un puzzle, formant un mécanisme complet — auquel il ne manquait plus qu\u2019une aiguille centrale pour fonctionner. La leur, précisément, venait d\u2019être volée." },
+  { emoji:'⚙️', text:"Faute de mieux, les trois frères façonnèrent une aiguille de fortune dans un vieux clou d\u2019horlogerie trouvé au fond d\u2019un pot. Ils l\u2019insérèrent au cœur du mécanisme assemblé, remontèrent la clé... et le boîtier se mit à vibrer, à chauffer, à luire d\u2019une lumière dorée." },
+  { emoji:'✨', text:"« Attendez, on devrait peut-être réflé... » commença Noé. Trop tard. Dans un éclair silencieux, l\u2019atelier se déroba sous leurs pieds, et les trois frères furent aspirés vers une époque que nul calendrier ne pouvait nommer." },
+ ]},
+ chapters: {
+  cp: { id:'primhist_c_cp', title:'Chapitre I — La Préhistoire', crystal:'Rouage du Feu Sacré', pages:[
+   { emoji:'🔥', text:"Les trois frères atterrirent dans une clairière balayée par le vent, entourée de collines rocheuses. L\u2019air sentait la fumée et l\u2019herbe sauvage. Non loin, un groupe de silhouettes vêtues de peaux se figea de stupeur en les voyant apparaître dans un souffle de lumière." },
+   { emoji:'🪨', text:"« L\u2019aiguille de fortune est instable », souffla Gaspard en examinant le mécanisme fumant. « On ne choisit pas où elle nous envoie — seulement quand elle nous y envoie. » Noé referma sa montre d\u2019un geste sec : le cadran indiquait une date impossible, bien antérieure à toute écriture connue." },
+   { emoji:'💨', text:"Un vieil homme du clan, le visage buriné, s\u2019avança sans crainte apparente et désigna le foyer central du campement : le souffle de leur arrivée venait de disperser les braises, et le feu — précieusement entretenu depuis des lunes — menaçait de s\u2019éteindre pour de bon." },
+   { emoji:'🦣', text:"{hero} comprit d\u2019instinct la gravité de la situation : sans feu, plus de chaleur, plus de lumière pour repousser les bêtes, plus de viande cuite pour l\u2019hiver qui approchait. Toute une histoire, peut-être, tenait à ce tas de braises fragiles." },
+   { emoji:'👣', text:"En observant les empreintes autour du campement, Noé remarqua une trace de pas inhabituelle, bien plus nette que les autres — une empreinte de botte, pas de peau nouée. « Quelqu\u2019un d\u2019autre est déjà passé par ici », murmura-t-il. « Récemment. »" },
+  ]},
+  ce1: { id:'primhist_c_ce1', title:'Chapitre II — L\u2019Égypte antique', crystal:'Rouage des Bâtisseurs', pages:[
+   { emoji:'🏜️', text:"Le mécanisme cracha les trois frères sur un sol de sable brûlant, au pied d\u2019un chantier titanesque : des milliers d\u2019ouvriers hâlaient d\u2019immenses blocs de pierre le long de rampes de terre battue, sous un soleil de plomb. La grande pyramide de Gizeh s\u2019élevait, encore inachevée, vers le ciel." },
+   { emoji:'🪨', text:"Un bloc de calcaire massif, mal arrimé à ses cordages, s\u2019était renversé en travers de la rampe principale au moment même de leur arrivée, bloquant tout le convoi et provoquant une clameur d\u2019inquiétude parmi les ouvriers et les contremaîtres." },
+   { emoji:'📜', text:"Un jeune scribe, tablette de cire à la main, s\u2019approcha des frères avec curiosité — leurs vêtements, si étranges, ne ressemblaient à rien de ce qu\u2019il connaissait. Il leur expliqua, dans un mélange de gestes et de mots, que ce bloc devait impérativement être posé avant le coucher du soleil, sous peine de retarder tout le chantier de plusieurs jours." },
+   { emoji:'⏳', text:"Noé consulta sa montre : l\u2019aiguille de fortune, à peine stabilisée par le premier rouage, vibrait légèrement — un signe, pensa-t-il, qu\u2019ils approchaient d\u2019un moment où l\u2019Histoire pouvait basculer d\u2019un côté comme de l\u2019autre selon leurs actes." },
+   { emoji:'👞', text:"Près d\u2019un entrepôt de cordages, Gaspard repéra une empreinte de semelle identique à celle de la Préhistoire, à demi effacée dans le sable. « Il est passé ici aussi », dit-il. « Et récemment, en plus. »" },
+  ]},
+  ce2: { id:'primhist_c_ce2', title:'Chapitre III — Rome antique', crystal:'Rouage du Cirque', pages:[
+   { emoji:'🏛️', text:"Un vacarme assourdissant accueillit les trois frères : ils venaient d\u2019atterrir dans les gradins du Circus Maximus, en pleine course de chars, sous les acclamations d\u2019une foule immense agitant des étoffes colorées." },
+   { emoji:'🐎', text:"En contrebas, sur la piste, un char venait de perdre une roue dans un virage serré, projetant son cocher au sol sous les cris horrifiés du public. L\u2019attelage, paniqué, menaçait de s\u2019emballer et de blesser les autres concurrents lancés à pleine vitesse." },
+   { emoji:'⚔️', text:"Un vétéran des courses, assis non loin des frères dans les gradins, leur expliqua que ce cocher, jeune et prometteur, jouait ce jour-là sa toute dernière chance de gagner sa liberté d\u2019esclave — une victoire suffirait à convaincre son maître de l\u2019affranchir." },
+   { emoji:'🛠️', text:"Gaspard, en observant l\u2019attelage endommagé, comprit qu\u2019il fallait faire vite : la course reprendrait dès que la piste serait dégagée, avec ou sans char réparé. {hero} sentit peser sur ses épaules le poids d\u2019une destinée qui n\u2019était pas la sienne, mais qu\u2019il ne pouvait ignorer." },
+   { emoji:'👣', text:"Sous les gradins, près des écuries, Noé repéra une trace de semelle fraîche menant droit vers les coulisses du Circus — la même empreinte, encore et toujours, comme un fil rouge tissé à travers les siècles." },
+  ]},
+  cm1: { id:'primhist_c_cm1', title:'Chapitre IV — Le Moyen Âge', crystal:'Rouage du Siège', pages:[
+   { emoji:'🏰', text:"Le mécanisme projeta les trois frères en pleine nuit, contre les remparts d\u2019une ville assiégée, dans le fracas lointain des bombardes et les cris des sentinelles. Des feux de camp anglais scintillaient tout autour des murailles d\u2019Orléans." },
+   { emoji:'🌾', text:"Ils se glissèrent à l\u2019intérieur des fortifications à la faveur de l\u2019obscurité, et découvrirent une ville à bout de forces : les réserves de vivres s\u2019amenuisaient dangereusement, et le moral des défenseurs vacillait après des semaines de siège." },
+   { emoji:'⚜️', text:"Une jeune femme en armure légère, entourée de soldats qui la regardaient avec un mélange de ferveur et d\u2019espoir, traversa la place en direction des remparts. « Jeanne », murmura un garde à proximité, presque en prière. Les frères comprirent qu\u2019ils venaient de croiser Jeanne d\u2019Arc elle-même." },
+   { emoji:'🌾', text:"Un capitaine épuisé expliqua aux frères qu\u2019un convoi de vivres, caché dans un chemin détourné à l\u2019extérieur des murs, n\u2019était encore jamais parvenu à franchir les lignes ennemies — et sans lui, la ville ne tiendrait plus très longtemps." },
+   { emoji:'👞', text:"Sur le chemin de ronde, Noé remarqua une empreinte de botte identique aux précédentes, imprimée dans la boue fraîche près d\u2019une poterne dérobée. « Toujours la même trace », dit-il. « Il ne cherche pas à se cacher de nous. Il cherche autre chose. »" },
+  ]},
+  cm2: { id:'primhist_c_cm2', title:'Chapitre V — Les Temps modernes', crystal:'Rouage du Progrès', pages:[
+   { emoji:'🗼', text:"Les trois frères atterrirent au beau milieu d\u2019une foule en habits du dimanche, sous une tour de fer immense qui s\u2019élançait vers le ciel parisien. Des banderoles annonçaient la grande inauguration officielle de la tour Eiffel, ce jour même." },
+   { emoji:'⚙️', text:"Un incident venait de survenir dans les entrailles du monument : l\u2019un des ascenseurs hydrauliques, tout juste installé, refusait obstinément de fonctionner, menaçant de gâcher la cérémonie prévue devant les officiels et les journalistes du monde entier." },
+   { emoji:'🎩', text:"Un ingénieur en redingote, dépassé par les événements et cerné de curieux, expliqua aux frères — qu\u2019il prit d\u2019abord pour de jeunes apprentis mécaniciens égarés — que sans cet ascenseur, l\u2019inauguration se déroulerait dans la confusion la plus totale devant la presse internationale." },
+   { emoji:'🔩', text:"Gaspard, en observant le mécanisme hydraulique, sentit son cœur s\u2019accélérer : les pièces, les tuyaux, les soupapes — tout cela ressemblait, en plus grand, au mécanisme de leur propre montre-boussole. Comme si l\u2019esprit de leur grand-père avait, d\u2019une certaine façon, traversé les siècles jusqu\u2019ici." },
+   { emoji:'👞', text:"Dans l\u2019agitation de la foule, {hero} aperçut, l\u2019espace d\u2019un instant, une silhouette au manteau sombre s\u2019éclipser derrière un pilier de fer — la même démarche pressée, la même trace de botte qu\u2019ils suivaient depuis la Préhistoire. Cette fois, ils étaient tout près." },
+  ]},
+  final: { id:'primhist_c_final', title:'Chapitre VI — L\u2019Atelier d\u2019Autrefois', crystal:'', pages:[
+   { emoji:'🌫️', text:"Cinq Rouages en poche, les trois frères remontent une dernière fois le mécanisme de fortune. Mais cette fois, l\u2019aiguille ne vibre pas comme les autres fois : elle vise un point précis, presque paisible, comme si elle savait exactement où elle devait les mener." },
+   { emoji:'🔧', text:"« Elle n\u2019a jamais été aussi stable », murmure Gaspard en observant le mécanisme luire d\u2019une lumière régulière. « On dirait qu\u2019elle... nous ramène quelque part de précis, pas juste n\u2019importe quand. »" },
+   { emoji:'🚪', text:"Dans un dernier éclair, plus doux que les précédents, les trois frères se retrouvent devant la porte close d\u2019un atelier qu\u2019ils ne connaissent que trop bien — en plus jeune, en plus poussiéreux encore. Quelque chose, ici, attend d\u2019être résolu depuis bien longtemps." },
+  ]},
+ },
+ victories: {
+  cp: { id:'primhist_w_cp', title:'Le Feu Sacré', crystal:'Rouage du Feu Sacré', pages:[
+   { emoji:'🔥', text:"Avec l\u2019aide du clan, les trois frères rassemblèrent bois sec, écorce et silex, et parvinrent à raviver la flamme juste avant qu\u2019elle ne s\u2019éteigne. Le vieil homme leva les bras au ciel en un cri de joie que tout le campement reprit en chœur." },
+   { emoji:'🐾', text:"En signe de gratitude, le vieil homme tendit à {hero} un petit rouage d\u2019ivoire sculpté à même une défense de mammouth, encore chaud d\u2019avoir été façonné à la lueur du feu sauvé. « Le Rouage du Feu Sacré », murmura Gaspard en l\u2019examinant, émerveillé. « Le premier. »" },
+   { emoji:'🗿', text:"Avant qu\u2019ils ne reprennent leur route à travers le temps, le vieil homme désigna, du doigt, la direction d\u2019où venait le vent ce matin-là — et mima, avec de grands gestes, une silhouette pressée, un bâton à la main, disparue depuis peu vers l\u2019horizon. {villain} était bel et bien passé par là." },
+  ]},
+  ce1: { id:'primhist_w_ce1', title:'Les Bâtisseurs', crystal:'Rouage des Bâtisseurs', pages:[
+   { emoji:'🧵', text:"En coordonnant les efforts des ouvriers, en calant de nouveaux rondins sous le bloc et en réorganisant les équipes de tir sur les cordes, les trois frères parvinrent à redresser puis à hisser la pierre jusqu\u2019à sa place, juste avant que le soleil ne touche l\u2019horizon." },
+   { emoji:'🏺', text:"Le contremaître en chef, impressionné, offrit aux frères un petit rouage doré, gravé de hiéroglyphes représentant un soleil et une pierre. « Le Rouage des Bâtisseurs », lut Gaspard à voix haute, en tentant de déchiffrer les symboles avec l\u2019aide du jeune scribe." },
+   { emoji:'🔍', text:"Le jeune scribe, en les raccompagnant vers l\u2019endroit isolé où ils avaient atterri, mentionna qu\u2019un étranger était passé le mois précédent, posant d\u2019étranges questions sur « une femme perdue entre deux mondes ». Les frères se regardèrent, sentant qu\u2019ils touchaient à quelque chose d\u2019important." },
+  ]},
+  ce2: { id:'primhist_w_ce2', title:'Le Cirque', crystal:'Rouage du Cirque', pages:[
+   { emoji:'🔧', text:"À l\u2019aide d\u2019outils empruntés aux artisans des écuries, les trois frères parvinrent à réparer la roue et à calmer les chevaux à temps pour que le jeune cocher reprenne sa place sur la ligne de départ, sous un tonnerre d\u2019applaudissements." },
+   { emoji:'🏆', text:"Le cocher, une fois la course achevée et sa liberté gagnée, vint remercier les frères en personne et leur offrit un petit rouage de bronze, frappé du symbole d\u2019un char ailé. « Le Rouage du Cirque », souffla {hero}, sentant l\u2019objet vibrer doucement entre ses doigts." },
+   { emoji:'🕵️', text:"Le vétéran des courses, en guise d\u2019adieu, glissa aux frères qu\u2019un homme au manteau sombre avait, quelques semaines plus tôt, interrogé les prêtresses du temple voisin sur « le moyen de réparer une erreur du passé ». {villain}, décidément, les précédait toujours d\u2019un pas." },
+  ]},
+  cm1: { id:'primhist_w_cm1', title:'Le Siège', crystal:'Rouage du Siège', pages:[
+   { emoji:'🌾', text:"En empruntant discrètement le chemin détourné à la nuit tombée, les trois frères guidèrent le convoi de vivres jusqu\u2019à une poterne dérobée, évitant de justesse les patrouilles ennemies, et permirent enfin à la ville d\u2019être ravitaillée." },
+   { emoji:'🔔', text:"Au petit matin, les cloches d\u2019Orléans sonnèrent à toute volée pour saluer l\u2019arrivée des vivres. Un vieux chevalier, reconnaissant, remit aux frères un rouage d\u2019argent finement ouvragé. « Le Rouage du Siège », lut Gaspard, ému malgré lui par la ferveur de la ville libérée." },
+   { emoji:'🕯️', text:"Avant de reprendre leur route à travers le temps, le vieux chevalier confia aux frères qu\u2019un étranger encapuchonné avait, quelques jours plus tôt, demandé audience à Jeanne elle-même pour l\u2019interroger sur « les miracles capables de ramener les disparus ». {villain} cherchait toujours la même chose, quelle que soit l\u2019époque." },
+  ]},
+  cm2: { id:'primhist_w_cm2', title:'Le Progrès', crystal:'Rouage du Progrès', pages:[
+   { emoji:'🔧', text:"En s\u2019inspirant du mécanisme familier de leur propre héritage, les trois frères aidèrent l\u2019ingénieur à identifier la soupape défectueuse et à la remplacer juste à temps, permettant à l\u2019ascenseur de fonctionner parfaitement pour la cérémonie officielle." },
+   { emoji:'🎉', text:"Sous les applaudissements de la foule et les flashs des tout premiers appareils photo, l\u2019ingénieur, reconnaissant, tendit aux frères un rouage de cuivre étincelant. « Le Rouage du Progrès », souffla Noé, en le voyant s\u2019assembler presque naturellement avec les quatre autres au creux de sa montre." },
+   { emoji:'✨', text:"Le mécanisme tout entier se mit soudain à vibrer d\u2019une lumière stable, presque apaisée — les cinq rouages réunis semblaient enfin donner un sens à l\u2019aiguille de fortune. Et au loin, entre les pieds de la tour de fer, la silhouette de {villain} s\u2019immobilisa un instant, avant de disparaître dans un éclair familier." },
+  ]},
+ },
+ epilogue: { id:'primhist_epilogue', title:'Épilogue — L\u2019Atelier d\u2019Autrefois', pages:[
+  { emoji:'🔥', text:"Une explosion étouffée fit sursauter les trois frères : dans un coin de l\u2019atelier, un dispositif complexe crachait des étincelles bleutées autour d\u2019une jeune femme figée en plein mouvement, comme suspendue entre deux battements de cœur, un sourire inachevé sur les lèvres." },
+  { emoji:'🕰️', text:"« Aline... », murmura une voix brisée derrière eux. {villain} se tenait là, bien plus jeune que le portrait que les frères s\u2019en étaient fait, le visage ravagé par des années de recherche acharnée. « Voilà des décennies que je cherche comment la libérer. »" },
+  { emoji:'💔', text:"{villain} leur raconta tout : lui et le jeune Isidore avaient été les meilleurs amis, deux inventeurs rivaux et complices, travaillant ensemble sur une expérience de voyage dans le temps. Un mauvais réglage, une étincelle de trop, et Aline — venue leur porter le repas ce soir-là — s\u2019était retrouvée figée entre deux instants, ni tout à fait présente, ni tout à fait absente du monde." },
+  { emoji:'😢', text:"« Isidore a eu peur », poursuivit {villain}, la voix tremblante. « Il a démonté la machine, dispersé les pièces à travers le temps par sécurité — la montre, la boussole, l\u2019aiguille — pour qu\u2019on ne puisse jamais recommencer une telle erreur. Moi, je n\u2019ai jamais cessé de la chercher, à travers chaque époque, avec les moyens du bord. »" },
+  { emoji:'⚙️', text:"Les trois frères comprirent alors : ce n\u2019était pas la peur qui avait guidé {villain} tout au long de leur odyssée, mais un chagrin immense, tenace, jamais résigné. Ensemble, ils insérèrent les cinq rouages retrouvés dans le mécanisme complet, stabilisant enfin l\u2019aiguille de fortune pour la toute première fois." },
+  { emoji:'✨', text:"Un rayon de lumière dorée enveloppa Aline. Son sourire inachevé se compléta enfin ; son regard s\u2019anima ; elle respira, comme si le temps reprenait son cours à l\u2019endroit exact où il s\u2019était arrêté. « J\u2019ai... j\u2019ai eu si froid », souffla-t-elle, avant de tomber dans les bras de {villain}, en larmes." },
+  { emoji:'🤝', text:"Le jeune Isidore, alerté par le vacarme, apparut à son tour sur le seuil de l\u2019atelier — et resta interdit devant ces trois jeunes gens aux visages étrangement familiers. Un silence ému s\u2019installa, chargé de tout ce qui ne pouvait pas encore se dire." },
+  { emoji:'🏡', text:"De retour dans leur propre époque, les trois frères posèrent la montre, la boussole et l\u2019aiguille — enfin réunies pour de bon — sur l\u2019établi de l\u2019atelier familial. « Un troisième héritage », dit Noé en souriant à {hero}. « Le plus précieux des trois, finalement. »" },
+  { emoji:'📖', text:"Dans le tiroir secret de l\u2019établi, ils trouvèrent une dernière page du carnet de grand-père Isidore, écrite bien après les autres, d\u2019une main plus âgée et apaisée : « À qui trouvera ceci : le temps ne pardonne pas les erreurs, mais il permet parfois, à ceux qui ont le cœur assez grand, de les réparer. Merci d\u2019avoir fini ce que je n\u2019ai jamais osé terminer. »" },
+ ]},
+};
 // ─── Histoire COLLÈGE : « Le Forgeron des Étoiles » (v10.2.0, mini-roman) ───
 const _COL_VILLAIN = 'Léthéas, le Titan de l\'Oubli';
 const _COL_KINGDOM = 'Sidéris';
@@ -931,6 +1069,210 @@ function _colBook7Pages(){
  ];
 }
 
+
+// ═══════════════════════════════════════════════════════════════════════
+// ─── Livres lisibles — Les Chroniques du Temps (histoire primaire) ───────
+// Chaque îlot conquis débloque un livre d'époque complet (texte vérifié,
+// illustrations, anecdotes). Un 6e livre bonus (Les Grandes Inventions de
+// l'Humanité) se débloque après l'épilogue. Réutilise le lecteur générique
+// (_colCoverSvg/_colBackCoverSvg/_colSymbol/_colLock/_wrapTitle), déjà
+// indépendant de toute matière.
+// ═══════════════════════════════════════════════════════════════════════
+function _histBook1Pages(){
+ const FLAME='<svg viewBox="0 0 120 96" width="100%"><path d="M60 8 C40 34 30 46 30 62 a30 30 0 0 0 60 0 C90 46 80 34 60 8 Z" fill="#e0762a" stroke="#8a3a10" stroke-width="2"/><path d="M60 30 C50 46 44 54 44 64 a16 16 0 0 0 32 0 C76 54 70 46 60 30 Z" fill="#f4c14a"/></svg>';
+ const SILEX='<svg viewBox="0 0 130 80" width="100%"><polygon points="20,60 45,18 78,26 100,58 62,72" fill="#8a8378" stroke="#4a453e" stroke-width="2"/><line x1="45" y1="18" x2="62" y2="72" stroke="#4a453e" stroke-width="1.2"/><line x1="78" y1="26" x2="62" y2="72" stroke="#4a453e" stroke-width="1.2"/></svg>';
+ const CAVE='<svg viewBox="0 0 150 80" width="100%"><rect width="150" height="80" fill="#3a2c1e"/><g fill="none" stroke="#c9a86a" stroke-width="2.4" stroke-linecap="round"><path d="M20 55 q18 -30 40 -6 q10 -18 30 -4 q14 -14 30 4"/></g><circle cx="60" cy="20" r="3" fill="#c9a86a"/><circle cx="95" cy="16" r="3" fill="#c9a86a"/></svg>';
+ return [
+  { chap:'Frontispice', illus:FLAME, cap:'Le feu, première grande conquête de l\u2019humanité.', html:"<p><i>Avant l\u2019écriture, avant les villes, avant même le langage tel que nous le connaissons : la Préhistoire.</i></p><p>Toi qui viens de traverser cette époque avec {hero}, voici ce que les archéologues savent, vérifié et raconté, sur la vie de nos tout premiers ancêtres.</p>" },
+  { chap:'I — La maîtrise du feu', illus:SILEX, cap:'Un silex taillé, premier outil de l\u2019humanité.', html:"<p>Bien avant l\u2019invention de l\u2019écriture, nos ancêtres ont appris à dompter le feu — sans doute d\u2019abord récupéré après un incendie naturel (foudre, éruption volcanique), puis produit volontairement grâce au frottement de deux morceaux de bois ou à la percussion de silex contre de la pyrite. Les traces les plus anciennes d\u2019un usage maîtrisé du feu remontent à environ 400 000 ans, en Europe et au Proche-Orient.</p><p>Le feu a tout changé : il éloignait les grands prédateurs, réchauffait les nuits glaciales, et surtout permettait de cuire la viande — un aliment alors bien plus facile à digérer et à mâcher, qui a probablement contribué à l\u2019évolution du cerveau humain.</p>" },
+  { chap:'II — Les outils de pierre', html:"<p>Les premiers outils connus, vieux de plus de 3 millions d\u2019années, étaient de simples galets cassés pour obtenir un tranchant. Peu à peu, les techniques se sont affinées : le biface, taillé sur ses deux faces, est devenu un véritable couteau suisse préhistorique, utilisé pour dépecer le gibier, travailler le bois ou racler les peaux.</p><p><b>Anecdote.</b> Certains silex taillés retrouvés par les archéologues proviennent de gisements situés à plus de 200 kilomètres du lieu où ils ont été découverts. Cela prouve que nos ancêtres échangeaient déjà des matériaux entre groupes, sur de très longues distances — une forme de commerce préhistorique !</p>" },
+  { chap:'III — La chasse et la cueillette', html:"<p>Les hommes et femmes de la Préhistoire ne cultivaient pas encore la terre : ils se nourrissaient de ce que la nature offrait. La chasse au gros gibier — mammouths, rennes, bisons — se faisait en groupe, avec des sagaies et des pièges, souvent en poussant les animaux vers un ravin ou une zone marécageuse. La cueillette de baies, racines et plantes complétait le régime alimentaire, et demandait une connaissance très fine du territoire.</p>" },
+  { chap:'IV — L\u2019art des grottes', illus:CAVE, cap:'Chevaux peints à la lueur d\u2019une lampe à graisse.', html:"<p>Il y a environ 36 000 ans, des artistes sont entrés dans des grottes profondes — comme celle de Chauvet en France — pour peindre des chevaux, des lions ou des rhinocéros laineux sur les parois, à la lueur de simples lampes à graisse. Personne ne sait avec certitude pourquoi ces peintures ont été réalisées : rituel, transmission du savoir sur les animaux, ou simplement l\u2019envie de créer.</p><p><b>Anecdote.</b> Les peintres préhistoriques utilisaient parfois le relief naturel de la roche pour donner du volume à leurs animaux — un bombement de pierre devenait l\u2019épaule d\u2019un bison. Une technique artistique déjà pleine d\u2019ingéniosité !</p>" },
+  { chap:'V — L\u2019habitat', html:"<p>Contrairement à une idée reçue, tous les hommes préhistoriques ne vivaient pas dans des grottes : beaucoup construisaient des abris en bois, en peaux ou en os de mammouth, notamment dans les régions sans relief rocheux. Les grottes et abris sous roche, eux, étaient surtout utilisés comme refuges temporaires ou lieux rituels.</p>" },
+  { chap:'VI — Les débuts de la parure', html:"<p>Colliers de coquillages, dents percées, perles d\u2019ivoire : dès cette époque très ancienne, les humains cherchaient déjà à se parer. Ces objets, retrouvés parfois à des centaines de kilomètres de la mer, montrent l\u2019existence d\u2019échanges entre groupes — et peut-être déjà, une forme de mode !</p>" },
+  { chap:'Clôture', illus:FLAME, cap:'Rouage du Feu Sacré : premier trésor de l\u2019odyssée.', html:"<p>Voilà pour la Préhistoire : l\u2019aube de l\u2019humanité, patiente et ingénieuse, qui a posé — silex après silex, feu après feu — les toutes premières pierres de tout ce qui allait suivre.</p>" },
+ ];
+}
+function _histBook2Pages(){
+ const PYRAMID='<svg viewBox="0 0 130 90" width="100%"><polygon points="65,10 118,78 12,78" fill="#d9b45a" stroke="#8a6a1e" stroke-width="2"/><line x1="65" y1="10" x2="65" y2="78" stroke="#8a6a1e" stroke-width="1.2"/><line x1="40" y1="78" x2="65" y2="34" stroke="#8a6a1e" stroke-width="1"/></svg>';
+ const ANKH='<svg viewBox="0 0 90 120" width="100%"><ellipse cx="45" cy="26" rx="18" ry="24" fill="none" stroke="#1d6e56" stroke-width="6"/><line x1="45" y1="50" x2="45" y2="108" stroke="#1d6e56" stroke-width="7"/><line x1="18" y1="70" x2="72" y2="70" stroke="#1d6e56" stroke-width="7"/></svg>';
+ return [
+  { chap:'Frontispice', illus:PYRAMID, cap:'La grande pyramide de Gizeh, tombeau de Khéops.', html:"<p><i>Le pays du Nil, où les pierres défient encore les millénaires.</i></p><p>Toi qui viens de traverser l\u2019Égypte antique avec {hero}, voici ce que les historiens savent, vérifié et raconté, sur cette grande civilisation.</p>" },
+  { chap:'I — Le don du Nil', html:"<p>L\u2019Égypte antique doit tout à son fleuve. Chaque année, la crue du Nil déposait sur ses rives un limon fertile qui permettait aux paysans de cultiver blé et orge en abondance. Les Égyptiens avaient même développé un calendrier basé sur ce cycle : la saison de la crue, celle des semailles, puis celle des récoltes.</p>" },
+  { chap:'II — Les pyramides, tombeaux des pharaons', html:"<p>Les pyramides n\u2019étaient pas de simples monuments : c\u2019étaient des tombeaux destinés à protéger le corps du pharaon et à l\u2019aider dans son voyage vers l\u2019au-delà. La grande pyramide de Khéops, à Gizeh, culmine à environ 146 mètres à l\u2019origine et a nécessité l\u2019assemblage de plus de 2 millions de blocs de pierre.</p><p><b>Anecdote.</b> Les ouvriers qui ont construit les pyramides n\u2019étaient pas des esclaves, contrairement à une idée très répandue — les archéologues ont retrouvé leurs villages, avec des preuves qu\u2019ils étaient nourris, soignés, et même enterrés avec honneur à proximité du chantier.</p>" },
+  { chap:'III — L\u2019écriture des hiéroglyphes', illus:ANKH, cap:'L\u2019ânkh, symbole égyptien de la vie.', html:"<p>Les Égyptiens ont inventé un système d\u2019écriture fait de petits dessins, les hiéroglyphes, utilisés pour les textes religieux et royaux, tandis qu\u2019une écriture plus rapide et simplifiée (le hiératique) servait à la vie quotidienne. Pendant des siècles, plus personne ne savait lire les hiéroglyphes — jusqu\u2019à ce qu\u2019un savant français, Jean-François Champollion, parvienne à les déchiffrer en 1822, grâce à la pierre de Rosette.</p>" },
+  { chap:'IV — La momification', html:"<p>Les Égyptiens croyaient que l\u2019âme avait besoin d\u2019un corps intact pour survivre dans l\u2019au-delà. Le processus de momification pouvait durer 70 jours : les organes étaient retirés (sauf le cœur, jugé essentiel), le corps était séché avec du natron, un sel naturel, puis enveloppé de bandelettes de lin.</p><p><b>Anecdote.</b> Les Égyptiens momifiaient aussi leurs animaux ! Des millions de chats momifiés ont été retrouvés, offerts en offrande à la déesse Bastet, protectrice des foyers.</p>" },
+  { chap:'V — Pharaons et dieux', html:"<p>Le pharaon était considéré comme un dieu vivant sur Terre, intermédiaire entre les hommes et les nombreuses divinités égyptiennes : Rê le dieu-soleil, Osiris le dieu des morts, Isis la déesse protectrice. Parmi les pharaons les plus célèbres figurent Khéops, bâtisseur de la grande pyramide, et Ramsès II, qui régna près de 66 ans.</p>" },
+  { chap:'VI — La vie sur le Nil', html:"<p>Le fleuve servait aussi de route principale : les Égyptiens y naviguaient en barques de roseaux ou de bois pour transporter marchandises, blocs de pierre et voyageurs. La pêche complétait l\u2019alimentation, avec le poisson du Nil comme ressource essentielle.</p>" },
+  { chap:'Clôture', illus:PYRAMID, cap:'Rouage des Bâtisseurs : deuxième trésor de l\u2019odyssée.', html:"<p>Voilà pour l\u2019Égypte antique : un peuple bâtisseur, tourné vers l\u2019éternité, dont les monuments dialoguent encore avec le ciel, quatre mille ans plus tard.</p>" },
+ ];
+}
+function _histBook3Pages(){
+ const COLUMN='<svg viewBox="0 0 120 100" width="100%"><rect x="20" y="12" width="80" height="8" fill="#c9a86a"/><rect x="30" y="20" width="10" height="60" fill="#e7d7ae"/><rect x="55" y="20" width="10" height="60" fill="#e7d7ae"/><rect x="80" y="20" width="10" height="60" fill="#e7d7ae"/><rect x="18" y="80" width="84" height="8" fill="#c9a86a"/></svg>';
+ const CHARIOT='<svg viewBox="0 0 140 80" width="100%"><circle cx="42" cy="58" r="16" fill="none" stroke="#7a4a1e" stroke-width="4"/><circle cx="42" cy="58" r="3" fill="#7a4a1e"/><path d="M42 42 L90 30 L110 46" fill="none" stroke="#7a4a1e" stroke-width="4" stroke-linecap="round"/><path d="M90 30 L96 12" stroke="#7a4a1e" stroke-width="4" stroke-linecap="round"/></svg>';
+ return [
+  { chap:'Frontispice', illus:COLUMN, cap:'Colonnes d\u2019un temple romain.', html:"<p><i>De la ville sur le Tibre à l\u2019empire le plus vaste du monde antique.</i></p><p>Toi qui viens de traverser Rome antique avec {hero}, voici ce que les historiens savent, vérifié et raconté, sur cette civilisation.</p>" },
+  { chap:'I — De la ville à l\u2019empire', html:"<p>Selon la légende, Rome aurait été fondée en 753 avant J.-C. par Romulus. En réalité, la ville s\u2019est développée progressivement sur les bords du Tibre, avant de devenir, siècle après siècle, la capitale d\u2019un immense empire s\u2019étendant de la Grande-Bretagne à l\u2019Égypte.</p>" },
+  { chap:'II — Les légionnaires', html:"<p>L\u2019armée romaine, très organisée, était composée de légions de plusieurs milliers de soldats, équipés de bouclier rectangulaire (le scutum), de glaive court et de cuirasse segmentée. Les légionnaires construisaient chaque soir un camp fortifié, même en plein territoire ennemi — une discipline qui a fait la force de Rome.</p>" },
+  { chap:'III — Le Colisée et les jeux', illus:CHARIOT, cap:'Un char de course au Circus Maximus.', html:"<p>Inauguré en l\u2019an 80, le Colisée pouvait accueillir environ 50 000 spectateurs venus assister à des combats de gladiateurs, des chasses d\u2019animaux exotiques, voire des reconstitutions de batailles navales grâce à un système d\u2019inondation du sol de l\u2019arène.</p><p><b>Anecdote.</b> Le Circus Maximus, dédié aux courses de chars, pouvait accueillir jusqu\u2019à 150 000 spectateurs — bien plus que le Colisée ! Les meilleurs cochers, comme le célèbre Dioclès, devenaient de véritables stars, adulées par toute la ville.</p>" },
+  { chap:'IV — Les routes et les aqueducs', html:"<p>Les Romains sont restés célèbres pour leurs prouesses d\u2019ingénierie : plus de 80 000 kilomètres de routes pavées reliaient l\u2019ensemble de l\u2019empire, tandis que des aqueducs, parfois longs de plusieurs dizaines de kilomètres, acheminaient l\u2019eau potable jusqu\u2019aux villes et alimentaient thermes et fontaines.</p>" },
+  { chap:'V — La vie quotidienne', html:"<p>Les Romains riches vivaient dans des villas décorées de mosaïques et de fresques, avec l\u2019eau courante et parfois même un chauffage par le sol (l\u2019hypocauste). Le peuple, lui, logeait souvent dans des immeubles de plusieurs étages appelés insulae, parfois peu solides et sujets aux incendies.</p>" },
+  { chap:'VI — Jules César et Auguste', html:"<p>Jules César, brillant général, a conquis la Gaule mais n\u2019a jamais été empereur : il fut assassiné en 44 avant J.-C. par des sénateurs craignant qu\u2019il ne prenne trop de pouvoir. C\u2019est son neveu adoptif, Auguste, qui devint en 27 avant J.-C. le tout premier empereur romain, inaugurant plusieurs siècles de « Pax Romana », une longue période de paix relative.</p>" },
+  { chap:'Clôture', illus:COLUMN, cap:'Rouage du Cirque : troisième trésor de l\u2019odyssée.', html:"<p>Voilà pour Rome antique : de la loi aux routes en passant par les arènes, un empire qui a bâti en pierre ce qu\u2019il pensait éternel — et qui, sur bien des points, avait raison.</p>" },
+ ];
+}
+function _histBook4Pages(){
+ const CASTLE='<svg viewBox="0 0 140 90" width="100%"><rect x="20" y="34" width="100" height="50" fill="#7a6a52"/><rect x="20" y="20" width="16" height="18" fill="#7a6a52"/><rect x="62" y="14" width="16" height="24" fill="#7a6a52"/><rect x="104" y="20" width="16" height="18" fill="#7a6a52"/><rect x="52" y="56" width="36" height="28" fill="#3a2c1e"/><path d="M52 56 L70 40 L88 56 Z" fill="#4a3a26"/></svg>';
+ const SWORD='<svg viewBox="0 0 60 130" width="100%"><rect x="26" y="10" width="8" height="72" fill="#c9c9d0"/><rect x="14" y="82" width="32" height="8" fill="#8a6a1e"/><rect x="26" y="90" width="8" height="30" fill="#5a3a1e"/><circle cx="30" cy="124" r="7" fill="#8a6a1e"/></svg>';
+ return [
+  { chap:'Frontispice', illus:CASTLE, cap:'Un château fort et ses défenses.', html:"<p><i>Chevaliers, cathédrales et châteaux forts : mille ans d\u2019histoire européenne.</i></p><p>Toi qui viens de traverser le Moyen Âge avec {hero}, voici ce que les historiens savent, vérifié et raconté, sur cette longue période.</p>" },
+  { chap:'I — Le château fort', html:"<p>Construits sur des points stratégiques (colline, boucle de rivière), les châteaux forts protégeaient seigneurs et paysans en cas d\u2019attaque : douves, pont-levis, herse, chemin de ronde et donjon formaient un système défensif redoutable pour l\u2019époque. En temps de paix, le château était surtout le centre administratif et économique de tout un territoire.</p>" },
+  { chap:'II — Devenir chevalier', illus:SWORD, cap:'L\u2019épée, remise le jour de l\u2019adoubement.', html:"<p>Un jeune noble devenait chevalier après un long apprentissage : page dès 7 ans, puis écuyer au service d\u2019un chevalier confirmé, avant d\u2019être enfin adoubé vers 18-21 ans, lors d\u2019une cérémonie où on lui remettait ses armes. Le chevalier devait suivre un code d\u2019honneur : protéger les faibles, être loyal envers son seigneur, faire preuve de courage.</p><p><b>Anecdote.</b> Les tournois, combats amicaux entre chevaliers, attiraient des foules immenses — un peu comme les matchs de sport aujourd\u2019hui. Certains chevaliers en tiraient une véritable célébrité, et parfois une fortune grâce aux prix remportés !</p>" },
+  { chap:'III — La vie des paysans', html:"<p>La grande majorité de la population du Moyen Âge vivait à la campagne. Les paysans, souvent appelés serfs, travaillaient les terres du seigneur en échange de sa protection, et devaient lui verser une partie de leurs récoltes. Les famines et les épidémies, comme la terrible peste noire du milieu du XIVe siècle, pouvaient décimer des villages entiers.</p>" },
+  { chap:'IV — Les cathédrales', html:"<p>Les cathédrales gothiques, avec leurs voûtes vertigineuses et leurs vitraux colorés, pouvaient nécessiter plusieurs générations de travaux pour être achevées. Notre-Dame de Paris, commencée en 1163, n\u2019a été terminée qu\u2019au XIVe siècle ! Les moines copistes, dans les monastères, recopiaient patiemment les livres à la main, préservant ainsi de nombreux textes anciens.</p>" },
+  { chap:'V — Jeanne d\u2019Arc et la guerre de Cent Ans', html:"<p>La guerre de Cent Ans (1337-1453, soit en réalité 116 ans) opposa la France et l\u2019Angleterre pour le contrôle du royaume de France. En 1429, une jeune paysanne de 17 ans, Jeanne d\u2019Arc, convainquit le futur roi Charles VII de lui confier une armée : elle parvint à lever le siège d\u2019Orléans, un tournant décisif de la guerre, avant d\u2019être capturée puis exécutée en 1431.</p><p><b>Anecdote.</b> Jeanne d\u2019Arc ne combattait pas directement au premier rang comme une simple soldate — son rôle était surtout de porter l\u2019étendard et de redonner courage aux troupes, ce qui n\u2019enlève rien à son courage exceptionnel face au danger.</p>" },
+  { chap:'VI — Une société d\u2019ordres', html:"<p>La société médiévale était traditionnellement divisée en trois ordres : ceux qui prient (le clergé), ceux qui combattent (la noblesse) et ceux qui travaillent (le peuple, très majoritaire). Cette organisation, bien que présentée comme immuable, connaissait en réalité de nombreuses nuances selon les régions et les époques.</p>" },
+  { chap:'Clôture', illus:CASTLE, cap:'Rouage du Siège : quatrième trésor de l\u2019odyssée.', html:"<p>Voilà pour le Moyen Âge : mille ans souvent réduits à quelques clichés, mais en réalité riches de foi, de savoir et de courage — celui d\u2019Orléans comme celui de tant d\u2019anonymes.</p>" },
+ ];
+}
+function _histBook5Pages(){
+ const EIFFEL='<svg viewBox="0 0 90 130" width="100%"><path d="M45 8 L20 120 L38 120 L45 60 L52 120 L70 120 Z" fill="none" stroke="#6a5a3a" stroke-width="3" stroke-linejoin="round"/><line x1="26" y1="90" x2="64" y2="90" stroke="#6a5a3a" stroke-width="2"/><line x1="30" y1="60" x2="60" y2="60" stroke="#6a5a3a" stroke-width="2"/></svg>';
+ const GEAR='<svg viewBox="0 0 100 100" width="100%"><circle cx="50" cy="50" r="26" fill="none" stroke="#8a6a1e" stroke-width="8"/><circle cx="50" cy="50" r="10" fill="#8a6a1e"/><g stroke="#8a6a1e" stroke-width="8"><line x1="50" y1="8" x2="50" y2="20"/><line x1="50" y1="80" x2="50" y2="92"/><line x1="8" y1="50" x2="20" y2="50"/><line x1="80" y1="50" x2="92" y2="50"/></g></svg>';
+ return [
+  { chap:'Frontispice', illus:EIFFEL, cap:'La tour Eiffel, symbole du progrès de 1889.', html:"<p><i>Révolution, machines à vapeur et grandes inventions : le siècle qui a précipité le monde vers aujourd\u2019hui.</i></p><p>Toi qui viens de traverser les Temps modernes avec {hero}, voici ce que les historiens savent, vérifié et raconté, sur cette période.</p>" },
+  { chap:'I — L\u2019Exposition universelle de 1889', html:"<p>Organisée à Paris pour célébrer le centenaire de la Révolution française, l\u2019Exposition universelle de 1889 a accueilli plus de 32 millions de visiteurs. Son symbole, la tour Eiffel, culminait alors à 312 mètres — la structure la plus haute du monde à l\u2019époque, un exploit d\u2019ingénierie signé Gustave Eiffel.</p><p><b>Anecdote.</b> La tour Eiffel a été très critiquée avant sa construction ! Un groupe d\u2019artistes et d\u2019écrivains célèbres avait même signé une pétition la qualifiant de « monstrueuse » et « inutile ». Elle ne devait rester debout que 20 ans — mais son utilité pour les transmissions radio lui a finalement sauvé la vie.</p>" },
+  { chap:'II — La révolution industrielle', illus:GEAR, cap:'Le rouage, symbole de l\u2019ère industrielle.', html:"<p>Au XIXe siècle, l\u2019invention de la machine à vapeur a transformé l\u2019industrie et les transports : les usines se sont multipliées, les trains à vapeur ont permis de relier des villes entières en quelques heures là où il fallait auparavant plusieurs jours. Ce bouleversement a aussi entraîné l\u2019exode de nombreuses familles des campagnes vers les villes, à la recherche de travail.</p>" },
+  { chap:'III — Liberté, égalité, fraternité', html:"<p>La Révolution française de 1789 a profondément transformé la société : la prise de la Bastille, le 14 juillet, en est devenue le symbole. Le peuple réclamait la fin des privilèges de la noblesse et davantage d\u2019égalité. C\u2019est de cette période que datent la devise républicaine et l\u2019hymne national, la Marseillaise.</p>" },
+  { chap:'IV — Napoléon et l\u2019Empire', html:"<p>Napoléon Bonaparte, brillant général de la Révolution, s\u2019est fait sacrer empereur des Français en 1804 — un sacre, et non une élection au sens moderne du terme. Son règne a profondément modernisé la France (Code civil, nouvelles administrations) tout en la plongeant dans de nombreuses guerres à travers l\u2019Europe.</p>" },
+  { chap:'V — Les grandes inventions du siècle', html:"<p>Le XIXe siècle a vu se multiplier les innovations : le chemin de fer, le télégraphe électrique, puis l\u2019ampoule électrique et le téléphone à la toute fin du siècle. La photographie, inventée dans les années 1830, a permis pour la première fois de fixer durablement une image du réel.</p>" },
+  { chap:'VI — Vers la démocratie', html:"<p>Le suffrage universel masculin, permettant à tous les hommes adultes de voter, s\u2019est progressivement installé en France au cours du XIXe siècle. Il faudra cependant attendre 1944 pour que les femmes obtiennent enfin, elles aussi, le droit de vote.</p>" },
+  { chap:'Clôture', illus:EIFFEL, cap:'Rouage du Progrès : cinquième et dernier trésor de l\u2019odyssée.', html:"<p>Voilà pour les Temps modernes : un siècle de bouleversements où la vapeur, l\u2019électricité et la démocratie ont commencé à dessiner le monde que tu connais aujourd\u2019hui.</p>" },
+ ];
+}
+function _histBook6Pages(){
+ const BULB='<svg viewBox="0 0 90 120" width="100%"><circle cx="45" cy="46" r="34" fill="#f4e0a0" stroke="#c9a020" stroke-width="3"/><rect x="34" y="76" width="22" height="14" fill="#9a9a9a"/><rect x="36" y="92" width="18" height="8" fill="#7a7a7a"/><line x1="45" y1="24" x2="45" y2="68" stroke="#c9a020" stroke-width="2"/></svg>';
+ const WHEEL='<svg viewBox="0 0 100 100" width="100%"><circle cx="50" cy="50" r="36" fill="none" stroke="#7a4a1e" stroke-width="6"/><circle cx="50" cy="50" r="6" fill="#7a4a1e"/><g stroke="#7a4a1e" stroke-width="4"><line x1="50" y1="18" x2="50" y2="82"/><line x1="18" y1="50" x2="82" y2="50"/><line x1="27" y1="27" x2="73" y2="73"/><line x1="73" y1="27" x2="27" y2="73"/></g></svg>';
+ return [
+  { chap:'Frontispice', illus:BULB, cap:'Livre bonus — débloqué à la fin de l\u2019odyssée.', html:"<p><i>Ce livre ne raconte pas une seule époque : il traverse toute l\u2019Histoire de l\u2019humanité, invention après invention.</i></p><p>Bravo {hero} ! Ta montre-boussole a retrouvé son aiguille. En guise de dernier trésor, voici les plus grandes inventions qui ont jalonné l\u2019histoire humaine, vérifiées et racontées.</p>" },
+  { chap:'I — Le feu et la roue', illus:WHEEL, cap:'La roue, inventée pour la poterie avant le transport.', html:"<p>Il y a plus de 400 000 ans, nos ancêtres apprennent à contrôler le feu. Il y a environ 5 500 ans en Mésopotamie, une autre invention change tout : la roue — d\u2019abord utilisée pour la poterie, sous forme de tour de potier, avant d\u2019être fixée à des essieux pour créer les premiers chariots.</p><p><b>Anecdote.</b> Certaines civilisations d\u2019Amérique précolombienne connaissaient le principe de la roue — on en a retrouvé sur de petits jouets — mais ne l\u2019ont jamais utilisée pour le transport, faute d\u2019animaux de trait adaptés.</p>" },
+  { chap:'II — L\u2019écriture et la boussole', html:"<p>Vers 3300 avant J.-C., les Sumériens de Mésopotamie inventent l\u2019écriture cunéiforme, d\u2019abord pour tenir des comptes de récoltes. L\u2019écriture marque, pour les historiens, la fin de la Préhistoire. Bien plus tard, il y a environ 2 000 ans, la Chine invente la boussole, utilisant à l\u2019origine une pierre magnétique naturelle flottant sur l\u2019eau pour indiquer le sud.</p>" },
+  { chap:'III — L\u2019imprimerie', html:"<p>Vers 1450, l\u2019Allemand Johannes Gutenberg met au point une presse à caractères mobiles en métal, permettant d\u2019imprimer des livres bien plus rapidement qu\u2019à la main.</p><p><b>Anecdote.</b> La fameuse Bible de Gutenberg ne comptait qu\u2019environ 180 exemplaires — il en subsiste aujourd\u2019hui une cinquantaine à travers le monde, considérés comme des trésors inestimables.</p>" },
+  { chap:'IV — La machine à vapeur et l\u2019électricité', html:"<p>Perfectionnée par l\u2019ingénieur écossais James Watt à la fin du XVIIIe siècle, la machine à vapeur devient le moteur de la révolution industrielle. Un siècle plus tard, en 1879, l\u2019Américain Thomas Edison met au point une ampoule à incandescence capable de briller plusieurs heures durant.</p><p><b>Anecdote.</b> Edison et son équipe auraient testé plus de 6 000 matériaux différents avant de trouver le filament de carbone capable de tenir suffisamment longtemps dans une ampoule !</p>" },
+  { chap:'V — Le téléphone et l\u2019avion', html:"<p>En 1876, l\u2019inventeur écossais Alexander Graham Bell dépose le brevet du téléphone. Le 17 décembre 1903, les frères américains Wilbur et Orville Wright parviennent à faire décoller le Flyer, pour un vol de seulement 12 secondes et 36 mètres — la toute première fois qu\u2019une machine motorisée transporte un homme dans les airs de façon contrôlée.</p>" },
+  { chap:'VI — L\u2019ordinateur et Internet', html:"<p>Les tout premiers ordinateurs, dans les années 1940, occupaient des salles entières. L\u2019invention du transistor en 1947, puis du microprocesseur en 1971, a permis de réduire un ordinateur à la taille d\u2019une puce électronique. Ce n\u2019est qu\u2019avec l\u2019invention du World Wide Web par Tim Berners-Lee, en 1989, qu\u2019Internet devient accessible à tous.</p><p><b>Anecdote.</b> Le mot anglais « bug », utilisé pour désigner une erreur informatique, viendrait d\u2019un authentique insecte retrouvé coincé dans les circuits d\u2019un des tout premiers ordinateurs américains en 1947 !</p>" },
+  { chap:'Clôture', illus:BULB, cap:'Fin des Chroniques du Temps.', html:"<p>Du silex à l\u2019ordinateur, chaque invention est un rouage de plus dans le grand mécanisme de l\u2019Histoire — exactement comme {hero}, Noé et Gaspard ont assemblé, rouage après rouage, l\u2019aiguille de fortune de grand-père Isidore.</p>" },
+ ];
+}
+const _HIST_BOOKS = [
+ { roman:'I',   short:'Préhist.',  region:'cp',  accent:'#6B4A2A', accent2:'#8A6438', dark:'#402A18', title:'La Préhistoire',           power:'Rouage du Feu Sacré',    ready:true, pages: _histBook1Pages() },
+ { roman:'II',  short:'Égypte',    region:'ce1', accent:'#9E7A1E', accent2:'#C79A3A', dark:'#5a4712', title:'L\u2019Égypte antique',    power:'Rouage des Bâtisseurs',  ready:true, pages: _histBook2Pages() },
+ { roman:'III', short:'Rome',      region:'ce2', accent:'#8B2E1E', accent2:'#B0432D', dark:'#521a10', title:'Rome antique',             power:'Rouage du Cirque',       ready:true, pages: _histBook3Pages() },
+ { roman:'IV',  short:'Moy. Âge',  region:'cm1', accent:'#3C4A5C', accent2:'#526A82', dark:'#232c38', title:'Le Moyen Âge',             power:'Rouage du Siège',        ready:true, pages: _histBook4Pages() },
+ { roman:'V',   short:'Modernes',  region:'cm2', accent:'#2E5C4A', accent2:'#3E7C62', dark:'#1a3529', title:'Les Temps modernes',       power:'Rouage du Progrès',      ready:true, pages: _histBook5Pages() },
+ { roman:'',    short:'Bonus',     region:'final', accent:'#7A5C1E', accent2:'#A47F2E', dark:'#4a3812', gold:'#f4e0a0', title:'Les Grandes Inventions de l\u2019Humanité', power:'', ready:true, bonus:true, pages: _histBook6Pages() },
+];
+function _resolveHistBookPages(book){
+ return (book && book.pages || []).map(function(p){ return { chap:p.chap||'', html:p.html||p.text||'', illus:p.illus||'', cap:p.cap||'' }; });
+}
+function _openHistBook(idx){
+ try{
+  const book=(typeof _HIST_BOOKS!=='undefined'?_HIST_BOOKS:[])[idx];
+  if(!book) return;
+  const pages=_resolveHistBookPages(book);
+  if(!pages.length) return;
+  if(typeof closeAdventureLog==='function') closeAdventureLog();
+  setTimeout(function(){ _renderHistBook(book,idx,pages); },300);
+ }catch(e){}
+}
+function _renderHistBook(book,idx,pages){
+ const acc=book.accent||'#6B4A2A', gold=book.gold||'#C79A3A';
+ const S=Math.ceil(pages.length/2), total=S+2;
+ let step=0;
+ const ov=document.createElement('div'); ov.className='story-overlay';
+ function close(){ ov.classList.add('story-out'); setTimeout(function(){try{ov.remove();}catch(e){}},300); }
+ function _heroName(){ try{ return (typeof P!=='undefined'&&P&&P.name)?String(P.name):'le Voyageur du Temps'; }catch(e){ return 'le Voyageur du Temps'; } }
+ function _fill(s){ try{ s=String(s||''); const h=_heroName().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); return s.replace(/\{hero\}/g,'<b>'+h+'</b>').replace(/\{villain\}/g,(typeof _PRIM_VILLAIN_HIST!=='undefined'?_PRIM_VILLAIN_HIST:'L\u2019Horloger')); }catch(e){ return s; } }
+ function half(p,isLeft){
+  if(!p) return '<div style="border:2px solid '+gold+';border-radius:3px;padding:2px;height:100%;"><div style="border:1px solid '+gold+';border-radius:2px;min-height:240px;"></div></div>';
+  let body=_fill(p.html||'');
+  if(isLeft && /^<p>/.test(body)) body=body.replace(/^<p>\s*(.)/,'<p><span style="float:left;font-family:Georgia,serif;font-size:44px;line-height:.74;font-weight:700;color:'+acc+';padding:2px 8px 0 0;">$1</span>');
+  const illus=p.illus?'<div style="background:#e7d7ae;border:1px solid #c9b486;border-radius:4px;padding:7px;margin-bottom:8px;">'+p.illus+(p.cap?'<div style="font-family:Georgia,serif;font-style:italic;font-size:11px;color:#6b5638;text-align:center;margin-top:3px;">'+p.cap+'</div>':'')+'</div>':'';
+  return '<div style="border:2px solid '+gold+';border-radius:3px;padding:2px;height:100%;"><div style="border:1px solid '+gold+';border-radius:2px;padding:13px;min-height:240px;">'+illus+'<div style="font-family:Georgia,serif;font-size:13px;line-height:1.65;color:#3A2A18;text-align:justify;">'+body+'</div></div></div>';
+ }
+ function render(){
+  let inner='';
+  if(step===0){ inner='<div style="text-align:center;">'+_colCoverSvg(book,idx)+'<div style="font-family:Georgia,serif;font-size:12px;color:#8a6a45;margin-top:8px;">Touche « Feuilleter » pour ouvrir le livre.</div></div>'; }
+  else if(step===total-1){ inner='<div style="text-align:center;">'+_colBackCoverSvg(book,idx)+'<div style="font-family:Georgia,serif;font-size:12px;color:#8a6a45;margin-top:8px;">Fin.</div></div>'; }
+  else {
+   const li=(step-1)*2, L=pages[li], R=pages[li+1];
+   const chap=(L&&L.chap)||(R&&R.chap)||'';
+   inner='<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;border-bottom:1px solid #d8c79c;padding-bottom:6px;margin-bottom:10px;">'
+    +'<span style="font-family:Georgia,serif;font-weight:700;color:'+acc+';font-size:1.0em;">'+book.title+'</span>'
+    +'<span style="font-family:Georgia,serif;font-size:.76em;color:#8a6a45;">'+chap+'</span></div>'
+    +'<div style="position:relative;display:grid;grid-template-columns:1fr 1fr;gap:0;background:#EBDFBF;border-radius:5px;overflow:hidden;">'
+    +'<div style="background:linear-gradient(90deg,#F3E8CD,#ECE0C2 86%,#DCCBA0);padding:13px 13px 13px 15px;">'+half(L,true)+'</div>'
+    +'<div style="background:linear-gradient(90deg,#DCCBA0,#ECE0C2 14%,#F3E8CD);padding:13px 15px 13px 13px;">'+half(R,false)+'</div>'
+    +'<div style="position:absolute;top:0;bottom:0;left:50%;width:18px;transform:translateX(-50%);background:linear-gradient(90deg,rgba(0,0,0,0),rgba(90,60,30,.20) 50%,rgba(0,0,0,0));pointer-events:none;"></div>'
+    +'</div>';
+  }
+  const prevLbl=step===total-1?'‹ Pages':'‹ Précédent';
+  const nextLbl=step===0?'Feuilleter ›':(step===total-1?'Fermer le livre':'Suivant ›');
+  let counter; if(step===0) counter='Couverture'; else if(step===total-1) counter='Dos de couverture'; else { const a=(step-1)*2+1, b=Math.min(a+1,pages.length); counter=(a===b?('page '+a):('pages '+a+'–'+b))+' / '+pages.length; }
+  ov.innerHTML='<div class="story-parchment" style="max-width:'+((step===0||step===total-1)?'360':'600')+'px;border-top:6px solid '+acc+';">'
+   +inner
+   +'<div class="story-nav">'
+   +(step>0?'<button class="story-btn cb-prev">'+prevLbl+'</button>':'<span class="story-spacer"></span>')
+   +'<div class="story-dots" style="flex-wrap:wrap;max-width:58%;">'+Array.apply(null,{length:total}).map(function(_,i){return '<span class="story-dot'+(i===step?' on':'')+'"></span>';}).join('')+'</div>'
+   +'<button class="story-btn cb-next">'+nextLbl+'</button>'
+   +'</div>'
+   +'<div style="text-align:center;font-family:Georgia,serif;font-size:.76em;color:#8a6a45;margin-top:4px;">'+counter+'</div>'
+   +'</div>';
+  const nx=ov.querySelector('.cb-next'); if(nx) nx.onclick=function(){ if(step<total-1){step++;render();} else close(); };
+  const pv=ov.querySelector('.cb-prev'); if(pv) pv.onclick=function(){ if(step>0){step--;render();} };
+  if(typeof beep==='function'){ try{ beep(520,'sine',.09,.04); }catch(e){} }
+ }
+ render(); document.body.appendChild(ov);
+}
+// ── Carnet histoire primaire : Les Chroniques du Temps (6 tranches 3D) ───
+function _advHistLibraryHtml(){
+ const seen=(typeof P!=='undefined'&&P&&P.storySeen)||[];
+ const books=(typeof _HIST_BOOKS!=='undefined')?_HIST_BOOKS:[];
+ const reg=['cp','ce1','ce2','cm1','cm2'];
+ const unlocked=function(i){ if(i<5) return _regionConquered(reg[i]); return seen.indexOf('primhist_epilogue')>=0; };
+ const N=books.length||6;
+ const nUn=books.reduce(function(a,b,i){return a+(unlocked(i)?1:0);},0);
+ const bw=26, gap=3, totalW=N*bw+(N-1)*gap, x0=(200-totalW)/2;
+ let spines='';
+ for(let i=0;i<N;i++){
+  const b=books[i]||{}; const on=unlocked(i); const x=x0+i*(bw+gap), cx=x+bw/2;
+  const col=on?(b.accent||'#6B4A2A'):'#615d57';
+  const dk=on?(b.dark||'#402A18'):'#46433e';
+  const gold=on?(b.gold||'#E0B24F'):'#8a857d';
+  const gly=on?(b.gold?'#dcdce4':'#f0d68a'):'#8a857d';
+  const click=on?(' onclick="_openHistBook('+i+')" style="cursor:pointer" role="button" tabindex="0" title="Lire : '+(b.title||'')+'"'):'';
+  spines+='<g'+click+'>'
+   +'<polygon points="'+x.toFixed(1)+',24 '+(x+3).toFixed(1)+',21 '+(x+bw+3).toFixed(1)+',21 '+(x+bw).toFixed(1)+',24" fill="'+dk+'"/>'
+   +'<polygon points="'+(x+bw).toFixed(1)+',24 '+(x+bw+3).toFixed(1)+',21 '+(x+bw+3).toFixed(1)+',127 '+(x+bw).toFixed(1)+',130" fill="'+dk+'"/>'
+   +'<rect x="'+x.toFixed(1)+'" y="24" width="'+bw+'" height="106" rx="2" fill="'+col+'"/>'
+   +'<rect x="'+(x+1.5).toFixed(1)+'" y="26" width="2" height="102" fill="#ffffff" opacity="0.10"/>'
+   +'<rect x="'+(x+2).toFixed(1)+'" y="33" width="'+(bw-4)+'" height="2" fill="'+gold+'"/><rect x="'+(x+2).toFixed(1)+'" y="119" width="'+(bw-4)+'" height="2" fill="'+gold+'"/>'
+   +'<text x="'+cx.toFixed(1)+'" y="52" text-anchor="middle" dominant-baseline="central" font-family="Georgia,serif" font-size="7" fill="'+gly+'" transform="rotate(-90 '+cx.toFixed(1)+' 52)">'+(b.short||b.roman||(i+1))+'</text>'
+   +(on?_colSymbol(i,cx,80,0.55,gly):_colLock(cx,77,'#cfcabf'))
+   +'<circle cx="'+cx.toFixed(1)+'" cy="108" r="8" fill="'+dk+'"/><circle cx="'+cx.toFixed(1)+'" cy="108" r="8" fill="none" stroke="'+gold+'" stroke-width="1.4"/>'
+   +'<text x="'+cx.toFixed(1)+'" y="108" text-anchor="middle" dominant-baseline="central" font-family="Georgia,serif" font-size="'+(b.roman?8:9)+'" font-weight="700" fill="'+gly+'">'+(b.roman||'✦')+'</text>'
+   +'</g>';
+ }
+ const shelf='<rect x="6" y="130" width="188" height="9" rx="2" fill="#5a4126"/><rect x="6" y="130" width="188" height="3" fill="#7a5a34"/><rect x="6" y="20" width="188" height="4" rx="2" fill="#3c2c18"/>';
+ const msg=nUn>0?'Touche un tome débloqué pour le feuilleter.':"Conquiers les époques : chaque tome rejoindra ta bibliothèque.";
+ return ''
+  +'<div class="advlog-section-title">📚 Les Chroniques du Temps</div>'
+  +'<div class="advcol-box advcol-mat">'
+  +' <svg viewBox="0 0 200 150" class="advcol-svg" aria-label="Chroniques du Temps : '+nUn+' livres sur '+N+'">'
+  +'  '+shelf+spines
+  +' </svg>'
+  +' <div class="advcol-caption">'+msg+' <b>'+nUn+' / '+N+'</b></div>'
+  +'</div>';
+}
 // Affiche une scène narrative (parchemin paginé). onDone() appelé à la fermeture.
 // ── Narration chaleureuse du livre (mode Odyssée) ──────────────────────
 // Voix de conteur : lente, posée, en privilégiant une voix française
@@ -1178,6 +1520,7 @@ function _questVocab(){
  if(adv==='primfr') return { icon:'🎖️', lockCollect:'🎖️ District à libérer', collected:'District libéré', region:'District à atteindre', end:'Insigne à compléter' };
  if(adv==='colfr') return { icon:'📚', lockCollect:'📚 Tome à conquérir', collected:'Tome conquis', region:'Livre à atteindre', end:'Bibliothèque à compléter' };
  if(adv==='col') return { icon:'🛡️', lockCollect:'🛡️ Pièce à forger',     collected:'Pièce forgée',    region:'Îlot à atteindre',  end:'Forge finale à débloquer' };
+ if(adv==='primhist') return { icon:'⚙️', lockCollect:'⚙️ Rouage à retrouver', collected:'Rouage retrouvé', region:'Époque à atteindre', end:'Mécanisme à assembler' };
  return { icon:'💎', lockCollect:'💎 Cristal à libérer', collected:'Cristal libéré', region:'Région à atteindre', end:'Fin à débloquer' };
 }
 function _questEntries(){

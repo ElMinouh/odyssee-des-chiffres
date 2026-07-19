@@ -23,6 +23,7 @@ function _advCollectionHtml(){
   if(adv==='colfr') return _advLibraryHtml();
   if(adv==='mat') return _advRainbowHtml();
   if(adv==='col') return _advArmorHtml();
+  if(adv==='primhist') return _advHistLibraryHtml();
   return _advTalismanHtml();
  }catch(e){ return ''; }
 }

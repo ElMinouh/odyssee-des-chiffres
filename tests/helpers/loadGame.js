@@ -112,7 +112,13 @@ export function loadGame(files, initialStorage = {}) {
   }).join('\n');
 
   const epilogue = `
-;globalThis.__api = {
+;// Le harness DOM est volontairement minimal (pas de vrai rendu) : openMap()
+// et navTo() manipulent des éléments réels du DOM et plantent dans ce sandbox.
+// On les neutralise pour pouvoir tester startAdventure() (permutation des
+// globals d'aventure) sans avoir besoin d'un DOM complet.
+if (typeof openMap === 'function') { globalThis.openMap = function(){}; }
+if (typeof navTo === 'function') { globalThis.navTo = function(){}; }
+globalThis.__api = {
   // --- fonctions testées (référencées par closure lexicale) ---
   isUnlocked: (typeof isUnlocked==='function') ? isUnlocked : undefined,
   prevWins:   (typeof prevWins==='function')   ? prevWins   : undefined,
@@ -158,6 +164,24 @@ export function loadGame(files, initialStorage = {}) {
   getP: () => P,
   setGMsubject: (s) => { GM.subject = s; },
   getGM: () => GM,
+  // --- Odyssée du Temps : histoire primaire (v11.5.0) ---
+  startAdventure: (typeof startAdventure==='function') ? startAdventure : undefined,
+  PRIM_ZONES_HIST: (typeof PRIM_ZONES_HIST!=='undefined') ? PRIM_ZONES_HIST : undefined,
+  _PRIM_REGIONS_HIST: (typeof _PRIM_REGIONS_HIST!=='undefined') ? _PRIM_REGIONS_HIST : undefined,
+  _PRIM_STORY_HIST: (typeof _PRIM_STORY_HIST!=='undefined') ? _PRIM_STORY_HIST : undefined,
+  _PRIM_VILLAIN_HIST: (typeof _PRIM_VILLAIN_HIST!=='undefined') ? _PRIM_VILLAIN_HIST : undefined,
+  _HIST_BOOKS: (typeof _HIST_BOOKS!=='undefined') ? _HIST_BOOKS : undefined,
+  _advCollectionHtml: (typeof _advCollectionHtml==='function') ? _advCollectionHtml : undefined,
+  _advHistLibraryHtml: (typeof _advHistLibraryHtml==='function') ? _advHistLibraryHtml : undefined,
+  _questVocab: (typeof _questVocab==='function') ? _questVocab : undefined,
+  _questEntries: (typeof _questEntries==='function') ? _questEntries : undefined,
+  _regionOfZone: (typeof _regionOfZone==='function') ? _regionOfZone : undefined,
+  _zonesOfRegion: (typeof _zonesOfRegion==='function') ? _zonesOfRegion : undefined,
+  _regionConquered: (typeof _regionConquered==='function') ? _regionConquered : undefined,
+  getMapZones: () => (typeof MAP_ZONES!=='undefined') ? MAP_ZONES : undefined,
+  getArchRegions: () => (typeof _ARCH_REGIONS!=='undefined') ? _ARCH_REGIONS : undefined,
+  getStory: () => (typeof _STORY!=='undefined') ? _STORY : undefined,
+  getStoryVillain: () => (typeof STORY_VILLAIN!=='undefined') ? STORY_VILLAIN : undefined,
 };
 `;
 

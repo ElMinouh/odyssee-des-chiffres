@@ -63,8 +63,15 @@ function startAdventure(advId){
    STORY_VILLAIN=_COL_VILLAIN; STORY_KINGDOM=_COL_KINGDOM;
   }
  } else {
+  // Variante histoire du primaire : « L'Odyssée du Temps — Les Trois Héritages ».
+  const _wantPrimHist = (advId==='primhist') || (advId==='prim' && typeof GM!=='undefined' && GM.subject==='hist');
   const _wantPrimFr = (advId==='primfr') || (advId==='prim' && typeof GM!=='undefined' && GM.subject==='fr');
-  if(_wantPrimFr){
+  if(_wantPrimHist){
+   if(typeof GM!=='undefined' && GM.subject!=='hist') GM.subject='hist';
+   MAP_ZONES=PRIM_ZONES_HIST; _ARCH_REGIONS=_PRIM_REGIONS_HIST; _STORY=_PRIM_STORY_HIST;
+   STORY_VILLAIN=_PRIM_VILLAIN_HIST; STORY_KINGDOM=_PRIM_KINGDOM_HIST;
+   GM.adventure='primhist';
+  } else if(_wantPrimFr){
    if(typeof GM!=='undefined' && GM.subject!=='fr') GM.subject='fr';
    MAP_ZONES=PRIM_ZONES_FR; _ARCH_REGIONS=_PRIM_REGIONS_FR; _STORY=_PRIM_STORY_FR;
    STORY_VILLAIN=_PRIM_VILLAIN_FR; STORY_KINGDOM=_PRIM_KINGDOM_FR;
