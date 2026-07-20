@@ -9,7 +9,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v11.5.6';
+const CACHE_VERSION = 'v11.5.7';
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources critiques précachées au premier chargement.
@@ -56,6 +56,7 @@ const OPTIONAL_URLS = [
   './assets/logo-main.webp',
   './assets/logo-mots.webp',
   './assets/logo-savoir.webp',
+  './assets/logo-histoire.webp',
   './assets/logo-circle.webp',
   // Autres assets
   './assets/portraits.svg',

@@ -119,12 +119,15 @@ function _setAvatarZone(id){
 // Ouvre l'écran de choix des trois aventures
 // v10.12.5 — Logo selon la matière : « L'Odyssée des Mots » en français,
 // « L'Odyssée des Chiffres » en maths. Les <img class="subj-logo"> sont basculées.
+// v11.5.7 — Ajout du logo dédié « L'Odyssée du Temps » pour l'histoire (subj==='hist') ;
+// avant, l'histoire retombait sur le logo générique logo-savoir.webp faute de logo propre.
 function _setSubjectLogos(){
  try{
   const subj = (typeof GM!=='undefined' && GM && GM.subject) ? GM.subject : 'math';
   let src, alt, lbl;
   if(subj==='fr'){ src='assets/logo-mots.webp?v=1071'; alt="L'Odyssée des Mots"; lbl="L'ODYSSÉE : L'AVENTURE LITTÉRAIRE"; }
   else if(subj==='math'){ src='assets/logo-main.webp?v=1071'; alt="L'Odyssée des Chiffres"; lbl="L'ODYSSÉE : L'AVENTURE MATHÉMATIQUE"; }
+  else if(subj==='hist'){ src='assets/logo-histoire.webp?v=1082'; alt="L'Odyssée du Temps"; lbl="L'ODYSSÉE : L'AVENTURE HISTORIQUE"; }
   else { src='assets/logo-savoir.webp?v=1071'; alt="L'Odyssée du Savoir"; lbl="L'ODYSSÉE DU SAVOIR"; }
   document.querySelectorAll('img.subj-logo').forEach(function(im){ im.src=src; im.alt=alt; });
   const el = document.getElementById('ody-btn-label');
