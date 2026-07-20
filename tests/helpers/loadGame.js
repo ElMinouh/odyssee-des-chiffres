@@ -234,6 +234,15 @@ globalThis.__api = {
   _trackSubjCatStat: (typeof _trackSubjCatStat==='function') ? _trackSubjCatStat : undefined,
   _trackSubjCatError: (typeof _trackSubjCatError==='function') ? _trackSubjCatError : undefined,
   setGMadventure: (v) => { GM.adventure = v; },
+  // --- correctif v11.5.4 (boutiques par îlot alignées sur l'environnement) ---
+  getArchShops: () => (typeof _ARCH_SHOPS!=='undefined') ? _ARCH_SHOPS : undefined,
+  _ARCH_SHOPS_PRIM: (typeof _ARCH_SHOPS_PRIM!=='undefined') ? _ARCH_SHOPS_PRIM : undefined,
+  _ARCH_SHOPS_MAT: (typeof _ARCH_SHOPS_MAT!=='undefined') ? _ARCH_SHOPS_MAT : undefined,
+  _ARCH_SHOPS_COL: (typeof _ARCH_SHOPS_COL!=='undefined') ? _ARCH_SHOPS_COL : undefined,
+  _ARCH_SHOPS_MATFR: (typeof _ARCH_SHOPS_MATFR!=='undefined') ? _ARCH_SHOPS_MATFR : undefined,
+  _ARCH_SHOPS_PRIMFR: (typeof _ARCH_SHOPS_PRIMFR!=='undefined') ? _ARCH_SHOPS_PRIMFR : undefined,
+  _ARCH_SHOPS_COLFR: (typeof _ARCH_SHOPS_COLFR!=='undefined') ? _ARCH_SHOPS_COLFR : undefined,
+  _ARCH_SHOPS_HIST: (typeof _ARCH_SHOPS_HIST!=='undefined') ? _ARCH_SHOPS_HIST : undefined,
 };
 `;
 

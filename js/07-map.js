@@ -45,9 +45,11 @@ function startAdventure(advId){
    MAP_ZONES=MAT_ZONES_FR; _ARCH_REGIONS=_MAT_REGIONS_FR; _STORY=_MAT_STORY_FR;
    STORY_VILLAIN=_MAT_VILLAIN_FR; STORY_KINGDOM=_MAT_KINGDOM_FR;
    GM.adventure='matfr';
+   _ARCH_SHOPS=_ARCH_SHOPS_MATFR;
   } else {
    MAP_ZONES=MAT_ZONES; _ARCH_REGIONS=_MAT_REGIONS; _STORY=_MAT_STORY;
    STORY_VILLAIN=_MAT_VILLAIN; STORY_KINGDOM=_MAT_KINGDOM;
+   _ARCH_SHOPS=_ARCH_SHOPS_MAT;
   }
  } else if(advId==='col' || advId==='colfr'){
   // Variante française du collège : « L'Odyssée des mots — La Bibliothèque infinie ».
@@ -57,10 +59,12 @@ function startAdventure(advId){
    MAP_ZONES=COL_ZONES_FR; _ARCH_REGIONS=_COL_REGIONS_FR; _STORY=_COL_STORY_FR;
    STORY_VILLAIN=_COL_VILLAIN_FR; STORY_KINGDOM=_COL_KINGDOM_FR;
    GM.adventure='colfr';
+   _ARCH_SHOPS=_ARCH_SHOPS_COLFR;
   } else {
    GM.adventure='col';
    MAP_ZONES=COL_ZONES; _ARCH_REGIONS=_COL_REGIONS; _STORY=_COL_STORY;
    STORY_VILLAIN=_COL_VILLAIN; STORY_KINGDOM=_COL_KINGDOM;
+   _ARCH_SHOPS=_ARCH_SHOPS_COL;
   }
  } else {
   // Variante histoire du primaire : « L'Odyssée du Temps — Les Trois Héritages ».
@@ -71,15 +75,18 @@ function startAdventure(advId){
    MAP_ZONES=PRIM_ZONES_HIST; _ARCH_REGIONS=_PRIM_REGIONS_HIST; _STORY=_PRIM_STORY_HIST;
    STORY_VILLAIN=_PRIM_VILLAIN_HIST; STORY_KINGDOM=_PRIM_KINGDOM_HIST;
    GM.adventure='primhist';
+   _ARCH_SHOPS=_ARCH_SHOPS_HIST;
   } else if(_wantPrimFr){
    if(typeof GM!=='undefined' && GM.subject!=='fr') GM.subject='fr';
    MAP_ZONES=PRIM_ZONES_FR; _ARCH_REGIONS=_PRIM_REGIONS_FR; _STORY=_PRIM_STORY_FR;
    STORY_VILLAIN=_PRIM_VILLAIN_FR; STORY_KINGDOM=_PRIM_KINGDOM_FR;
    GM.adventure='primfr';
+   _ARCH_SHOPS=_ARCH_SHOPS_PRIMFR;
   } else {
    GM.adventure='prim';
    MAP_ZONES=PRIM_ZONES; _ARCH_REGIONS=_PRIM_REGIONS; _STORY=_PRIM_STORY;
    STORY_VILLAIN='Comte Zéro de Cafouillac'; STORY_KINGDOM='Calcultopia';
+   _ARCH_SHOPS=_ARCH_SHOPS_PRIM;
   }
  }
  if(typeof P==='object' && P) P.lastAdventure = GM.adventure;
@@ -742,7 +749,7 @@ function _archHash(str, salt=0){
 // dans une zone libre du sentier (ajustée d'après les retours visuels).
 // xPctOffset = % du W ajouté au centre X du blob (négatif=gauche, positif=droite).
 // yShift = px ajouté au centre Y du blob (négatif=haut, positif=bas).
-const _ARCH_SHOPS = {
+const _ARCH_SHOPS_PRIM = {
  'cp':    { emoji:'🍬', name:'Échoppe Sucrée',     theme:'sweets',
             bg:'linear-gradient(160deg,#ffc7e4 0%,#ff8fb1 45%,#f368a0 100%)',
             accent:'#c0398a',
@@ -768,6 +775,140 @@ const _ARCH_SHOPS = {
             accent:'#6a4d04',
             xPctOffset:-22, yShift: 0 },    // Sanctuaire : inchangé (îlot trop petit)
 };
+// v11.5.4 — Correctif : les boutiques par îlot ne changeaient jamais de nom/thème
+// selon l'aventure active (elles gardaient toujours les noms "maths primaire"
+// ci-dessus, même en maternelle, au collège, ou dans les odyssées français/histoire).
+// Un jeu de boutiques dédié par variante, positions (xPctOffset/yShift) reprises à
+// l'identique de _ARCH_SHOPS_PRIM (même geometrie de blob par id de région, cf.
+// `shape` identique dans chaque _XXX_REGIONS_YYY), seuls emoji/nom/couleurs changent.
+const _ARCH_SHOPS_MAT = { // maternelle maths — La Plaine des Coquelicots → Le Château du Soir
+ 'cp':    { emoji:'🌼', name:'Étal des Coquelicots', theme:'meadow',
+            bg:'linear-gradient(160deg,#c8f7d0 0%,#7ed9a3 50%,#3a8f5c 100%)', accent:'#1f5a3a',
+            xPctOffset: 15, yShift: 35 },
+ 'ce1':   { emoji:'🍊', name:'Étal du Verger',       theme:'orchard',
+            bg:'linear-gradient(160deg,#ffe0b8 0%,#ffb56b 50%,#e07a1e 100%)', accent:'#8a4a0e',
+            xPctOffset: 10, yShift: 70 },
+ 'ce2':   { emoji:'🍄', name:'Échoppe des Bois Dorés', theme:'forest',
+            bg:'linear-gradient(160deg,#c9f2b0 0%,#8fd66a 50%,#4a8f2e 100%)', accent:'#2c5a1a',
+            xPctOffset: 8, yShift: -12 },
+ 'cm1':   { emoji:'🐢', name:'Comptoir du Lagon',    theme:'lagoon',
+            bg:'linear-gradient(160deg,#b8f5f0 0%,#5fd6cf 50%,#1f8a82 100%)', accent:'#0f4a45',
+            xPctOffset:-14, yShift:-100 },
+ 'cm2':   { emoji:'🌾', name:'Étal du Grand Vent',   theme:'windmill',
+            bg:'linear-gradient(160deg,#fff0c0 0%,#ffcf5e 50%,#d99a1a 100%)', accent:'#8a5c0a',
+            xPctOffset: 13, yShift: -15 },
+ 'final': { emoji:'🌙', name:'Comptoir du Crépuscule', theme:'dusk',
+            bg:'linear-gradient(160deg,#d6d0ff 0%,#9a86e8 50%,#4a3a8a 100%)', accent:'#2a1f5c',
+            xPctOffset:-22, yShift: 0 },
+};
+const _ARCH_SHOPS_COL = { // collège maths — Le Port des Décimales → L'Antre du Titan
+ 'cp':    { emoji:'⚓', name:'Comptoir du Port',      theme:'ocean',
+            bg:'linear-gradient(160deg,#7ec8e3 0%,#2980b9 50%,#154360 100%)', accent:'#0d2b3d',
+            xPctOffset: 15, yShift: 35 },
+ 'ce1':   { emoji:'🌳', name:'Cabane du Bois Vert',  theme:'forest',
+            bg:'linear-gradient(160deg,#8fd9a0 0%,#27ae60 50%,#145a2a 100%)', accent:'#0a2e15',
+            xPctOffset: 10, yShift: 70 },
+ 'ce2':   { emoji:'🧊', name:'Comptoir du Gel',      theme:'frost',
+            bg:'linear-gradient(160deg,#8a8fc4 0%,#5d4a8c 50%,#232042 100%)', accent:'#141230',
+            xPctOffset: 8, yShift: -12 },
+ 'cm1':   { emoji:'⚒️', name:'Forge de la Citadelle', theme:'castle',
+            bg:'linear-gradient(160deg,#c9b088 0%,#a07d4a 50%,#5a3f1f 100%)', accent:'#3a2812',
+            xPctOffset:-14, yShift:-100 },
+ 'cm2':   { emoji:'🌋', name:'Étal de la Caldeira',  theme:'volcano',
+            bg:'linear-gradient(160deg,#e67e5a 0%,#c0392b 50%,#6e1c10 100%)', accent:'#3a0e08',
+            xPctOffset: 13, yShift: -15 },
+ 'final': { emoji:'🔭', name:"Comptoir de l'Observatoire", theme:'space',
+            bg:'linear-gradient(160deg,#7a5ea8 0%,#3a0a4a 50%,#150322 100%)', accent:'#0a0212',
+            xPctOffset:-22, yShift: 0 },
+ 'titan': { emoji:'🌑', name:'Marché des Cendres',   theme:'ashes',
+            bg:'linear-gradient(160deg,#8a5a3a 0%,#4a1505 50%,#1a0a05 100%)', accent:'#0d0502',
+            xPctOffset: 0, yShift: 0 }, // pas de tuning visuel existant (nouvelle région) — à ajuster si besoin
+};
+const _ARCH_SHOPS_MATFR = { // maternelle français — La Forêt des Animaux Muets → Le Château des Lettres
+ 'cp':    { emoji:'🦔', name:'Cabane du Bois Silencieux', theme:'forest',
+            bg:'linear-gradient(160deg,#c8f7d0 0%,#7ed9a3 50%,#3a8f5c 100%)', accent:'#1f5a3a',
+            xPctOffset: 15, yShift: 35 },
+ 'ce1':   { emoji:'🌼', name:'Étal du Grand Pré',    theme:'meadow',
+            bg:'linear-gradient(160deg,#ffe0b8 0%,#ffb56b 50%,#e07a1e 100%)', accent:'#8a4a0e',
+            xPctOffset: 10, yShift: 70 },
+ 'ce2':   { emoji:'🎵', name:'Comptoir des Échos',   theme:'hills',
+            bg:'linear-gradient(160deg,#c9f2b0 0%,#8fd66a 50%,#4a8f2e 100%)', accent:'#2c5a1a',
+            xPctOffset: 8, yShift: -12 },
+ 'cm1':   { emoji:'🎣', name:'Ponton du Lac',        theme:'lake',
+            bg:'linear-gradient(160deg,#b8f5f0 0%,#5fd6cf 50%,#1f8a82 100%)', accent:'#0f4a45',
+            xPctOffset:-14, yShift:-100 },
+ 'cm2':   { emoji:'🕯️', name:'Échoppe de la Grotte', theme:'cave',
+            bg:'linear-gradient(160deg,#fff0c0 0%,#ffcf5e 50%,#d99a1a 100%)', accent:'#8a5c0a',
+            xPctOffset: 13, yShift: -15 },
+ 'final': { emoji:'📜', name:'Comptoir du Château',  theme:'castle',
+            bg:'linear-gradient(160deg,#d6d0ff 0%,#9a86e8 50%,#4a3a8a 100%)', accent:'#2a1f5c',
+            xPctOffset:-22, yShift: 0 },
+};
+const _ARCH_SHOPS_PRIMFR = { // français primaire — Le district des Sons → L'île de la Rature
+ 'cp':    { emoji:'🔔', name:'Kiosque du District',  theme:'district',
+            bg:'linear-gradient(160deg,#ffc7e4 0%,#ff8fb1 45%,#f368a0 100%)', accent:'#c0398a',
+            xPctOffset: 15, yShift: 35 },
+ 'ce1':   { emoji:'📖', name:'Cabane du Lecteur',    theme:'lecture',
+            bg:'linear-gradient(160deg,#a8e6a2 0%,#5fb95a 50%,#2c6e26 100%)', accent:'#1f5a1c',
+            xPctOffset: 10, yShift: 70 },
+ 'ce2':   { emoji:'📚', name:'Halles du Vocabulaire', theme:'halles',
+            bg:'linear-gradient(160deg,#fde7b6 0%,#e9b04e 45%,#b76b1c 100%)', accent:'#834a14',
+            xPctOffset: 8, yShift: -12 },
+ 'cm1':   { emoji:'⏳', name:'Comptoir de la Tour',  theme:'temps',
+            bg:'linear-gradient(160deg,#d3dce6 0%,#7e8fa3 50%,#3d4a5d 100%)', accent:'#1f2733',
+            xPctOffset:-14, yShift:-100 },
+ 'cm2':   { emoji:'✍️', name:'Marché de la Citadelle', theme:'citadelle',
+            bg:'linear-gradient(160deg,#cbb1ee 0%,#7e57c4 50%,#2a1357 100%)', accent:'#1f0a45',
+            xPctOffset: 13, yShift: -15 },
+ 'final': { emoji:'📝', name:'Échoppe de la Rature', theme:'rature',
+            bg:'linear-gradient(160deg,#fff4c0 0%,#f1c40f 50%,#a17806 100%)', accent:'#6a4d04',
+            xPctOffset:-22, yShift: 0 },
+};
+const _ARCH_SHOPS_COLFR = { // français collège — Livre I : Origines → L'Antre du Chancelier
+ 'cp':    { emoji:'📜', name:'Comptoir du Fleuve',   theme:'origines',
+            bg:'linear-gradient(160deg,#7ec8e3 0%,#2980b9 50%,#154360 100%)', accent:'#0d2b3d',
+            xPctOffset: 15, yShift: 35 },
+ 'ce1':   { emoji:'🗝️', name:'Échoppe du Trésor',    theme:'tresor',
+            bg:'linear-gradient(160deg,#8fd9a0 0%,#27ae60 50%,#145a2a 100%)', accent:'#0a2e15',
+            xPctOffset: 10, yShift: 70 },
+ 'ce2':   { emoji:'🏛️', name:"Échoppe de l'Agora",   theme:'agora',
+            bg:'linear-gradient(160deg,#8a8fc4 0%,#5d4a8c 50%,#232042 100%)', accent:'#141230',
+            xPctOffset: 8, yShift: -12 },
+ 'cm1':   { emoji:'⚙️', name:'Atelier des Engrenages', theme:'horlogerie',
+            bg:'linear-gradient(160deg,#c9b088 0%,#a07d4a 50%,#5a3f1f 100%)', accent:'#3a2812',
+            xPctOffset:-14, yShift:-100 },
+ 'cm2':   { emoji:'🎭', name:'Loge du Théâtre',      theme:'theatre',
+            bg:'linear-gradient(160deg,#e67e5a 0%,#c0392b 50%,#6e1c10 100%)', accent:'#3a0e08',
+            xPctOffset: 13, yShift: -15 },
+ 'final': { emoji:'🌅', name:'Comptoir du Réveil',   theme:'reveil',
+            bg:'linear-gradient(160deg,#7a5ea8 0%,#3a0a4a 50%,#150322 100%)', accent:'#0a0212',
+            xPctOffset:-22, yShift: 0 },
+ 'titan': { emoji:'👑', name:'Marché du Chancelier', theme:'chancelier',
+            bg:'linear-gradient(160deg,#8a5a3a 0%,#4a1505 50%,#1a0a05 100%)', accent:'#0d0502',
+            xPctOffset: 0, yShift: 0 }, // pas de tuning visuel existant (nouvelle région) — à ajuster si besoin
+};
+const _ARCH_SHOPS_HIST = { // Odyssée du Temps (histoire primaire) — palette reprise des 6 livres (07-story.js)
+ 'cp':    { emoji:'🔥', name:'Échoppe du Silex',     theme:'prehistoire',
+            bg:'linear-gradient(160deg,#c9a876 0%,#8a6a3e 50%,#3a2814 100%)', accent:'#6B4A2A',
+            xPctOffset: 15, yShift: 35 },
+ 'ce1':   { emoji:'🏺', name:'Bazar du Nil',         theme:'egypte',
+            bg:'linear-gradient(160deg,#e8cf7a 0%,#c2a03e 50%,#5a4310 100%)', accent:'#9E7A1E',
+            xPctOffset: 10, yShift: 70 },
+ 'ce2':   { emoji:'🏛️', name:'Forum de Rome',        theme:'rome',
+            bg:'linear-gradient(160deg,#d98a6e 0%,#b2503a 50%,#4a1710 100%)', accent:'#8B2E1E',
+            xPctOffset: 8, yShift: -12 },
+ 'cm1':   { emoji:'🛡️', name:'Échoppe du Beffroi',   theme:'moyenage',
+            bg:'linear-gradient(160deg,#8a97a8 0%,#57697e 50%,#1e2530 100%)', accent:'#3C4A5C',
+            xPctOffset:-14, yShift:-100 },
+ 'cm2':   { emoji:'🗼', name:"Comptoir de l'Exposition", theme:'tempsmodernes',
+            bg:'linear-gradient(160deg,#7ac9a0 0%,#3f7a5e 50%,#173a2a 100%)', accent:'#2E5C4A',
+            xPctOffset: 13, yShift: -15 },
+ 'final': { emoji:'⚙️', name:"Atelier d'Isidore",    theme:'atelier',
+            bg:'linear-gradient(160deg,#e8d49a 0%,#a3811f 50%,#3a2c0e 100%)', accent:'#7A5C1E',
+            xPctOffset:-22, yShift: 0 },
+};
+// Pointeur actif, permuté dans startAdventure() comme _ARCH_REGIONS/_STORY/MAP_ZONES.
+let _ARCH_SHOPS = _ARCH_SHOPS_PRIM;
 // Layout vertical : chaque sous-zone a une coordonnée Y croissante.
 // X est généré par hash de l'id pour des positions variées mais déterministes.
 // IMPORTANT : x est stocké en POURCENTAGE (0-100) pour être responsive.

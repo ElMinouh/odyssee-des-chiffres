@@ -136,3 +136,65 @@ describe('Correctif stats par matière — _trackSubjCatStat / _trackSubjCatErro
     expect(api.getP().errorsHist.length).toBe(nHistBefore);
   });
 });
+
+// ─────────────────────────────────────────────────────────────
+// Correctif 4 — boutiques par îlot alignées sur l'environnement de chaque
+// odyssée (elles gardaient toujours les noms/thèmes "maths primaire" quelle
+// que soit l'aventure active)
+// ─────────────────────────────────────────────────────────────
+describe('Correctif boutiques par îlot — une table dédiée par aventure', () => {
+  it('chaque table de boutiques couvre toutes les régions de son aventure (y compris "titan" pour col/colfr)', () => {
+    const api = loadGame(FILES);
+    const check = (shops, regionIds) => {
+      for (const id of regionIds) expect(shops[id]).toBeTruthy();
+    };
+    check(api._ARCH_SHOPS_MAT, ['cp', 'ce1', 'ce2', 'cm1', 'cm2', 'final']);
+    check(api._ARCH_SHOPS_COL, ['cp', 'ce1', 'ce2', 'cm1', 'cm2', 'final', 'titan']);
+    check(api._ARCH_SHOPS_MATFR, ['cp', 'ce1', 'ce2', 'cm1', 'cm2', 'final']);
+    check(api._ARCH_SHOPS_PRIMFR, ['cp', 'ce1', 'ce2', 'cm1', 'cm2', 'final']);
+    check(api._ARCH_SHOPS_COLFR, ['cp', 'ce1', 'ce2', 'cm1', 'cm2', 'final', 'titan']);
+    check(api._ARCH_SHOPS_HIST, ['cp', 'ce1', 'ce2', 'cm1', 'cm2', 'final']);
+  });
+
+  it('startAdventure() bascule bien _ARCH_SHOPS vers la table dédiée à chaque odyssée', () => {
+    const api = loadGame(FILES);
+    const cases = [
+      ['mat', 'matfr', undefined], // ambigu seul (dépend de GM.subject) → testé séparément
+      ['col', undefined, '_ARCH_SHOPS_COL'],
+      ['colfr', undefined, '_ARCH_SHOPS_COLFR'],
+      ['prim', undefined, '_ARCH_SHOPS_PRIM'],
+      ['primfr', undefined, '_ARCH_SHOPS_PRIMFR'],
+      ['primhist', undefined, '_ARCH_SHOPS_HIST'],
+    ];
+    for (const [advId, , tableName] of cases) {
+      if (!tableName) continue;
+      api.setP({ name: 'Test' });
+      api.setGMsubject('math');
+      api.startAdventure(advId);
+      expect(api.getArchShops()).toBe(api[tableName]);
+    }
+    // 'mat' seul, sans matière fr : doit prendre _ARCH_SHOPS_MAT
+    api.setGMsubject('math');
+    api.startAdventure('mat');
+    expect(api.getArchShops()).toBe(api._ARCH_SHOPS_MAT);
+    // 'mat' avec matière fr active : doit basculer vers _ARCH_SHOPS_MATFR
+    api.setGMsubject('fr');
+    api.startAdventure('mat');
+    expect(api.getArchShops()).toBe(api._ARCH_SHOPS_MATFR);
+  });
+
+  it('les noms de boutiques ne sont plus les mêmes entre deux aventures différentes pour une même région (ex. "cp")', () => {
+    const api = loadGame(FILES);
+    const names = new Set([
+      api._ARCH_SHOPS_PRIM.cp.name,
+      api._ARCH_SHOPS_MAT.cp.name,
+      api._ARCH_SHOPS_COL.cp.name,
+      api._ARCH_SHOPS_MATFR.cp.name,
+      api._ARCH_SHOPS_PRIMFR.cp.name,
+      api._ARCH_SHOPS_COLFR.cp.name,
+      api._ARCH_SHOPS_HIST.cp.name,
+    ]);
+    // 7 aventures, 7 noms distincts attendus (aucune n'a été oubliée / recopiée telle quelle)
+    expect(names.size).toBe(7);
+  });
+});
