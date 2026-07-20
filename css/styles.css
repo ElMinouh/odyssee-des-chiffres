@@ -2799,6 +2799,7 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  white-space:nowrap;
  font-size:.7em;
  font-weight:800;
+ color:#fff;
  text-shadow:0 1px 3px rgba(0,0,0,.85), 0 0 6px rgba(0,0,0,.6);
  letter-spacing:.5px;
 }

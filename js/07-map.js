@@ -1413,7 +1413,7 @@ function renderMap(){
               style="left:${shopXPct.toFixed(1)}%;top:${shopY.toFixed(1)}px;background:${shop.bg};border-color:${shop.accent};"
               onclick="openArchipelShop('${region.id}')">
             <div class="archipel-shop-emoji">${shop.emoji}</div>
-            <div class="archipel-shop-label" style="color:${shop.accent};">${shop.name}</div>
+            <div class="archipel-shop-label">${shop.name}</div>
           </div>`;
  }).join('');
  // v8.7.38 (O3-B.4 polish) : Overlay nuageux animé par-dessus chaque îlot foggé.
