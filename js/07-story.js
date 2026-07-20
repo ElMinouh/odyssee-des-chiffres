@@ -346,7 +346,19 @@ const _PRIMFR_ZONE_LABELS = {
  // Final — île de la Rature
  sanctuaire:"L'Antre du Docteur Babel",
 };
-const PRIM_ZONES_FR = (typeof PRIM_ZONES!=='undefined' ? PRIM_ZONES : []).map(z => Object.assign({}, z, { id:'primfr_'+z.id, label: _PRIMFR_ZONE_LABELS[z.id] || z.label }));
+// v11.5.4 — ADR-22 étendue (bug corrigé, cf. dette technique section 17.5/18) :
+// PRIM_ZONES n'a pas de champ `region` natif, donc _regionOfZone() retombait sur
+// son cas spécial `zone.id==='sanctuaire'`, qui ne matche jamais un id préfixé
+// (`primfr_sanctuaire`) ; la zone finale était alors mal résolue dans la région
+// 'cm2' (même `level` que 'final') au lieu de 'final'. Comme pour PRIM_ZONES_HIST,
+// on assigne désormais un `region` explicite à chaque zone pour ne plus dépendre
+// de ce fallback ambigu.
+const _PRIMFR_LEVEL_TO_REGION = {CP:'cp',CE1:'ce1',CE2:'ce2',CM1:'cm1',CM2:'cm2'};
+const PRIM_ZONES_FR = (typeof PRIM_ZONES!=='undefined' ? PRIM_ZONES : []).map(z => Object.assign({}, z, {
+ id:'primfr_'+z.id,
+ label: _PRIMFR_ZONE_LABELS[z.id] || z.label,
+ region: z.id==='sanctuaire' ? 'final' : (_PRIMFR_LEVEL_TO_REGION[z.level] || null),
+}));
 const _PRIM_REGIONS_FR = [
  { id:'cp',    label:'Le district des Sons',       levels:['CP'],    shape:'colline' },
  { id:'ce1',   label:'Le quartier de la Lecture',  levels:['CE1'],   shape:'feuille' },

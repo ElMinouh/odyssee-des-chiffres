@@ -629,6 +629,37 @@ function submitAns(){
  }
  const raw=($('answer-input').value||'').replace(',','.').trim();const v=parseFloat(raw);validate((raw===''||isNaN(v))?null:v);
 }
+// v11.5.4 — Table de correspondance matière → stats/erreurs par catégorie.
+// Remplace les anciens blocs dupliqués un par matière (dette technique
+// section 18). CONVENTION pour une future matière à catégories (cf. checklist
+// 01-core.js) : ajouter une seule entrée ici (nom de la fonction _xxxCatOf en
+// chaîne + les 2 propriétés de profil correspondantes).
+const _SUBJ_CAT_STATS = {
+ fr:   { catOfFnName: '_frCatOf',   statsProp: 'opStatsFr',   errorsProp: 'errorsFr' },
+ hist: { catOfFnName: '_histCatOf', statsProp: 'opStatsHist', errorsProp: 'errorsHist' },
+};
+// Incrémente P.opStats<Xxx>[catégorie].ok/fail pour la matière active.
+// Ne fait rien pour 'math' (déjà géré par P.opStats[opKey] séparément) ni pour
+// une matière absente de _SUBJ_CAT_STATS.
+function _trackSubjCatStat(subj, opKey, ok){
+ const cfg = _SUBJ_CAT_STATS[subj]; if(!cfg) return;
+ const catOf = globalThis[cfg.catOfFnName];
+ if(typeof catOf!=='function') return;
+ const c = catOf(opKey);
+ P[cfg.statsProp] = P[cfg.statsProp] || {};
+ P[cfg.statsProp][c] = P[cfg.statsProp][c] || {ok:0,fail:0};
+ P[cfg.statsProp][c][ok?'ok':'fail']++;
+}
+// Journalise une erreur dans P.errors<Xxx> pour la matière donnée.
+// Retourne true si géré (matière connue), false sinon (appelant doit alors
+// journaliser dans P.errors, le registre maths par défaut).
+function _trackSubjCatError(subj, q){
+ const cfg = _SUBJ_CAT_STATS[subj]; if(!cfg) return false;
+ const _qd=String(q.display||'').replace(/<[^>]+>/g,'').trim();
+ const _ans=String(q.hint||'').replace(/^R[eé]ponse\s*:\s*/i,'').trim();
+ if(_qd) P[cfg.errorsProp]=([...(P[cfg.errorsProp]||[])]).concat({q:_qd,ok:_ans}).slice(-60);
+ return true;
+}
 function validate(ans){
  if(!GS.q||GS.answering)return; // guard : question null ou déjà en train de traiter
  GS.answering=true;
@@ -667,8 +698,7 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
   const pw=powers[P.name];if(pw?.dbl){pts*=2;pw.dbl=false;toast('⚡ Double !');}
   GS.score+=pts;
   const opK=q.opKey||'+';P.opStats[opK]=P.opStats[opK]||{ok:0,fail:0};P.opStats[opK].ok++;
-  if(GM.subject==='fr' && typeof _frCatOf==='function'){ const c=_frCatOf(q.opKey); P.opStatsFr[c]=P.opStatsFr[c]||{ok:0,fail:0}; P.opStatsFr[c].ok++; }
-  if(GM.subject==='hist' && typeof _histCatOf==='function'){ const c=_histCatOf(q.opKey); P.opStatsHist=P.opStatsHist||{}; P.opStatsHist[c]=P.opStatsHist[c]||{ok:0,fail:0}; P.opStatsHist[c].ok++; }
+  _trackSubjCatStat(GM.subject, q.opKey, true);
   if(typeof _progUpdate==="function") _progUpdate(GM.level, true);
   if(typeof _classStatUpdate==="function") _classStatUpdate(GM.level, q.opKey, true);
   // Chantier 1.2 : si c'était une question de révision et que l'enfant a réussi → on réduit sa présence
@@ -759,20 +789,12 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
  }else{
 GS.errInGame++;GS.combo=0;GS.opCombo=0;GS.lastOpKey=null;$('gc').classList.remove('combo-breaker');
   const opK=q.opKey||'+';P.opStats[opK]=P.opStats[opK]||{ok:0,fail:0};P.opStats[opK].fail++;
-  if(GM.subject==='fr' && typeof _frCatOf==='function'){ const c=_frCatOf(q.opKey); P.opStatsFr[c]=P.opStatsFr[c]||{ok:0,fail:0}; P.opStatsFr[c].fail++; }
-  if(GM.subject==='hist' && typeof _histCatOf==='function'){ const c=_histCatOf(q.opKey); P.opStatsHist=P.opStatsHist||{}; P.opStatsHist[c]=P.opStatsHist[c]||{ok:0,fail:0}; P.opStatsHist[c].fail++; }
+  _trackSubjCatStat(GM.subject, q.opKey, false);
   if(typeof _progUpdate==="function") _progUpdate(GM.level, false);
   if(typeof _classStatUpdate==="function") _classStatUpdate(GM.level, q.opKey, false);
   if(q.display&&q.res!==undefined){
-   if((q.subj==='fr')||(typeof GM!=='undefined'&&GM.subject==='fr')){
-    const _qd=String(q.display||'').replace(/<[^>]+>/g,'').trim();
-    const _ans=String(q.hint||'').replace(/^R[eé]ponse\s*:\s*/i,'').trim();
-    if(_qd) P.errorsFr=([...(P.errorsFr||[])]).concat({q:_qd,ok:_ans}).slice(-60);
-   } else if((q.subj==='hist')||(typeof GM!=='undefined'&&GM.subject==='hist')){
-    const _qd=String(q.display||'').replace(/<[^>]+>/g,'').trim();
-    const _ans=String(q.hint||'').replace(/^R[eé]ponse\s*:\s*/i,'').trim();
-    if(_qd) P.errorsHist=([...(P.errorsHist||[])]).concat({q:_qd,ok:_ans}).slice(-60);
-   } else {
+   const _subj=(q.subj && _SUBJ_CAT_STATS[q.subj]) ? q.subj : (typeof GM!=='undefined' ? GM.subject : undefined);
+   if(!_trackSubjCatError(_subj, q)){
     P.errors=([...(P.errors||[])]).concat(`${q.a||'?'}${q.op||'?'}${q.b||'?'}=${q.res}`).slice(-60);
    }
   }

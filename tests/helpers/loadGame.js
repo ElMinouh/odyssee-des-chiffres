@@ -222,6 +222,18 @@ globalThis.__api = {
   onFilterSubjectChange: (typeof onFilterSubjectChange==='function') ? onFilterSubjectChange : undefined,
   loadFilterSettings: (typeof loadFilterSettings==='function') ? loadFilterSettings : undefined,
   saveFilterSettings: (typeof saveFilterSettings==='function') ? saveFilterSettings : undefined,
+  // --- correctifs v11.5.4 (bugs/dette technique : région finale FR, carnet
+  // de collection généralisé, stats par matière généralisées) ---
+  PRIM_ZONES_FR: (typeof PRIM_ZONES_FR!=='undefined') ? PRIM_ZONES_FR : undefined,
+  _PRIM_REGIONS_FR: (typeof _PRIM_REGIONS_FR!=='undefined') ? _PRIM_REGIONS_FR : undefined,
+  MAT_ZONES_FR: (typeof MAT_ZONES_FR!=='undefined') ? MAT_ZONES_FR : undefined,
+  _MAT_REGIONS_FR: (typeof _MAT_REGIONS_FR!=='undefined') ? _MAT_REGIONS_FR : undefined,
+  COL_ZONES_FR: (typeof COL_ZONES_FR!=='undefined') ? COL_ZONES_FR : undefined,
+  _COL_REGIONS_FR: (typeof _COL_REGIONS_FR!=='undefined') ? _COL_REGIONS_FR : undefined,
+  _ADV_COLLECTION_FN: (typeof _ADV_COLLECTION_FN!=='undefined') ? _ADV_COLLECTION_FN : undefined,
+  _trackSubjCatStat: (typeof _trackSubjCatStat==='function') ? _trackSubjCatStat : undefined,
+  _trackSubjCatError: (typeof _trackSubjCatError==='function') ? _trackSubjCatError : undefined,
+  setGMadventure: (v) => { GM.adventure = v; },
 };
 `;
 

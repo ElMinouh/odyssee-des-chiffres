@@ -15,16 +15,24 @@ const _ADV_COL_PIECES = [
  { key:'torso', name:'Cuirasse',        power:'Cœur d\'Or',   eff:'vitalité',         gem:'radial-gradient(circle at 35% 30%,#ffb13d,#7a4400)' },
  { key:'helm',  name:'Heaume',          power:'Clairvoyance', eff:'lit les attaques', gem:'radial-gradient(circle at 35% 30%,#bfe9ff,#4f86b0)' },
 ];
+// v11.5.4 — Table de correspondance aventure→carnet (dette technique corrigée :
+// remplace l'ancien enchaînement d'if/else en dur). Pour ajouter une nouvelle
+// odyssée dédiée, ajouter une seule entrée ici (nom de fonction en chaîne pour
+// tolérer que la fonction soit définie plus bas dans ce même fichier).
+const _ADV_COLLECTION_FN = {
+ matfr:    '_advBookHtml',
+ primfr:   '_advBadgeHtml',
+ colfr:    '_advLibraryHtml',
+ mat:      '_advRainbowHtml',
+ col:      '_advArmorHtml',
+ primhist: '_advHistLibraryHtml',
+};
 function _advCollectionHtml(){
  try{
   const adv = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
-  if(adv==='matfr') return _advBookHtml();
-  if(adv==='primfr') return _advBadgeHtml();
-  if(adv==='colfr') return _advLibraryHtml();
-  if(adv==='mat') return _advRainbowHtml();
-  if(adv==='col') return _advArmorHtml();
-  if(adv==='primhist') return _advHistLibraryHtml();
-  return _advTalismanHtml();
+  const fnName = _ADV_COLLECTION_FN[adv] || '_advTalismanHtml';
+  const fn = globalThis[fnName];
+  return (typeof fn==='function') ? fn() : _advTalismanHtml();
  }catch(e){ return ''; }
 }
 // ── Carnet maternelle : Mon Arc-en-ciel ─────────────────────────────
