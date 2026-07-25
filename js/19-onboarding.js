@@ -309,9 +309,9 @@ function _obRenderStep(){
    if(targetEl && targetEl.offsetParent===null) targetEl = null; // caché → pas de cible
   }
   if(targetEl && typeof targetEl.scrollIntoView==='function'){
-   try{ targetEl.scrollIntoView({behavior:'smooth', block:'center'}); }catch(e){ targetEl.scrollIntoView(); }
+   try{ targetEl.scrollIntoView({block:'center'}); }catch(e){}
   }
-  setTimeout(()=>_obShowTooltip(step, targetEl), targetEl?180:0);
+  setTimeout(()=>_obShowTooltip(step, targetEl), targetEl?70:0);
  }, 90);
 }
 
@@ -327,17 +327,21 @@ function _obShowTooltip(step, targetEl){
   '<div class="ob-blocker"></div>'
   + (targetEl ? '<div class="ob-spotlight" id="ob-spotlight"></div>' : '')
   + '<div class="ob-box'+(targetEl?'':' ob-centered')+'" id="ob-box">'
-  +  '<div class="ob-progress">'+dots+'</div>'
-  +  '<div class="ob-counter">ÉTAPE '+num+' SUR '+total+'</div>'
-  +  '<div class="ob-icon">'+(step.icon||'💡')+'</div>'
-  +  '<div class="ob-title">'+step.title+'</div>'
-  +  '<div class="ob-body">'+step.body+'</div>'
-  +  '<div class="ob-nav">'
-  +   '<button class="ob-btn-prev" onclick="obPrev()" style="'+(_obIdx===0?'visibility:hidden;':'')+'">&#8592; Précédent</button>'
-  +   '<button class="ob-btn-next" onclick="'+(isLast?'_obFinishClick()':'obNext()')+'">'+(isLast?'Terminer ✅':'Suivant →')+'</button>'
+  +  '<div class="ob-box-scroll">'
+  +   '<div class="ob-progress">'+dots+'</div>'
+  +   '<div class="ob-counter">ÉTAPE '+num+' SUR '+total+'</div>'
+  +   '<div class="ob-icon">'+(step.icon||'💡')+'</div>'
+  +   '<div class="ob-title">'+step.title+'</div>'
+  +   '<div class="ob-body">'+step.body+'</div>'
   +  '</div>'
-  +  '<div style="text-align:center;margin-top:8px;">'
-  +   '<button class="ob-btn-skip" onclick="obSkip()">Passer le reste de la visite</button>'
+  +  '<div class="ob-footer">'
+  +   '<div class="ob-nav">'
+  +    '<button class="ob-btn-prev" onclick="obPrev()" style="'+(_obIdx===0?'visibility:hidden;':'')+'">&#8592; Précédent</button>'
+  +    '<button class="ob-btn-next" onclick="'+(isLast?'_obFinishClick()':'obNext()')+'">'+(isLast?'Terminer ✅':'Suivant →')+'</button>'
+  +   '</div>'
+  +   '<div style="text-align:center;margin-top:8px;">'
+  +    '<button class="ob-btn-skip" onclick="obSkip()">Passer le reste de la visite</button>'
+  +   '</div>'
   +  '</div>'
   + '</div>';
  ov.classList.remove('hidden');
@@ -348,8 +352,14 @@ function _obPositionBox(targetEl){
  const box = document.getElementById('ob-box');
  const spot = document.getElementById('ob-spotlight');
  if(!box) return;
- if(!targetEl){ return; } // .ob-centered gère déjà le centrage via CSS
  try{
+  const vh = window.innerHeight || 600, vw = window.innerWidth || 360;
+  if(!targetEl){
+   // Cas général (pas de cible précise) : centré via CSS, on borne juste la
+   // hauteur pour qu'il ne déborde jamais, quelle que soit la taille d'écran.
+   box.style.maxHeight = Math.max(200, vh-24)+'px';
+   return;
+  }
   const r = targetEl.getBoundingClientRect();
   if(spot){
    const pad = 8;
@@ -358,12 +368,29 @@ function _obPositionBox(targetEl){
    spot.style.width = (r.width+pad*2)+'px';
    spot.style.height = (r.height+pad*2)+'px';
   }
-  const boxW = box.offsetWidth || 340, boxH = box.offsetHeight || 260;
-  const spaceBelow = window.innerHeight - r.bottom;
-  const top = (spaceBelow > boxH+30) ? (r.bottom+16) : Math.max(10, r.top-boxH-16);
-  const left = Math.max(10, Math.min(window.innerWidth-boxW-10, r.left + r.width/2 - boxW/2));
+  // La hauteur réelle est bornée par le CSS (max-height) : offsetHeight
+  // reflète donc déjà une valeur qui ne peut pas dépasser l'écran.
+  box.style.maxHeight = Math.max(200, vh-24)+'px';
+  const boxW = box.offsetWidth || 340;
+  const boxH = Math.min(box.offsetHeight || 260, vh-24);
+  const spaceBelow = vh - r.bottom;
+  const spaceAbove = r.top;
+  let top;
+  if(spaceBelow >= boxH+26) top = r.bottom+16;
+  else if(spaceAbove >= boxH+26) top = r.top-boxH-16;
+  else top = (vh-boxH)/2; // ni assez dessus ni dessous → centrage vertical, quitte à frôler la cible
+  // Garde-fou FINAL, non contournable : quel que soit le cas ci-dessus,
+  // la bulle reste TOUJOURS entièrement contenue dans la fenêtre visible.
+  // C'est cette ligne qui empêche structurellement le blocage constaté
+  // (boutons Suivant/Précédent/Passer poussés hors écran).
+  top = Math.max(10, Math.min(top, vh-boxH-10));
+  const left = Math.max(10, Math.min(vw-boxW-10, r.left + r.width/2 - boxW/2));
   box.style.position='fixed'; box.style.top=top+'px'; box.style.left=left+'px';
- }catch(e){}
+ }catch(e){
+  // Filet de sécurité ultime : si le calcul échoue pour une raison
+  // quelconque, on recentre plutôt que de risquer un blocage silencieux.
+  try{ box.classList.add('ob-centered'); box.style.maxHeight=Math.max(200,(window.innerHeight||600)-24)+'px'; }catch(e2){}
+ }
 }
 try{
  window.addEventListener('resize', ()=>{
