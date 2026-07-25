@@ -165,7 +165,7 @@
   </div>
 
   <!-- Toggles principaux : Voix + Musique + bouton Paramètres -->
-  <div style="display:flex;justify-content:center;align-items:center;gap:18px;margin:16px 0 6px;flex-wrap:wrap;">
+  <div id="menu1-toggles-row" style="display:flex;justify-content:center;align-items:center;gap:18px;margin:16px 0 6px;flex-wrap:wrap;">
    <label style="font-size:.92em;display:inline-flex;align-items:center;gap:6px;"><input type="checkbox" id="voiceToggle" checked onchange="if(typeof saveVoice==='function')saveVoice();"> &#128266; Voix</label>
    <label style="font-size:.92em;display:inline-flex;align-items:center;gap:6px;"><input type="checkbox" id="musicToggle" onchange="toggleMusic()"> &#127925; Musique</label>
    <button onclick="gotoParams()" title="Réglages avancés" style="background:#444;font-size:.8em;padding:6px 14px;">&#9881;&#65039; Paramètres</button>
@@ -221,7 +221,7 @@
    <div style="font-size:1.5em;font-weight:800;color:#f1c40f;margin-top:4px;">Choisis ta matière</div>
    <div style="font-size:.8em;color:#aebbd4;margin-top:2px;">Sélectionne un univers pour commencer</div>
   </div>
-  <div class="subj-grid">
+  <div class="subj-grid" id="subjects-grid">
    <button class="subj-tile subj-on" style="--g1:#2c3e9e;--g2:#1b2a6b;" onclick="chooseSubject('math')">
     <div class="subj-em">&#128290;</div>
     <div class="subj-nm">Mathématiques</div>
@@ -299,10 +299,10 @@
   </div>
 
   <!-- Gros bouton L'Odyssée : pleine largeur, mis en valeur, icône en double -->
-  <button onclick="startOdyssee()" style="width:92%;max-width:540px;font-size:1.05em;font-weight:800;padding:28px 16px;background:linear-gradient(135deg,#16a085,#1abc9c);border:2px solid rgba(255,255,255,.25);box-shadow:0 6px 24px rgba(26,188,156,.4);line-height:1.3;" class="pulse">&#128506;&#65039;&nbsp; <span id="ody-btn-label">L'ODYSSÉE : L'AVENTURE MATHÉMATIQUE</span> &nbsp;&#128506;&#65039;</button>
+  <button id="btn-start-odyssee" onclick="startOdyssee()" style="width:92%;max-width:540px;font-size:1.05em;font-weight:800;padding:28px 16px;background:linear-gradient(135deg,#16a085,#1abc9c);border:2px solid rgba(255,255,255,.25);box-shadow:0 6px 24px rgba(26,188,156,.4);line-height:1.3;" class="pulse">&#128506;&#65039;&nbsp; <span id="ody-btn-label">L'ODYSSÉE : L'AVENTURE MATHÉMATIQUE</span> &nbsp;&#128506;&#65039;</button>
 
   <!-- 4 modes en grille 2×2 -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:92%;max-width:540px;margin:14px auto 0;">
+  <div id="modes-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:92%;max-width:540px;margin:14px auto 0;">
    <button onclick="openModeConfig('normal')" style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:14px 8px;background:linear-gradient(135deg,#2c3e50,#34495e);">
     <span style="font-size:1.6em;">&#9876;&#65039;</span><span style="font-weight:700;">Normal</span><span style="font-size:.72em;color:#bdc3c7;">6 monstres</span>
    </button>
@@ -343,7 +343,7 @@
  <div id="v-params" class="hidden">
   <h2 style="color:#f1c40f;margin:10px 0 4px;">&#9881;&#65039; Paramètres</h2>
   <p style="font-size:.82em;color:#bdc3c7;margin:0 0 20px;">Réglages avancés du jeu</p>
-  <div style="display:flex;flex-direction:column;gap:18px;width:100%;max-width:380px;margin:0 auto;text-align:left;">
+  <div id="params-list" style="display:flex;flex-direction:column;gap:18px;width:100%;max-width:380px;margin:0 auto;text-align:left;">
    <label style="font-size:1em;display:flex;align-items:center;gap:10px;justify-content:space-between;background:rgba(255,255,255,.04);padding:14px 16px;border-radius:10px;">
     <span>📳 Vibration</span>
     <input type="checkbox" id="vibrateToggleUI" checked onchange="syncParamToggle('vibrate',this.checked)" style="transform:scale(1.4);">
@@ -511,6 +511,9 @@
   
   <img src="assets/logo-circle.webp?v=1057" alt="" class="page-logo-circle" aria-hidden="true">
   <h3>&#128202; Tableau de Bord &mdash; <span id="dash-player-name" style="color:#f1c40f;"></span></h3>
+  <div style="text-align:center;margin:2px 0 8px;">
+   <button class="btn-revisit-tour" onclick="obReplay(3)">🔰 Revoir la visite du compte</button>
+  </div>
   <div id="p-ava-disp" style="font-size:2.6em;text-align:center;margin:8px 0 0;"></div>
   <div id="p-title-disp" style="font-size:.9em;color:#f1c40f;text-align:center;margin-bottom:8px;"></div>
   <div id="tab-hero-header">
@@ -527,17 +530,17 @@
   </div>
   <div id="tab-hero">
    <div style="text-align:right;margin:4px 0;"><button onclick="dashCollapseAll('tab-hero')" style="background:rgba(255,255,255,.1);font-size:.72em;padding:4px 10px;">⬍ Tout replier</button></div>
-   <button class="accordion" onclick="renderFigurinesShop('none');_shopSearch='';">🧩 Boutique de figurines<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Échange tes étoiles contre des figurines</span></button>
+   <button class="accordion" id="acc-shop-figurines" onclick="renderFigurinesShop('none');_shopSearch='';">🧩 Boutique de figurines<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Échange tes étoiles contre des figurines</span></button>
    <div class="panel"><div id="p-figurines"><div style="color:rgba(255,255,255,.4);font-size:.8em;text-align:center;padding:10px;">Clique pour voir les figurines</div></div></div>
-   <button class="accordion">😀 Avatar<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Choisis ton personnage</span></button>
+   <button class="accordion" id="acc-avatar">😀 Avatar<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Choisis ton personnage</span></button>
    <div class="panel" id="p-avatars"></div>
-   <button class="accordion">🔊 Son de victoire<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Ta petite musique quand tu gagnes</span></button>
+   <button class="accordion" id="acc-vsound">🔊 Son de victoire<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Ta petite musique quand tu gagnes</span></button>
    <div class="panel" id="p-vsounds"></div>
-   <button class="accordion">👾 Skins de monstres<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Change l'allure des monstres</span></button>
+   <button class="accordion" id="acc-skins">👾 Skins de monstres<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Change l'allure des monstres</span></button>
    <div class="panel" id="p-skins"></div>
-   <button class="accordion">🏵️ Titres de héros<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Débloque des titres à afficher</span></button>
+   <button class="accordion" id="acc-titles">🏵️ Titres de héros<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Débloque des titres à afficher</span></button>
    <div class="panel" id="p-titles"></div>
-   <button class="accordion">🎵 Musiques<span class="acc-sub">Achète et choisis la musique du jeu</span></button>
+   <button class="accordion" id="acc-musics">🎵 Musiques<span class="acc-sub">Achète et choisis la musique du jeu</span></button>
    <div class="panel" id="p-musics"></div>
   </div>
   <div id="tab-figurines" class="hidden">
@@ -547,28 +550,28 @@
   </div>
   <div id="tab-milestones" class="hidden">
    <div style="text-align:right;margin:4px 0;"><button onclick="dashCollapseAll('tab-milestones')" style="background:rgba(255,255,255,.1);font-size:.72em;padding:4px 10px;">⬍ Tout replier</button></div>
-   <button class="accordion">📖 Révisions<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Erreurs récentes à revoir (maths + français)</span></button>
+   <button class="accordion" id="acc-revisions">📖 Révisions<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Erreurs récentes à revoir (maths + français)</span></button>
    <div class="panel"><div id="p-errors"></div><button onclick="startRevision()" id="btn-revision" class="hidden" style="margin-top:8px;width:100%;background:#c0392b;">🔁 Rejouer mes erreurs</button></div>
-   <button class="accordion">✖️ Tables de multiplication<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Entraîne-toi aux tables de 1 à 10</span></button>
+   <button class="accordion" id="acc-multtable">✖️ Tables de multiplication<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Entraîne-toi aux tables de 1 à 10</span></button>
    <div class="panel"><button onclick="openMultTable()" style="width:100%;background:#2980b9;">✖️ Ouvrir les tables de multiplication</button></div>
-   <button class="accordion">🔒 Niveaux<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Ta progression de niveau en niveau</span></button>
+   <button class="accordion" id="acc-levels">🔒 Niveaux<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Ta progression de niveau en niveau</span></button>
    <div class="panel" id="p-levels"></div>
-   <button class="accordion">🏆 Paliers à conquérir<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Objectifs long terme</span></button>
+   <button class="accordion" id="acc-milestones-list">🏆 Paliers à conquérir<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Objectifs long terme</span></button>
    <div class="panel"><div id="milestones-list"></div></div>
-   <button class="accordion">🏅 Badges<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Tes récompenses débloquées</span></button>
+   <button class="accordion" id="acc-badges">🏅 Badges<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Tes récompenses débloquées</span></button>
    <div class="panel" id="p-badges"></div>
   </div>
   <div id="tab-stats" class="hidden">
    <div style="text-align:right;margin:4px 0;"><button onclick="dashCollapseAll('tab-stats')" style="background:rgba(255,255,255,.1);font-size:.72em;padding:4px 10px;">⬍ Tout replier</button></div>
-   <button class="accordion">📅 Quêtes du jour<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Tes défis du jour</span></button>
+   <button class="accordion" id="acc-quests">📅 Quêtes du jour<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Tes défis du jour</span></button>
    <div class="panel" id="p-quests"></div>
-   <button class="accordion">🏆 Classement<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Compare-toi aux autres (toutes matières)</span></button>
+   <button class="accordion" id="acc-lb">🏆 Classement<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Compare-toi aux autres (toutes matières)</span></button>
    <div class="panel" id="p-lb"></div>
-   <button class="accordion">🥇 Mes records<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Tes meilleurs scores</span></button>
+   <button class="accordion" id="acc-records">🥇 Mes records<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Tes meilleurs scores</span></button>
    <div class="panel" id="p-records"></div>
-   <button class="accordion">📊 7 dernières parties<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Progression en mathématiques</span></button>
+   <button class="accordion" id="acc-chart">📊 7 dernières parties<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Progression en mathématiques</span></button>
    <div class="panel"><div id="p-chart" class="chart-container"></div><div id="p-opstats" style="margin-top:8px;font-size:.83em;"></div></div>
-   <button class="accordion">📜 Historique détaillé<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Le détail de tes parties</span></button>
+   <button class="accordion" id="acc-history">📜 Historique détaillé<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Le détail de tes parties</span></button>
    <div class="panel" id="p-history"></div>
   </div>
  </div>
@@ -664,6 +667,10 @@
   
   <img src="assets/logo-circle.webp?v=1057" alt="" class="page-logo-circle" aria-hidden="true">
   <h2>&#128106; Vue Parent</h2>
+  <div id="parent-content-tours" class="hidden" style="text-align:center;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:0 0 10px;">
+   <button class="btn-revisit-tour" onclick="obReplay(1)">🔰 Revoir l'installation de démarrage</button>
+   <button class="btn-revisit-tour" id="btn-revisit-tour-2" onclick="obReplay(2)">🔰 Revoir la présentation de la Vue Parent</button>
+  </div>
   <div id="parent-lock">
    <p style="font-size:.9em;margin:4px 0;">Code parent :</p>
    <input type="password" id="pin-input" placeholder="****" style="width:50%;text-align:center;letter-spacing:6px;font-size:1.2em;" maxlength="4"><br>
@@ -684,9 +691,9 @@
     <p class="ptab-intro">Regarde comment ton enfant progresse.</p>
     <p class="ptab-sel-lbl">👤 Pour quel enfant&nbsp;?</p>
     <select id="parent-player" onchange="renderReport();renderReportView();" style="width:92%;margin-bottom:10px;"></select>
-    <button class="accordion">📈 Progression<span class="acc-sub">Niveau, zones conquises, étoiles, badges</span></button>
+    <button class="accordion" id="acc-progression">📈 Progression<span class="acc-sub">Niveau, zones conquises, étoiles, badges</span></button>
     <div class="panel"><div id="report-content"></div></div>
-    <button class="accordion">📊 Statistiques<span class="acc-sub">Parties, précision, opérations ratées</span></button>
+    <button class="accordion" id="acc-stats-parent">📊 Statistiques<span class="acc-sub">Parties, précision, opérations ratées</span></button>
     <div class="panel">
      <select id="report-view-mode" onchange="renderReportView()" style="width:95%;margin-bottom:10px;font-weight:700;">
       <option value="weekly">📊 Rapport hebdomadaire</option>
@@ -694,14 +701,14 @@
      </select>
      <div id="report-view-weekly"><p style="font-size:.88em;font-weight:700;color:#f1c40f;">🚧 Rapport hebdomadaire</p><div id="weekly-summary-zone"></div></div>
      <div id="report-view-errors" class="hidden"><p style="font-size:.88em;font-weight:700;color:#e74c3c;">❌ Opérations ratées (les plus récentes)</p><div id="errors-list-zone"></div></div>
-     <button onclick="exportPDF()" style="width:100%;margin-top:10px;background:#2c3e50;border:1px solid #f1c40f;">📄 Exporter un bilan PDF</button>
+     <button id="btn-export-pdf" onclick="exportPDF()" style="width:100%;margin-top:10px;background:#2c3e50;border:1px solid #f1c40f;">📄 Exporter un bilan PDF</button>
     </div>
    </div>
 
    <div id="ptab-encadrement" class="hidden">
     <p class="ptab-intro">Fixe des objectifs et des limites pour chaque enfant.</p>
 
-    <button class="accordion">📚 Devoir du jour<span class="acc-i" onclick="event.stopPropagation();pGuide('objectifs')">i</span><span class="acc-sub">Un exercice à réussir pour gagner des étoiles</span></button>
+    <button class="accordion" id="acc-hw">📚 Devoir du jour<span class="acc-i" onclick="event.stopPropagation();pGuide('objectifs')">i</span><span class="acc-sub">Un exercice à réussir pour gagner des étoiles</span></button>
     <div class="panel">
      <select id="hw-player" style="width:90%;margin-bottom:6px;" onchange="loadHomework()"></select>
      <select id="hw-subject" style="width:90%;margin-bottom:6px;" onchange="onHwSubjectChange()">
@@ -741,7 +748,7 @@
      <div id="hw-status" style="font-size:.78em;margin-top:6px;color:#f1c40f;"></div>
     </div>
 
-    <button class="accordion">⏰ Horaires autorisés<span class="acc-i" onclick="event.stopPropagation();pGuide('horaire')">i</span><span class="acc-sub">Les heures où l'enfant peut jouer</span></button>
+    <button class="accordion" id="acc-horaires">⏰ Horaires autorisés<span class="acc-i" onclick="event.stopPropagation();pGuide('horaire')">i</span><span class="acc-sub">Les heures où l'enfant peut jouer</span></button>
     <div class="panel">
      <select id="block-player" style="width:90%;margin-bottom:8px;" onchange="loadBlockSettings()"></select>
      <div style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:6px;">
@@ -757,7 +764,7 @@
      <div id="block-status" style="font-size:.78em;margin-top:6px;color:#f1c40f;"></div>
     </div>
 
-    <button class="accordion">🔢 Types de questions autorisés<span class="acc-i" onclick="event.stopPropagation();pGuide('filtres')">i</span><span class="acc-sub">Coupe certains types (additions, tables…)</span></button>
+    <button class="accordion" id="acc-filtres">🔢 Types de questions autorisés<span class="acc-i" onclick="event.stopPropagation();pGuide('filtres')">i</span><span class="acc-sub">Coupe certains types (additions, tables…)</span></button>
     <div class="panel">
      <select id="filter-player" style="width:90%;margin-bottom:8px;" onchange="loadFilterSettings()"></select>
      <select id="filter-subject" style="width:90%;margin-bottom:8px;" onchange="onFilterSubjectChange()">
@@ -772,7 +779,7 @@
      <div id="filter-status" style="font-size:.78em;margin-top:6px;color:#f1c40f;"></div>
     </div>
 
-    <button class="accordion">📖 Matières autorisées<span class="acc-i" onclick="event.stopPropagation();pGuide('matieres')">i</span><span class="acc-sub">N'autorise que certaines matières</span></button>
+    <button class="accordion" id="acc-matieres">📖 Matières autorisées<span class="acc-i" onclick="event.stopPropagation();pGuide('matieres')">i</span><span class="acc-sub">N'autorise que certaines matières</span></button>
     <div class="panel">
      <select id="bsubj-player" style="width:90%;margin-bottom:8px;" onchange="loadBlockedSubjects()"></select>
      <div id="bsubj-list" style="text-align:left;max-width:280px;margin:0 auto;"></div>
@@ -780,7 +787,7 @@
      <div id="bsubj-status" style="font-size:.78em;margin-top:6px;color:#f1c40f;"></div>
     </div>
 
-    <button class="accordion">✉️ Messagerie de l'enfant<span class="acc-i" onclick="event.stopPropagation();pGuide('messagerie')">i</span><span class="acc-sub">Suspends, surveille ou bloque des contacts</span></button>
+    <button class="accordion" id="acc-messagerie">✉️ Messagerie de l'enfant<span class="acc-i" onclick="event.stopPropagation();pGuide('messagerie')">i</span><span class="acc-sub">Suspends, surveille ou bloque des contacts</span></button>
     <div class="panel">
      <select id="enc-msg-player" style="width:90%;margin-bottom:8px;" onchange="renderOptMessaging(this.value)"></select>
      <div id="opt-messaging"></div>
@@ -792,7 +799,7 @@
     <p class="ptab-sel-lbl">👤 Profil concerné&nbsp;:</p>
     <select id="opt-profile" style="width:92%;margin-bottom:10px;padding:6px;" onchange="optSelectProfile()"></select>
 
-    <button class="accordion">☁️ Sauvegarde en ligne (code)<span class="acc-i" onclick="event.stopPropagation();pGuide('cloud')">i</span><span class="acc-sub">Retrouve ce profil sur un autre appareil</span></button>
+    <button class="accordion" id="acc-cloud">☁️ Sauvegarde en ligne (code)<span class="acc-i" onclick="event.stopPropagation();pGuide('cloud')">i</span><span class="acc-sub">Retrouve ce profil sur un autre appareil</span></button>
     <div class="panel">
      <p style="font-size:.72em;color:#bdc3c7;margin:0 0 8px;">Note bien le code : il sert à retrouver ce profil sur un autre appareil.</p>
      <select id="cloud-sync-player" class="hidden" onchange="renderCloudPanel()"></select>
@@ -806,7 +813,7 @@
      </div>
     </div>
 
-    <button class="accordion">💾 Sauvegarde dans un fichier<span class="acc-i" onclick="event.stopPropagation();pGuide('fichier')">i</span><span class="acc-sub">Télécharge ou réimporte ce profil</span></button>
+    <button class="accordion" id="acc-fichier">💾 Sauvegarde dans un fichier<span class="acc-i" onclick="event.stopPropagation();pGuide('fichier')">i</span><span class="acc-sub">Télécharge ou réimporte ce profil</span></button>
     <div class="panel">
      <select id="cloud-player" class="hidden"></select>
      <button onclick="exportProfileFile()" style="background:#2980b9;font-size:.86em;">💾 Télécharger le fichier</button>
@@ -815,16 +822,16 @@
      <p id="file-import-msg" style="font-size:.78em;margin-top:6px;"></p>
     </div>
 
-    <button class="accordion">🎂 Anniversaire<span class="acc-sub">Jour et mois d'anniversaire de l'enfant</span></button>
+    <button class="accordion" id="acc-birthday">🎂 Anniversaire<span class="acc-sub">Jour et mois d'anniversaire de l'enfant</span></button>
     <div class="panel"><div id="opt-birthday"></div></div>
 
-    <button class="accordion">🗑 Réinitialiser ce profil<span class="acc-sub">Efface la progression de ce profil</span></button>
+    <button class="accordion" id="acc-reset-one">🗑 Réinitialiser ce profil<span class="acc-sub">Efface la progression de ce profil</span></button>
     <div class="panel"><div id="opt-reset-one"></div></div>
 
     <hr style="border-color:rgba(255,255,255,.18);margin:16px 0 12px;">
     <p style="font-size:.78em;font-weight:700;color:#9aa6b2;letter-spacing:.04em;margin:0 0 10px;">TOUS LES ENFANTS</p>
 
-    <button class="accordion">👥 Ajouter, renommer ou retirer un enfant<span class="acc-i" onclick="event.stopPropagation();pGuide('profils')">i</span><span class="acc-sub">Gère la liste des profils</span></button>
+    <button class="accordion" id="acc-profils-manage">👥 Ajouter, renommer ou retirer un enfant<span class="acc-i" onclick="event.stopPropagation();pGuide('profils')">i</span><span class="acc-sub">Gère la liste des profils</span></button>
     <div class="panel">
      <div id="profile-manager" style="margin-bottom:12px;"></div>
      <p style="font-size:.8em;font-weight:700;color:#f1c40f;margin:8px 0 4px;">✏️ Renommer un profil</p>
@@ -834,7 +841,7 @@
      <p id="rename-msg" style="font-size:.78em;margin-top:6px;color:#2ecc71;"></p>
     </div>
 
-    <button class="accordion">📦 Tout sauvegarder (fichier global)<span class="acc-sub">Un seul fichier avec tous les profils</span></button>
+    <button class="accordion" id="acc-export-all">📦 Tout sauvegarder (fichier global)<span class="acc-sub">Un seul fichier avec tous les profils</span></button>
     <div class="panel">
      <p style="font-size:.72em;color:#bdc3c7;margin:0 0 6px;">Un seul fichier contenant tous les profils — pratique pour tout transférer d'un coup.</p>
      <button onclick="exportAllProfiles()" style="background:#2980b9;font-size:.86em;">📦 Télécharger tous les profils</button>
@@ -844,13 +851,13 @@
    <div id="ptab-avance" class="hidden">
     <p class="ptab-intro">Réglages techniques et dépannage. Touche l'icône <span class="acc-i" style="margin:0;">i</span> pour un guide pas à pas.</p>
 
-    <button class="accordion">🔄 Réparer la synchronisation entre appareils<span class="acc-i" onclick="event.stopPropagation();pGuide('synchro')">i</span><span class="acc-sub">Renvoie les données vers les autres appareils</span></button>
+    <button class="accordion" id="acc-synchro">🔄 Réparer la synchronisation entre appareils<span class="acc-i" onclick="event.stopPropagation();pGuide('synchro')">i</span><span class="acc-sub">Renvoie les données vers les autres appareils</span></button>
     <div class="panel">
      <p style="font-size:.72em;color:#bdc3c7;margin:0 0 6px;">Envoie l'identité de messagerie et les profils de cet appareil vers le cloud. À faire depuis l'appareil de référence (PC), puis recharger les autres.</p>
      <button onclick="chatForceSyncMessaging()" style="background:#8e44ad;font-size:.86em;">🔄 Envoyer vers les autres appareils</button>
     </div>
 
-    <button class="accordion">🩺 Diagnostic de synchronisation<span class="acc-i" onclick="event.stopPropagation();pGuide('diagnostic')">i</span><span class="acc-sub">Rapport technique à copier en cas de souci</span></button>
+    <button class="accordion" id="acc-diagnostic">🩺 Diagnostic de synchronisation<span class="acc-i" onclick="event.stopPropagation();pGuide('diagnostic')">i</span><span class="acc-sub">Rapport technique à copier en cas de souci</span></button>
     <div class="panel">
      <button onclick="showSyncDiag()" style="background:#f39c12;font-size:.84em;padding:7px 14px;">📋 Afficher le diagnostic</button>
      <button onclick="(function(){if(typeof clearSyncDiag==='function')clearSyncDiag();var z=document.getElementById('sync-diag-zone');if(z)z.value='';})()" style="background:#7f8c8d;font-size:.78em;padding:6px 12px;margin-left:4px;">🗑️ Effacer</button>
@@ -858,7 +865,7 @@
      <button onclick="(function(){var z=document.getElementById('sync-diag-zone');if(z){z.select();try{document.execCommand('copy');if(typeof toast==='function')toast('📋 Diagnostic copié !',2000);}catch(e){}}})()" style="background:#34495e;font-size:.8em;padding:6px 12px;margin-top:4px;">📋 Tout copier</button>
     </div>
 
-    <button class="accordion">🔑 Code parent<span class="acc-sub">Change le code et la question secrète</span></button>
+    <button class="accordion" id="acc-pin">🔑 Code parent<span class="acc-sub">Change le code et la question secrète</span></button>
     <div class="panel">
      <input type="password" id="new-pin" placeholder="Nouveau code (4 chiffres)" style="width:62%;" maxlength="4"><br>
      <p style="font-size:.74em;color:#bdc3c7;margin:8px 0 3px;">Question secrète (pour récupérer le code en cas d'oubli) :</p>
@@ -868,7 +875,7 @@
      <p id="pin-msg" style="font-size:.78em;color:#2ecc71;margin-top:6px;"></p>
     </div>
 
-    <button class="accordion" style="background:rgba(231,76,60,.15);color:#ff9b93;">⚠️ Tout réinitialiser<span class="acc-sub" style="color:#e0a9a4;">Remet TOUS les profils à zéro — irréversible</span></button>
+    <button class="accordion" id="acc-reset-all" style="background:rgba(231,76,60,.15);color:#ff9b93;">⚠️ Tout réinitialiser<span class="acc-sub" style="color:#e0a9a4;">Remet TOUS les profils à zéro — irréversible</span></button>
     <div class="panel">
      <p style="font-size:.72em;color:#bdc3c7;margin:0 0 6px;">Remet TOUS les profils à zéro. Action irréversible.</p>
      <button onclick="resetAllProfiles()" style="background:#c0392b;font-size:.86em;border:2px solid #ff6b6b;">🗑 Tout réinitialiser</button>
@@ -946,7 +953,8 @@
 <script src="js/14-primaire.js"></script>
   <script src="js/15-college.js"></script>
 <script src="js/17-messaging.js"></script>
-<script src="js/11-init.js?v=1082"></script>
+<script src="js/19-onboarding.js"></script>
+<script src="js/11-init.js?v=1083"></script>
 
 <!-- Enregistrement du Service Worker (mode hors-ligne + installation PWA) -->
 <script>

@@ -4886,3 +4886,66 @@ body.mat-mode #v-game{
 #v-menu select{ background-color:#14313f !important; color:#fff !important; }
 #menu1-playercard{ background:#153847 !important; border-color:rgba(241,196,15,.5) !important; }
 #app-version{ position:absolute; top:8px; left:10px; font-size:.6em; color:rgba(255,255,255,.5); z-index:5; letter-spacing:.5px; }
+
+/* ═══════════════════════════════════════════════════════
+   v11.6.0 — SYSTÈME D'INFOBULLES PAS-À-PAS (visites guidées)
+   3 visites indépendantes : Système 1 (installation parent),
+   Système 2 (présentation Vue Parent), Système 3 (visite du
+   compte joueur). Voir js/19-onboarding.js.
+   Ne remplace PAS et ne modifie PAS le système d'aide contextuelle
+   existant (.acc-i / pGuide() / PARENT_GUIDES) qui reste tel quel.
+   ═══════════════════════════════════════════════════════ */
+
+/* Boutons de relance (Vue Parent + Tableau de bord joueur) */
+.btn-revisit-tour{
+  background:rgba(58,160,196,.15); border:1px solid #3aa0c4; color:#7fd4f0;
+  font-size:.72em; padding:7px 12px; border-radius:20px; cursor:pointer;
+  font-weight:700; font-family:'Nunito',sans-serif;
+}
+.btn-revisit-tour:hover{ background:rgba(58,160,196,.28); }
+.btn-revisit-tour:disabled{
+  opacity:.4; cursor:not-allowed; border-color:rgba(255,255,255,.2); color:rgba(255,255,255,.4);
+}
+
+/* Conteneur plein écran de la visite guidée */
+#ob-overlay{ position:fixed; inset:0; z-index:500; }
+#ob-overlay.hidden{ display:none; }
+.ob-blocker{ position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:500; }
+/* Halo « spotlight » : matche exactement la zone ciblée, avec un immense
+   box-shadow qui assombrit tout le reste de l'écran (technique standard,
+   ne nécessite qu'un seul élément). */
+.ob-spotlight{
+  position:fixed; z-index:501; pointer-events:none; box-sizing:border-box;
+  border:3px solid #f1c40f; border-radius:10px;
+  box-shadow:0 0 0 9999px rgba(0,0,0,.62), 0 0 22px rgba(241,196,15,.55);
+  transition:top .25s ease, left .25s ease, width .25s ease, height .25s ease;
+}
+
+/* Bulle d'explication */
+.ob-box{
+  position:fixed; z-index:502; background:#12313a; border:1px solid #3aa0c4;
+  border-radius:16px; max-width:400px; width:90vw; padding:18px 20px 16px;
+  box-shadow:0 10px 34px rgba(0,0,0,.55); font-family:'Nunito',sans-serif;
+}
+.ob-box.ob-centered{
+  left:50% !important; top:50% !important; transform:translate(-50%,-50%);
+}
+.ob-progress{ display:flex; justify-content:center; gap:5px; margin-bottom:10px; flex-wrap:wrap; }
+.ob-dot{ width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.2); }
+.ob-dot.ob-done{ background:#3aa0c4; }
+.ob-dot.ob-current{ background:#f1c40f; width:8px; height:8px; }
+.ob-counter{ text-align:center; font-size:.66em; color:#7fd4f0; font-weight:700; letter-spacing:.05em; margin-bottom:8px; }
+.ob-icon{ font-size:2.2em; text-align:center; margin-bottom:4px; }
+.ob-title{ text-align:center; font-size:1.08em; font-weight:800; color:#fff; margin:0 0 10px; }
+.ob-body{ font-size:.85em; line-height:1.6; color:#dce8ea; }
+.ob-body b{ color:#f1c40f; }
+.ob-body code{ background:rgba(0,0,0,.3); padding:1px 6px; border-radius:4px; color:#7fd4f0; font-size:.92em; }
+.ob-nav{ display:flex; justify-content:space-between; align-items:center; margin-top:16px; gap:8px; }
+.ob-nav button{ border:none; border-radius:8px; padding:9px 14px; font-size:.82em; cursor:pointer; font-weight:700; font-family:'Nunito',sans-serif; }
+.ob-btn-prev{ background:rgba(255,255,255,.1); color:#bdc3c7; }
+.ob-btn-next{ background:#3aa0c4; color:#fff; flex:1; margin:0 8px; }
+.ob-btn-skip{ background:transparent; color:#7f8c8d; font-weight:400; text-decoration:underline; font-size:.74em; cursor:pointer; border:none; }
+
+@media (max-width:480px){
+  .ob-box{ max-width:92vw; padding:16px; }
+}

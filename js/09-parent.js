@@ -22,6 +22,7 @@ function checkPin(){
  if(checkStoredPin(pin)){
   pinAttempts=0;
   $('parent-lock').classList.add('hidden');$('parent-content').classList.remove('hidden');renderReport();renderReportView();
+  if(typeof obOnParentUnlocked==='function') obOnParentUnlocked();
  }else{
   pinAttempts++;
   if(pinAttempts>=5){pinLockUntil=Date.now()+30000;pinAttempts=0;toast('🔒 5 tentatives échouées. Bloqué 30 secondes !',3500);}
