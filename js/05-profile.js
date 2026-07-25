@@ -207,6 +207,12 @@ function validateProfile(raw, defaultName){
   // Chantier Cloud Sync : préserver le code joueur et le statut d'activation
   cloudCode: _safeStr(raw.cloudCode, 40, null),
   cloudEnabled: _safeBool(raw.cloudEnabled, false),
+  // v11.6.2 — marqueur "visite du compte déjà vue" (système d'onboarding,
+  // 19-onboarding.js). Sans cette ligne, le champ n'étant pas dans cette
+  // liste blanche, il était silencieusement effacé à CHAQUE rechargement
+  // du profil (retour à l'accueil, changement de joueur, etc.), ce qui
+  // relançait la visite guidée en boucle malgré ob3MarkCompleted().
+  onbAccountSeen: _safeBool(raw.onbAccountSeen, false),
  };
  // v8.7.33 : MIGRATION RÉTROACTIVE pour le bug critique de GS.isBoss.
  // Avant ce fix, mapBossBeaten n'était pas mis à jour quand un joueur battait le boss
@@ -248,7 +254,7 @@ function defProfile(name){
   histCatFilters:{frise:true,personnages:true,evenements:true,civilisation:true,temps:true,repere:true},
   frCatFilters:{conj:true,orth:true,gram:true,vocab:true},
   heroStageId:'oeuf',
-  cloudCode:null,cloudEnabled:false};
+  cloudCode:null,cloudEnabled:false,onbAccountSeen:false};
 }
 function fillPlayerSelect(){
  const sel=$('playerSelect'); if(!sel) return;
