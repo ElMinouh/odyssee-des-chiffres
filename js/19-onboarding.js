@@ -152,7 +152,7 @@ const OB_STEPS_3 = [
    body:"Ces deux cases activent ou coupent la voix qui lit les questions à voix haute, et la musique de fond du jeu.",
    nav:{view:'v-menu'}, target:'menu1-toggles-row' },
  { icon:'☁️', title:'La sauvegarde en ligne',
-   body:"Si ce bandeau apparaît, c'est qu'un parent peut activer une sauvegarde en ligne de ta progression, pour la retrouver sur un autre appareil. S'il n'apparaît pas, c'est simplement qu'elle est déjà activée, ou pas encore proposée.",
+   body:"Ce bloc t'indique si ta progression est sauvegardée en ligne. S'il affiche « Activer », elle n'est encore enregistrée que sur cet appareil : tape dessus pour la retrouver aussi sur une tablette ou un autre téléphone. S'il affiche une coche verte, c'est déjà fait !",
    nav:{view:'v-menu'}, target:'cloud-optin-banner' },
  { icon:'✉️', title:'La messagerie',
    body:"Si ce bouton est visible, tu peux échanger de courts messages avec des amis, grâce à un code ami (jamais de recherche libre). Un parent peut à tout moment consulter tes conversations.",

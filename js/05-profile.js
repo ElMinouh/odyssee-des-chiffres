@@ -318,7 +318,7 @@ function loadProfile(){
  if(typeof saveProfile==='function') saveProfile();
  if(typeof cancelCloudSync==='function') cancelCloudSync();
  if(P.cloudEnabled && typeof scheduleCloudSync==='function') scheduleCloudSync();
- if(typeof showCloudOptInBannerIfRelevant==='function') setTimeout(showCloudOptInBannerIfRelevant, 200);
+ if(typeof refreshCloudIndicator==='function') setTimeout(refreshCloudIndicator, 200);
  if(typeof obMaybeAutoStart3==='function') setTimeout(obMaybeAutoStart3, 400);
 }
 // saveProfile avec debounce : évite de sérialiser à chaque micro-action (quêtes, badges…)

@@ -158,6 +158,7 @@ async function pushProfileToCloud(forceFirst=false){
   _cloudLastSync = Date.now();
   _cloudLastError = null;
   _cloudLog('sync OK à', new Date(_cloudLastSync).toISOString());
+  if(typeof refreshCloudIndicator==='function') refreshCloudIndicator();
   return true;
  } catch(e){
   _cloudLastError = e.message || 'erreur réseau';
@@ -418,9 +419,9 @@ function initCloudSync(){
   // Sync initial 3 sec après chargement (laisse le temps à l'UI de se monter)
   setTimeout(() => pushProfileToCloud(), 3000);
  }
- // Bandeau opt-in si pertinent (déclenché légèrement plus tard pour ne pas
+ // Indicateur de statut (déclenché légèrement plus tard pour ne pas
  // surcharger le boot)
- setTimeout(() => showCloudOptInBannerIfRelevant(), 1500);
+ setTimeout(() => refreshCloudIndicator(), 1500);
 }
 
 // ══════════════ HOOK DE FIN DE PARTIE ══════════════
@@ -432,60 +433,38 @@ function syncCloudOnEndGame(){
  }
 }
 
-// ══════════════ BANDEAU OPT-IN (Décision 2 = option B) ══════════════
-// Affiché si :
-//   - le profil actif a au moins 100 XP (= a déjà joué un peu)
-//   - le cloud n'est pas activé
-//   - le bandeau n'a pas été dismissé récemment (< 7 jours) ou définitivement
-const CLOUD_BANNER_DISMISS_KEY = 'cloud_banner_dismiss';
-const CLOUD_BANNER_REMIND_DAYS = 7;
-
-function shouldShowCloudOptInBanner(){
- if(!P) return false;
- if(P.cloudEnabled) return false;
- if((P.xp || 0) < 100) return false; // attendre que le joueur ait joué un peu
- try{
-  const raw = localStorage.getItem(CLOUD_BANNER_DISMISS_KEY);
-  if(raw){
-   const data = JSON.parse(raw);
-   if(data.permanent) return false;
-   if(data.until && Date.now() < data.until) return false;
-  }
- }catch(e){}
- return true;
-}
-
-function showCloudOptInBannerIfRelevant(){
- const banner = document.getElementById('cloud-optin-banner');
- if(!banner) return;
- if(shouldShowCloudOptInBanner()){
-  banner.classList.remove('hidden');
- } else {
-  banner.classList.add('hidden');
+// ══════════════ INDICATEUR PERMANENT DE STATUT (v11.6.3) ══════════════
+// Remplace l'ancien bandeau conditionnel (masqué tant que le profil n'avait
+// pas 100 XP) par un indicateur toujours visible sous la carte joueur :
+//   - état "off" : cloud pas encore activé → bouton d'activation direct.
+//   - état "on"  : cloud activé → simple statut + heure de dernière synchro.
+// Le conteneur externe garde l'id historique 'cloud-optin-banner' (cible du
+// pas-à-pas onboarding, système 3, étape 4/28 — ne pas renommer sans mettre
+// à jour 19-onboarding.js en conséquence).
+function refreshCloudIndicator(){
+ const off = document.getElementById('cloud-status-off');
+ const on = document.getElementById('cloud-status-on');
+ if(!off || !on) return;
+ if(!P || !P.cloudEnabled){
+  off.classList.remove('hidden');
+  on.classList.add('hidden');
+  return;
+ }
+ off.classList.add('hidden');
+ on.classList.remove('hidden');
+ const lastEl = document.getElementById('cloud-last-sync');
+ if(lastEl){
+  lastEl.textContent = _cloudLastSync
+   ? 'Dernière synchro : ' + new Date(_cloudLastSync).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'})
+   : 'Synchronisation en attente…';
  }
 }
 
 async function cloudOptInActivate(){
  if(typeof enableCloudSync === 'function'){
-  const ok = await enableCloudSync();
-  if(ok){
-   const banner = document.getElementById('cloud-optin-banner');
-   if(banner) banner.classList.add('hidden');
-  }
+  await enableCloudSync();
+  refreshCloudIndicator();
  }
-}
-
-function cloudOptInDismiss(permanent){
- try{
-  if(permanent){
-   localStorage.setItem(CLOUD_BANNER_DISMISS_KEY, JSON.stringify({permanent:true}));
-  } else {
-   const until = Date.now() + CLOUD_BANNER_REMIND_DAYS * 24 * 3600 * 1000;
-   localStorage.setItem(CLOUD_BANNER_DISMISS_KEY, JSON.stringify({permanent:false, until}));
-  }
- }catch(e){}
- const banner = document.getElementById('cloud-optin-banner');
- if(banner) banner.classList.add('hidden');
 }
 
 // ══════════════ SAUVEGARDE À LA FERMETURE ══════════════
