@@ -4908,14 +4908,24 @@ body.mat-mode #v-game{
 }
 
 /* Conteneur plein écran de la visite guidée */
-#ob-overlay{ position:fixed; inset:0; z-index:500; }
+/* v11.6.8 — CORRECTIF CRITIQUE : #ob-overlay (position:fixed;inset:0) capte
+   tous les clics par défaut (pointer-events:auto implicite), MÊME là où
+   aucun enfant n'est affiché (le "trou" entre les 4 pans n'était que
+   visuel — le conteneur parent, lui, couvrait et bloquait toujours tout).
+   C'est ce qui empêchait toute saisie réelle pendant les visites guidées,
+   malgré le découpage en 4 pans. On neutralise donc le conteneur par
+   défaut, et on ne réactive les clics QUE sur les éléments qui doivent
+   réellement les intercepter (pans opaques + bulle) — pointer-events est
+   une propriété héritée, donc sans ce réglage explicite sur chaque enfant,
+   ils auraient hérité du "none" du conteneur. */
+#ob-overlay{ position:fixed; inset:0; z-index:500; pointer-events:none; }
 #ob-overlay.hidden{ display:none; }
-.ob-blocker{ position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:500; }
+.ob-blocker{ position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:500; pointer-events:auto; }
 /* v11.6.5 — 4 pans opaques encadrant EXACTEMENT la cible en surbrillance :
    contrairement à l'ancien .ob-blocker plein écran (purement visuel), ces
    pans laissent un vrai trou par-dessus la cible, qui redevient donc
    réellement cliquable/saisissable (voir _obPositionBox, 19-onboarding.js). */
-.ob-blocker-piece{ position:fixed; background:rgba(0,0,0,.45); z-index:500; }
+.ob-blocker-piece{ position:fixed; background:rgba(0,0,0,.45); z-index:500; pointer-events:auto; }
 /* Halo « spotlight » : bordure dorée qui matche exactement la zone ciblée
    (le fond assombri est désormais assuré par .ob-blocker-piece, plus par
    un box-shadow à spread géant). */
@@ -4937,7 +4947,7 @@ body.mat-mode #v-game{
    _obPositionBox() dans 19-onboarding.js). */
 .ob-box{
   position:fixed; z-index:502; background:#12313a; border:1px solid #3aa0c4;
-  border-radius:16px; max-width:400px; width:90vw;
+  border-radius:16px; max-width:400px; width:90vw; pointer-events:auto;
   box-shadow:0 10px 34px rgba(0,0,0,.55); font-family:'Nunito',sans-serif;
   display:flex; flex-direction:column; overflow:hidden;
 }

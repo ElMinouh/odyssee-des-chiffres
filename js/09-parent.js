@@ -1554,15 +1554,55 @@ function _refreshAllParentPlayerSelects(){
  if(typeof optFillProfiles==='function') optFillProfiles();
  if(typeof _encFillMsgPlayer==='function') _encFillMsgPlayer();
 }
+// v11.6.8 : sécurisation de la suppression par re-saisie exacte du prénom
+// (remplace l'ancien confirm() natif, jugé insuffisamment engageant).
+let _pmDeleteTarget = null;
 function pmRemoveProfile(n){
- if(!n || typeof removeFromRoster!=='function') return;
- if(!confirm('Retirer « '+n+' » de la liste ?\n\nSa progression reste sauvegardée sur l\'appareil et réapparaîtra si tu le rajoutes.')) return;
+ if(!n) return;
+ _pmDeleteTarget = n;
+ const _e=(typeof esc==='function')?esc:(s=>String(s));
+ const ov = document.createElement('div');
+ ov.id='pm-delete-overlay';
+ ov.style.cssText='position:fixed;inset:0;z-index:610;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:20px;';
+ ov.innerHTML = '<div style="background:#2c1414;border:1px solid rgba(231,76,60,.4);border-radius:18px;padding:24px 20px;text-align:center;max-width:340px;width:100%;">'
+  + '<div style="font-size:2.6em;margin-bottom:6px;">⚠️</div>'
+  + '<div style="font-size:1.2em;font-weight:800;color:#e74c3c;margin-bottom:8px;">Supprimer ce profil ?</div>'
+  + '<div style="font-size:.88em;color:#dce3f0;line-height:1.5;margin-bottom:16px;">Pour confirmer, retape le prénom exact du profil à retirer : <b style="color:#f1c40f;">'+_e(n)+'</b><br>Sa progression restera stockée sur l\'appareil et réapparaîtra si tu le rajoutes.</div>'
+  + '<input type="text" id="pm-delete-input" placeholder="Tape « '+_e(n)+' »" autocomplete="off" style="width:100%;box-sizing:border-box;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;padding:10px;text-align:center;font-size:1em;margin-bottom:6px;" oninput="_pmCheckDeleteInput()" onkeydown="if(event.key===\'Enter\')_pmConfirmDelete()">'
+  + '<div id="pm-delete-err" style="font-size:.78em;color:#e74c3c;min-height:1.1em;margin-bottom:10px;"></div>'
+  + '<div style="display:flex;gap:10px;justify-content:center;">'
+  +  '<button onclick="_pmCloseDeleteConfirm()" style="background:#555;color:#fff;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:.88em;">Annuler</button>'
+  +  '<button id="pm-delete-btn" onclick="_pmConfirmDelete()" disabled style="background:#7f1d1d;color:#ffb4ac;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:.88em;cursor:not-allowed;">🗑 Supprimer</button>'
+  + '</div></div>';
+ document.body.appendChild(ov);
+ setTimeout(()=>{ const inp=document.getElementById('pm-delete-input'); if(inp) inp.focus(); }, 50);
+}
+function _pmCheckDeleteInput(){
+ const inp=document.getElementById('pm-delete-input'), btn=document.getElementById('pm-delete-btn'), err=document.getElementById('pm-delete-err');
+ if(!inp||!btn) return;
+ const match = inp.value === _pmDeleteTarget;
+ btn.disabled = !match;
+ btn.style.background = match ? '#e74c3c' : '#7f1d1d';
+ btn.style.color = match ? '#fff' : '#ffb4ac';
+ btn.style.cursor = match ? 'pointer' : 'not-allowed';
+ if(err) err.textContent = (inp.value && !match) ? 'Le prénom ne correspond pas.' : '';
+}
+function _pmCloseDeleteConfirm(){
+ const ov=document.getElementById('pm-delete-overlay'); if(ov) ov.remove();
+ _pmDeleteTarget=null;
+}
+function _pmConfirmDelete(){
+ const inp=document.getElementById('pm-delete-input');
+ const n=_pmDeleteTarget;
+ if(!n || !inp || inp.value!==n || typeof removeFromRoster!=='function') return;
  removeFromRoster(n);
  if(_pmRenameOpen===n) _pmRenameOpen=null;
+ _pmCloseDeleteConfirm();
  renderProfileManager();
  if(typeof fillPlayerSelect==='function') fillPlayerSelect();
  if(typeof optFillProfiles==='function') optFillProfiles();
  if(typeof _refreshAllParentPlayerSelects==='function') _refreshAllParentPlayerSelects();
+ if(typeof toast==='function') toast('🗑 Profil « '+n+' » retiré.',2000);
 }
 
 function pmSetBirthday(name, field, val){

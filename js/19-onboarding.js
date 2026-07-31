@@ -468,19 +468,34 @@ function _obPositionBox(step, targetEl){
   if(bpL){ bpL.style.top=holeTop+'px'; bpL.style.left='0px'; bpL.style.width=holeLeft+'px'; bpL.style.height=holeH+'px'; }
   if(bpR){ bpR.style.top=holeTop+'px'; bpR.style.left=holeRight+'px'; bpR.style.width=Math.max(0,vw-holeRight)+'px'; bpR.style.height=holeH+'px'; }
 
-  // v11.6.7 — CORRECTIF (étapes 1/10 et 4/10 signalées masquées) : la bulle
-  // n'essaie plus de se placer au-dessus/en dessous de la cible (l'ancienne
-  // logique retombait sur un centrage qui RECOUVRAIT alors la cible quand
-  // celle-ci était plus grande que l'espace dispo dessus + dessous). Elle
-  // est désormais TOUJOURS ancrée en tiroir plein largeur au bas de l'écran :
-  // la cible, scrollée en haut de l'écran juste avant (voir _obRenderStep),
-  // reste ainsi toujours entièrement visible ET cliquable au-dessus.
-  const drawerMaxH = Math.min(vh*0.46, vh-40);
-  box.style.maxHeight = drawerMaxH+'px';
+  // v11.6.8 — CORRECTIF (cibles en bas de page cachées par le tiroir bas
+  // systématique de la v11.6.7) : on ancre désormais la bulle du côté
+  // (HAUT ou BAS) qui a le PLUS d'espace libre RÉEL autour de la cible,
+  // mesuré après le scroll. Un ancrage systématique en bas ne fonctionne
+  // pas pour une cible déjà tout en bas de la page : impossible de la faire
+  // remonter en haut de l'écran (plus rien à faire défiler en dessous), donc
+  // le tiroir bas la recouvrait. Un minimum de 130px est garanti même dans
+  // les cas extrêmes (cible qui occupe presque tout l'écran) ; le contenu
+  // de la bulle défile alors en interne (.ob-box-scroll) plutôt que de
+  // déborder ou d'être rogné.
+  const spaceAbove = r.top;
+  const spaceBelow = vh - r.bottom;
+  const gap = 8, MIN_DRAWER = 130;
+  const dockBottom = spaceBelow >= spaceAbove;
+  const avail = Math.max(MIN_DRAWER, (dockBottom ? spaceBelow : spaceAbove) - gap);
+  const drawerH = Math.min(vh*0.46, vh-40, avail);
+
   box.style.position='fixed';
-  box.style.left='0px'; box.style.right='0px'; box.style.bottom='0px'; box.style.top='auto';
   box.style.width='100%'; box.style.maxWidth='none';
-  box.style.borderRadius='16px 16px 0 0';
+  box.style.maxHeight = drawerH+'px';
+  box.style.left='0px'; box.style.right='0px';
+  if(dockBottom){
+   box.style.top='auto'; box.style.bottom='0px';
+   box.style.borderRadius='16px 16px 0 0';
+  } else {
+   box.style.top='0px'; box.style.bottom='auto';
+   box.style.borderRadius='0 0 16px 16px';
+  }
  }catch(e){
   // Filet de sécurité ultime : si le calcul échoue pour une raison
   // quelconque, on recentre plutôt que de risquer un blocage silencieux.
@@ -495,10 +510,12 @@ try{
   _obPositionBox(step, t);
  };
  window.addEventListener('resize', _obReposition);
- // v11.6.5 : la cible peut aussi se déplacer si la page défile (panneau
- // plus grand que l'écran) — sans ça, le trou cliquable se désynchronisait
- // de la cible réelle après un scroll.
+ // v11.6.8 : la page ne défile pas au niveau de la fenêtre mais dans le
+ // conteneur #gc (overflow-y:auto) — sans ce second listener, repositionner
+ // au scroll ne marchait tout simplement jamais en usage réel.
  window.addEventListener('scroll', _obReposition, {passive:true});
+ const _obGc = document.getElementById('gc');
+ if(_obGc) _obGc.addEventListener('scroll', _obReposition, {passive:true});
 }catch(e){}
 
 function obNext(){ _obIdx++; _obRenderStep(); }
