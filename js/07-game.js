@@ -7,7 +7,7 @@
 // (Carte : 07-map.js. Boss/collection/décor : 07-boss.js. Histoire/livres : 07-story.js.)
 
 var _bgAudio=null;
-function _musicDuck(on){ if(_bgAudio){ try{ _bgAudio.volume = on ? 0.06 : 0.4; }catch(e){} } } // baisse la musique pendant la voix
+function _musicDuck(on){ if(_bgAudio){ try{ _bgAudio.volume = on ? 0.03 : 0.4; }catch(e){} } } // baisse la musique pendant la voix (v11.6.4 : 0.06→0.03, la voix restait couverte)
 function startMusic(){
  stopMusic();
  const m=(typeof MUSICS!=='undefined')?(MUSICS.find(x=>x.id===((P&&P.music)||'theme'))||MUSICS[0]):null;
@@ -59,7 +59,7 @@ function renderSkills(){
   return `<div class="skill-item"><span>${label} Niv.${lvl}</span><button onclick="buySkill('${s}')"${lvl>=3?' disabled':''}>${lvl>=3?'MAX':price+' ⭐'}</button></div>`;
  }).join('');
 }
-function spend(amt,cb){if((P.stars||0)<amt){beep(200,'sawtooth');return false;}P.stars-=amt;cb();saveProfileNow();updateMenuUI();beep(800,'sine',.3);return true;}
+function spend(amt,cb){if((P.stars||0)<amt){beep(200,'sawtooth');return false;}P.stars-=amt;cb();saveProfileNow();updateMenuUI();if($('th-stars'))$('th-stars').textContent=P.stars||0;if(typeof renderRecords==='function'&&$('p-records'))renderRecords();beep(800,'sine',.3);return true;}
 function buySkill(s){if((P.skills[s]||0)>=3)return;spend(((P.skills[s]||0)+1)*20,()=>{P.skills[s]=(P.skills[s]||0)+1;renderSkills();});}
 function buyItem(it,price){spend(price,()=>{P.inventory[it]=(P.inventory[it]||0)+1;updateMenuUI();toast('Acheté !');});}
 function useItem(it){

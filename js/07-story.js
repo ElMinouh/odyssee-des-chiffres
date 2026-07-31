@@ -1493,6 +1493,19 @@ function _maybeShowStory(){
  try{
   if(_STORY.epilogue && !P.storySeen.includes(_STORY.epilogue.id) && _regionConquered(_lastRegionId())){
    _markStorySeen(_STORY.epilogue.id);
+   // v11.6.5 : bonus de fin de scénario complet (+200⭐), crédité une seule
+   // fois par Odyssée terminée. _epilogueBonusCredited évite tout recrédit
+   // si l'épilogue est revu plus tard (rejouable). Les joueurs ayant déjà
+   // terminé une Odyssée AVANT l'existence de ce bonus sont crédités
+   // rétroactivement via la migration dans validateProfile() (05-profile.js).
+   P._epilogueBonusCredited = P._epilogueBonusCredited || [];
+   if(!P._epilogueBonusCredited.includes(_STORY.epilogue.id)){
+    P._epilogueBonusCredited.push(_STORY.epilogue.id);
+    P.stars = (P.stars || 0) + 200;
+    if(typeof saveProfileNow==='function') saveProfileNow();
+    if(typeof updateMenuUI==='function') updateMenuUI();
+    if(typeof toast==='function') toast('🏆 Odyssée terminée ! +200⭐', 3000);
+   }
    // Si l'aventure a une « histoire du Livre » (Histoire B), elle s'enchaîne juste
    // après l'épilogue, en récompense.
    const _after = (_STORY.bookTale) ? (function(){ try{ _markStorySeen(_STORY.bookTale.id); _showStoryModal(_STORY.bookTale, null); }catch(e){} }) : null;

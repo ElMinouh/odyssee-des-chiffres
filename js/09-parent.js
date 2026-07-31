@@ -1412,7 +1412,31 @@ function pmAddProfile(){
  i.value='';
  renderProfileManager();
  if(typeof fillPlayerSelect==='function') fillPlayerSelect();
+ // v11.6.5 : fillPlayerSelect() ne rafraîchit que le sélecteur de l'écran
+ // d'accueil. Sans la ligne suivante, un profil ajouté PENDANT une session
+ // Vue Parent restait absent des sélecteurs de l'onglet Encadrement
+ // (hw-player, block-player, filter-player, bsubj-player…) tant que la Vue
+ // Parent n'était pas refermée puis rouverte.
+ _refreshAllParentPlayerSelects();
+ // v11.6.5 : pendant le Système 1 (installation initiale), mémorise ce
+ // profil pour que les étapes suivantes (anniversaire, cloud, fichier,
+ // messagerie, matières, horaires, filtres) le ciblent automatiquement.
+ if(typeof _obNoteProfileCreated==='function') _obNoteProfileCreated(n);
  if(typeof toast==='function')toast('✅ Profil ajouté : '+n,2000);
+}
+// v11.6.5 : rafraîchit TOUS les sélecteurs de profil de la Vue Parent
+// (pas seulement celui de l'écran d'accueil), en préservant la sélection
+// en cours quand elle reste valide.
+function _refreshAllParentPlayerSelects(){
+ const opts=(typeof getRoster==='function'?getRoster():[]).map(n=>`<option>${n}</option>`).join('');
+ ['parent-player','obj-player','block-player','filter-player','hw-player','bsubj-player'].forEach(id=>{
+  const e=$(id); if(!e) return;
+  const cur=e.value;
+  e.innerHTML=opts;
+  if(cur && Array.prototype.some.call(e.options, o=>o.value===cur)) e.value=cur;
+ });
+ if(typeof optFillProfiles==='function') optFillProfiles();
+ if(typeof _encFillMsgPlayer==='function') _encFillMsgPlayer();
 }
 function pmRemoveProfile(n){
  if(!n || typeof removeFromRoster!=='function') return;

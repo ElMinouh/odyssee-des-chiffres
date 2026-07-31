@@ -213,6 +213,10 @@ function validateProfile(raw, defaultName){
   // du profil (retour à l'accueil, changement de joueur, etc.), ce qui
   // relançait la visite guidée en boucle malgré ob3MarkCompleted().
   onbAccountSeen: _safeBool(raw.onbAccountSeen, false),
+  // v11.6.5 — épilogues déjà crédités du bonus de fin de scénario (+200⭐),
+  // pour ne jamais le recréditer deux fois (voir migration rétroactive
+  // juste après, et le crédit "à chaud" dans _maybeShowStory, 07-story.js).
+  _epilogueBonusCredited: _safeArr(raw._epilogueBonusCredited).filter(s => typeof s === 'string'),
  };
  // v8.7.33 : MIGRATION RÉTROACTIVE pour le bug critique de GS.isBoss.
  // Avant ce fix, mapBossBeaten n'était pas mis à jour quand un joueur battait le boss
@@ -231,6 +235,26 @@ function validateProfile(raw, defaultName){
    out.mapBossBeaten = Array.from(beatenSet);
   }
  }catch(e){ console.warn('mapBossBeaten migration failed', e); }
+ // v11.6.5 : MIGRATION RÉTROACTIVE — bonus de +200⭐ pour Odyssée(s) déjà
+ // terminée(s) AVANT l'introduction de ce bonus. Pour chaque épilogue déjà
+ // présent dans storySeen mais pas encore dans _epilogueBonusCredited, on
+ // crédite 200⭐ une seule fois, puis on marque l'épilogue comme "déjà
+ // crédité" pour ne plus jamais le recréditer aux chargements suivants.
+ try{
+  const ALL_EPILOGUE_IDS = ['epilogue','mat_epilogue','matfr_epilogue','primfr_epilogue','primhist_epilogue','col_epilogue','colfr_epilogue'];
+  const credited = new Set(out._epilogueBonusCredited || []);
+  let _toCredit = 0;
+  ALL_EPILOGUE_IDS.forEach(eid => {
+   if(out.storySeen.includes(eid) && !credited.has(eid)){
+    credited.add(eid);
+    _toCredit += 200;
+   }
+  });
+  if(_toCredit > 0){
+   out.stars = (out.stars || 0) + _toCredit;
+   out._epilogueBonusCredited = Array.from(credited);
+  }
+ }catch(e){ console.warn('epilogue bonus migration failed', e); }
  return out;
 }
 
@@ -254,7 +278,7 @@ function defProfile(name){
   histCatFilters:{frise:true,personnages:true,evenements:true,civilisation:true,temps:true,repere:true},
   frCatFilters:{conj:true,orth:true,gram:true,vocab:true},
   heroStageId:'oeuf',
-  cloudCode:null,cloudEnabled:false,onbAccountSeen:false};
+  cloudCode:null,cloudEnabled:false,onbAccountSeen:false,_epilogueBonusCredited:[]};
 }
 function fillPlayerSelect(){
  const sel=$('playerSelect'); if(!sel) return;

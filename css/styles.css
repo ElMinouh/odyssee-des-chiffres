@@ -4911,13 +4911,18 @@ body.mat-mode #v-game{
 #ob-overlay{ position:fixed; inset:0; z-index:500; }
 #ob-overlay.hidden{ display:none; }
 .ob-blocker{ position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:500; }
-/* Halo « spotlight » : matche exactement la zone ciblée, avec un immense
-   box-shadow qui assombrit tout le reste de l'écran (technique standard,
-   ne nécessite qu'un seul élément). */
+/* v11.6.5 — 4 pans opaques encadrant EXACTEMENT la cible en surbrillance :
+   contrairement à l'ancien .ob-blocker plein écran (purement visuel), ces
+   pans laissent un vrai trou par-dessus la cible, qui redevient donc
+   réellement cliquable/saisissable (voir _obPositionBox, 19-onboarding.js). */
+.ob-blocker-piece{ position:fixed; background:rgba(0,0,0,.45); z-index:500; }
+/* Halo « spotlight » : bordure dorée qui matche exactement la zone ciblée
+   (le fond assombri est désormais assuré par .ob-blocker-piece, plus par
+   un box-shadow à spread géant). */
 .ob-spotlight{
   position:fixed; z-index:501; pointer-events:none; box-sizing:border-box;
   border:3px solid #f1c40f; border-radius:10px;
-  box-shadow:0 0 0 9999px rgba(0,0,0,.62), 0 0 22px rgba(241,196,15,.55);
+  box-shadow:0 0 22px rgba(241,196,15,.55);
   transition:top .25s ease, left .25s ease, width .25s ease, height .25s ease;
 }
 

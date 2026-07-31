@@ -223,7 +223,7 @@
 
  <!-- ═══ ÉCRAN « CHOISIS TA MATIÈRE » (multi-matières) ═══ -->
  <div id="v-subjects" class="hidden">
-  <div class="back-top-bar"><button class="back-top-btn" onclick="navBack()">&#8592; Retour</button></div>
+  <div class="back-top-bar" style="display:flex;justify-content:space-between;align-items:center;"><button class="back-top-btn" onclick="navBack()">&#8592; Retour</button><button class="back-top-btn" onclick="toggleSettings()" style="background:#34495e;">&#128202; Tableau de bord</button></div>
   <div style="text-align:center;margin:4px 0 2px;">
    <div style="font-size:.72em;letter-spacing:3px;color:#8aa0c8;text-transform:uppercase;">Joueur : <span id="subj-player">Joueur</span></div>
    <div style="font-size:1.5em;font-weight:800;color:#f1c40f;margin-top:4px;">Choisis ta matière</div>
@@ -962,7 +962,7 @@
   <script src="js/15-college.js"></script>
 <script src="js/17-messaging.js"></script>
 <script src="js/19-onboarding.js"></script>
-<script src="js/11-init.js?v=1086"></script>
+<script src="js/11-init.js?v=1088"></script>
 
 <!-- Enregistrement du Service Worker (mode hors-ligne + installation PWA) -->
 <script>

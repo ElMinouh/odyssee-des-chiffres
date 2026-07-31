@@ -1,7 +1,7 @@
 // 19-onboarding.js — L'Odyssée du Savoir
 'use strict';
 // ═══════════════════════════════════════════════════════
-// SYSTÈME D'INFOBULLES PAS-À-PAS (visites guidées) — v11.6.0
+// SYSTÈME D'INFOBULLES PAS-À-PAS (visites guidées) — v11.6.5
 //
 // 3 visites guidées séquentielles, indépendantes du système d'aide
 // contextuelle déjà en place (icônes "i" / pGuide() / PARENT_GUIDES,
@@ -11,6 +11,12 @@
 //              Déclenché automatiquement au tout premier déverrouillage
 //              réussi de la Vue Parent. Relançable via le bouton
 //              "🔰 Revoir l'installation de démarrage" (Vue Parent).
+//              v11.6.5 : VÉRITABLEMENT interactive — la zone en
+//              surbrillance est réellement cliquable/saisissable (le
+//              reste de l'écran seul est bloqué), et les étapes 3 à 10
+//              ciblent automatiquement le profil créé à l'étape 2 (voir
+//              _obPendingProfile plus bas), sans rien forcer si aucun
+//              profil n'a été créé pendant cette visite.
 //  Système 2 — 21 étapes — Présentation exhaustive de la Vue Parent.
 //              Déclenché automatiquement une seule fois, juste après que
 //              le Système 1 a été TERMINÉ avec succès (bouton "Terminer",
@@ -27,6 +33,22 @@
 //   target   : id DOM de l'élément à mettre en surbrillance (optionnel)
 //   accordion: true si `target` est un bouton .accordion à déplier au besoin
 // ═══════════════════════════════════════════════════════
+
+// v11.6.5 — Pour les étapes du Système 1 qui pilotent un réglage PAR PROFIL
+// (anniversaire, cloud, fichier, messagerie, matières, horaires, filtres),
+// associe le sélecteur de profil concerné + la fonction à rappeler pour
+// rafraîchir le panneau une fois ce sélecteur repositionné automatiquement
+// sur le profil qu'on vient de créer à l'étape 2 (voir _obApplyPendingProfile).
+const OB1_PROFILE_TARGETS = {
+ 'acc-birthday':   { select:'opt-profile',    after:'optSelectProfile' },
+ 'acc-cloud':      { select:'opt-profile',    after:'optSelectProfile' },
+ 'acc-fichier':    { select:'opt-profile',    after:'optSelectProfile' },
+ 'acc-messagerie': { select:'enc-msg-player', after:'renderOptMessaging', passName:true },
+ 'acc-matieres':   { select:'bsubj-player',   after:'loadBlockedSubjects' },
+ 'acc-horaires':   { select:'block-player',   after:'loadBlockSettings' },
+ 'acc-filtres':    { select:'filter-player',  after:'loadFilterSettings' },
+};
+
 
 // ─────────────────────────────────────────────────────────
 // SYSTÈME 1 — Premier accès parent (installation initiale)
@@ -234,8 +256,38 @@ const OB_STEPS_3 = [
 let _obSystem = null;   // 1, 2 ou 3 (système en cours) ou null
 let _obIdx = 0;
 let _obSteps = [];
+// v11.6.5 : nom du profil créé à l'étape 2 du Système 1 pendant LA VISITE
+// EN COURS. Reste null si aucun profil n'a été créé (visite relancée alors
+// que des profils existent déjà, étape sautée…) — dans ce cas, chaque
+// sélecteur de profil garde son comportement normal (choix manuel).
+let _obPendingProfile = null;
 
 function _obStepsFor(n){ return n===1?OB_STEPS_1:(n===2?OB_STEPS_2:OB_STEPS_3); }
+
+// Appelée par pmAddProfile() (09-parent.js) au moment de la création d'un
+// profil. Ne mémorise le nom que si on est bien en train de dérouler le
+// Système 1 (sans effet en usage normal, hors visite guidée).
+function _obNoteProfileCreated(name){
+ if(_obSystem===1 && name) _obPendingProfile = name;
+}
+
+// Aligne le sélecteur de profil concerné par l'étape en cours sur
+// _obPendingProfile, si cette étape en a un ET que ce profil y figure déjà
+// (roster à jour). Ne force rien sinon : le sélecteur garde sa valeur/
+// son comportement normal, laissant le parent choisir lui-même.
+function _obApplyPendingProfile(step){
+ if(!_obPendingProfile || !step || !step.target) return;
+ const cfg = OB1_PROFILE_TARGETS[step.target];
+ if(!cfg) return;
+ const sel = document.getElementById(cfg.select);
+ if(!sel) return;
+ const has = Array.prototype.some.call(sel.options, o => o.value === _obPendingProfile);
+ if(!has) return;
+ sel.value = _obPendingProfile;
+ if(cfg.after && typeof window[cfg.after] === 'function'){
+  if(cfg.passName) window[cfg.after](_obPendingProfile); else window[cfg.after]();
+ }
+}
 
 // ── Marqueurs de progression (Systèmes 1 et 2 : globaux à l'appareil) ──
 function _obSeenKey(n){ return 'onb'+n+'_seen'; }         // affichée au moins une fois (Terminer OU Passer)
@@ -308,11 +360,36 @@ function _obRenderStep(){
    targetEl = step.accordion ? _obOpenAccordionById(step.target) : document.getElementById(step.target);
    if(targetEl && targetEl.offsetParent===null) targetEl = null; // caché → pas de cible
   }
+  // v11.6.5 : aligne le sélecteur de profil concerné (s'il y en a un pour
+  // cette étape) sur le profil créé à l'étape 2, AVANT de mesurer/surligner
+  // la zone (le contenu du panneau peut changer suite à ce rafraîchissement).
+  _obApplyPendingProfile(step);
   if(targetEl && typeof targetEl.scrollIntoView==='function'){
    try{ targetEl.scrollIntoView({block:'center'}); }catch(e){}
   }
   setTimeout(()=>_obShowTooltip(step, targetEl), targetEl?70:0);
  }, 90);
+}
+
+// v11.6.5 : rectangle RÉEL de la cible. Pour un accordéon, on unit le
+// bouton d'en-tête ET son panneau ouvert (contient les vrais champs/
+// boutons) — sinon seul l'en-tête serait rendu cliquable, pas le
+// formulaire qu'il contient.
+function _obTargetRect(step, targetEl){
+ if(!targetEl) return null;
+ let r = targetEl.getBoundingClientRect();
+ if(step.accordion){
+  const panel = targetEl.nextElementSibling;
+  if(panel && panel.style && panel.style.display === 'block'){
+   const pr = panel.getBoundingClientRect();
+   const top = Math.min(r.top, pr.top);
+   const left = Math.min(r.left, pr.left);
+   const right = Math.max(r.right, pr.right);
+   const bottom = Math.max(r.bottom, pr.bottom);
+   r = { top, left, right, bottom, width: right-left, height: bottom-top };
+  }
+ }
+ return r;
 }
 
 function _obShowTooltip(step, targetEl){
@@ -323,10 +400,12 @@ function _obShowTooltip(step, targetEl){
  const dots = _obSteps.map((s,i)=>
   '<span class="ob-dot'+(i<_obIdx?' ob-done':'')+(i===_obIdx?' ob-current':'')+'"></span>'
  ).join('');
+ const hasTarget = !!targetEl;
  ov.innerHTML =
-  '<div class="ob-blocker"></div>'
-  + (targetEl ? '<div class="ob-spotlight" id="ob-spotlight"></div>' : '')
-  + '<div class="ob-box'+(targetEl?'':' ob-centered')+'" id="ob-box">'
+  (hasTarget
+   ? '<div class="ob-blocker-piece" id="ob-bp-t"></div><div class="ob-blocker-piece" id="ob-bp-b"></div><div class="ob-blocker-piece" id="ob-bp-l"></div><div class="ob-blocker-piece" id="ob-bp-r"></div><div class="ob-spotlight" id="ob-spotlight"></div>'
+   : '<div class="ob-blocker"></div>')
+  + '<div class="ob-box'+(hasTarget?'':' ob-centered')+'" id="ob-box">'
   +  '<div class="ob-box-scroll">'
   +   '<div class="ob-progress">'+dots+'</div>'
   +   '<div class="ob-counter">ÉTAPE '+num+' SUR '+total+'</div>'
@@ -345,29 +424,46 @@ function _obShowTooltip(step, targetEl){
   +  '</div>'
   + '</div>';
  ov.classList.remove('hidden');
- _obPositionBox(targetEl);
+ _obPositionBox(step, targetEl);
 }
 
-function _obPositionBox(targetEl){
+function _obPositionBox(step, targetEl){
  const box = document.getElementById('ob-box');
- const spot = document.getElementById('ob-spotlight');
  if(!box) return;
  try{
   const vh = window.innerHeight || 600, vw = window.innerWidth || 360;
-  if(!targetEl){
+  const r = _obTargetRect(step, targetEl);
+  if(!r){
    // Cas général (pas de cible précise) : centré via CSS, on borne juste la
    // hauteur pour qu'il ne déborde jamais, quelle que soit la taille d'écran.
    box.style.maxHeight = Math.max(200, vh-24)+'px';
    return;
   }
-  const r = targetEl.getBoundingClientRect();
+  const pad = 8;
+  // v11.6.5 : trou RÉEL (pas seulement visuel) exactement calé sur la cible.
+  const holeTop = Math.max(0, r.top - pad);
+  const holeBottom = Math.min(vh, r.bottom + pad);
+  const holeLeft = Math.max(0, r.left - pad);
+  const holeRight = Math.min(vw, r.right + pad);
+  const holeH = Math.max(0, holeBottom - holeTop);
+  const holeW = Math.max(0, holeRight - holeLeft);
+
+  const spot = document.getElementById('ob-spotlight');
   if(spot){
-   const pad = 8;
-   spot.style.top = Math.max(0, r.top-pad)+'px';
-   spot.style.left = Math.max(0, r.left-pad)+'px';
-   spot.style.width = (r.width+pad*2)+'px';
-   spot.style.height = (r.height+pad*2)+'px';
+   spot.style.top = holeTop+'px'; spot.style.left = holeLeft+'px';
+   spot.style.width = holeW+'px'; spot.style.height = holeH+'px';
   }
+  // 4 pans opaques encadrant EXACTEMENT ce trou : tout le reste de l'écran
+  // reste bloqué, mais la zone en surbrillance redevient réellement
+  // cliquable/saisissable (contrairement à l'ancien cache plein écran,
+  // purement visuel, qui bloquait aussi le clic sur la zone surlignée).
+  const bpT=document.getElementById('ob-bp-t'), bpB=document.getElementById('ob-bp-b'),
+        bpL=document.getElementById('ob-bp-l'), bpR=document.getElementById('ob-bp-r');
+  if(bpT){ bpT.style.top='0px'; bpT.style.left='0px'; bpT.style.width=vw+'px'; bpT.style.height=holeTop+'px'; }
+  if(bpB){ bpB.style.top=holeBottom+'px'; bpB.style.left='0px'; bpB.style.width=vw+'px'; bpB.style.height=Math.max(0,vh-holeBottom)+'px'; }
+  if(bpL){ bpL.style.top=holeTop+'px'; bpL.style.left='0px'; bpL.style.width=holeLeft+'px'; bpL.style.height=holeH+'px'; }
+  if(bpR){ bpR.style.top=holeTop+'px'; bpR.style.left=holeRight+'px'; bpR.style.width=Math.max(0,vw-holeRight)+'px'; bpR.style.height=holeH+'px'; }
+
   // La hauteur réelle est bornée par le CSS (max-height) : offsetHeight
   // reflète donc déjà une valeur qui ne peut pas dépasser l'écran.
   box.style.maxHeight = Math.max(200, vh-24)+'px';
@@ -393,12 +489,17 @@ function _obPositionBox(targetEl){
  }
 }
 try{
- window.addEventListener('resize', ()=>{
+ const _obReposition = ()=>{
   if(!_obSystem) return;
   const step = _obSteps[_obIdx]; if(!step) return;
   const t = step.target ? document.getElementById(step.target) : null;
-  _obPositionBox(t);
- });
+  _obPositionBox(step, t);
+ };
+ window.addEventListener('resize', _obReposition);
+ // v11.6.5 : la cible peut aussi se déplacer si la page défile (panneau
+ // plus grand que l'écran) — sans ça, le trou cliquable se désynchronisait
+ // de la cible réelle après un scroll.
+ window.addEventListener('scroll', _obReposition, {passive:true});
 }catch(e){}
 
 function obNext(){ _obIdx++; _obRenderStep(); }
@@ -416,6 +517,7 @@ function obSkip(){
  const n = _obSystem;
  _obCloseUI();
  _obSystem = null;
+ _obPendingProfile = null;
  if(n===1||n===2) _obMarkSeen(n);
  if(typeof _obRefreshButtons==='function') _obRefreshButtons();
 }
@@ -427,6 +529,7 @@ function _obFinishClick(){
  const n = _obSystem;
  _obCloseUI();
  _obSystem = null;
+ _obPendingProfile = null;
  if(n===1||n===2){ _obMarkSeen(n); _obMarkCompleted(n); }
  if(n===3){ ob3MarkCompleted(); }
  if(typeof _obRefreshButtons==='function') _obRefreshButtons();
