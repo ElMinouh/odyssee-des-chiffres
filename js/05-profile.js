@@ -51,6 +51,19 @@ function _safeStr(v, maxLen, defaultV){
  if(typeof v !== 'string') return defaultV;
  return v.slice(0, maxLen);
 }
+// v11.6.6 — Contrairement à _safeStr, on REJETTE entièrement (→ defaultV) une
+// chaîne trop longue au lieu de la tronquer : tronquer un data URL base64 le
+// rendrait corrompu (image cassée), ce qui serait pire que ne rien afficher.
+function _safeDataUrl(v, maxLen, defaultV){
+ if(typeof v !== 'string') return defaultV;
+ if(v.length > maxLen) return defaultV;
+ if(!/^data:image\/(jpeg|png|webp);base64,/.test(v)) return defaultV;
+ return v;
+}
+// v11.6.6 — Code du profil : exactement 2 chiffres, ou rien.
+function _safePlayerCode(v){
+ return (typeof v === 'string' && /^[0-9]{2}$/.test(v)) ? v : null;
+}
 function _safeArr(v, defaultV){
  return Array.isArray(v) ? v : (defaultV ?? []);
 }
@@ -213,6 +226,10 @@ function validateProfile(raw, defaultName){
   // du profil (retour à l'accueil, changement de joueur, etc.), ce qui
   // relançait la visite guidée en boucle malgré ob3MarkCompleted().
   onbAccountSeen: _safeBool(raw.onbAccountSeen, false),
+  // v11.6.6 — photo de profil (facultative, recadrée/compressée côté appareil
+  // avant stockage, 200 Ko max) et code du profil (2 chiffres, facultatif).
+  photo: _safeDataUrl(raw.photo, 200000, null),
+  playerCode: _safePlayerCode(raw.playerCode),
   // v11.6.5 — épilogues déjà crédités du bonus de fin de scénario (+200⭐),
   // pour ne jamais le recréditer deux fois (voir migration rétroactive
   // juste après, et le crédit "à chaud" dans _maybeShowStory, 07-story.js).
@@ -278,7 +295,7 @@ function defProfile(name){
   histCatFilters:{frise:true,personnages:true,evenements:true,civilisation:true,temps:true,repere:true},
   frCatFilters:{conj:true,orth:true,gram:true,vocab:true},
   heroStageId:'oeuf',
-  cloudCode:null,cloudEnabled:false,onbAccountSeen:false,_epilogueBonusCredited:[]};
+  cloudCode:null,cloudEnabled:false,onbAccountSeen:false,_epilogueBonusCredited:[],photo:null,playerCode:null};
 }
 function fillPlayerSelect(){
  const sel=$('playerSelect'); if(!sel) return;
@@ -343,6 +360,10 @@ function loadProfile(){
  if(typeof cancelCloudSync==='function') cancelCloudSync();
  if(P.cloudEnabled && typeof scheduleCloudSync==='function') scheduleCloudSync();
  if(typeof refreshCloudIndicator==='function') setTimeout(refreshCloudIndicator, 200);
+ // v11.6.6 : vérification d'identité AVANT la visite du compte (jamais les
+ // deux à la fois — voir _pcMaybeShow : ne s'affiche pas tant que ce profil
+ // n'a pas encore terminé sa toute première visite guidée).
+ if(typeof _pcMaybeShow==='function') setTimeout(_pcMaybeShow, 300);
  if(typeof obMaybeAutoStart3==='function') setTimeout(obMaybeAutoStart3, 400);
 }
 // saveProfile avec debounce : évite de sérialiser à chaque micro-action (quêtes, badges…)
@@ -451,7 +472,7 @@ function updateMenuUI(){
  if(typeof refreshMenu1Card==='function' && document.getElementById('menu1-name')) {
   try{
    const av=$('menu1-avatar'),nm=$('menu1-name'),sb=$('menu1-sub');
-   if(av)av.textContent=P.avatar||'🧙';
+   if(typeof _setAvatarEl==='function') _setAvatarEl(av,P,52); else if(av)av.textContent=P.avatar||'🧙';
    if(nm)nm.textContent=P.name||'Joueur';
    if(sb){const lvl=levelFromXP(P.xp||0);const tt=(t?t.label:'');sb.textContent='Niveau '+lvl+(tt?' · '+tt:'');}
   }catch(e){}
@@ -459,7 +480,7 @@ function updateMenuUI(){
  if(document.getElementById('m2-name')){
   try{
    const av=$('m2-avatar'),nm=$('m2-name'),lv=$('m2-lvl'),tt=$('m2-title'),st=$('m2-stars');
-   if(av)av.textContent=P.avatar||'🧙';
+   if(typeof _setAvatarEl==='function') _setAvatarEl(av,P,46); else if(av)av.textContent=P.avatar||'🧙';
    if(nm)nm.textContent=P.name||'Joueur';
    if(lv)lv.textContent='Niv.'+levelFromXP(P.xp||0);
    if(tt)tt.textContent=(t?t.label:'');
@@ -577,4 +598,78 @@ function showLevelUpAnim(lvl,xpGain){
  startConfetti();vibrate(VIBE.levelup);
  [523,659,784,1047,1319].forEach((f,i)=>setTimeout(()=>beep(f,'sine',.4,.15),i*120));
  $('level-up-screen').onclick=()=>{$('level-up-screen').classList.add('hidden');$('level-up-screen').onclick=null;};
+}
+
+// ═══════════════════════════════════════════════════════
+// VÉRIFICATION D'IDENTITÉ AU CHARGEMENT DU PROFIL (v11.6.6)
+// Par profil : soit une simple confirmation par défaut ("C'est bien toi ?"),
+// soit un code à 2 chiffres si le parent l'a activé POUR CE PROFIL — jamais
+// les deux à la fois (voir P.playerCode, réglé dans Vue Parent → Comptes).
+// Ne s'affiche jamais à la toute première connexion d'un profil : à ce
+// moment précis le parent est juste à côté en train de le configurer.
+// ═══════════════════════════════════════════════════════
+function _pcMaybeShow(){
+ if(typeof P==='undefined' || !P || !P.name) return;
+ if(!P.onbAccountSeen) return; // toute première connexion → pas de vérification
+ if(P.playerCode) _pcShowPin(); else _pcShowConfirm();
+}
+function _pcEl(){
+ let ov = document.getElementById('pc-overlay');
+ if(!ov){
+  ov = document.createElement('div');
+  ov.id = 'pc-overlay';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:20px;';
+  document.body.appendChild(ov);
+ }
+ return ov;
+}
+function _pcClose(){
+ const ov = document.getElementById('pc-overlay');
+ if(ov) ov.remove();
+}
+function _pcShowConfirm(){
+ const ov = _pcEl();
+ const _e = (typeof esc==='function') ? esc : (s=>String(s));
+ const av = P.photo
+  ? '<img src="'+P.photo+'" style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid #f1c40f;margin:0 auto 12px;display:block;">'
+  : '<div style="font-size:4em;margin-bottom:8px;">'+(P.avatar||'🙂')+'</div>';
+ ov.innerHTML = '<div style="background:linear-gradient(135deg,rgba(241,196,15,.10),rgba(241,196,15,.02));border:1px solid rgba(241,196,15,.3);border-radius:18px;padding:26px 20px;text-align:center;max-width:340px;width:100%;">'
+  + av
+  + '<div style="font-size:1.4em;font-weight:800;color:#f1c40f;">'+_e(P.name)+'</div>'
+  + '<div style="font-size:1em;color:#dce3f0;margin:6px 0 20px;">C\'est bien toi qui vas jouer ?</div>'
+  + '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">'
+  +  '<button onclick="_pcConfirmYes()" style="background:#27ae60;color:#fff;border:none;border-radius:10px;padding:12px 20px;font-weight:700;">✅ Oui, c\'est moi</button>'
+  +  '<button onclick="_pcConfirmNo()" style="background:#555;color:#fff;border:none;border-radius:10px;padding:12px 20px;font-weight:700;">↩️ Non, changer</button>'
+  + '</div></div>';
+}
+function _pcConfirmYes(){ _pcClose(); }
+function _pcConfirmNo(){
+ _pcClose();
+ const sel=$('playerSelect');
+ if(sel){ try{ sel.scrollIntoView({block:'center'}); sel.focus(); }catch(e){} }
+ if(typeof toast==='function') toast('👆 Choisis ton profil dans la liste',2500);
+}
+function _pcShowPin(){
+ const ov = _pcEl();
+ const _e = (typeof esc==='function') ? esc : (s=>String(s));
+ ov.innerHTML = '<div style="background:linear-gradient(135deg,rgba(241,196,15,.10),rgba(241,196,15,.02));border:1px solid rgba(241,196,15,.3);border-radius:18px;padding:26px 20px;text-align:center;max-width:340px;width:100%;">'
+  + '<div style="font-size:3.2em;margin-bottom:6px;">'+(P.avatar||'🙂')+'</div>'
+  + '<div style="font-size:1.4em;font-weight:800;color:#f1c40f;">'+_e(P.name)+'</div>'
+  + '<div style="font-size:1em;color:#dce3f0;margin:6px 0 14px;">Entre ton code à 2 chiffres</div>'
+  + '<input type="password" id="pc-pin-input" maxlength="2" inputmode="numeric" style="width:90px;text-align:center;font-family:monospace;font-size:1.6em;letter-spacing:8px;padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.3);color:#fff;" onkeydown="if(event.key===\'Enter\')_pcCheckPin()">'
+  + '<div style="margin-top:16px;"><button onclick="_pcCheckPin()" style="background:#27ae60;color:#fff;border:none;border-radius:10px;padding:12px 20px;font-weight:700;">Valider</button></div>'
+  + '<div id="pc-pin-msg" style="font-size:.8em;color:#e74c3c;margin-top:10px;min-height:1em;"></div>'
+  + '<button onclick="_pcConfirmNo()" style="background:none;border:none;color:#bdc3c7;font-size:.78em;margin-top:14px;text-decoration:underline;cursor:pointer;">Ce n\'est pas moi</button>'
+  + '</div>';
+ setTimeout(()=>{ const inp=$('pc-pin-input'); if(inp) inp.focus(); }, 50);
+}
+function _pcCheckPin(){
+ const inp=$('pc-pin-input'), msg=$('pc-pin-msg');
+ const v=(inp&&inp.value||'').trim();
+ if(v && P && v===P.playerCode){ _pcClose(); }
+ else{
+  if(msg) msg.textContent='Code incorrect.';
+  if(inp){ inp.value=''; inp.focus(); }
+  if(typeof beep==='function') beep(200,'sawtooth',.3);
+ }
 }

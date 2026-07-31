@@ -891,11 +891,22 @@ function maybeMidCombatTaunt(){
 // ═══════════════════════════════════════════════════════
 
 // Rafraîchit la carte du joueur sur l'écran 1
+// v11.6.6 : affiche la photo de profil si définie (P.photo), sinon l'avatar
+// emoji habituel — utilisé ici et dans updateMenuUI() (05-profile.js).
+function _setAvatarEl(el, p, sizePx){
+ if(!el) return;
+ sizePx = sizePx || 52;
+ if(p && p.photo){
+  el.innerHTML = '<img src="'+p.photo+'" style="width:'+sizePx+'px;height:'+sizePx+'px;border-radius:50%;object-fit:cover;border:2px solid #f1c40f;vertical-align:middle;">';
+ } else {
+  el.textContent = (p && p.avatar) ? p.avatar : '🧙';
+ }
+}
 function refreshMenu1Card(){
  try{
   if(typeof loadProfile==='function') loadProfile();
   const av=$('menu1-avatar'), nm=$('menu1-name'), sb=$('menu1-sub');
-  if(av) av.textContent = (P && P.avatar) ? P.avatar : '🧙';
+  _setAvatarEl(av, P, 52);
   if(nm) nm.textContent = (P && P.name) ? P.name : 'Joueur';
   if(sb){
    const lvl = (typeof levelFromXP==='function' && P) ? levelFromXP(P.xp||0) : 1;
@@ -910,7 +921,7 @@ function refreshMenu2(){
  try{
   if(P){
    const av=$('m2-avatar'), nm=$('m2-name'), lv=$('m2-lvl'), tt=$('m2-title'), st=$('m2-stars');
-   if(av) av.textContent = P.avatar || '🧙';
+   _setAvatarEl(av, P, 46);
    if(nm) nm.textContent = P.name || 'Joueur';
    if(lv){ const lvl=(typeof levelFromXP==='function')?levelFromXP(P.xp||0):1; lv.textContent='Niv.'+lvl; }
    if(tt) tt.textContent = P.heroTitle || '';

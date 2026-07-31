@@ -43,7 +43,7 @@ function ptab(name){
   if(typeof loadBlockedSubjects==='function')loadBlockedSubjects();
   _encFillMsgPlayer();
  }
- if(name==='comptes'){setTimeout(()=>{ if(typeof optFillProfiles==='function')optFillProfiles(); if(typeof renderProfileManager==='function')renderProfileManager(); _fillRenamePlayer(); },60);}
+ if(name==='comptes'){setTimeout(()=>{ if(typeof optFillProfiles==='function')optFillProfiles(); if(typeof renderProfileManager==='function')renderProfileManager(); },60);}
  if(name==='figurines'){
   const sel=$('pfig-player');if(!sel)return;
   const cu=localStorage.getItem('customPlayerName');
@@ -63,24 +63,25 @@ function _encFillMsgPlayer(){
  if(cur){ sel.value=cur; if(typeof renderOptMessaging==='function') renderOptMessaging(cur); }
  else if($('opt-messaging')){ $('opt-messaging').innerHTML='<span style="font-size:.78em;color:#bdc3c7;">Ajoute un profil dans « Comptes ».</span>'; }
 }
-function _fillRenamePlayer(){
- const sel=$('rename-player'); if(!sel) return;
- const names=getRoster();
- sel.innerHTML=names.map(n=>`<option>${n}</option>`).join('');
- if(P&&P.name&&names.includes(P.name)) sel.value=P.name;
-}
+// ── Cartes profils unifiées : photo, renommer, retirer (v11.6.6) ──
+let _pmRenameOpen = null;   // nom du profil dont la carte "renommer" est dépliée (une seule à la fois)
+let _pmPhotoTarget = null;  // nom du profil ciblé par le prochain choix de photo
+
 // ── Renommer un profil (migre toutes les données liées au nom) ──
-function renameProfileUI(){
- const sel=$('rename-player'), inp=$('rename-new'), msg=$('rename-msg');
- if(!sel||!inp) return;
- const oldN=sel.value, newN=(inp.value||'').trim();
- const say=(ok,t)=>{ if(msg){ msg.style.color=ok?'#2ecc71':'#e74c3c'; msg.textContent=t; } };
- if(!oldN) return say(false,'Choisis un profil.');
- if(!newN) return say(false,'Entre un nouveau prénom.');
- if(newN===oldN) return say(false,'C\u2019est déjà ce prénom.');
+function pmConfirmRename(oldN){
+ const inp=$('pm-rename-input'); if(!inp) return;
+ const newN=(inp.value||'').trim();
+ if(!newN || newN===oldN){ _pmRenameOpen=null; renderProfileManager(); return; }
  const r=renameProfile(oldN,newN);
- say(r.ok,r.msg);
- if(r.ok){ inp.value=''; _fillRenamePlayer(); if(typeof optFillProfiles==='function')optFillProfiles(); if(typeof renderProfileManager==='function')renderProfileManager(); if(typeof fillPlayerSelect==='function')fillPlayerSelect(); }
+ if(typeof toast==='function') toast(r.ok?r.msg:('⚠️ '+r.msg), r.ok?2000:2500);
+ _pmRenameOpen=null;
+ renderProfileManager();
+ if(r.ok){
+  if(typeof optFillProfiles==='function')optFillProfiles();
+  if(typeof fillPlayerSelect==='function')fillPlayerSelect();
+  if(typeof _refreshAllParentPlayerSelects==='function')_refreshAllParentPlayerSelects();
+  if(typeof refreshMenu1Card==='function' && typeof P!=='undefined' && P && P.name===newN) refreshMenu1Card();
+ }
 }
 function renameProfile(oldN,newN){
  try{
@@ -104,6 +105,101 @@ function renameProfile(oldN,newN){
   return {ok:true,msg:'\u2705 Profil renommé : '+newN};
  }catch(e){ return {ok:false,msg:'Erreur lors du renommage.'}; }
 }
+function pmToggleRename(name){
+ _pmRenameOpen = (_pmRenameOpen===name) ? null : name;
+ renderProfileManager();
+ if(_pmRenameOpen===name){ const inp=$('pm-rename-input'); if(inp){ inp.focus(); inp.select(); } }
+}
+// ── Photo de profil : capture, recadrage carré, compression légère (v11.6.6) ──
+function pmChoosePhoto(name){
+ _pmPhotoTarget = name;
+ const inp=$('pm-photo-input'); if(inp){ inp.value=''; inp.click(); }
+}
+function pmPhotoFileSelected(event){
+ const file = event.target.files && event.target.files[0];
+ const name = _pmPhotoTarget;
+ event.target.value='';
+ if(!file || !name) return;
+ if(!file.type || !file.type.startsWith('image/')){ if(typeof toast==='function') toast('⚠️ Choisis une image.',2500); return; }
+ const reader = new FileReader();
+ reader.onload = function(){
+  const img = new Image();
+  img.onload = function(){
+   try{
+    const SIZE=160;
+    const canvas=document.createElement('canvas');
+    canvas.width=SIZE; canvas.height=SIZE;
+    const ctx=canvas.getContext('2d');
+    // Recadrage "cover" centré : carré le plus grand possible au centre de l'image.
+    const side=Math.min(img.width,img.height);
+    const sx=(img.width-side)/2, sy=(img.height-side)/2;
+    ctx.drawImage(img, sx, sy, side, side, 0, 0, SIZE, SIZE);
+    let dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+    if(dataUrl.length > 150000) dataUrl = canvas.toDataURL('image/jpeg', 0.55); // filet de sécurité (photo très détaillée)
+    if(dataUrl.length > 200000){ if(typeof toast==='function') toast('⚠️ Photo trop lourde, réessaie avec une autre.',3000); return; }
+    _pmSavePhoto(name, dataUrl);
+   }catch(e){ console.warn('[photo] traitement échoué', e); if(typeof toast==='function') toast('⚠️ Erreur lors du traitement de la photo.',3000); }
+  };
+  img.onerror = function(){ if(typeof toast==='function') toast('⚠️ Image illisible.',2500); };
+  img.src = reader.result;
+ };
+ reader.onerror = function(){ if(typeof toast==='function') toast('⚠️ Lecture du fichier échouée.',2500); };
+ reader.readAsDataURL(file);
+}
+function _pmSavePhoto(name, dataUrl){
+ try{
+  const raw=localStorage.getItem('user_'+name); if(!raw) return;
+  const d=JSON.parse(raw); d.photo=dataUrl; localStorage.setItem('user_'+name, JSON.stringify(d));
+  if(typeof P!=='undefined' && P && P.name===name){ P.photo=dataUrl; if(typeof saveProfileNow==='function') saveProfileNow(); if(typeof refreshMenu1Card==='function') refreshMenu1Card(); }
+  renderProfileManager();
+  if(typeof toast==='function') toast('📷 Photo enregistrée pour '+name, 2000);
+ }catch(e){ console.warn('[photo] sauvegarde échouée', e); if(typeof toast==='function') toast('⚠️ Erreur lors de l\u2019enregistrement.',3000); }
+}
+function pmRemovePhoto(name){
+ try{
+  const raw=localStorage.getItem('user_'+name); if(!raw) return;
+  const d=JSON.parse(raw); delete d.photo; localStorage.setItem('user_'+name, JSON.stringify(d));
+  if(typeof P!=='undefined' && P && P.name===name){ P.photo=null; if(typeof saveProfileNow==='function') saveProfileNow(); if(typeof refreshMenu1Card==='function') refreshMenu1Card(); }
+  renderProfileManager();
+ }catch(e){ console.warn('[photo] suppression échouée', e); }
+}
+// ── Code du profil (2 chiffres, optionnel — remplace la confirmation simple
+//    par défaut UNIQUEMENT pour ce profil, jamais cumulé avec elle) ──
+function renderOptPlayerCode(name){
+ const box=$('opt-playercode'); if(!box) return;
+ const _e=(typeof esc==='function')?esc:(s=>String(s));
+ let code=null;
+ try{ const d=JSON.parse(localStorage.getItem('user_'+name)||'null'); code=d&&d.playerCode||null; }catch(e){}
+ box.innerHTML = `<p style="font-size:.74em;color:#bdc3c7;margin:0 0 8px;line-height:1.4;">Si activé, ce code à 2 chiffres est demandé à la connexion de ce profil, à la place de la simple confirmation ("C'est bien toi ?") affichée par défaut.</p>
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+   <input type="text" id="pc-code-input" data-n="${_e(name)}" maxlength="2" inputmode="numeric" placeholder="${code?'••':'--'}" style="width:60px;text-align:center;font-family:monospace;font-size:1.2em;letter-spacing:4px;">
+   <button data-n="${_e(name)}" onclick="pmSavePlayerCode(this.dataset.n)" style="background:#27ae60;font-size:.82em;padding:7px 12px;">${code?'Changer':'Activer'}</button>
+   ${code?`<button data-n="${_e(name)}" onclick="pmClearPlayerCode(this.dataset.n)" style="background:#7f8c8d;font-size:.82em;padding:7px 12px;">Désactiver</button>`:''}
+  </div>
+  <p id="pc-code-msg" style="font-size:.76em;margin-top:6px;"></p>`;
+}
+function pmSavePlayerCode(name){
+ const inp=$('pc-code-input'); const msg=$('pc-code-msg');
+ const say=(ok,t)=>{ if(msg){ msg.style.color=ok?'#2ecc71':'#e74c3c'; msg.textContent=t; } };
+ const v=(inp&&inp.value||'').trim();
+ if(!/^[0-9]{2}$/.test(v)) return say(false,'Entre exactement 2 chiffres.');
+ try{
+  const raw=localStorage.getItem('user_'+name); if(!raw) return say(false,'Profil introuvable.');
+  const d=JSON.parse(raw); d.playerCode=v; localStorage.setItem('user_'+name, JSON.stringify(d));
+  if(typeof P!=='undefined' && P && P.name===name){ P.playerCode=v; if(typeof saveProfileNow==='function') saveProfileNow(); }
+  say(true,'✅ Code activé pour '+name+'.');
+  renderOptPlayerCode(name);
+ }catch(e){ say(false,'Erreur lors de l\u2019enregistrement.'); }
+}
+function pmClearPlayerCode(name){
+ try{
+  const raw=localStorage.getItem('user_'+name); if(!raw) return;
+  const d=JSON.parse(raw); d.playerCode=null; localStorage.setItem('user_'+name, JSON.stringify(d));
+  if(typeof P!=='undefined' && P && P.name===name){ P.playerCode=null; if(typeof saveProfileNow==='function') saveProfileNow(); }
+  renderOptPlayerCode(name);
+  if(typeof toast==='function') toast('🔓 Code désactivé pour '+name,2000);
+ }catch(e){}
+}
 // ── Guides « pas à pas » (icône ⓘ) ──
 var PARENT_GUIDES = {
  objectifs:{t:'📚 Devoir du jour',s:['Choisis l\u2019enfant concerné.','Choisis la matière, le type de questions et le niveau.','Choisis le nombre de questions et la récompense en étoiles.','Touche « Donner » : l\u2019enfant verra le devoir sur son écran d\u2019accueil.']},
@@ -113,8 +209,9 @@ var PARENT_GUIDES = {
  cloud:{t:'☁️ Sauvegarde en ligne',s:['Sur l\u2019appareil principal : un code s\u2019affiche pour ce profil. Note-le.','Sur un autre appareil : ouvre cette même section.','Entre le code dans « Récupérer depuis un code » puis touche « Récupérer ».','Le profil apparaît alors sur ce nouvel appareil.']},
  fichier:{t:'💾 Sauvegarde fichier',s:['Touche « Télécharger le fichier » : un fichier .json est enregistré.','Range ce fichier en lieu sûr (clé USB, cloud perso…).','Pour restaurer : touche « Importer un fichier » et choisis-le.']},
  messagerie:{t:'✉️ Messagerie',s:['Choisis l\u2019enfant.','« Suspendre » met en pause sans perdre le code ni les amis ; « Réactiver » reprend.','« Voir les conversations » permet de surveiller les échanges.','Dans la liste des contacts, « Bloquer » empêche un contact d\u2019écrire.','Les demandes d\u2019ami en attente s\u2019acceptent ou se refusent ici.']},
- profils:{t:'👥 Profils',s:['Ajoute un enfant en tapant son prénom puis « Ajouter ».','Pour renommer : choisis le profil, tape le nouveau prénom, touche « Renommer » (amis et progression sont conservés).','Pour retirer un profil, utilise la croix (sa progression reste sur l\u2019appareil).']},
+ profils:{t:'👥 Profils',s:['Ajoute un enfant en tapant son prénom puis « Ajouter ».','Touche 📷 sur l\u2019avatar d\u2019un profil pour lui ajouter/changer sa photo (✕ pour la retirer).','Touche « Renommer » sur sa carte : un champ s\u2019ouvre pour taper le nouveau prénom (amis et progression sont conservés).','Touche « Supprimer » pour retirer un profil (confirmation demandée ; sa progression reste sur l\u2019appareil).']},
  synchro:{t:'🔄 Réparer la synchronisation',s:['Va sur l\u2019appareil principal (celui qui a les bonnes données, en général le PC).','Touche « Envoyer vers les autres appareils ».','Sur les autres appareils (tablette, téléphone), ferme puis rouvre le jeu.','Les profils et messages sont alors identiques partout.']},
+ playercode:{t:'🔒 Code du profil',s:['Choisis l\u2019enfant concerné en haut de l\u2019onglet.','Tape un code à 2 chiffres puis touche « Activer ».','Ce code sera demandé à la connexion de ce profil, à la place de la simple confirmation par défaut.','Touche « Désactiver » pour revenir à la simple confirmation.']},
  diagnostic:{t:'🩺 Diagnostic',s:['Touche « Afficher le diagnostic » : un rapport technique apparaît.','Touche « Tout copier ».','Colle ce rapport dans un message si tu demandes de l\u2019aide.']}
 };
 function pGuide(key){
@@ -1393,15 +1490,34 @@ function renderProfileManager(){
  const box=$('profile-manager'); if(!box) return;
  const _e=(typeof esc==='function')?esc:(s=>String(s));
  const roster=(typeof getRoster==='function')?getRoster():[];
- const rows = roster.length
-  ? roster.map(n=>`<div class="lb-row"><span class="lb-name" style="flex:1;">${_e(n)}</span><button onclick="pmRemoveProfile(this.dataset.n)" data-n="${_e(n)}" title="Retirer ${_e(n)}" style="background:#e74c3c;color:#fff;border:none;border-radius:6px;width:28px;height:28px;cursor:pointer;font-weight:700;line-height:1;">✕</button></div>`).join('')
-  : '<span style="color:#bdc3c7;">Aucun profil pour le moment. Ajoute-en un ci-dessous.</span>';
- box.innerHTML = `<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px;">
-   <strong>👤 Profils du jeu</strong>
-   <div style="margin:8px 0;display:flex;flex-direction:column;gap:5px;">${rows}</div>
-   <div style="display:flex;gap:6px;"><input id="pm-new" type="text" placeholder="Nouveau prénom…" maxlength="20" style="flex:1;" onkeydown="if(event.key==='Enter')pmAddProfile()"><button onclick="pmAddProfile()" style="background:#27ae60;color:#fff;border:none;border-radius:8px;padding:0 14px;cursor:pointer;font-weight:700;">Ajouter</button></div>
-   <div style="font-size:.74em;color:#9aa6b2;margin-top:6px;line-height:1.4;">Les profils et tous leurs progrès sont enregistrés sur cet appareil. Retirer un profil n'efface pas sa progression : il réapparaîtra si tu le rajoutes. L'anniversaire se règle dans le panneau du profil ci-dessus.</div>
-  </div>`;
+ if(!roster.length){ box.innerHTML='<span style="color:#bdc3c7;">Aucun profil pour le moment. Ajoute-en un ci-dessus.</span>'; return; }
+ box.innerHTML = roster.map(n=>{
+  let photo=null;
+  try{ const d=JSON.parse(localStorage.getItem('user_'+n)||'null'); photo=(d&&d.photo)||null; }catch(e){}
+  const thumb = photo
+   ? `<img src="${photo}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid #f1c40f;">`
+   : `<div style="width:52px;height:52px;border-radius:50%;background:#3a3a55;border:2px solid #f1c40f;display:flex;align-items:center;justify-content:center;font-size:1.5em;">🙂</div>`;
+  const renaming = _pmRenameOpen===n;
+  return `<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px;margin-bottom:10px;">
+    <div style="display:flex;align-items:center;gap:12px;">
+     <div style="position:relative;flex-shrink:0;">
+      ${thumb}
+      <span data-n="${_e(n)}" onclick="pmChoosePhoto(this.dataset.n)" title="Changer la photo" style="position:absolute;right:-4px;bottom:-2px;width:20px;height:20px;border-radius:50%;background:#2980b9;border:2px solid #232342;display:flex;align-items:center;justify-content:center;font-size:.65em;cursor:pointer;">📷</span>
+      ${photo?`<span data-n="${_e(n)}" onclick="pmRemovePhoto(this.dataset.n)" title="Retirer la photo" style="position:absolute;right:-4px;top:-2px;width:20px;height:20px;border-radius:50%;background:#e74c3c;border:2px solid #232342;display:flex;align-items:center;justify-content:center;font-size:.65em;cursor:pointer;">✕</span>`:''}
+     </div>
+     <div style="flex:1;font-size:1.05em;font-weight:800;color:#f1c40f;">${_e(n)}</div>
+    </div>
+    <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
+     <button data-n="${_e(n)}" onclick="pmToggleRename(this.dataset.n)" style="background:${renaming?'#f1c40f':'#34495e'};color:${renaming?'#1a1a2e':'#fff'};border:none;border-radius:7px;padding:6px 11px;font-size:.78em;font-weight:700;">✏️ Renommer</button>
+     <button data-n="${_e(n)}" onclick="pmRemoveProfile(this.dataset.n)" style="background:#e74c3c;color:#fff;border:none;border-radius:7px;padding:6px 11px;font-size:.78em;font-weight:700;">🗑 Supprimer</button>
+    </div>
+    ${renaming?`<div style="display:flex;gap:6px;margin-top:10px;">
+     <input id="pm-rename-input" type="text" value="${_e(n)}" maxlength="20" style="flex:1;font-size:.85em;padding:6px 8px;" onkeydown="if(event.key==='Enter')pmConfirmRename(_pmRenameOpen)">
+     <button data-n="${_e(n)}" onclick="pmConfirmRename(this.dataset.n)" style="background:#27ae60;color:#fff;border:none;border-radius:7px;padding:0 12px;font-size:.8em;font-weight:700;">OK</button>
+     <button data-n="${_e(n)}" onclick="pmToggleRename(this.dataset.n)" style="background:#555;color:#fff;border:none;border-radius:7px;padding:0 12px;font-size:.8em;font-weight:700;">Annuler</button>
+    </div>`:''}
+   </div>`;
+ }).join('');
 }
 function pmAddProfile(){
  const i=$('pm-new'); if(!i) return; const n=i.value.trim();
@@ -1442,8 +1558,11 @@ function pmRemoveProfile(n){
  if(!n || typeof removeFromRoster!=='function') return;
  if(!confirm('Retirer « '+n+' » de la liste ?\n\nSa progression reste sauvegardée sur l\'appareil et réapparaîtra si tu le rajoutes.')) return;
  removeFromRoster(n);
+ if(_pmRenameOpen===n) _pmRenameOpen=null;
  renderProfileManager();
  if(typeof fillPlayerSelect==='function') fillPlayerSelect();
+ if(typeof optFillProfiles==='function') optFillProfiles();
+ if(typeof _refreshAllParentPlayerSelects==='function') _refreshAllParentPlayerSelects();
 }
 
 function pmSetBirthday(name, field, val){
@@ -1472,6 +1591,7 @@ function optSelectProfile(){
  const cp=$('cloud-player'); if(cp){ cp.innerHTML=opts; cp.value=name; }
  if(typeof renderCloudPanel==='function') renderCloudPanel();
  renderOptBirthday(name);
+ renderOptPlayerCode(name);
  renderOptResetOne(name);
 }
 function renderOptBirthday(name){

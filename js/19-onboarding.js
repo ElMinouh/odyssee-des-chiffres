@@ -17,7 +17,7 @@
 //              ciblent automatiquement le profil créé à l'étape 2 (voir
 //              _obPendingProfile plus bas), sans rien forcer si aucun
 //              profil n'a été créé pendant cette visite.
-//  Système 2 — 21 étapes — Présentation exhaustive de la Vue Parent.
+//  Système 2 — 22 étapes — Présentation exhaustive de la Vue Parent.
 //              Déclenché automatiquement une seule fois, juste après que
 //              le Système 1 a été TERMINÉ avec succès (bouton "Terminer",
 //              pas juste "Passer"). Relançable via le bouton
@@ -58,7 +58,7 @@ const OB_STEPS_1 = [
    body:"Bienvenue dans <b>L'Odyssée du Savoir</b> ! Cette visite guidée va vous accompagner, en 10 étapes, pour mettre en place tout ce qu'il faut avant de laisser votre enfant jouer. Vous pourrez la revoir quand vous voulez grâce à un bouton dédié, en haut de cette page.<br><br>Premier réglage : le <b>code parent</b>. C'est un code à 4 chiffres qui protège l'accès à cette Vue Parent, pour que votre enfant ne puisse pas modifier les réglages tout seul. Par défaut, il vaut <b>1234</b> — un code que tout le monde connaît, donc peu protecteur. Changez-le ici, et notez une <b>question secrète</b> (par exemple « Quelle est votre ville de naissance ? ») qui permettra de le retrouver en cas d'oubli.",
    nav:{ptab:'avance'}, target:'acc-pin', accordion:true },
  { icon:'👥', title:'Créer le profil de votre enfant',
-   body:"Un <b>profil</b> est l'espace personnel de votre enfant dans le jeu : son avatar, ses étoiles, ses figurines, sa progression. Chaque enfant de la famille doit avoir son propre profil, pour ne jamais mélanger deux progressions.<br><br>Pour créer un profil, tapez le prénom de votre enfant puis validez « Ajouter ». Vous pourrez plus tard le renommer ou le retirer depuis ce même endroit, sans jamais perdre sa progression.",
+   body:"Un <b>profil</b> est l'espace personnel de votre enfant dans le jeu : son avatar, ses étoiles, ses figurines, sa progression. Chaque enfant de la famille doit avoir son propre profil, pour ne jamais mélanger deux progressions.<br><br>Pour créer un profil, tapez le prénom de votre enfant puis validez « Ajouter ». Vous pourrez ensuite lui ajouter une photo (📷, facultatif — utile pour reconnaître son profil au premier coup d'œil), le renommer ou le retirer depuis ce même endroit, sans jamais perdre sa progression.",
    nav:{ptab:'comptes'}, target:'acc-profils-manage', accordion:true },
  { icon:'🎂', title:"La date d'anniversaire",
    body:"Indiquer le jour et le mois de naissance de votre enfant permet au jeu de lui proposer, une fois par an, un petit contenu spécial pour son anniversaire. Ce n'est pas obligatoire, mais c'est une jolie attention automatique.<br><br>Cette information reste strictement locale : elle ne sert qu'à l'intérieur du jeu.",
@@ -132,11 +132,14 @@ const OB_STEPS_2 = [
  { icon:'🎂', title:"L'anniversaire de l'enfant",
    body:"Renseignez ou modifiez ici la date d'anniversaire du profil sélectionné.",
    nav:{ptab:'comptes'}, target:'acc-birthday', accordion:true },
+ { icon:'🔒', title:'Le code du profil',
+   body:"Par défaut, une simple confirmation (« C'est bien toi ? ») s'affiche à chaque connexion de l'enfant, pour éviter qu'il joue par inadvertance sur le profil d'un frère ou d'une sœur.<br><br>Vous pouvez remplacer cette confirmation par un <b>code à 2 chiffres</b> propre à ce profil : il sera alors demandé à la place, jamais en plus. Facultatif et désactivé par défaut.",
+   nav:{ptab:'comptes'}, target:'acc-playercode', accordion:true },
  { icon:'🗑', title:'Réinitialiser ce profil',
    body:"Ce bouton efface <b>définitivement</b> toute la progression du profil sélectionné (étoiles, figurines, niveau, badges). Il ne supprime pas le profil lui-même : l'enfant repart simplement de zéro. Cette action est <b>irréversible</b>.",
    nav:{ptab:'comptes'}, target:'acc-reset-one', accordion:true },
  { icon:'👥', title:'Ajouter, renommer ou retirer un enfant',
-   body:"Gérez ici la liste complète des profils : ajoutez un nouvel enfant, renommez un profil existant (sans perdre ses amis ni sa progression), ou retirez un profil de la liste (sa progression reste stockée sur l'appareil, au cas où).",
+   body:"Gérez ici la liste complète des profils : ajoutez un nouvel enfant, donnez-lui une photo (📷 sur son avatar, facultatif), renommez un profil existant (sans perdre ses amis ni sa progression), ou retirez un profil de la liste (sa progression reste stockée sur l'appareil, au cas où). La suppression d'un profil vous demande toujours une confirmation.",
    nav:{ptab:'comptes'}, target:'acc-profils-manage', accordion:true },
  { icon:'📦', title:'Tout sauvegarder en un seul fichier',
    body:"Ce bouton télécharge un unique fichier regroupant <b>tous</b> les profils de la famille en une fois — pratique pour tout transférer d'un coup vers un autre appareil, plutôt que profil par profil.",

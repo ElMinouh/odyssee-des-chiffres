@@ -833,6 +833,9 @@
     <button class="accordion" id="acc-birthday">🎂 Anniversaire<span class="acc-sub">Jour et mois d'anniversaire de l'enfant</span></button>
     <div class="panel"><div id="opt-birthday"></div></div>
 
+    <button class="accordion" id="acc-playercode">🔒 Code du profil (optionnel)<span class="acc-i" onclick="event.stopPropagation();pGuide('playercode')">i</span><span class="acc-sub">Code à 2 chiffres avant de jouer</span></button>
+    <div class="panel"><div id="opt-playercode"></div></div>
+
     <button class="accordion" id="acc-reset-one">🗑 Réinitialiser ce profil<span class="acc-sub">Efface la progression de ce profil</span></button>
     <div class="panel"><div id="opt-reset-one"></div></div>
 
@@ -841,12 +844,13 @@
 
     <button class="accordion" id="acc-profils-manage">👥 Ajouter, renommer ou retirer un enfant<span class="acc-i" onclick="event.stopPropagation();pGuide('profils')">i</span><span class="acc-sub">Gère la liste des profils</span></button>
     <div class="panel">
-     <div id="profile-manager" style="margin-bottom:12px;"></div>
-     <p style="font-size:.8em;font-weight:700;color:#f1c40f;margin:8px 0 4px;">✏️ Renommer un profil</p>
-     <select id="rename-player" style="width:90%;margin-bottom:6px;"></select>
-     <input type="text" id="rename-new" placeholder="Nouveau prénom" maxlength="20" style="width:70%;"><br>
-     <button onclick="renameProfileUI()" style="background:#2980b9;font-size:.86em;margin-top:6px;">✏️ Renommer</button>
-     <p id="rename-msg" style="font-size:.78em;margin-top:6px;color:#2ecc71;"></p>
+     <div style="display:flex;gap:6px;margin-bottom:12px;">
+      <input id="pm-new" type="text" placeholder="Nouveau prénom…" maxlength="20" style="flex:1;" onkeydown="if(event.key==='Enter')pmAddProfile()">
+      <button onclick="pmAddProfile()" style="background:#27ae60;font-size:.86em;">Ajouter</button>
+     </div>
+     <div id="profile-manager"></div>
+     <input type="file" id="pm-photo-input" accept="image/*" style="display:none;" onchange="pmPhotoFileSelected(event)">
+     <p style="font-size:.74em;color:#9aa6b2;margin-top:6px;line-height:1.4;">Les profils et tous leurs progrès sont enregistrés sur cet appareil. Retirer un profil n'efface pas sa progression : il réapparaîtra si tu le rajoutes.</p>
     </div>
 
     <button class="accordion" id="acc-export-all">📦 Tout sauvegarder (fichier global)<span class="acc-sub">Un seul fichier avec tous les profils</span></button>
@@ -962,7 +966,7 @@
   <script src="js/15-college.js"></script>
 <script src="js/17-messaging.js"></script>
 <script src="js/19-onboarding.js"></script>
-<script src="js/11-init.js?v=1088"></script>
+<script src="js/11-init.js?v=1089"></script>
 
 <!-- Enregistrement du Service Worker (mode hors-ligne + installation PWA) -->
 <script>
