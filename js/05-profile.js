@@ -360,10 +360,6 @@ function loadProfile(){
  if(typeof cancelCloudSync==='function') cancelCloudSync();
  if(P.cloudEnabled && typeof scheduleCloudSync==='function') scheduleCloudSync();
  if(typeof refreshCloudIndicator==='function') setTimeout(refreshCloudIndicator, 200);
- // v11.6.6 : vérification d'identité AVANT la visite du compte (jamais les
- // deux à la fois — voir _pcMaybeShow : ne s'affiche pas tant que ce profil
- // n'a pas encore terminé sa toute première visite guidée).
- if(typeof _pcMaybeShow==='function') setTimeout(_pcMaybeShow, 300);
  if(typeof obMaybeAutoStart3==='function') setTimeout(obMaybeAutoStart3, 400);
 }
 // saveProfile avec debounce : évite de sérialiser à chaque micro-action (quêtes, badges…)
@@ -601,16 +597,21 @@ function showLevelUpAnim(lvl,xpGain){
 }
 
 // ═══════════════════════════════════════════════════════
-// VÉRIFICATION D'IDENTITÉ AU CHARGEMENT DU PROFIL (v11.6.6)
+// VÉRIFICATION D'IDENTITÉ (v11.6.7 : déclenchée par gotoSubjects(), au clic
+// sur CONTINUER — PAS au simple chargement de la page/du profil, pour ne
+// pas apparaître avant même d'avoir choisi qui va jouer).
 // Par profil : soit une simple confirmation par défaut ("C'est bien toi ?"),
 // soit un code à 2 chiffres si le parent l'a activé POUR CE PROFIL — jamais
 // les deux à la fois (voir P.playerCode, réglé dans Vue Parent → Comptes).
 // Ne s'affiche jamais à la toute première connexion d'un profil : à ce
 // moment précis le parent est juste à côté en train de le configurer.
 // ═══════════════════════════════════════════════════════
-function _pcMaybeShow(){
- if(typeof P==='undefined' || !P || !P.name) return;
- if(!P.onbAccountSeen) return; // toute première connexion → pas de vérification
+let _pcPendingSuccess = null;
+function _pcMaybeShow(onSuccess){
+ const go = (typeof onSuccess==='function') ? onSuccess : function(){};
+ if(typeof P==='undefined' || !P || !P.name){ go(); return; }
+ if(!P.onbAccountSeen){ go(); return; } // toute première connexion → pas de vérification
+ _pcPendingSuccess = go;
  if(P.playerCode) _pcShowPin(); else _pcShowConfirm();
 }
 function _pcEl(){
@@ -642,9 +643,14 @@ function _pcShowConfirm(){
   +  '<button onclick="_pcConfirmNo()" style="background:#555;color:#fff;border:none;border-radius:10px;padding:12px 20px;font-weight:700;">↩️ Non, changer</button>'
   + '</div></div>';
 }
-function _pcConfirmYes(){ _pcClose(); }
+function _pcConfirmYes(){
+ _pcClose();
+ const cb=_pcPendingSuccess; _pcPendingSuccess=null;
+ if(typeof cb==='function') cb();
+}
 function _pcConfirmNo(){
  _pcClose();
+ _pcPendingSuccess=null;
  const sel=$('playerSelect');
  if(sel){ try{ sel.scrollIntoView({block:'center'}); sel.focus(); }catch(e){} }
  if(typeof toast==='function') toast('👆 Choisis ton profil dans la liste',2500);
@@ -666,7 +672,11 @@ function _pcShowPin(){
 function _pcCheckPin(){
  const inp=$('pc-pin-input'), msg=$('pc-pin-msg');
  const v=(inp&&inp.value||'').trim();
- if(v && P && v===P.playerCode){ _pcClose(); }
+ if(v && P && v===P.playerCode){
+  _pcClose();
+  const cb=_pcPendingSuccess; _pcPendingSuccess=null;
+  if(typeof cb==='function') cb();
+ }
  else{
   if(msg) msg.textContent='Code incorrect.';
   if(inp){ inp.value=''; inp.focus(); }

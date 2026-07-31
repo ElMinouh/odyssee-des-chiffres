@@ -697,6 +697,7 @@
 
    <div id="ptab-suivi">
     <p class="ptab-intro">Regarde comment ton enfant progresse.</p>
+    <div style="text-align:right;margin:4px 0;"><button onclick="dashCollapseAll('ptab-suivi')" style="background:rgba(255,255,255,.1);font-size:.72em;padding:4px 10px;">⬍ Tout replier</button></div>
     <p class="ptab-sel-lbl">👤 Pour quel enfant&nbsp;?</p>
     <select id="parent-player" onchange="renderReport();renderReportView();" style="width:92%;margin-bottom:10px;"></select>
     <button class="accordion" id="acc-progression">📈 Progression<span class="acc-sub">Niveau, zones conquises, étoiles, badges</span></button>
@@ -715,6 +716,7 @@
 
    <div id="ptab-encadrement" class="hidden">
     <p class="ptab-intro">Fixe des objectifs et des limites pour chaque enfant.</p>
+    <div style="text-align:right;margin:4px 0;"><button onclick="dashCollapseAll('ptab-encadrement')" style="background:rgba(255,255,255,.1);font-size:.72em;padding:4px 10px;">⬍ Tout replier</button></div>
 
     <button class="accordion" id="acc-hw">📚 Devoir du jour<span class="acc-i" onclick="event.stopPropagation();pGuide('objectifs')">i</span><span class="acc-sub">Un exercice à réussir pour gagner des étoiles</span></button>
     <div class="panel">
@@ -804,6 +806,7 @@
 
    <div id="ptab-comptes" class="hidden">
     <p class="ptab-intro">Gère les profils et leurs sauvegardes.</p>
+    <div style="text-align:right;margin:4px 0;"><button onclick="dashCollapseAll('ptab-comptes')" style="background:rgba(255,255,255,.1);font-size:.72em;padding:4px 10px;">⬍ Tout replier</button></div>
     <p class="ptab-sel-lbl">👤 Profil concerné&nbsp;:</p>
     <select id="opt-profile" style="width:92%;margin-bottom:10px;padding:6px;" onchange="optSelectProfile()"></select>
 
@@ -862,6 +865,7 @@
 
    <div id="ptab-avance" class="hidden">
     <p class="ptab-intro">Réglages techniques et dépannage. Touche l'icône <span class="acc-i" style="margin:0;">i</span> pour un guide pas à pas.</p>
+    <div style="text-align:right;margin:4px 0;"><button onclick="dashCollapseAll('ptab-avance')" style="background:rgba(255,255,255,.1);font-size:.72em;padding:4px 10px;">⬍ Tout replier</button></div>
 
     <button class="accordion" id="acc-synchro">🔄 Réparer la synchronisation entre appareils<span class="acc-i" onclick="event.stopPropagation();pGuide('synchro')">i</span><span class="acc-sub">Renvoie les données vers les autres appareils</span></button>
     <div class="panel">
@@ -966,7 +970,7 @@
   <script src="js/15-college.js"></script>
 <script src="js/17-messaging.js"></script>
 <script src="js/19-onboarding.js"></script>
-<script src="js/11-init.js?v=1089"></script>
+<script src="js/11-init.js?v=1090"></script>
 
 <!-- Enregistrement du Service Worker (mode hors-ligne + installation PWA) -->
 <script>

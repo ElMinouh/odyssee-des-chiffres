@@ -368,7 +368,10 @@ function _obRenderStep(){
   // la zone (le contenu du panneau peut changer suite à ce rafraîchissement).
   _obApplyPendingProfile(step);
   if(targetEl && typeof targetEl.scrollIntoView==='function'){
-   try{ targetEl.scrollIntoView({block:'center'}); }catch(e){}
+   // v11.6.7 : on scrolle la cible EN HAUT de l'écran (pas centrée) — la
+   // bulle d'explication est désormais ancrée en bas (voir _obPositionBox),
+   // ça laisse toute la partie haute, visible et cliquable, à la cible.
+   try{ targetEl.scrollIntoView({block:'start'}); window.scrollBy(0,-16); }catch(e){}
   }
   setTimeout(()=>_obShowTooltip(step, targetEl), targetEl?70:0);
  }, 90);
@@ -437,13 +440,12 @@ function _obPositionBox(step, targetEl){
   const vh = window.innerHeight || 600, vw = window.innerWidth || 360;
   const r = _obTargetRect(step, targetEl);
   if(!r){
-   // Cas général (pas de cible précise) : centré via CSS, on borne juste la
-   // hauteur pour qu'il ne déborde jamais, quelle que soit la taille d'écran.
+   // Cas général (pas de cible précise) : carte centrée classique (CSS .ob-centered).
    box.style.maxHeight = Math.max(200, vh-24)+'px';
    return;
   }
   const pad = 8;
-  // v11.6.5 : trou RÉEL (pas seulement visuel) exactement calé sur la cible.
+  // Trou RÉEL (pas seulement visuel) exactement calé sur la cible.
   const holeTop = Math.max(0, r.top - pad);
   const holeBottom = Math.min(vh, r.bottom + pad);
   const holeLeft = Math.max(0, r.left - pad);
@@ -458,8 +460,7 @@ function _obPositionBox(step, targetEl){
   }
   // 4 pans opaques encadrant EXACTEMENT ce trou : tout le reste de l'écran
   // reste bloqué, mais la zone en surbrillance redevient réellement
-  // cliquable/saisissable (contrairement à l'ancien cache plein écran,
-  // purement visuel, qui bloquait aussi le clic sur la zone surlignée).
+  // cliquable/saisissable.
   const bpT=document.getElementById('ob-bp-t'), bpB=document.getElementById('ob-bp-b'),
         bpL=document.getElementById('ob-bp-l'), bpR=document.getElementById('ob-bp-r');
   if(bpT){ bpT.style.top='0px'; bpT.style.left='0px'; bpT.style.width=vw+'px'; bpT.style.height=holeTop+'px'; }
@@ -467,24 +468,19 @@ function _obPositionBox(step, targetEl){
   if(bpL){ bpL.style.top=holeTop+'px'; bpL.style.left='0px'; bpL.style.width=holeLeft+'px'; bpL.style.height=holeH+'px'; }
   if(bpR){ bpR.style.top=holeTop+'px'; bpR.style.left=holeRight+'px'; bpR.style.width=Math.max(0,vw-holeRight)+'px'; bpR.style.height=holeH+'px'; }
 
-  // La hauteur réelle est bornée par le CSS (max-height) : offsetHeight
-  // reflète donc déjà une valeur qui ne peut pas dépasser l'écran.
-  box.style.maxHeight = Math.max(200, vh-24)+'px';
-  const boxW = box.offsetWidth || 340;
-  const boxH = Math.min(box.offsetHeight || 260, vh-24);
-  const spaceBelow = vh - r.bottom;
-  const spaceAbove = r.top;
-  let top;
-  if(spaceBelow >= boxH+26) top = r.bottom+16;
-  else if(spaceAbove >= boxH+26) top = r.top-boxH-16;
-  else top = (vh-boxH)/2; // ni assez dessus ni dessous → centrage vertical, quitte à frôler la cible
-  // Garde-fou FINAL, non contournable : quel que soit le cas ci-dessus,
-  // la bulle reste TOUJOURS entièrement contenue dans la fenêtre visible.
-  // C'est cette ligne qui empêche structurellement le blocage constaté
-  // (boutons Suivant/Précédent/Passer poussés hors écran).
-  top = Math.max(10, Math.min(top, vh-boxH-10));
-  const left = Math.max(10, Math.min(vw-boxW-10, r.left + r.width/2 - boxW/2));
-  box.style.position='fixed'; box.style.top=top+'px'; box.style.left=left+'px';
+  // v11.6.7 — CORRECTIF (étapes 1/10 et 4/10 signalées masquées) : la bulle
+  // n'essaie plus de se placer au-dessus/en dessous de la cible (l'ancienne
+  // logique retombait sur un centrage qui RECOUVRAIT alors la cible quand
+  // celle-ci était plus grande que l'espace dispo dessus + dessous). Elle
+  // est désormais TOUJOURS ancrée en tiroir plein largeur au bas de l'écran :
+  // la cible, scrollée en haut de l'écran juste avant (voir _obRenderStep),
+  // reste ainsi toujours entièrement visible ET cliquable au-dessus.
+  const drawerMaxH = Math.min(vh*0.46, vh-40);
+  box.style.maxHeight = drawerMaxH+'px';
+  box.style.position='fixed';
+  box.style.left='0px'; box.style.right='0px'; box.style.bottom='0px'; box.style.top='auto';
+  box.style.width='100%'; box.style.maxWidth='none';
+  box.style.borderRadius='16px 16px 0 0';
  }catch(e){
   // Filet de sécurité ultime : si le calcul échoue pour une raison
   // quelconque, on recentre plutôt que de risquer un blocage silencieux.
@@ -513,6 +509,17 @@ function _obCloseUI(){
  if(ov){ ov.classList.add('hidden'); ov.innerHTML=''; }
 }
 
+// v11.6.7 : à la fin d'une visite (Terminer OU Passer), replie tous les
+// accordéons qu'elle a pu ouvrir en chemin — Vue Parent (Systèmes 1 et 2)
+// et Tableau de bord (Système 3). Sans effet sur les onglets qui n'ont pas
+// d'accordéon ouvert (dashCollapseAll ne fait rien s'il n'y a rien à replier).
+function _obCollapseAllAccordions(){
+ if(typeof dashCollapseAll!=='function') return;
+ ['ptab-suivi','ptab-encadrement','ptab-comptes','ptab-avance','tab-hero','tab-figurines','tab-milestones','tab-stats'].forEach(id=>{
+  try{ dashCollapseAll(id); }catch(e){}
+ });
+}
+
 // "Passer" : ferme la visite, la marque comme vue (pour ne plus la relancer
 // automatiquement), mais SANS la marquer "terminée avec succès" — ce qui
 // signifie qu'elle n'enchaînera pas automatiquement vers la suivante.
@@ -521,6 +528,7 @@ function obSkip(){
  _obCloseUI();
  _obSystem = null;
  _obPendingProfile = null;
+ _obCollapseAllAccordions();
  if(n===1||n===2) _obMarkSeen(n);
  if(typeof _obRefreshButtons==='function') _obRefreshButtons();
 }
@@ -533,6 +541,7 @@ function _obFinishClick(){
  _obCloseUI();
  _obSystem = null;
  _obPendingProfile = null;
+ _obCollapseAllAccordions();
  if(n===1||n===2){ _obMarkSeen(n); _obMarkCompleted(n); }
  if(n===3){ ob3MarkCompleted(); }
  if(typeof _obRefreshButtons==='function') _obRefreshButtons();

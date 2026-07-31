@@ -7,12 +7,12 @@
 // (Carte : 07-map.js. Boss/collection/décor : 07-boss.js. Histoire/livres : 07-story.js.)
 
 var _bgAudio=null;
-function _musicDuck(on){ if(_bgAudio){ try{ _bgAudio.volume = on ? 0.03 : 0.4; }catch(e){} } } // baisse la musique pendant la voix (v11.6.4 : 0.06→0.03, la voix restait couverte)
+function _musicDuck(on){ if(_bgAudio){ try{ _bgAudio.volume = on ? 0.03 : 0.25; }catch(e){} } } // baisse la musique pendant la voix (v11.6.7 : volume de base 0.4→0.25, trop fort par défaut)
 function startMusic(){
  stopMusic();
  const m=(typeof MUSICS!=='undefined')?(MUSICS.find(x=>x.id===((P&&P.music)||'theme'))||MUSICS[0]):null;
  if(!m)return;
- try{ _bgAudio=new Audio('assets/'+m.file); _bgAudio.loop=true; _bgAudio.volume=.4; _bgAudio.play().catch(function(){}); }catch(e){}
+ try{ _bgAudio=new Audio('assets/'+m.file); _bgAudio.loop=true; _bgAudio.volume=.25; _bgAudio.play().catch(function(){}); }catch(e){}
  const _mv=$('music-viz');if(_mv)_mv.classList.add('viz-anim');
 }
 function stopMusic(){ if(_bgAudio){ try{_bgAudio.pause();}catch(e){} _bgAudio=null; } clearTimeout(musicTimer);musicTimer=null;const _mv=$('music-viz');if(_mv)_mv.classList.remove('viz-anim'); }

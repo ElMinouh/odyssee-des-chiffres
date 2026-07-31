@@ -8,13 +8,13 @@ describe('_musicDuck : mise en sourdine de la musique de fond', () => {
   let api;
   beforeEach(() => { api = loadGame(FILES); });
 
-  it('baisse le volume à 0.03 puis le remonte à 0.4', () => {
+  it('baisse le volume à 0.03 puis le remonte à 0.25', () => {
     api.startMusic();
-    expect(api.getBgAudioVolume()).toBeCloseTo(0.4);
+    expect(api.getBgAudioVolume()).toBeCloseTo(0.25);
     api._musicDuck(true);
     expect(api.getBgAudioVolume()).toBeCloseTo(0.03);
     api._musicDuck(false);
-    expect(api.getBgAudioVolume()).toBeCloseTo(0.4);
+    expect(api.getBgAudioVolume()).toBeCloseTo(0.25);
   });
 
   it('ne plante pas si aucune musique n\'est démarrée', () => {

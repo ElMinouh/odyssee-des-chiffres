@@ -944,8 +944,14 @@ function gotoMenu2(){
 // Écran 1 → Écran « Choisis ta matière » (v10.5.0 : app multi-matières)
 function gotoSubjects(){
  if(typeof savePrefs==='function') savePrefs();
- try{ const nm=$('subj-player'); if(nm) nm.textContent=(P&&P.name)||'Joueur'; }catch(e){}
- navTo('v-subjects');
+ const _proceed = ()=>{
+  try{ const nm=$('subj-player'); if(nm) nm.textContent=(P&&P.name)||'Joueur'; }catch(e){}
+  navTo('v-subjects');
+ };
+ // v11.6.7 : la vérification d'identité (confirmation ou code) se déclenche
+ // ICI — au clic sur CONTINUER, pour valider le profil juste avant d'y jouer —
+ // pas au chargement de la page, avant même d'avoir choisi qui va jouer.
+ if(typeof _pcMaybeShow==='function') _pcMaybeShow(_proceed); else _proceed();
 }
 // Choix d'une matière. Maths → flux actuel (modes). Autres → bientôt disponibles.
 const SUBJECT_LABELS={ math:'Mathématiques', fr:'Français', hist:'Histoire', geo:'Géographie', en:'Anglais', svt:'SVT', pc:'Physique-Chimie' };
