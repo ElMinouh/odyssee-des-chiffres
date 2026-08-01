@@ -512,6 +512,9 @@ function _advBadgeHtml(){
   : nD>0 ? `${nD} district${nD>1?'s':''} libéré${nD>1?'s':''} — le médaillon se forge !`
   : "Libère les districts de Verbopolis, un par un !";
  const clickable = done ? `onclick="_openBookTale()" role="button" tabindex="0" title="Lire le dossier du Docteur Babel" style="cursor:pointer"` : '';
+ // v11.6.14 : bouton explicite (cohérence avec Arc-en-ciel/Livre/Talisman/Armure)
+ // — auparavant seule l'illustration était cliquable, sans confirmation visuelle claire.
+ const babelCta = done ? `<button onclick="_openBookTale()" style="margin-top:8px;background:#8a2a3b;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-weight:700;font-size:.85em;cursor:pointer;">📖 ${taleSeen?'Relire':'Lire'} le dossier du Docteur Babel</button>` : '';
  const _hn = (typeof P!=='undefined' && P && P.name) ? String(P.name) : 'le héros';
  const heroEsc = _hn.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
  return `
@@ -551,6 +554,7 @@ function _advBadgeHtml(){
     ${slots}
    </svg>
    <div class="advcol-caption">${msg} <b>${n} / 6</b></div>
+   ${babelCta}
   </div>`;
 }
 // ── Carnet collège : l'Armure Solaire ───────────────────────────────
