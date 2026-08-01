@@ -116,7 +116,8 @@ function _renderTaleIllus(tale){
  function close(){ stopSay(); ov.classList.add('story-out'); setTimeout(function(){try{ov.remove();}catch(e){}},300); }
  function render(){
   const p=pages[step];
-  ov.innerHTML='<div class="story-parchment" style="max-width:560px;border-top:6px solid '+(tale.accent||'#7c5bd0')+';">'
+  ov.innerHTML='<div class="story-parchment" style="max-width:560px;border-top:6px solid '+(tale.accent||'#7c5bd0')+';position:relative;">'
+   +'<button class="story-btn ti-close" title="Fermer" style="position:absolute;top:8px;right:8px;width:30px;height:30px;padding:0;line-height:1;border-radius:50%;font-size:16px;z-index:2;">✕</button>'
    +'<div style="text-align:center;font-family:Georgia,serif;font-weight:700;color:'+(tale.accent||'#7c5bd0')+';font-size:15px;margin-bottom:8px;">'+tale.title+'</div>'
    +(p.illus?('<div style="background:#fffaf0;border:2px solid #e6d3a3;border-radius:12px;padding:6px;overflow:hidden;">'+p.illus+'</div>'):'')
    +'<div style="font-family:Georgia,serif;font-size:18px;line-height:1.55;color:#3a2a18;text-align:center;margin:12px 8px 6px;">'+_fill(p.text||'')+'</div>'
@@ -130,6 +131,9 @@ function _renderTaleIllus(tale){
   const nx=ov.querySelector('.ti-next'); nx.onclick=function(){ stopSay(); if(step<total-1){ step++; render(); if(tale.autoSpeak) sayCur(); } else close(); };
   const pv=ov.querySelector('.ti-prev'); if(pv) pv.onclick=function(){ stopSay(); if(step>0){ step--; render(); if(tale.autoSpeak) sayCur(); } };
   ov.querySelector('.ti-read').onclick=sayCur;
+  // v11.6.11 : bouton de fermeture toujours visible — auparavant, seule la
+  // dernière page proposait "Fin ✨" : impossible de sortir sans tout lire.
+  ov.querySelector('.ti-close').onclick=close;
   if(typeof beep==='function'){ try{ beep(560,'sine',.08,.04); }catch(e){} }
  }
  render(); document.body.appendChild(ov); if(tale.autoSpeak) setTimeout(sayCur,260);
@@ -361,6 +365,9 @@ function _advBookHtml(){
   : "Retrouve les mots, monde après monde !";
  const clickable = done ? `onclick="_openBookTale()" role="button" tabindex="0" title="Écouter l'histoire du Livre" style="cursor:pointer"` : '';
  const haloR = done ? `<ellipse cx="120" cy="100" rx="112" ry="92" fill="url(#gbGlo)"/>` : '';
+ // v11.6.11 : bouton bien visible (pas seulement l'illustration cliquable),
+ // pour que ce soit sans ambiguïté possible comment (re)trouver cette histoire.
+ const cta = done ? `<button onclick="_openBookTale()" style="margin-top:8px;background:#3a44ad;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-weight:700;font-size:.85em;cursor:pointer;">📖 ${taleSeen?'Réécouter':'Écouter'} l'histoire du Livre</button>` : '';
  return `
   <div class="advlog-section-title">📖 Le Grand Livre</div>
   <div class="advcol-box advcol-mat${done?' advbook-done':''}" ${clickable}>
@@ -398,6 +405,7 @@ function _advBookHtml(){
     ${coins}
    </svg>
    <div class="advcol-caption">${msg} <b>${n} / 6</b></div>
+   ${cta}
   </div>`;
 }
 // ── Carnet primaire FR : le Journal intime du héros ─────────────────
