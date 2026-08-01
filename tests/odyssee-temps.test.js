@@ -204,6 +204,42 @@ describe('Odyssée du Temps — corrections v11.5.1 (oublis "Histoire" dans l\u2
     expect(keys).toContain('hist');
   });
 
+  it('v11.6.9 : Histoire n\u2019ayant pas d\u2019Odyssée en maternelle/collège, ces tuiles sont verrouillées (primaire reste dispo)', () => {
+    const api = loadGame(FILES);
+    api.setGMsubject('hist');
+    api.openOdysseeSelect();
+    expect(api._domEl('ody-mat-sub').textContent).toBe('🔒 Bientôt disponible');
+    expect(api._domEl('ody-col-sub').textContent).toBe('🔒 Bientôt disponible');
+    expect(api._domEl('ody-prim-sub').textContent).toBe('Les Trois Héritages'); // toujours dispo
+  });
+
+  it('v11.6.9 : cliquer une tuile verrouillée ne lance PAS l\u2019aventure (pas de bascule silencieuse sur les maths)', () => {
+    const api = loadGame(FILES);
+    api.setGMsubject('hist');
+    api.setGMadventure(null);
+    api.openOdysseeSelect();
+    api._domEl('ody-btn-mat').onclick(); // simule le clic sur la tuile verrouillée
+    expect(api.getGM().adventure).toBeNull();
+    api._domEl('ody-btn-col').onclick();
+    expect(api.getGM().adventure).toBeNull();
+  });
+
+  it('v11.6.9 : les tuiles maths/français restent cliquables (non-régression)', () => {
+    const api = loadGame(FILES);
+    api.setGMsubject('math');
+    api.openOdysseeSelect();
+    expect(api._domEl('ody-mat-sub').textContent).not.toMatch(/Bientôt disponible/);
+    expect(api._domEl('ody-col-sub').textContent).not.toMatch(/Bientôt disponible/);
+  });
+
+  it('v11.6.9 : filet de sécurité — startAdventure() bloque aussi si appelée directement pour une combinaison verrouillée', () => {
+    const api = loadGame(FILES);
+    api.setGMsubject('hist');
+    api.setGMadventure(null);
+    api.startAdventure('col');
+    expect(api.getGM().adventure).toBeNull();
+  });
+
   it('renderHistory() (Historique détaillé) propose bien un filtre "hist" et l\u2019affiche pour une partie d\u2019histoire', () => {
     const api = loadGame(FILES);
     api.setP({

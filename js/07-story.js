@@ -151,63 +151,86 @@ const _MAT_VILLAIN = 'Nuage Grognon';
 const _MAT_KINGDOM = 'le Pays des Couleurs';
 const _MAT_STORY = {
  intro: { id:'mat_intro', title:'Le Pays des Couleurs', pages:[
-  { emoji:'🌈', text:"Il était une fois un pays magnifique : <b>{kingdom}</b>. Les coquelicots étaient rouges, les oranges bien orange, et le ciel tout bleu." },
-  { emoji:'☁️', text:"Mais un matin, un gros nuage tout gris est arrivé : le <b>{villain}</b>. Il était si triste qu'il a aspiré toutes les couleurs ! Tout est devenu gris…" },
-  { emoji:'🧒', text:"Les animaux ont besoin de toi, {hero} ! Sur chaque île, joue avec eux pour retrouver une couleur. En route, petit héros !" },
+  { emoji:'🌈', text:"Il était une fois un pays merveilleux appelé <b>{kingdom}</b>. Là-bas, les coquelicots étaient rouges comme des baisers, les oranges bien juteuses et bien orange, les blés dorés comme du miel, l'herbe verte comme une prairie de printemps, le ciel bleu comme une mer sans vagues, et le soir tombait toujours tout en douceur, couleur de myrtille. Sept couleurs, sept trésors, et un seul arc-en-ciel qui brillait dans le ciel, jour et nuit." },
+  { emoji:'🦋', text:"Au-dessus de ce beau pays volait une petite luciole pas comme les autres : elle s'appelait <b>Iris</b>, et changeait de couleur selon son humeur — rouge quand elle riait, bleue quand elle rêvait, dorée quand elle chantait. Elle veillait sur {kingdom} depuis toujours, en amie de tous ses habitants." },
+  { emoji:'☁️', text:"Mais un matin d'hiver, un énorme nuage tout gris est arrivé au-dessus des collines : c'était <b>{villain}</b>. Il avait le cœur si lourd, si triste, que partout où passait son ombre, les couleurs s'échappaient du monde comme de l'eau qui fuit entre les doigts." },
+  { emoji:'😢', text:"Une à une, les couleurs ont disparu. Le rouge des coquelicots, l'orange des fruits, le jaune du soleil, le vert des feuilles, le bleu du ciel : tout est devenu gris, comme une vieille photo oubliée dans un tiroir. Iris elle-même a perdu ses couleurs, et s'est cachée, toute pâle, au creux d'une fleur fanée." },
+  { emoji:'🧒', text:"Alors les animaux du pays se sont souvenus d'une vieille chanson : un jour viendrait un petit héros au grand cœur, capable de faire revivre les couleurs, une à une. {hero}, ce héros, c'est <b>TOI</b> ! Retrouve Iris sur chaque chemin, joue avec les amis du pays, et ensemble, ramenez l'arc-en-ciel dans le ciel de {kingdom} !" },
  ]},
  chapters: {
-  cp:    { id:'mat_c_cp',  title:'La Plaine des Coquelicots', crystal:'le Rouge', pages:[
-   { emoji:'🌱', text:"Te voilà dans la <b>Plaine des Coquelicots</b>. Les fleurs sont toutes grises et ça rend le petit lapin très triste." },
-   { emoji:'🐰', text:"« {hero}, aide-nous ! » dit le lapin. « Si tu joues avec nous, le <b>rouge</b> reviendra ! »" },
+  cp: { id:'mat_c_cp', title:'La Plaine des Coquelicots', crystal:'le Rouge', pages:[
+   { emoji:'🌱', text:"Te voilà dans la <b>Plaine des Coquelicots</b>, un endroit qui, dit-on, était autrefois rouge à perte de vue. Aujourd'hui, l'herbe est grise, les fleurs sont grises, et même les petits nuages semblent tristes de ne plus savoir quelle couleur porter." },
+   { emoji:'🐰', text:"Un petit lapin gris s'approche en reniflant. « Bonjour, {hero}... Avant, mes coquelicots préférés étaient si rouges qu'on aurait dit des cœurs de velours. Maintenant, tout est gris, gris, gris. Je n'ose même plus sauter de joie. »" },
+   { emoji:'✨', text:"Sur ton épaule, une minuscule lumière pâle s'agite : c'est <b>Iris</b> ! « Psst, {hero}... » chuchote-t-elle. « Aide le lapin à retrouver le sourire, et je crois bien que le rouge reviendra avec lui. »" },
+   { emoji:'❤️', text:"Le lapin sèche ses larmes et sourit timidement : « Si tu joues avec nous, {hero}, peut-être que la plaine redeviendra aussi belle qu'avant... Tu veux bien essayer ? » Le vent souffle doucement, comme pour t'encourager à commencer." },
   ]},
-  ce1:   { id:'mat_c_ce1', title:'Le Verger des Oranges', crystal:'l\'Orange', pages:[
-   { emoji:'🍊', text:"Dans le <b>Verger des Oranges</b>, les fruits sont gris comme des cailloux. L'ourson n'a plus envie de goûter !" },
-   { emoji:'🐻', text:"« Mmm… aide-nous à retrouver la couleur <b>orange</b>, {hero}, et le verger sentira bon à nouveau ! »" },
+  ce1: { id:'mat_c_ce1', title:'Le Verger des Oranges', crystal:'l\'Orange', pages:[
+   { emoji:'🍊', text:"Bienvenue dans le <b>Verger des Oranges</b> ! Ici poussaient jadis les fruits les plus sucrés du pays, ronds et brillants comme de petits soleils. Aujourd'hui, ils pendent aux branches, gris et ternes, comme des cailloux oubliés." },
+   { emoji:'🐻', text:"Un ourson soupire devant un arbre : « {hero}, avant je croquais une orange chaque matin, et le jus me coulait sur le menton ! Maintenant... regarde. » Il tapote un fruit gris du bout de sa patte, sans grand espoir." },
+   { emoji:'🦋', text:"Iris frétille sur ton épaule, une lueur orangée scintillant furtivement autour d'elle. « Je sens l'orange qui hésite à revenir, tout près... Il suffirait d'un peu de courage et de jeu pour la convaincre ! »" },
+   { emoji:'🐻', text:"L'ourson renifle un grand coup et retrouve un peu d'entrain : « D'accord, {hero}, jouons ensemble ! Si l'orange nous écoute, le verger sentira à nouveau bon la confiture et le soleil. »" },
   ]},
-  ce2:   { id:'mat_c_ce2', title:'Les Bois Dorés', crystal:'le Jaune', pages:[
-   { emoji:'🍂', text:"Chut… voici les <b>Bois Dorés</b>. D'habitude, les feuilles brillent comme des petits soleils. Mais tout est gris." },
-   { emoji:'🦉', text:"« Hou hou ! » fait le hibou. « Le <b>jaune</b> se cache par ici. Joue avec nous pour le retrouver, {hero} ! »" },
+  ce2: { id:'mat_c_ce2', title:'Les Bois Dorés', crystal:'le Jaune', pages:[
+   { emoji:'🍂', text:"Chut... nous voici dans les <b>Bois Dorés</b>, où d'ordinaire chaque feuille brille comme une pièce d'or et chante au moindre souffle de vent. Mais aujourd'hui, la forêt est silencieuse, et les feuilles pendent, grises et lourdes." },
+   { emoji:'🦉', text:"Un vieux hibou cligne des yeux depuis sa branche : « Hou hou, {hero}... Sans le jaune, plus personne ne retrouve son chemin dans ces bois, même moi qui vois pourtant très bien la nuit. »" },
+   { emoji:'✨', text:"Iris voltige entre les troncs gris, cherchant une trace de lumière oubliée. « Le jaune se cache tout près, j'en suis sûre ! Il attend juste un peu de malice et de jeu pour oser ressortir. »" },
+   { emoji:'🦉', text:"Le hibou hoche gravement la tête : « Alors joue avec nous, petit héros, et peut-être que le soleil du matin retrouvera enfin ses bois dorés. » Un frisson d'espoir parcourt la forêt endormie." },
   ]},
-  cm1:   { id:'mat_c_cm1', title:'Le Lagon aux Tortues', crystal:'le Vert', pages:[
-   { emoji:'🐢', text:"Plouf ! Bienvenue au <b>Lagon aux Tortues</b>. Les palmiers et les tortues ont perdu leur joli <b>vert</b>." },
-   { emoji:'🌊', text:"« Viens jouer dans l'eau, {hero} ! » disent les poissons. « Ensemble, on va rendre le lagon tout vert ! »" },
+  cm1: { id:'mat_c_cm1', title:'Le Lagon aux Tortues', crystal:'le Vert', pages:[
+   { emoji:'🐢', text:"Plouf ! Te voilà au bord du <b>Lagon aux Tortues</b>, où l'eau turquoise reflétait autrefois des palmiers d'un vert éclatant. Aujourd'hui, tout est gris : l'eau, les palmiers, et même les carapaces des tortues, qui nagent lentement, tristounettes." },
+   { emoji:'🐢', text:"Une vieille tortue soulève la tête hors de l'eau : « {hero}, te voici enfin ! Sans le vert, le lagon a perdu tout son éclat. Les poissons eux-mêmes n'ont plus envie de faire des bulles. »" },
+   { emoji:'🐟', text:"Un banc de petits poissons argentés jaillit hors de l'eau en riant : « Viens jouer avec nous dans les vagues, {hero} ! Iris dit que le vert adore le rire et les éclaboussures ! »" },
+   { emoji:'🌊', text:"Iris plonge la pointe de ses ailes dans l'eau et frissonne de plaisir. La vieille tortue sourit pour la première fois depuis longtemps, et plonge doucement dans l'eau grise en te faisant signe de la suivre." },
   ]},
-  cm2:   { id:'mat_c_cm2', title:'La Colline des Bleuets', crystal:'le Bleu', pages:[
-   { emoji:'🪁', text:"Sur la <b>Colline des Bleuets</b>, le vent fait danser les cerfs-volants. Mais le ciel et les fleurs ont perdu leur <b>bleu</b>." },
-   { emoji:'🐦', text:"« Encore un effort, {hero} ! » chante l'oiseau. « Quand le bleu reviendra, le ciel sera magnifique ! »" },
+  cm2: { id:'mat_c_cm2', title:'La Colline des Bleuets', crystal:'le Bleu', pages:[
+   { emoji:'🪁', text:"Le vent te pousse doucement jusqu'à la <b>Colline des Bleuets</b>, là où les cerfs-volants dansaient autrefois sous un ciel du plus beau bleu. Aujourd'hui, le ciel est gris et lourd, et les cerfs-volants restent posés, tristes, dans l'herbe." },
+   { emoji:'🐦', text:"Un petit oiseau se pose sur ton épaule en pépiant doucement : « {hero}, sans le bleu, je ne retrouve même plus le chemin du nid ! Le ciel et les fleurs de bleuets se ressemblent tous, gris et gris encore. »" },
+   { emoji:'✨', text:"Iris s'installe sur ton autre épaule, presque timide : « Encore un effort, {hero}... c'est la dernière île avant le château. Le bleu, c'est celui du ciel tout entier — il mérite qu'on joue de tout son cœur pour lui ! »" },
+   { emoji:'🐦', text:"L'oiseau s'envole en cercle, plein d'espoir : « Joue avec nous, {hero}, et bientôt les cerfs-volants danseront de nouveau dans un ciel tout bleu ! » Le vent semble retenir son souffle, en attendant." },
   ]},
   final: { id:'mat_c_final', title:'Le Château du Soir', crystal:'l\'Indigo', pages:[
-   { emoji:'🏰', text:"Tout là-haut, voici le <b>Château du Soir</b>. C'est ici que dort le {villain}, dans le ciel couleur de nuit." },
-   { emoji:'🌙', text:"Il garde la couleur <b>indigo</b>, celle du soir qui tombe. N'aie pas peur, {hero} : il a surtout besoin d'un ami." },
+   { emoji:'🏰', text:"Tout là-haut, au sommet d'un escalier de nuages, se dresse le <b>Château du Soir</b>. C'est ici, dans un ciel couleur de nuit, que sommeille le grand {villain} — la source de toute cette grisaille." },
+   { emoji:'🌙', text:"Iris se blottit contre toi, un peu inquiète : « C'est ici qu'il garde la dernière couleur, l'indigo du soir... Mais {hero}, je crois que {villain} n'est pas méchant. Il est juste... très, très triste. »" },
+   { emoji:'☁️', text:"Une grosse voix, lourde comme un orage, résonne dans le château : « Qui ose venir déranger mon sommeil gris ? » {villain} entrouvre un œil, fatigué, presque surpris de te voir là, si petit et si déterminé." },
+   { emoji:'❤️', text:"Tu t'avances sans peur, {hero}. « Je ne suis pas venu me battre, » dis-tu doucement. « Je suis venu jouer avec toi, comme avec tous les autres amis du pays. » Le nuage grognon, surpris, ne sait pas quoi répondre." },
   ]},
  },
  victories: {
-  cp:  { id:'mat_w_cp',  title:'Le Rouge est revenu !',  crystal:'le Rouge',  pages:[
-   { emoji:'❤️', text:"Hourra ! Les coquelicots redeviennent <b>rouges</b>, un par un, comme des petites flammes ! Le lapin saute de joie." },
-   { emoji:'🌈', text:"Regarde ton carnet, {hero} : la première couleur de l'arc-en-ciel brille déjà !" },
+  cp: { id:'mat_w_cp', title:'Le Rouge est revenu !', crystal:'le Rouge', pages:[
+   { emoji:'❤️', text:"Hourra ! Un par un, les coquelicots retrouvent leur <b>rouge</b> éclatant, comme de petites flammes qui se rallument dans l'herbe verdissante. Le petit lapin bondit de joie, ses moustaches frémissantes de bonheur." },
+   { emoji:'🐰', text:"« Merci, {hero} ! » couine-t-il en tournoyant sur lui-même. « Je vais enfin pouvoir sauter dans les coquelicots comme avant ! » Iris, elle, scintille d'un rouge éclatant, ravie." },
+   { emoji:'🌈', text:"Regarde ton carnet, {hero} : la toute première couleur de l'arc-en-ciel brille déjà, fière et chaude. Encore six couleurs à ramener, et {kingdom} resplendira de nouveau." },
   ]},
-  ce1: { id:'mat_w_ce1', title:'L\'Orange est revenue !',  crystal:'l\'Orange',  pages:[
-   { emoji:'🧡', text:"Les oranges redeviennent <b>orange</b> et toutes brillantes ! L'ourson croque dedans : « Merci {hero} ! »" },
-   { emoji:'🌈', text:"Deux couleurs dans ton arc-en-ciel ! Tu es un vrai petit magicien des couleurs." },
+  ce1: { id:'mat_w_ce1', title:'L\'Orange est revenue !', crystal:'l\'Orange', pages:[
+   { emoji:'🧡', text:"Les oranges retrouvent leur belle couleur, rondes et brillantes comme de petits soleils accrochés aux branches. Un parfum sucré flotte soudain dans tout le verger." },
+   { emoji:'🐻', text:"L'ourson croque à pleines dents dans un fruit tout juteux : « Miam ! Merci {hero}, c'est encore meilleur que dans mes souvenirs ! » Il partage même un quartier avec Iris, ravie." },
+   { emoji:'🌈', text:"Deux couleurs dans ton arc-en-ciel, {hero} ! Le pays retrouve peu à peu son sourire, et toi, tu deviens un vrai petit magicien des couleurs." },
   ]},
-  ce2: { id:'mat_w_ce2', title:'Le Jaune est revenu !',     crystal:'le Jaune',  pages:[
-   { emoji:'💛', text:"Les feuilles des bois redeviennent <b>jaunes</b> et dorées. Tout scintille ! Le hibou fait « hou hou » de bonheur." },
-   { emoji:'🌈', text:"Trois couleurs déjà ! L'arc-en-ciel de ton carnet devient de plus en plus joli." },
+  ce2: { id:'mat_w_ce2', title:'Le Jaune est revenu !', crystal:'le Jaune', pages:[
+   { emoji:'💛', text:"Les feuilles des Bois Dorés retrouvent leur jaune éclatant, et scintillent comme mille pièces d'or accrochées aux branches. La forêt entière semble s'illuminer d'un coup." },
+   { emoji:'🦉', text:"Le vieux hibou fait « hou hou » de bonheur et cligne des yeux, ébloui : « Quelle lumière ! Merci, {hero}, je retrouve enfin mon chemin dans ces bois ! »" },
+   { emoji:'🌈', text:"Trois couleurs déjà ! L'arc-en-ciel de ton carnet devient chaque jour plus beau, et {kingdom} retrouve, île après île, un peu de sa joie perdue." },
   ]},
-  cm1: { id:'mat_w_cm1', title:'Le Vert est revenu !',  crystal:'le Vert',  pages:[
-   { emoji:'💚', text:"Le <b>vert</b> coule sur les palmiers et les carapaces des tortues ! Le lagon est redevenu tout beau." },
-   { emoji:'🌈', text:"Quatre couleurs, {hero} ! Plus que deux îles et le {villain} verra quelque chose de magnifique…" },
+  cm1: { id:'mat_w_cm1', title:'Le Vert est revenu !', crystal:'le Vert', pages:[
+   { emoji:'💚', text:"Le vert coule sur les palmiers comme une pluie de printemps, et les carapaces des tortues retrouvent leurs jolis reflets émeraude. Le lagon tout entier scintille de nouveau." },
+   { emoji:'🐢', text:"La vieille tortue plonge et replonge de joie, éclaboussant tout le monde en riant ! « Le lagon est redevenu magnifique, {hero}, comme dans mon plus beau souvenir. »" },
+   { emoji:'🌈', text:"Quatre couleurs, {hero} ! Plus que deux étapes avant le Château du Soir. {villain} lui-même va bientôt voir quelque chose de merveilleux..." },
   ]},
   cm2: { id:'mat_w_cm2', title:'Le Bleu est revenu !', crystal:'le Bleu', pages:[
-   { emoji:'💙', text:"Le ciel redevient <b>bleu</b>, et les bleuets aussi ! Les cerfs-volants dansent de joie dans le vent." },
-   { emoji:'🌈', text:"Cinq couleurs ! Il ne manque plus que celle du soir. Direction le château, petit héros !" },
+   { emoji:'💙', text:"Le ciel se teinte à nouveau d'un bleu profond, et les bleuets de la colline se redressent, fiers et colorés. Les cerfs-volants s'élancent enfin dans les airs !" },
+   { emoji:'🐦', text:"Le petit oiseau tournoie de joie autour de toi : « Regarde, {hero}, le ciel est redevenu immense et bleu ! Je retrouve enfin le chemin de mon nid. »" },
+   { emoji:'🌈', text:"Cinq couleurs dans ton arc-en-ciel ! Il ne manque plus que celle du soir, tout là-haut. Iris frissonne d'impatience : le grand moment approche." },
   ]},
  },
  epilogue: { id:'mat_epilogue', title:'L\'Arc-en-ciel complet', pages:[
-  { emoji:'🌌', text:"Bravo {hero} ! L'<b>indigo</b> du soir est revenu. Et là… le {villain} ouvre grand les yeux : tout le pays brille de mille couleurs !" },
-  { emoji:'☁️', text:"« Comme c'est beau… » murmure le nuage. Et pour la première fois, il <b>sourit</b> ! Il n'est plus gris du tout." },
-  { emoji:'💜', text:"Alors, pour te dire merci, il souffle une couleur rien que pour toi : le <b>violet</b> ! La septième couleur, celle qui manquait." },
-  { emoji:'🌈', text:"Regarde ton carnet : l'arc-en-ciel est <b>complet</b> ! {kingdom} est sauvé, et c'est grâce à toi. <b>BRAVO, petit héros des couleurs !</b>" },
+  { emoji:'🌌', text:"Bravo, {hero} ! L'<b>indigo</b> du soir revient enfin, doux et profond comme un ciel d'été qui s'endort. Et là, sous tes yeux, {villain} ouvre grand les yeux : tout {kingdom} scintille soudain de mille couleurs retrouvées." },
+  { emoji:'☁️', text:"« Comme... comme c'est beau, » murmure le nuage, sa voix tremblant un peu. Pour la première fois depuis si longtemps, il sent quelque chose de chaud lui monter au cœur. Une larme, presque invisible, roule le long de son pelage gris." },
+  { emoji:'😊', text:"Et alors, {villain} fait quelque chose que personne n'attendait : il <b>sourit</b>. Un vrai sourire, tout doux, qui illumine son visage tout entier. Il n'est plus gris du tout — il rayonne, comme s'il avait toujours porté cette lumière en lui, cachée sous la tristesse." },
+  { emoji:'💜', text:"« Merci, petit héros, » souffle-t-il. « Grâce à toi, j'ai retrouvé mes couleurs... et mon cœur avec. » Pour te remercier, il souffle doucement une couleur toute nouvelle, rien que pour toi : le <b>violet</b>, la septième et dernière couleur qui manquait à l'arc-en-ciel." },
+  { emoji:'🦋', text:"Iris voltige tout autour de toi, resplendissante de toutes les couleurs à la fois — rouge, orange, jaune, vert, bleu, indigo, violet — comme un petit arc-en-ciel vivant. « On a réussi, {hero} ! On a réussi ensemble ! »" },
+  { emoji:'🌈', text:"Regarde ton carnet : l'arc-en-ciel est enfin <b>complet</b> ! Les animaux de {kingdom} dansent de joie sur toutes les collines, et {villain}, désormais tout sourire, promet de veiller sur le pays pour toujours. <b>BRAVO, {hero}, petit héros des couleurs !</b>" },
+  { emoji:'🌟', text:"« Puisque nous voilà amis, » ajoute {villain} avec un clin d'œil malicieux, « laisse-moi te raconter une histoire... celle du <b>Trésor au bout de l'Arc-en-ciel</b>. Une histoire de couleurs, de partage, et d'un petit lutin nommé Pim. »" },
+  { emoji:'📖', text:"Cette histoire t'attend maintenant dans ton <b>carnet d'aventure</b> ! Ouvre-le, touche le bel arc-en-ciel tout complet (ou le bouton juste en dessous), et {villain} te la racontera avec grand plaisir." },
  ]},
 };
 

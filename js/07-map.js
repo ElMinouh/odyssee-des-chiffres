@@ -34,6 +34,15 @@ function closeMap(){
 // de la carte. Le primaire est l'aventure par défaut.
 // ═══════════════════════════════════════════════════════
 function startAdventure(advId){
+ // v11.6.9 — filet de sécurité : au cas où cette fonction serait appelée
+ // directement (pas via la tuile verrouillée de openOdysseeSelect), on
+ // bloque quand même les combinaisons sans Odyssée écrite plutôt que de
+ // basculer silencieusement sur l'Odyssée des maths.
+ const _subjGuard=(typeof GM!=='undefined'&&GM.subject)?GM.subject:'math';
+ if(_subjGuard==='hist' && (advId==='mat' || advId==='col')){
+  if(typeof toast==='function') toast('🔒 Odyssée — bientôt disponible pour cette matière à ce niveau !');
+  return;
+ }
  // Variante française de la maternelle : « L'Odyssée des mots » (Le Grand Livre du
  // Conteur). Déclenchée si la matière active est le français, ou au retour via 'matfr'.
  const _wantFr = (advId==='matfr') || (advId==='mat' && typeof GM!=='undefined' && GM.subject==='fr');
@@ -136,6 +145,24 @@ function _setSubjectLogos(){
   if(hdr){ hdr.style.backgroundImage = "url('"+src+"')"; }
  }catch(e){}
 }
+// v11.6.9 — Verrouille la tuile de cursus quand l'Odyssée de cette matière
+// n'existe pas encore pour ce niveau (au lieu de laisser silencieusement
+// tomber sur l'Odyssée des maths, comme c'était le cas auparavant). Rejoue
+// exactement le style "🔒 bientôt disponible" déjà utilisé pour les
+// matières non implémentées (chooseSubject, 01-core.js).
+function _setOdysseyTileLock(btnId, locked, advId){
+ const btn=document.getElementById(btnId); if(!btn) return;
+ if(locked){
+  btn.onclick = function(){
+   if(typeof toast==='function') toast('🔒 Odyssée — bientôt disponible pour cette matière à ce niveau !');
+   try{ if(typeof beep==='function') beep(220,'sine',.12); }catch(e){}
+  };
+  btn.style.opacity='.5'; btn.style.filter='grayscale(70%)'; btn.style.cursor='not-allowed';
+ } else {
+  btn.onclick = function(){ startAdventure(advId); };
+  btn.style.opacity=''; btn.style.filter=''; btn.style.cursor='';
+ }
+}
 function openOdysseeSelect(){
  try{
   // v11.5.1 — la matière n'est plus binaire (math/fr) : l'histoire a aussi
@@ -145,11 +172,19 @@ function openOdysseeSelect(){
   // Calcultopia » s'afficher pour l'histoire (v11.5.0).
   const subj=(typeof GM!=='undefined'&&GM.subject)?GM.subject:'math';
   const fr=(subj==='fr'), hist=(subj==='hist');
+  // v11.6.9 — Seul le primaire a une Odyssée Histoire écrite (_PRIM_STORY_HIST).
+  // La maternelle et le collège n'en ont pas encore : on verrouille plutôt
+  // que de faire silencieusement jouer l'Odyssée des maths à la place.
+  const matLocked = hist;
+  const colLocked = hist;
   const t=document.getElementById('ody-sel-title'); if(t) t.textContent=fr?"L'Odyssée : l'aventure littéraire":hist?"L'Odyssée : l'aventure historique":"L'Odyssée : l'aventure mathématique";
   const su=document.getElementById('ody-sel-sub'); if(su) su.textContent=fr?"Maîtrise les secrets du langage":hist?"Voyage à travers les époques":"Choisis ton aventure";
-  const ms=document.getElementById('ody-mat-sub'); if(ms) ms.textContent=fr?"Le Grand Livre du Conteur":"Le Pays des Couleurs";
+  const ms=document.getElementById('ody-mat-sub'); if(ms) ms.textContent = matLocked ? '🔒 Bientôt disponible' : (fr?"Le Grand Livre du Conteur":"Le Pays des Couleurs");
   const ps=document.getElementById('ody-prim-sub'); if(ps) ps.textContent=fr?"Le journal intime":hist?"Les Trois Héritages":"L'Ombre sur Calcultopia";
-  const cs=document.getElementById('ody-col-sub'); if(cs) cs.textContent=fr?"La Bibliothèque infinie":"Le Forgeron des Étoiles";
+  const cs=document.getElementById('ody-col-sub'); if(cs) cs.textContent = colLocked ? '🔒 Bientôt disponible' : (fr?"La Bibliothèque infinie":"Le Forgeron des Étoiles");
+  _setOdysseyTileLock('ody-btn-mat', matLocked, 'mat');
+  _setOdysseyTileLock('ody-btn-prim', false, 'prim');
+  _setOdysseyTileLock('ody-btn-col', colLocked, 'col');
   if(typeof _setSubjectLogos==='function') _setSubjectLogos();
  }catch(e){}
  if(typeof navTo==='function') navTo('v-odyssey-select'); else showView('v-odyssey-select');

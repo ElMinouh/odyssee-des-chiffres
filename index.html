@@ -432,19 +432,19 @@
   <p id="ody-sel-sub" style="color:#bdc3c7;font-size:.9em;margin:0 0 14px;">Choisis ton aventure</p>
 
   <div style="width:92%;max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:12px;">
-   <button onclick="startAdventure('mat')" style="display:flex;align-items:center;gap:12px;text-align:left;padding:14px 16px;background:linear-gradient(135deg,#ff9ec7,#ffd6e8);box-shadow:0 5px 0 rgba(0,0,0,.25);">
+   <button id="ody-btn-mat" style="display:flex;align-items:center;gap:12px;text-align:left;padding:14px 16px;background:linear-gradient(135deg,#ff9ec7,#ffd6e8);box-shadow:0 5px 0 rgba(0,0,0,.25);">
     <span style="font-size:2em;line-height:1;">&#129528;</span>
     <span style="flex:1;"><span style="display:block;font-weight:800;color:#7a2348;font-size:1.05em;">En maternelle</span><span style="display:block;font-size:.82em;color:#9b3b63;" id="ody-mat-sub">Le Pays des Couleurs</span></span>
     <span style="color:#7a2348;font-size:1.3em;">&#8250;</span>
    </button>
 
-   <button onclick="startAdventure('prim')" style="display:flex;align-items:center;gap:12px;text-align:left;padding:14px 16px;background:linear-gradient(135deg,#27ae60,#2ecc71);box-shadow:0 5px 0 rgba(0,0,0,.25);">
+   <button id="ody-btn-prim" style="display:flex;align-items:center;gap:12px;text-align:left;padding:14px 16px;background:linear-gradient(135deg,#27ae60,#2ecc71);box-shadow:0 5px 0 rgba(0,0,0,.25);">
     <span style="font-size:2em;line-height:1;">&#127890;</span>
     <span style="flex:1;"><span style="display:block;font-weight:800;color:#0e5b2b;font-size:1.05em;">En primaire</span><span style="display:block;font-size:.82em;color:#15703a;" id="ody-prim-sub">L'Ombre sur Calcultopia</span></span>
     <span style="color:#0e5b2b;font-size:1.3em;">&#8250;</span>
    </button>
 
-   <button onclick="startAdventure('col')" style="display:flex;align-items:center;gap:12px;text-align:left;padding:14px 16px;background:linear-gradient(135deg,#5b6ee0,#8e44ad);box-shadow:0 5px 0 rgba(0,0,0,.25);">
+   <button id="ody-btn-col" style="display:flex;align-items:center;gap:12px;text-align:left;padding:14px 16px;background:linear-gradient(135deg,#5b6ee0,#8e44ad);box-shadow:0 5px 0 rgba(0,0,0,.25);">
     <span style="font-size:2em;line-height:1;">&#127891;</span>
     <span style="flex:1;"><span style="display:block;font-weight:800;color:#fff;font-size:1.05em;">Au collège</span><span style="display:block;font-size:.82em;color:#e6d9f5;" id="ody-col-sub">Le Forgeron des Étoiles</span></span>
     <span style="color:#fff;font-size:1.3em;">&#8250;</span>
@@ -970,7 +970,7 @@
   <script src="js/15-college.js"></script>
 <script src="js/17-messaging.js"></script>
 <script src="js/19-onboarding.js"></script>
-<script src="js/11-init.js?v=1091"></script>
+<script src="js/11-init.js?v=1093"></script>
 
 <!-- Enregistrement du Service Worker (mode hors-ligne + installation PWA) -->
 <script>
