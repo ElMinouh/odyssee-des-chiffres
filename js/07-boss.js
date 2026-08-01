@@ -572,6 +572,9 @@ function _advArmorHtml(){
  const seenC=(P&&P.storySeen)||[]; const taleSeenC=seenC.includes('col_tale_armor');
  const clickableC = titanDone ? `onclick="_openTaleIllus(_COL_TALE_ARMOR)" role="button" tabindex="0" title="Lire La Saga des Porteurs de l'Armure" style="cursor:pointer"` : '';
  const sagaInvite = titanDone ? `<div class="advcol-caption">${taleSeenC?"Titan vaincu — touche l'Armure pour relire la Saga 📖":"Titan vaincu ! Touche l'Armure pour lire la Saga des Porteurs ⚔️📜"}</div>` : '';
+ // v11.6.12 : bouton explicite (cohérence avec Arc-en-ciel/Livre) — auparavant
+ // seule l'illustration était cliquable, sans confirmation visuelle claire.
+ const sagaCta = titanDone ? `<button onclick="_openTaleIllus(_COL_TALE_ARMOR)" style="margin-top:8px;background:#caa64e;color:#3a2a05;border:none;border-radius:10px;padding:8px 16px;font-weight:700;font-size:.85em;cursor:pointer;">📖 ${taleSeenC?'Relire':'Lire'} la Saga des Porteurs</button>` : '';
  return `
   <div class="advlog-section-title">🛡️ Armure Solaire <span class="advcol-count">${count} / 6 pièces</span></div>
   <div class="advcol-box advcol-col${titanDone?' advbook-done':''}" ${clickableC}>
@@ -709,6 +712,7 @@ function _advArmorHtml(){
    <div class="advcol-powers">${powers}</div>
    ${ult}
    ${sagaInvite}
+   ${sagaCta}
   </div>`;
 }
 
@@ -772,6 +776,9 @@ function _advTalismanHtml(){
  const msg = done ? (taleSeen ? "Talisman complet — touche-le pour relire La Grande Histoire des Nombres 📖" : "Talisman complet ! Touche-le pour lire La Grande Histoire des Nombres 📜✨")
   : count>0 ? `${count} Cristal${count>1?'aux':''} libéré${count>1?'s':''} — continue !`
   : 'Libère les Cristaux pour reformer le Talisman !';
+ // v11.6.12 : bouton explicite (cohérence avec Arc-en-ciel/Livre) — auparavant
+ // seule l'illustration était cliquable, sans confirmation visuelle claire.
+ const numbersCta = done ? `<button onclick="_openTaleIllus(_PRIM_TALE_NUMBERS)" style="margin-top:8px;background:#3f6ad0;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-weight:700;font-size:.85em;cursor:pointer;">📖 ${taleSeen?'Relire':'Lire'} l'histoire des Nombres</button>` : '';
  return `
   <div class="advlog-section-title">💎 Talisman de Calcultopia <span class="advcol-count">${count} / 5 cristaux</span></div>
   <div class="advcol-box advtal-box${done?' advbook-done':''}" ${clickable}>
@@ -796,6 +803,7 @@ function _advTalismanHtml(){
    </svg>
    <div class="advcol-caption">${msg}</div>
    <div class="advtal-legend">${legend}</div>
+   ${numbersCta}
   </div>`;
 }
 
