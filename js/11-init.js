@@ -70,9 +70,9 @@ adjustGameLogoSize();
 function _bootSanityCheck(){
  const required = {
   '01-core': ['$','esc','toast','navTo','pickMonster'],
-  '02-data': ['SKINS','BOSS_ROSTER'],
-  '03-figurines-data': ['FIGURINES'],
-  '04-questions': ['GEN'],
+  '02-data': ['getRoster','heroGender'],
+  '03-figurines-data': ['getCharPortrait'],
+  '04-questions': ['genQ_CP'],
   '05-profile': ['loadProfile','validateProfile','saveProfile'],
   '06a-adaptive': ['_progPhase','logError','getRevisionErrorToAsk'],
   '06b-time-block': ['isTimeBlocked'],
@@ -89,22 +89,20 @@ function _bootSanityCheck(){
   '13-maternelle': ['_matGen'],
   '14-primaire': ['_primEnrich'],
   '15-college': ['_collEnrich'],
-  '16-francais': ['GEN_FR'],
+  '16-francais': ['_frRnd'],
   '17-messaging': ['ensureChatIdentity'],
-  '18-histoire': ['GEN_HIST'],
+  '18-histoire': ['_histCatOf'],
   '19-onboarding': ['_obNoteProfileCreated'],
  };
- // v11.7.3 (audit n°6) : le eval() ci-dessous est nécessaire (et sans risque) —
- // `window[sym]` seul ne suffit pas car les constantes déclarées via `const`
- // (ex. GEN, BOSS_ROSTER, FIGURINES) ne deviennent PAS des propriétés de
- // `window`, contrairement aux fonctions. `sym` provient uniquement de la
- // liste `required` ci-dessus (littéraux figés dans ce fichier) — jamais
- // d'entrée utilisateur/dynamique — donc pas de risque d'injection.
+ // v11.7.4 (correctif urgent) : le garde-fou ne s'appuie plus QUE sur
+ // typeof window[sym] (fonctions uniquement, jamais de const) — la CSP ajoutée
+ // en v11.7.3 bloque eval() (pas de 'unsafe-eval' dans script-src), ce qui
+ // faisait échouer silencieusement toute vérification passant par eval() et
+ // affichait à tort le bandeau "Chargement incomplet" à chaque démarrage.
  const missing = [];
  for(const mod in required){
   for(const sym of required[mod]){
-   try{ if(typeof window[sym] === 'undefined' && typeof eval(sym) === 'undefined') missing.push(mod+'.'+sym); }
-   catch(e){ missing.push(mod+'.'+sym); }
+   if(typeof window[sym] === 'undefined') missing.push(mod+'.'+sym);
   }
  }
  if(missing.length){
