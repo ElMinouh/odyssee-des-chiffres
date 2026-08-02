@@ -69,7 +69,7 @@ adjustGameLogoSize();
 // ═══════════════════════════════════════════════════════
 function _bootSanityCheck(){
  const required = {
-  '01-core': ['$','esc','toast','navTo','pickMonster'],
+  '01-core': ['esc','toast','navTo','pickMonster'],
   '02-data': ['getRoster','heroGender'],
   '03-figurines-data': ['getCharPortrait'],
   '04-questions': ['genQ_CP'],
