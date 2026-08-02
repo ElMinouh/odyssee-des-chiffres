@@ -96,6 +96,11 @@ function _colRelDiv(level){
 // ════════════════ Chantier C2 : Calcul littéral & équations (5e→3e) ════════════════
 // Choix d'expressions (chaînes), distracteurs = erreurs classiques (oubli de
 // distribuer, confusion + / ×, terme constant transformé en x…).
+// v11.7.3 (audit n°23) : contrairement à _colChoices() (nombres), on ne comble
+// PAS ici les collisions par un distracteur générique fabriqué — un texte
+// inventé (ex. "5(x + 3)·1") serait visuellement trompeur pour l'enfant, ce
+// qui serait pire que d'afficher parfois 3 choix au lieu de 4. Le dédoublonnage
+// (Set) reste en place ; il ne reste donc que ce cas rare et sans gravité.
 function _colChoicesTxt(correct, distractors){
  const set = new Set([correct]);
  for(const d of (distractors || [])){ if(set.size >= 4) break; if(d && d !== correct) set.add(d); }

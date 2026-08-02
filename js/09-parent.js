@@ -934,7 +934,7 @@ function doImport(){
 // service-worker → page blanche). On imprime désormais un rapport HTML mis en page
 // dans une iframe cachée → l'utilisateur choisit « Enregistrer en PDF ».
 function _reportLevel(xp){ try{ return (typeof levelFromXP==='function') ? levelFromXP(xp||0) : '?'; }catch(e){ return '?'; } }
-function _esc(s){ return String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+// v11.7.3 (audit n°16) : la fonction d'échappement locale a été supprimée — on réutilise esc() (01-core.js), déjà mutualisée ailleurs (ADR-8).
 function _buildReportHTML(player, d){
  const h = d.history || [];
  const total = h.length, wins = h.filter(x=>x.won).length;
@@ -950,9 +950,9 @@ function _buildReportHTML(player, d){
  const last7 = Object.keys(byDate).slice(-7);
  const weekRows = last7.map(dt=>{ const g=byDate[dt]; const w=g.filter(x=>x.won).length;
   const av = Math.round(g.reduce((a,b)=>a+(b.score||0),0)/g.length);
-  return `<tr><td>${_esc(dt)}</td><td>${g.length}</td><td>${w}</td><td>${av}</td></tr>`; }).join('')
+  return `<tr><td>${esc(dt)}</td><td>${g.length}</td><td>${w}</td><td>${av}</td></tr>`; }).join('')
   || `<tr><td colspan="4" style="text-align:center;color:#888;">Aucune partie enregistrée cette période.</td></tr>`;
- const stat = (k,v)=>`<tr><td class="k">${k}</td><td class="v">${_esc(v)}</td></tr>`;
+ const stat = (k,v)=>`<tr><td class="k">${k}</td><td class="v">${esc(v)}</td></tr>`;
  const statRows = [
   stat('Niveau XP', 'Niv. '+lvl+' ('+(d.xp||0)+' XP)'),
   stat('Parties jouées', total),
@@ -964,10 +964,10 @@ function _buildReportHTML(player, d){
   stat('Boss vaincus', boss+(bossTot?(' / '+bossTot):'')),
  ].join('');
  const gameRows = h.slice(-10).reverse().map(x=>
-  `<tr><td>${_esc(x.date||'?')}</td><td>${_esc(x.level||'?')}</td><td>${_esc(x.mode||'?')}</td><td>${x.won?'✔ Victoire':'✘ Défaite'}</td><td>${x.score||0} pts</td></tr>`
+  `<tr><td>${esc(x.date||'?')}</td><td>${esc(x.level||'?')}</td><td>${esc(x.mode||'?')}</td><td>${x.won?'✔ Victoire':'✘ Défaite'}</td><td>${x.score||0} pts</td></tr>`
  ).join('') || `<tr><td colspan="5" style="text-align:center;color:#888;">Aucune partie.</td></tr>`;
  const today = new Date().toLocaleDateString('fr-FR');
- return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Rapport — ${_esc(player)}</title>
+ return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Rapport — ${esc(player)}</title>
  <style>
   @page{ size:A4; margin:14mm; }
   *{ box-sizing:border-box; }
@@ -983,7 +983,7 @@ function _buildReportHTML(player, d){
   td.v{ color:#34495e; }
   .foot{ margin-top:24px; text-align:center; font-size:10px; color:#9aa7b4; }
  </style></head><body>
-  <div class="band"><h1>L'Odyssée des Chiffres</h1><p>Rapport de <b>${_esc(player)}</b> &nbsp;•&nbsp; ${today}</p></div>
+  <div class="band"><h1>L'Odyssée des Chiffres</h1><p>Rapport de <b>${esc(player)}</b> &nbsp;•&nbsp; ${today}</p></div>
   <h2>Synthèse</h2><table>${statRows}</table>
   <h2>Rapport hebdomadaire (7 derniers jours d'activité)</h2>
   <table><thead><tr><th>Jour</th><th>Parties</th><th>Victoires</th><th>Score moyen</th></tr></thead><tbody>${weekRows}</tbody></table>

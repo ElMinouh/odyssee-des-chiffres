@@ -179,6 +179,8 @@ function validateProfile(raw, defaultName){
   objective: _clampNum(raw.objective, 0, 99, 0),
   objectiveDone: _clampNum(raw.objectiveDone, 0, 99, 0),
   objDate: _safeStr(raw.objDate, 12, null),
+  // v11.7.3 (audit n°9) : genre explicite optionnel ('m'/'f'), sinon null (→ heuristique)
+  gender: (raw.gender==='m'||raw.gender==='f') ? raw.gender : null,
   avatar: _safeStr(raw.avatar, 8, '🧙'),
   heroTitle: _safeStr(raw.heroTitle, 30, 'novice'),
   ownedSkins: _safeArr(raw.ownedSkins).filter(s => typeof s === 'string'),
@@ -295,7 +297,10 @@ function defProfile(name){
   histCatFilters:{frise:true,personnages:true,evenements:true,civilisation:true,temps:true,repere:true},
   frCatFilters:{conj:true,orth:true,gram:true,vocab:true},
   heroStageId:'oeuf',
-  cloudCode:null,cloudEnabled:false,onbAccountSeen:false,_epilogueBonusCredited:[],photo:null,playerCode:null};
+  cloudCode:null,cloudEnabled:false,onbAccountSeen:false,_epilogueBonusCredited:[],photo:null,playerCode:null,
+  // v11.7.3 (audit n°9) : genre explicite optionnel, réglable par le parent —
+  // prioritaire sur l'heuristique orthographique de heroGender() dans 02-data.js.
+  gender:null};
 }
 function fillPlayerSelect(){
  const sel=$('playerSelect'); if(!sel) return;

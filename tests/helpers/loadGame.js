@@ -243,6 +243,18 @@ globalThis.__api = {
   _ARCH_SHOPS_PRIMFR: (typeof _ARCH_SHOPS_PRIMFR!=='undefined') ? _ARCH_SHOPS_PRIMFR : undefined,
   _ARCH_SHOPS_COLFR: (typeof _ARCH_SHOPS_COLFR!=='undefined') ? _ARCH_SHOPS_COLFR : undefined,
   _ARCH_SHOPS_HIST: (typeof _ARCH_SHOPS_HIST!=='undefined') ? _ARCH_SHOPS_HIST : undefined,
+  // --- v11.7.3 (audit n°28) : générateurs de questions, jusqu'ici non exposés,
+  // ce qui explique l'absence totale de tests sur le cœur mathématique du jeu.
+  GEN: (typeof GEN!=='undefined') ? GEN : undefined,
+  genQ_CP:  (typeof genQ_CP==='function')  ? genQ_CP  : undefined,
+  genQ_CE1: (typeof genQ_CE1==='function') ? genQ_CE1 : undefined,
+  genQ_CE2: (typeof genQ_CE2==='function') ? genQ_CE2 : undefined,
+  genQ_CM1: (typeof genQ_CM1==='function') ? genQ_CM1 : undefined,
+  genQ_CM2: (typeof genQ_CM2==='function') ? genQ_CM2 : undefined,
+  genQ_6E:  (typeof genQ_6E==='function')  ? genQ_6E  : undefined,
+  genQ_5E:  (typeof genQ_5E==='function')  ? genQ_5E  : undefined,
+  genQ_4E:  (typeof genQ_4E==='function')  ? genQ_4E  : undefined,
+  genQ_3E:  (typeof genQ_3E==='function')  ? genQ_3E  : undefined,
 };
 `;
 

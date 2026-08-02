@@ -6,8 +6,13 @@
 // ═══════════════════════════════════════════════════════
 // BLOCAGE HORAIRE
 // ═══════════════════════════════════════════════════════
+// v11.7.3 (audit n°12) : format HH:MM strict — une config corrompue ou mal
+// formée ne doit jamais verrouiller l'enfant en permanence (fail-open, pas
+// fail-closed : c'est un confort parental, pas un dispositif de sécurité).
+function _isValidTimeStr(s){ return typeof s==='string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(s); }
 function isTimeBlocked(){
  const cfg=getBlockCfg(P.name);if(!cfg||!cfg.enabled)return false;
+ if(!_isValidTimeStr(cfg.start)||!_isValidTimeStr(cfg.end)) return false;
  const now=new Date(),h=now.getHours(),m=now.getMinutes();
  const cur=h*60+m;
  const [sh,sm]=cfg.start.split(':').map(Number);const [eh,em]=cfg.end.split(':').map(Number);

@@ -11,6 +11,15 @@ function _ari(min, max, opKey){
  if(typeof _progScaleRange === 'function'){ const r=_progScaleRange(m, M); m=r[0]; M=r[1]; }
  return ri(m, M);
 }
+// v11.7.3 — Factorisation du motif commun de fin des 9 générateurs genQ_* (audit
+// point n°14) : si la question est nulle ou déjà vue récemment, on relance via
+// `regen` (qui doit rappeler le même générateur avec _d+1) ; sinon on la
+// mémorise (anti-répétition) et on la renvoie. Ne touche à aucune logique de
+// génération mathématique — extraction purement mécanique.
+function _finalizeQ(q, regen){
+ if(!q||_seenQ(q))return regen();
+ _trackQ(q);return q;
+}
 function genQ_CP(boss,_d=0){
  if(_d>12)return{a:2,b:3,op:'+',res:5,type:'normal',opKey:'+',display:'2 + 3',img:''};
  const em=EMOJIS[ri(0,9)];
@@ -26,8 +35,7 @@ if(bType===0){const a=_ari(5,9,'+'),b=_ari(2,6,'+');q={a,b,op:'+',res:a+b,type:'
   const a=_ari(1,6,'+'),b=_ari(1,4,'+');
   q={a,b,op:'+',res:a+b,type:'normal',opKey:'+',display:`${a} + ${b}`,img:a<=8?em.repeat(a)+' + '+em.repeat(b):''};
  }
- if(_seenQ(q))return genQ_CP(boss,_d+1);
- _trackQ(q);return q;
+ return _finalizeQ(q, ()=>genQ_CP(boss,_d+1));
 }
 function genQ_CE1(boss,_depth=0){
  if(_depth>12)return genQ_CP(boss);
@@ -51,8 +59,7 @@ function genQ_CE1(boss,_depth=0){
    const em=EMOJIS[ri(0,9)];
    q={a,b,op,res,type:'normal',opKey:op,display:`${a} ${op} ${b}`,img:op==='+'&&a<=7?em.repeat(a)+' + '+em.repeat(b):''};}
  }
- if(_seenQ(q))return genQ_CE1(boss,_depth+1);
- _trackQ(q);return q;
+ return _finalizeQ(q, ()=>genQ_CE1(boss,_depth+1));
 }
 function genQ_CE2(boss,_d=0){
  if(_d>12)return genQ_CE1(boss);
@@ -71,8 +78,7 @@ function genQ_CE2(boss,_d=0){
   else if(!af.mult){return genQ_CE1(boss);}
   else{const ts=[2,3,5,10],a=ts[ri(0,ts.length-1)],b=_ari(1,10,'x');q={a,b,op:'×',res:a*b,type:'normal',opKey:'x',display:`${a} × ${b}`,img:''};}
  }
- if(!q||_seenQ(q))return genQ_CE2(boss,_d+1);
- _trackQ(q);return q;
+ return _finalizeQ(q, ()=>genQ_CE2(boss,_d+1));
 }
 function genQ_CM1(boss,_d=0){
  if(_d>12)return genQ_CE2(boss);
@@ -96,8 +102,7 @@ function genQ_CM1(boss,_d=0){
   else if(pick==='geo')q=GEO_Q[ri(0,GEO_Q.length-1)]();
   else{const a=_ari(10,50,'+'),b=_ari(10,40,'+');q={a,b,op:'+',res:a+b,type:'normal',opKey:'+',display:`${a} + ${b}`,img:''};}
  }
- if(!q||_seenQ(q))return genQ_CM1(boss,_d+1);
- _trackQ(q);return q;
+ return _finalizeQ(q, ()=>genQ_CM1(boss,_d+1));
 }
 function genQ_CM2(boss,_d2=0){
  if(_d2>12)return genQ_CM1(boss);
@@ -121,8 +126,7 @@ function genQ_CM2(boss,_d2=0){
   else if(!af.div)return genQ_CM1(boss);
   else{const b=_ari(2,6,'/'),r=_ari(2,10,'/');q={display:`${b*r} ÷ ${b}`,res:r,type:'normal',opKey:'/',img:''};}
  }
- if(!q||_seenQ(q))return genQ_CM2(boss,_d2+1);
- _trackQ(q);return q;
+ return _finalizeQ(q, ()=>genQ_CM2(boss,_d2+1));
 }
 const GEN={CP:genQ_CP,CE1:genQ_CE1,CE2:genQ_CE2,CM1:genQ_CM1,CM2:genQ_CM2,'6E':genQ_6E,'5E':genQ_5E,'4E':genQ_4E,'3E':genQ_3E};
 function getOpFilters(){
@@ -168,8 +172,7 @@ function genQ_6E(boss,_d=0){
    ])(); q=_mkQ(c[0], c[1], '+'); }
  else if(t==='mult'){ const m=ri(2,9), rank=ri(2,boss?12:9); q=_mkQ(`Le ${rank}ᵉ multiple de ${m}`, m*rank, 'x'); }
  else { const v=ri(20,boss?198:98)*(_pick([1,1])); const isDouble=ri(0,1); if(isDouble){ q=_mkQ(`Le double de ${v}`, v*2, '+'); } else { const even=v*2; q=_mkQ(`La moitié de ${even}`, even/2, '/'); } }
- if(!q||_seenQ(q)) return genQ_6E(boss,_d+1);
- _trackQ(q); return q;
+ return _finalizeQ(q, ()=>genQ_6E(boss,_d+1));
 }
 
 // ── 5ᵉ : relatifs (+/−), pourcentages simples, priorités opératoires
@@ -183,9 +186,8 @@ function genQ_5E(boss,_d=0){
  if(t==='radd'){ const a=ri(-M,M), b=ri(-M,M); q=_mkQ(`${_rel(a)} + ${_rel(b)}`, a+b, '+'); }
  else if(t==='rsub'){ const a=ri(-M,M), b=ri(-M,M); q=_mkQ(`${_rel(a)} − ${_rel(b)}`, a-b, '-'); }
  else if(t==='pct'){ const p=_pick([10,20,25,50,75,100]); const base=_pick([20,40,60,80,100,120,200]); q=_mkQ(`${p}% de ${base}`, base*p/100, 'pct'); }
- else { const a=ri(2,9), b=ri(2,9), c=ri(2,9); if(ri(0,1)) q=_mkQ(`${a} + ${b} × ${c}`, a+b*c, 'prio'); else q=_mkQ(`${a*c+ri(1,9)} − ${b} × ${c}`, (a*c+0)-(b*c), 'prio'); }
- if(!q||_seenQ(q)) return genQ_5E(boss,_d+1);
- _trackQ(q); return q;
+ else { const a=ri(2,9), b=ri(2,9), c=ri(2,9); if(ri(0,1)) q=_mkQ(`${a} + ${b} × ${c}`, a+b*c, 'prio'); else { const extra=ri(1,9); q=_mkQ(`${a*c+extra} − ${b} × ${c}`, (a*c+extra)-(b*c), 'prio'); } }
+ return _finalizeQ(q, ()=>genQ_5E(boss,_d+1));
 }
 
 // ── 4ᵉ : relatifs (× ÷), puissances, carrés (Pythagore), calcul littéral évalué
@@ -203,8 +205,7 @@ function genQ_4E(boss,_d=0){
  else if(t==='pow10'){ const exp=ri(2,boss?6:4); q=_mkQ(`10${_supExp(exp)}`, Math.pow(10,exp), 'pow'); }
  else if(t==='lit'){ const x=ri(2,9), a=ri(2,5), b=ri(1,9); if(ri(0,1)) q=_mkQ(`Si x = ${x} :  ${a}x + ${b}`, a*x+b, 'lit'); else q=_mkQ(`Si x = ${x} :  ${a}x − ${b}`, a*x-b, 'lit'); }
  else { const a=ri(2,9), b=ri(2,9); q=_mkQ(`${a}² + ${b}²`, a*a+b*b, 'pow'); }
- if(!q||_seenQ(q)) return genQ_4E(boss,_d+1);
- _trackQ(q); return q;
+ return _finalizeQ(q, ()=>genQ_4E(boss,_d+1));
 }
 
 // ── 3ᵉ : racines carrées, PGCD, pourcentages d'évolution, puissances, littéral
@@ -223,6 +224,5 @@ function genQ_3E(boss,_d=0){
  else if(t==='evol'){ const p=_pick([10,20,25,50]); const base=_pick([40,60,80,100,120,200]); if(ri(0,1)) q=_mkQ(`${base} augmenté de ${p}%`, base*(1+p/100), 'pct'); else q=_mkQ(`${base} diminué de ${p}%`, base*(1-p/100), 'pct'); }
  else if(t==='pow'){ const base=ri(2,boss?12:9), exp=_pick([2,2,3]); q=_mkQ(`${base}${_supExp(exp)}`, Math.pow(base,exp), 'pow'); }
  else { const x=ri(2,9), a=ri(2,6), b=ri(2,9); if(ri(0,1)) q=_mkQ(`Si x = ${x} :  ${a}x + ${b}`, a*x+b, 'lit'); else q=_mkQ(`Si x = ${x} :  ${a}(x + ${b})`, a*(x+b), 'lit'); }
- if(!q||_seenQ(q)) return genQ_3E(boss,_d+1);
- _trackQ(q); return q;
+ return _finalizeQ(q, ()=>genQ_3E(boss,_d+1));
 }

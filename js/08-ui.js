@@ -61,13 +61,13 @@ function renderErrors(){
  const bar='<div style="display:flex;gap:6px;margin-bottom:8px;">'+((typeof IMPLEMENTED_SUBJECTS!=='undefined')?IMPLEMENTED_SUBJECTS:[['math','🔢 Maths'],['fr','📖 Français'],['hist','🏛️ Histoire']]).map(a=>`<button onclick="setRevSubj('${a[0]}')" style="font-size:.72em;padding:4px 10px;border-radius:8px;background:${_revSubj===a[0]?'#27ae60':'#2c3e50'};">${a[1]}</button>`).join('')+'</div>';
  if(_revSubj==='fr'){
   const u=(P.errorsFr||[]).slice(-12).reverse();
-  el.innerHTML=bar+(u.length?u.map(e=>`<div class="revision-q"><span>${e.q}</span><strong style="color:#f1c40f;">${e.ok||''}</strong></div>`).join(''):'<span style="color:#2ecc71;">✅ Aucune erreur en français !</span>');
+  el.innerHTML=bar+(u.length?u.map(e=>`<div class="revision-q"><span>${esc(e.q)}</span><strong style="color:#f1c40f;">${esc(e.ok||'')}</strong></div>`).join(''):'<span style="color:#2ecc71;">✅ Aucune erreur en français !</span>');
   if(btn)btn.classList.add('hidden');
   return;
  }
  if(_revSubj==='hist'){
   const u=(P.errorsHist||[]).slice(-12).reverse();
-  el.innerHTML=bar+(u.length?u.map(e=>`<div class="revision-q"><span>${e.q}</span><strong style="color:#f1c40f;">${e.ok||''}</strong></div>`).join(''):'<span style="color:#2ecc71;">✅ Aucune erreur en histoire !</span>');
+  el.innerHTML=bar+(u.length?u.map(e=>`<div class="revision-q"><span>${esc(e.q)}</span><strong style="color:#f1c40f;">${esc(e.ok||'')}</strong></div>`).join(''):'<span style="color:#2ecc71;">✅ Aucune erreur en histoire !</span>');
   if(btn)btn.classList.add('hidden');
   return;
  }

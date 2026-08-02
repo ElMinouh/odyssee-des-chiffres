@@ -71,14 +71,35 @@ function _bootSanityCheck(){
  const required = {
   '01-core': ['$','esc','toast','navTo','pickMonster'],
   '02-data': ['SKINS','BOSS_ROSTER'],
+  '03-figurines-data': ['FIGURINES'],
   '04-questions': ['GEN'],
-  '05-profile': ['loadProfile'],
+  '05-profile': ['loadProfile','validateProfile','saveProfile'],
   '06a-adaptive': ['_progPhase','logError','getRevisionErrorToAsk'],
+  '06b-time-block': ['isTimeBlocked'],
+  '06c-seasonal': ['getActiveSeasonalBoss'],
+  '06d-cinematics': ['playZoneIntro','playZoneVictory'],
   '07-game': ['generateQ','renderQ','validate'],
+  '07-map': ['openMap','renderMap','startAdventure'],
+  '07-boss': ['openAdventureLog'],
+  '07-story': ['_storyText'],
+  '08-ui': ['renderHistory','renderMilestones'],
+  '09-parent': ['openParent','renderReport'],
+  '10-figurines': ['renderFigCollection'],
+  '12-cloud': ['ensureCloudCode'],
   '13-maternelle': ['_matGen'],
   '14-primaire': ['_primEnrich'],
   '15-college': ['_collEnrich'],
+  '16-francais': ['GEN_FR'],
+  '17-messaging': ['ensureChatIdentity'],
+  '18-histoire': ['GEN_HIST'],
+  '19-onboarding': ['_obNoteProfileCreated'],
  };
+ // v11.7.3 (audit n°6) : le eval() ci-dessous est nécessaire (et sans risque) —
+ // `window[sym]` seul ne suffit pas car les constantes déclarées via `const`
+ // (ex. GEN, BOSS_ROSTER, FIGURINES) ne deviennent PAS des propriétés de
+ // `window`, contrairement aux fonctions. `sym` provient uniquement de la
+ // liste `required` ci-dessus (littéraux figés dans ce fichier) — jamais
+ // d'entrée utilisateur/dynamique — donc pas de risque d'injection.
  const missing = [];
  for(const mod in required){
   for(const sym of required[mod]){
@@ -102,15 +123,20 @@ function _bootSanityCheck(){
 window.onload=()=>{
  try{ _bootSanityCheck(); }catch(e){}
  // OPT-1+2 : init des références DOM cachées et du canvas particules
- _initCachedDOM();
+ try{ _initCachedDOM(); }catch(e){ console.error('[init] _initCachedDOM a échoué', e); }
  // Force l'affichage correct : seul v-menu visible au démarrage
- showView('v-menu');
- document.querySelectorAll('.accordion').forEach(btn=>{
-  btn.addEventListener('click',function(){const p=this.nextElementSibling;p.style.display=p.style.display==='block'?'none':'block';});
- });
- $('gameModeSelect').addEventListener('change',()=>{if($('gameModeSelect').value!=='combat')combatCfg=[];});
- $('modeSelect').addEventListener('change',()=>savePrefs());
- $('parent-player').addEventListener('change',()=>{renderReport();renderWeeklySummary();});
+ try{ showView('v-menu'); }catch(e){ console.error('[init] showView a échoué', e); }
+ try{
+  document.querySelectorAll('.accordion').forEach(btn=>{
+   btn.addEventListener('click',function(){const p=this.nextElementSibling;p.style.display=p.style.display==='block'?'none':'block';});
+  });
+ }catch(e){ console.error('[init] listeners accordéon ont échoué', e); }
+ // v11.7.3 (audit n°1) : chaque listener protégé individuellement — un seul
+ // élément DOM manquant ne doit plus interrompre le reste de l'initialisation
+ // (restauration lastPlayer, thème, loadProfile, numpad, cloud sync…).
+ try{ $('gameModeSelect').addEventListener('change',()=>{if($('gameModeSelect').value!=='combat')combatCfg=[];}); }catch(e){ console.error('[init] listener gameModeSelect a échoué', e); }
+ try{ $('modeSelect').addEventListener('change',()=>savePrefs()); }catch(e){ console.error('[init] listener modeSelect a échoué', e); }
+ try{ $('parent-player').addEventListener('change',()=>{renderReport();renderWeeklySummary();}); }catch(e){ console.error('[init] listener parent-player a échoué', e); }
  // v8.7.0 : nettoyage des profils corrompus (clés user_undefined, user_null,
  // ou JSON illisible / sans nom). On NE touche JAMAIS aux profils valides
  // (ceux avec un name défini), pour ne pas casser les sauvegardes actives.

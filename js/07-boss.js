@@ -961,7 +961,7 @@ function openAdventureLog(){
     <div class="advlog-avatar">${P.avatar || '🧒'}</div>
     <div class="advlog-header-text">
      <div class="advlog-hero-name">${P.name || 'Héros'}</div>
-     <div class="advlog-hero-level">Niveau ${lvl} · Aventurier${heroGender(P.name)==='f'?'ère':''}</div>
+     <div class="advlog-hero-level">Niveau ${lvl} · Aventurier${heroGender(P.name,P.gender)==='f'?'ère':''}</div>
     </div>
    </div>
    <div class="advlog-global">
@@ -1308,35 +1308,45 @@ function _atkWords(){
  if(typeof monsterSpeak === 'function'){ try{ monsterSpeak('Sais-tu encore lire ?', 1800); }catch(e){} }
 }
 // Conversion d'un entier (0-9999) en toutes lettres françaises
+// v11.7.3 (audit n°19/n°20) : chaque sous-fonction reçoit désormais un
+// paramètre `final` — "quatre-vingts"/"cents" ne prennent le -s du pluriel
+// QUE lorsqu'ils ne sont suivis d'aucun autre nombre (ex. "quatre-vingts"
+// seul, mais "quatre-vingt mille" sans s). Ajout d'un palier "million(s)"
+// (absent auparavant, ce qui aurait donné un résultat incorrect au-delà).
 function _numberToFrenchWords(n){
  if(n === 0) return 'zéro';
  if(n < 0) return 'moins ' + _numberToFrenchWords(-n);
  const units = ['','un','deux','trois','quatre','cinq','six','sept','huit','neuf','dix',
   'onze','douze','treize','quatorze','quinze','seize','dix-sept','dix-huit','dix-neuf'];
  const tens = ['','','vingt','trente','quarante','cinquante','soixante','soixante','quatre-vingt','quatre-vingt'];
- function below100(x){
+ function below100(x, final){
   if(x < 20) return units[x];
   const t = Math.floor(x / 10), u = x % 10;
   if(t === 7 || t === 9){ // soixante-dix / quatre-vingt-dix
    const base = t === 7 ? 'soixante' : 'quatre-vingt';
-   const rem = below100(10 + u); // dix..dix-neuf
+   const rem = below100(10 + u, final); // dix..dix-neuf
    return base + '-' + rem;
   }
-  if(u === 0) return tens[t] + (t === 8 ? 's' : '');
+  if(u === 0) return tens[t] + (t === 8 && final ? 's' : '');
   if(u === 1 && t !== 8) return tens[t] + '-et-un';
   return tens[t] + '-' + units[u];
  }
- function below1000(x){
-  if(x < 100) return below100(x);
+ function below1000(x, final){
+  if(x < 100) return below100(x, final);
   const h = Math.floor(x / 100), rem = x % 100;
   const hPart = (h === 1 ? 'cent' : units[h] + '-cent');
-  if(rem === 0) return hPart + (h > 1 ? 's' : '');
-  return hPart + ' ' + below100(rem);
+  if(rem === 0) return hPart + (h > 1 && final ? 's' : '');
+  return hPart + ' ' + below100(rem, final);
  }
- if(n < 1000) return below1000(n);
- const th = Math.floor(n / 1000), rem = n % 1000;
- const thPart = (th === 1 ? 'mille' : below1000(th) + ' mille');
- return rem === 0 ? thPart : thPart + ' ' + below1000(rem);
+ if(n < 1000) return below1000(n, true);
+ if(n < 1000000){
+  const th = Math.floor(n / 1000), rem = n % 1000;
+  const thPart = (th === 1 ? 'mille' : below1000(th, false) + ' mille');
+  return rem === 0 ? thPart : thPart + ' ' + below1000(rem, true);
+ }
+ const mil = Math.floor(n / 1000000), remM = n % 1000000;
+ const milPart = (mil === 1 ? 'un million' : below1000(mil, false) + ' millions');
+ return remM === 0 ? milPart : milPart + ' ' + _numberToFrenchWords(remM);
 }
 
 // ═══════════════════════════════════════════════════════

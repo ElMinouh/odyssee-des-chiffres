@@ -24,11 +24,17 @@ function setBirthday(name,m,d){ name=String(name||'').trim(); if(!name) return; 
 // 'm' = masculin, 'f' = féminin. Clés en minuscules pour comparaison insensible à la casse.
 const KNOWN_GENDERS={ papa:'m', maman:'f' }; // mots génériques uniquement (pas de prénoms privés)
 // Retourne 'm' ou 'f' pour un prénom donné.
-// 1) table des prénoms connus, 2) heuristique française (finit par 'a'/'e' → féminin).
-function heroGender(name){
+// v11.7.3 (audit n°9) : ordre de priorité —
+//  1) genre explicite réglé par le parent sur le profil (P.gender, le plus fiable) ;
+//  2) table des prénoms génériques connus (papa/maman) ;
+//  3) heuristique française en tout dernier recours (finit par 'a'/'e' → féminin) —
+//     imparfaite : de nombreux prénoms masculins finissent en -e (Alexandre,
+//     Maxime, Timothée…), d'où la priorité donnée aux deux options précédentes.
+function heroGender(name, explicitGender){
+ if(explicitGender==='m'||explicitGender==='f') return explicitGender;
  const key=(name||'').trim().toLowerCase();
  if(KNOWN_GENDERS[key]) return KNOWN_GENDERS[key];
- // Heuristique de repli pour les prénoms personnalisés
+ // Heuristique de repli pour les prénoms personnalisés sans genre renseigné
  if(/[ae]$/.test(key)) return 'f';
  return 'm';
 }

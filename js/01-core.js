@@ -154,19 +154,31 @@ function _pickFrenchVoice(){
  for(const match of prefs){const f=voices.find(match);if(f)return f;}
  return null;
 }
-function speak(t){
- if(!$('voiceToggle')?.checked)return;
+// v11.7.3 (audit n°4) : helper commun mutualisant ce qui était triplé entre
+// speak(), speakAs() et repeatQuestion() (création de l'utterance, ducking
+// musique, gestion d'erreur). opts.requireToggle=false permet à
+// repeatQuestion() de forcer la lecture même si la voix est désactivée
+// (l'utilisateur l'a explicitement demandée en tapant sur "répéter").
+function _speakUtterance(text, opts){
+ opts = opts||{};
+ const requireToggle = opts.requireToggle!==false;
+ if(requireToggle && !$('voiceToggle')?.checked)return;
  if(!window.speechSynthesis)return;
- window.speechSynthesis.cancel();
- const m=new SpeechSynthesisUtterance(_humanizeForSpeech(t));
- m.lang='fr-FR';
- m.rate=0.95; // légèrement ralenti pour les petits
- m.pitch=1;
- if(_frVoice)m.voice=_frVoice;
- if(typeof _musicDuck==='function') _musicDuck(true);           // baisse la musique
  const _un=function(){ if(typeof _musicDuck==='function') _musicDuck(false); };
- m.onend=_un; m.onerror=_un;
- try{window.speechSynthesis.speak(m);}catch(e){ _un(); }
+ try{
+  window.speechSynthesis.cancel();
+  const m=new SpeechSynthesisUtterance(_humanizeForSpeech(text));
+  m.lang='fr-FR';
+  m.pitch = opts.pitch!==undefined ? opts.pitch : 1;
+  m.rate = opts.rate!==undefined ? opts.rate : 0.95;
+  if(_frVoice)m.voice=_frVoice;
+  if(typeof _musicDuck==='function') _musicDuck(true);           // baisse la musique
+  m.onend=_un; m.onerror=_un;
+  window.speechSynthesis.speak(m);
+ }catch(e){ _un(); }
+}
+function speak(t){
+ _speakUtterance(t, {pitch:1, rate:0.95}); // légèrement ralenti pour les petits
 }
 
 // ═══════════════════════════════════════════════════════
@@ -222,21 +234,8 @@ function _voiceProfileFor(monster){
 // Fait parler un personnage avec sa voix propre.
 // Utilisé pour les intros, taunts, paroles de boss (avant/pendant/après).
 function speakAs(text, monster){
- if(!$('voiceToggle')?.checked) return;
- if(!window.speechSynthesis) return;
- try{
-  window.speechSynthesis.cancel();
-  const prof = _voiceProfileFor(monster);
-  const m = new SpeechSynthesisUtterance(_humanizeForSpeech(text));
-  m.lang='fr-FR';
-  m.pitch = prof.pitch;
-  m.rate = Math.min(prof.rate || 0.9, 0.9);
-  if(_frVoice) m.voice=_frVoice;
-  if(typeof _musicDuck==='function') _musicDuck(true);           // baisse la musique pendant la voix du monstre
-  const _un=function(){ if(typeof _musicDuck==='function') _musicDuck(false); };
-  m.onend=_un; m.onerror=_un;
-  window.speechSynthesis.speak(m);
- }catch(e){ if(typeof _musicDuck==='function') _musicDuck(false); }
+ const prof = _voiceProfileFor(monster);
+ _speakUtterance(text, {pitch:prof.pitch, rate:Math.min(prof.rate||0.9,0.9)});
 }
 function saveVoice(){
  const t=$('voiceToggle');if(!t)return;
@@ -301,14 +300,7 @@ function repeatQuestion(){
  const q=typeof GS!=='undefined'?GS.q:null;if(!q)return;
  const txt=q.maternelle?(q.consigne||''):(q.display||(q.a!==undefined&&q.b!==undefined?`${q.a} ${q.op||'='} ${q.b}`:String(q.res)));
  // Forcer la lecture même si voix non activée : user a explicitement demandé
- if(!window.speechSynthesis)return;
- window.speechSynthesis.cancel();
- const m=new SpeechSynthesisUtterance(_humanizeForSpeech(txt));
- m.lang='fr-FR';m.rate=0.95;if(_frVoice)m.voice=_frVoice;
- if(typeof _musicDuck==='function') _musicDuck(true);
- const _un=function(){ if(typeof _musicDuck==='function') _musicDuck(false); };
- m.onend=_un; m.onerror=_un;
- try{window.speechSynthesis.speak(m);}catch(e){ _un(); }
+ _speakUtterance(txt, {rate:0.95, requireToggle:false});
 }
 let toastT=null;
 function toast(msg,dur=2200){const el=$('toast');el.innerText=msg;el.classList.remove('hidden');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.add('hidden'),dur);}
