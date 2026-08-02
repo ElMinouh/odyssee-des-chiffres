@@ -42,6 +42,8 @@ Coche au fur et à mesure. Si un point échoue, note la version et le niveau con
 - [ ] Ouvrir une histoire : boutons ▶ / ⏸ / ⏹ présents sur chaque page.
 - [ ] ▶ lit la page avec une voix de conteur ; ⏸ met en pause ; ▶ reprend ; ⏹ arrête.
 - [ ] Changer de page ou fermer **coupe** la lecture en cours (pas de chevauchement).
+- [ ] **Carnet / collections de tomes** (Chroniques du Temps, tomes Collège Français, contes bonus Maths/Docteur Babel/Conte du Livre) : bouton **✕** visible et fonctionnel dès la couverture, permettant de refermer le livre **à tout moment**, sans devoir le feuilleter jusqu'au bout (régression corrigée v11.7.2 sur les tomes Collège Français — à re-tester en priorité).
+- [ ] Carnet à tomes multiples : chaque tome débloqué affiche clairement qu'il est cliquable (halo/icône) et son état verrouillé/déverrouillé est cohérent avec la progression réelle.
 
 ## 8. Voix (Paramètres)
 - [ ] La liste « Voix du conteur » se remplit avec les voix de l'appareil.
@@ -59,4 +61,4 @@ Coche au fur et à mesure. Si un point échoue, note la version et le niveau con
 - [ ] Après mise à jour, l'ancienne version ne « colle » pas (le SW sert bien la nouvelle).
 
 ---
-*Référence rapide des derniers ajouts à surveiller : figures collège C4/C5, lot 6e, polish primaire (combinatoire/angle/symétrie), narration du livre, sélecteur de voix, rééquilibrage des phases de fin d'année (PS, MS, CP, CE1, 5e).*
+*Référence rapide des derniers ajouts à surveiller : figures collège C4/C5, lot 6e, polish primaire (combinatoire/angle/symétrie), narration du livre, sélecteur de voix, rééquilibrage des phases de fin d'année (PS, MS, CP, CE1, 5e), Collège Français (histoire principale réécrite + collection 5 tomes, carnet réduit de 7 à 5 tomes, correctif bouton ✕ manquant sur le lecteur de tomes).*
