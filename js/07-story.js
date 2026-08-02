@@ -56,6 +56,7 @@ const _PRIM_STORY = {
     { emoji:'🐄', text:"Dans un pré voisin, un fermier compte et recompte ses vaches sans jamais retrouver le même nombre deux fois de suite, s'arrachant les cheveux de désespoir. Ton aide patiente lui redonne enfin le sourire, chiffre après chiffre." },
     { emoji:'💎', text:"« Relève les défis de chaque lieu pour gagner en courage, puis affronte le Loup au bout du chemin, » reprend Maître Comptin. « Libère le Cristal de l'Unité... et la toute première lueur d'espoir renaîtra sur Calcultopia ! » En avant, héros !" },
     { emoji:'🐺', text:"Au bout du chemin, le Loup des Plaines t'attend, les yeux rougeoyants de magie noire, grondant sourdement. Mais tu n'as pas peur : tu sens au fond de toi que ta mission est plus forte que sa colère. Le moment est venu de faire tes preuves." },
+    { emoji:'💨', text:"Le Loup bondit soudain, toutes griffes dehors ! Tu plonges de côté juste à temps, roules dans l'herbe et te relèves d'un bond, le cœur battant. Il tourne autour de toi en grognant, cherchant une ouverture — mais toi aussi, tu cherches la tienne." },
    ],
   },
   ce1: {
@@ -74,6 +75,7 @@ const _PRIM_STORY = {
     { emoji:'🌊', text:"Sur la plage, les marées elles-mêmes semblent déréglées : une vague monte deux fois de suite sans jamais redescendre, comme si la mer avait, elle aussi, oublié comment alterner. Lumo s'amuse à voler juste au-dessus de l'écume, ravie de ce nouveau terrain de jeu." },
     { emoji:'🦉', text:"Une chouette, perchée de guingois sur une branche tordue, hulule tristement : « Je ne sais plus combien de nuits il reste avant la pleine lune ! » Lumo compatit, ayant elle-même bien du mal à s'y retrouver dans le temps qui passe." },
     { emoji:'⚔️', text:"Au loin, un rire glacial résonne entre les arbres. Le {villain} t'observe ! Qu'importe — tu serres les poings, Lumo brille plus fort à tes côtés, et tu t'enfonces résolument dans les bois. Rien ne t'arrêtera, pas même une ombre lointaine." },
+    { emoji:'🦌', text:"Le Cerf Spectral surgit entre les arbres et charge, ses bois immenses fendant l'air ! Tu te baisses juste à temps, sens le vent de son passage sur ta nuque, puis fais volte-face pour lui faire face bien en garde. « Attention derrière ! » crie Lumo — un peu tard, mais avec beaucoup d'enthousiasme." },
    ],
   },
   ce2: {
@@ -92,6 +94,7 @@ const _PRIM_STORY = {
     { emoji:'🦂', text:"Un petit scorpion des sables, perdu entre deux dunes identiques, gratte frénétiquement le sol de ses pinces : « Ma maison était juste ici, j'en suis sûr... ou peut-être là-bas ? » Avec un peu d'aide, il retrouve enfin son terrier familier." },
     { emoji:'🦎', text:"Un lézard doré, réfugié à l'ombre d'une colonne brisée, te souffle un conseil précieux : « Les couloirs de ce temple se répètent toujours par groupes de trois, jeune héros. Compte bien tes pas, et jamais tu ne t'égareras. »" },
     { emoji:'🌟', text:"Lumo réapparaît, un peu honteuse de s'être cachée : « Tu es si brave, {hero}... je serai courageuse moi aussi, la prochaine fois ! » Ensemble, vous avancez vers le temple, le cœur vaillant. Trois Cristaux bientôt réunis !" },
+    { emoji:'⏳', text:"Le Sphinx des Sables pose sa dernière énigme, la plus redoutable de toutes. Le sable du sablier géant s'écoule déjà, de plus en plus vite. Lumo retient son souffle. Une seconde d'hésitation... et la bonne réponse jaillit enfin de tes lèvres, juste à temps !" },
    ],
   },
   cm1: {
@@ -108,6 +111,7 @@ const _PRIM_STORY = {
     { emoji:'🦅', text:"Un aigle des glaces, autrefois messager du royaume, tourne désormais en cercles sans fin au-dessus des tours, incapable de retrouver la direction de son nid. Lumo l'appelle doucement, et peu à peu, l'oiseau retrouve un cap à suivre." },
     { emoji:'🐉', text:"Pour atteindre la tour, tu devras vaincre le Dragon des Remparts, gardien du <b>Cristal de la Bravoure</b>. Chaque calcul juste que tu résous fissure un peu plus la glace qui retient Maître Comptin prisonnier, tout là-haut." },
     { emoji:'💎', text:"« Tiens bon, {hero} ! » lance Lumo, brillant de mille feux malgré le froid mordant. « Quatre Cristaux bientôt, et déjà tu fais reculer les ténèbres du {villain} ! » Tu inspires un grand coup, tu serres les poings... et tu t'élances vers le Dragon." },
+    { emoji:'🔥', text:"Le Dragon des Remparts crache un souffle glacé qui fait voler la neige tout autour de toi ! Tu te jettes derrière un pan de mur brisé, attends que le souffle passe, puis bondis à découvert pour lui faire face. Plus question de reculer maintenant." },
    ],
   },
   cm2: {
@@ -124,6 +128,7 @@ const _PRIM_STORY = {
     { emoji:'🔭', text:"Au loin, une comète solitaire trace une longue traînée lumineuse à travers le vide, comme pour rappeler que même les astres les plus perdus finissent toujours par retrouver leur chemin, un jour ou l'autre, à travers l'immensité du ciel." },
     { emoji:'🌠', text:"Tu comprends alors : le {villain} n'est pas qu'un monstre, mais un cœur brisé par une seule erreur qu'il n'a jamais su pardonner. Le <b>Cristal de l'Infini</b>, gardé par le Colosse Stellaire, pourrait bien être la clé pour enfin le raisonner." },
     { emoji:'✨', text:"« Cinq Cristaux bientôt, {hero} ! » s'écrie Lumo, éblouie par toutes ces étoiles. « Il ne restera plus que le Sanctuaire ! » Le destin de Calcultopia — et peut-être même celui du {villain} — tient désormais entre tes mains. Sois fort. Sois juste." },
+    { emoji:'☄️', text:"Le Colosse Stellaire lève un poing géant, fait de pierre et d'étoiles mortes, et frappe le sol ! Tu esquives d'un bond, la secousse te fait perdre l'équilibre un instant — mais tu te redresses aussitôt, plus déterminé que jamais." },
    ],
   },
   final: {
@@ -592,6 +597,7 @@ const _PRIM_STORY_FR = {
   { emoji:'🗣️', text:"« Alors dis-moi, » je réponds, surprenant même L'Orateur derrière moi. « Pourquoi as-tu tout brisé ? » Le silence qui suit dure une éternité. Puis, lentement, {villain} commence à parler — pour la première fois depuis des années, quelqu'un l'écoute vraiment." },
   { emoji:'📖', text:"Il me raconte, par bribes hachées, une enfance solitaire, une langue inventée que personne ne comprenait, une colère née d'années de silence. Je l'écoute sans l'interrompre, comme Dame Calligraphe m'a appris à écouter un texte difficile : jusqu'au bout." },
   { emoji:'✨', text:"Quand il termine enfin son récit, un long silence s'installe entre nous, sur cette tour battue par le vent. Puis je lui tends la main, comme on tend un mot à quelqu'un qui en a besoin. « Il n'est pas trop tard, » dis-je simplement." },
+  { emoji:'😨', text:"Mais {villain} recule d'un coup, comme effrayé par sa propre vulnérabilité. « Trop tard ! » hurle-t-il soudain, sa voix retrouvant toute sa dureté. « J'ai été seul trop longtemps pour croire encore à une main tendue ! » Ses yeux se voilent de noir, et l'air autour de lui se met à trembler dangereusement." },
   { emoji:'💬', text:"Il a lancé son plus terrible sort : un grand charabia où plus personne ne se comprenait. Alors j'ai prononcé, justes et vrais, les mots les plus simples — <i>bonjour, merci, ami, ensemble</i> — et chacun déchirait son charabia." },
   { emoji:'🕯️', text:"À chaque mot simple que je prononçais, une lueur traversait le regard de {villain}, comme un souvenir lointain qui refaisait surface. Il vacilla, porta les mains à ses tempes, et pour la première fois, ne riposta pas." },
   { emoji:'🛡️', text:"La <b>Guilde de la Rature</b> est tombée. Partout, les peuples ont recommencé à se parler. Et moi… je suis devenu <b>Gardien de l'Alphabet</b>, le plus jeune de tous." },
@@ -705,7 +711,7 @@ const _PRIM_STORY_HIST = {
   { emoji:'📜', text:"Grand-père Isidore s\u2019en est allé un soir d\u2019automne, dans le silence de son vieil atelier encombré d\u2019engrenages, de plans jaunis et d\u2019inventions inachevées. Le notaire, un homme sec à lunettes rondes, avait convoqué les trois frères pour la lecture de son testament." },
   { emoji:'🕰️', text:"« À Noé, l\u2019aîné, je lègue ma montre à gousset », lut le notaire, en tendant un boîtier d\u2019argent terni. « À Gaspard, mon cadet d\u2019esprit vif, je lègue ma boussole. » Gaspard reçut l\u2019objet, perplexe : son aiguille ne pointait vers aucun nord connu." },
   { emoji:'🪡', text:"« Et à {hero}, le benjamin... » Le notaire hésita, fouilla dans une petite boîte, et en sortit une simple aiguille de métal noirci, sans manche ni écrin. « ... une aiguille. C\u2019est tout ce qui est inscrit. » Les deux aînés échangèrent un regard amusé. {hero} serra les dents." },
-  { emoji:'🌙', text:"Ce soir-là, chacun dans sa chambre inspecta son présent. Noé remonta sa montre, qui égrena une heure parfaitement juste. Gaspard fit tourner sa boussole dans tous les sens, sans succès. {hero}, désabusé, posa la petite aiguille sur la table de nuit, éteignit la lumière, et s\u2019endormit en pensant que grand-père, pour une fois, s\u2019était trompé de cadeau." },
+  { emoji:'🌙', text:"Ce soir-là, chacun dans sa chambre inspecta son présent. Noé remonta sa montre, qui égrena une heure parfaitement juste. Gaspard fit tourner sa boussole dans tous les sens, sans succès — il l'avait même essayée un peu plus tôt pour retrouver la salle de bain dans le couloir, et s'était retrouvé nez à nez avec le placard à balais. {hero}, désabusé, posa la petite aiguille sur la table de nuit, éteignit la lumière, et s\u2019endormit en pensant que grand-père, pour une fois, s\u2019était trompé de cadeau." },
   { emoji:'🌘', text:"Au cœur de la nuit, un bruit sourd tira {hero} du sommeil. Une ombre, penchée sur la table de nuit, se redressa d\u2019un coup et bondit par la fenêtre entrouverte, aussi silencieuse qu\u2019un chat. En allumant la lampe, {hero} découvrit la vérité : l\u2019aiguille avait disparu." },
   { emoji:'🏃', text:"{hero} réveilla Noé et Gaspard en pleine nuit. D\u2019abord sceptiques, les deux frères durent se rendre à l\u2019évidence : la petite aiguille de rien du tout venait bel et bien d\u2019être volée. Pourquoi s\u2019en prendre à l\u2019objet le moins précieux des trois ?" },
   { emoji:'🧓', text:"Grand-père Isidore n\u2019avait jamais été un grand-père comme les autres. Il passait ses journées entier dans son atelier à démonter des horloges pour le seul plaisir de les remonter autrement, et racontait aux trois frères, le soir, des histoires si précises sur des époques lointaines qu\u2019on aurait dit qu\u2019il y avait vécu lui-même." },
@@ -735,6 +741,7 @@ const _PRIM_STORY_HIST = {
   ce2: { id:'primhist_c_ce2', title:'Chapitre III — Rome antique', crystal:'Rouage du Cirque', pages:[
    { emoji:'🏛️', text:"Un vacarme assourdissant accueillit les trois frères : ils venaient d\u2019atterrir dans les gradins du Circus Maximus, en pleine course de chars, sous les acclamations d\u2019une foule immense agitant des étoffes colorées." },
    { emoji:'🐎', text:"En contrebas, sur la piste, un char venait de perdre une roue dans un virage serré, projetant son cocher au sol sous les cris horrifiés du public. L\u2019attelage, paniqué, menaçait de s\u2019emballer et de blesser les autres concurrents lancés à pleine vitesse." },
+   { emoji:'💨', text:"Sans réfléchir, {hero} sauta par-dessus la balustrade et courut vers les chevaux affolés, saisissant les rênes traînantes à pleines mains. Gaspard, juste derrière, se jeta sur la roue brisée pour la dégager du sable avant qu'un autre char ne s'y empale à pleine vitesse." },
    { emoji:'⚔️', text:"Un vétéran des courses, assis non loin des frères dans les gradins, leur expliqua que ce cocher, jeune et prometteur, jouait ce jour-là sa toute dernière chance de gagner sa liberté d\u2019esclave — une victoire suffirait à convaincre son maître de l\u2019affranchir." },
    { emoji:'🛠️', text:"Gaspard, en observant l\u2019attelage endommagé, comprit qu\u2019il fallait faire vite : la course reprendrait dès que la piste serait dégagée, avec ou sans char réparé. {hero} sentit peser sur ses épaules le poids d\u2019une destinée qui n\u2019était pas la sienne, mais qu\u2019il ne pouvait ignorer." },
    { emoji:'👣', text:"Sous les gradins, près des écuries, Noé repéra une trace de semelle fraîche menant droit vers les coulisses du Circus — la même empreinte, encore et toujours, comme un fil rouge tissé à travers les siècles." },
@@ -762,6 +769,7 @@ const _PRIM_STORY_HIST = {
    { emoji:'🔧', text:"« Elle n\u2019a jamais été aussi stable », murmure Gaspard en observant le mécanisme luire d\u2019une lumière régulière. « On dirait qu\u2019elle... nous ramène quelque part de précis, pas juste n\u2019importe quand. »" },
    { emoji:'🚪', text:"Dans un dernier éclair, plus doux que les précédents, les trois frères se retrouvent devant la porte close d\u2019un atelier qu\u2019ils ne connaissent que trop bien — en plus jeune, en plus poussiéreux encore. Quelque chose, ici, attend d\u2019être résolu depuis bien longtemps." },
    { emoji:'🤝', text:"Noé, la main déjà posée sur la poignée, se retourna un instant vers ses deux frères. « Quoi qu\u2019il y ait derrière cette porte, » dit-il, la voix moins sûre qu\u2019à l\u2019accoutumée, « on l\u2019affrontera ensemble, comme on a traversé chaque époque. » Pour la première fois de leur odyssée, ce fut lui, l\u2019aîné si raisonnable, qui eut besoin d\u2019être rassuré — et {hero} le rassura à son tour." },
+   { emoji:'😶', text:"Noé poussa la porte. Un grincement sinistre résonna dans le silence — puis rien. L'atelier semblait plongé dans l'obscurité la plus totale. Les trois frères échangèrent un regard et avancèrent d'un pas, le cœur battant, sans savoir ce qui les attendait." },
   ]},
  },
  victories: {
