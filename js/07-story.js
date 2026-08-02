@@ -1582,7 +1582,8 @@ function _renderColBook(book,idx,pages){
   const prevLbl=step===total-1?'‹ Pages':'‹ Précédent';
   const nextLbl=step===0?'Feuilleter ›':(step===total-1?'Fermer le livre':'Suivant ›');
   let counter; if(step===0) counter='Couverture'; else if(step===total-1) counter='Dos de couverture'; else { const a=(step-1)*2+1, b=Math.min(a+1,pages.length); counter=(a===b?('page '+a):('pages '+a+'–'+b))+' / '+pages.length; }
-  ov.innerHTML='<div class="story-parchment" style="max-width:'+((step===0||step===total-1)?'360':'600')+'px;border-top:6px solid '+acc+';">'
+  ov.innerHTML='<div class="story-parchment" style="max-width:'+((step===0||step===total-1)?'360':'600')+'px;border-top:6px solid '+acc+';position:relative;">'
+   +'<button class="story-btn cb-close" title="Fermer" style="position:absolute;top:8px;right:8px;width:30px;height:30px;padding:0;line-height:1;border-radius:50%;font-size:16px;z-index:2;">✕</button>'
    +inner
    +'<div class="story-nav">'
    +(step>0?'<button class="story-btn cb-prev">'+prevLbl+'</button>':'<span class="story-spacer"></span>')
@@ -1593,6 +1594,7 @@ function _renderColBook(book,idx,pages){
    +'</div>';
   const nx=ov.querySelector('.cb-next'); if(nx) nx.onclick=function(){ if(step<total-1){step++;render();} else close(); };
   const pv=ov.querySelector('.cb-prev'); if(pv) pv.onclick=function(){ if(step>0){step--;render();} };
+  const cl=ov.querySelector('.cb-close'); if(cl) cl.onclick=close;
   if(typeof beep==='function'){ try{ beep(520,'sine',.09,.04); }catch(e){} }
  }
  render(); document.body.appendChild(ov);
