@@ -922,7 +922,6 @@ function refreshMenu2(){
   // Défi hebdo + Devoir du jour (réutilisent les rendus existants)
   if(typeof renderWC==='function') renderWC();
   if(typeof renderHomework==='function') renderHomework();
-  if(typeof renderChallenges==='function') renderChallenges();
  }catch(e){}
 }
 

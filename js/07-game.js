@@ -469,7 +469,7 @@ function nextTurn(){
    : (mapBoss
     ? {emoji:mapBoss.boss,name:mapBoss.bossName,title:'Boss de la Carte',intro:`Bienvenue dans ${mapBoss.label}. Tu ne repartiras pas vivant.`,anim:'glow',col:'#e74c3c'}
     : _currentMonster);
-  showMonsterIntro((typeof _themeMonster==='function')?_themeMonster(bossM):bossM,renderQ);
+  showMonsterIntro(bossM,renderQ);
  }else if((GS.qCount===1||(GM.mode2==='survie'&&GS.qCount%4===1)) && !(GM.mapZone && GM.mapStep)){
   // v8.7.9 (O1) : ne PAS rejouer l'intro en étape de zone : on l'a déjà
   // jouée dans startMapStep avec le bon monstre. Sinon un 2e monstre
@@ -807,9 +807,9 @@ GS.errInGame++;GS.combo=0;GS.opCombo=0;GS.lastOpKey=null;$('gc').classList.remov
    if(!GS.errList.some(e=>e.display===_disp && e.res===q.res)){
     GS.errList.push({display:_disp, res:q.res, opKey:q.opKey||q.op||'+', type:q.type||'normal'});
    }
-   // Erreur commise : on retire la question de l'anti-répétition pour qu'elle
-   // puisse réapparaître plus tôt (entraînement ciblé).
-   try{ if(typeof _untrackQ==='function') _untrackQ(q); }catch(e){}
+   // Erreur commise : la question reste dans l'anti-répétition (comportement
+   // normal) — un retrait anticipé (entraînement ciblé immédiat) avait été
+   // envisagé (_untrackQ) mais jamais implémenté ; décision : retiré (audit).
   }
   // Monster taunts on wrong answer
   monsterSpeak(WRONG_TAUNTS[ri(0,WRONG_TAUNTS.length-1)],2200);
