@@ -357,7 +357,7 @@ function loadProfile(){
  if(P.objDate!==todayKey()){P.objectiveDone=0;P.objDate=todayKey();}
  // v8.6.3 : mémoriser le joueur actif pour le restaurer au prochain démarrage
  // (essentiel pour la récupération cloud forcée qui recharge la page)
- try{ if(P && P.name) localStorage.setItem('lastPlayer', P.name); }catch(e){}
+ try{ if(P && P.name) localStorage.setItem('lastPlayer', P.name); }catch(e){ console.warn('[profil] échec écriture lastPlayer — le prochain démarrage pourrait ouvrir le mauvais profil', e); }
  applyPrefs();updateMenuUI();
  // Chantier Cloud Sync : génère le code (silencieux) + relance le timer + bandeau
  if(typeof ensureCloudCode==='function') ensureCloudCode(P);
