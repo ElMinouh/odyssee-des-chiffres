@@ -54,7 +54,7 @@ function fakeEl() {
       contains(c) { return cls.has(c); },
       [Symbol.iterator]() { return cls[Symbol.iterator](); },
     },
-    appendChild() {}, removeChild() {}, setAttribute() {}, addEventListener() {},
+    appendChild() {}, removeChild() {}, remove() {}, setAttribute() {}, addEventListener() {},
     querySelector() { return null; }, querySelectorAll() { return []; },
   };
 }
@@ -255,6 +255,24 @@ globalThis.__api = {
   genQ_5E:  (typeof genQ_5E==='function')  ? genQ_5E  : undefined,
   genQ_4E:  (typeof genQ_4E==='function')  ? genQ_4E  : undefined,
   genQ_3E:  (typeof genQ_3E==='function')  ? genQ_3E  : undefined,
+  // --- v11.7.4 (filet de sécurité pour validate(), en vue d'une future
+  // factorisation prudente — voir audit n°18) : accès à GS et powers, et à
+  // validate() elle-même. GM est déjà accessible via getGM/setGMsubject ;
+  // setGM() ajouté ici pour couvrir les autres champs (mode2, level...).
+  validate: (typeof validate==='function') ? validate : undefined,
+  resetGS: (typeof resetGS==='function') ? resetGS : undefined,
+  getGS: () => (typeof GS!=='undefined') ? GS : undefined,
+  setGS: (patch) => { Object.assign(GS, patch); },
+  setGM: (patch) => { Object.assign(GM, patch); },
+  getPowers: () => (typeof powers!=='undefined') ? powers : undefined,
+  // --- Audit fonctionnel (#14/#19) : le module cloud (12-cloud.js) n'était
+  // chargé par aucun test. On expose ici la logique de fusion non destructive
+  // (#2) et les helpers de code, qui sont des fonctions pures testables sans
+  // réseau (les fonctions async qui appellent fetch restent hors périmètre :
+  // le sandbox n'a pas de vrai réseau, cf. helpers/loadGame.js).
+  _mergeCloudProfiles: (typeof _mergeCloudProfiles==='function') ? _mergeCloudProfiles : undefined,
+  isValidCloudCode: (typeof isValidCloudCode==='function') ? isValidCloudCode : undefined,
+  generateCloudCode: (typeof generateCloudCode==='function') ? generateCloudCode : undefined,
 };
 `;
 
