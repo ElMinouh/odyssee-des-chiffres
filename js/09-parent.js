@@ -1414,6 +1414,33 @@ async function doForceCloudRestore(){
  if(typeof forceRestoreFromCloud !== 'function'){
   msg.style.color='#e74c3c'; msg.textContent='Récupération non disponible.'; return;
  }
+ // Audit fonctionnel (#4) : forceRestoreFromCloud écrase SANS CONDITION le profil
+ // local homonyme (par design, cf. commentaire de la fonction). On ajoute ici une
+ // confirmation explicite si un profil local du même nom existe déjà, pour éviter
+ // qu'un parent n'efface par erreur une progression locale non synchronisée.
+ msg.style.color='#bdc3c7'; msg.textContent='⏳ Vérification du code…';
+ if(typeof pullProfileFromCloud === 'function'){
+  const peek = await pullProfileFromCloud(code);
+  if(peek && peek.ok && peek.profile && peek.profile.name){
+   const localName = peek.profile.name;
+   let localRaw = null;
+   try{ localRaw = JSON.parse(localStorage.getItem('user_'+localName) || 'null'); }catch(e){}
+   if(localRaw){
+    const localXp = localRaw.xp||0, cloudXp = peek.profile.xp||0;
+    const sameCode = localRaw.cloudCode === code.toUpperCase();
+    if(!sameCode){
+     const ok = confirm(
+      `⚠️ Un profil local nommé « ${localName} » existe déjà sur cet appareil (${localXp} XP), `+
+      `avec un code cloud différent.\n\n`+
+      `Le profil du code que tu restaures a ${cloudXp} XP.\n\n`+
+      `Continuer VA REMPLACER le profil local « ${localName} » par celui du cloud. Cette action est irréversible.\n\n`+
+      `Continuer quand même ?`
+     );
+     if(!ok){ msg.style.color='#bdc3c7'; msg.textContent='Récupération annulée.'; return; }
+    }
+   }
+  }
+ }
  msg.style.color='#bdc3c7'; msg.textContent='⏳ Récupération en cours…';
  const result = await forceRestoreFromCloud(code);
  if(!result.ok){
