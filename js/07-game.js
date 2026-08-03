@@ -1055,6 +1055,39 @@ function endGame(won){
  $('BODY').classList.remove('urgency-bg','body-alert');
  clearMonsterSpeech();
  const heart=$('timer-heart');if(heart)heart.style.display='none';
+ // Audit fonctionnel (#8) : en mode Combat, validateCombat() incrémente cp.score
+ // (par joueur) mais ne touche JAMAIS GS.score, qui reste donc à 0 toute la partie.
+ // De plus, endGame(true) était appelé en dur à la fin de tout combat (validateCombat
+ // ligne ~1011), donc le joueur actif était toujours crédité comme "gagnant" même
+ // éliminé en premier. Conséquence : personne (ni le joueur actif, ni les autres
+ // joueurs nommés) ne recevait d'étoiles/XP/historique cohérents avec sa performance
+ // réelle en Combat. On corrige ici : le joueur actif est recrédité sur son propre
+ // score et son propre résultat, et chaque AUTRE joueur nommé (s'il correspond à un
+ // profil local existant) est crédité séparément — étoiles, XP, historique, victoire
+ // de niveau. Les systèmes secondaires (quêtes, jalons, drop de figurine) restent
+ // liés au seul profil actif, comme avant.
+ if(GM.mode2==='combat' && Array.isArray(combatPlayers) && combatPlayers.length){
+  const _me = combatPlayers.find(p=>p.name===P.name) || combatPlayers[0];
+  GS.score = _me.score||0;
+  won = !!_me.alive;
+  combatPlayers.forEach(cp=>{
+   if(cp===_me) return;
+   try{
+    const raw = JSON.parse(localStorage.getItem('user_'+cp.name)||'null');
+    if(!raw) return; // pas de profil local sous ce nom : rien à créditer
+    const cpWon = !!cp.alive;
+    const starsGain = Math.round((cp.score||0) * 1.5);
+    const xpGain = Math.round((cp.score||0) * (cpWon?3:1) * 0.8);
+    raw.stars = (raw.stars||0) + starsGain;
+    raw.xp = (raw.xp||0) + xpGain;
+    raw._totalStarsEarned = (raw._totalStarsEarned||0) + starsGain;
+    raw._bestCombo = Math.max(raw._bestCombo||0, cp.bestCombo||0);
+    raw.history = ([...(raw.history||[]), {date:fmtDate(),timestamp:Date.now(),score:cp.score||0,mode:'combat',level:cp.level||'CP',won:cpWon,subject:(GM.subject)||'math'}]).slice(-50);
+    if(cpWon){ raw.levelWins = raw.levelWins||{}; raw.levelWins[cp.level] = (raw.levelWins[cp.level]||0) + 1; }
+    localStorage.setItem('user_'+cp.name, JSON.stringify(raw));
+   }catch(e){}
+  });
+ }
  P.sessionMinutes=(P.sessionMinutes||0)+Math.round((Date.now()-GS.sessionStart)/60000);
  const fl=GM.mode2==='combat'?combatPlayers.map(p=>p.level).join('+'):GM.level;
  P.history=([...(P.history||[]),{date:fmtDate(),timestamp:Date.now(),score:GS.score,mode:GM.mode2,level:fl,won,subject:(typeof GM!=='undefined'&&GM.subject)||'math'}]).slice(-50);
