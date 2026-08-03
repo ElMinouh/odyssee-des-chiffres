@@ -680,6 +680,8 @@ function renderWeeklySummary(){
  const chart = _renderActivityChart(eThis, wThis.start);
  // ────── RENDU HTML ──────
  const fmtD = (date) => date.toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit'});
+ const _esc_player = (typeof esc==='function') ? esc(player) : player;
+ const _jsAttrPlayer = (typeof _jsAttr==='function') ? _jsAttr(player) : player;
  const html = `
   <div class="wreport">
    <div class="wreport-head">
@@ -717,6 +719,11 @@ function renderWeeklySummary(){
     <h4>💡 Conseil pour la semaine prochaine</h4>
     <div style="line-height:1.5;">${advice}</div>
    </div>
+   ${(typeof chatIsEnabledByName==='function' && chatIsEnabledByName(player)) ? `
+   <div class="wreport-section no-print" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+    <span style="font-size:.85em;color:#9aa6b2;">✉️ Messagerie de ${_esc_player}</span>
+    <button onclick="openMessaging('${_jsAttrPlayer}')" style="background:#9b59b6;font-size:.8em;padding:6px 12px;">Voir →</button>
+   </div>` : ''}
    <div class="wreport-actions no-print">
     <button onclick="copyWeeklySummary()" style="background:#3498db;">📋 Copier le résumé</button>
     <button onclick="printReport()" style="background:#9b59b6;">🖨️ Imprimer / PDF</button>

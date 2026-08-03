@@ -69,6 +69,9 @@ async function chatFriendUnblock(prof, other){ return _chatApi('/friend/unblock'
 async function chatMsgSend(prof, to, txt){ return _chatApi('/msg/send', Object.assign(_chatAuth(prof), { to, body:txt })); }
 async function chatMsgFetch(prof, withId, since){ return _chatApi('/msg/fetch', Object.assign(_chatAuth(prof), { with:withId, since:since||0 })); }
 async function chatMsgLatest(prof){ return _chatApi('/msg/latest', _chatAuth(prof)); }
+// #16 (accusé de lecture) : signale au Worker que j'ai lu la conversation
+// avec `withId` jusqu'à l'id `upto`. Fire-and-forget côté appelant.
+async function chatMsgMarkRead(prof, withId, upto){ return _chatApi('/msg/markread', Object.assign(_chatAuth(prof), { with:withId, upto })); }
 
 // ═══════════════════════════════════════════════════════
 // ACTIVATION (parental) — désactivée par défaut
@@ -313,9 +316,17 @@ function _renderBubbles(messages){
   const t = _fmtTime(m.ts);
   if(isMine){
    const pop = (_msgJustSent && i===lastIdx) ? ' msg-pop' : '';
+   // #16 (accusé de lecture) : affiché uniquement sous le TOUT DERNIER message
+   // envoyé, quand otherReadUpTo (renvoyé par /msg/fetch) couvre son id.
+   const isLastMine = (i===lastIdx);
+   const readByOther = !m.pending && m.id!=null && _msgConv && _msgConv.otherReadUpTo && _msgConv.otherReadUpTo>=m.id;
+   const seenLine = (isLastMine && readByOther)
+    ? '<div style="text-align:right;font-size:.68em;color:#9aa6b2;margin:2px 6px 6px;">Vu'+(_msgConv.otherReadTs?(' à '+_fmtTime(_msgConv.otherReadTs)):'')+' <span style="color:#3498db;">\u2713\u2713</span></div>'
+    : '';
    return '<div class="msg-row msg-out"><div class="msg-bub msg-bub-out'+pop+'">'
     + '<div>'+_e(m.body)+'</div>'
-    + '<div class="msg-meta msg-meta-out"><span>'+t+'</span><span class="msg-ck">'+(m.pending?'\u23F3':'\u2713')+'</span></div></div></div>';
+    + '<div class="msg-meta msg-meta-out"><span>'+t+'</span><span class="msg-ck">'+(m.pending?'\u23F3':'\u2713')+'</span></div></div>'
+    + seenLine + '</div>';
   }
   return '<div class="msg-row msg-in"><div class="msg-av">'+_e(av)+'</div>'
    + '<div class="msg-bub msg-bub-in"><div>'+_e(m.body)+'</div>'
@@ -356,8 +367,8 @@ async function _chatFlushQueue(prof){
 // facilement modifiable ci-dessous. On BLOQUE l'envoi (toast explicite) plutôt
 // que de censurer/altérer le message à l'insu de l'enfant.
 const _CHAT_BLOCKED_WORDS = [
- 'con','connard','connasse','encul','putain','salope','pute',
- 'batard','bâtard','nique','niquer','pd','pédé','abruti',
+ 'con','connard','connasse','encul','merde','putain','salope','pute',
+ 'batard','bâtard','nique','niquer','pd','pédé','abruti','débile','crétin',
 ];
 function _chatContainsBlockedWord(txt){
  const norm = String(txt||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
@@ -398,13 +409,25 @@ async function _convFetch(reset){
  if(reset) _convCache = [];
  const since = reset ? 0 : _msgConv.lastId;
  const res = await chatMsgFetch(_msgProf, _msgConv.id, since);
- if(res && res.ok && res.messages){
-  if(res.messages.length){
+ if(res && res.ok){
+  // #16 (accusé de lecture) : mémorise où en est la lecture de l'AUTRE
+  // participant, à CHAQUE sondage (même sans nouveau message), pour afficher
+  // "Vu à..." dès qu'il lit notre dernier message envoyé.
+  const prevOtherRead = _msgConv.otherReadUpTo||0;
+  _msgConv.otherReadUpTo = res.otherReadUpTo||0;
+  _msgConv.otherReadTs = res.otherReadTs||0;
+  const readChanged = _msgConv.otherReadUpTo !== prevOtherRead;
+  if(res.messages && res.messages.length){
    _convCache = _convCache.concat(res.messages);
    _msgConv.lastId = _convCache[_convCache.length-1].id;
    _renderBubbles(_convCache);
    _chatMarkSeen(_msgProf, _msgConv.id, _msgConv.lastId);
-  } else if(reset){ _renderBubbles([]); }
+   if(!_msgReadOnly && typeof chatMsgMarkRead==='function') chatMsgMarkRead(_msgProf, _msgConv.id, _msgConv.lastId).catch(()=>{});
+  } else if(reset){
+   _renderBubbles([]);
+  } else if(readChanged){
+   _renderBubbles(_convCache); // re-rendu pour afficher l'accusé de lecture mis à jour
+  }
  } else if(reset){
   const thread = document.getElementById('msg-thread');
   if(thread) thread.innerHTML = '<p style="color:#e74c3c;font-size:.82em;text-align:center;">Connexion impossible.</p>';
