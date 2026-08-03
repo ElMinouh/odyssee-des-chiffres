@@ -117,6 +117,12 @@ export function loadGame(files, initialStorage = {}) {
     requestAnimationFrame: () => 0,
     // $ est souvent utilisé dans le jeu : on renvoie un élément factice
     $: () => fakeEl(),
+    // Découvert en corrigeant un test flaky (validate-characterization) : un
+    // contexte vm a par défaut son PROPRE objet Math, distinct de celui du
+    // process de test. vi.spyOn(Math,'random') dans un test n'a donc AUCUN
+    // effet sur le Math.random() utilisé par le code du jeu tant qu'on ne
+    // partage pas explicitement le même objet Math ici.
+    Math,
   };
   sandbox.globalThis = sandbox;
   sandbox.self = sandbox;
