@@ -10,6 +10,8 @@ var _pfigSearch = '';
 // ═══════════════════════════════════════════════════════
 function openParent(){
  $('parent-lock').classList.remove('hidden');$('parent-content').classList.add('hidden');$('pin-input').value='';
+ const hint=$('pin-default-hint');
+ if(hint) hint.classList.toggle('hidden', !!localStorage.getItem('parentPin'));
  const opts=getRoster().map(n=>`<option>${n}</option>`).join('');
 ['parent-player','obj-player','block-player','filter-player','hw-player','bsubj-player'].forEach(id=>{const e=$(id);if(e)e.innerHTML=opts;});
  $('cloud-player').innerHTML='<option value="ALL">Tous les joueurs</option>'+opts;

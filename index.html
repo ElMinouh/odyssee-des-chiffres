@@ -685,7 +685,7 @@
    <input type="password" id="pin-input" placeholder="****" style="width:50%;text-align:center;letter-spacing:6px;font-size:1.2em;" maxlength="4"><br>
    <p style="margin-top:8px;"><a onclick="recoverParentPin()" style="font-size:.78em;color:#9aa6b2;cursor:pointer;text-decoration:underline;">Code parent oubli&#233; ?</a></p>
    <button onclick="checkPin()">&#128275; Accéder</button>
-   <p style="font-size:.72em;color:#bdc3c7;margin-top:6px;">Code par défaut : 1234</p>
+   <p id="pin-default-hint" class="hidden" style="font-size:.72em;color:#f1c40f;margin-top:6px;">⚠️ Code par défaut (1234) : pense à le changer dans l'onglet « 🔧 Avancé ».</p>
   </div>
   <div id="parent-content" class="hidden">
    <div class="tabs" id="ptabs">
