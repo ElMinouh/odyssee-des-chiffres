@@ -1314,9 +1314,9 @@ function renderCloudPanel(){
    ${isActive ? `<p style="font-size:.72em;color:#bdc3c7;margin:4px 0;">Dernière sync : ${lastSyncStr}</p>` : `<p style="font-size:.74em;color:#e67e22;margin:6px 0;background:rgba(230,126,34,.12);border-radius:6px;padding:6px 8px;">⚠️ <b>Sauvegarde non activée</b> : tant que ce bouton n'est pas activé, la progression de ${_nH} n'est <b>pas envoyée au cloud</b> et ne peut pas être récupérée sur un autre appareil. Active-la ci-dessous.</p>`}
    <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
     ${isActive
-     ? `<button onclick="doCloudSyncNow('${_nJ}')" style="background:#3498db;font-size:.82em;">🔄 Synchroniser maintenant</button>
+     ? `<button onclick="doCloudSyncNow('${_nJ}',this)" style="background:#3498db;font-size:.82em;">🔄 Synchroniser maintenant</button>
         <button onclick="doCloudDisable('${_nJ}')" style="background:#7f8c8d;font-size:.82em;">⏸ Désactiver</button>`
-     : `<button onclick="doCloudEnable('${_nJ}')" style="background:#27ae60;font-size:.82em;">☁️ Activer la sauvegarde cloud</button>`
+     : `<button onclick="doCloudEnable('${_nJ}',this)" style="background:#27ae60;font-size:.82em;">☁️ Activer la sauvegarde cloud</button>`
     }
    </div>
   </div>
@@ -1324,11 +1324,12 @@ function renderCloudPanel(){
 }
 
 // Active la sync cloud pour un profil donné
-async function doCloudEnable(name){
+async function doCloudEnable(name,btn){
  if(!P || P.name !== name){
   toast('⚠️ Activation possible uniquement pour le profil actif',3500);
   return;
  }
+ if(btn){btn.disabled=true;btn.textContent='⏳ Activation…';}
  if(typeof enableCloudSync === 'function'){
   const ok = await enableCloudSync();
   renderCloudPanel();
@@ -1348,11 +1349,12 @@ function doCloudDisable(name){
 }
 
 // Force une synchronisation immédiate
-async function doCloudSyncNow(name){
+async function doCloudSyncNow(name,btn){
  if(!P || P.name !== name){
   toast('⚠️ Sync possible uniquement pour le profil actif',3500);
   return;
  }
+ if(btn){btn.disabled=true;btn.textContent='⏳ Synchronisation…';}
  if(typeof pushProfileToCloud === 'function'){
   const ok = await pushProfileToCloud();
   if(ok) toast('☁️ Synchronisé !',2000);
