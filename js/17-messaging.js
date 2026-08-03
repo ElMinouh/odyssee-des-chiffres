@@ -351,9 +351,26 @@ async function _chatFlushQueue(prof){
  } finally { _chatFlushing=false; }
  return sent;
 }
+// Audit fonctionnel (#17) : filtre de contenu basique sur les messages sortants.
+// Liste courte, non exhaustive, pensée pour un usage familial entre enfants —
+// facilement modifiable ci-dessous. On BLOQUE l'envoi (toast explicite) plutôt
+// que de censurer/altérer le message à l'insu de l'enfant.
+const _CHAT_BLOCKED_WORDS = [
+ 'con','connard','connasse','encul','putain','salope','pute',
+ 'batard','bâtard','nique','niquer','pd','pédé','abruti',
+];
+function _chatContainsBlockedWord(txt){
+ const norm = String(txt||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+ return _CHAT_BLOCKED_WORDS.some(w => norm.includes(w));
+}
+
 async function _chatSend(body){
  if(!_msgConv) return;
  body=String(body==null?'':body).trim(); if(!body) return;
+ if(_chatContainsBlockedWord(body)){
+  if(typeof toast==='function') toast('⚠️ Message bloqué : merci de rester poli(e) 🙂', 3000);
+  return;
+ }
  const res = await chatMsgSend(_msgProf, _msgConv.id, body);
  if(res && res.ok){
   _convCache.push({ id:res.id, sender:_msgProf.chatId, body:body, ts:res.ts });
