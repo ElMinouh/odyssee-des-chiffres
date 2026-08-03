@@ -409,12 +409,18 @@ function applyPrefs(){
  }).join('');
  $('modeSelect').value=p.mode||'keyboard';
  $('gameModeSelect').value=p.mode2||'normal';
- // v8.7.6 : priorité à la clé globale (dernier choix explicite du joueur),
- // puis prefs profil, puis défaut. Corrige la non-persistance du thème.
+ // v8.7.6 : la clé globale sert de repli tôt au boot (avant que le profil ne soit
+ // chargé, cf. 11-init.js) et pour un profil qui n'a jamais choisi de thème.
+ // Audit fonctionnel (#13) : donner ici la priorité à la clé globale au lieu du
+ // thème PROPRE au profil créait une fuite entre profils frère/sœur sur le même
+ // appareil — le dernier thème choisi par l'un écrasait silencieusement (et de
+ // façon persistante, via la ligne juste en dessous) la préférence de l'autre.
+ // Une fois le profil réellement chargé (ici), on fait confiance à p.theme s'il
+ // existe déjà ; la clé globale ne sert plus que de valeur par défaut initiale.
  let _theme='standard';
  try{
   const g=localStorage.getItem('odyssee_theme');
-  _theme = g || p.theme || 'standard';
+  _theme = (p.theme!=null) ? p.theme : (g || 'standard');
  }catch(e){ _theme = p.theme || 'standard'; }
  applyTheme(_theme);
  $('themeSelect').value=_theme;
