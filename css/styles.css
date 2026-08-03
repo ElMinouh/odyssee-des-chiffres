@@ -4977,3 +4977,20 @@ body.mat-mode #v-game{
   .ob-box-scroll{ padding:16px 16px 4px; }
   .ob-footer{ padding:8px 16px 14px; }
 }
+
+/* ═══════════════════════════════════════════════════════
+   Audit UX #13 (v11.7.18) — contraste du texte secondaire
+   #bdc3c7 (défini en dur dans de nombreux styles inline JS/HTML)
+   devient illisible sur fonds clairs : mode clair (contraste
+   mesuré 1.29:1 à 1.65:1) et thème de zone "banquise" (1.09:1).
+   Sur le thème sombre par défaut, #bdc3c7 reste très lisible
+   (6.17:1 à 11.79:1) : aucune modification nécessaire là.
+   Correctif ciblé par sélecteur d'attribut, sans toucher au JS.
+   Nouvelle teinte #4a5560 : 5.52:1 (clair) / 7.07:1 (clair) /
+   3.93:1 (banquise, en-dessous du seuil texte normal mais
+   nette amélioration par rapport à 1.09:1).
+   ═══════════════════════════════════════════════════════ */
+html[data-appearance="light"] [style*="color:#bdc3c7"],
+body.theme-banquise [style*="color:#bdc3c7"] {
+  color: #4a5560 !important;
+}

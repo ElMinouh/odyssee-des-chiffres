@@ -73,7 +73,7 @@
 <div id="fig-viewer" class="hidden">
  <div id="fig-vbg"></div>
  <div id="fig-vstars"></div>
- <button class="fv-close" onclick="closeFigViewer()">✕</button>
+ <button class="fv-close" onclick="closeFigViewer()" aria-label="Fermer la visionneuse de figurine">✕</button>
  <div id="fig-vhdr">
   <div><span id="fig-vuni"></span></div>
   <div id="fig-vtitle"></div>
@@ -472,11 +472,11 @@
   </div>
   <!-- v9.0.0 : ligne 2 — commandes remontées -->
   <div id="map-zoom-bar">
-   <button onclick="mapZoomOut()" class="map-cmd-btn">&#128270;&#8722;</button>
+   <button onclick="mapZoomOut()" class="map-cmd-btn" aria-label="Dézoomer la carte">&#128270;&#8722;</button>
    <span id="map-zoom-label">Vue régions</span>
-   <button onclick="mapZoomIn()" class="map-cmd-btn">&#128270;&#43;</button>
-   <button onclick="mapCenterOnAvatar()" title="Centrer sur ma position" class="map-cmd-btn" style="background:#16a085;">&#127919;</button>
-   <button onclick="mapGoToNextZone()" title="Aller à ma prochaine zone" class="map-cmd-btn" style="background:#e67e22;">&#128681;</button>
+   <button onclick="mapZoomIn()" class="map-cmd-btn" aria-label="Zoomer la carte">&#128270;&#43;</button>
+   <button onclick="mapCenterOnAvatar()" title="Centrer sur ma position" aria-label="Centrer la carte sur ma position" class="map-cmd-btn" style="background:#16a085;">&#127919;</button>
+   <button onclick="mapGoToNextZone()" title="Aller à ma prochaine zone" aria-label="Aller à ma prochaine zone" class="map-cmd-btn" style="background:#e67e22;">&#128681;</button>
   </div>
   <!-- v9.0.2 : boutons fixes (sous Retour/Accueil) + panneaux déroulants verticaux larges -->
   <div class="map-side-col map-side-left">
@@ -485,7 +485,7 @@
    <div class="map-drawer drawer-left" id="drawer-minimap"><div class="map-drawer-pad"><div id="minimap-body"></div></div></div>
   </div>
   <div class="map-side-col map-side-right">
-   <button class="back-top-btn compass-btn" onclick="_spinCompass(this)" title="Boussole">&#129517;</button>
+   <button class="back-top-btn compass-btn" onclick="_spinCompass(this)" title="Boussole" aria-label="Faire tourner la boussole">&#129517;</button>
    <button class="back-top-btn map-tool-btn" id="btn-quest" onclick="_toggleDrawer('quest')" title="Livre d'aventure">&#128214; Livre <span class="drawer-caret">&#9662;</span></button>
    <div class="map-drawer drawer-right" id="drawer-quest"><div class="map-drawer-pad"><div id="quest-body"></div></div></div>
   </div>
@@ -613,7 +613,7 @@
   <div id="power-bar" class="hidden"></div>
   <div id="question-wrap" style="display:flex;align-items:center;justify-content:center;gap:10px;margin:6px 0;flex-wrap:wrap;max-width:100%;padding:0 8px;">
    <div id="question" style="font-size:clamp(1.15em,4.4vw,2.6em);font-weight:900;line-height:1.22;text-align:center;overflow-wrap:break-word;word-break:break-word;max-width:100%;"></div>
-   <button id="repeatQuestionBtn" onclick="repeatQuestion()" title="Réécouter la question" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:44px;height:44px;border-radius:50%;font-size:1.3em;cursor:pointer;flex-shrink:0;box-shadow:0 2px 0 rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;padding:0;line-height:1;">🔊</button>
+   <button id="repeatQuestionBtn" onclick="repeatQuestion()" title="Réécouter la question" aria-label="Réécouter la question" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:44px;height:44px;border-radius:50%;font-size:1.3em;cursor:pointer;flex-shrink:0;box-shadow:0 2px 0 rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;padding:0;line-height:1;">🔊</button>
   </div>
   <div id="problem-image"></div>
   <div id="input-zone">
