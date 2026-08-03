@@ -428,6 +428,8 @@ function applyPrefs(){
  if(P && (!p.theme || p.theme!==_theme)){ P.prefs=P.prefs||{}; P.prefs.theme=_theme; }
  // Chantier B1 : appliquer le mode clair/sombre sauvegardé
  if(typeof initAppearance === 'function') initAppearance();
+ // Audit UX : appliquer la taille de texte sauvegardée
+ if(typeof initFontScale === 'function') initFontScale();
 }
 // Table de correspondance niveau→index (évite indexOf à chaque appel)
 const LEVEL_IDX={PS:0,MS:1,GS:2,CP:3,CE1:4,CE2:5,CM1:6,CM2:7,'6E':8,'5E':9,'4E':10,'3E':11};

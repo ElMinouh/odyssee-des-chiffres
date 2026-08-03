@@ -786,6 +786,39 @@ if(window.matchMedia){
   if(P?.prefs?.appearance === 'auto') applyAppearance('auto');
  });
 }
+
+// ═══════════════════════════════════════════════════════
+// Audit UX — option de taille de police globale
+// ═══════════════════════════════════════════════════════
+// L'interface étant très majoritairement dimensionnée en `em`,
+// ajuster la taille de police racine (html) propage l'échelle à
+// quasiment tout le jeu, sans toucher aux écrans un par un.
+const FONT_SCALES = { normal: '100%', large: '115%', xlarge: '130%' };
+
+function applyFontScale(scale){
+ const s = FONT_SCALES[scale] ? scale : 'normal';
+ document.documentElement.style.fontSize = FONT_SCALES[s];
+ ['normal','large','xlarge'].forEach(k=>{
+  const b = document.getElementById('fontscale-'+k);
+  if(b) b.style.background = (k===s) ? '#27ae60' : '#444';
+ });
+}
+
+function setFontScale(scale){
+ if(!P) return;
+ P.prefs = P.prefs || {};
+ P.prefs.fontScale = FONT_SCALES[scale] ? scale : 'normal';
+ if(typeof saveProfile === 'function') saveProfile();
+ applyFontScale(P.prefs.fontScale);
+ if(typeof toast === 'function') toast('🔠 Taille du texte : '+({normal:'Normal',large:'Grand',xlarge:'Très grand'}[P.prefs.fontScale]), 1500);
+}
+
+// Initialisation : au chargement, applique la préférence sauvegardée
+function initFontScale(){
+ const scale = (P?.prefs?.fontScale) || 'normal';
+ applyFontScale(scale);
+}
+
 // ═══════════════════════════════════════════════════════
 // Chantier A4 : Animations de combat enrichies
 // ═══════════════════════════════════════════════════════
