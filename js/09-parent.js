@@ -175,8 +175,8 @@ function renderOptPlayerCode(name){
  box.innerHTML = `<p style="font-size:.74em;color:#bdc3c7;margin:0 0 8px;line-height:1.4;">Si activé, ce code à 2 chiffres est demandé à la connexion de ce profil, à la place de la simple confirmation ("C'est bien toi ?") affichée par défaut.</p>
   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
    <input type="text" id="pc-code-input" data-n="${_e(name)}" maxlength="2" inputmode="numeric" placeholder="${code?'••':'--'}" style="width:60px;text-align:center;font-family:monospace;font-size:1.2em;letter-spacing:4px;">
-   <button data-n="${_e(name)}" onclick="pmSavePlayerCode(this.dataset.n)" style="background:#27ae60;font-size:.82em;padding:7px 12px;">${code?'Changer':'Activer'}</button>
-   ${code?`<button data-n="${_e(name)}" onclick="pmClearPlayerCode(this.dataset.n)" style="background:#7f8c8d;font-size:.82em;padding:7px 12px;">Désactiver</button>`:''}
+   <button data-n="${_e(name)}" onclick="pmSavePlayerCode(this.dataset.n)" style="background:var(--ok);font-size:.82em;padding:7px 12px;">${code?'Changer':'Activer'}</button>
+   ${code?`<button data-n="${_e(name)}" onclick="pmClearPlayerCode(this.dataset.n)" style="background:var(--neutral);font-size:.82em;padding:7px 12px;">Désactiver</button>`:''}
   </div>
   <p id="pc-code-msg" style="font-size:.76em;margin-top:6px;"></p>`;
 }
@@ -727,7 +727,7 @@ function renderWeeklySummary(){
     <button onclick="openMessaging('${_jsAttrPlayer}')" style="background:#9b59b6;font-size:.8em;padding:6px 12px;">Voir →</button>
    </div>` : ''}
    <div class="wreport-actions no-print">
-    <button onclick="copyWeeklySummary()" style="background:#3498db;">📋 Copier le résumé</button>
+    <button onclick="copyWeeklySummary()" style="background:var(--info);">📋 Copier le résumé</button>
     <button onclick="printReport()" style="background:#9b59b6;">🖨️ Imprimer / PDF</button>
    </div>
   </div>`;
@@ -1314,9 +1314,9 @@ function renderCloudPanel(){
    ${isActive ? `<p style="font-size:.72em;color:#bdc3c7;margin:4px 0;">Dernière sync : ${lastSyncStr}</p>` : `<p style="font-size:.74em;color:#e67e22;margin:6px 0;background:rgba(230,126,34,.12);border-radius:6px;padding:6px 8px;">⚠️ <b>Sauvegarde non activée</b> : tant que ce bouton n'est pas activé, la progression de ${_nH} n'est <b>pas envoyée au cloud</b> et ne peut pas être récupérée sur un autre appareil. Active-la ci-dessous.</p>`}
    <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
     ${isActive
-     ? `<button onclick="doCloudSyncNow('${_nJ}',this)" style="background:#3498db;font-size:.82em;">🔄 Synchroniser maintenant</button>
-        <button onclick="doCloudDisable('${_nJ}')" style="background:#7f8c8d;font-size:.82em;">⏸ Désactiver</button>`
-     : `<button onclick="doCloudEnable('${_nJ}',this)" style="background:#27ae60;font-size:.82em;">☁️ Activer la sauvegarde cloud</button>`
+     ? `<button onclick="doCloudSyncNow('${_nJ}',this)" style="background:var(--info);font-size:.82em;">🔄 Synchroniser maintenant</button>
+        <button onclick="doCloudDisable('${_nJ}')" style="background:var(--neutral);font-size:.82em;">⏸ Désactiver</button>`
+     : `<button onclick="doCloudEnable('${_nJ}',this)" style="background:var(--ok);font-size:.82em;">☁️ Activer la sauvegarde cloud</button>`
     }
    </div>
   </div>
@@ -1541,18 +1541,18 @@ function renderProfileManager(){
      <div style="position:relative;flex-shrink:0;">
       ${thumb}
       <span data-n="${_e(n)}" onclick="pmChoosePhoto(this.dataset.n)" title="Changer la photo" style="position:absolute;right:-4px;bottom:-2px;width:20px;height:20px;border-radius:50%;background:#2980b9;border:2px solid #232342;display:flex;align-items:center;justify-content:center;font-size:.65em;cursor:pointer;">📷</span>
-      ${photo?`<span data-n="${_e(n)}" onclick="pmRemovePhoto(this.dataset.n)" title="Retirer la photo" style="position:absolute;right:-4px;top:-2px;width:20px;height:20px;border-radius:50%;background:#e74c3c;border:2px solid #232342;display:flex;align-items:center;justify-content:center;font-size:.65em;cursor:pointer;">✕</span>`:''}
+      ${photo?`<span data-n="${_e(n)}" onclick="pmRemovePhoto(this.dataset.n)" title="Retirer la photo" style="position:absolute;right:-4px;top:-2px;width:20px;height:20px;border-radius:50%;background:var(--danger);border:2px solid #232342;display:flex;align-items:center;justify-content:center;font-size:.65em;cursor:pointer;">✕</span>`:''}
      </div>
      <div style="flex:1;font-size:1.05em;font-weight:800;color:#f1c40f;">${_e(n)}</div>
     </div>
     <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
      <button data-n="${_e(n)}" onclick="pmToggleRename(this.dataset.n)" style="background:${renaming?'#f1c40f':'#34495e'};color:${renaming?'#1a1a2e':'#fff'};border:none;border-radius:7px;padding:6px 11px;font-size:.78em;font-weight:700;">✏️ Renommer</button>
-     <button data-n="${_e(n)}" onclick="pmRemoveProfile(this.dataset.n)" style="background:#e74c3c;color:#fff;border:none;border-radius:7px;padding:6px 11px;font-size:.78em;font-weight:700;">🗑 Supprimer</button>
+     <button data-n="${_e(n)}" onclick="pmRemoveProfile(this.dataset.n)" style="background:var(--danger);color:#fff;border:none;border-radius:7px;padding:6px 11px;font-size:.78em;font-weight:700;">🗑 Supprimer</button>
     </div>
     ${renaming?`<div style="display:flex;gap:6px;margin-top:10px;">
      <input id="pm-rename-input" type="text" value="${_e(n)}" maxlength="20" style="flex:1;font-size:.85em;padding:6px 8px;" onkeydown="if(event.key==='Enter')pmConfirmRename(_pmRenameOpen)">
-     <button data-n="${_e(n)}" onclick="pmConfirmRename(this.dataset.n)" style="background:#27ae60;color:#fff;border:none;border-radius:7px;padding:0 12px;font-size:.8em;font-weight:700;">OK</button>
-     <button data-n="${_e(n)}" onclick="pmToggleRename(this.dataset.n)" style="background:#555;color:#fff;border:none;border-radius:7px;padding:0 12px;font-size:.8em;font-weight:700;">Annuler</button>
+     <button data-n="${_e(n)}" onclick="pmConfirmRename(this.dataset.n)" style="background:var(--ok);color:#fff;border:none;border-radius:7px;padding:0 12px;font-size:.8em;font-weight:700;">OK</button>
+     <button data-n="${_e(n)}" onclick="pmToggleRename(this.dataset.n)" style="background:var(--neutral);color:#fff;border:none;border-radius:7px;padding:0 12px;font-size:.8em;font-weight:700;">Annuler</button>
     </div>`:''}
    </div>`;
  }).join('');
@@ -1692,7 +1692,7 @@ function renderOptResetOne(name){
  box.innerHTML=`<div style="font-size:.72em;color:#bdc3c7;margin-bottom:6px;">Niv.${lvl} · ${stars} étoiles · ${figs} figurines · ${zb}/23 zones</div>
   <div style="display:flex;gap:6px;">
    <button data-pname="${en}" onclick="resetAdventure(decodeURIComponent(this.dataset.pname))" style="flex:1;background:#16a085;color:#fff;padding:8px 10px;font-size:.78em;font-weight:700;border-radius:8px;border:2px solid #1abc9c;cursor:pointer;">🗺 Reset Aventure</button>
-   <button data-pname="${en}" onclick="resetProfile(decodeURIComponent(this.dataset.pname))" style="flex:1;background:#c0392b;color:#fff;padding:8px 10px;font-size:.78em;font-weight:700;border-radius:8px;border:2px solid #ff6b6b;cursor:pointer;">🗑 Reset Total</button>
+   <button data-pname="${en}" onclick="resetProfile(decodeURIComponent(this.dataset.pname))" style="flex:1;background:var(--danger);color:#fff;padding:8px 10px;font-size:.78em;font-weight:700;border-radius:8px;border:2px solid #ff6b6b;cursor:pointer;">🗑 Reset Total</button>
   </div>`;
 }
 // Sauvegarde globale : un seul fichier contenant tous les profils.

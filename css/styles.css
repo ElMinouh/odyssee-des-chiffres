@@ -4,7 +4,9 @@
 --radius-sm:8px;--radius-md:12px;--radius-lg:18px;--radius-pill:999px;
 --shadow-card:0 4px 14px rgba(0,0,0,.4);
 --shadow-popup:0 8px 24px rgba(0,0,0,.5);
---shadow-modal:0 18px 50px rgba(0,0,0,.65);}
+--shadow-modal:0 18px 50px rgba(0,0,0,.65);
+/* v11.7.21 (Audit DA #6/#13) : couleurs sémantiques uniques, indépendantes des 8 thèmes */
+--ok:#27ae60;--danger:#c0392b;--info:#3498db;--neutral:#7f8c8d;}
 .theme-espace{--bg:radial-gradient(circle at center,#1a1c2c,#4b1d3f 50%,#0b0d17);--primary:rgba(26,28,44,.92);--accent:#9b59b6;--glow:#9b59b6;}
 .theme-foret{--bg:linear-gradient(to bottom,#2d5a27,#1b4d3e 70%,#3e2723);--primary:rgba(27,77,62,.92);--accent:#2ecc71;--glow:#2ecc71;}
 .theme-volcan{--bg:linear-gradient(to top,#4a0404,#8b0000 40%,#1a0000);--primary:rgba(74,4,4,.92);--accent:#e74c3c;--glow:#e74c3c;}

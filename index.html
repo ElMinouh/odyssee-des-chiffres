@@ -762,8 +762,8 @@
      <select id="hw-reward" style="width:90%;margin-top:6px;">
       <option value="30">+30 ⭐</option><option value="50" selected>+50 ⭐</option><option value="100">+100 ⭐</option>
      </select><br>
-     <button onclick="saveHomework()" style="width:44%;margin-top:6px;background:#27ae60;">💾 Donner</button>
-     <button onclick="clearHomework()" style="width:44%;margin-top:6px;background:#7f8c8d;">🚫 Annuler</button>
+     <button onclick="saveHomework()" style="width:44%;margin-top:6px;background:var(--ok);">💾 Donner</button>
+     <button onclick="clearHomework()" style="width:44%;margin-top:6px;background:var(--neutral);">🚫 Annuler</button>
      <div id="hw-status" style="font-size:.78em;margin-top:6px;color:#f1c40f;"></div>
     </div>
 
@@ -868,7 +868,7 @@
     <button class="accordion" id="acc-export-all">📦 Tout sauvegarder (fichier global)<span class="acc-sub">Un seul fichier avec tous les profils</span></button>
     <div class="panel">
      <p style="font-size:.72em;color:#bdc3c7;margin:0 0 6px;">Un seul fichier contenant tous les profils — pratique pour tout transférer d'un coup.</p>
-     <button onclick="exportAllProfiles()" style="background:#2980b9;font-size:.86em;">📦 Télécharger tous les profils</button>
+     <button onclick="exportAllProfiles()" style="background:var(--info);font-size:.86em;">📦 Télécharger tous les profils</button>
     </div>
    </div>
 
@@ -885,7 +885,7 @@
     <button class="accordion" id="acc-diagnostic">🩺 Diagnostic de synchronisation<span class="acc-i" onclick="event.stopPropagation();pGuide('diagnostic')">i</span><span class="acc-sub">Rapport technique à copier en cas de souci</span></button>
     <div class="panel">
      <button onclick="showSyncDiag()" style="background:#f39c12;font-size:.84em;padding:7px 14px;">📋 Afficher le diagnostic</button>
-     <button onclick="(function(){if(typeof clearSyncDiag==='function')clearSyncDiag();var z=document.getElementById('sync-diag-zone');if(z)z.value='';})()" style="background:#7f8c8d;font-size:.78em;padding:6px 12px;margin-left:4px;">🗑️ Effacer</button>
+     <button onclick="(function(){if(typeof clearSyncDiag==='function')clearSyncDiag();var z=document.getElementById('sync-diag-zone');if(z)z.value='';})()" style="background:var(--neutral);font-size:.78em;padding:6px 12px;margin-left:4px;">🗑️ Effacer</button>
      <textarea id="sync-diag-zone" readonly placeholder="(Le diagnostic s'affichera ici)" style="width:96%;height:140px;margin-top:8px;resize:vertical;font-family:monospace;font-size:.68em;background:rgba(0,0,0,.35);color:#ddd;border:1px solid rgba(255,255,255,.15);border-radius:6px;padding:6px;"></textarea>
      <button onclick="(function(){var z=document.getElementById('sync-diag-zone');if(z){z.select();try{document.execCommand('copy');if(typeof toast==='function')toast('📋 Diagnostic copié !',2000);}catch(e){}}})()" style="background:#34495e;font-size:.8em;padding:6px 12px;margin-top:4px;">📋 Tout copier</button>
     </div>
@@ -903,7 +903,7 @@
     <button class="accordion" id="acc-reset-all" style="background:rgba(231,76,60,.15);color:#ff9b93;">⚠️ Tout réinitialiser<span class="acc-sub" style="color:#e0a9a4;">Remet TOUS les profils à zéro — irréversible</span></button>
     <div class="panel">
      <p style="font-size:.72em;color:#bdc3c7;margin:0 0 6px;">Remet TOUS les profils à zéro. Action irréversible.</p>
-     <button onclick="resetAllProfiles()" style="background:#c0392b;font-size:.86em;border:2px solid #ff6b6b;">🗑 Tout réinitialiser</button>
+     <button onclick="resetAllProfiles()" style="background:var(--danger);font-size:.86em;border:2px solid #ff6b6b;">🗑 Tout réinitialiser</button>
     </div>
    </div>
 
