@@ -1803,7 +1803,7 @@ function openArchipelShop(regionId){
  overlay.id = 'archipel-shop-overlay';
  overlay.innerHTML = `
   <div class="archipel-shop-content" data-theme="${shop.theme}" style="background:${shop.bg};border-color:${shop.accent};">
-   <button class="archipel-shop-close" data-action="close" style="color:${shop.accent};">✕</button>
+   <button class="archipel-shop-close" data-action="close" style="color:${shop.accent};"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
    <div class="archipel-shop-header">
     <div class="archipel-shop-header-emoji">${shop.emoji}</div>
     <div class="archipel-shop-header-title" style="color:${shop.accent};">${shop.name}</div>
