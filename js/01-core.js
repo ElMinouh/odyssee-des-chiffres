@@ -1128,6 +1128,16 @@ function mcStart(){
    else alert('Il faut au moins 2 joueurs nommés !');
    return;
   }
+  // Audit fonctionnel v11.7.6+ (#3) : deux joueurs homonymes faussent l'attribution
+  // des effets ciblés en combat (combatPlayers.find(x=>x.name===name) résout au
+  // premier trouvé). On bloque le lancement plutôt que de risquer une mauvaise
+  // attribution de PV/score en cours de partie.
+  const _lcNames = valid.map(p=>p.name.trim().toLowerCase());
+  if(new Set(_lcNames).size !== _lcNames.length){
+   if(typeof toast==='function') toast('⚠️ Deux joueurs ne peuvent pas avoir le même prénom !', 3000);
+   else alert('Deux joueurs ne peuvent pas avoir le même prénom !');
+   return;
+  }
   // Alimenter la structure globale combatCfg utilisée par startGame
   combatCfg = valid.map(p=>({ name:p.name.trim(), level:p.level||'CP' }));
   const ic = document.getElementById('mc-input-combat');
