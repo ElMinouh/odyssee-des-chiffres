@@ -571,7 +571,7 @@
    <div class="panel"><div id="p-errors"></div><button onclick="startRevision()" id="btn-revision" class="hidden" style="margin-top:8px;width:100%;background:#c0392b;">🔁 Rejouer mes erreurs</button></div>
    <button class="accordion" id="acc-multtable">✖️ Tables de multiplication<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Entraîne-toi aux tables de 1 à 10</span></button>
    <div class="panel"><button onclick="openMultTable()" style="width:100%;background:#2980b9;">✖️ Ouvrir les tables de multiplication</button></div>
-   <button class="accordion" id="acc-levels">🔒 Niveaux<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Ta progression de niveau en niveau</span></button>
+   <button class="accordion" id="acc-levels"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Niveaux<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Ta progression de niveau en niveau</span></button>
    <div class="panel" id="p-levels"></div>
    <button class="accordion" id="acc-milestones-list">🏆 Paliers à conquérir<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Objectifs long terme</span></button>
    <div class="panel"><div id="milestones-list"></div></div>
@@ -845,7 +845,7 @@
     <button class="accordion" id="acc-birthday">🎂 Anniversaire<span class="acc-sub">Jour et mois d'anniversaire de l'enfant</span></button>
     <div class="panel"><div id="opt-birthday"></div></div>
 
-    <button class="accordion" id="acc-playercode">🔒 Code du profil (optionnel)<span class="acc-i" onclick="event.stopPropagation();pGuide('playercode')">i</span><span class="acc-sub">Code à 2 chiffres avant de jouer</span></button>
+    <button class="accordion" id="acc-playercode"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Code du profil (optionnel)<span class="acc-i" onclick="event.stopPropagation();pGuide('playercode')">i</span><span class="acc-sub">Code à 2 chiffres avant de jouer</span></button>
     <div class="panel"><div id="opt-playercode"></div></div>
 
     <button class="accordion" id="acc-reset-one">🗑 Réinitialiser ce profil<span class="acc-sub">Efface la progression de ce profil</span></button>
@@ -921,8 +921,8 @@
      </div>
      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px;">
       <button onclick="pfigFilter('all')" id="pfig-btn-all" class="active" style="font-size:.62em;padding:4px 9px;border-radius:8px;margin:0;border-bottom:2px solid rgba(0,0,0,.3);">🌐 Tout</button>
-      <button onclick="pfigFilter('owned')" id="pfig-btn-owned" style="font-size:.62em;padding:4px 9px;border-radius:8px;margin:0;background:rgba(255,255,255,.1);border-bottom:2px solid rgba(0,0,0,.3);">✅ Possédées</button>
-      <button onclick="pfigFilter('missing')" id="pfig-btn-missing" style="font-size:.62em;padding:4px 9px;border-radius:8px;margin:0;background:rgba(255,255,255,.1);border-bottom:2px solid rgba(0,0,0,.3);">🔒 Manquantes</button>
+      <button onclick="pfigFilter('owned')" id="pfig-btn-owned" style="font-size:.62em;padding:4px 9px;border-radius:8px;margin:0;background:rgba(255,255,255,.1);border-bottom:2px solid rgba(0,0,0,.3);"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg> Possédées</button>
+      <button onclick="pfigFilter('missing')" id="pfig-btn-missing" style="font-size:.62em;padding:4px 9px;border-radius:8px;margin:0;background:rgba(255,255,255,.1);border-bottom:2px solid rgba(0,0,0,.3);"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Manquantes</button>
      </div>
     </div>
     <div id="pfig-content"></div>

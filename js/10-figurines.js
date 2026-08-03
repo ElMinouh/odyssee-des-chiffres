@@ -113,7 +113,7 @@ function _renderFigurinesShop(filter){
    html+=`<span style="font-size:.65em;color:#2ecc71;font-weight:700;">🔍 Voir →</span>`;
   } else {
    if(fig.r==='exclusif'){
-    html+=`<span style="font-size:.62em;color:#bdc3c7;font-style:italic;">🔒 À gagner en boss</span>`;
+    html+=`<span style="font-size:.62em;color:#bdc3c7;font-style:italic;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> À gagner en boss</span>`;
    } else {
     html+=`<button class="fig-buy-btn" data-figid="${fig.id}" style="margin:3px 0 0;padding:4px 10px;font-size:.63em;background:${fig.color};border-bottom:2px solid rgba(0,0,0,.3);border-radius:8px;">${fig.p} ⭐</button>`;
    }
@@ -208,7 +208,7 @@ function renderFigCollection(){
  $('fig-count-hdr').textContent=`${owned.length} / ${total} figurines collectées`;
  const el=$('p-col-figurines');
  if(owned.length===0){
-  el.innerHTML='<div style="color:rgba(255,255,255,.4);font-size:.85em;text-align:center;padding:24px;line-height:2;">🔒 Aucune figurine encore...<br><span style="font-size:.85em;">Gagnez des étoiles ⭐ et achetez vos premières figurines dans la Boutique !</span></div>';
+  el.innerHTML='<div style="color:rgba(255,255,255,.4);font-size:.85em;text-align:center;padding:24px;line-height:2;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Aucune figurine encore...<br><span style="font-size:.85em;">Gagnez des étoiles ⭐ et achetez vos premières figurines dans la Boutique !</span></div>';
   return;
  }
  const owned_figs=FIGURINES.filter(f=>owned.includes(f.id));

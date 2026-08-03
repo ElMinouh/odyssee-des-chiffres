@@ -18,7 +18,7 @@ function renderLevelUnlocks(){
  const bar='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">'+((typeof IMPLEMENTED_SUBJECTS!=='undefined')?IMPLEMENTED_SUBJECTS:[['math','🔢 Maths'],['fr','📖 Français'],['hist','🏛️ Histoire']]).map(a=>`<button onclick="setLvlSubj('${a[0]}')" style="font-size:.8em;padding:9px 14px;border-radius:8px;background:${_dashSubj===a[0]?'#27ae60':'#2c3e50'};">${a[1]}</button>`).join('')+'</div>';
  const row=(lvl,icon)=>{
   const ok=isUnlocked(lvl,_dashSubj),pW=prevWins(lvl,_dashSubj),req=UNLOCK_REQ[lvl];
-  return `<div class="level-lock ${ok?'unlocked':'locked'}"><span>${icon} ${lab(lvl)}</span><span style="font-size:.78em;color:${ok?'#2ecc71':'#e74c3c'};">${ok?'✅ Débloqué':'🔒 '+pW+'/'+req+' victoires'}</span></div>`;
+  return `<div class="level-lock ${ok?'unlocked':'locked'}"><span>${icon} ${lab(lvl)}</span><span style="font-size:.78em;color:${ok?'#2ecc71':'#e74c3c'};">${ok?'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg> Débloqué':'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> '+pW+'/'+req+' victoires'}</span></div>`;
  };
  const groups=(typeof GROUP_ORDER!=='undefined' && typeof GROUP_META!=='undefined')
    ? GROUP_ORDER.map(k=>GROUP_META[k])
@@ -64,18 +64,18 @@ function renderErrors(){
  const bar='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">'+((typeof IMPLEMENTED_SUBJECTS!=='undefined')?IMPLEMENTED_SUBJECTS:[['math','🔢 Maths'],['fr','📖 Français'],['hist','🏛️ Histoire']]).map(a=>`<button onclick="setRevSubj('${a[0]}')" style="font-size:.8em;padding:9px 14px;border-radius:8px;background:${_dashSubj===a[0]?'#27ae60':'#2c3e50'};">${a[1]}</button>`).join('')+'</div>';
  if(_dashSubj==='fr'){
   const u=(P.errorsFr||[]).slice(-12).reverse();
-  el.innerHTML=bar+(u.length?u.map(e=>`<div class="revision-q"><span>${esc(e.q)}</span><strong style="color:#f1c40f;">${esc(e.ok||'')}</strong></div>`).join(''):'<span style="color:#2ecc71;">✅ Aucune erreur en français !</span>');
+  el.innerHTML=bar+(u.length?u.map(e=>`<div class="revision-q"><span>${esc(e.q)}</span><strong style="color:#f1c40f;">${esc(e.ok||'')}</strong></div>`).join(''):'<span style="color:#2ecc71;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg> Aucune erreur en français !</span>');
   if(btn)btn.classList.add('hidden');
   return;
  }
  if(_dashSubj==='hist'){
   const u=(P.errorsHist||[]).slice(-12).reverse();
-  el.innerHTML=bar+(u.length?u.map(e=>`<div class="revision-q"><span>${esc(e.q)}</span><strong style="color:#f1c40f;">${esc(e.ok||'')}</strong></div>`).join(''):'<span style="color:#2ecc71;">✅ Aucune erreur en histoire !</span>');
+  el.innerHTML=bar+(u.length?u.map(e=>`<div class="revision-q"><span>${esc(e.q)}</span><strong style="color:#f1c40f;">${esc(e.ok||'')}</strong></div>`).join(''):'<span style="color:#2ecc71;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg> Aucune erreur en histoire !</span>');
   if(btn)btn.classList.add('hidden');
   return;
  }
  const u=[...new Set(P.errors||[])].slice(-10);
- if(!u.length){el.innerHTML=bar+'<span style="color:#2ecc71;">✅ Aucune erreur en maths !</span>';if(btn)btn.classList.add('hidden');return;}
+ if(!u.length){el.innerHTML=bar+'<span style="color:#2ecc71;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg> Aucune erreur en maths !</span>';if(btn)btn.classList.add('hidden');return;}
  el.innerHTML=bar+u.map(e=>{const m=e.match(/^(.+?)([+\-x×\/÷])(.+?)=(\d+)$/);return m?`<div class="revision-q"><span>${m[1]} ${m[2]} ${m[3]} = ?</span><strong style="color:#f1c40f;">${m[4]}</strong></div>`:`<div class="revision-q">${e}</div>`;}).join('');
  if(btn)btn.classList.remove('hidden');
 }
@@ -135,7 +135,7 @@ function renderAvatars(){
  // Liste des avatars verrouillés (stades suivants)
  const lockedAvatars = AVATAR_LIST.filter(a => !unlocked.includes(a));
  const lockedHTML = lockedAvatars.length ? `<details style="margin-top:8px;">
-  <summary style="cursor:pointer;font-size:.84em;color:#bdc3c7;">🔒 ${lockedAvatars.length} avatars à débloquer</summary>
+  <summary style="cursor:pointer;font-size:.84em;color:#bdc3c7;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> ${lockedAvatars.length} avatars à débloquer</summary>
   <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:6px 0;opacity:.45;">${lockedAvatars.map(a=>`<span class="ava" style="filter:grayscale(.7);cursor:not-allowed;">${a}</span>`).join('')}</div>
  </details>` : '';
  $('p-avatars').innerHTML = stageHTML + unlockedHTML + lockedHTML;
@@ -168,7 +168,7 @@ function renderMusics(){
   return `<div class="skin-row"><span style="font-size:1.3em;width:34px;">🎵</span>
    <div style="flex:1;text-align:left;"><div style="font-weight:700;">${s.label}</div><div style="font-size:.75em;color:#bdc3c7;">${s.price===0?'Gratuit':s.price+' ⭐'}</div></div>
    <button onclick="testMusic('${s.id}')" style="font-size:.8em;padding:5px 8px;background:#2c3e50;" title="Aperçu">▶</button>
-   ${owned?`<button onclick="selectMusic('${s.id}')" style="font-size:.8em;padding:5px 10px;margin-left:4px;background:${cur?'#27ae60':'#2c3e50'};">${cur?'✅ Choisie':'Choisir'}</button>`:
+   ${owned?`<button onclick="selectMusic('${s.id}')" style="font-size:.8em;padding:5px 10px;margin-left:4px;background:${cur?'#27ae60':'#2c3e50'};">${cur?'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg> Choisie':'Choisir'}</button>`:
             `<button onclick="buyMusic('${s.id}',${s.price})" style="font-size:.8em;padding:5px 10px;margin-left:4px;">Acheter</button>`}
   </div>`;
  }).join('');
@@ -189,7 +189,7 @@ function renderSkins(){
   const equipped=(P.equippedSkin||'default')===s.id;
   return`<div class="skin-row"><span style="font-size:1.7em;width:40px;">${s.prv}</span>
    <div style="flex:1;text-align:left;"><div style="font-weight:700;">${s.label}</div><div style="font-size:.75em;color:#bdc3c7;">${s.price===0?'Gratuit':s.price+' ⭐'}</div></div>
-   ${owned?`<button onclick="equipSkin('${s.id}')" style="font-size:.8em;padding:5px 10px;background:${equipped?'#27ae60':'#2c3e50'};">${equipped?'✅ Équipé':'Équiper'}</button>`:
+   ${owned?`<button onclick="equipSkin('${s.id}')" style="font-size:.8em;padding:5px 10px;background:${equipped?'#27ae60':'#2c3e50'};">${equipped?'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg> Équipé':'Équiper'}</button>`:
             `<button onclick="buySkin('${s.id}',${s.price})" style="font-size:.8em;padding:5px 10px;">Acheter</button>`}
   </div>`;
  }).join('');
@@ -200,7 +200,7 @@ function renderTitles(){
  const d={stars:P.stars||0,badgesEarned:P.badgesEarned||[],levelWins:P.levelWins||{},history:P.history||[]};
  $('p-titles').innerHTML=HERO_TITLES.map(t=>{
   const ok=t.ok(d),active=P.heroTitle===t.id;
-  return`<div class="skill-item" style="${ok?'':'opacity:.4'}"><span style="color:${t.col};">${ok?'✅':'🔒'} ${t.label}</span>${ok?`<button onclick="setTitle('${t.id}')" style="font-size:.8em;padding:5px 10px;background:${active?'#27ae60':'var(--accent)'};">${active?'Actif':'Choisir'}</button>`:''}</div>`;
+  return`<div class="skill-item" style="${ok?'':'opacity:.4'}"><span style="color:${t.col};">${ok?'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>':'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>'} ${t.label}</span>${ok?`<button onclick="setTitle('${t.id}')" style="font-size:.8em;padding:5px 10px;background:${active?'#27ae60':'var(--accent)'};">${active?'Actif':'Choisir'}</button>`:''}</div>`;
  }).join('');
 }
 function setTitle(id){P.heroTitle=id;saveProfile();renderTitles();updateMenuUI();toast('Titre : '+HERO_TITLES.find(t=>t.id===id)?.label);}
