@@ -195,6 +195,78 @@ async function pullProfileFromCloud(code){
  }
 }
 
+// Audit fonctionnel (#2) : fusion non destructive entre le profil local et le
+// profil serveur, au lieu d'un écrasement complet. Sans historique de sync commun,
+// on ne peut pas faire un vrai merge 3-way ; on prend donc le MAX pour les compteurs
+// (jamais de somme, pour éviter de gonfler artificiellement des stats) et l'UNION
+// pour les collections (figurines, badges, boss battus…). Le reste (prefs, thème…)
+// vient du profil "gagnant" (imported), comme avant.
+function _mergeCloudProfiles(local, imported){
+ if(!local) return imported;
+ const out = Object.assign({}, imported);
+ const uniq = (a,b)=>[...new Set([...(a||[]),...(b||[])])];
+ const maxN = (a,b)=>Math.max(a||0, b||0);
+
+ out.ownedFigurines     = uniq(local.ownedFigurines, imported.ownedFigurines);
+ out.ownedSkins         = uniq(local.ownedSkins, imported.ownedSkins);
+ out.ownedMusics        = uniq(local.ownedMusics, imported.ownedMusics);
+ out.ownedSounds        = uniq(local.ownedSounds, imported.ownedSounds);
+ out.badgesEarned       = uniq(local.badgesEarned, imported.badgesEarned);
+ out.milestonesClaimed  = uniq(local.milestonesClaimed, imported.milestonesClaimed);
+ out.mapBossBeaten      = uniq(local.mapBossBeaten, imported.mapBossBeaten);
+
+ out.xp                = maxN(local.xp, imported.xp);
+ out.stars             = maxN(local.stars, imported.stars);
+ out._totalStarsEarned = maxN(local._totalStarsEarned, imported._totalStarsEarned);
+ out._bestCombo        = maxN(local._bestCombo, imported._bestCombo);
+ out.sessionMinutes    = maxN(local.sessionMinutes, imported.sessionMinutes);
+
+ // levelWins / levelWinsBySubj : max par niveau (et par matière)
+ out.levelWins = {};
+ new Set([...Object.keys(local.levelWins||{}),...Object.keys(imported.levelWins||{})])
+  .forEach(k=>{ out.levelWins[k]=maxN((local.levelWins||{})[k], (imported.levelWins||{})[k]); });
+ out.levelWinsBySubj = {};
+ new Set([...Object.keys(local.levelWinsBySubj||{}),...Object.keys(imported.levelWinsBySubj||{})])
+  .forEach(s=>{
+   out.levelWinsBySubj[s] = {};
+   const ls=(local.levelWinsBySubj||{})[s]||{}, is=(imported.levelWinsBySubj||{})[s]||{};
+   new Set([...Object.keys(ls),...Object.keys(is)]).forEach(k=>{ out.levelWinsBySubj[s][k]=maxN(ls[k], is[k]); });
+  });
+
+ // zoneProgress : max stepsCompleted par zone, completed = OU logique
+ out.zoneProgress = {};
+ new Set([...Object.keys(local.zoneProgress||{}),...Object.keys(imported.zoneProgress||{})])
+  .forEach(z=>{
+   const lz=(local.zoneProgress||{})[z]||{stepsCompleted:0,completed:false};
+   const iz=(imported.zoneProgress||{})[z]||{stepsCompleted:0,completed:false};
+   out.zoneProgress[z]={ stepsCompleted:maxN(lz.stepsCompleted, iz.stepsCompleted), completed: !!(lz.completed||iz.completed) };
+  });
+
+ // opStats / opStatsFr / opStatsHist : max ok/fail par catégorie
+ const mergeStatBlock=(la,ia)=>{
+  const r={}; new Set([...Object.keys(la||{}),...Object.keys(ia||{})]).forEach(k=>{
+   r[k]={ ok:maxN((la||{})[k]?.ok,(ia||{})[k]?.ok), fail:maxN((la||{})[k]?.fail,(ia||{})[k]?.fail) };
+  });
+  return r;
+ };
+ out.opStats     = mergeStatBlock(local.opStats, imported.opStats);
+ out.opStatsFr   = mergeStatBlock(local.opStatsFr, imported.opStatsFr);
+ out.opStatsHist = mergeStatBlock(local.opStatsHist, imported.opStatsHist);
+
+ // history / historyDetailed : union dédupliquée (date+score+mode), triée, tronquée
+ const mergeHist=(la,ia,max)=>{
+  const seen=new Set(), r=[];
+  [...(la||[]),...(ia||[])]
+   .sort((a,b)=>(a.timestamp||0)-(b.timestamp||0))
+   .forEach(e=>{ const k=(e.timestamp||0)+'|'+(e.score||0)+'|'+(e.mode||''); if(!seen.has(k)){seen.add(k);r.push(e);} });
+  return r.slice(-max);
+ };
+ out.history         = mergeHist(local.history, imported.history, 50);
+ out.historyDetailed = mergeHist(local.historyDetailed, imported.historyDetailed, 60);
+
+ return out;
+}
+
 // Import d'un profil serveur dans le profil actif courant
 async function _importProfileFromServer(serverProfile){
  if(!serverProfile || !serverProfile.name) return false;
@@ -206,11 +278,13 @@ async function _importProfileFromServer(serverProfile){
   imported = validateProfile(imported, serverProfile.name);
  }
  if(!imported) return false;
+ // #2 : fusion non destructive au lieu d'un écrasement complet
+ const merged = _mergeCloudProfiles(P, imported);
  // Préserver le code et le statut cloud du profil local
- imported.cloudCode = P.cloudCode;
- imported.cloudEnabled = P.cloudEnabled;
+ merged.cloudCode = P.cloudCode;
+ merged.cloudEnabled = P.cloudEnabled;
  // Remplace le profil en mémoire et sauvegarde local
- Object.assign(P, imported);
+ Object.assign(P, merged);
  if(P._chat) delete P._chat;
  if(typeof saveProfileNow==='function') saveProfileNow();
  if(typeof updateMenuUI==='function') updateMenuUI();
