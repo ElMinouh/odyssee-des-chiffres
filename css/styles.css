@@ -5019,3 +5019,14 @@ html[data-appearance="light"] [style*="color:#bdc3c7"],
 body.theme-banquise [style*="color:#bdc3c7"] {
   color: #4a5560 !important;
 }
+/* v11.7.30 (Audit DA #10, Lot 8) : même symptôme que le correctif ci-dessus,
+   sur les textes blancs semi-transparents codés en dur (illisibles en mode
+   clair). Valeurs exactes vérifiées pour ne pas toucher le seul border-color
+   existant avec rgba(255,255,255,...) (.18, non ciblé ici). */
+html[data-appearance="light"] [style*="color:rgba(255,255,255,.55)"],
+html[data-appearance="light"] [style*="color:rgba(255,255,255,.5)"],
+html[data-appearance="light"] [style*="color:rgba(255,255,255,.4)"],
+html[data-appearance="light"] [style*="color:rgba(255,255,255,.35)"],
+html[data-appearance="light"] [style*="color:rgba(255,255,255,.3)"] {
+  color: #4a5560 !important;
+}
