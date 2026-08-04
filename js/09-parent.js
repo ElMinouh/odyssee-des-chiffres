@@ -1541,7 +1541,7 @@ function renderProfileManager(){
      <div style="position:relative;flex-shrink:0;">
       ${thumb}
       <span data-n="${_e(n)}" onclick="pmChoosePhoto(this.dataset.n)" title="Changer la photo" style="position:absolute;right:-4px;bottom:-2px;width:20px;height:20px;border-radius:50%;background:#2980b9;border:2px solid #232342;display:flex;align-items:center;justify-content:center;font-size:.65em;cursor:pointer;">📷</span>
-      ${photo?`<span data-n="${_e(n)}" onclick="pmRemovePhoto(this.dataset.n)" title="Retirer la photo" style="position:absolute;right:-4px;top:-2px;width:20px;height:20px;border-radius:50%;background:var(--danger);border:2px solid #232342;display:flex;align-items:center;justify-content:center;font-size:.65em;cursor:pointer;">✕</span>`:''}
+      ${photo?`<span data-n="${_e(n)}" onclick="pmRemovePhoto(this.dataset.n)" title="Retirer la photo" style="position:absolute;right:-4px;top:-2px;width:20px;height:20px;border-radius:50%;background:var(--danger);border:2px solid #232342;display:flex;align-items:center;justify-content:center;font-size:.65em;cursor:pointer;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></span>`:''}
      </div>
      <div style="flex:1;font-size:1.05em;font-weight:800;color:#f1c40f;">${_e(n)}</div>
     </div>

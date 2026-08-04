@@ -8,7 +8,9 @@
 /* v11.7.21 (Audit DA #6/#13) : couleurs sémantiques uniques, indépendantes des 8 thèmes */
 --ok:#27ae60;--danger:#c0392b;--info:#3498db;--neutral:#7f8c8d;
 /* v11.7.23 (Audit DA #15) : échelle d'espacement, base pour les prochains lots */
---space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;}
+--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;
+/* v11.7.32 (Audit DA #26, Lot 10) : tokens de durée, appliqués aux composants déjà touchés dans ce chantier */
+--dur-fast:150ms;--dur-base:300ms;--dur-slow:600ms;}
 /* v11.7.29 (Lot 7 renforcé) : différenciation de cycle nettement plus marquée */
 html[data-cycle="maternelle"]{--radius-sm:16px;--radius-md:22px;--radius-lg:30px;}
 html[data-cycle="college"]{--radius-sm:4px;--radius-md:6px;--radius-lg:9px;}
@@ -35,7 +37,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:#fff;text-align:
 h1{font-family:'Cinzel Decorative',cursive;font-size:1.5em;margin:0 0 4px;}
 h2{font-family:'Cinzel Decorative',cursive;font-size:1.2em;}
 h3{font-family:'Cinzel Decorative',cursive;font-size:1em;margin:6px 0;}
-button{background:var(--accent);border:none;padding:10px 18px;color:#fff;border-radius:var(--radius-sm);cursor:pointer;font-size:1em;font-family:'Nunito',sans-serif;font-weight:700;margin:4px;transition:.2s;box-shadow:0 4px 0 rgba(0,0,0,.3);}
+button{background:var(--accent);border:none;padding:10px 18px;color:#fff;border-radius:var(--radius-sm);cursor:pointer;font-size:1em;font-family:'Nunito',sans-serif;font-weight:700;margin:4px;transition:var(--dur-fast);box-shadow:0 4px 0 rgba(0,0,0,.3);}
 button:active{transform:translateY(3px);box-shadow:none;}
 button:disabled{background:#7f8c8d;cursor:not-allowed;opacity:.5;}
 /* v11.7.23 (Audit DA #20/#21) : survol souris + focus clavier, sans effet sur le tactile */
@@ -441,7 +443,7 @@ button.pulse{font-size:1.15em!important;padding:13px 24px!important;width:100%!i
 .pfig-panel{display:none;padding:10px;background:rgba(0,0,0,.15);}
 .pfig-panel.open{display:block;}
 .pfig-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;}
-.pfig-card{background:rgba(255,255,255,.05);border-radius:var(--radius-md);padding:8px 4px 7px;text-align:center;border:2px solid rgba(255,255,255,.1);cursor:pointer;transition:.2s;position:relative;overflow:hidden;}
+.pfig-card{background:rgba(255,255,255,.05);border-radius:var(--radius-md);padding:8px 4px 7px;text-align:center;border:2px solid rgba(255,255,255,.1);cursor:pointer;transition:var(--dur-fast);position:relative;overflow:hidden;}
 .pfig-card::before{content:'';position:absolute;inset:0;background:linear-gradient(160deg,rgba(255,255,255,.04),transparent);pointer-events:none;}
 .pfig-card:hover{transform:translateY(-3px);border-color:var(--accent);}
 .pfig-card.owned{border-color:gold;background:rgba(255,215,0,.07);}
@@ -2809,7 +2811,7 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  box-shadow:0 4px 14px rgba(0,0,0,.55), inset 0 -3px 8px rgba(0,0,0,.18);
  z-index:6;
  animation:shopPulse 3.4s ease-in-out infinite;
- transition:transform .18s ease, box-shadow .18s ease;
+ transition:transform var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
 }
 .archipel-shop:hover, .archipel-shop:active{
  transform:translate(-50%,-50%) scale(1.12);
