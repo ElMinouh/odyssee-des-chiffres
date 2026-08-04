@@ -767,6 +767,9 @@
      <div id="hw-status" style="font-size:.78em;margin-top:6px;color:#f1c40f;"></div>
     </div>
 
+    <hr style="border-color:rgba(255,255,255,.18);margin:16px 0 12px;">
+    <p style="font-size:.78em;font-weight:700;color:#9aa6b2;letter-spacing:.04em;margin:0 0 10px;">LIMITES & CONTRÔLE</p>
+
     <button class="accordion" id="acc-horaires">⏰ Horaires autorisés<span class="acc-i" onclick="event.stopPropagation();pGuide('horaire')">i</span><span class="acc-sub">Les heures où l'enfant peut jouer</span></button>
     <div class="panel">
      <select id="block-player" style="width:90%;margin-bottom:8px;" onchange="loadBlockSettings()"></select>
@@ -848,7 +851,7 @@
     <button class="accordion" id="acc-playercode"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Code du profil (optionnel)<span class="acc-i" onclick="event.stopPropagation();pGuide('playercode')">i</span><span class="acc-sub">Code à 2 chiffres avant de jouer</span></button>
     <div class="panel"><div id="opt-playercode"></div></div>
 
-    <button class="accordion" id="acc-reset-one">🗑 Réinitialiser ce profil<span class="acc-sub">Efface la progression de ce profil</span></button>
+    <button class="accordion" id="acc-reset-one" style="background:rgba(231,76,60,.15);color:#ff9b93;">🗑 Réinitialiser ce profil<span class="acc-sub" style="color:#e0a9a4;">Efface la progression de ce profil — irréversible</span></button>
     <div class="panel"><div id="opt-reset-one"></div></div>
 
     <hr style="border-color:rgba(255,255,255,.18);margin:16px 0 12px;">
@@ -889,6 +892,9 @@
      <textarea id="sync-diag-zone" readonly placeholder="(Le diagnostic s'affichera ici)" style="width:96%;height:140px;margin-top:8px;resize:vertical;font-family:monospace;font-size:.68em;background:rgba(0,0,0,.35);color:#ddd;border:1px solid rgba(255,255,255,.15);border-radius:6px;padding:6px;"></textarea>
      <button onclick="(function(){var z=document.getElementById('sync-diag-zone');if(z){z.select();try{document.execCommand('copy');if(typeof toast==='function')toast('📋 Diagnostic copié !',2000);}catch(e){}}})()" style="background:#34495e;font-size:.8em;padding:6px 12px;margin-top:4px;">📋 Tout copier</button>
     </div>
+
+    <hr style="border-color:rgba(255,255,255,.18);margin:16px 0 12px;">
+    <p style="font-size:.78em;font-weight:700;color:#9aa6b2;letter-spacing:.04em;margin:0 0 10px;">SÉCURITÉ</p>
 
     <button class="accordion" id="acc-pin">🔑 Code parent<span class="acc-sub">Change le code et la question secrète</span></button>
     <div class="panel">
