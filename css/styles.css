@@ -42,7 +42,7 @@ button:active{transform:translateY(3px);box-shadow:none;}
 button:disabled{background:#7f8c8d;cursor:not-allowed;opacity:.5;}
 /* v11.7.23 (Audit DA #20/#21) : survol souris + focus clavier, sans effet sur le tactile */
 button:hover:not(:disabled){filter:brightness(1.08);}
-button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{
  outline:2px solid var(--accent);outline-offset:2px;
 }
 select,input[type=number],input[type=text],input[type=password],textarea{padding:10px;margin:4px;border-radius:8px;border:none;font-size:.95em;font-family:'Nunito',sans-serif;background:rgba(255,255,255,.15);color:#fff;width:80%;}

@@ -57,7 +57,7 @@ function _advRainbowHtml(){
   : `<path d="${b[0]}" fill="none" stroke="#d9d4e8" stroke-width="${Math.max(4,b[2]-6)}" stroke-linecap="round" stroke-dasharray="2 9" opacity=".55"/>`
  ).join('');
  const taleSeen = seen.includes('mat_tale_rainbow');
- const clickable = violet ? `onclick="_openTaleIllus(_MAT_TALE_RAINBOW)" role="button" tabindex="0" title="Lire l'histoire du trésor" style="cursor:pointer"` : '';
+ const clickable = violet ? `onclick="_openTaleIllus(_MAT_TALE_RAINBOW)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();_openTaleIllus(_MAT_TALE_RAINBOW);}" role="button" tabindex="0" title="Lire l'histoire du trésor" style="cursor:pointer"` : '';
  const cloudFill = happy ? '#ffffff' : '#cfd6e6';
  const mouth = happy ? 'M-11 13 q11 12 22 0' : 'M-9 16 q9 -2 18 0';
  const sparks = (violet)
@@ -513,7 +513,7 @@ function _advBookHtml(){
   : done ? "Le Livre est complet ! Touche-le pour écouter son histoire ✨"
   : n>0 ? `${n} page${n>1?'s':''} retrouvée${n>1?'s':''} — continue, page après page !`
   : "Retrouve les mots, monde après monde !";
- const clickable = done ? `onclick="_openBookTale()" role="button" tabindex="0" title="Écouter l'histoire du Livre" style="cursor:pointer"` : '';
+ const clickable = done ? `onclick="_openBookTale()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();_openBookTale();}" title="Écouter l'histoire du Livre" style="cursor:pointer"` : '';
  const haloR = done ? `<ellipse cx="120" cy="100" rx="112" ry="92" fill="url(#gbGlo)"/>` : '';
  // v11.6.11 : bouton bien visible (pas seulement l'illustration cliquable),
  // pour que ce soit sans ambiguïté possible comment (re)trouver cette histoire.
@@ -607,7 +607,7 @@ function _advBadgeHtml(){
   : done ? "Tu es Gardien de l'Alphabet ! Touche le journal pour lire le dossier secret 🦸"
   : nD>0 ? `${nD} district${nD>1?'s':''} libéré${nD>1?'s':''} — le médaillon se forge !`
   : "Libère les districts de Verbopolis, un par un !";
- const clickable = done ? `onclick="_openBookTale()" role="button" tabindex="0" title="Lire le dossier du Docteur Babel" style="cursor:pointer"` : '';
+ const clickable = done ? `onclick="_openBookTale()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();_openBookTale();}" title="Lire le dossier du Docteur Babel" style="cursor:pointer"` : '';
  // v11.6.14 : bouton explicite (cohérence avec Arc-en-ciel/Livre/Talisman/Armure)
  // — auparavant seule l'illustration était cliquable, sans confirmation visuelle claire.
  const babelCta = done ? `<button onclick="_openBookTale()" style="margin-top:8px;background:#8a2a3b;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-weight:700;font-size:.85em;cursor:pointer;">📖 ${taleSeen?'Relire':'Lire'} le dossier du Docteur Babel</button>` : '';
@@ -670,7 +670,7 @@ function _advArmorHtml(){
   : `<div class="advcol-ult">⚔️ <b>Lame d'Aurore</b> — apparaît quand l'armure est complète.</div>`;
  const titanDone = _regionConquered('titan');
  const seenC=(P&&P.storySeen)||[]; const taleSeenC=seenC.includes('col_tale_armor');
- const clickableC = titanDone ? `onclick="_openTaleIllus(_COL_TALE_ARMOR)" role="button" tabindex="0" title="Lire La Saga des Porteurs de l'Armure" style="cursor:pointer"` : '';
+ const clickableC = titanDone ? `onclick="_openTaleIllus(_COL_TALE_ARMOR)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();_openTaleIllus(_COL_TALE_ARMOR);}" role="button" tabindex="0" title="Lire La Saga des Porteurs de l'Armure" style="cursor:pointer"` : '';
  const sagaInvite = titanDone ? `<div class="advcol-caption">${taleSeenC?"Titan vaincu — touche l'Armure pour relire la Saga 📖":"Titan vaincu ! Touche l'Armure pour lire la Saga des Porteurs ⚔️📜"}</div>` : '';
  // v11.6.12 : bouton explicite (cohérence avec Arc-en-ciel/Livre) — auparavant
  // seule l'illustration était cliquable, sans confirmation visuelle claire.
@@ -872,7 +872,7 @@ function _advTalismanHtml(){
  const legend = _ADV_PRIM_CRYSTALS.map((c,i)=>
   `<div class="advtal-lg ${got[i]?'on':''}"><span class="advtal-dot" style="background:${c.dot}"></span><b>${c.name}</b> <span style="opacity:.85">(${c.color})</span></div>`).join('');
  const seen=(P&&P.storySeen)||[]; const taleSeen=seen.includes('prim_tale_numbers');
- const clickable = done ? `onclick="_openTaleIllus(_PRIM_TALE_NUMBERS)" role="button" tabindex="0" title="Lire La Grande Histoire des Nombres" style="cursor:pointer"` : '';
+ const clickable = done ? `onclick="_openTaleIllus(_PRIM_TALE_NUMBERS)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();_openTaleIllus(_PRIM_TALE_NUMBERS);}" role="button" tabindex="0" title="Lire La Grande Histoire des Nombres" style="cursor:pointer"` : '';
  const msg = done ? (taleSeen ? "Talisman complet — touche-le pour relire La Grande Histoire des Nombres 📖" : "Talisman complet ! Touche-le pour lire La Grande Histoire des Nombres 📜✨")
   : count>0 ? `${count} Cristal${count>1?'aux':''} libéré${count>1?'s':''} — continue !`
   : 'Libère les Cristaux pour reformer le Talisman !';
