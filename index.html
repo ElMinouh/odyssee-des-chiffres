@@ -45,7 +45,7 @@
 </div>
 <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;pointer-events:none;z-index:150;"></canvas>
 <canvas id="particle-canvas" style="position:fixed;top:0;left:0;pointer-events:none;z-index:155;"></canvas>
-<div id="toast" class="hidden"></div>
+<div id="toast" class="hidden" role="status" aria-live="polite"></div>
 <div id="event-banner" class="hidden"></div>
 <div id="transition-screen" class="hidden"><div id="transition-inner"><div id="trans-monster" style="font-size:5em;"></div><div id="trans-msg" style="margin-top:16px;font-weight:700;"></div></div></div>
 
@@ -646,7 +646,7 @@
   </div>
   <div id="qcm-options" class="hidden"></div>
   <div id="timer-bar-container"><div id="timer-bar"></div><span id="timer-heart">❤️</span></div>
-  <p id="feedback" style="font-weight:bold;min-height:22px;margin-top:8px;font-size:1.05em;"></p>
+  <p id="feedback" aria-live="assertive" style="font-weight:bold;min-height:22px;margin-top:8px;font-size:1.05em;"></p>
   <div id="correction" class="hidden" style="background:rgba(0,0,0,.3);border-radius:8px;padding:7px;margin-top:5px;font-size:.83em;color:#f1c40f;"></div>
  </div>
 
