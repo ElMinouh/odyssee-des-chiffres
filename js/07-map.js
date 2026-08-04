@@ -48,6 +48,8 @@ function startAdventure(advId){
  const _wantFr = (advId==='matfr') || (advId==='mat' && typeof GM!=='undefined' && GM.subject==='fr');
  if(advId==='matfr') advId='mat';
  GM.adventure = advId;
+ // v11.7.28 (Audit DA #7/#8, Lot 7) : cycle propre au mode Odyssée, choisi directement par la tuile cliquée
+ document.documentElement.setAttribute('data-cycle', advId==='col'?'college':(advId==='prim'?'primaire':'maternelle'));
  if(advId==='mat'){
   if(_wantFr){
    if(typeof GM!=='undefined' && GM.subject!=='fr') GM.subject='fr';

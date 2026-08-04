@@ -407,6 +407,9 @@ function applyPrefs(){
    const g=GROUP_META[gk];
    return `<optgroup label="${g.icon} ${g.name}">${g.levels.map(_opt).join('')}</optgroup>`;
  }).join('');
+ // v11.7.28 (Audit DA #7/#8, Lot 7) : reflète le dernier cycle connu du profil
+ // dès l'affichage des menus, avant même une éventuelle re-confirmation via savePrefs().
+ document.documentElement.setAttribute('data-cycle', _groupKeyOf(p.level||'CP'));
  $('modeSelect').value=p.mode||'keyboard';
  $('gameModeSelect').value=p.mode2||'normal';
  // v8.7.6 : la clé globale sert de repli tôt au boot (avant que le profil ne soit
@@ -464,6 +467,8 @@ function savePrefs(){
   mode2: $('gameModeSelect').value,
   theme: $('themeSelect').value,
  };
+ // v11.7.28 (Audit DA #7/#8, Lot 7) : cycle mis à jour dès que le niveau est reconfirmé
+ document.documentElement.setAttribute('data-cycle', _groupKeyOf(P.prefs.level));
  saveProfile();
 }
 function updateMenuUI(){
