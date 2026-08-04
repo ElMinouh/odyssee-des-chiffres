@@ -256,7 +256,8 @@ function _matRenderQ(q){
   qcm.classList.toggle('mat-row', !!q.row);
   qcm.innerHTML = q.choices
    .map(c => { const kind = c.html.indexOf('mat-collection')>=0?'coll':(c.html.indexOf('mat-dots')>=0?'dots':'num');
-    return `<button class="qcm-btn mat-choice mat-choice-${kind}" data-val="${c.val}">${c.html}</button>`; })
+    const label = kind==='num' ? '' : ` aria-label="${c.val}"`;
+    return `<button class="qcm-btn mat-choice mat-choice-${kind}" data-val="${c.val}"${label}>${c.html}</button>`; })
    .join('');
   qcm.onclick = (e) => { const b = e.target.closest('.qcm-btn'); if(b && !b.disabled) validate(+b.dataset.val); };
  }
