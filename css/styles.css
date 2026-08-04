@@ -9,12 +9,15 @@
 --ok:#27ae60;--danger:#c0392b;--info:#3498db;--neutral:#7f8c8d;
 /* v11.7.23 (Audit DA #15) : échelle d'espacement, base pour les prochains lots */
 --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;}
-/* v11.7.28 (Audit DA #7/#8, Lot 7) : première différenciation de cycle scolaire.
-   Primaire = référence (aucune surcharge). */
-html[data-cycle="maternelle"]{--radius-sm:10px;--radius-md:14px;--radius-lg:20px;}
-html[data-cycle="college"]{--radius-sm:6px;--radius-md:10px;--radius-lg:15px;}
-html[data-cycle="college"] button{box-shadow:0 2px 4px rgba(0,0,0,.35);}
-html[data-cycle="college"] button:active{transform:translateY(1px);}
+/* v11.7.29 (Lot 7 renforcé) : différenciation de cycle nettement plus marquée */
+html[data-cycle="maternelle"]{--radius-sm:16px;--radius-md:22px;--radius-lg:30px;}
+html[data-cycle="college"]{--radius-sm:4px;--radius-md:6px;--radius-lg:9px;}
+html[data-cycle="maternelle"] button{box-shadow:0 6px 0 rgba(0,0,0,.3);}
+html[data-cycle="maternelle"] button:active{transform:translateY(4px);}
+html[data-cycle="college"] button{box-shadow:0 1px 3px rgba(0,0,0,.35);}
+html[data-cycle="college"] button:active{transform:translateY(1px);box-shadow:none;}
+html[data-cycle="maternelle"] h1,html[data-cycle="maternelle"] h2,html[data-cycle="maternelle"] h3{letter-spacing:.5px;}
+html[data-cycle="college"] h1,html[data-cycle="college"] h2,html[data-cycle="college"] h3{letter-spacing:-.3px;}
 .theme-espace{--bg:radial-gradient(circle at center,#1a1c2c,#4b1d3f 50%,#0b0d17);--primary:rgba(26,28,44,.92);--accent:#9b59b6;--glow:#9b59b6;}
 .theme-foret{--bg:linear-gradient(to bottom,#2d5a27,#1b4d3e 70%,#3e2723);--primary:rgba(27,77,62,.92);--accent:#2ecc71;--glow:#2ecc71;}
 .theme-volcan{--bg:linear-gradient(to top,#4a0404,#8b0000 40%,#1a0000);--primary:rgba(74,4,4,.92);--accent:#e74c3c;--glow:#e74c3c;}
