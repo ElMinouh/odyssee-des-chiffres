@@ -380,10 +380,10 @@ function renderReport(){
    <div class="lb-row"><span>⭐ Trésor</span><span>${d.stars||0}</span></div>
    <div class="lb-row"><span>🗺️ Boss battus</span><span>${(d.mapBossBeaten||[]).length}/${MAP_ZONES.length}</span></div>
   </div>
-  ${weak.length?`<div style="margin-top:8px;padding:7px;background:rgba(231,76,60,.2);border-radius:8px;">⚠️ Points faibles : ${weak.join(', ')}</div>`:'<div style="margin-top:8px;padding:7px;background:rgba(46,204,113,.2);border-radius:8px;">✅ Aucun point faible !</div>'}
+  ${weak.length?`<div style="margin-top:8px;padding:7px;background:rgba(231,76,60,.2);border-radius:8px;">⚠️ Points faibles : ${weak.join(', ')}</div>`:'<div style="margin-top:8px;padding:7px;background:rgba(46,204,113,.2);border-radius:8px;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg> Aucun point faible !</div>'}
   ${typeof _matBilanHtml==='function'?_matBilanHtml(d):''}
   ${typeof _progPanelHtml==='function'?_progPanelHtml(d):''}
-  ${h.slice(-7).map(x=>`<div style="display:flex;justify-content:space-between;font-size:.78em;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span>${x.date} · ${x.level||'?'} · ${x.mode||'?'}</span><span style="color:${x.won?'#2ecc71':'#e74c3c'}">${x.won?'✅':'❌'} ${x.score}⭐</span></div>`).join('')}
+  ${h.slice(-7).map(x=>`<div style="display:flex;justify-content:space-between;font-size:.78em;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span>${x.date} · ${x.level||'?'} · ${x.mode||'?'}</span><span style="color:${x.won?'#2ecc71':'#e74c3c'}">${x.won?'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>':'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'} ${x.score}⭐</span></div>`).join('')}
  </div>`;
 }
 
@@ -421,7 +421,7 @@ function renderErrorsList(){
  }
  const log = Array.isArray(d.errorLog) ? d.errorLog.slice() : [];
  if(!log.length){
-  el.innerHTML = '<div style="text-align:center;padding:20px 10px;color:#2ecc71;font-size:.85em;">✅ Aucune opération ratée enregistrée pour '+player+' !<br><span style="color:#7f8c8d;font-size:.9em;">(Les erreurs apparaissent ici au fil des parties)</span></div>';
+  el.innerHTML = '<div style="text-align:center;padding:20px 10px;color:#2ecc71;font-size:.85em;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg> Aucune opération ratée enregistrée pour '+player+' !<br><span style="color:#7f8c8d;font-size:.9em;">(Les erreurs apparaissent ici au fil des parties)</span></div>';
   return;
  }
  // Tri par date décroissante (plus récentes d'abord), max 100
@@ -1132,7 +1132,7 @@ function saveBlockedSubjects(){
   const raw=localStorage.getItem('user_'+sel); if(!raw){if(typeof toast==='function')toast('⚠️ Profil introuvable.',3000);return;}
   const d=JSON.parse(raw); d.blockedSubjects=blocked; localStorage.setItem('user_'+sel,JSON.stringify(d));
   if(typeof P!=='undefined' && P && P.name===sel) P.blockedSubjects=blocked;
-  const st=$('bsubj-status'); if(st) st.innerHTML=blocked.length?`<span style="color:#2ecc71;">✅ ${blocked.length} matière(s) bloquée(s) pour ${sel}.</span>`:`<span style="color:#2ecc71;">✅ Aucune matière bloquée.</span>`;
+  const st=$('bsubj-status'); if(st) st.innerHTML=blocked.length?`<span style="color:#2ecc71;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg> ${blocked.length} matière(s) bloquée(s) pour ${sel}.</span>`:`<span style="color:#2ecc71;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg> Aucune matière bloquée.</span>`;
   if(typeof toast==='function')toast('🔒 Blocage enregistré pour '+sel,2200); try{beep(700,'sine',.3);}catch(e){}
  }catch(e){ console.error('[bsubj] save error:',e); if(typeof toast==='function')toast('❌ Erreur',3000); }
 }
@@ -1163,7 +1163,7 @@ function loadHomework(){
   if(status){
    const prog = hw.progress || 0;
    const total = hw.count || 10;
-   const doneTxt = hw.done ? ' ✅ TERMINÉ' : '';
+   const doneTxt = hw.done ? ' <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg> TERMINÉ' : '';
    status.innerHTML = `<span style="color:#2ecc71;">📚 Devoir actif : ${prog}/${total}${doneTxt}</span>`;
   }
  }catch(e){
@@ -1189,7 +1189,7 @@ function saveHomework(){
   data.homework = { type, level, subject, count, reward, progress: 0, done: false, createdAt: Date.now() };
   localStorage.setItem('user_'+sel, JSON.stringify(data));
   const status = $('hw-status');
-  if(status) status.innerHTML = `<span style="color:#2ecc71;">✅ Devoir donné à ${sel} !</span>`;
+  if(status) status.innerHTML = `<span style="color:#2ecc71;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg> Devoir donné à ${sel} !</span>`;
   toast(`📚 Devoir donné à ${sel} !`, 2500);
   try{beep(700,'sine',.3);}catch(e){}
   // Si l'enfant est le profil actif, recharger
@@ -1468,7 +1468,7 @@ async function doForceCloudRestore(){
   return;
  }
  msg.style.color='#2ecc71';
- msg.innerHTML=`✅ Profil <b>"${esc(result.name)}"</b> récupéré avec succès !<br>Rechargement de la page…`;
+ msg.innerHTML=`<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg> Profil <b>"${esc(result.name)}"</b> récupéré avec succès !<br>Rechargement de la page…`;
  input.value='';
  // Recharge complète après 2s pour un état 100% propre
  setTimeout(() => {
