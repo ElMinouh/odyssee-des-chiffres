@@ -264,7 +264,32 @@ async function resetAll() {
   }
 }
 
-diagnose();
+// ═══════════════════════════════════════════════════════
+// PROTECTION PAR CODE PARENTAL (audit sécurité, V8)
+// Cette page diagnostique n'avait aucune protection alors qu'elle est
+// servie en production (voir SW_BYPASS ci-dessus) et expose le nom/les
+// stats du joueur actif + des actions destructrices (reset, forçage de
+// phase/enrage) sans confirmation parentale.
+//
+// hashPin/DEFAULT_PIN sont volontairement DUPLIQUÉS ici plutôt que
+// d'importer js/01-core.js en entier : ce fichier a des effets de bord
+// (addEventListener sur des éléments propres à index.html) non prévus
+// pour tourner hors de ce contexte. Si l'algorithme de hash change dans
+// 01-core.js (chantier V5), reporter le même changement ici.
+// ═══════════════════════════════════════════════════════
+function _dbgHashPin(pin){let h=5381;for(const c of String(pin))h=((h<<5)+h)+c.charCodeAt(0);return(h>>>0).toString(16);}
+function _dbgCheckPin(input){
+  const stored = localStorage.getItem('parentPin');
+  if(!stored) return input === '1234';
+  if(/^\d{4}$/.test(stored)) return input === stored; // ancien format non-hashé
+  return _dbgHashPin(input) === stored;
+}
+const _dbgPin = prompt('🔒 Code parental requis pour accéder au diagnostic :');
+if(!_dbgCheckPin(String(_dbgPin||'').trim())){
+  document.body.innerHTML = '<p style="padding:24px;font-family:sans-serif;color:#e74c3c;">Accès refusé.</p>';
+} else {
+  diagnose();
+}
 </script>
 </body>
 </html>

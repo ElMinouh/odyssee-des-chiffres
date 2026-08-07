@@ -352,7 +352,13 @@ function checkStoredPin(input){
  // Valeur hashée (format normal)
  return hashPin(input)===stored;
 }
-let pinAttempts=0,pinLockUntil=0;
+// ── Verrou anti-force-brute du PIN (V4, audit sécurité) ──
+// Persisté en localStorage (et non de simples variables JS) pour résister
+// à un rechargement de page, qui remettait auparavant le compteur à zéro.
+function getPinAttempts(){ return parseInt(localStorage.getItem('pinAttempts')||'0',10)||0; }
+function setPinAttempts(n){ try{ localStorage.setItem('pinAttempts', String(n)); }catch(e){} }
+function getPinLockUntil(){ return parseInt(localStorage.getItem('pinLockUntil')||'0',10)||0; }
+function setPinLockUntil(ts){ try{ localStorage.setItem('pinLockUntil', String(ts)); }catch(e){} }
 
 let _monsterCenter={x:0,y:0}; // position précalculée du monstre (OPT-5)
 // ═══════════════════════════════════════════════════════

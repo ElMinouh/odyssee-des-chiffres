@@ -19,15 +19,17 @@ function openParent(){
 }
 function checkPin(){
  const now=Date.now();
- if(pinLockUntil>now){const sec=Math.ceil((pinLockUntil-now)/1000);toast(`🔒 Trop de tentatives. Réessayer dans ${sec}s.`,2500);return;}
+ const lockUntil=getPinLockUntil();
+ if(lockUntil>now){const sec=Math.ceil((lockUntil-now)/1000);toast(`🔒 Trop de tentatives. Réessayer dans ${sec}s.`,2500);return;}
  const pin=$('pin-input').value;
  if(checkStoredPin(pin)){
-  pinAttempts=0;
+  setPinAttempts(0);
   $('parent-lock').classList.add('hidden');$('parent-content').classList.remove('hidden');renderReport();renderReportView();
   if(typeof obOnParentUnlocked==='function') obOnParentUnlocked();
  }else{
-  pinAttempts++;
-  if(pinAttempts>=5){pinLockUntil=Date.now()+30000;pinAttempts=0;toast('🔒 5 tentatives échouées. Bloqué 30 secondes !',3500);}
+  const attempts=getPinAttempts()+1;
+  setPinAttempts(attempts);
+  if(attempts>=5){setPinLockUntil(Date.now()+30000);setPinAttempts(0);toast('🔒 5 tentatives échouées. Bloqué 30 secondes !',3500);}
   $('pin-input').value='';$('pin-input').placeholder='Code incorrect !';
   setTimeout(()=>{if($('pin-input'))$('pin-input').placeholder='****';},1500);beep(200,'sawtooth',.3);
  }
