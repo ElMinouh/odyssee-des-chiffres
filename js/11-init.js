@@ -227,4 +227,9 @@ window.onload=()=>{
  document.addEventListener('touchend',_fvDragEnd);
  // ── Chantier Cloud Sync : initialise après chargement du profil ──
  if(typeof initCloudSync==='function') initCloudSync();
+ // v11.7.44 (correctif signalé par Cyril) : si aucun profil n'existe encore
+ // sur cet appareil, lance automatiquement l'installation de démarrage —
+ // à CHAQUE ouverture de l'app tant qu'aucun profil n'a été créé, même si
+ // le parent a déjà cliqué "Passer" une fois.
+ setTimeout(()=>{ if(typeof obMaybeAutoStartFreshInstall==='function') obMaybeAutoStartFreshInstall(); }, 500);
 };

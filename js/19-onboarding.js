@@ -587,6 +587,15 @@ function _obShouldChainToSystem2(n){ return n===1 && !obIsSeen(2); }
 function _obShouldAutoStart1(){ return !obIsSeen(1); }
 function _obShouldFallbackStart2(){ return obIsCompleted(1) && !obIsSeen(2); }
 function _obShouldAutoStart3(){ return !!(typeof P!=='undefined' && P && P.name && !P.onbAccountSeen); }
+// v11.7.44 (correctif signalé par Cyril) : tant qu'AUCUN profil n'existe dans
+// le trousseau, l'installation de démarrage doit revenir à chaque chargement
+// de l'app — même si le parent a déjà cliqué "Passer" une fois. Volontairement
+// PAS basé sur obIsSeen(1) (qui, lui, reste "vu pour de bon" dès qu'un profil
+// existe) : ici c'est la présence d'un profil, et seulement elle, qui arrête
+// le rappel automatique.
+function _obShouldAutoStartFreshInstall(){
+ return (typeof getRoster==='function') && getRoster().length===0;
+}
 
 // ── Déclenchement automatique ──
 // Système 1 (+ filet de sécurité pour le Système 2) : à chaque déverrouillage
@@ -604,9 +613,29 @@ function obOnParentUnlocked(){
  if(_obShouldFallbackStart2()){ setTimeout(()=>{ if(!_obSystem) obStart(2); }, 300); }
 }
 
-// Système 3 : à la première connexion d'un profil (appelé depuis
-// loadProfile(), 05-profile.js). Le marqueur vit DANS le profil (P),
-// donc chaque enfant a sa propre visite, indépendante des autres.
+// v11.7.44 : Système 1, cas "tout premier lancement, aucun profil" — appelé
+// depuis 11-init.js, à chaque démarrage de l'app. Contrairement à
+// obOnParentUnlocked() (qui suppose que le parent a déjà lui-même ouvert la
+// Vue Parent et saisi le code), ici on saute directement dans la Vue Parent
+// déverrouillée : rien à protéger par un code tant qu'aucun enfant n'est
+// configuré sur l'appareil.
+function obMaybeAutoStartFreshInstall(){
+ if(_obSystem) return;
+ if(!_obShouldAutoStartFreshInstall()) return;
+ if(typeof openParent==='function') openParent();
+ const lock=document.getElementById('parent-lock'); if(lock) lock.classList.add('hidden');
+ const content=document.getElementById('parent-content'); if(content) content.classList.remove('hidden');
+ if(typeof renderReport==='function') renderReport();
+ if(typeof renderReportView==='function') renderReportView();
+ if(typeof _obRefreshButtons==='function') _obRefreshButtons();
+ obStart(1);
+}
+
+// Système 3 : au clic sur "Continuer" pour un profil qui ne l'a jamais vue
+// (appelé depuis gotoSubjects(), 01-core.js — plus depuis loadProfile(), qui
+// se déclenchait à CHAQUE démarrage de l'app, même sans profil réel créé).
+// Le marqueur vit DANS le profil (P), donc chaque enfant a sa propre visite,
+// indépendante des autres.
 function obMaybeAutoStart3(){
  if(_obSystem) return;
  if(_obShouldAutoStart3()){

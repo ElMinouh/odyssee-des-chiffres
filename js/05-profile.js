@@ -365,7 +365,9 @@ function loadProfile(){
  if(typeof cancelCloudSync==='function') cancelCloudSync();
  if(P.cloudEnabled && typeof scheduleCloudSync==='function') scheduleCloudSync();
  if(typeof refreshCloudIndicator==='function') setTimeout(refreshCloudIndicator, 200);
- if(typeof obMaybeAutoStart3==='function') setTimeout(obMaybeAutoStart3, 400);
+ // v11.7.44 : le déclenchement du Système 3 (visite du compte) a déménagé
+ // dans gotoSubjects() (01-core.js) — se lancer ICI, à CHAQUE chargement de
+ // l'app (même sans profil réel créé), provoquait le bug signalé par Cyril.
 }
 // saveProfile avec debounce : évite de sérialiser à chaque micro-action (quêtes, badges…)
 // saveProfileNow() force la sauvegarde immédiate (fin de partie, achats)

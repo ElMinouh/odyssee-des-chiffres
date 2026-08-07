@@ -1037,6 +1037,10 @@ function gotoSubjects(){
  const _proceed = ()=>{
   try{ const nm=$('subj-player'); if(nm) nm.textContent=(P&&P.name)||'Joueur'; }catch(e){}
   navTo('v-subjects');
+  // v11.7.44 : c'est ICI, au clic sur CONTINUER pour un profil qui n'a
+  // jamais vu la visite du compte, qu'elle doit se lancer — plus au
+  // chargement de l'app (voir 05-profile.js, loadProfile()).
+  if(typeof obMaybeAutoStart3==='function') obMaybeAutoStart3();
  };
  // v11.6.7 : la vérification d'identité (confirmation ou code) se déclenche
  // ICI — au clic sur CONTINUER, pour valider le profil juste avant d'y jouer —
