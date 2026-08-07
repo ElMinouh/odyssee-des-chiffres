@@ -62,13 +62,13 @@ const OB_STEPS_1 = [
    nav:{ptab:'comptes'}, target:'acc-profils-manage', accordion:true },
  { icon:'🎂', title:"La date d'anniversaire",
    body:"Indiquer le jour et le mois de naissance de votre enfant permet au jeu de lui proposer, une fois par an, un petit contenu spécial pour son anniversaire. Ce n'est pas obligatoire, mais c'est une jolie attention automatique.<br><br>Cette information reste strictement locale : elle ne sert qu'à l'intérieur du jeu.",
-   nav:{ptab:'comptes'}, target:'acc-birthday', accordion:true },
+   nav:{ptab:'comptes'}, target:'acc-birthday', accordion:true, extraTarget:'opt-profile' },
  { icon:'☁️', title:'La sauvegarde en ligne',
    body:"Ce jeu enregistre normalement la progression de votre enfant uniquement <b>sur cet appareil</b> (cet ordinateur, cette tablette…). Si l'appareil est perdu, cassé, ou si votre enfant joue aussi sur un autre appareil, cette progression ne le suivra pas automatiquement.<br><br>La <b>sauvegarde en ligne</b> résout ce problème : elle copie la progression sur un serveur, avec un <b>code unique</b> (par exemple <code>SOREN-7B4K9X</code>). Ce code permet de retrouver le profil de votre enfant sur n'importe quel autre appareil, simplement en le saisissant.<br><br>👉 Notez ce code dans un endroit sûr (photo, carnet, gestionnaire de mots de passe) avant de continuer.",
-   nav:{ptab:'comptes'}, target:'acc-cloud', accordion:true },
+   nav:{ptab:'comptes'}, target:'acc-cloud', accordion:true, extraTarget:'opt-profile' },
  { icon:'💾', title:'La sauvegarde dans un fichier',
    body:"En plus (ou à la place) de la sauvegarde en ligne, vous pouvez télécharger un <b>fichier</b> contenant toute la progression du profil sélectionné. C'est un peu comme une photo de la sauvegarde à un instant donné, que vous rangez où vous voulez (clé USB, votre propre espace de stockage personnel…).<br><br>En cas de souci, ce même fichier permet de tout restaurer exactement comme avant, grâce au bouton « Importer un fichier ».",
-   nav:{ptab:'comptes'}, target:'acc-fichier', accordion:true },
+   nav:{ptab:'comptes'}, target:'acc-fichier', accordion:true, extraTarget:'opt-profile' },
  { icon:'✉️', title:"La messagerie de l'enfant",
    body:"Le jeu propose une messagerie qui permet à votre enfant d'échanger de courts messages avec des amis (uniquement via un code ami, jamais par recherche libre). Elle est <b>désactivée par défaut</b>.<br><br>Depuis cet endroit, vous pouvez l'activer, la suspendre à tout moment (sans perdre le code ni les amis de votre enfant), consulter les conversations, et bloquer un contact si besoin. Rien n'est caché à un parent : tout reste consultable ici.",
    nav:{ptab:'encadrement'}, target:'acc-messagerie', accordion:true },
@@ -381,19 +381,30 @@ function _obRenderStep(){
 // bouton d'en-tête ET son panneau ouvert (contient les vrais champs/
 // boutons) — sinon seul l'en-tête serait rendu cliquable, pas le
 // formulaire qu'il contient.
+function _obMergeRect(a, b){
+ const top = Math.min(a.top, b.top);
+ const left = Math.min(a.left, b.left);
+ const right = Math.max(a.right, b.right);
+ const bottom = Math.max(a.bottom, b.bottom);
+ return { top, left, right, bottom, width: right-left, height: bottom-top };
+}
 function _obTargetRect(step, targetEl){
  if(!targetEl) return null;
  let r = targetEl.getBoundingClientRect();
  if(step.accordion){
   const panel = targetEl.nextElementSibling;
   if(panel && panel.style && panel.style.display === 'block'){
-   const pr = panel.getBoundingClientRect();
-   const top = Math.min(r.top, pr.top);
-   const left = Math.min(r.left, pr.left);
-   const right = Math.max(r.right, pr.right);
-   const bottom = Math.max(r.bottom, pr.bottom);
-   r = { top, left, right, bottom, width: right-left, height: bottom-top };
+   r = _obMergeRect(r, panel.getBoundingClientRect());
   }
+ }
+ // Signalé par Cyril : les étapes ciblant acc-birthday/acc-cloud/acc-fichier
+ // (onglet Comptes) laissaient le sélecteur de profil #opt-profile — situé
+ // juste au-dessus, hors de la zone surlignée — impossible à atteindre
+ // pendant ces étapes précises. step.extraTarget permet d'inclure un second
+ // élément dans le trou de surbrillance en réutilisant la même fusion.
+ if(step.extraTarget){
+  const extraEl = document.getElementById(step.extraTarget);
+  if(extraEl) r = _obMergeRect(r, extraEl.getBoundingClientRect());
  }
  return r;
 }

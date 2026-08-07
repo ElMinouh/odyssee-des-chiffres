@@ -1287,7 +1287,19 @@ function renderCloudPanel(){
   if(typeof ensureCloudCode === 'function') ensureCloudCode(P);
   if(typeof saveProfileNow === 'function') saveProfileNow();
  }
- const prof = (P && P.name === name) ? P : _readProfile(name);
+ // Signalé par Cyril : un profil ajouté depuis la Vue Parent (« Ajouter un
+ // enfant ») n'a pas encore de fiche complète tant que l'enfant ne s'est
+ // jamais connecté lui-même une première fois — _readProfile() renvoie alors
+ // null, ce qui affichait auparavant « Profil introuvable » (le bouton
+ // Activer disparaissait sans aucune explication). On utilise désormais un
+ // profil par défaut (mêmes valeurs qu'un vrai premier login) pour générer/
+ // afficher le code normalement, avec un message adapté plutôt qu'un bouton
+ // qui échouerait de toute façon (l'activation réelle exige que ce profil
+ // soit la session active, cf. doCloudEnable()).
+ const isActiveSession = !!(P && P.name === name);
+ const savedProf = isActiveSession ? P : _readProfile(name);
+ const neverPlayed = !isActiveSession && !savedProf;
+ const prof = savedProf || (typeof defProfile === 'function' ? defProfile(name) : null);
  if(!prof){ container.innerHTML = '<p style="font-size:.78em;color:#bdc3c7;">Profil introuvable.</p>'; return; }
  // Pour les profils non-actifs, on génère aussi le code si manquant
  if(!prof.cloudCode && typeof generateCloudCode === 'function'){
@@ -1297,7 +1309,7 @@ function renderCloudPanel(){
  }
  const isActive = !!prof.cloudEnabled;
  const code = prof.cloudCode || '(non généré)';
- const lastSync = isActive && (P && P.name === name) && typeof getCloudStatus === 'function'
+ const lastSync = isActive && isActiveSession && typeof getCloudStatus === 'function'
   ? getCloudStatus().lastSync : 0;
  const lastSyncStr = lastSync
   ? new Date(lastSync).toLocaleString('fr-FR')
@@ -1306,6 +1318,24 @@ function renderCloudPanel(){
  // un prénom comme « L'éa » cassait les boutons cloud.
  const _nH = esc(prof.name);
  const _nJ = _jsAttr(prof.name); // v11.1.10 : mutualisée dans 01-core.js (auparavant inline ici)
+
+ let statusBlock, actionBlock;
+ if(neverPlayed){
+  statusBlock = '';
+  actionBlock = '<p style="font-size:.74em;color:#3498db;margin:6px 0;background:rgba(52,152,219,.1);border-radius:6px;padding:6px 8px;">ℹ️ <b>'+_nH+'</b> ne s\'est encore jamais connecté(e). Le code est prêt : la sauvegarde deviendra activable dès sa première connexion — reviens alors sur cet écran.</p>';
+ } else {
+  statusBlock = '<p style="font-size:.72em;color:#bdc3c7;margin:8px 0 4px;">Statut : <strong style="color:'+(isActive?'#2ecc71':'#e67e22')+';">'+(isActive?'☁️ Activé':'⏸ Désactivé')+'</strong></p>'
+   + (isActive
+      ? '<p style="font-size:.72em;color:#bdc3c7;margin:4px 0;">Dernière sync : '+lastSyncStr+'</p>'
+      : '<p style="font-size:.74em;color:#e67e22;margin:6px 0;background:rgba(230,126,34,.12);border-radius:6px;padding:6px 8px;">⚠️ <b>Sauvegarde non activée</b> : tant que ce bouton n\'est pas activé, la progression de '+_nH+' n\'est <b>pas envoyée au cloud</b> et ne peut pas être récupérée sur un autre appareil. Active-la ci-dessous.</p>');
+  actionBlock = '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">'
+   + (isActive
+      ? '<button onclick="doCloudSyncNow(\''+_nJ+'\',this)" style="background:var(--info);font-size:.82em;">🔄 Synchroniser maintenant</button>'
+        + '<button onclick="doCloudDisable(\''+_nJ+'\')" style="background:var(--neutral);font-size:.82em;">⏸ Désactiver</button>'
+      : '<button onclick="doCloudEnable(\''+_nJ+'\',this)" style="background:var(--ok);font-size:.82em;">☁️ Activer la sauvegarde cloud</button>')
+   + '</div>';
+ }
+
  container.innerHTML = `
   <div style="background:rgba(52,152,219,.08);border:1px solid rgba(52,152,219,.3);border-radius:8px;padding:10px;margin-top:6px;">
    <p style="font-size:.78em;color:#bdc3c7;margin:0 0 4px;">Code de sauvegarde de <strong style="color:#fff;">${_nH}</strong> :</p>
@@ -1313,15 +1343,8 @@ function renderCloudPanel(){
     <code style="font-size:1.05em;color:#3498db;font-weight:700;background:rgba(0,0,0,.25);padding:6px 10px;border-radius:6px;letter-spacing:1px;font-family:monospace;">${code}</code>
     <button onclick="doCloudCopyFor('${_nJ}')" style="font-size:.78em;padding:5px 10px;background:#34495e;">📋 Copier</button>
    </div>
-   <p style="font-size:.72em;color:#bdc3c7;margin:8px 0 4px;">Statut : <strong style="color:${isActive?'#2ecc71':'#e67e22'};">${isActive?'☁️ Activé':'⏸ Désactivé'}</strong></p>
-   ${isActive ? `<p style="font-size:.72em;color:#bdc3c7;margin:4px 0;">Dernière sync : ${lastSyncStr}</p>` : `<p style="font-size:.74em;color:#e67e22;margin:6px 0;background:rgba(230,126,34,.12);border-radius:6px;padding:6px 8px;">⚠️ <b>Sauvegarde non activée</b> : tant que ce bouton n'est pas activé, la progression de ${_nH} n'est <b>pas envoyée au cloud</b> et ne peut pas être récupérée sur un autre appareil. Active-la ci-dessous.</p>`}
-   <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
-    ${isActive
-     ? `<button onclick="doCloudSyncNow('${_nJ}',this)" style="background:var(--info);font-size:.82em;">🔄 Synchroniser maintenant</button>
-        <button onclick="doCloudDisable('${_nJ}')" style="background:var(--neutral);font-size:.82em;">⏸ Désactiver</button>`
-     : `<button onclick="doCloudEnable('${_nJ}',this)" style="background:var(--ok);font-size:.82em;">☁️ Activer la sauvegarde cloud</button>`
-    }
-   </div>
+   ${statusBlock}
+   ${actionBlock}
   </div>
  `;
 }
