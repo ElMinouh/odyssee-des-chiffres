@@ -254,6 +254,7 @@ input::placeholder,textarea::placeholder{color:rgba(255,255,255,.5);}
 .urgency-bg{animation:urgencyPulse .48s ease infinite !important;}
 /* ── Timer heartbeat icon ── */
 #timer-heart{font-size:.9em;position:absolute;right:6px;top:-2px;display:none;animation:heartBeat .5s ease infinite alternate;}
+#timer-secs{font-size:.65em;font-weight:700;color:#fff;position:absolute;left:6px;top:-1px;text-shadow:0 1px 2px rgba(0,0,0,.6);pointer-events:none;}
 @keyframes heartBeat{from{transform:scale(1);}to{transform:scale(1.35);}}
 #timer-bar-container{position:relative;}
 .zone-title{font-weight:900;font-size:1.05em;margin:3px 0;}

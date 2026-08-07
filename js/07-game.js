@@ -249,10 +249,13 @@ function startTimer(){
  _timerTauntFired=false;
  const tb=_timerBarEl||$('timer-bar');
  const heart=$('timer-heart');
+ const secsEl=$('timer-secs');
+ let _lastSec=-1;
  function tick(){
   if(GS.frozen){timerEnd+=(1000/60);timerRaf=requestAnimationFrame(tick);return;}
   const rem=Math.max(0,(timerEnd-performance.now())/1000);
   tb.style.width=(rem/totalTime*100)+'%';
+  if(secsEl){const s=Math.ceil(rem);if(s!==_lastSec){_lastSec=s;secsEl.textContent=s+'s';}}
   if(rem<=3){
    tb.className='td';
    $('BODY').classList.add('body-alert','urgency-bg');
@@ -596,7 +599,7 @@ function renderQ(){
  }
  renderPowerBar();
  if((GM.subject==='math'||!GM.subject)){ if(GM.mode2!=='chrono')startTimer(); }
- else { if(typeof stopTimer==='function')stopTimer(); const _tb=(typeof _timerBarEl!=='undefined'&&_timerBarEl)||$('timer-bar'); if(_tb){_tb.style.width='0%';_tb.className='';} $('BODY').classList.remove('body-alert','urgency-bg'); }
+ else { if(typeof stopTimer==='function')stopTimer(); const _tb=(typeof _timerBarEl!=='undefined'&&_timerBarEl)||$('timer-bar'); if(_tb){_tb.style.width='0%';_tb.className='';} const _ts=$('timer-secs'); if(_ts)_ts.textContent=''; $('BODY').classList.remove('body-alert','urgency-bg'); }
  // v10.0.0 (C3 debug) : forçage immédiat de l'enrage si le drapeau debug est posé
  if(GS.isBoss && !GS.bossEnraged && _dbgForceEnrage()){
   GS.bossEnraged=true;
