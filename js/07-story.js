@@ -1533,9 +1533,7 @@ function _colBackCoverSvg(book,idx){
 
 // ── Lecteur de livre : couverture → double page enluminée → dos ─────────
 function _resolveBookPages(book){
- let ps=book.pages;
- if(!ps && book.bookTale && typeof _COL_STORY_FR!=='undefined' && _COL_STORY_FR.bookTale) ps=_COL_STORY_FR.bookTale.pages;
- ps=ps||[];
+ let ps=book.pages||[];
  return ps.map(function(p){ return { chap:p.chap||'', html:p.html||p.text||'', illus:p.illus||'', cap:p.cap||'' }; });
 }
 function _openColBook(idx){
@@ -1553,7 +1551,8 @@ function _renderColBook(book,idx,pages){
  const S=Math.ceil(pages.length/2), total=S+2;
  let step=0;
  const ov=document.createElement('div'); ov.className='story-overlay';
- function close(){ ov.classList.add('story-out'); setTimeout(function(){try{ov.remove();}catch(e){}},300); }
+ function _escHandler(e){ if(e.key==='Escape') close(); }
+ function close(){ if(ov._releaseTrap){ov._releaseTrap();delete ov._releaseTrap;} document.removeEventListener('keydown',_escHandler); ov.classList.add('story-out'); setTimeout(function(){try{ov.remove();}catch(e){}},300); }
  function _heroName(){ try{ return (typeof P!=='undefined'&&P&&P.name)?String(P.name):'le Porteur de Mots'; }catch(e){ return 'le Porteur de Mots'; } }
  function _fill(s){ try{ s=String(s||''); const h=_heroName().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); return s.replace(/\{hero\}/g,'<b>'+h+'</b>').replace(/\{villain\}/g,(typeof _COL_VILLAIN_FR!=='undefined'?_COL_VILLAIN_FR:'le Chancelier')); }catch(e){ return s; } }
  function half(p,isLeft){
@@ -1596,8 +1595,11 @@ function _renderColBook(book,idx,pages){
   const pv=ov.querySelector('.cb-prev'); if(pv) pv.onclick=function(){ if(step>0){step--;render();} };
   const cl=ov.querySelector('.cb-close'); if(cl) cl.onclick=close;
   if(typeof beep==='function'){ try{ beep(520,'sine',.09,.04); }catch(e){} }
+  if(typeof focusFirstIn==='function') focusFirstIn(ov);
  }
  render(); document.body.appendChild(ov);
+ if(typeof trapFocus==='function') ov._releaseTrap=trapFocus(ov);
+ document.addEventListener('keydown',_escHandler);
 }
 
 // ── Carnet collège FR : La Bibliothèque infinie (7 tranches 3D) ─────────
@@ -1771,7 +1773,8 @@ function _renderHistBook(book,idx,pages){
  const S=Math.ceil(pages.length/2), total=S+2;
  let step=0;
  const ov=document.createElement('div'); ov.className='story-overlay';
- function close(){ ov.classList.add('story-out'); setTimeout(function(){try{ov.remove();}catch(e){}},300); }
+ function _escHandler(e){ if(e.key==='Escape') close(); }
+ function close(){ if(ov._releaseTrap){ov._releaseTrap();delete ov._releaseTrap;} document.removeEventListener('keydown',_escHandler); ov.classList.add('story-out'); setTimeout(function(){try{ov.remove();}catch(e){}},300); }
  function _heroName(){ try{ return (typeof P!=='undefined'&&P&&P.name)?String(P.name):'le Voyageur du Temps'; }catch(e){ return 'le Voyageur du Temps'; } }
  function _fill(s){ try{ s=String(s||''); const h=_heroName().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); return s.replace(/\{hero\}/g,'<b>'+h+'</b>').replace(/\{villain\}/g,(typeof _PRIM_VILLAIN_HIST!=='undefined'?_PRIM_VILLAIN_HIST:'L\u2019Horloger')); }catch(e){ return s; } }
  function half(p,isLeft){
@@ -1814,8 +1817,11 @@ function _renderHistBook(book,idx,pages){
   const pv=ov.querySelector('.cb-prev'); if(pv) pv.onclick=function(){ if(step>0){step--;render();} };
   const cl=ov.querySelector('.hb-close'); if(cl) cl.onclick=close;
   if(typeof beep==='function'){ try{ beep(520,'sine',.09,.04); }catch(e){} }
+  if(typeof focusFirstIn==='function') focusFirstIn(ov);
  }
  render(); document.body.appendChild(ov);
+ if(typeof trapFocus==='function') ov._releaseTrap=trapFocus(ov);
+ document.addEventListener('keydown',_escHandler);
 }
 // ── Carnet histoire primaire : Les Chroniques du Temps (6 tranches 3D) ───
 function _advHistLibraryHtml(){
@@ -1939,9 +1945,11 @@ function _showStoryModal(chapter, onDone){
  }
  function _bPause(){ try{ if(window.speechSynthesis.speaking && !window.speechSynthesis.paused){ window.speechSynthesis.pause(); _bSyncPlay(); if(typeof _musicDuck==='function') _musicDuck(false); } }catch(e){} }
  function _bStop(){ _readActive=false; _readUtter=null; try{ window.speechSynthesis.cancel(); }catch(e){} if(typeof _musicDuck==='function') _musicDuck(false); _bSyncPlay(); }
+ function _escHandler(e){ if(e.key==='Escape') close(); }
  function close(){
   _bStop();
   if(overlay._releaseTrap){overlay._releaseTrap();delete overlay._releaseTrap;}
+  document.removeEventListener('keydown',_escHandler);
   overlay.classList.add('story-out');
   setTimeout(()=>{ try{ overlay.remove(); }catch(e){} if(onDone) onDone(); }, 300);
  }
@@ -1980,6 +1988,7 @@ function _showStoryModal(chapter, onDone){
  render();
  document.body.appendChild(overlay);
  if(typeof trapFocus==='function') overlay._releaseTrap=trapFocus(overlay);
+ document.addEventListener('keydown',_escHandler);
 }
 function _markStorySeen(id){
  if(typeof P==='undefined' || !P) return;

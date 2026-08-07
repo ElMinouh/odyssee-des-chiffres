@@ -113,7 +113,8 @@ function _renderTaleIllus(tale){
  function _fill(s){ s=String(s||''); const h=_hero().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); return s.replace(/\{hero\}/g,h); }
  function sayCur(){ try{ if(typeof speak==='function'){ const t=_fill(pages[step].text||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim(); speak(t); } }catch(e){} }
  function stopSay(){ try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){} }
- function close(){ stopSay(); ov.classList.add('story-out'); setTimeout(function(){try{ov.remove();}catch(e){}},300); }
+ function _escHandler(e){ if(e.key==='Escape') close(); }
+ function close(){ stopSay(); if(ov._releaseTrap){ov._releaseTrap();delete ov._releaseTrap;} document.removeEventListener('keydown',_escHandler); ov.classList.add('story-out'); setTimeout(function(){try{ov.remove();}catch(e){}},300); }
  function render(){
   const p=pages[step];
   ov.innerHTML='<div class="story-parchment" style="max-width:560px;border-top:6px solid '+(tale.accent||'#7c5bd0')+';position:relative;">'
@@ -135,8 +136,12 @@ function _renderTaleIllus(tale){
   // dernière page proposait "Fin ✨" : impossible de sortir sans tout lire.
   ov.querySelector('.ti-close').onclick=close;
   if(typeof beep==='function'){ try{ beep(560,'sine',.08,.04); }catch(e){} }
+  if(typeof focusFirstIn==='function') focusFirstIn(ov);
  }
- render(); document.body.appendChild(ov); if(tale.autoSpeak) setTimeout(sayCur,260);
+ render(); document.body.appendChild(ov);
+ if(typeof trapFocus==='function') ov._releaseTrap=trapFocus(ov);
+ document.addEventListener('keydown',_escHandler);
+ if(tale.autoSpeak) setTimeout(sayCur,260);
 }
 
 // ── Histoire maternelle (maths) : « Le Trésor au bout de l'Arc-en-ciel » ─
