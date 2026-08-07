@@ -146,7 +146,7 @@
      <option value="Autre">✏️ Autre joueur…</option>
     </select>
     <div id="custom-zone" class="hidden">
-     <input type="text" id="customInput" placeholder="Entre ton prénom…" style="width:100%;text-align:center;margin:0;" oninput="applyCustom();refreshMenu1Card();" maxlength="20">
+     <input type="text" id="customInput" aria-label="Ton prénom" placeholder="Entre ton prénom…" style="width:100%;text-align:center;margin:0;" oninput="applyCustom();refreshMenu1Card();" maxlength="20">
     </div>
    </div>
    <div style="display:flex;flex-direction:column;gap:5px;">
@@ -626,7 +626,7 @@
   </div>
   <div id="problem-image"></div>
   <div id="input-zone">
-   <input type="text" id="answer-input" inputmode="decimal" onkeyup="if(event.key==='Enter')submitAns()" placeholder="Réponse…" style="width:60%;text-align:center;font-size:1.4em;">
+   <input type="text" id="answer-input" aria-label="Ta réponse" inputmode="decimal" onkeyup="if(event.key==='Enter')submitAns()" placeholder="Réponse…" style="width:60%;text-align:center;font-size:1.4em;">
    <div id="numpad" class="numpad">
     <button type="button" class="np-btn" data-k="1">1</button>
     <button type="button" class="np-btn" data-k="2">2</button>
@@ -690,8 +690,11 @@
    <button class="btn-revisit-tour" id="btn-revisit-tour-2" onclick="obReplay(2)">🔰 Revoir la présentation de la Vue Parent</button>
   </div>
   <div id="parent-lock">
-   <p style="font-size:.9em;margin:4px 0;">Code parent :</p>
-   <input type="password" id="pin-input" placeholder="****" style="width:50%;text-align:center;letter-spacing:6px;font-size:1.2em;" maxlength="4"><br>
+   <p id="pin-input-label" style="font-size:.9em;margin:4px 0;">Code parent :</p>
+   <span style="display:inline-flex;align-items:center;gap:6px;">
+    <input type="password" id="pin-input" aria-labelledby="pin-input-label" placeholder="****" style="width:50%;text-align:center;letter-spacing:6px;font-size:1.2em;" maxlength="4">
+    <button type="button" onclick="const i=$('pin-input');const on=i.type==='password';i.type=on?'text':'password';this.setAttribute('aria-label',on?'Masquer le code':'Afficher le code');this.textContent=on?'🙈':'👁️';" aria-label="Afficher le code" style="font-size:1.1em;padding:4px 8px;background:transparent;border:none;cursor:pointer;">👁️</button>
+   </span><br>
    <p style="margin-top:8px;"><a onclick="recoverParentPin()" style="font-size:.78em;color:#9aa6b2;cursor:pointer;text-decoration:underline;">Code parent oubli&#233; ?</a></p>
    <button onclick="checkPin()">&#128275; Accéder</button>
    <p id="pin-default-hint" class="hidden" style="font-size:.72em;color:#f1c40f;margin-top:6px;">⚠️ Code par défaut (1234) : pense à le changer dans l'onglet « 🔧 Avancé ».</p>
@@ -775,9 +778,9 @@
     <div class="panel">
      <select id="block-player" style="width:90%;margin-bottom:8px;" onchange="loadBlockSettings()"></select>
      <div style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:6px;">
-      <label style="font-size:.82em;">De</label>
+      <label for="block-start" style="font-size:.82em;">De</label>
       <input type="time" id="block-start" style="width:110px;padding:6px;" value="17:00">
-      <label style="font-size:.82em;">à</label>
+      <label for="block-end" style="font-size:.82em;">à</label>
       <input type="time" id="block-end" style="width:110px;padding:6px;" value="18:00">
      </div>
      <label style="font-size:.82em;display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:8px;">
@@ -831,7 +834,7 @@
      <div style="margin-top:10px;background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.3);border-radius:10px;padding:10px;">
       <p style="font-size:.8em;font-weight:700;color:#2ecc71;margin:0 0 4px;">📥 Récupérer depuis un code</p>
       <p style="font-size:.72em;color:#bdc3c7;margin:2px 0 6px;">Sur un nouvel appareil : entre le code du profil pour le récupérer ici (remplace la version locale).</p>
-      <input type="text" id="cloud-force-code" placeholder="ex: SOREN-7B4K9X" style="width:74%;text-transform:uppercase;letter-spacing:1px;font-family:monospace;padding:7px;border-radius:6px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.15);color:#fff;"><br>
+      <input type="text" id="cloud-force-code" aria-label="Code du profil à récupérer" placeholder="ex: SOREN-7B4K9X" style="width:74%;text-transform:uppercase;letter-spacing:1px;font-family:monospace;padding:7px;border-radius:6px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.15);color:#fff;"><br>
       <button onclick="doForceCloudRestore()" style="background:#27ae60;margin-top:8px;font-size:.88em;padding:8px 16px;">🔄 Récupérer ce profil</button>
       <p id="cloud-force-msg" style="font-size:.78em;margin-top:6px;"></p>
      </div>
@@ -861,7 +864,7 @@
     <button class="accordion" id="acc-profils-manage">👥 Ajouter, renommer ou retirer un enfant<span class="acc-i" onclick="event.stopPropagation();pGuide('profils')">i</span><span class="acc-sub">Gère la liste des profils</span></button>
     <div class="panel">
      <div style="display:flex;gap:6px;margin-bottom:12px;">
-      <input id="pm-new" type="text" placeholder="Nouveau prénom…" maxlength="20" style="flex:1;" onkeydown="if(event.key==='Enter')pmAddProfile()">
+      <input id="pm-new" type="text" aria-label="Nouveau prénom" placeholder="Nouveau prénom…" maxlength="20" style="flex:1;" onkeydown="if(event.key==='Enter')pmAddProfile()">
       <button onclick="pmAddProfile()" style="background:#27ae60;font-size:.86em;">Ajouter</button>
      </div>
      <div id="profile-manager"></div>
@@ -899,10 +902,13 @@
 
     <button class="accordion" id="acc-pin">🔑 Code parent<span class="acc-sub">Change le code et la question secrète</span></button>
     <div class="panel">
-     <input type="password" id="new-pin" placeholder="Nouveau code (4 chiffres)" style="width:62%;" maxlength="4"><br>
+     <span style="display:inline-flex;align-items:center;gap:6px;">
+      <input type="password" id="new-pin" aria-label="Nouveau code, 4 chiffres" placeholder="Nouveau code (4 chiffres)" style="width:62%;" maxlength="4">
+      <button type="button" onclick="const i=$('new-pin');const on=i.type==='password';i.type=on?'text':'password';this.setAttribute('aria-label',on?'Masquer le code':'Afficher le code');this.textContent=on?'🙈':'👁️';" aria-label="Afficher le code" style="font-size:1.1em;padding:4px 8px;background:transparent;border:none;cursor:pointer;">👁️</button>
+     </span><br>
      <p style="font-size:.74em;color:#bdc3c7;margin:8px 0 3px;">Question secrète (pour récupérer le code en cas d'oubli) :</p>
-     <input type="text" id="new-secq" placeholder="ex: Ville de naissance ?" style="width:84%;margin-bottom:4px;"><br>
-     <input type="text" id="new-seca" placeholder="Réponse" style="width:62%;"><br>
+     <input type="text" id="new-secq" aria-label="Question secrète" placeholder="ex: Ville de naissance ?" style="width:84%;margin-bottom:4px;"><br>
+     <input type="text" id="new-seca" aria-label="Réponse à la question secrète" placeholder="Réponse" style="width:62%;"><br>
      <button onclick="savePin()" style="margin-top:6px;">💾 Sauvegarder le code</button>
      <p id="pin-msg" style="font-size:.78em;color:#2ecc71;margin-top:6px;"></p>
     </div>
