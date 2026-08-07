@@ -581,6 +581,18 @@ function _onVisibilityChange(){
  }
 }
 
+// Audit performances #8 : suspendre le timer de synchro auto pendant une
+// coupure réseau détectée (au lieu de continuer à tenter — et échouer, avec
+// le timeout de 8s à chaque fois — toutes les 5 min), et reprendre
+// immédiatement au retour du réseau plutôt que d'attendre le prochain tick.
+function _onOffline(){ cancelCloudSync(); }
+function _onOnline(){
+ if(P && P.cloudEnabled){
+  scheduleCloudSync();
+  pushProfileToCloud(); // tentative immédiate, sans attendre le prochain tick de 5 min
+ }
+}
+
 // Enregistrer les hooks dès que le module est chargé
 if(typeof window !== 'undefined'){
  window.addEventListener('pagehide', _onPageHide);
@@ -590,4 +602,6 @@ if(typeof window !== 'undefined'){
   if(typeof saveProfileNow === 'function') saveProfileNow();
   _cloudSyncBeacon();
  });
+ window.addEventListener('offline', _onOffline);
+ window.addEventListener('online', _onOnline);
 }

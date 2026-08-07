@@ -50,11 +50,20 @@ function ensureChatIdentity(prof){
 // ═══════════════════════════════════════════════════════
 // CLIENT API (Worker)
 // ═══════════════════════════════════════════════════════
+// Audit performances #7 : timeout explicite (AbortController), sur le même
+// modèle que _cloudFetch (12-cloud.js) — sans lui, un appel sur un réseau
+// dégradé (pas coupé, juste lent) peut rester en attente très longtemps, et
+// avec un polling toutes les 4 à 25s, plusieurs appels lents peuvent
+// s'empiler avant que le premier ne réponde.
+const CHAT_REQUEST_TIMEOUT_MS = 5000;
 async function _chatApi(path, body){
+ const ctrl = new AbortController();
+ const tid = setTimeout(() => ctrl.abort(), CHAT_REQUEST_TIMEOUT_MS);
  try{
-  const r = await fetch(CHAT_API + path, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+  const r = await fetch(CHAT_API + path, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body), signal:ctrl.signal });
   return await r.json();
  }catch(e){ return { error:'network' }; }
+ finally{ clearTimeout(tid); }
 }
 function _chatAuth(prof){ return { id: prof.chatId, secret: prof.chatSecret }; }
 function _chatProfileAvatar(name){ try{ const gp=(typeof P!=='undefined' && P && P.name===name) ? P : (typeof _readProfile==='function' ? _readProfile(name) : null); return (gp && gp.avatar) || '\uD83E\uDDD9'; }catch(e){ return '\uD83E\uDDD9'; } }
@@ -710,6 +719,11 @@ async function optToggleMessaging(name){
   const res = await chatEnableForProfile(name);
   if(res && res.ok){ if(typeof toast==='function') toast('\u25B6 Messagerie réactivée !',2000); }
   else { if(typeof toast==='function') toast('\u25B6 Réactivée. Le code se synchronisera à la prochaine ouverture.',3200); }
+  // Audit performances #6 : le polling de fond ne démarre plus automatiquement
+  // au chargement de la page si la messagerie était désactivée (voir plus
+  // haut) — s'il s'agit du profil actuellement actif, on le démarre donc ici,
+  // sans attendre un rechargement de page.
+  if(typeof chatStartBadgePoll==='function' && typeof _curName==='function' && name===_curName()) chatStartBadgePoll();
  }
  renderOptMessaging(name);
  if(typeof chatRefreshBadges==='function') chatRefreshBadges();
@@ -819,4 +833,43 @@ async function chatImportIdentityCode(name){
 }
 
 // Démarrage : suivi des pastilles + affichage du bouton menu (fixe)
-try{ if(typeof window!=='undefined'){ setTimeout(()=>{ if(typeof chatStartBadgePoll==='function') chatStartBadgePoll(); }, 1500); } }catch(e){}
+// Audit performances #6 : ne démarre le polling de fond (toutes les 25s) que
+// si la messagerie est réellement activée pour le profil courant — elle est
+// désactivée par défaut pour tout profil neuf (opt-in parental), donc sans
+// cette condition, un trafic réseau permanent tournait pour chaque session
+// ouverte même quand la messagerie n'est jamais utilisée. Si un parent
+// l'active en cours de session, le polling démarre alors depuis
+// optToggleMessaging() (voir plus bas) — pas besoin de recharger la page.
+try{ if(typeof window!=='undefined'){ setTimeout(()=>{
+ if(typeof chatStartBadgePoll==='function' && typeof chatIsEnabledByName==='function' && typeof _curName==='function' && chatIsEnabledByName(_curName())){
+  chatStartBadgePoll();
+ }
+}, 1500); } }catch(e){}
+
+// Audit performances #8 : suspendre les minuteurs de polling pendant une
+// coupure réseau détectée (au lieu de continuer à tenter — et échouer — des
+// appels toutes les 4 à 25s), et reprendre immédiatement au retour du réseau
+// plutôt que d'attendre le prochain tick programmé. _msgWasPollingConv retient
+// si une conversation était activement suivie au moment de la coupure, pour
+// ne reprendre que ce qui tournait réellement avant (ne force pas l'ouverture
+// d'une conversation qui n'était pas affichée).
+var _msgWasPollingConv = false;
+function _msgOnOffline(){
+ _msgWasPollingConv = !!(_msgConv && _msgConvTimer);
+ _stopConvPoll();
+ if(_msgBadgePoll){ clearInterval(_msgBadgePoll); _msgBadgePoll=null; }
+}
+function _msgOnOnline(){
+ if(typeof chatIsEnabledByName==='function' && typeof _curName==='function' && chatIsEnabledByName(_curName()) && typeof chatStartBadgePoll==='function'){
+  chatStartBadgePoll(); // relance immédiatement (chatSyncTick() est appelé dès le démarrage)
+ }
+ if(_msgWasPollingConv && _msgConv){
+  _startConvPoll();
+  try{ _convFetch(false); }catch(e){}
+ }
+ _msgWasPollingConv = false;
+}
+try{ if(typeof window!=='undefined'){
+ window.addEventListener('offline', _msgOnOffline);
+ window.addEventListener('online', _msgOnOnline);
+} }catch(e){}
