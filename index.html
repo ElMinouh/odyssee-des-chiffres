@@ -961,28 +961,37 @@
 
 <!-- ══════════════════════════════════════════════════════════════════
      SCRIPTS — l'ordre de chargement compte (dépendances en cascade)
+     Audit performances #1 : defer sur les 25 fichiers. defer préserve
+     l'ordre d'exécution du document (contrairement à async), donc sans
+     risque pour les dépendances entre fichiers ci-dessous — il ne fait que
+     laisser le navigateur télécharger ces fichiers SANS bloquer le rendu de
+     la page pendant ce temps, puis les exécuter dans cet ordre une fois le
+     HTML analysé. Le script inline d'enregistrement du Service Worker, plus
+     bas dans ce fichier, n'est pas concerné (il ne dépend d'aucun fichier
+     ci-dessous et attend déjà l'événement 'load' avant de s'exécuter).
      ════════════════════════════════════════════════════════════════ -->
-<script src="js/01-core.js"></script>
-<script src="js/02-data.js"></script>
-<script src="js/03-figurines-data.js"></script>
-<script src="js/04-questions.js"></script>
-<script src="js/16-francais.js"></script>
-<script src="js/18-histoire.js"></script>
-<script src="js/05-profile.js"></script>
-<script src="js/06a-adaptive.js"></script>
-<script src="js/06b-time-block.js"></script>
-<script src="js/06c-seasonal.js"></script>
-<script src="js/06d-cinematics.js"></script>
-<script src="js/07-map.js"></script><script src="js/07-game.js"></script><script src="js/07-boss.js"></script><script src="js/07-story.js"></script><script src="js/08-ui.js"></script>
-<script src="js/09-parent.js"></script>
-<script src="js/10-figurines.js"></script>
-<script src="js/12-cloud.js"></script>
-<script src="js/13-maternelle.js"></script>
-<script src="js/14-primaire.js"></script>
-  <script src="js/15-college.js"></script>
-<script src="js/17-messaging.js"></script>
-<script src="js/19-onboarding.js"></script>
-<script src="js/11-init.js"></script>
+<script defer src="js/01-core.js"></script>
+<script defer src="js/02-data.js"></script>
+<script defer src="js/03-figurines-data.js"></script>
+<script defer src="js/04-questions.js"></script>
+<script defer src="js/16-francais.js"></script>
+<script defer src="js/18-histoire.js"></script>
+<script defer src="js/05-profile.js"></script>
+<script defer src="js/06a-adaptive.js"></script>
+<script defer src="js/06b-time-block.js"></script>
+<script defer src="js/06c-seasonal.js"></script>
+<script defer src="js/06d-cinematics.js"></script>
+<script defer src="js/07-map.js"></script><script defer src="js/07-game.js"></script><script defer src="js/07-boss.js"></script><script defer src="js/07-story.js"></script><script defer src="js/08-ui.js"></script>
+<script defer src="js/09-parent.js"></script>
+<script defer src="js/10-figurines.js"></script>
+<script defer src="js/12-cloud.js"></script>
+<script defer src="js/13-maternelle.js"></script>
+<script defer src="js/14-primaire.js"></script>
+  <script defer src="js/15-college.js"></script>
+<script defer src="js/17-messaging.js"></script>
+<script defer src="js/19-onboarding.js"></script>
+<script defer src="js/11-init.js"></script>
+
 
 <!-- Enregistrement du Service Worker (mode hors-ligne + installation PWA) -->
 <script>
