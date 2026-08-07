@@ -367,11 +367,21 @@ function _obRenderStep(){
   // cette étape) sur le profil créé à l'étape 2, AVANT de mesurer/surligner
   // la zone (le contenu du panneau peut changer suite à ce rafraîchissement).
   _obApplyPendingProfile(step);
-  if(targetEl && typeof targetEl.scrollIntoView==='function'){
+  // Correctif signalé par Cyril : scroller sur l'accordéon (targetEl) seul
+  // le pousse en haut de l'écran et fait sortir step.extraTarget (le
+  // sélecteur, situé juste au-dessus dans la page) de la zone visible AVANT
+  // même le calcul du spotlight — la fusion de rectangles dans
+  // _obTargetRect() donnait alors un rectangle qui remontait bien au-dessus
+  // de l'écran, mais _obPositionBox() le recadre ensuite à 0 (haut de
+  // l'écran), annulant tout gain visible. On scrolle donc sur l'extraTarget
+  // quand elle existe : elle précède toujours la cible principale dans la
+  // page, donc l'accordéon reste naturellement visible juste en dessous.
+  const _obScrollAnchor = (step.extraTarget && document.getElementById(step.extraTarget)) || targetEl;
+  if(_obScrollAnchor && typeof _obScrollAnchor.scrollIntoView==='function'){
    // v11.6.7 : on scrolle la cible EN HAUT de l'écran (pas centrée) — la
    // bulle d'explication est désormais ancrée en bas (voir _obPositionBox),
    // ça laisse toute la partie haute, visible et cliquable, à la cible.
-   try{ targetEl.scrollIntoView({block:'start'}); window.scrollBy(0,-16); }catch(e){}
+   try{ _obScrollAnchor.scrollIntoView({block:'start'}); window.scrollBy(0,-16); }catch(e){}
   }
   setTimeout(()=>_obShowTooltip(step, targetEl), targetEl?70:0);
  }, 90);
