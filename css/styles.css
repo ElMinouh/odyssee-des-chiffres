@@ -5018,9 +5018,22 @@ body.mat-mode #v-game{
    3.93:1 (banquise, en-dessous du seuil texte normal mais
    nette amélioration par rapport à 1.09:1).
    ═══════════════════════════════════════════════════════ */
-html[data-appearance="light"] [style*="color:#bdc3c7"],
-body.theme-banquise [style*="color:#bdc3c7"] {
+html[data-appearance="light"] [style*="color:#bdc3c7"] {
   color: #4a5560 !important;
+}
+/* v11.7.42 (Audit accessibilité P10) : la règle ci-dessus visait à l'origine
+   aussi body.theme-banquise. Vérification : la quasi-totalité des usages de
+   #bdc3c7 sont DANS #gc, dont le fond réel est --primary (semi-transparent)
+   posé sur --bg — pas --bg brut. Le 1.09:1 mesuré par l'audit d'origine
+   comparait par erreur #bdc3c7 au --bg brut (non au fond réellement affiché) ;
+   sur le vrai fond de #gc, #bdc3c7 était déjà conforme (4.71:1 à 5.48:1) et
+   #4a5560 y tombait au contraire à 1.10:1 — retiré ci-dessus.
+   (Les 2 usages hors #gc — bannière de mise à jour, écran de blocage horaire —
+   ont leur propre fond opaque quasi noir, indépendant du thème : jamais concernés.)
+   theme-sakura, lui, était réellement sous le seuil sur son propre fond réel
+   (3.61:1 à 4.31:1) : #e0e0e0 y remonte à 4.91:1–5.81:1. */
+body.theme-sakura #gc [style*="color:#bdc3c7"] {
+  color: #e0e0e0 !important;
 }
 /* v11.7.30 (Audit DA #10, Lot 8) : même symptôme que le correctif ci-dessus,
    sur les textes blancs semi-transparents codés en dur (illisibles en mode
@@ -5032,4 +5045,18 @@ html[data-appearance="light"] [style*="color:rgba(255,255,255,.4)"],
 html[data-appearance="light"] [style*="color:rgba(255,255,255,.35)"],
 html[data-appearance="light"] [style*="color:rgba(255,255,255,.3)"] {
   color: #4a5560 !important;
+}
+/* v11.7.42 (Audit accessibilité P10) : même symptôme que ci-dessus, mesuré
+   cette fois sur le fond réel de #gc pour Banquise et Sakura (panneau
+   --primary semi-transparent posé sur le dégradé --bg). Contraste d'origine
+   2.36:1 à 3.77:1 selon l'opacité — #e0e0e0 y remonte à 4.69:1–6.72:1.
+   Scopé à #gc : le seul usage hors panneau (écran level-up) a son propre
+   fond opaque quasi noir, indépendant du thème — non concerné. */
+body.theme-banquise #gc [style*="color:rgba(255,255,255,.55)"],
+body.theme-banquise #gc [style*="color:rgba(255,255,255,.5)"],
+body.theme-banquise #gc [style*="color:rgba(255,255,255,.4)"],
+body.theme-sakura #gc [style*="color:rgba(255,255,255,.55)"],
+body.theme-sakura #gc [style*="color:rgba(255,255,255,.5)"],
+body.theme-sakura #gc [style*="color:rgba(255,255,255,.4)"] {
+  color: #e0e0e0 !important;
 }
