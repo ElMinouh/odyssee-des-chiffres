@@ -45,9 +45,17 @@ const CLOUD_API = 'https://odyssee-sync.air7841.workers.dev';
 const CLOUD_SYNC_INTERVAL_MS = 5 * 60 * 1000; // 5 min
 const CLOUD_REQUEST_TIMEOUT_MS = 8000;        // 8 sec timeout
 const CLOUD_VERBOSE = false; // mettre true pour debug
+// Audit performances #3 : fenêtre de regroupement (debounce) des pushs
+// déclenchés par syncCloudOnEndGame() — voir plus bas. Plusieurs parties
+// terminées coup sur coup (ex. 5 parties en 10 minutes) ne déclenchent alors
+// qu'un seul envoi cloud au lieu d'un par partie, réduisant la fréquence
+// réelle d'écriture KV (quota gratuit : 1000 écritures/jour, partagées sur
+// tout le compte Cloudflare).
+const CLOUD_ENDGAME_DEBOUNCE_MS = 5000;
 
 // ══════════════ ÉTAT EN MÉMOIRE ══════════════
 let _cloudSyncTimer = null;
+let _cloudEndgameDebounceTimer = null;
 let _cloudInflight = false;     // évite les syncs simultanées
 let _cloudLastSync = 0;          // timestamp du dernier sync réussi
 let _cloudLastError = null;      // dernière erreur (pour UI)
@@ -441,6 +449,7 @@ function cancelCloudSync(){
   clearInterval(_cloudSyncTimer);
   _cloudSyncTimer = null;
  }
+ clearTimeout(_cloudEndgameDebounceTimer);
 }
 
 // ══════════════ STATUT POUR L'UI ══════════════
@@ -502,8 +511,12 @@ function initCloudSync(){
 // À appeler après chaque saveProfileNow() de fin de partie pour pousser au cloud.
 function syncCloudOnEndGame(){
  if(P && P.cloudEnabled && !_cloudInflight){
-  // Petit délai pour ne pas bloquer l'UI de fin de partie
-  setTimeout(() => pushProfileToCloud(), 500);
+  // Audit performances #3 : debounce plutôt qu'un simple délai fixe — si
+  // plusieurs fins de partie arrivent en moins de CLOUD_ENDGAME_DEBOUNCE_MS,
+  // seule la dernière déclenche réellement un envoi (les précédentes sont
+  // annulées et remplacées), au lieu d'empiler une écriture KV par partie.
+  clearTimeout(_cloudEndgameDebounceTimer);
+  _cloudEndgameDebounceTimer = setTimeout(() => pushProfileToCloud(), CLOUD_ENDGAME_DEBOUNCE_MS);
  }
 }
 
