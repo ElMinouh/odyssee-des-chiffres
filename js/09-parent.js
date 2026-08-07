@@ -17,12 +17,12 @@ function openParent(){
  $('cloud-player').innerHTML='<option value="ALL">Tous les joueurs</option>'+opts;
  if(typeof navTo==='function') navTo('v-parent'); else showView('v-parent');
 }
-function checkPin(){
+async function checkPin(){
  const now=Date.now();
  const lockUntil=getPinLockUntil();
  if(lockUntil>now){const sec=Math.ceil((lockUntil-now)/1000);toast(`🔒 Trop de tentatives. Réessayer dans ${sec}s.`,2500);return;}
  const pin=$('pin-input').value;
- if(checkStoredPin(pin)){
+ if(await checkStoredPin(pin)){
   setPinAttempts(0);
   $('parent-lock').classList.add('hidden');$('parent-content').classList.remove('hidden');renderReport();renderReportView();
   if(typeof obOnParentUnlocked==='function') obOnParentUnlocked();
@@ -786,11 +786,11 @@ function saveObj(){
  try{const d=JSON.parse(localStorage.getItem('user_'+player)||'{}');d.objective=count;localStorage.setItem('user_'+player,JSON.stringify(d));}catch(e){}
  $('obj-status').innerText=`✅ Objectif : ${count} partie(s)/jour pour ${player}.`;beep(600,'sine',.3);
 }
-function savePin(){
+async function savePin(){
  const pin=$('new-pin')?.value.trim();if(!/^\d{4}$/.test(pin)){$('pin-msg').innerText='❌ 4 chiffres requis.';$('pin-msg').style.color='#e74c3c';return;}
- localStorage.setItem('parentPin',hashPin(pin));
+ localStorage.setItem('parentPin', await hashPinSecure(pin));
  const q=$('new-secq')?.value.trim(), a=$('new-seca')?.value.trim();
- if(q && a){ localStorage.setItem('parentSecQ',q); localStorage.setItem('parentSecA',hashPin(a.toLowerCase())); }
+ if(q && a){ localStorage.setItem('parentSecQ',q); localStorage.setItem('parentSecA', await hashPinSecure(a.toLowerCase())); }
  $('pin-msg').innerText=(q&&a)?'✅ Code et question secrète enregistrés !':'✅ Code mis à jour !';
  $('pin-msg').style.color='#2ecc71';$('new-pin').value='';if($('new-seca'))$('new-seca').value='';beep(700,'sine',.3);
 }
@@ -1724,16 +1724,16 @@ function resetAllProfiles(){
  setTimeout(()=>{ try{ location.reload(); }catch(e){} }, 900);
 }
 // Récupération du code parent via question secrète (écran de verrouillage).
-function recoverParentPin(){
+async function recoverParentPin(){
  const q=localStorage.getItem('parentSecQ');
  if(!q){ alert("Aucune question secrète n'a été configurée.\n\nAstuce : si le code n'a jamais été changé, le code par défaut est 1234."); return; }
  const ans=prompt('Question secrète :\n\n'+q);
  if(ans===null) return;
  const stored=localStorage.getItem('parentSecA');
- if(stored && (typeof hashPin==='function') && hashPin(String(ans).trim().toLowerCase())===stored){
+ if(stored && (await verifySecureValue(String(ans).trim().toLowerCase(), stored))){
   const np=prompt('✅ Bonne réponse !\n\nChoisis un nouveau code parent (4 chiffres) :');
   if(np!==null){
-   if(/^\d{4}$/.test(String(np).trim())){ localStorage.setItem('parentPin',hashPin(String(np).trim())); alert('Code mis à jour. Tu peux maintenant te connecter avec ce nouveau code.'); }
+   if(/^\d{4}$/.test(String(np).trim())){ localStorage.setItem('parentPin', await hashPinSecure(String(np).trim())); alert('Code mis à jour. Tu peux maintenant te connecter avec ce nouveau code.'); }
    else alert('Code invalide : il faut exactement 4 chiffres. Recommence.');
   }
  } else {

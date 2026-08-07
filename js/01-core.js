@@ -340,17 +340,59 @@ function trapFocus(container){
  };
 }
 
-// ── PIN sécurisé ──
-function hashPin(pin){let h=5381;for(const c of String(pin))h=((h<<5)+h)+c.charCodeAt(0);return(h>>>0).toString(16);}
+// ── PIN sécurisé (V5/V7, audit sécurité) ──
+// Format de stockage : "pbkdf2:<selHex>:<hashHex>" (SHA-256, sel aléatoire
+// par valeur, 150 000 itérations pour ralentir une attaque hors-ligne).
+// Les anciens formats (djb2 non salé, ou 4 chiffres en clair pour les
+// toutes premières installations) restent reconnus EN LECTURE pour ne
+// jamais bloquer une famille qui n'a pas encore changé son code — ils
+// sont migrés vers le nouveau format dès le prochain enregistrement
+// (savePin(), recoverParentPin()).
+//
+// LIMITE ASSUMÉE (documentée suite à l'audit V5) : un code à 4 chiffres
+// protégé uniquement côté client reste contournable par un accès aux
+// outils de développement du navigateur, quel que soit l'algorithme —
+// ceci ralentit une attaque hors-ligne (ex. base exportée), ce n'est pas
+// une protection contre un accès physique + devtools.
+const PIN_PBKDF2_ITER = 150000;
+function hashPin(pin){let h=5381;for(const c of String(pin))h=((h<<5)+h)+c.charCodeAt(0);return(h>>>0).toString(16);} // ancien format (lecture seule, migration)
+function _hasSubtleCrypto(){ return typeof crypto!=='undefined' && crypto.subtle && typeof crypto.subtle.digest==='function'; }
+function _hexFromBytes(bytes){ return Array.from(bytes).map(b=>b.toString(16).padStart(2,'0')).join(''); }
+function _bytesFromHex(hex){ return new Uint8Array(hex.match(/.{2}/g).map(b=>parseInt(b,16))); }
+async function _pbkdf2Hex(value, saltHex, iterations){
+ const enc = new TextEncoder();
+ const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(String(value)), {name:'PBKDF2'}, false, ['deriveBits']);
+ const bits = await crypto.subtle.deriveBits({name:'PBKDF2', salt:_bytesFromHex(saltHex), iterations, hash:'SHA-256'}, keyMaterial, 256);
+ return _hexFromBytes(new Uint8Array(bits));
+}
+// Génère un nouveau hash sécurisé pour une valeur (PIN ou réponse secrète).
+async function hashPinSecure(value){
+ if(!_hasSubtleCrypto()) return hashPin(value); // repli si Web Crypto indisponible
+ const saltArr = new Uint8Array(16);
+ if(typeof crypto!=='undefined' && crypto.getRandomValues) crypto.getRandomValues(saltArr);
+ else for(let i=0;i<16;i++) saltArr[i]=Math.floor(Math.random()*256);
+ const saltHex = _hexFromBytes(saltArr);
+ const hashHex = await _pbkdf2Hex(value, saltHex, PIN_PBKDF2_ITER);
+ return `pbkdf2:${saltHex}:${hashHex}`;
+}
+// Vérifie une valeur face à un hash stocké, quel que soit son format (nouveau ou ancien).
+async function verifySecureValue(input, stored){
+ if(!stored) return false;
+ if(stored.startsWith('pbkdf2:')){
+  const parts = stored.split(':');
+  if(parts.length!==3 || !_hasSubtleCrypto()) return false;
+  const hashHex = await _pbkdf2Hex(input, parts[1], PIN_PBKDF2_ITER);
+  return hashHex === parts[2];
+ }
+ if(/^\d{4}$/.test(stored)) return input===stored; // ancien format en clair
+ return hashPin(input)===stored; // ancien format djb2
+}
 const DEFAULT_PIN='1234';
-function checkStoredPin(input){
+async function checkStoredPin(input){
  const stored=localStorage.getItem('parentPin');
  // Rien de stocké → code par défaut 1234
  if(!stored)return input===DEFAULT_PIN;
- // Migration : ancienne valeur stockée en clair (4 chiffres)
- if(/^\d{4}$/.test(stored))return input===stored;
- // Valeur hashée (format normal)
- return hashPin(input)===stored;
+ return verifySecureValue(input, stored);
 }
 // ── Verrou anti-force-brute du PIN (V4, audit sécurité) ──
 // Persisté en localStorage (et non de simples variables JS) pour résister

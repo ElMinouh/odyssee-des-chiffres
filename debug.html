@@ -52,10 +52,10 @@ async function diagnose() {
     './js/02-data.js',
     './js/03-figurines-data.js',
     './js/11-init.js',
-    './assets/icon.svg',
     './assets/icon-192.png',
     './assets/icon-512.png',
-    './assets/icon-maskable.png',
+    './assets/icon-maskable-192.png',
+    './assets/icon-maskable-512.png',
     './assets/favicon-32.png',
     './assets/apple-touch-icon.png',
     './assets/portraits.svg',
@@ -271,25 +271,43 @@ async function resetAll() {
 // stats du joueur actif + des actions destructrices (reset, forçage de
 // phase/enrage) sans confirmation parentale.
 //
-// hashPin/DEFAULT_PIN sont volontairement DUPLIQUÉS ici plutôt que
-// d'importer js/01-core.js en entier : ce fichier a des effets de bord
-// (addEventListener sur des éléments propres à index.html) non prévus
-// pour tourner hors de ce contexte. Si l'algorithme de hash change dans
-// 01-core.js (chantier V5), reporter le même changement ici.
+// La logique de vérification (formats pbkdf2:/djb2/clair) est
+// DUPLIQUÉE ici plutôt que d'importer js/01-core.js en entier : ce
+// fichier a des effets de bord (addEventListener sur des éléments
+// propres à index.html) non prévus pour tourner hors de ce contexte.
+// Si le format de hash change à nouveau dans 01-core.js, reporter le
+// même changement ici (PIN_PBKDF2_ITER doit rester identique).
 // ═══════════════════════════════════════════════════════
+const _DBG_PBKDF2_ITER = 150000;
 function _dbgHashPin(pin){let h=5381;for(const c of String(pin))h=((h<<5)+h)+c.charCodeAt(0);return(h>>>0).toString(16);}
-function _dbgCheckPin(input){
+function _dbgHexFromBytes(bytes){ return Array.from(bytes).map(b=>b.toString(16).padStart(2,'0')).join(''); }
+function _dbgBytesFromHex(hex){ return new Uint8Array(hex.match(/.{2}/g).map(b=>parseInt(b,16))); }
+async function _dbgPbkdf2Hex(value, saltHex, iterations){
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(String(value)), {name:'PBKDF2'}, false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({name:'PBKDF2', salt:_dbgBytesFromHex(saltHex), iterations, hash:'SHA-256'}, keyMaterial, 256);
+  return _dbgHexFromBytes(new Uint8Array(bits));
+}
+async function _dbgCheckPin(input){
   const stored = localStorage.getItem('parentPin');
   if(!stored) return input === '1234';
+  if(stored.startsWith('pbkdf2:')){
+    const parts = stored.split(':');
+    const hasSubtle = typeof crypto!=='undefined' && crypto.subtle && typeof crypto.subtle.digest==='function';
+    if(parts.length!==3 || !hasSubtle) return false;
+    return (await _dbgPbkdf2Hex(input, parts[1], _DBG_PBKDF2_ITER)) === parts[2];
+  }
   if(/^\d{4}$/.test(stored)) return input === stored; // ancien format non-hashé
-  return _dbgHashPin(input) === stored;
+  return _dbgHashPin(input) === stored; // ancien format djb2
 }
-const _dbgPin = prompt('🔒 Code parental requis pour accéder au diagnostic :');
-if(!_dbgCheckPin(String(_dbgPin||'').trim())){
-  document.body.innerHTML = '<p style="padding:24px;font-family:sans-serif;color:#e74c3c;">Accès refusé.</p>';
-} else {
-  diagnose();
-}
+(async function(){
+  const _dbgPin = prompt('🔒 Code parental requis pour accéder au diagnostic :');
+  if(!(await _dbgCheckPin(String(_dbgPin||'').trim()))){
+    document.body.innerHTML = '<p style="padding:24px;font-family:sans-serif;color:#e74c3c;">Accès refusé.</p>';
+  } else {
+    diagnose();
+  }
+})();
 </script>
 </body>
 </html>

@@ -244,7 +244,7 @@ async function chatAddFriend(){
  }
 }
 async function chatAcceptContact(from){
- if(!_chatParentGate()) return;
+ if(!(await _chatParentGate())) return;
  const res = await chatFriendAccept(_msgProf, from);
  if(res && res.ok){ if(typeof toast==='function') toast('✅ Ami ajouté !',2000); renderContactsScreen(); }
  else if(typeof toast==='function') toast('Échec de l\u2019ajout.',2000);
@@ -258,11 +258,11 @@ async function chatRemoveContact(other, name){
  const res = await chatFriendRemove(_msgProf, other);
  if(res && res.ok){ if(typeof toast==='function') toast('Contact retiré.',1800); renderContactsScreen(); }
 }
-function _chatParentGate(){
+async function _chatParentGate(){
  if(_msgReadOnly) return true;
  const pin = prompt('Validation parentale\n\nEntre le code parent pour accepter ce contact :');
  if(pin===null) return false;
- if(typeof checkStoredPin==='function' && checkStoredPin(String(pin).trim())) return true;
+ if(typeof checkStoredPin==='function' && (await checkStoredPin(String(pin).trim()))) return true;
  if(typeof toast==='function') toast('❌ Code parent incorrect.',2000);
  return false;
 }
