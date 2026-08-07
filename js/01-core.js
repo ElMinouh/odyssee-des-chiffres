@@ -855,6 +855,37 @@ function initFontScale(){
 }
 
 // ═══════════════════════════════════════════════════════
+// Audit accessibilité (P1) — option de temps par question
+// ═══════════════════════════════════════════════════════
+// 'normal' = comportement d'origine (défaut, rien ne change pour qui n'y
+// touche pas) ; 'relaxed' = ×1.5 ; 'unlimited' = pas de minuteur du tout
+// sur les questions (mode Normal/Boss). N'affecte pas le mode Chrono.
+const TIMER_SCALES = { normal: 1, relaxed: 1.5, unlimited: Infinity };
+
+function applyTimerScale(scale){
+ const s = TIMER_SCALES[scale] ? scale : 'normal';
+ ['normal','relaxed','unlimited'].forEach(k=>{
+  const b = document.getElementById('timerscale-'+k);
+  if(b) b.style.background = (k===s) ? '#27ae60' : '#444';
+ });
+}
+
+function setTimerScale(scale){
+ if(!P) return;
+ P.prefs = P.prefs || {};
+ P.prefs.timerScale = TIMER_SCALES[scale] ? scale : 'normal';
+ if(typeof saveProfile === 'function') saveProfile();
+ applyTimerScale(P.prefs.timerScale);
+ if(typeof toast === 'function') toast('⏱️ Temps par question : '+({normal:'Normal',relaxed:'+50%',unlimited:'Illimité'}[P.prefs.timerScale]), 1500);
+}
+
+// Initialisation : au chargement, applique la préférence sauvegardée
+function initTimerScale(){
+ const scale = (P?.prefs?.timerScale) || 'normal';
+ applyTimerScale(scale);
+}
+
+// ═══════════════════════════════════════════════════════
 // Chantier A4 : Animations de combat enrichies
 // ═══════════════════════════════════════════════════════
 

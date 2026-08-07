@@ -239,12 +239,23 @@ function usePower(name){
 function stopTimer(){if(timerRaf){cancelAnimationFrame(timerRaf);timerRaf=null;}}
 function startTimer(){
  stopTimer();if(GS.frozen)return;
+ // Audit accessibilité (P1) : réglage "Temps par question"
+ const _tScale=(typeof TIMER_SCALES!=='undefined' && P?.prefs?.timerScale && TIMER_SCALES[P.prefs.timerScale]) || 1;
+ if(_tScale===Infinity){
+  // Illimité : pas de minuteur, barre pleine et statique, jamais de "temps écoulé"
+  const _tb0=_timerBarEl||$('timer-bar'); if(_tb0){_tb0.style.width='100%';_tb0.className='';}
+  const _heart0=$('timer-heart'); if(_heart0)_heart0.style.display='none';
+  const _secs0=$('timer-secs'); if(_secs0)_secs0.textContent='∞';
+  $('BODY').classList.remove('body-alert','urgency-bg');
+  return;
+ }
  totalTime=(GS.isBoss?12:20)+(P.skills.clock||0)*5;
  // v8.7.50 (O4) : en phase enragée, le boss met plus de pression (timer -3s, plancher 9s)
  if(GS.isBoss && GS.bossEnraged) totalTime = Math.max(9, totalTime - 3);
  if(GS.activeEvent?.effect==='reduce_timer')totalTime=Math.max(8,totalTime-5);
  // Plus de temps pour les questions à lire/observer (problèmes en barres, exercices visuels)
  if(GS.q && (GS.q.visualHtml || (GS.q.display && GS.q.display.length>40))) totalTime += 12;
+ totalTime *= _tScale;
  timerEnd=performance.now()+totalTime*1000;
  _timerTauntFired=false;
  const tb=_timerBarEl||$('timer-bar');
