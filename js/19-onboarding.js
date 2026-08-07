@@ -431,6 +431,16 @@ function _obShowTooltip(step, targetEl){
   + '</div>';
  ov.classList.remove('hidden');
  _obPositionBox(step, targetEl);
+ // v11.7.41 (P4) : piège de focus seulement quand la bulle est centrée
+ // (pas de vraie zone de la page à surligner) — quand une cible réelle
+ // est mise en avant (spotlight), l'utilisateur doit pouvoir interagir
+ // avec elle directement, donc on ne piège pas le focus dans ce cas.
+ if(ov._releaseTrap){ ov._releaseTrap(); delete ov._releaseTrap; }
+ if(!hasTarget && typeof trapFocus==='function'){
+  ov._releaseTrap = trapFocus(ov);
+ } else if(typeof focusFirstIn==='function'){
+  focusFirstIn(ov);
+ }
 }
 
 function _obPositionBox(step, targetEl){
@@ -523,7 +533,7 @@ function obPrev(){ if(_obIdx>0){ _obIdx--; _obRenderStep(); } }
 
 function _obCloseUI(){
  const ov = document.getElementById('ob-overlay');
- if(ov){ ov.classList.add('hidden'); ov.innerHTML=''; }
+ if(ov){ if(ov._releaseTrap){ov._releaseTrap();delete ov._releaseTrap;} ov.classList.add('hidden'); ov.innerHTML=''; }
 }
 
 // v11.6.7 : à la fin d'une visite (Terminer OU Passer), replie tous les

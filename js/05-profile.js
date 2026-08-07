@@ -644,7 +644,7 @@ function _pcEl(){
 }
 function _pcClose(){
  const ov = document.getElementById('pc-overlay');
- if(ov) ov.remove();
+ if(ov){ if(ov._releaseTrap){ov._releaseTrap();delete ov._releaseTrap;} ov.remove(); }
 }
 function _pcShowConfirm(){
  const ov = _pcEl();
@@ -660,6 +660,7 @@ function _pcShowConfirm(){
   +  '<button onclick="_pcConfirmYes()" style="background:#27ae60;color:#fff;border:none;border-radius:10px;padding:12px 20px;font-weight:700;">✅ Oui, c\'est moi</button>'
   +  '<button onclick="_pcConfirmNo()" style="background:#555;color:#fff;border:none;border-radius:10px;padding:12px 20px;font-weight:700;">↩️ Non, changer</button>'
   + '</div></div>';
+ if(typeof trapFocus==='function') ov._releaseTrap=trapFocus(ov);
 }
 function _pcConfirmYes(){
  _pcClose();
@@ -686,6 +687,7 @@ function _pcShowPin(){
   + '<button onclick="_pcConfirmNo()" style="background:none;border:none;color:#bdc3c7;font-size:.78em;margin-top:14px;text-decoration:underline;cursor:pointer;">Ce n\'est pas moi</button>'
   + '</div>';
  setTimeout(()=>{ const inp=$('pc-pin-input'); if(inp) inp.focus(); }, 50);
+ if(typeof trapFocus==='function') ov._releaseTrap=trapFocus(ov);
 }
 function _pcCheckPin(){
  const inp=$('pc-pin-input'), msg=$('pc-pin-msg');

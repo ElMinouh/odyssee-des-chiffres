@@ -221,12 +221,13 @@ function pGuide(key){
  let ov=document.getElementById('p-guide-ov');
  if(!ov){ ov=document.createElement('div'); ov.id='p-guide-ov'; ov.className='p-guide-ov hidden'; ov.onclick=function(e){ if(e.target===ov) pGuideClose(); }; document.body.appendChild(ov); }
  ov.innerHTML='<div class="p-guide-box">'
-  +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span style="font-weight:700;color:#7fd4f0;">'+g.t+' — pas à pas</span><span onclick="pGuideClose()" style="cursor:pointer;font-size:1.2em;color:#9fc3cf;">\u2715</span></div>'
+  +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span style="font-weight:700;color:#7fd4f0;">'+g.t+' — pas à pas</span><button onclick="pGuideClose()" aria-label="Fermer" style="cursor:pointer;font-size:1.2em;color:#9fc3cf;background:none;border:none;padding:0;">\u2715</button></div>'
   +g.s.map((st,i)=>'<div class="p-guide-step"><span class="p-guide-num">'+(i+1)+'</span><span>'+st+'</span></div>').join('')
   +'<button onclick="pGuideClose()" style="margin-top:8px;width:100%;background:#3aa0c4;">J\u2019ai compris</button></div>';
  ov.classList.remove('hidden');
+ if(typeof trapFocus==='function') ov._releaseTrap=trapFocus(ov);
 }
-function pGuideClose(){ const ov=document.getElementById('p-guide-ov'); if(ov) ov.classList.add('hidden'); }
+function pGuideClose(){ const ov=document.getElementById('p-guide-ov'); if(ov){ if(ov._releaseTrap){ov._releaseTrap();delete ov._releaseTrap;} ov.classList.add('hidden'); } }
 function renderParentFigurines(){
  // Précharge les portraits si pas déjà fait. Re-rend une fois prêt.
  if(typeof loadPortraits==='function'&&!_portraitsLoaded){
@@ -1614,6 +1615,7 @@ function pmRemoveProfile(n){
   + '</div></div>';
  document.body.appendChild(ov);
  setTimeout(()=>{ const inp=document.getElementById('pm-delete-input'); if(inp) inp.focus(); }, 50);
+ if(typeof trapFocus==='function') ov._releaseTrap=trapFocus(ov);
 }
 function _pmCheckDeleteInput(){
  const inp=document.getElementById('pm-delete-input'), btn=document.getElementById('pm-delete-btn'), err=document.getElementById('pm-delete-err');
@@ -1626,7 +1628,7 @@ function _pmCheckDeleteInput(){
  if(err) err.textContent = (inp.value && !match) ? 'Le prénom ne correspond pas.' : '';
 }
 function _pmCloseDeleteConfirm(){
- const ov=document.getElementById('pm-delete-overlay'); if(ov) ov.remove();
+ const ov=document.getElementById('pm-delete-overlay'); if(ov){ if(ov._releaseTrap){ov._releaseTrap();delete ov._releaseTrap;} ov.remove(); }
  _pmDeleteTarget=null;
 }
 function _pmConfirmDelete(){

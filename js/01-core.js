@@ -304,6 +304,41 @@ function repeatQuestion(){
 }
 let toastT=null;
 function toast(msg,dur=2200){const el=$('toast');el.innerText=msg;el.classList.remove('hidden');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.add('hidden'),dur);}
+// ═══════════════════════════════════════════════════════
+// PIÈGE DE FOCUS POUR FENÊTRES MODALES (accessibilité — P4)
+// À l'ouverture d'une modale : releaseFn = trapFocus(container).
+// À la fermeture : releaseFn() — rend le focus à l'élément d'origine.
+// Après un ré-affichage interne (ex: page suivante d'un livre) sans
+// fermer/rouvrir la modale : focusFirstIn(container) pour replacer le
+// focus sur un élément utile plutôt que de le perdre sur <body>.
+// ═══════════════════════════════════════════════════════
+const _FOCUSABLE_SEL='a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+function _focusablesIn(container){
+ if(!container) return [];
+ return Array.prototype.filter.call(container.querySelectorAll(_FOCUSABLE_SEL), el=>el.offsetParent!==null);
+}
+function focusFirstIn(container){
+ const els=_focusablesIn(container);
+ if(els.length) els[0].focus();
+}
+function trapFocus(container){
+ if(!container) return function(){};
+ const prevFocus=document.activeElement;
+ function onKeydown(e){
+  if(e.key!=='Tab') return;
+  const els=_focusablesIn(container);
+  if(!els.length) return;
+  const first=els[0], last=els[els.length-1];
+  if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+  else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+ }
+ container.addEventListener('keydown', onKeydown);
+ setTimeout(()=>focusFirstIn(container), 40);
+ return function releaseFocus(){
+  container.removeEventListener('keydown', onKeydown);
+  try{ if(prevFocus && typeof prevFocus.focus==='function' && document.body.contains(prevFocus)) prevFocus.focus(); }catch(e){}
+ };
+}
 
 // ── PIN sécurisé ──
 function hashPin(pin){let h=5381;for(const c of String(pin))h=((h<<5)+h)+c.charCodeAt(0);return(h>>>0).toString(16);}

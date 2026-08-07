@@ -1708,7 +1708,7 @@ function openArchipelZoom(zoneId){
  overlay.onclick = function(e){ if(e.target === overlay) closeArchipelZoom(); };
  overlay.innerHTML = `
   <div class="archipel-zoom-content" style="--zone-bg-top:${bg.top};--zone-bg-bot:${bg.bot};">
-   <button class="archipel-zoom-close" onclick="closeArchipelZoom()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+   <button class="archipel-zoom-close" aria-label="Fermer" onclick="closeArchipelZoom()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
    <div class="archipel-zoom-header">
     <div style="font-size:2em;line-height:1;">${zone.emoji}</div>
     <div class="archipel-zoom-title">${zone.label}</div>
@@ -1733,11 +1733,12 @@ function openArchipelZoom(zoneId){
    </div>
   </div>`;
  document.body.appendChild(overlay);
+ if(typeof trapFocus==='function') overlay._releaseTrap=trapFocus(overlay);
 }
 
 function closeArchipelZoom(){
  const el = document.getElementById('archipel-zoom-overlay');
- if(el) el.remove();
+ if(el){ if(el._releaseTrap){el._releaseTrap();delete el._releaseTrap;} el.remove(); }
 }
 
 // Action point d'entrée (legacy compat) — anime aussi maintenant
@@ -1805,7 +1806,7 @@ function openArchipelShop(regionId){
  overlay.id = 'archipel-shop-overlay';
  overlay.innerHTML = `
   <div class="archipel-shop-content" data-theme="${shop.theme}" style="background:${shop.bg};border-color:${shop.accent};">
-   <button class="archipel-shop-close" data-action="close" style="color:${shop.accent};"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+   <button class="archipel-shop-close" data-action="close" aria-label="Fermer" style="color:${shop.accent};"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
    <div class="archipel-shop-header">
     <div class="archipel-shop-header-emoji">${shop.emoji}</div>
     <div class="archipel-shop-header-title" style="color:${shop.accent};">${shop.name}</div>
@@ -1821,6 +1822,7 @@ function openArchipelShop(regionId){
    </div>
   </div>`;
  document.body.appendChild(overlay);
+ if(typeof trapFocus==='function') overlay._releaseTrap=trapFocus(overlay);
  // v8.7.28 : tous les handlers via addEventListener (au lieu de onclick inline)
  // pour éviter les problèmes de bubble / scope global.
  // Fermeture au clic sur le fond (en dehors de la modale)
@@ -1858,7 +1860,7 @@ function openArchipelShop(regionId){
 }
 function closeArchipelShop(){
  const el = document.getElementById('archipel-shop-overlay');
- if(el) el.remove();
+ if(el){ if(el._releaseTrap){el._releaseTrap();delete el._releaseTrap;} el.remove(); }
 }
 
 // ═══ ZOOM ADAPTATIF (carte mondiale, conservé) ═══

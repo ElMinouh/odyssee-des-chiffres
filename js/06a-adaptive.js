@@ -427,6 +427,7 @@ function showPlateauHint(){ return false; /* v9.0.10: suggestions de changement 
  `;
  document.body.appendChild(overlay);
  const close = () => {
+  if(overlay._releaseTrap){overlay._releaseTrap();delete overlay._releaseTrap;}
   overlay.classList.add('plateau-fadeout');
   setTimeout(()=>overlay.remove(), 300);
  };
@@ -435,6 +436,7 @@ function showPlateauHint(){ return false; /* v9.0.10: suggestions de changement 
   setTimeout(()=>{ try{config.ctaAction();}catch(e){console.warn('plateau cta',e);} }, 350);
  };
  overlay.querySelector('.plateau-hint-skip').onclick = close;
+ if(typeof trapFocus==='function') overlay._releaseTrap=trapFocus(overlay);
  // Petit son discret
  if(typeof beep === 'function') beep(440,'sine',.3,.08);
  return true;
@@ -499,6 +501,7 @@ function showHeroEvolution(stage){
  if(typeof startConfetti==='function') startConfetti();
  // Fermeture
  const close = () => {
+  if(overlay._releaseTrap){overlay._releaseTrap();delete overlay._releaseTrap;}
   overlay.classList.add('he-fadeout');
   setTimeout(()=>overlay.remove(), 400);
   if(reward && typeof toast==='function'){
@@ -506,6 +509,7 @@ function showHeroEvolution(stage){
   }
  };
  overlay.querySelector('.he-cta').onclick = close;
+ if(typeof trapFocus==='function') overlay._releaseTrap=trapFocus(overlay);
 }
 // ═══════════════════════════════════════════════════════
 // PROGRESSION INTRA-ANNÉE PAR CLASSE (chantier P9)

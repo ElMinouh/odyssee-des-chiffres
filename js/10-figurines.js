@@ -331,6 +331,7 @@ function _renderFigViewer(fig,id){
  _genFigStars();
  // Afficher
  $('fig-viewer').classList.remove('hidden');
+ if(typeof trapFocus==='function') $('fig-viewer')._releaseTrap=trapFocus($('fig-viewer'));
  // Animation si figurine possédée
  if(_fvParentMode||(P.ownedFigurines||[]).includes(id)){setTimeout(()=>playFullFigAnim(id,fig.gc),80);}
  _fvCurrentId=id;_fvCurrentGc=fig.gc;
@@ -425,6 +426,7 @@ function figReadStop(){
 function closeFigViewer(){
  if(typeof figReadStop==='function') figReadStop();             // couper la lecture en fermant
  $('fig-viewer').classList.add('hidden');
+ if($('fig-viewer')._releaseTrap){$('fig-viewer')._releaseTrap();delete $('fig-viewer')._releaseTrap;}
  if(_fvRaf){cancelAnimationFrame(_fvRaf);_fvRaf=null;}
  clearTimeout(_fvResumeT);
  if($('fig-viewer')._escHandler){

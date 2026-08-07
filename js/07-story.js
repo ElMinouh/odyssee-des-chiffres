@@ -1941,6 +1941,7 @@ function _showStoryModal(chapter, onDone){
  function _bStop(){ _readActive=false; _readUtter=null; try{ window.speechSynthesis.cancel(); }catch(e){} if(typeof _musicDuck==='function') _musicDuck(false); _bSyncPlay(); }
  function close(){
   _bStop();
+  if(overlay._releaseTrap){overlay._releaseTrap();delete overlay._releaseTrap;}
   overlay.classList.add('story-out');
   setTimeout(()=>{ try{ overlay.remove(); }catch(e){} if(onDone) onDone(); }, 300);
  }
@@ -1974,9 +1975,11 @@ function _showStoryModal(chapter, onDone){
   const _pa = overlay.querySelector('.snarr-pause'); if(_pa) _pa.onclick = _bPause;
   const _st = overlay.querySelector('.snarr-stop');  if(_st) _st.onclick = _bStop;
   if(!_readActive && typeof beep==='function'){ try{ beep(520,'sine',.12,.05); }catch(e){} }
+  if(typeof focusFirstIn==='function') focusFirstIn(overlay);
  }
  render();
  document.body.appendChild(overlay);
+ if(typeof trapFocus==='function') overlay._releaseTrap=trapFocus(overlay);
 }
 function _markStorySeen(id){
  if(typeof P==='undefined' || !P) return;
@@ -2334,8 +2337,10 @@ function _openBossCard(zoneId){
  document.body.appendChild(overlay);
  requestAnimationFrame(() => overlay.classList.add('show'));
  if(typeof beep==='function'){ try{ beep(440,'sine',.1,.05); }catch(e){} }
+ if(typeof trapFocus==='function') overlay._releaseTrap=trapFocus(overlay);
 }
 function _closeBossCard(overlay){
+ if(overlay._releaseTrap){overlay._releaseTrap();delete overlay._releaseTrap;}
  overlay.classList.remove('show');
  setTimeout(() => { try{ overlay.remove(); }catch(e){} }, 280);
 }

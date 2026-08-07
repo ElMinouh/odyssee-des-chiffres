@@ -991,10 +991,12 @@ function openAdventureLog(){
  });
  // Animation d'entrée
  requestAnimationFrame(() => overlay.classList.add('advlog-show'));
+ if(typeof trapFocus==='function') overlay._releaseTrap=trapFocus(overlay);
 }
 function closeAdventureLog(){
  const overlay = document.querySelector('.advlog-overlay');
  if(!overlay) return;
+ if(overlay._releaseTrap){overlay._releaseTrap();delete overlay._releaseTrap;}
  overlay.classList.remove('advlog-show');
  setTimeout(() => overlay.remove(), 300);
 }

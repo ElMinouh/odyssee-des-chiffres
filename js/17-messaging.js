@@ -138,10 +138,15 @@ async function openMessaging(readOnlyName){
   else { try{ chatRegister(prof).catch(function(){}); }catch(e){} } // rafraîchit prénom+avatar en arrière-plan
  }
  renderContactsScreen();
+ if(typeof trapFocus==='function' && ov) ov._releaseTrap=trapFocus(ov);
 }
 function closeMessaging(){
  _stopConvPoll(); _msgConv = null;
- const ov = _msgEl(); if(ov) ov.classList.add('hidden');
+ const ov = _msgEl();
+ if(ov){
+  if(ov._releaseTrap){ov._releaseTrap();delete ov._releaseTrap;}
+  ov.classList.add('hidden');
+ }
  if(typeof chatRefreshBadges==='function') chatRefreshBadges();
 }
 
