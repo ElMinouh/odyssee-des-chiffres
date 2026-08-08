@@ -1386,7 +1386,20 @@ async function doCloudSyncNow(name,btn){
  if(typeof pushProfileToCloud === 'function'){
   const ok = await pushProfileToCloud();
   if(ok) toast('☁️ Synchronisé !',2000);
-  else toast('⚠️ Échec de synchronisation',2500);
+  else{
+   // v12.0.20 (fiche 7, audit de cohérence globale) : la cause réelle de
+   // l'échec est déjà calculée par pushProfileToCloud() (_cloudLastError,
+   // exposée via getCloudStatus()) mais jusqu'ici jamais utilisée ici — on
+   // affichait un message générique quelle que soit la cause, en rupture de
+   // ton avec le message de succès chaleureux juste au-dessus.
+   const status = (typeof getCloudStatus==='function') ? getCloudStatus() : null;
+   const err = status && status.lastError;
+   let msg = '⚠️ Échec de synchronisation, réessaie dans quelques instants.';
+   if(err==='Failed to fetch' || /network|fetch/i.test(String(err||''))) msg='⚠️ Pas de connexion internet. Réessaie une fois connecté(e).';
+   else if(/^HTTP 5/.test(String(err||''))) msg='⚠️ Le service cloud est momentanément indisponible. Réessaie dans quelques instants.';
+   else if(/^HTTP 429/.test(String(err||''))) msg='⚠️ Trop de synchronisations d\u2019un coup, patiente une minute puis réessaie.';
+   toast(msg,3000);
+  }
   renderCloudPanel();
  }
 }
@@ -1499,7 +1512,7 @@ async function _doForceCloudRestoreProceed(code, input, msg){
   else if(result.error === 'invalid_code') msg.textContent='❌ Format de code invalide. Exemple : SOREN-7B4K9X';
   else if(result.error === 'storage_full') msg.textContent='❌ Stockage local plein.';
   else if(result.error === 'network_error' || result.error === 'Failed to fetch') msg.textContent='❌ Pas de connexion internet. Connecte-toi et réessaie.';
-  else msg.textContent='❌ Erreur : '+result.error;
+  else msg.textContent='❌ Une erreur inattendue est survenue. Réessaie dans quelques instants.';
   return;
  }
  msg.style.color='#2ecc71';
@@ -1529,7 +1542,8 @@ async function doCloudRestore(){
   if(result.error === 'not_found') msg.textContent='❌ Code introuvable. Vérifie l\'orthographe.';
   else if(result.error === 'invalid_code') msg.textContent='❌ Format de code invalide.';
   else if(result.error === 'storage_full') msg.textContent='❌ Espace de stockage local plein.';
-  else msg.textContent='❌ Erreur : '+result.error;
+  else if(result.error === 'network_error' || result.error === 'Failed to fetch') msg.textContent='❌ Pas de connexion internet. Connecte-toi et réessaie.';
+  else msg.textContent='❌ Une erreur inattendue est survenue. Réessaie dans quelques instants.';
   return;
  }
  msg.style.color='#2ecc71';
