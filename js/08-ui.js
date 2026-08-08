@@ -18,7 +18,7 @@ function renderLevelUnlocks(){
  const bar='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">'+((typeof IMPLEMENTED_SUBJECTS!=='undefined')?IMPLEMENTED_SUBJECTS:[['math','🔢 Maths'],['fr','📖 Français'],['hist','🏛️ Histoire']]).map(a=>`<button onclick="setLvlSubj('${a[0]}')" style="font-size:.8em;padding:9px 14px;border-radius:8px;background:${_dashSubj===a[0]?'#27ae60':'#2c3e50'};">${a[1]}</button>`).join('')+'</div>';
  const row=(lvl,icon)=>{
   const ok=isUnlocked(lvl,_dashSubj),pW=prevWins(lvl,_dashSubj),req=UNLOCK_REQ[lvl];
-  return `<div class="level-lock ${ok?'unlocked':'locked'}"><span>${icon} ${lab(lvl)}</span><span style="font-size:.78em;color:${ok?'#2ecc71':'#e74c3c'};">${ok?'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg> Débloqué':'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> '+pW+'/'+req+' victoires'}</span></div>`;
+  return `<div class="level-lock ${ok?'unlocked':'locked'}"><span>${icon} ${lab(lvl)}</span><span style="font-size:.8em;color:${ok?'#2ecc71':'#e74c3c'};">${ok?'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg> Débloqué':'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> '+pW+'/'+req+' victoires'}</span></div>`;
  };
  const groups=(typeof GROUP_ORDER!=='undefined' && typeof GROUP_META!=='undefined')
    ? GROUP_ORDER.map(k=>GROUP_META[k])
@@ -42,7 +42,7 @@ function renderOpStats(){
   const cats=['conj','orth','gram','vocab'];
   $('p-opstats').innerHTML=bar+'<strong>📊 Par catégorie :</strong><br>'+
    cats.map(c=>{const s=(P.opStatsFr||{})[c]||{ok:0,fail:0};const t=s.ok+s.fail;if(!t)return'';const pct=Math.round(s.ok/t*100);const col=pct>=80?'#2ecc71':pct>=60?'#f1c40f':'#e74c3c';
-   return`<div class="op-stat-row"><span style="width:90px;text-align:left;font-size:.82em;">${names[c]}</span><div class="op-stat-bar"><div class="op-stat-fill" style="width:${pct}%;background:${col};"></div></div><span style="color:${col};font-weight:700;margin-left:6px;font-size:.82em;">${pct}%</span></div>`;}).filter(Boolean).join('')||'<span style="color:#bdc3c7;">Pas encore de données en français.</span>';
+   return`<div class="op-stat-row"><span style="width:90px;text-align:left;font-size:.8em;">${names[c]}</span><div class="op-stat-bar"><div class="op-stat-fill" style="width:${pct}%;background:${col};"></div></div><span style="color:${col};font-weight:700;margin-left:6px;font-size:.8em;">${pct}%</span></div>`;}).filter(Boolean).join('')||'<span style="color:#bdc3c7;">Pas encore de données en français.</span>';
   return;
  }
  if(_dashSubj==='hist'){
@@ -50,13 +50,13 @@ function renderOpStats(){
   const cats=['frise','personnages','evenements','civilisation','temps','repere'];
   $('p-opstats').innerHTML=bar+'<strong>📊 Par catégorie :</strong><br>'+
    cats.map(c=>{const s=(P.opStatsHist||{})[c]||{ok:0,fail:0};const t=s.ok+s.fail;if(!t)return'';const pct=Math.round(s.ok/t*100);const col=pct>=80?'#2ecc71':pct>=60?'#f1c40f':'#e74c3c';
-   return`<div class="op-stat-row"><span style="width:90px;text-align:left;font-size:.82em;">${names[c]}</span><div class="op-stat-bar"><div class="op-stat-fill" style="width:${pct}%;background:${col};"></div></div><span style="color:${col};font-weight:700;margin-left:6px;font-size:.82em;">${pct}%</span></div>`;}).filter(Boolean).join('')||'<span style="color:#bdc3c7;">Pas encore de données en histoire.</span>';
+   return`<div class="op-stat-row"><span style="width:90px;text-align:left;font-size:.8em;">${names[c]}</span><div class="op-stat-bar"><div class="op-stat-fill" style="width:${pct}%;background:${col};"></div></div><span style="color:${col};font-weight:700;margin-left:6px;font-size:.8em;">${pct}%</span></div>`;}).filter(Boolean).join('')||'<span style="color:#bdc3c7;">Pas encore de données en histoire.</span>';
   return;
  }
  const ops=['+','-','x','/','geo'];const names={'+':"Addition",'-':"Soustraction",'x':"Multiplication",'/':'Division','geo':'Géométrie'};
  $('p-opstats').innerHTML=bar+'<strong>📊 Par opération :</strong><br>'+
   ops.map(op=>{const s=P.opStats[op]||{ok:0,fail:0};const t=s.ok+s.fail;if(!t)return'';const pct=Math.round(s.ok/t*100);const col=pct>=80?'#2ecc71':pct>=60?'#f1c40f':'#e74c3c';
-  return`<div class="op-stat-row"><span style="width:90px;text-align:left;font-size:.82em;">${names[op]}</span><div class="op-stat-bar"><div class="op-stat-fill" style="width:${pct}%;background:${col};"></div></div><span style="color:${col};font-weight:700;margin-left:6px;font-size:.82em;">${pct}%</span></div>`;}).filter(Boolean).join('')||'<span style="color:#bdc3c7;">Pas encore de données.</span>';
+  return`<div class="op-stat-row"><span style="width:90px;text-align:left;font-size:.8em;">${names[op]}</span><div class="op-stat-bar"><div class="op-stat-fill" style="width:${pct}%;background:${col};"></div></div><span style="color:${col};font-weight:700;margin-left:6px;font-size:.8em;">${pct}%</span></div>`;}).filter(Boolean).join('')||'<span style="color:#bdc3c7;">Pas encore de données.</span>';
 }
 function setRevSubj(s){_dashSubj=s;if(_histSubj!=='all')_histSubj=s;_dashSyncAll();}
 function renderErrors(){
@@ -112,7 +112,7 @@ function renderStageProgress(stage){
  else if(next.id === 'maitre'){ pct = Math.min(totalWins/50, totalStars/100) * 100; }
  else if(next.id === 'legende'){ pct = Math.min(totalWins/100, totalStars/500, figs/30) * 100; }
  pct = Math.min(100, Math.max(0, pct));
- return `<div style="margin-top:6px;font-size:.74em;color:#bdc3c7;">
+ return `<div style="margin-top:6px;font-size:.72em;color:#bdc3c7;">
   Prochain stade : <span style="color:${next.color};">${next.icon} ${next.label}</span>
   <div style="height:6px;background:rgba(255,255,255,.1);border-radius:3px;margin-top:4px;overflow:hidden;">
    <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,${stage.color},${next.color});transition:width .5s;"></div>
@@ -135,7 +135,7 @@ function renderAvatars(){
  // Liste des avatars verrouillés (stades suivants)
  const lockedAvatars = AVATAR_LIST.filter(a => !unlocked.includes(a));
  const lockedHTML = lockedAvatars.length ? `<details style="margin-top:8px;">
-  <summary style="cursor:pointer;font-size:.84em;color:#bdc3c7;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> ${lockedAvatars.length} avatars à débloquer</summary>
+  <summary style="cursor:pointer;font-size:.8em;color:#bdc3c7;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> ${lockedAvatars.length} avatars à débloquer</summary>
   <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:6px 0;opacity:.45;">${lockedAvatars.map(a=>`<span class="ava" style="filter:grayscale(.7);cursor:not-allowed;">${a}</span>`).join('')}</div>
  </details>` : '';
  $('p-avatars').innerHTML = stageHTML + unlockedHTML + lockedHTML;
@@ -166,7 +166,7 @@ function renderMusics(){
   const owned=(P.ownedMusics||['theme']).includes(s.id)||s.price===0;
   const cur=(P.music||'theme')===s.id;
   return `<div class="skin-row"><span style="font-size:1.3em;width:34px;">🎵</span>
-   <div style="flex:1;text-align:left;"><div style="font-weight:700;">${s.label}</div><div style="font-size:.75em;color:#bdc3c7;">${s.price===0?'Gratuit':s.price+' ⭐'}</div></div>
+   <div style="flex:1;text-align:left;"><div style="font-weight:700;">${s.label}</div><div style="font-size:.72em;color:#bdc3c7;">${s.price===0?'Gratuit':s.price+' ⭐'}</div></div>
    <button onclick="testMusic('${s.id}')" style="font-size:.8em;padding:5px 8px;background:#2c3e50;" title="Aperçu">▶</button>
    ${owned?`<button onclick="selectMusic('${s.id}')" style="font-size:.8em;padding:5px 10px;margin-left:4px;background:${cur?'#27ae60':'#2c3e50'};">${cur?'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg> Choisie':'Choisir'}</button>`:
             `<button onclick="buyMusic('${s.id}',${s.price})" style="font-size:.8em;padding:5px 10px;margin-left:4px;">Acheter</button>`}
@@ -187,8 +187,8 @@ function renderSkins(){
  $('p-skins').innerHTML=SKINS.map(s=>{
   const owned=(P.ownedSkins||[]).includes(s.id)||s.price===0;
   const equipped=(P.equippedSkin||'default')===s.id;
-  return`<div class="skin-row"><span style="font-size:1.7em;width:40px;">${s.prv}</span>
-   <div style="flex:1;text-align:left;"><div style="font-weight:700;">${s.label}</div><div style="font-size:.75em;color:#bdc3c7;">${s.price===0?'Gratuit':s.price+' ⭐'}</div></div>
+  return`<div class="skin-row"><span style="font-size:1.6em;width:40px;">${s.prv}</span>
+   <div style="flex:1;text-align:left;"><div style="font-weight:700;">${s.label}</div><div style="font-size:.72em;color:#bdc3c7;">${s.price===0?'Gratuit':s.price+' ⭐'}</div></div>
    ${owned?`<button onclick="equipSkin('${s.id}')" style="font-size:.8em;padding:5px 10px;background:${equipped?'#27ae60':'#2c3e50'};">${equipped?'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg> Équipé':'Équiper'}</button>`:
             `<button onclick="buySkin('${s.id}',${s.price})" style="font-size:.8em;padding:5px 10px;">Acheter</button>`}
   </div>`;
@@ -273,13 +273,13 @@ function renderMilestones(){
   // Barre de progression avec segments pour chaque palier
   const segments = m.tiers.map((t,i)=>{
    const done = i <= prog.currentTier;
-   return `<span title="${t.goal}" style="display:inline-block;min-width:28px;text-align:center;font-size:.68em;padding:1px 4px;border-radius:6px;margin:0 2px;${done?'background:#2ecc71;color:#000;font-weight:700;':'background:rgba(255,255,255,.12);color:#bdc3c7;'}">${t.goal}</span>`;
+   return `<span title="${t.goal}" style="display:inline-block;min-width:28px;text-align:center;font-size:.65em;padding:1px 4px;border-radius:6px;margin:0 2px;${done?'background:#2ecc71;color:#000;font-weight:700;':'background:rgba(255,255,255,.12);color:#bdc3c7;'}">${t.goal}</span>`;
   }).join('');
   return `<div class="milestone-row">
    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
     <span style="font-size:1.6em;">${m.icon}</span>
     <div style="flex:1;">
-     <div style="font-weight:700;font-size:.95em;">${m.label}</div>
+     <div style="font-weight:700;font-size:.9em;">${m.label}</div>
      <div style="font-size:.72em;color:#bdc3c7;">${m.desc} : <strong style="color:#fff;">${prog.current}</strong>${prog.isMaxed?'':` / ${prog.nextGoal}`}</div>
     </div>
    </div>
