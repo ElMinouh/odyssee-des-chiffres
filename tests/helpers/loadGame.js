@@ -55,7 +55,7 @@ function fakeEl() {
       [Symbol.iterator]() { return cls[Symbol.iterator](); },
     },
     appendChild() {}, removeChild() {}, remove() {}, setAttribute() {}, addEventListener() {},
-    querySelector() { return null; }, querySelectorAll() { return []; },
+    querySelector() { return fakeEl(); }, querySelectorAll() { return []; },
   };
 }
 
@@ -83,9 +83,16 @@ export function loadGame(files, initialStorage = {}) {
     return elementRegistry.get(id);
   }
 
+  // v12.0.20 — Registre des éléments créés dynamiquement (document.createElement),
+  // distinct du registre par id ci-dessus : plusieurs fonctions du jeu créent un
+  // <div> overlay et posent son innerHTML sans jamais lui donner d'id ni l'exposer
+  // (_renderColBook, _openBossCard, openAdventureLog...). Ce registre permet aux
+  // tests d'inspecter le dernier overlay créé (voir _lastCreatedElement ci-dessous).
+  const createdElements = [];
+
   const documentStub = {
     getElementById: (id) => registryEl(id),
-    createElement: () => fakeEl(),
+    createElement: () => { const el = fakeEl(); createdElements.push(el); return el; },
     querySelector: () => null,
     querySelectorAll: () => [],
     addEventListener: () => {},
@@ -279,10 +286,22 @@ globalThis.__api = {
   _mergeCloudProfiles: (typeof _mergeCloudProfiles==='function') ? _mergeCloudProfiles : undefined,
   isValidCloudCode: (typeof isValidCloudCode==='function') ? isValidCloudCode : undefined,
   generateCloudCode: (typeof generateCloudCode==='function') ? generateCloudCode : undefined,
+  // --- v12.0.20 (filet de non-régression narrative, fiche 9 de l'audit de
+  // cohérence globale) : les fonctions de rendu de contenu narratif qui
+  // doivent TOUJOURS produire un bouton de fermeture visible.
+  _renderColBook: (typeof _renderColBook==='function') ? _renderColBook : undefined,
+  _renderHistBook: (typeof _renderHistBook==='function') ? _renderHistBook : undefined,
+  _openBossCard: (typeof _openBossCard==='function') ? _openBossCard : undefined,
+  _renderTaleIllus: (typeof _renderTaleIllus==='function') ? _renderTaleIllus : undefined,
+  openAdventureLog: (typeof openAdventureLog==='function') ? openAdventureLog : undefined,
 };
 `;
 
   const context = vm.createContext(sandbox);
   vm.runInContext(sources + epilogue, context, { filename: 'game-bundle.js' });
+  // Exposition côté Node (pas dans l'épilogue vm) : le registre d'éléments créés
+  // vit dans la closure de loadGame(), inaccessible depuis le code vm.
+  sandbox.__api._createdElements = () => createdElements;
+  sandbox.__api._lastCreatedElement = () => createdElements[createdElements.length - 1];
   return sandbox.__api;
 }
