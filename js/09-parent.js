@@ -1749,17 +1749,17 @@ function resetAllProfiles(){
 // Récupération du code parent via question secrète (écran de verrouillage).
 async function recoverParentPin(){
  const q=localStorage.getItem('parentSecQ');
- if(!q){ alert("Aucune question secrète n'a été configurée.\n\nAstuce : si le code n'a jamais été changé, le code par défaut est 1234."); return; }
+ if(!q){ showAlert("Aucune question secrète n'a été configurée.\n\nAstuce : si le code n'a jamais été changé, le code par défaut est 1234."); return; }
  const ans=prompt('Question secrète :\n\n'+q);
  if(ans===null) return;
  const stored=localStorage.getItem('parentSecA');
  if(stored && (await verifySecureValue(String(ans).trim().toLowerCase(), stored))){
   const np=prompt('✅ Bonne réponse !\n\nChoisis un nouveau code parent (4 chiffres) :');
   if(np!==null){
-   if(/^\d{4}$/.test(String(np).trim())){ localStorage.setItem('parentPin', await hashPinSecure(String(np).trim())); alert('Code mis à jour. Tu peux maintenant te connecter avec ce nouveau code.'); }
-   else alert('Code invalide : il faut exactement 4 chiffres. Recommence.');
+   if(/^\d{4}$/.test(String(np).trim())){ localStorage.setItem('parentPin', await hashPinSecure(String(np).trim())); showAlert('Code mis à jour. Tu peux maintenant te connecter avec ce nouveau code.'); }
+   else showAlert('Code invalide : il faut exactement 4 chiffres. Recommence.');
   }
  } else {
-  alert('❌ Réponse incorrecte.');
+  showAlert('❌ Réponse incorrecte.');
  }
 }

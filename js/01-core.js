@@ -340,6 +340,66 @@ function trapFocus(container){
  };
 }
 
+// ═══════════════════════════════════════════════════════
+// MODALES STYLÉES showAlert()/showConfirm() (Audit qualité perçue #2, lot 2a)
+// Remplacent alert()/confirm() natifs du navigateur — incohérents avec le
+// reste de l'interface. Réutilisent la grammaire visuelle déjà éprouvée de
+// pmRemoveProfile() (overlay sombre, carte arrondie, trapFocus).
+// showAlert(message, opts?) : info à un seul bouton "OK", fire-and-forget.
+// showConfirm(message, onConfirm, opts?) : Annuler/Confirmer — onConfirm()
+//   n'est appelé que si l'utilisateur valide. opts: {title, danger,
+//   confirmLabel, cancelLabel}.
+// ═══════════════════════════════════════════════════════
+function _closeStyledDialog(id){
+ const ov=document.getElementById(id);
+ if(ov){ if(ov._releaseTrap){ov._releaseTrap();delete ov._releaseTrap;} ov.remove(); }
+}
+function showAlert(message, opts={}){
+ const _e=(typeof esc==='function')?esc:(s=>String(s));
+ const title=opts.title||'Information';
+ const ov=document.createElement('div');
+ ov.id='sd-alert-overlay';
+ ov.style.cssText='position:fixed;inset:0;z-index:620;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:20px;';
+ ov.innerHTML='<div style="background:#182449;border:1px solid rgba(241,196,15,.35);border-radius:18px;padding:24px 20px;text-align:center;max-width:340px;width:100%;box-shadow:var(--shadow-modal);">'
+  +'<div style="font-size:1.15em;font-weight:800;color:#f1c40f;margin-bottom:10px;">'+_e(title)+'</div>'
+  +'<div style="font-size:.92em;color:#dce3f0;line-height:1.5;margin-bottom:18px;white-space:pre-line;">'+_e(message)+'</div>'
+  +'<button id="sd-alert-ok" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px 26px;font-weight:700;font-size:.92em;cursor:pointer;">OK</button>'
+  +'</div>';
+ document.body.appendChild(ov);
+ const closeIt=()=>_closeStyledDialog('sd-alert-overlay');
+ ov.querySelector('#sd-alert-ok').onclick=closeIt;
+ ov.addEventListener('keydown', e=>{ if(e.key==='Escape') closeIt(); });
+ setTimeout(()=>{ const b=document.getElementById('sd-alert-ok'); if(b) b.focus(); }, 50);
+ ov._releaseTrap=trapFocus(ov);
+}
+function showConfirm(message, onConfirm, opts={}){
+ const _e=(typeof esc==='function')?esc:(s=>String(s));
+ const title=opts.title||(opts.danger?'⚠️ Confirmation':'Confirmation');
+ const confirmLabel=opts.confirmLabel||'Confirmer';
+ const cancelLabel=opts.cancelLabel||'Annuler';
+ const accentColor=opts.danger?'#e74c3c':'var(--accent)';
+ const borderColor=opts.danger?'rgba(231,76,60,.4)':'rgba(241,196,15,.35)';
+ const bg=opts.danger?'#2c1414':'#182449';
+ const ov=document.createElement('div');
+ ov.id='sd-confirm-overlay';
+ ov.style.cssText='position:fixed;inset:0;z-index:620;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:20px;';
+ ov.innerHTML='<div style="background:'+bg+';border:1px solid '+borderColor+';border-radius:18px;padding:24px 20px;text-align:center;max-width:360px;width:100%;box-shadow:var(--shadow-modal);">'
+  +(opts.danger?'<div style="font-size:2.2em;margin-bottom:6px;">⚠️</div>':'')
+  +'<div style="font-size:1.1em;font-weight:800;color:'+accentColor+';margin-bottom:10px;">'+_e(title)+'</div>'
+  +'<div style="font-size:.9em;color:#dce3f0;line-height:1.5;margin-bottom:18px;white-space:pre-line;">'+_e(message)+'</div>'
+  +'<div style="display:flex;gap:10px;justify-content:center;">'
+  +'<button id="sd-confirm-cancel" style="background:#555;color:#fff;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:.88em;cursor:pointer;">'+_e(cancelLabel)+'</button>'
+  +'<button id="sd-confirm-ok" style="background:'+accentColor+';color:#fff;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:.88em;cursor:pointer;">'+_e(confirmLabel)+'</button>'
+  +'</div></div>';
+ document.body.appendChild(ov);
+ const closeIt=()=>_closeStyledDialog('sd-confirm-overlay');
+ ov.querySelector('#sd-confirm-cancel').onclick=closeIt;
+ ov.querySelector('#sd-confirm-ok').onclick=()=>{ closeIt(); if(typeof onConfirm==='function') onConfirm(); };
+ ov.addEventListener('keydown', e=>{ if(e.key==='Escape') closeIt(); });
+ setTimeout(()=>{ const b=document.getElementById('sd-confirm-cancel'); if(b) b.focus(); }, 50);
+ ov._releaseTrap=trapFocus(ov);
+}
+
 // ── PIN sécurisé (V5/V7, audit sécurité) ──
 // Format de stockage : "pbkdf2:<selHex>:<hashHex>" (SHA-256, sel aléatoire
 // par valeur, 150 000 itérations pour ralentir une attaque hors-ligne).
@@ -1276,7 +1336,7 @@ function mcStart(){
   const valid = _mcCombat.filter(p=>p.name && p.name.trim());
   if(valid.length < 2){
    if(typeof toast==='function') toast('⚠️ Il faut au moins 2 joueurs nommés !', 3000);
-   else alert('Il faut au moins 2 joueurs nommés !');
+   else showAlert('Il faut au moins 2 joueurs nommés !');
    return;
   }
   // Audit fonctionnel v11.7.6+ (#3) : deux joueurs homonymes faussent l'attribution
@@ -1286,7 +1346,7 @@ function mcStart(){
   const _lcNames = valid.map(p=>p.name.trim().toLowerCase());
   if(new Set(_lcNames).size !== _lcNames.length){
    if(typeof toast==='function') toast('⚠️ Deux joueurs ne peuvent pas avoir le même prénom !', 3000);
-   else alert('Deux joueurs ne peuvent pas avoir le même prénom !');
+   else showAlert('Deux joueurs ne peuvent pas avoir le même prénom !');
    return;
   }
   // Alimenter la structure globale combatCfg utilisée par startGame

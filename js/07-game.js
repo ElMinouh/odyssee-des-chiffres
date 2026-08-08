@@ -361,7 +361,7 @@ function startGame(){
  resetGS();powers={};isRevision=false;
  if(GM.mode2==='combat'){
   const valid=combatCfg.filter(p=>p.name&&p.name.trim());
-  if(valid.length<2){alert('Il faut au moins 2 joueurs nommés !');return;}
+  if(valid.length<2){showAlert('Il faut au moins 2 joueurs nommés !');return;}
   // Chantier A2 v1 : avatars + stats enrichies pour chaque joueur
   const avatars = ['🧙','🧝','🥷','🧛','🦸','🧚','🤖','👻'];
   combatPlayers=valid.map((p,i)=>({
@@ -405,7 +405,7 @@ function startRevision(){
   const objs=(P.errorLog||[]).filter(e=>(e.subj||'math')===_subj && e.payload && Array.isArray(e.payload.choices)).map(e=>Object.assign({},e.payload));
   queue=[...objs,...objs];
  }
- if(!queue.length){alert('Aucune erreur à réviser !');return;}
+ if(!queue.length){showAlert('Aucune erreur à réviser !');return;}
  gameActive=true;clearPendingTimers();
  revQueue=queue;isRevision=true;
  GM.mode=$('modeSelect').value;GM.mode2='revision';GM.level=$('levelSelect').value;
