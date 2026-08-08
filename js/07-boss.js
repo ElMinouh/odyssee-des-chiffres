@@ -118,7 +118,7 @@ function _renderTaleIllus(tale){
  function render(){
   const p=pages[step];
   ov.innerHTML='<div class="story-parchment" style="max-width:560px;border-top:6px solid '+(tale.accent||'#7c5bd0')+';position:relative;">'
-   +'<button class="story-btn ti-close" title="Fermer" style="position:absolute;top:8px;right:8px;width:30px;height:30px;padding:0;line-height:1;border-radius:50%;font-size:16px;z-index:2;">✕</button>'
+   +'<button class="story-btn ti-close" title="Fermer" style="position:absolute;top:8px;right:8px;width:30px;height:30px;padding:0;line-height:1;border-radius:50%;font-size:16px;z-index:2;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>'
    +'<div style="text-align:center;font-family:Georgia,serif;font-weight:700;color:'+(tale.accent||'#7c5bd0')+';font-size:15px;margin-bottom:8px;">'+tale.title+'</div>'
    +(p.illus?('<div style="background:#fffaf0;border:2px solid #e6d3a3;border-radius:12px;padding:6px;overflow:hidden;">'+p.illus+'</div>'):'')
    +'<div style="font-family:Georgia,serif;font-size:18px;line-height:1.55;color:#3a2a18;text-align:center;margin:12px 8px 6px;">'+_fill(p.text||'')+'</div>'
@@ -961,7 +961,7 @@ function openAdventureLog(){
  overlay.className = 'advlog-overlay';
  overlay.innerHTML = `
   <div class="advlog-modal">
-   <button class="advlog-close" onclick="closeAdventureLog()" aria-label="Fermer">✕</button>
+   <button class="advlog-close" onclick="closeAdventureLog()" aria-label="Fermer"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
    <div class="advlog-header">
     <div class="advlog-avatar">${P.avatar || '🧒'}</div>
     <div class="advlog-header-text">

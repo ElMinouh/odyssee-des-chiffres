@@ -1582,7 +1582,7 @@ function _renderColBook(book,idx,pages){
   const nextLbl=step===0?'Feuilleter ›':(step===total-1?'Fermer le livre':'Suivant ›');
   let counter; if(step===0) counter='Couverture'; else if(step===total-1) counter='Dos de couverture'; else { const a=(step-1)*2+1, b=Math.min(a+1,pages.length); counter=(a===b?('page '+a):('pages '+a+'–'+b))+' / '+pages.length; }
   ov.innerHTML='<div class="story-parchment" style="max-width:'+((step===0||step===total-1)?'360':'600')+'px;border-top:6px solid '+acc+';position:relative;">'
-   +'<button class="story-btn cb-close" title="Fermer" style="position:absolute;top:8px;right:8px;width:30px;height:30px;padding:0;line-height:1;border-radius:50%;font-size:16px;z-index:2;">✕</button>'
+   +'<button class="story-btn cb-close" title="Fermer" style="position:absolute;top:8px;right:8px;width:30px;height:30px;padding:0;line-height:1;border-radius:50%;font-size:16px;z-index:2;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>'
    +inner
    +'<div class="story-nav">'
    +(step>0?'<button class="story-btn cb-prev">'+prevLbl+'</button>':'<span class="story-spacer"></span>')
@@ -1804,7 +1804,7 @@ function _renderHistBook(book,idx,pages){
   const nextLbl=step===0?'Feuilleter ›':(step===total-1?'Fermer le livre':'Suivant ›');
   let counter; if(step===0) counter='Couverture'; else if(step===total-1) counter='Dos de couverture'; else { const a=(step-1)*2+1, b=Math.min(a+1,pages.length); counter=(a===b?('page '+a):('pages '+a+'–'+b))+' / '+pages.length; }
   ov.innerHTML='<div class="story-parchment" style="max-width:'+((step===0||step===total-1)?'360':'600')+'px;border-top:6px solid '+acc+';position:relative;">'
-   +'<button class="story-btn hb-close" title="Fermer" style="position:absolute;top:8px;right:8px;width:30px;height:30px;padding:0;line-height:1;border-radius:50%;font-size:16px;z-index:2;">✕</button>'
+   +'<button class="story-btn hb-close" title="Fermer" style="position:absolute;top:8px;right:8px;width:30px;height:30px;padding:0;line-height:1;border-radius:50%;font-size:16px;z-index:2;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>'
    +inner
    +'<div class="story-nav">'
    +(step>0?'<button class="story-btn cb-prev">'+prevLbl+'</button>':'<span class="story-spacer"></span>')
@@ -2321,7 +2321,7 @@ function _openBossCard(zoneId){
  const overlay = document.createElement('div');
  overlay.className = 'bosscard-overlay';
  overlay.innerHTML = `
-  <button class="bosscard-close" aria-label="Fermer">✕</button>
+  <button class="bosscard-close" aria-label="Fermer"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   <div class="bosscard" role="button" tabindex="0" title="Touche la carte pour la retourner">
    <div class="bosscard-inner" style="--bc-accent:${accent};">
     <div class="bosscard-face bosscard-front">
