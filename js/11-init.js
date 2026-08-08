@@ -37,14 +37,42 @@ adjustGameLogoSize();
  try{ sessionStorage.setItem('splashSeen', '1'); }catch(e){}
  const vid = document.getElementById('intro-video');
  const cont = document.getElementById('intro-continue');
+ const loading = document.getElementById('intro-loading');
  const muteBtn = document.getElementById('intro-mute');
  let done = false;
- const skip = () => {
-  if(done) return; done = true;
-  try{ if(vid) vid.pause(); }catch(e){}
+ const finish = () => {
   splash.style.transition = 'opacity .4s';
   splash.style.opacity = '0';
   setTimeout(() => { splash.classList.add('skipped'); }, 400);
+ };
+ // Audit qualité perçue #5 : sur une connexion lente, window.onload (qui
+ // charge le profil et initialise l'écran d'accueil) peut ne pas être
+ // terminé au moment où l'utilisateur passe ou termine la vidéo. Plutôt que
+ // de révéler un menu pas encore prêt (clic sans effet, aucun signe de vie),
+ // on affiche un signe de chargement — même identité visuelle (pulsation)
+ // que « Appuie pour continuer » — le temps que window.onload se termine.
+ const waitReadyThen = (action) => {
+  if(window._appReady){ action(); return; }
+  if(cont) cont.classList.add('hidden');
+  if(loading) loading.classList.remove('hidden');
+  let waited = 0;
+  const check = setInterval(() => {
+   waited += 150;
+   // Filet de sécurité : ne jamais bloquer indéfiniment (ex. réseau coupé
+   // pendant le préchargement de la vidéo, qui empêcherait "load" de se
+   // déclencher). Mieux vaut révéler l'app après 8s même si _appReady
+   // n'est jamais passé à true, comme c'était déjà le cas avant ce correctif.
+   if(window._appReady || waited >= 8000){
+    clearInterval(check);
+    if(loading) loading.classList.add('hidden');
+    action();
+   }
+  }, 150);
+ };
+ const skip = () => {
+  if(done) return; done = true;
+  try{ if(vid) vid.pause(); }catch(e){}
+  waitReadyThen(finish);
  };
  splash.addEventListener('click', skip);
  splash.addEventListener('touchstart', skip, { passive: true });
@@ -56,9 +84,9 @@ adjustGameLogoSize();
    muteBtn.addEventListener('click', (e) => { e.stopPropagation(); vid.muted = !vid.muted; muteBtn.textContent = vid.muted ? '🔇' : '🔊'; });
    muteBtn.addEventListener('touchstart', (e) => { e.stopPropagation(); }, { passive: true });
   }
-  vid.addEventListener('ended', () => { if(cont) cont.classList.remove('hidden'); });  // fige + texte
+  vid.addEventListener('ended', () => { waitReadyThen(() => { if(cont) cont.classList.remove('hidden'); }); });  // fige + texte
  } else {
-  setTimeout(() => { splash.classList.add('skipped'); }, 1500);
+  setTimeout(() => { waitReadyThen(finish); }, 1500);
  }
 })();
 
@@ -119,6 +147,7 @@ function _bootSanityCheck(){
 }
 
 window.onload=()=>{
+try{
  try{ _bootSanityCheck(); }catch(e){}
  // OPT-1+2 : init des références DOM cachées et du canvas particules
  try{ _initCachedDOM(); }catch(e){ console.error('[init] _initCachedDOM a échoué', e); }
@@ -232,4 +261,12 @@ window.onload=()=>{
  // à CHAQUE ouverture de l'app tant qu'aucun profil n'a été créé, même si
  // le parent a déjà cliqué "Passer" une fois.
  setTimeout(()=>{ if(typeof obMaybeAutoStartFreshInstall==='function') obMaybeAutoStartFreshInstall(); }, 500);
+}finally{
+ // Audit qualité perçue #5 : signale au splash screen que l'initialisation
+ // est terminée — voir handleSplash() plus haut. Dans un finally pour être
+ // certain que ce signal est envoyé même si une étape ci-dessus (non
+ // protégée individuellement par son propre try/catch) a levé une erreur —
+ // sans quoi le signe de chargement du splash tournerait indéfiniment.
+ window._appReady = true;
+}
 };
