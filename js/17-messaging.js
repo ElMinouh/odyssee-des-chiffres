@@ -167,30 +167,30 @@ async function renderContactsScreen(){
  const body = document.getElementById('msg-body'); if(!body) return;
  const prof = _msgProf;
  const myCode = prof.chatId || '(—)';
- body.innerHTML = '<p style="text-align:center;color:#bdc3c7;font-size:.85em;margin:20px;">Chargement\u2026</p>';
+ body.innerHTML = '<p style="text-align:center;color:#bdc3c7;font-size:.9em;margin:20px;">Chargement\u2026</p>';
  const data = await chatFriendList(prof);
  if(!data || data.error){
-  body.innerHTML = '<p style="text-align:center;color:#e74c3c;font-size:.85em;margin:20px;">Connexion impossible. Vérifie la connexion internet.</p>'
-   + '<div style="text-align:center;"><button onclick="renderContactsScreen()" style="font-size:.85em;">Réessayer</button></div>';
+  body.innerHTML = '<p style="text-align:center;color:#e74c3c;font-size:.9em;margin:20px;">Connexion impossible. Vérifie la connexion internet.</p>'
+   + '<div style="text-align:center;"><button onclick="renderContactsScreen()" style="font-size:.9em;">Réessayer</button></div>';
   return;
  }
  try{ (data.contacts||[]).forEach(c=>{ _chatContactCache[c.id]={name:c.name,avatar:c.avatar}; }); }catch(e){}
  let html = '';
  html += '<div style="background:rgba(52,152,219,.1);border:1px solid rgba(52,152,219,.35);border-radius:10px;padding:10px 12px;margin-bottom:12px;">'
-  + '<p style="margin:0 0 2px;font-size:.74em;color:#bdc3c7;">Ton code ami (à donner pour être ajouté) :</p>'
-  + '<div style="display:flex;align-items:center;gap:8px;"><span style="font-family:monospace;font-size:1.1em;font-weight:700;letter-spacing:1px;color:#5dade2;">'+_e(myCode)+'</span>'
+  + '<p style="margin:0 0 2px;font-size:.72em;color:#bdc3c7;">Ton code ami (à donner pour être ajouté) :</p>'
+  + '<div style="display:flex;align-items:center;gap:8px;"><span style="font-family:monospace;font-size:1em;font-weight:700;letter-spacing:1px;color:#5dade2;">'+_e(myCode)+'</span>'
   + '<button onclick="chatCopyCode()" style="font-size:.72em;padding:4px 8px;">📋 Copier</button></div></div>';
 
  const inc = data.incoming || [];
  if(inc.length && !_msgReadOnly){
-  html += '<p style="font-size:.78em;font-weight:700;color:#f1c40f;margin:6px 0;">📨 Demandes reçues</p>';
+  html += '<p style="font-size:.8em;font-weight:700;color:#f1c40f;margin:6px 0;">📨 Demandes reçues</p>';
   inc.forEach(c => {
    const cid=_e(c.id), cn=_e(c.name||c.id), av=_e(c.avatar||'\uD83E\uDDD9');
    html += '<div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);border-radius:10px;padding:8px 10px;margin:4px 0;">'
     + '<span style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">'+av+'</span>'
     + '<span style="flex:1;font-size:.9em;">'+cn+'</span>'
-    + '<button onclick="chatAcceptContact(\''+cid+'\')" style="background:#27ae60;font-size:.76em;padding:5px 10px;">✅ Accepter</button>'
-    + '<button onclick="chatDeclineContact(\''+cid+'\')" style="background:#7f8c8d;font-size:.76em;padding:5px 10px;">✕</button></div>';
+    + '<button onclick="chatAcceptContact(\''+cid+'\')" style="background:#27ae60;font-size:.72em;padding:5px 10px;">✅ Accepter</button>'
+    + '<button onclick="chatDeclineContact(\''+cid+'\')" style="background:#7f8c8d;font-size:.72em;padding:5px 10px;">✕</button></div>';
   });
  }
 
@@ -199,11 +199,11 @@ async function renderContactsScreen(){
  const seen = _chatSeen(prof);
 
  const contacts = data.contacts || [];
- html += '<p style="font-size:.78em;font-weight:700;color:#bdc3c7;margin:12px 0 6px;">👥 Mes amis</p>';
+ html += '<p style="font-size:.8em;font-weight:700;color:#bdc3c7;margin:12px 0 6px;">👥 Mes amis</p>';
  if(!contacts.length){
   html += '<div style="text-align:center;border:2px dashed rgba(255,255,255,.18);border-radius:14px;padding:16px;margin:6px 0;">'
    + '<div style="font-size:30px;">🤝</div>'
-   + '<p style="font-size:.82em;color:#9aa6b2;margin:6px 0 0;">Pas encore d\u2019amis ?<br>Partage ton code ami pour vous ajouter !</p></div>';
+   + '<p style="font-size:.8em;color:#9aa6b2;margin:6px 0 0;">Pas encore d\u2019amis ?<br>Partage ton code ami pour vous ajouter !</p></div>';
  } else {
   contacts.forEach(c => {
    const cid=_e(c.id), cn=_e(c.name||c.id), av=_e(c.avatar||'\uD83E\uDDD9');
@@ -211,7 +211,7 @@ async function renderContactsScreen(){
    const unread = (latest[c.id]||0) > (seen[c.id]||0);
    html += '<div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.06);border-radius:12px;padding:10px 12px;margin:5px 0;cursor:pointer;" onclick="chatOpenConv(\''+cid+'\',\''+nameArg+'\',\''+avArg+'\')">'
     + '<span style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0;">'+av+'</span>'
-    + '<span style="flex:1;font-size:.95em;font-weight:600;">'+cn+'</span>'
+    + '<span style="flex:1;font-size:.9em;font-weight:600;">'+cn+'</span>'
     + (unread ? '<span style="background:#e74c3c;border-radius:50%;width:11px;height:11px;display:inline-block;"></span>' : '')
     + '<button onclick="event.stopPropagation();chatRemoveContact(\''+cid+'\',\''+nameArg+'\')" style="background:transparent;border:none;color:#7f8c8d;font-size:1em;cursor:pointer;" title="Retirer">\u2715</button>'
     + '<span style="color:#7f8c8d;">\u203A</span></div>';
@@ -220,12 +220,12 @@ async function renderContactsScreen(){
 
  if(!_msgReadOnly){
   html += '<div style="margin-top:14px;border-top:1px solid rgba(255,255,255,.1);padding-top:12px;">'
-   + '<p style="font-size:.78em;font-weight:700;color:#2ecc71;margin:0 0 6px;">➕ Ajouter un ami</p>'
+   + '<p style="font-size:.8em;font-weight:700;color:#2ecc71;margin:0 0 6px;">➕ Ajouter un ami</p>'
    + '<input type="text" id="msg-addcode" placeholder="Code ami (ex: 7K2P-9QXM)" style="width:70%;text-transform:uppercase;font-family:monospace;letter-spacing:1px;">'
-   + '<button onclick="chatAddFriend()" style="background:#27ae60;font-size:.82em;margin-left:4px;">Envoyer</button>'
-   + '<p id="msg-add-msg" style="font-size:.76em;margin-top:6px;"></p></div>';
+   + '<button onclick="chatAddFriend()" style="background:#27ae60;font-size:.8em;margin-left:4px;">Envoyer</button>'
+   + '<p id="msg-add-msg" style="font-size:.72em;margin-top:6px;"></p></div>';
  } else {
-  html += '<p style="font-size:.74em;color:#7f8c8d;text-align:center;margin-top:14px;">👁 Visualisation parentale (lecture seule)</p>';
+  html += '<p style="font-size:.72em;color:#7f8c8d;text-align:center;margin-top:14px;">👁 Visualisation parentale (lecture seule)</p>';
  }
  body.innerHTML = html;
 }
@@ -292,7 +292,7 @@ function renderConvShell(name){
  const av = (_msgConv && _msgConv.avatar) || '\uD83E\uDDD9';
  body.innerHTML =
   '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'
-  + '<button onclick="renderContactsScreen()" style="background:#444;font-size:.82em;padding:5px 10px;">\u2039 Retour</button>'
+  + '<button onclick="renderContactsScreen()" style="background:#444;font-size:.8em;padding:5px 10px;">\u2039 Retour</button>'
   + '<span style="width:30px;height:30px;border-radius:50%;background:#f1ece2;display:flex;align-items:center;justify-content:center;font-size:16px;">'+_e(av)+'</span>'
   + '<span style="font-weight:700;font-size:1em;">'+_e(name)+'</span></div>'
   + '<div style="position:relative;">'
@@ -300,9 +300,9 @@ function renderConvShell(name){
   + '<button id="msg-jump" class="hidden" onclick="_msgJumpToBottom()">\u2193 nouveau message</button>'
   + '</div>'
   + (_msgReadOnly
-     ? '<p style="font-size:.74em;color:#7f8c8d;text-align:center;margin-top:8px;">\uD83D\uDC41 Lecture seule (espace parent)</p>'
+     ? '<p style="font-size:.72em;color:#7f8c8d;text-align:center;margin-top:8px;">\uD83D\uDC41 Lecture seule (espace parent)</p>'
      : ('<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">'
-        + CHAT_PHRASES.map(s=>'<button onclick="chatQuickSend(\''+_jsAttr(s)+'\')" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:6px 11px;font-size:.82em;">'+_e(s)+'</button>').join('')
+        + CHAT_PHRASES.map(s=>'<button onclick="chatQuickSend(\''+_jsAttr(s)+'\')" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:6px 11px;font-size:.8em;">'+_e(s)+'</button>').join('')
         + '</div>'
         + '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">'
         + CHAT_STICKERS.map(s=>'<button onclick="chatQuickSend(\''+s+'\')" style="background:rgba(255,255,255,.08);border-radius:50%;width:38px;height:38px;font-size:19px;padding:0;line-height:1;">'+s+'</button>').join('')
@@ -336,7 +336,7 @@ function _renderBubbles(messages){
    const isLastMine = (i===lastIdx);
    const readByOther = !m.pending && m.id!=null && _msgConv && _msgConv.otherReadUpTo && _msgConv.otherReadUpTo>=m.id;
    const seenLine = (isLastMine && readByOther)
-    ? '<div style="text-align:right;font-size:.68em;color:#9aa6b2;margin:2px 6px 6px;">Vu'+(_msgConv.otherReadTs?(' à '+_fmtTime(_msgConv.otherReadTs)):'')+' <span style="color:#3498db;">\u2713\u2713</span></div>'
+    ? '<div style="text-align:right;font-size:.65em;color:#9aa6b2;margin:2px 6px 6px;">Vu'+(_msgConv.otherReadTs?(' à '+_fmtTime(_msgConv.otherReadTs)):'')+' <span style="color:#3498db;">\u2713\u2713</span></div>'
     : '';
    return '<div class="msg-row msg-out"><div class="msg-bub msg-bub-out'+pop+'">'
     + '<div>'+_e(m.body)+'</div>'
@@ -445,7 +445,7 @@ async function _convFetch(reset){
   }
  } else if(reset){
   const thread = document.getElementById('msg-thread');
-  if(thread) thread.innerHTML = '<p style="color:#e74c3c;font-size:.82em;text-align:center;">Connexion impossible.</p>';
+  if(thread) thread.innerHTML = '<p style="color:#e74c3c;font-size:.8em;text-align:center;">Connexion impossible.</p>';
  }
 }
 function chatInsertEmoji(em){ const i=document.getElementById('msg-input'); if(i){ i.value += em; i.focus(); } }
@@ -478,7 +478,7 @@ function _msgEnsureFab(){
    +'#msg-toast.msg-toast-show{transform:translateX(-50%) translateY(0);}#msg-toast.hidden{display:none;}'
    +'.msg-row{display:flex;align-items:flex-end;gap:6px;margin-bottom:8px;}.msg-row.msg-out{justify-content:flex-end;}'
    +'.msg-av{width:26px;height:26px;border-radius:50%;background:#f1ece2;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}'
-   +'.msg-bub{max-width:76%;padding:7px 11px;border-radius:14px;font-size:.92em;word-break:break-word;}'
+   +'.msg-bub{max-width:76%;padding:7px 11px;border-radius:14px;font-size:.9em;word-break:break-word;}'
    +'.msg-bub-in{background:#fff;color:#2c2c2a;border:1px solid #eee;border-bottom-left-radius:4px;}'
    +'.msg-bub-out{background:#cdeafc;color:#0c447c;border-bottom-right-radius:4px;}'
    +'.msg-meta{display:flex;align-items:center;gap:6px;margin-top:3px;font-size:.62rem;color:#9aa6b2;}.msg-meta-out{justify-content:flex-end;color:#5a86a8;}'
@@ -664,24 +664,24 @@ async function _renderOptMsgManage(name){
  let h='';
  const inc=fl.incoming||[];
  if(inc.length){
-  h+='<div style="margin-top:10px;font-size:.74em;font-weight:700;color:#f39c12;">\uD83D\uDCE5 Demandes en attente ('+inc.length+')</div>';
+  h+='<div style="margin-top:10px;font-size:.72em;font-weight:700;color:#f39c12;">\uD83D\uDCE5 Demandes en attente ('+inc.length+')</div>';
   inc.forEach(c=>{ h+='<div style="display:flex;align-items:center;gap:8px;margin:5px 0;">'+avat(av(c))
-    +'<span style="flex:1;font-size:.82em;">'+nm(c)+'</span>'
+    +'<span style="flex:1;font-size:.8em;">'+nm(c)+'</span>'
     +'<button onclick="optAcceptPending(\''+nEsc+'\',\''+idOf(c)+'\')" style="background:#27ae60;font-size:.72em;padding:4px 9px;">Accepter</button>'
     +'<button onclick="optDeclinePending(\''+nEsc+'\',\''+idOf(c)+'\')" style="background:#7f8c8d;font-size:.72em;padding:4px 9px;">Refuser</button></div>'; });
  }
  const contacts=fl.contacts||[];
- h+='<div style="margin-top:10px;font-size:.74em;font-weight:700;color:#bdc3c7;">\uD83D\uDC65 Contacts ('+contacts.length+')</div>';
+ h+='<div style="margin-top:10px;font-size:.72em;font-weight:700;color:#bdc3c7;">\uD83D\uDC65 Contacts ('+contacts.length+')</div>';
  if(!contacts.length) h+='<p style="font-size:.72em;color:#7f8c8d;margin:4px 0;">Aucun contact.</p>';
  contacts.forEach(c=>{ const cnArg=_jsAttr(c.name||c.id);
   h+='<div style="display:flex;align-items:center;gap:8px;margin:5px 0;">'+avat(av(c))
-   +'<span style="flex:1;font-size:.82em;">'+nm(c)+'</span>'
+   +'<span style="flex:1;font-size:.8em;">'+nm(c)+'</span>'
    +'<button onclick="chatBlockContact(\''+nEsc+'\',\''+idOf(c)+'\',\''+cnArg+'\')" style="background:#c0392b;font-size:.72em;padding:4px 9px;">\uD83D\uDEAB Bloquer</button></div>'; });
  const blocked=fl.blocked||[];
  if(blocked.length){
-  h+='<div style="margin-top:10px;font-size:.74em;font-weight:700;color:#e74c3c;">\uD83D\uDEAB Bloqués ('+blocked.length+')</div>';
+  h+='<div style="margin-top:10px;font-size:.72em;font-weight:700;color:#e74c3c;">\uD83D\uDEAB Bloqués ('+blocked.length+')</div>';
   blocked.forEach(c=>{ h+='<div style="display:flex;align-items:center;gap:8px;margin:5px 0;opacity:.7;">'+avat(av(c))
-    +'<span style="flex:1;font-size:.82em;">'+nm(c)+'</span>'
+    +'<span style="flex:1;font-size:.8em;">'+nm(c)+'</span>'
     +'<button onclick="chatUnblockContact(\''+nEsc+'\',\''+idOf(c)+'\')" style="background:#7f8c8d;font-size:.72em;padding:4px 9px;">Débloquer</button></div>'; });
  }
  box.innerHTML=h;
@@ -696,16 +696,16 @@ function renderOptMessaging(name){
  const nEsc = _jsAttr(name);
  box.innerHTML =
   '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">'
-  + '<span style="font-size:.85em;">Messagerie : <b style="color:'+(on?'#2ecc71':'#e67e22')+';">'+(on?'active':'suspendue')+'</b></span>'
-  + '<button onclick="optToggleMessaging(\''+nEsc+'\')" style="background:'+(on?'#e67e22':'#27ae60')+';font-size:.78em;padding:5px 12px;">'+(on?'\u23F8 Suspendre':'\u25B6 Réactiver')+'</button>'
+  + '<span style="font-size:.9em;">Messagerie : <b style="color:'+(on?'#2ecc71':'#e67e22')+';">'+(on?'active':'suspendue')+'</b></span>'
+  + '<button onclick="optToggleMessaging(\''+nEsc+'\')" style="background:'+(on?'#e67e22':'#27ae60')+';font-size:.8em;padding:5px 12px;">'+(on?'\u23F8 Suspendre':'\u25B6 Réactiver')+'</button>'
   + '</div>'
   + (on
      ? ('<p style="font-size:.72em;color:#bdc3c7;margin:0 0 6px;">Code ami : <span style="font-family:monospace;color:#5dade2;">'+_e(code)+'</span></p>'
         + '<button onclick="openMessaging(\''+nEsc+'\')" style="background:#2980b9;font-size:.8em;">\uD83D\uDC41 Voir les conversations</button>'
-        + '<button onclick="chatAdoptCloudIdentity(\''+nEsc+'\')" style="background:#16a085;font-size:.78em;margin-left:4px;">\uD83D\uDD01 Aligner le code ami sur les autres appareils</button>'
-        + '<div style="margin-top:8px;font-size:.7em;color:#9aa6b2;">Forcer le même code ami (transfert manuel d\u2019un appareil à l\u2019autre) :</div>'
-        + '<button onclick="chatExportIdentityCode(\''+nEsc+'\')" style="background:#7f8c8d;font-size:.76em;">\uD83D\uDCE4 Exporter le code</button>'
-        + '<button onclick="chatImportIdentityCode(\''+nEsc+'\')" style="background:#7f8c8d;font-size:.76em;margin-left:4px;">\uD83D\uDCE5 Importer un code</button>'
+        + '<button onclick="chatAdoptCloudIdentity(\''+nEsc+'\')" style="background:#16a085;font-size:.8em;margin-left:4px;">\uD83D\uDD01 Aligner le code ami sur les autres appareils</button>'
+        + '<div style="margin-top:8px;font-size:.72em;color:#9aa6b2;">Forcer le même code ami (transfert manuel d\u2019un appareil à l\u2019autre) :</div>'
+        + '<button onclick="chatExportIdentityCode(\''+nEsc+'\')" style="background:#7f8c8d;font-size:.72em;">\uD83D\uDCE4 Exporter le code</button>'
+        + '<button onclick="chatImportIdentityCode(\''+nEsc+'\')" style="background:#7f8c8d;font-size:.72em;margin-left:4px;">\uD83D\uDCE5 Importer un code</button>'
         + '<div id="opt-msg-manage"></div>')
      : '<p style="font-size:.72em;color:#7f8c8d;margin:0;">Suspendue : le code ami, les amis et l\u2019historique sont <b>conservés</b>. Réactive quand tu veux pour reprendre avec le même code.</p>');
  if(on){ try{ _renderOptMsgManage(name); }catch(e){} }
