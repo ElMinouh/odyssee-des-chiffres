@@ -528,7 +528,15 @@ function generateQ(){
   const ce=_collEnrich(GM.level); if(ce) return ce;
  }
  const _GS=_subjGen();
- const fn=_GS[GM.level]||_GS.CP||GEN.CP;let q=fn(GS.isBoss);
+ const fn=_GS[GM.level]||_GS.CP||GEN.CP;
+ // Lot 3 (audit pédagogique) : interleaving volontaire — hors boss/maternelle,
+ // favorise/force l'alternance entre les 2 catégories les plus faibles du moment,
+ // pour les 3 matières actuelles et toute matière future suivant le même schéma.
+ const _subjKey=(GM.subject||'math');
+ const _interleaveOk = GM.mode2==='normal' && !GS.isBoss && !(typeof _isMaternelle==='function'&&_isMaternelle(GM.level));
+ let q=(_interleaveOk && typeof applyInterleaveGuard==='function')
+  ? applyInterleaveGuard(_subjKey, ()=>fn(GS.isBoss))
+  : fn(GS.isBoss);
  if(GS.activeEvent?.effect==='next_golden'){GS.isGolden=true;GS.activeEvent=null;}
  return q;
 }

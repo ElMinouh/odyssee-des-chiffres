@@ -25,6 +25,75 @@ const LEITNER_MAX_BOX = LEITNER_BOX_TARGET_MIN.length - 1;
 // réelle de la notion — elle est retestée presque tout de suite, hors case Leitner.
 const INATTENTION_MS_THRESHOLD = 2000;
 
+// ═══════════════════════════════════════════════════════
+// INTERLEAVING VOLONTAIRE (Lot 3, audit pédagogique 12e conversation)
+// ═══════════════════════════════════════════════════════
+// Quand 2 catégories proches sont SIMULTANÉMENT en difficulté (même seuils que
+// l'adaptativité : ADAPT_MIN_ATTEMPTS tentatives, ratio ≤ ADAPT_STRUGGLE), on force
+// une alternance entre les deux plutôt que de laisser le tirage aléatoire du pool
+// les répéter ou les espacer au hasard (Rohrer & Taylor — alterner deux notions
+// proches aide à mieux les distinguer). Générique et multi-matières : s'appuie sur
+// les stats déjà suivies pour chaque matière (P.opStats / P.opStatsFr / P.opStatsHist),
+// sans paire de catégories "confusables" fabriquée à l'avance — ce sont toujours les
+// 2 catégories réellement les plus faibles du moment qui sont choisies.
+// Toute matière future en bénéficie automatiquement dès lors qu'elle suit le schéma
+// « générateur de niveau → question avec opKey » déjà utilisé par maths/français/histoire
+// (branchement unique dans generateQ(), 07-game.js — rien à ajouter par matière).
+function _catStatsFor(subj){
+ if(subj==='fr')   return (typeof P!=='undefined' && P.opStatsFr)   || {};
+ if(subj==='hist') return (typeof P!=='undefined' && P.opStatsHist) || {};
+ return (typeof P!=='undefined' && P.opStats) || {}; // math (et défaut)
+}
+function getWeakInterleavePair(subj){
+ const stats=_catStatsFor(subj);
+ const weak=[];
+ for(const k in stats){
+  const s=stats[k]; const n=(s.ok||0)+(s.fail||0);
+  if(n<ADAPT_MIN_ATTEMPTS) continue;
+  const ratio=s.ok/n;
+  if(ratio<=ADAPT_STRUGGLE) weak.push({k, ratio});
+ }
+ if(weak.length<2) return null;
+ weak.sort((a,b)=>a.ratio-b.ratio); // les 2 plus faibles d'abord
+ return [weak[0].k, weak[1].k];
+}
+function _interleaveCatOf(subj, q){
+ if(!q || !q.opKey) return null;
+ if(subj==='fr'   && typeof _frCatOf==='function')   return _frCatOf(q.opKey);
+ if(subj==='hist' && typeof _histCatOf==='function') return _histCatOf(q.opKey);
+ return q.opKey; // math : la catégorie EST l'opérateur, pas de regroupement nécessaire
+}
+let _interleaveLast = {};
+function _nextInterleaveTarget(subj, pair){
+ const last=_interleaveLast[subj];
+ const target = (last===pair[0]) ? pair[1] : pair[0];
+ _interleaveLast[subj]=target;
+ return target;
+}
+// Nombre d'essais avant d'accepter le tirage tel quel : en maths, la catégorie est
+// connue immédiatement (peu de branches), l'alternance est donc quasi garantie avec
+// un budget confortable. En français/histoire, la catégorie n'est connue qu'après
+// génération complète (pool de fonctions) — alternance favorisée, pas garantie à 100%.
+const INTERLEAVE_MAX_TRIES = {math:20, fr:4, hist:4};
+/**
+ * Enrobe un appel de générateur de question pour favoriser/garantir l'alternance
+ * entre les 2 catégories les plus faibles du moment, si elles sont au moins 2 en
+ * vraie difficulté simultanée. Ne change rien si tout va bien (0 ou 1 catégorie faible).
+ */
+function applyInterleaveGuard(subj, genFn){
+ let q=genFn();
+ if(!q) return q;
+ const pair=getWeakInterleavePair(subj);
+ if(!pair) return q;
+ const target=_nextInterleaveTarget(subj, pair);
+ const maxTries=INTERLEAVE_MAX_TRIES[subj]||4;
+ let tries=0;
+ while(_interleaveCatOf(subj,q)!==target && tries<maxTries){
+  q=genFn(); tries++;
+ }
+ return q;
+}
+
 /**
  * Renvoie un signal d'ajustement pour un opérateur donné :
  *  +1 → joueur maîtrise, on peut corser légèrement
