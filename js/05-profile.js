@@ -658,7 +658,7 @@ function _pcShowConfirm(){
   : '<div style="font-size:4em;margin-bottom:8px;">'+(P.avatar||'🙂')+'</div>';
  ov.innerHTML = '<div style="background:linear-gradient(135deg,rgba(241,196,15,.10),rgba(241,196,15,.02));border:1px solid rgba(241,196,15,.3);border-radius:18px;padding:26px 20px;text-align:center;max-width:340px;width:100%;">'
   + av
-  + '<div style="font-size:1.4em;font-weight:800;color:#f1c40f;">'+_e(P.name)+'</div>'
+  + '<div style="font-size:1.3em;font-weight:800;color:#f1c40f;">'+_e(P.name)+'</div>'
   + '<div style="font-size:1em;color:#dce3f0;margin:6px 0 20px;">C\'est bien toi qui vas jouer ?</div>'
   + '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">'
   +  '<button onclick="_pcConfirmYes()" style="background:#27ae60;color:#fff;border:none;border-radius:10px;padding:12px 20px;font-weight:700;">✅ Oui, c\'est moi</button>'
@@ -683,12 +683,12 @@ function _pcShowPin(){
  const _e = (typeof esc==='function') ? esc : (s=>String(s));
  ov.innerHTML = '<div style="background:linear-gradient(135deg,rgba(241,196,15,.10),rgba(241,196,15,.02));border:1px solid rgba(241,196,15,.3);border-radius:18px;padding:26px 20px;text-align:center;max-width:340px;width:100%;">'
   + '<div style="font-size:3.2em;margin-bottom:6px;">'+(P.avatar||'🙂')+'</div>'
-  + '<div style="font-size:1.4em;font-weight:800;color:#f1c40f;">'+_e(P.name)+'</div>'
+  + '<div style="font-size:1.3em;font-weight:800;color:#f1c40f;">'+_e(P.name)+'</div>'
   + '<div style="font-size:1em;color:#dce3f0;margin:6px 0 14px;">Entre ton code à 2 chiffres</div>'
   + '<input type="password" id="pc-pin-input" maxlength="2" inputmode="numeric" style="width:90px;text-align:center;font-family:monospace;font-size:1.6em;letter-spacing:8px;padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.3);color:#fff;" onkeydown="if(event.key===\'Enter\')_pcCheckPin()">'
   + '<div style="margin-top:16px;"><button onclick="_pcCheckPin()" style="background:#27ae60;color:#fff;border:none;border-radius:10px;padding:12px 20px;font-weight:700;">Valider</button></div>'
   + '<div id="pc-pin-msg" style="font-size:.8em;color:#e74c3c;margin-top:10px;min-height:1em;"></div>'
-  + '<button onclick="_pcConfirmNo()" style="background:none;border:none;color:#bdc3c7;font-size:.78em;margin-top:14px;text-decoration:underline;cursor:pointer;">Ce n\'est pas moi</button>'
+  + '<button onclick="_pcConfirmNo()" style="background:none;border:none;color:#bdc3c7;font-size:.8em;margin-top:14px;text-decoration:underline;cursor:pointer;">Ce n\'est pas moi</button>'
   + '</div>';
  setTimeout(()=>{ const inp=$('pc-pin-input'); if(inp) inp.focus(); }, 50);
  if(typeof trapFocus==='function') ov._releaseTrap=trapFocus(ov);

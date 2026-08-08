@@ -1570,8 +1570,8 @@ function _renderColBook(book,idx,pages){
    const li=(step-1)*2, L=pages[li], R=pages[li+1];
    const chap=(L&&L.chap)||(R&&R.chap)||'';
    inner='<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;border-bottom:1px solid #d8c79c;padding-bottom:6px;margin-bottom:10px;">'
-    +'<span style="font-family:Georgia,serif;font-weight:700;color:'+acc+';font-size:1.0em;">'+book.title+'</span>'
-    +'<span style="font-family:Georgia,serif;font-size:.76em;color:#8a6a45;">'+chap+'</span></div>'
+    +'<span style="font-family:Georgia,serif;font-weight:700;color:'+acc+';font-size:1em;">'+book.title+'</span>'
+    +'<span style="font-family:Georgia,serif;font-size:.72em;color:#8a6a45;">'+chap+'</span></div>'
     +'<div style="position:relative;display:grid;grid-template-columns:1fr 1fr;gap:0;background:#EBDFBF;border-radius:5px;overflow:hidden;">'
     +'<div style="background:linear-gradient(90deg,#F3E8CD,#ECE0C2 86%,#DCCBA0);padding:13px 13px 13px 15px;">'+half(L,true)+'</div>'
     +'<div style="background:linear-gradient(90deg,#DCCBA0,#ECE0C2 14%,#F3E8CD);padding:13px 15px 13px 13px;">'+half(R,false)+'</div>'
@@ -1589,7 +1589,7 @@ function _renderColBook(book,idx,pages){
    +'<div class="story-dots" style="flex-wrap:wrap;max-width:58%;">'+Array.apply(null,{length:total}).map(function(_,i){return '<span class="story-dot'+(i===step?' on':'')+'"></span>';}).join('')+'</div>'
    +'<button class="story-btn cb-next">'+nextLbl+'</button>'
    +'</div>'
-   +'<div style="text-align:center;font-family:Georgia,serif;font-size:.76em;color:#8a6a45;margin-top:4px;">'+counter+'</div>'
+   +'<div style="text-align:center;font-family:Georgia,serif;font-size:.72em;color:#8a6a45;margin-top:4px;">'+counter+'</div>'
    +'</div>';
   const nx=ov.querySelector('.cb-next'); if(nx) nx.onclick=function(){ if(step<total-1){step++;render();} else close(); };
   const pv=ov.querySelector('.cb-prev'); if(pv) pv.onclick=function(){ if(step>0){step--;render();} };
@@ -1792,8 +1792,8 @@ function _renderHistBook(book,idx,pages){
    const li=(step-1)*2, L=pages[li], R=pages[li+1];
    const chap=(L&&L.chap)||(R&&R.chap)||'';
    inner='<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;border-bottom:1px solid #d8c79c;padding-bottom:6px;margin-bottom:10px;">'
-    +'<span style="font-family:Georgia,serif;font-weight:700;color:'+acc+';font-size:1.0em;">'+book.title+'</span>'
-    +'<span style="font-family:Georgia,serif;font-size:.76em;color:#8a6a45;">'+chap+'</span></div>'
+    +'<span style="font-family:Georgia,serif;font-weight:700;color:'+acc+';font-size:1em;">'+book.title+'</span>'
+    +'<span style="font-family:Georgia,serif;font-size:.72em;color:#8a6a45;">'+chap+'</span></div>'
     +'<div style="position:relative;display:grid;grid-template-columns:1fr 1fr;gap:0;background:#EBDFBF;border-radius:5px;overflow:hidden;">'
     +'<div style="background:linear-gradient(90deg,#F3E8CD,#ECE0C2 86%,#DCCBA0);padding:13px 13px 13px 15px;">'+half(L,true)+'</div>'
     +'<div style="background:linear-gradient(90deg,#DCCBA0,#ECE0C2 14%,#F3E8CD);padding:13px 15px 13px 13px;">'+half(R,false)+'</div>'
@@ -1811,7 +1811,7 @@ function _renderHistBook(book,idx,pages){
    +'<div class="story-dots" style="flex-wrap:wrap;max-width:58%;">'+Array.apply(null,{length:total}).map(function(_,i){return '<span class="story-dot'+(i===step?' on':'')+'"></span>';}).join('')+'</div>'
    +'<button class="story-btn cb-next">'+nextLbl+'</button>'
    +'</div>'
-   +'<div style="text-align:center;font-family:Georgia,serif;font-size:.76em;color:#8a6a45;margin-top:4px;">'+counter+'</div>'
+   +'<div style="text-align:center;font-family:Georgia,serif;font-size:.72em;color:#8a6a45;margin-top:4px;">'+counter+'</div>'
    +'</div>';
   const nx=ov.querySelector('.cb-next'); if(nx) nx.onclick=function(){ if(step<total-1){step++;render();} else close(); };
   const pv=ov.querySelector('.cb-prev'); if(pv) pv.onclick=function(){ if(step>0){step--;render();} };

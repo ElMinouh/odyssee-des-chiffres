@@ -113,7 +113,7 @@ function _frQ(display, correctHtml, distractorHtmls, opKey, hint){
  const choices=items.map((it,i)=>{ const val=i+1; if(it.ok)res=val; return {val, label:String(val), html:it.html}; });
  return {display, img:'', choices, visualChoices:true, res, opKey:opKey||'fr', type:'normal', subj:'fr', hint:hint||('Réponse : '+_frStrip(correctHtml))};
 }
-const _frHtmlWord = o => `<span style="font-size:1.7em">${o.e}</span><br>${o.w}`;     // emoji + mot
+const _frHtmlWord = o => `<span style="font-size:1.6em">${o.e}</span><br>${o.w}`;     // emoji + mot
 const _frHtmlEmoji = o => `<span style="font-size:2em">${o.e}</span>`;                  // emoji seul
 
 // Anti-répétition : on évite de reposer une question vue dans les 6 dernières
@@ -952,7 +952,7 @@ function _frM_syll(maxSyl){
  const mx=maxSyl||3; const w=_frRnd(FR_WORDS.filter(x=>x.syl>=1&&x.syl<=mx));
  const set=new Set([w.syl]); while(set.size<3){ set.add(1+Math.floor(Math.random()*3)); }
  const nums=_frShuffle(Array.from(set));
- const items=nums.map((n,i)=>({val:i+1,label:String(i+1),html:`<span style="font-size:1.7em">${'👏'.repeat(n)}</span>`,n}));
+ const items=nums.map((n,i)=>({val:i+1,label:String(i+1),html:`<span style="font-size:1.6em">${'👏'.repeat(n)}</span>`,n}));
  let res=1; items.forEach(it=>{ if(it.n===w.syl)res=it.val; });
  return {display:`Combien de syllabes ? ${w.e} ${w.w}`, img:'', choices:items.map(({val,label,html})=>({val,label,html})), visualChoices:true, res, opKey:'frm-syll', type:'normal', subj:'fr', speakText:`Combien de syllabes dans le mot ${w.w} ?`, hint:`${w.w} = ${w.syl} syllabe${w.syl>1?'s':''}`};
 }
@@ -981,8 +981,8 @@ function _frM_son(){
 // M9 — localiser la syllabe (GS) : au début ou à la fin (flèches).
 function _frM_loc(){
  const l=_frRnd(FR_LOC);
- const deb='<span style="font-size:1.5em">⬅️</span><br>au début';
- const fin='<span style="font-size:1.5em">➡️</span><br>à la fin';
+ const deb='<span style="font-size:1.6em">⬅️</span><br>au début';
+ const fin='<span style="font-size:1.6em">➡️</span><br>à la fin';
  const okHtml=l.pos==='début'?deb:fin, badHtml=l.pos==='début'?fin:deb;
  const q=_frQ(`${l.e} Dans « ${l.w} », où entends-tu « ${l.syl} » ?`, okHtml, [badHtml], 'frm-loc', `« ${l.syl} » est ${l.pos==='début'?'au début':'à la fin'}`);
  q.speakText=`Dans le mot ${l.w}, où entends-tu ${l.syl} ? Au début, ou à la fin ?`; return q;

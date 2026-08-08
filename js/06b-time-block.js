@@ -53,21 +53,21 @@ function loadFilterSettings(){
  const f=(d&&d.opFilters)||{add:true,sub:true,mult:true,div:true,miss:true,frac:true,geo:true};
  $('op-filters').innerHTML=OP_FILTERS.map(op=>`
   <div class="op-toggle">
-   <label for="opf-${op.key}">${op.label}<br><span style="font-size:.7em;color:#bdc3c7;">${op.affects.join(', ')}</span></label>
+   <label for="opf-${op.key}">${op.label}<br><span style="font-size:.72em;color:#bdc3c7;">${op.affects.join(', ')}</span></label>
    <label class="toggle-sw"><input type="checkbox" id="opf-${op.key}" ${f[op.key]!==false?'checked':''}><span class="toggle-slider"></span></label>
   </div>`).join('');
  // v11.5.2 — bloc dédié aux catégories histoire (miroir de op-filters).
  const hf=(d&&d.histCatFilters)||{frise:true,personnages:true,evenements:true,civilisation:true,temps:true,repere:true};
  $('hist-filters').innerHTML=(typeof HIST_CAT_FILTERS!=='undefined'?HIST_CAT_FILTERS:[]).map(op=>`
   <div class="op-toggle">
-   <label for="histf-${op.key}">${op.label}<br><span style="font-size:.7em;color:#bdc3c7;">${op.affects.join(', ')}</span></label>
+   <label for="histf-${op.key}">${op.label}<br><span style="font-size:.72em;color:#bdc3c7;">${op.affects.join(', ')}</span></label>
    <label class="toggle-sw"><input type="checkbox" id="histf-${op.key}" ${hf[op.key]!==false?'checked':''}><span class="toggle-slider"></span></label>
   </div>`).join('');
  // v11.5.3 — bloc dédié aux catégories français (même principe).
  const ff=(d&&d.frCatFilters)||{conj:true,orth:true,gram:true,vocab:true};
  $('fr-filters').innerHTML=(typeof FR_CAT_FILTERS!=='undefined'?FR_CAT_FILTERS:[]).map(op=>`
   <div class="op-toggle">
-   <label for="frf-${op.key}">${op.label}<br><span style="font-size:.7em;color:#bdc3c7;">${op.affects.join(', ')}</span></label>
+   <label for="frf-${op.key}">${op.label}<br><span style="font-size:.72em;color:#bdc3c7;">${op.affects.join(', ')}</span></label>
    <label class="toggle-sw"><input type="checkbox" id="frf-${op.key}" ${ff[op.key]!==false?'checked':''}><span class="toggle-slider"></span></label>
   </div>`).join('');
  if(typeof onFilterSubjectChange==='function') onFilterSubjectChange();

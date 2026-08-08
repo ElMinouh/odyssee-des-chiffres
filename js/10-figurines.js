@@ -77,8 +77,8 @@ function _renderFigurinesShop(filter){
  if(_figFilter==='none' && !_shopSearch.trim()){
   html+=`<div class="shop-empty-hint" style="text-align:center;padding:30px 16px;color:#bdc3c7;">
    <div style="font-size:2.6em;margin-bottom:8px;">🎴</div>
-   <p style="font-size:.95em;margin:6px 0;"><strong>Sélectionne une licence dans le menu</strong></p>
-   <p style="font-size:.78em;margin:4px 0;">ou utilise la barre de recherche pour trouver un personnage.</p>
+   <p style="font-size:.9em;margin:6px 0;"><strong>Sélectionne une licence dans le menu</strong></p>
+   <p style="font-size:.8em;margin:4px 0;">ou utilise la barre de recherche pour trouver un personnage.</p>
    <p style="font-size:.72em;margin-top:14px;color:#7f8c8d;">${FIGURINES.length} figurines à découvrir</p>
   </div>`;
   const target=$('p-figurines');
@@ -96,7 +96,7 @@ function _renderFigurinesShop(filter){
  }
 
  if(list.length===0){
-  html+='<div style="color:rgba(255,255,255,.4);font-size:.82em;text-align:center;padding:20px;">Aucune figurine trouvée.</div>';
+  html+='<div style="color:rgba(255,255,255,.4);font-size:.8em;text-align:center;padding:20px;">Aucune figurine trouvée.</div>';
   $('p-figurines').innerHTML=html;
   return;
  }
@@ -113,9 +113,9 @@ function _renderFigurinesShop(filter){
    html+=`<span style="font-size:.65em;color:#2ecc71;font-weight:700;">🔍 Voir →</span>`;
   } else {
    if(fig.r==='exclusif'){
-    html+=`<span style="font-size:.62em;color:#bdc3c7;font-style:italic;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> À gagner en boss</span>`;
+    html+=`<span style="font-size:.65em;color:#bdc3c7;font-style:italic;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> À gagner en boss</span>`;
    } else {
-    html+=`<button class="fig-buy-btn" data-figid="${fig.id}" style="margin:3px 0 0;padding:4px 10px;font-size:.63em;background:${fig.color};border-bottom:2px solid rgba(0,0,0,.3);border-radius:8px;">${fig.p} ⭐</button>`;
+    html+=`<button class="fig-buy-btn" data-figid="${fig.id}" style="margin:3px 0 0;padding:4px 10px;font-size:.65em;background:${fig.color};border-bottom:2px solid rgba(0,0,0,.3);border-radius:8px;">${fig.p} ⭐</button>`;
    }
   }
   html+='</div>';
@@ -208,7 +208,7 @@ function renderFigCollection(){
  $('fig-count-hdr').textContent=`${owned.length} / ${total} figurines collectées`;
  const el=$('p-col-figurines');
  if(owned.length===0){
-  el.innerHTML='<div style="color:rgba(255,255,255,.4);font-size:.85em;text-align:center;padding:24px;line-height:2;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Aucune figurine encore...<br><span style="font-size:.85em;">Gagnez des étoiles ⭐ et achetez vos premières figurines dans la Boutique !</span></div>';
+  el.innerHTML='<div style="color:rgba(255,255,255,.4);font-size:.9em;text-align:center;padding:24px;line-height:2;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Aucune figurine encore...<br><span style="font-size:.9em;">Gagnez des étoiles ⭐ et achetez vos premières figurines dans la Boutique !</span></div>';
   return;
  }
  const owned_figs=FIGURINES.filter(f=>owned.includes(f.id));
@@ -317,7 +317,7 @@ function _renderFigViewer(fig,id){
  $('fv-nm').textContent=fig.name;
  $('fv-nm').style.textShadow=`0 0 14px ${fig.gc}`;
  $('fv-rar').textContent=RARITY_STARS[fig.r]+' '+fig.r;
- $('fv-rar').style.cssText=`background:${RARITY_COL[fig.r]}33;color:${RARITY_COL[fig.r]};border:1px solid ${RARITY_COL[fig.r]};font-size:.62em;margin-top:6px;padding:3px 12px;border-radius:12px;font-weight:700;`;
+ $('fv-rar').style.cssText=`background:${RARITY_COL[fig.r]}33;color:${RARITY_COL[fig.r]};border:1px solid ${RARITY_COL[fig.r]};font-size:.65em;margin-top:6px;padding:3px 12px;border-radius:12px;font-weight:700;`;
  // Face arrière (v10.3.0 : pagination multi-pages + lecture vocale pour non-lecteurs)
  $('fv-buni').textContent=UNI_ICON[fig.uk]||''; // face arrière
  if($('fv-bname')) $('fv-bname').textContent = fig.name;
@@ -1893,8 +1893,8 @@ function renderResetZone(){
       +'<div style="font-size:.72em;color:#bdc3c7;">Niv.'+lvl+' · '+stars+' étoiles · '+figs+' figurines · '+zonesBeaten+'/23 zones</div>'
       +'</div></div>'
       +'<div style="display:flex;gap:6px;">'
-      +'<button data-pname="'+enc+'" onclick="resetAdventure(decodeURIComponent(this.dataset.pname))" style="flex:1;background:#16a085;color:#fff;padding:8px 10px;font-size:.78em;font-weight:700;border-radius:8px;border:2px solid #1abc9c;cursor:pointer;">&#128506; Reset Aventure</button>'
-      +'<button data-pname="'+enc+'" onclick="resetProfile(decodeURIComponent(this.dataset.pname))" style="flex:1;background:#c0392b;color:#fff;padding:8px 10px;font-size:.78em;font-weight:700;border-radius:8px;border:2px solid #ff6b6b;cursor:pointer;">&#128465; Reset Total</button>'
+      +'<button data-pname="'+enc+'" onclick="resetAdventure(decodeURIComponent(this.dataset.pname))" style="flex:1;background:#16a085;color:#fff;padding:8px 10px;font-size:.8em;font-weight:700;border-radius:8px;border:2px solid #1abc9c;cursor:pointer;">&#128506; Reset Aventure</button>'
+      +'<button data-pname="'+enc+'" onclick="resetProfile(decodeURIComponent(this.dataset.pname))" style="flex:1;background:#c0392b;color:#fff;padding:8px 10px;font-size:.8em;font-weight:700;border-radius:8px;border:2px solid #ff6b6b;cursor:pointer;">&#128465; Reset Total</button>'
       +'</div>'
       +'</div>';
   }).join('');

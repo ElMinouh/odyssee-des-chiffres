@@ -596,7 +596,7 @@ function _progBilanHtml(d){
   let html='<div style="margin-top:10px;padding:8px;background:rgba(255,255,255,.06);border-radius:8px;"><div style="font-weight:800;margin-bottom:6px;">📈 Progression d\'année</div>';
   for(const l of rows){
    const v=Math.max(0,Math.min(1,yp[l]));
-   html+=`<div style="margin:5px 0;"><div style="display:flex;justify-content:space-between;font-size:.82em;"><span>${l}</span><span style="color:${col(v)}">${lab(v)}</span></div><div style="height:7px;background:rgba(255,255,255,.12);border-radius:4px;overflow:hidden;margin-top:2px;"><div style="height:100%;width:${Math.round(v*100)}%;background:${col(v)};"></div></div></div>`;
+   html+=`<div style="margin:5px 0;"><div style="display:flex;justify-content:space-between;font-size:.8em;"><span>${l}</span><span style="color:${col(v)}">${lab(v)}</span></div><div style="height:7px;background:rgba(255,255,255,.12);border-radius:4px;overflow:hidden;margin-top:2px;"><div style="height:100%;width:${Math.round(v*100)}%;background:${col(v)};"></div></div></div>`;
   }
   html+='<div style="font-size:.72em;opacity:.7;margin-top:4px;">La barre monte avec les réussites, redescend un peu en cas d\'erreurs.</div></div>';
   return html;
@@ -661,7 +661,7 @@ function _progPanelHtml(d){
      <div style="flex:1;background:#1d9e75;"></div><div style="flex:1;background:#ba7517;"></div><div style="flex:1;background:#d85a30;"></div>
      <div style="position:absolute;top:50%;transform:translate(-50%,-50%);left:${(v*100).toFixed(1)}%;width:4px;height:32px;background:#fff;border-radius:2px;box-shadow:0 0 4px rgba(0,0,0,.6);"></div>
     </div>
-    <div style="display:flex;justify-content:space-between;font-size:.68em;opacity:.85;"><span>Début</span><span>Milieu</span><span>Fin</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:.65em;opacity:.85;"><span>Début</span><span>Milieu</span><span>Fin</span></div>
     <div style="text-align:center;font-weight:800;color:${col};margin-top:5px;">${sel} — ${lab} · ${Math.round(v*100)}%</div>`;
   // Point faible : suivi par notion disponible pour les maths
   let weakBox='';
@@ -672,7 +672,7 @@ function _progPanelHtml(d){
          <div style="font-weight:800;color:#ff6b6b;">⚠️ Point faible n°1 en ${sel}</div>
          <div style="margin-top:3px;">${_PROG_OPLABEL[w.key]||w.key} — ${Math.round(w.rate*100)}% d'erreurs (${w.fail} sur ${w.n})</div>
        </div>`
-    : `<div style="margin-top:10px;padding:10px;border:2px dashed rgba(255,255,255,.25);border-radius:10px;font-size:.85em;opacity:.8;">Pas encore assez de réponses en ${sel} pour repérer un point faible.</div>`;
+    : `<div style="margin-top:10px;padding:10px;border:2px dashed rgba(255,255,255,.25);border-radius:10px;font-size:.9em;opacity:.8;">Pas encore assez de réponses en ${sel} pour repérer un point faible.</div>`;
   }
   return `<div style="margin-top:10px;padding:10px;background:rgba(255,255,255,.06);border-radius:10px;">
      <div style="font-weight:800;margin-bottom:6px;">📈 Progression d'année <span style="font-weight:400;opacity:.7;font-size:.8em;">(matière puis classe)</span></div>

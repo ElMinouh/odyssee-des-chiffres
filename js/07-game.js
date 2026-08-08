@@ -99,13 +99,13 @@ function renderQuests(){
                 : q.smart==='strong' ? 'Défi (zone maîtrisée)'
                 : 'Quête classique';
   return `<div class="quest-row">
-  <div style="font-size:1.2em;" title="${tooltip}">${icon}</div>
+  <div style="font-size:1.3em;" title="${tooltip}">${icon}</div>
   <div style="flex:1;text-align:left;">
-   <div style="font-weight:700;font-size:.82em;">${q.label} ${q.done?'✅':''}</div>
+   <div style="font-weight:700;font-size:.8em;">${q.label} ${q.done?'✅':''}</div>
    <div style="color:#f1c40f;font-size:.72em;">+${q.reward} ⭐</div>
    <div class="quest-prog"><div class="quest-prog-fill" style="width:${Math.min(100,Math.round(q.progress/q.goal*100))}%"></div></div>
   </div>
-  <div style="font-size:.75em;color:#bdc3c7;">${Math.min(q.progress,q.goal)}/${q.goal}</div>
+  <div style="font-size:.72em;color:#bdc3c7;">${Math.min(q.progress,q.goal)}/${q.goal}</div>
  </div>`;
  }).join('');
 }
@@ -1182,7 +1182,7 @@ if(typeof checkMilestones==='function') checkMilestones();
      $('trans-monster').textContent='🗺️';
      $('trans-msg').innerHTML=`<div style="color:#f1c40f;font-size:.9em;font-weight:700;letter-spacing:.05em;">ZONE CONQUISE !</div>
       <div style="font-family:'Cinzel Decorative',cursive;font-size:1.3em;color:#2ecc71;margin:8px 0;">${_zone.label}</div>
-      <div style="font-size:.85em;color:#bdc3c7;">Une nouvelle zone s'ouvre à toi…</div>`;
+      <div style="font-size:.9em;color:#bdc3c7;">Une nouvelle zone s'ouvre à toi…</div>`;
      trans.classList.remove('hidden');
      try{startConfetti();
      [523,659,784,1047,1319].forEach((f,i)=>setTimeout(()=>beep(f,'sine',.4,.15),i*120));
@@ -1241,7 +1241,7 @@ if(typeof checkMilestones==='function') checkMilestones();
   // Chantier A2 v1 : classement enrichi avec stats individuelles
   $('end-score').innerHTML='<strong>🏁 Classement :</strong><br>'+sorted.map((p,i)=>{
    const status = p.alive?'❤️':'💀';
-   const elim = p.eliminated?` <span style="font-size:.85em;color:#bdc3c7;">(par ${esc(p.eliminated)})</span>`:'';
+   const elim = p.eliminated?` <span style="font-size:.9em;color:#bdc3c7;">(par ${esc(p.eliminated)})</span>`:'';
    return `${medals[i]} ${p.avatar||''} ${esc(p.name)} — ${p.score} pts ${status}${elim}`;
   }).join('<br>');
   // Calcul des prix spéciaux
@@ -1271,7 +1271,7 @@ if(typeof checkMilestones==='function') checkMilestones();
    trophies.push(`☠️ <strong>Chasseur</strong> : ${killerP.avatar||''} ${esc(killerP.name)} (${killerP.killCount} élim.)`);
   }
   if(trophies.length){
-   $('end-score').innerHTML += '<br><br><strong>🏆 Prix spéciaux :</strong><br><div style="font-size:.92em;color:#f1c40f;text-align:left;display:inline-block;">'+trophies.join('<br>')+'</div>';
+   $('end-score').innerHTML += '<br><br><strong>🏆 Prix spéciaux :</strong><br><div style="font-size:.9em;color:#f1c40f;text-align:left;display:inline-block;">'+trophies.join('<br>')+'</div>';
   }
   $('end-stars').innerText='';$('end-enc').innerText='🏆 Bravo à tous !';
   $('end-xp').innerText=`+${xpGained} XP`;
@@ -1335,7 +1335,7 @@ function _renderEndRecap(won){
  for(const g of groups){
   if(lines>=_RECAP_MAX_LINES) break;
   const d=_RECAP_DOMAINS[g.key]||{e:'📝',l:'À revoir'};
-  html+=`<div style="color:#86b8e6;margin:7px 0 2px;font-weight:700;font-size:.92em;">${d.e} ${d.l}</div>`;
+  html+=`<div style="color:#86b8e6;margin:7px 0 2px;font-weight:700;font-size:.9em;">${d.e} ${d.l}</div>`;
   for(const it of g.items){
    if(lines>=_RECAP_MAX_LINES) break;
    html+=`<div style="padding:1px 0;">${esc(String(it.display))} = <strong style="color:#2ecc71;">${esc(String(it.res))}</strong></div>`;
@@ -1344,7 +1344,7 @@ function _renderEndRecap(won){
  }
  const remaining=list.length-lines;
  if(remaining>0) html+=`<div style="color:#bdc3c7;margin-top:4px;font-size:.9em;">… et ${remaining} autre${remaining>1?'s':''}.</div>`;
- html+=`<div style="color:#9fd3a0;margin-top:9px;font-style:italic;font-size:.95em;">${_RECAP_ENCOURAGE[ri(0,_RECAP_ENCOURAGE.length-1)]}</div>`;
+ html+=`<div style="color:#9fd3a0;margin-top:9px;font-style:italic;font-size:.9em;">${_RECAP_ENCOURAGE[ri(0,_RECAP_ENCOURAGE.length-1)]}</div>`;
  el.innerHTML=html;
  // Bouton « Rejouer mes erreurs » : seulement si des erreurs arithmétiques sont rejouables
  if(btn){

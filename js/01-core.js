@@ -361,9 +361,9 @@ function showAlert(message, opts={}){
  ov.id='sd-alert-overlay';
  ov.style.cssText='position:fixed;inset:0;z-index:620;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:20px;';
  ov.innerHTML='<div style="background:#182449;border:1px solid rgba(241,196,15,.35);border-radius:18px;padding:24px 20px;text-align:center;max-width:340px;width:100%;box-shadow:var(--shadow-modal);">'
-  +'<div style="font-size:1.15em;font-weight:800;color:#f1c40f;margin-bottom:10px;">'+_e(title)+'</div>'
-  +'<div style="font-size:.92em;color:#dce3f0;line-height:1.5;margin-bottom:18px;white-space:pre-line;">'+_e(message)+'</div>'
-  +'<button id="sd-alert-ok" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px 26px;font-weight:700;font-size:.92em;cursor:pointer;">OK</button>'
+  +'<div style="font-size:1em;font-weight:800;color:#f1c40f;margin-bottom:10px;">'+_e(title)+'</div>'
+  +'<div style="font-size:.9em;color:#dce3f0;line-height:1.5;margin-bottom:18px;white-space:pre-line;">'+_e(message)+'</div>'
+  +'<button id="sd-alert-ok" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px 26px;font-weight:700;font-size:.9em;cursor:pointer;">OK</button>'
   +'</div>';
  document.body.appendChild(ov);
  const closeIt=()=>_closeStyledDialog('sd-alert-overlay');
@@ -385,11 +385,11 @@ function showConfirm(message, onConfirm, opts={}){
  ov.style.cssText='position:fixed;inset:0;z-index:620;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:20px;';
  ov.innerHTML='<div style="background:'+bg+';border:1px solid '+borderColor+';border-radius:18px;padding:24px 20px;text-align:center;max-width:360px;width:100%;box-shadow:var(--shadow-modal);">'
   +(opts.danger?'<div style="font-size:2.2em;margin-bottom:6px;">⚠️</div>':'')
-  +'<div style="font-size:1.1em;font-weight:800;color:'+accentColor+';margin-bottom:10px;">'+_e(title)+'</div>'
+  +'<div style="font-size:1em;font-weight:800;color:'+accentColor+';margin-bottom:10px;">'+_e(title)+'</div>'
   +'<div style="font-size:.9em;color:#dce3f0;line-height:1.5;margin-bottom:18px;white-space:pre-line;">'+_e(message)+'</div>'
   +'<div style="display:flex;gap:10px;justify-content:center;">'
-  +'<button id="sd-confirm-cancel" style="background:#555;color:#fff;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:.88em;cursor:pointer;">'+_e(cancelLabel)+'</button>'
-  +'<button id="sd-confirm-ok" style="background:'+accentColor+';color:#fff;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:.88em;cursor:pointer;">'+_e(confirmLabel)+'</button>'
+  +'<button id="sd-confirm-cancel" style="background:#555;color:#fff;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:.9em;cursor:pointer;">'+_e(cancelLabel)+'</button>'
+  +'<button id="sd-confirm-ok" style="background:'+accentColor+';color:#fff;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:.9em;cursor:pointer;">'+_e(confirmLabel)+'</button>'
   +'</div></div>';
  document.body.appendChild(ov);
  const closeIt=()=>_closeStyledDialog('sd-confirm-overlay');
@@ -1310,7 +1310,7 @@ function mcRenderCombat(){
  box.innerHTML = _mcCombat.map((p,i)=>{
   const isCustom = !KN.includes(p.name);
   return `<div style="display:flex;gap:6px;align-items:center;background:rgba(255,255,255,.04);padding:8px;border-radius:8px;">
-   <span style="font-size:1.1em;">👤</span>
+   <span style="font-size:1em;">👤</span>
    <select onchange="mcCombatName(${i},this.value)" style="flex:1.2;margin:0;">
     ${KN.map(n=>`<option value="${_esc(n)}"${n===p.name?' selected':''}>${_esc(n)}</option>`).join('')}
     <option value="__c__"${isCustom?' selected':''}>✏️ Autre…</option>

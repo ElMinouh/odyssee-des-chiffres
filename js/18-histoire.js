@@ -73,7 +73,7 @@ function _histPick(arr){ return arr[ri(0,arr.length-1)]; }
 // ── Frise à trous (astuce _matRanger : choisir la BONNE réponse) ──
 function _histFriseHtml(arr, holeIdx){
  return '<div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;">'+
-  arr.map((label,i)=>`<span style="background:${i===holeIdx?'#e67e22':'rgba(255,255,255,.12)'};color:${i===holeIdx?'#2c1810':'#fff'};border-radius:6px;padding:4px 8px;font-size:.78em;font-weight:700;">${i===holeIdx?'?':label}</span>`).join('')+
+  arr.map((label,i)=>`<span style="background:${i===holeIdx?'#e67e22':'rgba(255,255,255,.12)'};color:${i===holeIdx?'#2c1810':'#fff'};border-radius:6px;padding:4px 8px;font-size:.8em;font-weight:700;">${i===holeIdx?'?':label}</span>`).join('')+
   '</div>';
 }
 function _histOrdreChoiceHtml(arr){ return arr.map((label,i)=>`${i+1}. ${label}`).join('<br>'); }
@@ -969,7 +969,7 @@ function _histMatQ(level, consigne, visuelHtml, choices, res, opKey, row){
  return q;
 }
 function _histMatIcon(emoji){ return `<div class="mat-collection"><span class="mat-obj">${emoji}</span></div>`; }
-function _histMatIconCap(emoji, cap){ return `<div class="mat-collection"><span class="mat-obj">${emoji}</span><div style="font-size:.4em;color:var(--text-secondary,#7f8c8d);width:100%;text-align:center;margin-top:2px;">${cap}</div></div>`; }
+function _histMatIconCap(emoji, cap){ return `<div class="mat-collection"><span class="mat-obj">${emoji}</span><div style="font-size:.65em;color:var(--text-secondary,#7f8c8d);width:100%;text-align:center;margin-top:2px;">${cap}</div></div>`; }
 function _histMatRowHtml(arr){ return `<div class="mat-collection mat-rowtas">${arr.map(e=>`<span class="mat-obj" style="font-size:1.3em;">${e}</span>`).join('')}</div>`; }
 // v11.3.1 — FIX bug critique : val doit être attribué APRÈS le mélange (comme dans
 // _histQ), jamais avant. L'ancien code fixait val:1/val:2 puis mélangeait le tableau

@@ -71,7 +71,7 @@ function _advRainbowHtml(){
   : 'Rapporte les couleurs, île après île !';
  // v11.6.10 : un vrai bouton (pas seulement l'illustration cliquable) pour que
  // ce soit sans ambiguïté possible comment relire l'histoire bonus.
- const cta = violet ? `<button onclick="_openTaleIllus(_MAT_TALE_RAINBOW)" style="margin-top:8px;background:#c08cf8;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-weight:700;font-size:.85em;cursor:pointer;">📖 ${taleSeen?'Relire':'Lire'} l'histoire du Trésor</button>` : '';
+ const cta = violet ? `<button onclick="_openTaleIllus(_MAT_TALE_RAINBOW)" style="margin-top:8px;background:#c08cf8;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-weight:700;font-size:.9em;cursor:pointer;">📖 ${taleSeen?'Relire':'Lire'} l'histoire du Trésor</button>` : '';
  return `
   <div class="advlog-section-title">🌈 Mon Arc-en-ciel</div>
   <div class="advcol-box advcol-mat${violet?' advbook-done':''}" ${clickable}>
@@ -522,7 +522,7 @@ function _advBookHtml(){
  const haloR = done ? `<ellipse cx="120" cy="100" rx="112" ry="92" fill="url(#gbGlo)"/>` : '';
  // v11.6.11 : bouton bien visible (pas seulement l'illustration cliquable),
  // pour que ce soit sans ambiguïté possible comment (re)trouver cette histoire.
- const cta = done ? `<button onclick="_openBookTale()" style="margin-top:8px;background:#3a44ad;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-weight:700;font-size:.85em;cursor:pointer;">📖 ${taleSeen?'Réécouter':'Écouter'} l'histoire du Livre</button>` : '';
+ const cta = done ? `<button onclick="_openBookTale()" style="margin-top:8px;background:#3a44ad;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-weight:700;font-size:.9em;cursor:pointer;">📖 ${taleSeen?'Réécouter':'Écouter'} l'histoire du Livre</button>` : '';
  return `
   <div class="advlog-section-title">📖 Le Grand Livre</div>
   <div class="advcol-box advcol-mat${done?' advbook-done':''}" ${clickable}>
@@ -615,7 +615,7 @@ function _advBadgeHtml(){
  const clickable = done ? `onclick="_openBookTale()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();_openBookTale();}" title="Lire le dossier du Docteur Babel" style="cursor:pointer"` : '';
  // v11.6.14 : bouton explicite (cohérence avec Arc-en-ciel/Livre/Talisman/Armure)
  // — auparavant seule l'illustration était cliquable, sans confirmation visuelle claire.
- const babelCta = done ? `<button onclick="_openBookTale()" style="margin-top:8px;background:#8a2a3b;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-weight:700;font-size:.85em;cursor:pointer;">📖 ${taleSeen?'Relire':'Lire'} le dossier du Docteur Babel</button>` : '';
+ const babelCta = done ? `<button onclick="_openBookTale()" style="margin-top:8px;background:#8a2a3b;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-weight:700;font-size:.9em;cursor:pointer;">📖 ${taleSeen?'Relire':'Lire'} le dossier du Docteur Babel</button>` : '';
  const _hn = (typeof P!=='undefined' && P && P.name) ? String(P.name) : 'le héros';
  const heroEsc = _hn.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
  return `
@@ -679,7 +679,7 @@ function _advArmorHtml(){
  const sagaInvite = titanDone ? `<div class="advcol-caption">${taleSeenC?"Titan vaincu — touche l'Armure pour relire la Saga 📖":"Titan vaincu ! Touche l'Armure pour lire la Saga des Porteurs ⚔️📜"}</div>` : '';
  // v11.6.12 : bouton explicite (cohérence avec Arc-en-ciel/Livre) — auparavant
  // seule l'illustration était cliquable, sans confirmation visuelle claire.
- const sagaCta = titanDone ? `<button onclick="_openTaleIllus(_COL_TALE_ARMOR)" style="margin-top:8px;background:#caa64e;color:#3a2a05;border:none;border-radius:10px;padding:8px 16px;font-weight:700;font-size:.85em;cursor:pointer;">📖 ${taleSeenC?'Relire':'Lire'} la Saga des Porteurs</button>` : '';
+ const sagaCta = titanDone ? `<button onclick="_openTaleIllus(_COL_TALE_ARMOR)" style="margin-top:8px;background:#caa64e;color:#3a2a05;border:none;border-radius:10px;padding:8px 16px;font-weight:700;font-size:.9em;cursor:pointer;">📖 ${taleSeenC?'Relire':'Lire'} la Saga des Porteurs</button>` : '';
  return `
   <div class="advlog-section-title">🛡️ Armure Solaire <span class="advcol-count">${count} / 6 pièces</span></div>
   <div class="advcol-box advcol-col${titanDone?' advbook-done':''}" ${clickableC}>
@@ -883,7 +883,7 @@ function _advTalismanHtml(){
   : 'Libère les Cristaux pour reformer le Talisman !';
  // v11.6.12 : bouton explicite (cohérence avec Arc-en-ciel/Livre) — auparavant
  // seule l'illustration était cliquable, sans confirmation visuelle claire.
- const numbersCta = done ? `<button onclick="_openTaleIllus(_PRIM_TALE_NUMBERS)" style="margin-top:8px;background:#3f6ad0;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-weight:700;font-size:.85em;cursor:pointer;">📖 ${taleSeen?'Relire':'Lire'} l'histoire des Nombres</button>` : '';
+ const numbersCta = done ? `<button onclick="_openTaleIllus(_PRIM_TALE_NUMBERS)" style="margin-top:8px;background:#3f6ad0;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-weight:700;font-size:.9em;cursor:pointer;">📖 ${taleSeen?'Relire':'Lire'} l'histoire des Nombres</button>` : '';
  return `
   <div class="advlog-section-title">💎 Talisman de Calcultopia <span class="advcol-count">${count} / 5 cristaux</span></div>
   <div class="advcol-box advtal-box${done?' advbook-done':''}" ${clickable}>
