@@ -14,6 +14,16 @@ const ADAPT_STRUGGLE     = 0.50;// ≤50% = difficulté → questions un peu plu
 // Probabilité de base d'injecter une erreur passée dans le flux normal
 const SPACED_BASE_PROBA  = 0.22;// ~1 question sur 5 est une révision
 const SPACED_MAX_LOG     = 30;  // taille max du log d'erreurs
+// Chantier Lot 2 (audit pédagogique 12e conversation) : système à cases (Leitner simplifié).
+// Chaque case = un palier de maîtrise, avec un délai cible avant reprogrammation qui
+// s'allonge à mesure que l'enfant consolide. Case 0 = jamais consolidée, case 3 = dernière
+// vérification avant retrait définitif (pt 16 : rappel différé volontaire).
+const LEITNER_BOX_TARGET_MIN = [0, 3*60, 24*60, 7*24*60]; // 0 / 3h / 1j / 7j
+const LEITNER_MAX_BOX = LEITNER_BOX_TARGET_MIN.length - 1;
+// Sous ce seuil (ms), une erreur est considérée comme une probable inattention
+// (réponse donnée trop vite pour avoir été réfléchie) plutôt qu'une incompréhension
+// réelle de la notion — elle est retestée presque tout de suite, hors case Leitner.
+const INATTENTION_MS_THRESHOLD = 2000;
 
 /**
  * Renvoie un signal d'ajustement pour un opérateur donné :
@@ -53,9 +63,15 @@ function adaptRange(min, max, opKey){
 
 /**
  * Enregistre une erreur dans le log avec timestamp.
- * Format : {q:'3+4=7', t: Date.now(), tries: 1}
+ * Format : {q:'3+4=7', t: Date.now(), tries: 1, box:0, subj, inattention}
+ * `elapsedMs` (optionnel) : temps entre l'affichage de la question et la réponse.
+ * Sous INATTENTION_MS_THRESHOLD, l'erreur est marquée `inattention:true` — elle sera
+ * retestée presque immédiatement (pas via les cases Leitner, qui supposent une
+ * vraie incompréhension à retravailler dans la durée). Fonctionne identiquement
+ * pour toutes les matières (maths, français, histoire, et toute matière future),
+ * le champ `subj` étant déjà lu depuis GM.subject sans logique spécifique à une matière.
  */
-function logError(qDisplay, res, q){
+function logError(qDisplay, res, q, elapsedMs){
  if(!P)return;
  P.errorLog = Array.isArray(P.errorLog) ? P.errorLog : [];
  const key = String(qDisplay).replace(/\s+/g,'')+'='+res;
@@ -65,6 +81,7 @@ function logError(qDisplay, res, q){
  // une question incompréhensible rejouée en boucle.
  const _replayable = (q && Array.isArray(q.choices) && q.choices.length) || /^[\d().,+\-x×\/÷\s]+=\d+$/.test(key);
  if(!_replayable) return;
+ const _inattention = (typeof elapsedMs==='number') && elapsedMs>=0 && elapsedMs<INATTENTION_MS_THRESHOLD;
  // Si l'erreur existe déjà, on met à jour le timestamp et tries
  const existing = P.errorLog.find(e=>e.q===key);
  const _subj = (typeof GM!=='undefined' && GM.subject) || 'math';
@@ -72,8 +89,11 @@ function logError(qDisplay, res, q){
   existing.t = Date.now();
   existing.tries = (existing.tries||0) + 1;
   existing.subj = _subj;
+  existing.box = 0; // nouvel échec → repart de la case 0 (règle Leitner standard)
+  existing.inattention = _inattention;
+  existing.pendingFinalCheck = false;
  } else {
-  const item = {q:key, t:Date.now(), tries:1, subj:_subj};
+  const item = {q:key, t:Date.now(), tries:1, subj:_subj, box:0, inattention:_inattention};
   // v9.4.16 : les questions QCM (exercices enrichis primaire/collège) sont
   // stockées avec un instantané rejouable — sinon elles encombraient le log
   // sans jamais être reposées. Cap de taille pour préserver localStorage.
@@ -87,16 +107,25 @@ function logError(qDisplay, res, q){
   }
   P.errorLog.push(item);
  }
- // Cap : on garde les 30 plus récentes
+ // Cap : en cas de dépassement, on retire en priorité les entrées les plus avancées
+ // (cases hautes = déjà bien maîtrisées, moins urgentes à garder) puis, à égalité
+ // de case, les plus anciennes — pour ne pas perdre le suivi des lacunes actives.
  if(P.errorLog.length > SPACED_MAX_LOG){
-  P.errorLog.sort((a,b)=>b.t-a.t);
-  P.errorLog = P.errorLog.slice(0, SPACED_MAX_LOG);
+  P.errorLog.sort((a,b)=> (a.box||0)!==(b.box||0) ? (b.box||0)-(a.box||0) : b.t-a.t);
+  P.errorLog = P.errorLog.slice(P.errorLog.length-SPACED_MAX_LOG);
  }
 }
 
 /**
- * Marque une erreur comme "bien réussie" : on l'enlève du log
- * (l'enfant a consolidé).
+ * Marque une erreur comme "bien réussie" : fait progresser sa case Leitner.
+ * - Sous la case max : consolidation partielle (2 bonnes réponses d'affilée requises
+ *   à chaque case), puis passage à la case suivante avec un délai cible plus long
+ *   avant reprogrammation (moins souvent reposée, car mieux maîtrisée).
+ * - À la case max : une dernière vérification différée (pt 16 — rappel différé
+ *   volontaire) est programmée avant retrait définitif, pour confirmer que la
+ *   rétention tient dans la durée et pas seulement à chaud.
+ * Fonctionne identiquement pour toutes les matières (le format de l'item ne dépend
+ * d'aucune logique spécifique à une matière donnée).
  */
 function clearErrorFromLog(qDisplay, res){
  if(!P?.errorLog)return;
@@ -104,45 +133,85 @@ function clearErrorFromLog(qDisplay, res){
  const item = P.errorLog.find(e=>e.q===key);
  if(!item)return;
  item.tries = (item.tries||1) - 1;
- // 2 bonnes réponses d'affilée = on considère l'erreur consolidée, on l'enlève
- if(item.tries<=0){
-  P.errorLog = P.errorLog.filter(e=>e.q!==key);
+ if(item.tries>0){
+  // Encore une bonne réponse nécessaire à cette case : on ne fait qu'avancer
+  // l'horloge, la case ne change pas.
+  item.t = Date.now();
+  return;
  }
+ if(item.pendingFinalCheck){
+  // La vérification différée finale (pt 16) est réussie → notion consolidée,
+  // on retire vraiment l'erreur du suivi.
+  P.errorLog = P.errorLog.filter(e=>e.q!==key);
+  return;
+ }
+ const box = item.box||0;
+ if(box>=LEITNER_MAX_BOX){
+  // Case max atteinte : programme la vérification finale différée plutôt que
+  // de retirer immédiatement (évite de déclarer une notion acquise après une
+  // seule série de bonnes réponses rapprochées).
+  item.pendingFinalCheck = true;
+  item.tries = 1;
+  item.t = Date.now();
+ } else {
+  item.box = box+1;
+  item.tries = 2;
+  item.t = Date.now();
+ }
+ item.inattention = false;
 }
 
 /**
  * Donne la probabilité de reposer une erreur donnée maintenant.
- * Plus l'erreur est récente, plus elle remonte souvent (courbe de l'oubli).
+ * - Erreur "inattention" (réponse trop rapide, cf. INATTENTION_MS_THRESHOLD) :
+ *   courbe rapprochée classique, indépendante de la case Leitner — l'enfant
+ *   savait probablement, on revérifie vite plutôt que d'attendre des jours.
+ * - Case 0 (jamais consolidée) : même courbe rapprochée (comportement historique).
+ * - Cases 1+ : pas due avant ~70% du délai cible de la case (LEITNER_BOX_TARGET_MIN),
+ *   puis probabilité croissante avec le retard — c'est l'espacement croissant réel.
  */
 function _spacedProba(errItem){
  const ageMs = Date.now() - errItem.t;
  const ageMin = ageMs / 60000;
- // 0-1min : 0.5, 5min : 0.25, 30min : 0.10, 24h : 0.05
- if(ageMin < 1)   return 0.50;
- if(ageMin < 5)   return 0.30;
- if(ageMin < 30)  return 0.18;
- if(ageMin < 180) return 0.10;
- return 0.05;
+ const targetMin = errItem.inattention ? 0 : LEITNER_BOX_TARGET_MIN[errItem.box||0];
+ if(targetMin<=0){
+  if(ageMin < 1)   return 0.50;
+  if(ageMin < 5)   return 0.30;
+  if(ageMin < 30)  return 0.18;
+  if(ageMin < 180) return 0.10;
+  return 0.05;
+ }
+ if(ageMin < targetMin*0.7) return 0; // pas encore due à cette case
+ const overdueMin = ageMin - targetMin;
+ return Math.min(0.5, 0.05 + Math.max(0,overdueMin)/500);
 }
 
 /**
  * Essaie de retourner une erreur à reposer maintenant.
  * Renvoie {display, res, isRevision:true} ou null.
  * Ne renvoie jamais 2 fois de suite la même question (via _lastRevisedKey).
+ * `opts.force` (pt 6 — rappel inter-session) : ignore le seuil de déclenchement
+ * SPACED_BASE_PROBA et le "pas encore due" des cases hautes — utilisé uniquement
+ * au retour d'une absence d'au moins 1 jour, pour prioriser 2-3 révisions avant
+ * tout contenu neuf (cf. hook dans startGame(), toutes matières confondues).
  */
 let _lastRevisedKey = null;
-function getRevisionErrorToAsk(){
+function getRevisionErrorToAsk(opts){
+ const force = !!(opts && opts.force);
  if(!P?.errorLog?.length)return null;
- // Trigger global : on ne déclenche la tentative que dans 22% des cas
- if(Math.random() > SPACED_BASE_PROBA)return null;
+ // Trigger global : on ne déclenche la tentative que dans 22% des cas (sauf forçage)
+ if(!force && Math.random() > SPACED_BASE_PROBA)return null;
  // Pour chaque erreur, calcul de la proba pondérée par sa "fraîcheur"
  // Scope par matière : on ne repose que des erreurs de la matière en cours
  const _subj = (typeof GM!=='undefined' && GM.subject) || 'math';
  const candidates = P.errorLog.filter(e=>e.q!==_lastRevisedKey && (e.subj||'math')===_subj);
  if(!candidates.length)return null;
- // Pondération : plus la proba individuelle est forte, plus on la prend
- const weighted = candidates.map(e=>({e, w:_spacedProba(e)}));
+ // Pondération : plus la proba individuelle est forte, plus on la prend.
+ // En mode forcé (rappel inter-session), on ignore le "pas encore due" et on
+ // pioche équitablement parmi toutes les erreurs en attente.
+ const weighted = force ? candidates.map(e=>({e, w:1})) : candidates.map(e=>({e, w:_spacedProba(e)}));
  const totalW = weighted.reduce((s,x)=>s+x.w, 0);
+ if(totalW<=0) return null;
  let r = Math.random() * totalW;
  for(const {e, w} of weighted){
   r -= w;
@@ -171,6 +240,26 @@ function getRevisionErrorToAsk(){
   }
  }
  return null;
+}
+// v11.8.0 (Lot 2, audit pédagogique) — Rappel inter-session (pt 6).
+// Appelée une fois par startGame() : si l'enfant revient après ≥1 jour d'absence
+// et qu'il a des erreurs en attente dans la matière du jour, programme un nombre
+// de révisions à forcer en priorité dans les premières questions de la session
+// (via GS.forceRevisionCount, consommé par generateQ()). Toutes matières.
+const INTERSESSION_MIN_DAYS = 1;
+const INTERSESSION_MAX_REVISIONS = 3;
+function checkInterSessionRevision(){
+ if(!P) return 0;
+ const now = Date.now();
+ const last = P.lastPlayTs;
+ P.lastPlayTs = now;
+ if(!last) return 0; // première partie jamais jouée : rien à rappeler
+ const daysSince = (now-last)/86400000;
+ if(daysSince < INTERSESSION_MIN_DAYS) return 0;
+ const _subj = (typeof GM!=='undefined' && GM.subject) || 'math';
+ const n = (P.errorLog||[]).filter(e=>(e.subj||'math')===_subj).length;
+ if(!n) return 0;
+ return Math.min(INTERSESSION_MAX_REVISIONS, n);
 }
 // ═══════════════════════════════════════════════════════
 // PALIERS (chantier 2.1)

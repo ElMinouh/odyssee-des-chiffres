@@ -359,6 +359,9 @@ function startGame(){
  }
  if(typeof _matApplyAmbiance==='function') _matApplyAmbiance(GM.level);
  resetGS();powers={};isRevision=false;
+ // Lot 2 (audit pédagogique) : rappel inter-session — priorise 2-3 révisions
+ // en tête de session si l'enfant revient après ≥1 jour, avant tout contenu neuf.
+ GS.forceRevisionCount = (typeof checkInterSessionRevision==='function') ? checkInterSessionRevision() : 0;
  if(GM.mode2==='combat'){
   const valid=combatCfg.filter(p=>p.name&&p.name.trim());
   if(valid.length<2){showAlert('Il faut au moins 2 joueurs nommés !');return;}
@@ -510,8 +513,11 @@ function generateQ(){
  }
  // Chantier 1.2 : révision espacée en mode normal (pas en boss ni en combat/révision)
  if(GM.mode2==='normal' && !GS.isBoss && !(typeof _isMaternelle==='function'&&_isMaternelle(GM.level)) && typeof getRevisionErrorToAsk==='function'){
-  const rev = getRevisionErrorToAsk();
-  if(rev) return rev;
+  // Lot 2 (audit pédagogique) : rappel inter-session — force les premières
+  // révisions en tête de session plutôt que de laisser au hasard du tirage 22%.
+  const _force = (GS.forceRevisionCount||0) > 0;
+  const rev = getRevisionErrorToAsk(_force ? {force:true} : undefined);
+  if(rev){ if(_force) GS.forceRevisionCount--; return rev; }
  }
  // P1 : exercices d'enrichissement numération (primaire, en mode normal hors boss)
  if((GM.subject==='math'||!GM.subject) && GM.mode2==='normal' && !GS.isBoss && !(typeof _isMaternelle==='function'&&_isMaternelle(GM.level)) && typeof _primEnrich==='function' && typeof _PRIM_LEVELS!=='undefined' && _PRIM_LEVELS.includes(GM.level) && Math.random()<0.33){
@@ -529,6 +535,7 @@ function generateQ(){
 function getSkin(){const s=SKINS.find(x=>x.id===(P.equippedSkin||'default'))||SKINS[0];return s.m;}
 function renderQ(){
  GS.answering=false;
+ GS.qShownAt=Date.now(); // Lot 2 audit pédagogique : temps de réponse → détection inattention
  // v8.7.53 (O4.2b) : nettoyer les effets d'attaque de la question précédente
  if(typeof _resetBossAttackEffects==='function') _resetBossAttackEffects();
  const q=GS.q;
@@ -813,7 +820,7 @@ GS.errInGame++;GS.combo=0;GS.opCombo=0;GS.lastOpKey=null;$('gc').classList.remov
    }
   }
   // Chantier 1.2 : log dans le registre de révision espacée
-  if(typeof logError==="function" && q.display && q.res!==undefined) logError(q.display, q.res, q);
+  if(typeof logError==="function" && q.display && q.res!==undefined) logError(q.display, q.res, q, GS.qShownAt?(Date.now()-GS.qShownAt):undefined);
   // v10.0.0 (C2) : liste de session propre pour le récap de fin de partie
   if(q.res!==undefined){
    const _disp = q.display || (q.a!==undefined&&q.b!==undefined ? `${q.a} ${q.op||'='} ${q.b}` : String(q.res));
