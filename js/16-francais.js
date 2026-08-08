@@ -152,7 +152,7 @@ function _frA_sound(){
  if(withS.length<1 || without.length<2) return null;
  const ok=_frRnd(withS);
  const bad=_frShuffle(without).slice(0,2);
- return _frQ(`Où entends-tu le son ${_SOUND_LABEL[snd]} ?`, _frHtmlWord(ok), bad.map(_frHtmlWord), 'fr-son');
+ return _frQ(`Où entends-tu le son ${_SOUND_LABEL[snd]} ?`, _frHtmlWord(ok), bad.map(_frHtmlWord), 'fr-son', `Dans « ${ok.w} », on entend bien le son ${_SOUND_LABEL[snd]}.`);
 }
 // A2 : Combien de syllabes ? (réponses = nombres)
 function _frA_syll(){
@@ -169,7 +169,7 @@ function _frC_opp(){
  const side=Math.random()<0.5;
  const cue=side?p.a:p.b, ok=side?p.b:p.a;
  const bad=_frSample(FR_WORDS,2).map(_frHtmlWord);
- return _frQ(`Le contraire de ${cue.e} « ${cue.w} » ?`, _frHtmlWord(ok), bad, 'fr-opp');
+ return _frQ(`Le contraire de ${cue.e} « ${cue.w} » ?`, _frHtmlWord(ok), bad, 'fr-opp', `« ${cue.w} » et « ${ok.w} » veulent dire le contraire l'un de l'autre.`);
 }
 // C2 : l'intrus d'une catégorie (réponses = images)
 function _frC_intrus(){
@@ -181,7 +181,7 @@ function _frC_intrus(){
  const two=_frShuffle(inCat).slice(0,2);
  const intrus=_frRnd(outCat);
  const label = cat==='animal'?'un animal':'une chose';
- return _frQ(`Trouve l\u2019intrus : lequel n\u2019est pas ${label} ?`, _frHtmlWord(intrus), two.map(_frHtmlWord), 'fr-intrus');
+ return _frQ(`Trouve l\u2019intrus : lequel n\u2019est pas ${label} ?`, _frHtmlWord(intrus), two.map(_frHtmlWord), 'fr-intrus', `« ${intrus.w} » n\u2019est pas ${label}, contrairement aux deux autres.`);
 }
 // C3 : lequel est un … ? (catégorie, réponses = images)
 function _frC_cat(){
@@ -191,19 +191,19 @@ function _frC_cat(){
  const ok=_frRnd(inCat);
  const bad=_frShuffle(outCat).slice(0,2);
  const label = cat==='animal'?'un animal':'une chose (un objet)';
- return _frQ(`Lequel est ${label} ?`, _frHtmlWord(ok), bad.map(_frHtmlWord), 'fr-cat');
+ return _frQ(`Lequel est ${label} ?`, _frHtmlWord(ok), bad.map(_frHtmlWord), 'fr-cat', `« ${ok.w} » est ${label}.`);
 }
 // G : compréhension orale (phrase lue, réponses = images)
 function _frG_listen(){
  const it=_frRnd(FR_SENT);
- return _frQ(`🔊 « ${it.s} » ${it.q}`, _frHtmlWord(it.ok), it.bad.map(_frHtmlWord), 'fr-ecoute');
+ return _frQ(`🔊 « ${it.s} » ${it.q}`, _frHtmlWord(it.ok), it.bad.map(_frHtmlWord), 'fr-ecoute', `Réécoute la phrase : « ${it.s} »`);
 }
 // D1 : un ou une ? (phase 3 — lecture du choix « un »/« une »)
 function _frD_genre(){
  const w=_frRnd(FR_WORDS.filter(x=>x.cat!=='personne'));
  const okHtml = (w.g==='m'?'un':'une');
  const badHtml = (w.g==='m'?'une':'un');
- return _frQ(`${w.e} ${w.w} : on dit… ?`, okHtml, [badHtml], 'fr-genre');
+ return _frQ(`${w.e} ${w.w} : on dit… ?`, okHtml, [badHtml], 'fr-genre', `On dit « ${okHtml} ${w.w} ».`);
 }
 // D2 : quel mot est bien écrit ? (phase 3 — lecture)
 const _FR_MISSPELL = {
@@ -216,7 +216,7 @@ function _frD_spell(){
  const k=_frRnd(keys);
  const w=FR_WORDS.find(x=>x.w===k);
  const wrong=_FR_MISSPELL[k];
- return _frQ(`${w.e} Quel mot est bien écrit ?`, `<b>${k}</b>`, wrong.map(x=>x), 'fr-orth');
+ return _frQ(`${w.e} Quel mot est bien écrit ?`, `<b>${k}</b>`, wrong.map(x=>x), 'fr-orth', `« ${k} » est la bonne orthographe.`);
 }
 // B : reconnaissance image → mot (phase 3 — lecture). Grande image dans #problem-image.
 function _frB_flash(){
@@ -338,7 +338,7 @@ function _frCE1_conj(){ const c=_frRnd(FR_CONJ); return _frQ(`Conjugue : ${c.p} 
 function _frCE1_conjSaisie(){ const inf=_frRnd(FR_VERBS_ER); const pr=_frRnd(FR_PRON); const ans=inf.slice(0,-2)+pr[1]; return _frText(`Conjugue « ${inf} » au présent : ${pr[0]} ___`, ans, 'fr-conjw', `${pr[0]} ${ans}`); }
 function _frCE1_temps(){ const t=_frRnd(FR_TEMPS); const bad=['passé','présent','futur'].filter(x=>x!==t.ok); return _frQ(`Quel temps ? « ${t.ph} »`, t.ok, bad, 'fr-temps', `« ${t.ph} » → ${t.ok}`); }
 function _frCE1_ptype(){ const t=_frRnd(FR_PHRASETYPE); return _frQ(`Quel type de phrase ? « ${t.ph} »`, t.ok, t.bad, 'fr-ptype', `« ${t.ph} » → ${t.ok}`); }
-function _frCE1_comp(){ const c=_frRnd(FR_COMP); return _frQ(`« ${c.t} » ${c.q}`, c.ok, c.bad, 'fr-comp', c.ok); }
+function _frCE1_comp(){ const c=_frRnd(FR_COMP); return _frQ(`« ${c.t} » ${c.q}`, c.ok, c.bad, 'fr-comp', `Relis le texte : la réponse s'y trouve directement.`); }
 function _frCE1_accord(){
  const n=_frRnd(FR_ACC_NOUN), a=_frRnd(FR_ACC_ADJ);
  const plural=Math.random()<0.5;
@@ -435,7 +435,7 @@ function _frCE2_pref(){ const p=_frRnd(FR_PREF); return _frQ(`Le contraire de «
 function _frCE2_fam(){ const f=_frRnd(FR_FAM); return _frQ(`Quel mot est de la famille de « ${f.rad} » ?`, f.ok, f.bad, 'fr-fam', `${f.ok} vient de « ${f.rad} »`); }
 function _frCE2_mbp(){ const m=_frRnd(FR_MBP); return _frQ(`Complète : « ${m.w.replace('_','…')} » → m ou n ?`, m.ok, m.bad, 'fr-mbp', `On écrit « ${m.full} » (devant m, b, p → on met m).`); }
 function _frCE2_dictee(){ const grp=_frRnd(FR_DICTEE2); const q=_frText('🔊 Écris la phrase que tu entends.', grp, 'fr-dictee2', `On écrit : « ${grp} »`); q.speakText=grp; return q; }
-function _frCE2_comp(){ const c=_frRnd(FR_COMP2); return _frQ(`« ${c.t} » ${c.q}`, c.ok, c.bad, 'fr-comp2', c.ok); }
+function _frCE2_comp(){ const c=_frRnd(FR_COMP2); return _frQ(`« ${c.t} » ${c.q}`, c.ok, c.bad, 'fr-comp2', `Relis le texte : la réponse s'y trouve directement.`); }
 
 function genFR_CE2(boss,_d){
  _d=_d||0;
@@ -919,13 +919,13 @@ function _artLe(o){ return /^[aeiouéèê]/i.test(o.w) ? 'l\u2019' : (o.g==='m'?
 // M1 — lexique imagé : « Où est le chat ? » → taper l'emoji.
 function _frM_lex(){
  const w=_frRnd(FR_WORDS); const bad=_frSample(FR_WORDS,2,[w.v]);
- const q=_frQ(`Où est ${_artLe(w)}${w.w} ?`, _frHtmlEmoji(w), bad.map(_frHtmlEmoji), 'frm-lex', w.w);
+ const q=_frQ(`Où est ${_artLe(w)}${w.w} ?`, _frHtmlEmoji(w), bad.map(_frHtmlEmoji), 'frm-lex', `C'est ${_artLe(w)}${w.w}.`);
  q.speakText=`Où est ${_artLe(w)}${w.w} ?`; return q;
 }
 // M2 — cris d'animaux (loto sonore).
 function _frM_cris(){
  const c=_frRnd(FR_CRIS); const bad=_frShuffle(FR_CRIS.filter(x=>x.w!==c.w)).slice(0,2);
- const q=_frQ(`🔊 ${c.cri} ! Quel animal fait ce cri ?`, _frHtmlEmoji(c), bad.map(_frHtmlEmoji), 'frm-cris', c.w);
+ const q=_frQ(`🔊 ${c.cri} ! Quel animal fait ce cri ?`, _frHtmlEmoji(c), bad.map(_frHtmlEmoji), 'frm-cris', `C'est ${c.w} qui fait ce cri.`);
  q.sound=c.file;                       // → joue le vrai cri (fichier ou synthèse)
  q.speakText='Quel animal fait ce cri ?'; // le TTS ne lit que la consigne
  return q;
@@ -933,7 +933,7 @@ function _frM_cris(){
 // M3 — compréhension orale (phrase lue, choix emoji).
 function _frM_listen(){
  const it=_frRnd(FR_SENT);
- const q=_frQ(`🔊 « ${it.s} » ${it.q}`, _frHtmlEmoji(it.ok), it.bad.map(_frHtmlEmoji), 'frm-ecoute', it.ok.w);
+ const q=_frQ(`🔊 « ${it.s} » ${it.q}`, _frHtmlEmoji(it.ok), it.bad.map(_frHtmlEmoji), 'frm-ecoute', `Réécoute : « ${it.s} »`);
  q.speakText=`${it.s} ${it.q}`; return q;
 }
 // M4 — intrus catégoriel (choix emoji).
@@ -944,7 +944,7 @@ function _frM_intrus(){
  if(inCat.length<2||outCat.length<1) return null;
  const two=_frShuffle(inCat).slice(0,2); const intrus=_frRnd(outCat);
  const label=cat==='animal'?'un animal':'une chose';
- const q=_frQ(`Lequel n\u2019est pas ${label} ?`, _frHtmlEmoji(intrus), two.map(_frHtmlEmoji), 'frm-intrus', intrus.w);
+ const q=_frQ(`Lequel n\u2019est pas ${label} ?`, _frHtmlEmoji(intrus), two.map(_frHtmlEmoji), 'frm-intrus', `${intrus.w} n'est pas ${label}.`);
  q.speakText=`Lequel n\u2019est pas ${label} ?`; return q;
 }
 // M5 — compter les syllabes (réponses = claps 👏, pas de chiffre à lire).
@@ -975,7 +975,7 @@ function _frM_son(){
  const without=FR_WORDS.filter(w=>w.snd.indexOf(snd)<0);
  if(withS.length<1||without.length<2) return null;
  const ok=_frRnd(withS); const bad=_frShuffle(without).slice(0,2);
- const q=_frQ(`Où entends-tu le son ${_SOUND_LABEL[snd]} ?`, _frHtmlEmoji(ok), bad.map(_frHtmlEmoji), 'frm-son', ok.w);
+ const q=_frQ(`Où entends-tu le son ${_SOUND_LABEL[snd]} ?`, _frHtmlEmoji(ok), bad.map(_frHtmlEmoji), 'frm-son', `Dans « ${ok.w} », on entend le son ${_SOUND_LABEL[snd]}.`);
  q.speakText=`Où entends-tu le son ${_MSND_SAY[snd]||snd} ?`; return q;
 }
 // M9 — localiser la syllabe (GS) : au début ou à la fin (flèches).

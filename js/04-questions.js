@@ -21,19 +21,19 @@ function _finalizeQ(q, regen){
  _trackQ(q);return q;
 }
 function genQ_CP(boss,_d=0){
- if(_d>12)return{a:2,b:3,op:'+',res:5,type:'normal',opKey:'+',display:'2 + 3',img:''};
+ if(_d>12)return{a:2,b:3,op:'+',res:5,type:'normal',opKey:'+',display:'2 + 3',img:'',hint:'Compte 2, puis 3 de plus : ça fait 5.'};
  const em=EMOJIS[ri(0,9)];
  let q;
  if(boss){
   // Boss CP: pool varié (additions grandes, soustraction simple, nombre manquant)
   const bType=_nextBossType([0,1,2,3],'CP');
-if(bType===0){const a=_ari(5,9,'+'),b=_ari(2,6,'+');q={a,b,op:'+',res:a+b,type:'normal',opKey:'+',display:`${a} + ${b}`,img:''};}
-  else if(bType===1){const a=_ari(6,10,'-'),b=_ari(1,5,'-');if(a-b<0)return genQ_CP(boss,_d+1);q={a,b,op:'-',res:a-b,type:'normal',opKey:'-',display:`${a} - ${b}`,img:''};}
-  else if(bType===2){const a=_ari(4,8,'+'),b=_ari(2,4,'+');q={display:`${a} + ? = ${a+b}`,res:b,type:'missing',opKey:'+',img:''};}
-  else{const a=_ari(5,9,'+'),b=_ari(3,7,'+');q={display:`? + ${b} = ${a+b}`,res:a,type:'missing',opKey:'+',img:''};}
+if(bType===0){const a=_ari(5,9,'+'),b=_ari(2,6,'+');q={a,b,op:'+',res:a+b,type:'normal',opKey:'+',display:`${a} + ${b}`,img:'',hint:`Compte ${a} sur tes doigts, puis ajoute ${b} de plus.`};}
+  else if(bType===1){const a=_ari(6,10,'-'),b=_ari(1,5,'-');if(a-b<0)return genQ_CP(boss,_d+1);q={a,b,op:'-',res:a-b,type:'normal',opKey:'-',display:`${a} - ${b}`,img:'',hint:`Pars de ${a} et recule de ${b}.`};}
+  else if(bType===2){const a=_ari(4,8,'+'),b=_ari(2,4,'+');q={display:`${a} + ? = ${a+b}`,res:b,type:'missing',opKey:'+',img:'',hint:`Il faut trouver combien on ajoute à ${a} pour arriver à ${a+b}.`};}
+  else{const a=_ari(5,9,'+'),b=_ari(3,7,'+');q={display:`? + ${b} = ${a+b}`,res:a,type:'missing',opKey:'+',img:'',hint:`Il faut trouver le nombre qui, avec ${b} de plus, donne ${a+b}.`};}
  } else {
   const a=_ari(1,6,'+'),b=_ari(1,4,'+');
-  q={a,b,op:'+',res:a+b,type:'normal',opKey:'+',display:`${a} + ${b}`,img:a<=8?em.repeat(a)+' + '+em.repeat(b):''};
+  q={a,b,op:'+',res:a+b,type:'normal',opKey:'+',display:`${a} + ${b}`,img:a<=8?em.repeat(a)+' + '+em.repeat(b):'',hint:`Compte ${a} doigts, puis ${b} doigts de plus.`};
  }
  return _finalizeQ(q, ()=>genQ_CP(boss,_d+1));
 }
@@ -45,19 +45,19 @@ function genQ_CE1(boss,_depth=0){
   // Boss CE1: pool enrichi — nombres manquants, soustractions, additions plus grandes
   const bTypes=['miss','sub','add_big','chain'];
   const pick=_nextBossType(bTypes,'CE1');
-  if(pick==='miss'){const a=_ari(8,18,'+'),b=_ari(3,12,'+');q={display:`${a} + ? = ${a+b}`,res:b,type:'missing',opKey:'+',img:''};}
-  else if(pick==='sub'){const a=_ari(10,20,'-'),b=_ari(3,10,'-');q={a,b,op:'-',res:a-b,type:'normal',opKey:'-',display:`${a} - ${b}`,img:''};}
-  else if(pick==='add_big'){const a=_ari(10,20,'+'),b=_ari(8,15,'+');q={a,b,op:'+',res:a+b,type:'normal',opKey:'+',display:`${a} + ${b}`,img:''};}
-  else{const a=_ari(5,12,'-'),b=_ari(3,8,'-');q={display:`? - ${b} = ${a}`,res:a+b,type:'missing',opKey:'-',img:''};}
+  if(pick==='miss'){const a=_ari(8,18,'+'),b=_ari(3,12,'+');q={display:`${a} + ? = ${a+b}`,res:b,type:'missing',opKey:'+',img:'',hint:`${a} + ? = ${a+b} → fais ${a+b} − ${a}.`};}
+  else if(pick==='sub'){const a=_ari(10,20,'-'),b=_ari(3,10,'-');q={a,b,op:'-',res:a-b,type:'normal',opKey:'-',display:`${a} - ${b}`,img:'',hint:`Pars de ${a} et recule de ${b}.`};}
+  else if(pick==='add_big'){const a=_ari(10,20,'+'),b=_ari(8,15,'+');q={a,b,op:'+',res:a+b,type:'normal',opKey:'+',display:`${a} + ${b}`,img:'',hint:`Additionne d'abord les dizaines, puis les unités.`};}
+  else{const a=_ari(5,12,'-'),b=_ari(3,8,'-');q={display:`? - ${b} = ${a}`,res:a+b,type:'missing',opKey:'-',img:'',hint:`? − ${b} = ${a} → fais ${a} + ${b}.`};}
  } else {
   const pool=[];
   if(af.miss)pool.push('miss');if(af.sub)pool.push('sub');pool.push('add','add');
   const pick=pool[ri(0,pool.length-1)];
-  if(pick==='miss'){const a=_ari(5,15,'+'),b=_ari(1,10,'+');q={display:`${a} + ? = ${a+b}`,res:b,type:'missing',opKey:'+',img:''};}
+  if(pick==='miss'){const a=_ari(5,15,'+'),b=_ari(1,10,'+');q={display:`${a} + ? = ${a+b}`,res:b,type:'missing',opKey:'+',img:'',hint:`${a} + ? = ${a+b} → fais ${a+b} − ${a}.`};}
   else{const op=(pick==='sub'||Math.random()>.5)?'-':'+';const a=_ari(5,15,op),b=_ari(1,10,op);
    const res=op==='+'?a+b:a-b;if(res<0)return genQ_CE1(boss,_depth+1);
    const em=EMOJIS[ri(0,9)];
-   q={a,b,op,res,type:'normal',opKey:op,display:`${a} ${op} ${b}`,img:op==='+'&&a<=7?em.repeat(a)+' + '+em.repeat(b):''};}
+   q={a,b,op,res,type:'normal',opKey:op,display:`${a} ${op} ${b}`,img:op==='+'&&a<=7?em.repeat(a)+' + '+em.repeat(b):'',hint:op==='+'?`Additionne ${a} et ${b}.`:`Pars de ${a} et recule de ${b}.`};}
  }
  return _finalizeQ(q, ()=>genQ_CE1(boss,_depth+1));
 }
@@ -69,14 +69,14 @@ function genQ_CE2(boss,_d=0){
   // Boss CE2: toutes tables, nombres manquants multiplication, divisions simples
   const bTypes=['mult_full','miss_mult','div_simple','sub_big'];
   const pick=_nextBossType(bTypes,'CE2');
-  if(pick==='mult_full'){const a=[2,3,4,5,6,7,8,9,10][ri(0,8)],b=_ari(2,10,'x');q={a,b,op:'×',res:a*b,type:'normal',opKey:'x',display:`${a} × ${b}`,img:''};}
-  else if(pick==='miss_mult'){const a=[3,4,5,6,7,8,9][ri(0,6)],b=_ari(2,10,'x');q={display:`${a} × ? = ${a*b}`,res:b,type:'missing',opKey:'x',img:''};}
-  else if(pick==='div_simple'){const b=[2,3,4,5][ri(0,3)],r=_ari(2,9,'/');q={display:`${b*r} ÷ ${b}`,res:r,type:'normal',opKey:'/',img:''};}
-  else{const a=_ari(20,50,'-'),b=_ari(8,20,'-');if(a-b<0)return genQ_CE2(boss,_d+1);q={a,b,op:'-',res:a-b,type:'normal',opKey:'-',display:`${a} - ${b}`,img:''};}
+  if(pick==='mult_full'){const a=[2,3,4,5,6,7,8,9,10][ri(0,8)],b=_ari(2,10,'x');q={a,b,op:'×',res:a*b,type:'normal',opKey:'x',display:`${a} × ${b}`,img:'',hint:`Pense à la table de ${a}.`};}
+  else if(pick==='miss_mult'){const a=[3,4,5,6,7,8,9][ri(0,6)],b=_ari(2,10,'x');q={display:`${a} × ? = ${a*b}`,res:b,type:'missing',opKey:'x',img:'',hint:`${a} × ? = ${a*b} → fais ${a*b} ÷ ${a}.`};}
+  else if(pick==='div_simple'){const b=[2,3,4,5][ri(0,3)],r=_ari(2,9,'/');q={display:`${b*r} ÷ ${b}`,res:r,type:'normal',opKey:'/',img:'',hint:`Combien de fois ${b} tient dans ${b*r} ?`};}
+  else{const a=_ari(20,50,'-'),b=_ari(8,20,'-');if(a-b<0)return genQ_CE2(boss,_d+1);q={a,b,op:'-',res:a-b,type:'normal',opKey:'-',display:`${a} - ${b}`,img:'',hint:`Soustrais d'abord les dizaines, puis les unités.`};}
  } else {
-  if(af.miss&&Math.random()<.25){const t=_ari(2,10,'x'),b=_ari(1,10,'x');q={display:`${t} × ? = ${t*b}`,res:b,type:'missing',opKey:'x',img:''};}
+  if(af.miss&&Math.random()<.25){const t=_ari(2,10,'x'),b=_ari(1,10,'x');q={display:`${t} × ? = ${t*b}`,res:b,type:'missing',opKey:'x',img:'',hint:`${t} × ? = ${t*b} → fais ${t*b} ÷ ${t}.`};}
   else if(!af.mult){return genQ_CE1(boss);}
-  else{const ts=[2,3,5,10],a=ts[ri(0,ts.length-1)],b=_ari(1,10,'x');q={a,b,op:'×',res:a*b,type:'normal',opKey:'x',display:`${a} × ${b}`,img:''};}
+  else{const ts=[2,3,5,10],a=ts[ri(0,ts.length-1)],b=_ari(1,10,'x');q={a,b,op:'×',res:a*b,type:'normal',opKey:'x',display:`${a} × ${b}`,img:'',hint:`Pense à la table de ${a}.`};}
  }
  return _finalizeQ(q, ()=>genQ_CE2(boss,_d+1));
 }
@@ -88,19 +88,19 @@ function genQ_CM1(boss,_d=0){
   // Boss CM1: pool très varié — additions/soustractions grands, multiplication, géométrie, nombre manquant
   const bTypes=af.geo?['add_big','sub_big','mult_mid','miss_sub','miss_mult','geo']:['add_big','sub_big','mult_mid','miss_sub','miss_mult'];
   const pick=_nextBossType(bTypes,'CM1');
-  if(pick==='add_big'){const a=_ari(30,80,'+'),b=_ari(20,60,'+');q={a,b,op:'+',res:a+b,type:'normal',opKey:'+',display:`${a} + ${b}`,img:''};}
-  else if(pick==='sub_big'){const a=_ari(40,99,'-'),b=_ari(10,40,'-');q={a,b,op:'-',res:a-b,type:'normal',opKey:'-',display:`${a} - ${b}`,img:''};}
-  else if(pick==='mult_mid'){const a=[3,4,6,7,8,9][ri(0,5)],b=_ari(3,9,'x');q={a,b,op:'×',res:a*b,type:'normal',opKey:'x',display:`${a} × ${b}`,img:''};}
-  else if(pick==='miss_sub'){const ans=_ari(15,40,'-'),b=_ari(5,20,'-');q={display:`? - ${b} = ${ans}`,res:ans+b,type:'missing',opKey:'-',img:''};}
-  else if(pick==='miss_mult'){const a=[4,6,7,8,9][ri(0,4)],b=_ari(3,9,'x');q={display:`${a} × ? = ${a*b}`,res:b,type:'missing',opKey:'x',img:''};}
+  if(pick==='add_big'){const a=_ari(30,80,'+'),b=_ari(20,60,'+');q={a,b,op:'+',res:a+b,type:'normal',opKey:'+',display:`${a} + ${b}`,img:'',hint:`Additionne d'abord les dizaines, puis les unités.`};}
+  else if(pick==='sub_big'){const a=_ari(40,99,'-'),b=_ari(10,40,'-');q={a,b,op:'-',res:a-b,type:'normal',opKey:'-',display:`${a} - ${b}`,img:'',hint:`Soustrais d'abord les dizaines, puis les unités.`};}
+  else if(pick==='mult_mid'){const a=[3,4,6,7,8,9][ri(0,5)],b=_ari(3,9,'x');q={a,b,op:'×',res:a*b,type:'normal',opKey:'x',display:`${a} × ${b}`,img:'',hint:`Pense à la table de ${a}.`};}
+  else if(pick==='miss_sub'){const ans=_ari(15,40,'-'),b=_ari(5,20,'-');q={display:`? - ${b} = ${ans}`,res:ans+b,type:'missing',opKey:'-',img:'',hint:`? − ${b} = ${ans} → fais ${ans} + ${b}.`};}
+  else if(pick==='miss_mult'){const a=[4,6,7,8,9][ri(0,4)],b=_ari(3,9,'x');q={display:`${a} × ? = ${a*b}`,res:b,type:'missing',opKey:'x',img:'',hint:`${a} × ? = ${a*b} → fais ${a*b} ÷ ${a}.`};}
   else q=GEO_Q[ri(0,GEO_Q.length-1)]();
  } else {
   const pool=['add','add'];
   if(af.miss)pool.push('miss');if(af.geo)pool.push('geo');
   const pick=pool[ri(0,pool.length-1)];
-  if(pick==='miss'){const a=_ari(10,50,'+'),ans=_ari(5,30,'+');q={display:`${a} + ? = ${a+ans}`,res:ans,type:'missing',opKey:'+',img:''};}
+  if(pick==='miss'){const a=_ari(10,50,'+'),ans=_ari(5,30,'+');q={display:`${a} + ? = ${a+ans}`,res:ans,type:'missing',opKey:'+',img:'',hint:`${a} + ? = ${a+ans} → fais ${a+ans} − ${a}.`};}
   else if(pick==='geo')q=GEO_Q[ri(0,GEO_Q.length-1)]();
-  else{const a=_ari(10,50,'+'),b=_ari(10,40,'+');q={a,b,op:'+',res:a+b,type:'normal',opKey:'+',display:`${a} + ${b}`,img:''};}
+  else{const a=_ari(10,50,'+'),b=_ari(10,40,'+');q={a,b,op:'+',res:a+b,type:'normal',opKey:'+',display:`${a} + ${b}`,img:'',hint:`Additionne d'abord les dizaines, puis les unités.`};}
  }
  return _finalizeQ(q, ()=>genQ_CM1(boss,_d+1));
 }
@@ -112,19 +112,19 @@ function genQ_CM2(boss,_d2=0){
   const bTypes=['div','frac','geo','miss_div','mult_hard'];
   const validTypes=bTypes.filter(t=>(t==='geo'?af.geo:true)&&(t==='frac'?af.frac:true));
   const pick=_nextBossType(validTypes.length?validTypes:['div'],'CM2');
-  if(pick==='div'){const b=_ari(2,9,'/'),res=_ari(2,12,'/');q={display:`${b*res} ÷ ${b}`,res,type:'normal',opKey:'/',img:''};}
-  else if(pick==='miss_div'){const b=_ari(2,8,'/'),r=_ari(3,10,'/');q={display:`${b*r} ÷ ? = ${r}`,res:b,type:'missing',opKey:'/',img:''};}
-  else if(pick==='frac'){const d=[2,4,5,10][ri(0,3)];const w=_ari(2,20,'/')*d,n=ri(1,d-1)||1;const r=Math.round(w*n/d);q={display:`${n}/${d} de ${w}`,res:r,type:'fraction',opKey:'/',img:''};}
-  else if(pick==='mult_hard'){const a=[6,7,8,9,11,12][ri(0,5)],b=_ari(4,12,'x');q={display:`${a} × ${b}`,res:a*b,type:'normal',opKey:'x',img:''};}
+  if(pick==='div'){const b=_ari(2,9,'/'),res=_ari(2,12,'/');q={display:`${b*res} ÷ ${b}`,res,type:'normal',opKey:'/',img:'',hint:`Combien de fois ${b} tient dans ${b*res} ?`};}
+  else if(pick==='miss_div'){const b=_ari(2,8,'/'),r=_ari(3,10,'/');q={display:`${b*r} ÷ ? = ${r}`,res:b,type:'missing',opKey:'/',img:'',hint:`${b*r} ÷ ? = ${r} → fais ${b*r} ÷ ${r}.`};}
+  else if(pick==='frac'){const d=[2,4,5,10][ri(0,3)];const w=_ari(2,20,'/')*d,n=ri(1,d-1)||1;const r=Math.round(w*n/d);q={display:`${n}/${d} de ${w}`,res:r,type:'fraction',opKey:'/',img:'',hint:`${n}/${d} de ${w} : fais (${w} ÷ ${d}) × ${n}.`};}
+  else if(pick==='mult_hard'){const a=[6,7,8,9,11,12][ri(0,5)],b=_ari(4,12,'x');q={display:`${a} × ${b}`,res:a*b,type:'normal',opKey:'x',img:'',hint:`Pense à la table de ${a}.`};}
   else q=GEO_Q[ri(0,GEO_Q.length-1)]();
  } else {
   const pool=['div'];
   if(af.geo)pool.push('geo','geo');if(af.frac)pool.push('frac','frac');
   const pick=pool[ri(0,pool.length-1)];
   if(pick==='geo')q=GEO_Q[ri(0,GEO_Q.length-1)]();
-  else if(pick==='frac'){const d=[2,4,5,10][ri(0,3)];const w=_ari(2,20,'/')*d,n=ri(1,d-1)||1;const r=Math.round(w*n/d);q={display:`${n}/${d} de ${w}`,res:r,type:'fraction',opKey:'/',img:''};}
+  else if(pick==='frac'){const d=[2,4,5,10][ri(0,3)];const w=_ari(2,20,'/')*d,n=ri(1,d-1)||1;const r=Math.round(w*n/d);q={display:`${n}/${d} de ${w}`,res:r,type:'fraction',opKey:'/',img:'',hint:`${n}/${d} de ${w} : fais (${w} ÷ ${d}) × ${n}.`};}
   else if(!af.div)return genQ_CM1(boss);
-  else{const b=_ari(2,6,'/'),r=_ari(2,10,'/');q={display:`${b*r} ÷ ${b}`,res:r,type:'normal',opKey:'/',img:''};}
+  else{const b=_ari(2,6,'/'),r=_ari(2,10,'/');q={display:`${b*r} ÷ ${b}`,res:r,type:'normal',opKey:'/',img:'',hint:`Combien de fois ${b} tient dans ${b*r} ?`};}
  }
  return _finalizeQ(q, ()=>genQ_CM2(boss,_d2+1));
 }
@@ -147,7 +147,7 @@ function _rel(n){ return n<0 ? `(−${Math.abs(n)})` : `${n}`; }              //
 function _round2(x){ return Math.round(x*100)/100; }
 function _pgcdN(a,b){ a=Math.abs(a);b=Math.abs(b); while(b){ const t=b; b=a%b; a=t; } return a; }
 function _pick(arr){ return arr[ri(0,arr.length-1)]; }
-function _mkQ(display,res,opKey){ return {display,res:_round2(res),type:'normal',opKey:opKey||'+',img:''}; }
+function _mkQ(display,res,opKey,hint){ return {display,res:_round2(res),type:'normal',opKey:opKey||'+',img:'',hint}; }
 
 // ── 6ᵉ : décimaux, fraction d'une quantité, conversions, multiples, moitiés/doubles
 function genQ_6E(boss,_d=0){
@@ -159,19 +159,19 @@ function genQ_6E(boss,_d=0){
  pool.push('mult','half');
  if(!pool.length) pool.push('mult');
  let q; const t=_pick(pool);
- if(t==='dmul'){ const base=_pick([10,100,1000]); const x=ri(11,boss?999:199)/10; q=_mkQ(`${_fr(x)} × ${base}`, x*base, 'x'); }
- else if(t==='ddiv'){ const base=_pick([10,100]); const n=ri(11,boss?999:499); q=_mkQ(`${n} ÷ ${base}`, n/base, '/'); }
- else if(t==='dadd'){ const a=ri(11,199)/10, b=ri(11,199)/10; q=_mkQ(`${_fr(a)} + ${_fr(b)}`, a+b, '+'); }
- else if(t==='fqty'){ const d=_pick([2,3,4,5,10]); const n=ri(1,d-1); const w=d*ri(2,boss?12:8); q=_mkQ(`${n}/${d} de ${w}`, w*n/d, '/'); }
+ if(t==='dmul'){ const base=_pick([10,100,1000]); const x=ri(11,boss?999:199)/10; q=_mkQ(`${_fr(x)} × ${base}`, x*base, 'x', `Multiplier par ${base}, c'est déplacer la virgule vers la droite.`); }
+ else if(t==='ddiv'){ const base=_pick([10,100]); const n=ri(11,boss?999:499); q=_mkQ(`${n} ÷ ${base}`, n/base, '/', `Diviser par ${base}, c'est déplacer la virgule vers la gauche.`); }
+ else if(t==='dadd'){ const a=ri(11,199)/10, b=ri(11,199)/10; q=_mkQ(`${_fr(a)} + ${_fr(b)}`, a+b, '+', `Aligne les virgules avant d'additionner.`); }
+ else if(t==='fqty'){ const d=_pick([2,3,4,5,10]); const n=ri(1,d-1); const w=d*ri(2,boss?12:8); q=_mkQ(`${n}/${d} de ${w}`, w*n/d, '/', `${n}/${d} de ${w} : fais (${w} ÷ ${d}) × ${n}.`); }
  else if(t==='conv'){ const c=_pick([
-    ()=>{const m=ri(2,9);return [`${m} m = ? cm`, m*100];},
-    ()=>{const k=ri(2,9);return [`${k} km = ? m`, k*1000];},
-    ()=>{const h=ri(2,6);return [`${h} h = ? min`, h*60];},
-    ()=>{const m=ri(2,9);return [`${m} min = ? s`, m*60];},
-    ()=>{const k=ri(2,9);return [`${k} kg = ? g`, k*1000];},
-   ])(); q=_mkQ(c[0], c[1], '+'); }
- else if(t==='mult'){ const m=ri(2,9), rank=ri(2,boss?12:9); q=_mkQ(`Le ${rank}ᵉ multiple de ${m}`, m*rank, 'x'); }
- else { const v=ri(20,boss?198:98)*(_pick([1,1])); const isDouble=ri(0,1); if(isDouble){ q=_mkQ(`Le double de ${v}`, v*2, '+'); } else { const even=v*2; q=_mkQ(`La moitié de ${even}`, even/2, '/'); } }
+    ()=>{const m=ri(2,9);return [`${m} m = ? cm`, m*100, `1 m = 100 cm, donc ${m} m × 100.`];},
+    ()=>{const k=ri(2,9);return [`${k} km = ? m`, k*1000, `1 km = 1000 m, donc ${k} km × 1000.`];},
+    ()=>{const h=ri(2,6);return [`${h} h = ? min`, h*60, `1 h = 60 min, donc ${h} h × 60.`];},
+    ()=>{const m=ri(2,9);return [`${m} min = ? s`, m*60, `1 min = 60 s, donc ${m} min × 60.`];},
+    ()=>{const k=ri(2,9);return [`${k} kg = ? g`, k*1000, `1 kg = 1000 g, donc ${k} kg × 1000.`];},
+   ])(); q=_mkQ(c[0], c[1], '+', c[2]); }
+ else if(t==='mult'){ const m=ri(2,9), rank=ri(2,boss?12:9); q=_mkQ(`Le ${rank}ᵉ multiple de ${m}`, m*rank, 'x', `Le ${rank}ᵉ multiple de ${m} : fais ${m} × ${rank}.`); }
+ else { const v=ri(20,boss?198:98)*(_pick([1,1])); const isDouble=ri(0,1); if(isDouble){ q=_mkQ(`Le double de ${v}`, v*2, '+', `Le double de ${v} : fais ${v} × 2.`); } else { const even=v*2; q=_mkQ(`La moitié de ${even}`, even/2, '/', `La moitié de ${even} : fais ${even} ÷ 2.`); } }
  return _finalizeQ(q, ()=>genQ_6E(boss,_d+1));
 }
 
@@ -183,10 +183,10 @@ function genQ_5E(boss,_d=0){
  if(af.pct) pool.push('pct');
  pool.push('prio');
  let q; const t=_pick(pool); const M=boss?12:9;
- if(t==='radd'){ const a=ri(-M,M), b=ri(-M,M); q=_mkQ(`${_rel(a)} + ${_rel(b)}`, a+b, '+'); }
- else if(t==='rsub'){ const a=ri(-M,M), b=ri(-M,M); q=_mkQ(`${_rel(a)} − ${_rel(b)}`, a-b, '-'); }
- else if(t==='pct'){ const p=_pick([10,20,25,50,75,100]); const base=_pick([20,40,60,80,100,120,200]); q=_mkQ(`${p}% de ${base}`, base*p/100, 'pct'); }
- else { const a=ri(2,9), b=ri(2,9), c=ri(2,9); if(ri(0,1)) q=_mkQ(`${a} + ${b} × ${c}`, a+b*c, 'prio'); else { const extra=ri(1,9); q=_mkQ(`${a*c+extra} − ${b} × ${c}`, (a*c+extra)-(b*c), 'prio'); } }
+ if(t==='radd'){ const a=ri(-M,M), b=ri(-M,M); q=_mkQ(`${_rel(a)} + ${_rel(b)}`, a+b, '+', `Additionne les deux nombres en tenant compte de leur signe.`); }
+ else if(t==='rsub'){ const a=ri(-M,M), b=ri(-M,M); q=_mkQ(`${_rel(a)} − ${_rel(b)}`, a-b, '-', `Soustraire ${_rel(b)} revient à ajouter son opposé.`); }
+ else if(t==='pct'){ const p=_pick([10,20,25,50,75,100]); const base=_pick([20,40,60,80,100,120,200]); q=_mkQ(`${p}% de ${base}`, base*p/100, 'pct', `${p}% de ${base} : fais ${base} × ${p} ÷ 100.`); }
+ else { const a=ri(2,9), b=ri(2,9), c=ri(2,9); if(ri(0,1)) q=_mkQ(`${a} + ${b} × ${c}`, a+b*c, 'prio', `Priorité : calcule d'abord ${b} × ${c}, puis ajoute ${a}.`); else { const extra=ri(1,9); q=_mkQ(`${a*c+extra} − ${b} × ${c}`, (a*c+extra)-(b*c), 'prio', `Priorité : calcule d'abord ${b} × ${c}, puis soustrais-le.`); } }
  return _finalizeQ(q, ()=>genQ_5E(boss,_d+1));
 }
 
@@ -199,12 +199,12 @@ function genQ_4E(boss,_d=0){
  if(af.lit) pool.push('lit');
  pool.push('carre');
  let q; const t=_pick(pool); const M=boss?12:9;
- if(t==='rmul'){ let a=ri(-M,M)||3, b=ri(-M,M)||2; q=_mkQ(`${_rel(a)} × ${_rel(b)}`, a*b, 'x'); }
- else if(t==='rdiv'){ const b=(ri(0,1)?1:-1)*ri(2,9); const res=(ri(0,1)?1:-1)*ri(2,9); q=_mkQ(`${_rel(b*res)} ÷ ${_rel(b)}`, res, '/'); }
- else if(t==='pow'){ const base=ri(2,9), exp=_pick([2,2,3]); q=_mkQ(`${base}${_supExp(exp)}`, Math.pow(base,exp), 'pow'); }
- else if(t==='pow10'){ const exp=ri(2,boss?6:4); q=_mkQ(`10${_supExp(exp)}`, Math.pow(10,exp), 'pow'); }
- else if(t==='lit'){ const x=ri(2,9), a=ri(2,5), b=ri(1,9); if(ri(0,1)) q=_mkQ(`Si x = ${x} :  ${a}x + ${b}`, a*x+b, 'lit'); else q=_mkQ(`Si x = ${x} :  ${a}x − ${b}`, a*x-b, 'lit'); }
- else { const a=ri(2,9), b=ri(2,9); q=_mkQ(`${a}² + ${b}²`, a*a+b*b, 'pow'); }
+ if(t==='rmul'){ let a=ri(-M,M)||3, b=ri(-M,M)||2; q=_mkQ(`${_rel(a)} × ${_rel(b)}`, a*b, 'x', `Signes identiques → résultat positif ; signes différents → résultat négatif.`); }
+ else if(t==='rdiv'){ const b=(ri(0,1)?1:-1)*ri(2,9); const res=(ri(0,1)?1:-1)*ri(2,9); q=_mkQ(`${_rel(b*res)} ÷ ${_rel(b)}`, res, '/', `Signes identiques → résultat positif ; signes différents → résultat négatif.`); }
+ else if(t==='pow'){ const base=ri(2,9), exp=_pick([2,2,3]); q=_mkQ(`${base}${_supExp(exp)}`, Math.pow(base,exp), 'pow', `${base}${_supExp(exp)} = ${Array(exp).fill(base).join(' × ')}.`); }
+ else if(t==='pow10'){ const exp=ri(2,boss?6:4); q=_mkQ(`10${_supExp(exp)}`, Math.pow(10,exp), 'pow', `10${_supExp(exp)} = 1 suivi de ${exp} zéros.`); }
+ else if(t==='lit'){ const x=ri(2,9), a=ri(2,5), b=ri(1,9); if(ri(0,1)) q=_mkQ(`Si x = ${x} :  ${a}x + ${b}`, a*x+b, 'lit', `Remplace x par ${x} : ${a}×${x} + ${b}.`); else q=_mkQ(`Si x = ${x} :  ${a}x − ${b}`, a*x-b, 'lit', `Remplace x par ${x} : ${a}×${x} − ${b}.`); }
+ else { const a=ri(2,9), b=ri(2,9); q=_mkQ(`${a}² + ${b}²`, a*a+b*b, 'pow', `Calcule ${a}² puis ${b}², et additionne les deux résultats.`); }
  return _finalizeQ(q, ()=>genQ_4E(boss,_d+1));
 }
 
@@ -219,10 +219,10 @@ function genQ_3E(boss,_d=0){
  if(af.lit)  pool.push('lit');
  if(!pool.length) pool.push('sqrt');
  let q; const t=_pick(pool);
- if(t==='sqrt'){ const r=ri(2,boss?15:12); q=_mkQ(`√${r*r}`, r, 'sqrt'); }
- else if(t==='pgcd'){ const g=ri(2,9), m=ri(2,8), n=ri(2,8); const a=g*m, b=g*n; q=_mkQ(`PGCD(${a} ; ${b})`, _pgcdN(a,b), 'pgcd'); }
- else if(t==='evol'){ const p=_pick([10,20,25,50]); const base=_pick([40,60,80,100,120,200]); if(ri(0,1)) q=_mkQ(`${base} augmenté de ${p}%`, base*(1+p/100), 'pct'); else q=_mkQ(`${base} diminué de ${p}%`, base*(1-p/100), 'pct'); }
- else if(t==='pow'){ const base=ri(2,boss?12:9), exp=_pick([2,2,3]); q=_mkQ(`${base}${_supExp(exp)}`, Math.pow(base,exp), 'pow'); }
- else { const x=ri(2,9), a=ri(2,6), b=ri(2,9); if(ri(0,1)) q=_mkQ(`Si x = ${x} :  ${a}x + ${b}`, a*x+b, 'lit'); else q=_mkQ(`Si x = ${x} :  ${a}(x + ${b})`, a*(x+b), 'lit'); }
+ if(t==='sqrt'){ const r=ri(2,boss?15:12); q=_mkQ(`√${r*r}`, r, 'sqrt', `Cherche quel nombre multiplié par lui-même donne ${r*r}.`); }
+ else if(t==='pgcd'){ const g=ri(2,9), m=ri(2,8), n=ri(2,8); const a=g*m, b=g*n; q=_mkQ(`PGCD(${a} ; ${b})`, _pgcdN(a,b), 'pgcd', `Le PGCD est le plus grand nombre qui divise à la fois ${a} et ${b}.`); }
+ else if(t==='evol'){ const p=_pick([10,20,25,50]); const base=_pick([40,60,80,100,120,200]); if(ri(0,1)) q=_mkQ(`${base} augmenté de ${p}%`, base*(1+p/100), 'pct', `${base} augmenté de ${p}% : fais ${base} × (1 + ${p}/100).`); else q=_mkQ(`${base} diminué de ${p}%`, base*(1-p/100), 'pct', `${base} diminué de ${p}% : fais ${base} × (1 − ${p}/100).`); }
+ else if(t==='pow'){ const base=ri(2,boss?12:9), exp=_pick([2,2,3]); q=_mkQ(`${base}${_supExp(exp)}`, Math.pow(base,exp), 'pow', `${base}${_supExp(exp)} = ${Array(exp).fill(base).join(' × ')}.`); }
+ else { const x=ri(2,9), a=ri(2,6), b=ri(2,9); if(ri(0,1)) q=_mkQ(`Si x = ${x} :  ${a}x + ${b}`, a*x+b, 'lit', `Remplace x par ${x} : ${a}×${x} + ${b}.`); else q=_mkQ(`Si x = ${x} :  ${a}(x + ${b})`, a*(x+b), 'lit', `Remplace x par ${x}, puis calcule (${x} + ${b}) avant de multiplier par ${a}.`); }
  return _finalizeQ(q, ()=>genQ_3E(boss,_d+1));
 }

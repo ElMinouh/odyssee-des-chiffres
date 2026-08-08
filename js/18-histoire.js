@@ -192,7 +192,7 @@ const HIST_CP_VIE = [
 ];
 function _histCP_vie(){
  const f = _histPick(HIST_CP_VIE);
- return _histQ(f.q, f.ok, f.bad, 'hist-vie', f.ok);
+ return _histQ(f.q, f.ok, f.bad, 'hist-vie', `${f.q} → ${f.ok}`);
 }
 // Reconnaître l'ancien parmi 3 images (1 ancien + 2 modernes)
 const HIST_CP_ANCIEN = [
@@ -303,7 +303,7 @@ const HIST_CE1_VIE = [
 ];
 function _histCE1_vie(){
  const f=_histPick(HIST_CE1_VIE);
- return _histQ(f.q, f.ok, f.bad, 'hist-vie', f.ok);
+ return _histQ(f.q, f.ok, f.bad, 'hist-vie', `${f.q} → ${f.ok}`);
 }
 function genQ_HIST_CE1(boss,_d){
  _d=_d||0;
@@ -351,7 +351,7 @@ const HIST_CE2_VIE = [
 ];
 function _histCE2_viequotidienne(){
  const f = _histPick(HIST_CE2_VIE);
- return _histQ(f.q, f.ok, f.bad, 'hist-vie', f.ok);
+ return _histQ(f.q, f.ok, f.bad, 'hist-vie', `${f.q} → ${f.ok}`);
 }
 const HIST_CE2_VRAIFAUX = HIST_CE1_VRAIFAUX.concat([
  {aff:'Les Égyptiens de l\u2019Antiquité construisaient des pyramides.', ok:'Vrai'},
@@ -430,7 +430,7 @@ const HIST_CM1_VOCAB = [
 ];
 function _histCM1_vocab(){
  const f=_histPick(HIST_CM1_VOCAB);
- return _histQ(f.q, f.ok, f.bad, 'hist-vie', f.ok);
+ return _histQ(f.q, f.ok, f.bad, 'hist-vie', `${f.q} → ${f.ok}`);
 }
 const HIST_CM1_VRAIFAUX = [
  {aff:'Au Moyen Âge, les seigneurs vivaient dans des châteaux forts.', ok:'Vrai'},
@@ -545,7 +545,7 @@ const HIST_CM2_VOCAB = [
 ];
 function _histCM2_vocab(){
  const f=_histPick(HIST_CM2_VOCAB);
- return _histQ(f.q, f.ok, f.bad, 'hist-vie', f.ok);
+ return _histQ(f.q, f.ok, f.bad, 'hist-vie', `${f.q} → ${f.ok}`);
 }
 function genQ_HIST_CM2(boss,_d){
  _d=_d||0;
@@ -639,7 +639,7 @@ const HIST_6E_CIVIL = [
  {q:'Sur quel support les Égyptiens écrivaient-ils souvent ?', ok:'Le papyrus', bad:['Le papier moderne','Une tablette numérique']},
  {q:'Comment appelle-t-on le lieu public où se réunissaient les Romains pour débattre et commercer ?', ok:'Le forum', bad:['L\u2019agora','Le Colisée']}
 ];
-function _hist6E_civil(){ const f=_histPick(HIST_6E_CIVIL); return _histQ(f.q, f.ok, f.bad, 'hist-vie', f.ok); }
+function _hist6E_civil(){ const f=_histPick(HIST_6E_CIVIL); return _histQ(f.q, f.ok, f.bad, 'hist-vie', `${f.q} → ${f.ok}`); }
 const HIST_6E_CAUSES = [
  {q:'Pourquoi Rome passe-t-elle de République à Empire vers 27 av. J.-C. ?', ok:'Après des guerres civiles, Auguste concentre tous les pouvoirs', bad:['Le Sénat a voté la fin de Rome','Les Gaulois ont envahi l\u2019Italie']},
  {q:'Pourquoi le christianisme devient-il toléré dans l\u2019Empire romain en 313 ?', ok:'L\u2019empereur Constantin signe l\u2019édit de Milan', bad:['Tous les Romains sont devenus chrétiens du jour au lendemain','Le Sénat a interdit les autres religions']},
@@ -731,7 +731,7 @@ const HIST_5E_CIVIL = [
  {q:'Quelle ville est un lieu de pèlerinage sacré pour juifs, chrétiens et musulmans ?', ok:'Jérusalem', bad:['Rome','La Mecque']},
  {q:'Comment appelle-t-on une grande foire commerciale au Moyen Âge ?', ok:'Une foire commerciale', bad:['Un fief','Un concile']}
 ];
-function _hist5E_civil(){ const f=_histPick(HIST_5E_CIVIL); return _histQ(f.q, f.ok, f.bad, 'hist-vie', f.ok); }
+function _hist5E_civil(){ const f=_histPick(HIST_5E_CIVIL); return _histQ(f.q, f.ok, f.bad, 'hist-vie', `${f.q} → ${f.ok}`); }
 const HIST_5E_CAUSES = [
  {q:'Pourquoi la première croisade est-elle lancée en 1096 ?', ok:'Le pape appelle les chrétiens à délivrer Jérusalem, lieu saint', bad:['Le roi de France veut agrandir son royaume','Les marchands veulent de nouvelles routes commerciales uniquement']},
  {q:'Quelle est une conséquence de l\u2019invention de l\u2019imprimerie ?', ok:'Les livres et les idées se diffusent beaucoup plus vite et plus largement', bad:['Plus personne ne sait lire','Les livres deviennent interdits']},
@@ -821,7 +821,7 @@ const HIST_4E_CIVIL = [
  {q:'Comment appelle-t-on la charte accordée par le roi après la chute de Napoléon en 1814-1815 ?', ok:'La Charte constitutionnelle', bad:['Le Code civil','Le suffrage universel']},
  {q:'Comment appelle-t-on la suppression des privilèges de la noblesse et du clergé, votée dans la nuit du 4 août 1789 ?', ok:'L\u2019abolition des privilèges', bad:['La Terreur','Le Directoire']}
 ];
-function _hist4E_civil(){ const f=_histPick(HIST_4E_CIVIL); return _histQ(f.q, f.ok, f.bad, 'hist-vie', f.ok); }
+function _hist4E_civil(){ const f=_histPick(HIST_4E_CIVIL); return _histQ(f.q, f.ok, f.bad, 'hist-vie', `${f.q} → ${f.ok}`); }
 const HIST_4E_CAUSES = [
  {q:'Quelle est une des causes de la Révolution française de 1789 ?', ok:'Le peuple supporte mal les inégalités entre les ordres et le poids des impôts', bad:['Le roi voulait rendre le pays plus pauvre exprès','Il n\u2019y avait plus aucun impôt en France']},
  {q:'Quelle est une conséquence de la révolution industrielle ?', ok:'Une partie de la population quitte les campagnes pour travailler dans les villes et les usines', bad:['Tout le monde est devenu agriculteur','Les usines ont fermé partout']},
@@ -910,7 +910,7 @@ const HIST_3E_CIVIL = [
  {q:'Comment appelle-t-on les procès qui ont jugé les crimes nazis après la guerre, à partir de 1945 ?', ok:'Le procès de Nuremberg', bad:['Le traité de Versailles','La conférence de Yalta']},
  {q:'Comment appelle-t-on la rencontre entre Churchill, Roosevelt et Staline en 1945 qui organise l\u2019après-guerre ?', ok:'La conférence de Yalta', bad:['Le traité de Rome','Le procès de Nuremberg']}
 ];
-function _hist3E_civil(){ const f=_histPick(HIST_3E_CIVIL); return _histQ(f.q, f.ok, f.bad, 'hist-vie', f.ok); }
+function _hist3E_civil(){ const f=_histPick(HIST_3E_CIVIL); return _histQ(f.q, f.ok, f.bad, 'hist-vie', `${f.q} → ${f.ok}`); }
 const HIST_3E_CAUSES = [
  {q:'Quel événement déclenche directement la Première Guerre mondiale en 1914 ?', ok:'L\u2019assassinat de l\u2019archiduc François-Ferdinand à Sarajevo', bad:['La chute du mur de Berlin','La crise économique de 1929']},
  {q:'Quelles sont des causes profondes de la Première Guerre mondiale ?', ok:'Les alliances militaires, la course aux armements et les tensions nationalistes en Europe', bad:['Un désaccord sur les Jeux Olympiques','Une famine mondiale']},
