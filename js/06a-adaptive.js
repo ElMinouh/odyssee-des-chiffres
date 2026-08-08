@@ -161,8 +161,9 @@ function logError(qDisplay, res, q, elapsedMs){
   existing.box = 0; // nouvel échec → repart de la case 0 (règle Leitner standard)
   existing.inattention = _inattention;
   existing.pendingFinalCheck = false;
+  existing.failStreak = (existing.failStreak||0) + 1; // Lot 4 : échecs consécutifs sur CETTE question précise
  } else {
-  const item = {q:key, t:Date.now(), tries:1, subj:_subj, box:0, inattention:_inattention};
+  const item = {q:key, t:Date.now(), tries:1, subj:_subj, box:0, inattention:_inattention, failStreak:1};
   // v9.4.16 : les questions QCM (exercices enrichis primaire/collège) sont
   // stockées avec un instantané rejouable — sinon elles encombraient le log
   // sans jamais être reposées. Cap de taille pour préserver localStorage.
@@ -228,6 +229,20 @@ function clearErrorFromLog(qDisplay, res){
   item.t = Date.now();
  }
  item.inattention = false;
+ item.failStreak = 0; // Lot 4 : une réussite casse la série d'échecs consécutifs
+}
+/**
+ * Lot 4 (audit pédagogique) : nombre d'échecs consécutifs sur CETTE question
+ * précise (mêmes nombres, même énoncé) — sert à déclencher une aide visuelle
+ * après 2 échecs plutôt qu'une simple répétition de la correction textuelle.
+ * Fonctionne pour toute matière (le format de l'item ne dépend d'aucune
+ * logique spécifique à une matière donnée).
+ */
+function getFailStreak(qDisplay, res){
+ if(!P?.errorLog) return 0;
+ const key = String(qDisplay).replace(/\s+/g,'')+'='+res;
+ const item = P.errorLog.find(e=>e.q===key);
+ return item ? (item.failStreak||0) : 0;
 }
 
 /**
@@ -858,3 +873,106 @@ function _progSelfCheck(opts){
  return rep;
 }
 if(typeof window!=='undefined'){ try{ setTimeout(function(){ try{ _progSelfCheck(); }catch(e){} }, 4000); }catch(e){} }
+
+// ═══════════════════════════════════════════════════════
+// AIDE VISUELLE APRÈS ERREURS RÉPÉTÉES (Lot 4, audit pédagogique 12e conversation)
+// ═══════════════════════════════════════════════════════
+// Après 2 échecs consécutifs sur EXACTEMENT la même question (cf. getFailStreak),
+// une aide visuelle simple (SVG inline) remplace la répétition de la même correction
+// textuelle. Couvre les cas les plus fréquents en maths (droite numérique, groupement,
+// fraction) et un cas ciblé en français (contraste homophones) — l'histoire est déjà
+// couverte nativement par les visuels de frise affichés dès la question elle-même
+// (cf. _histFriseTrouQ), donc rien à ajouter pour cette matière ici. Toute matière
+// future peut brancher son propre générateur en étendant getVisualAid() ci-dessous.
+function _svgNumberLine(a, b, isAdd){
+ if(typeof a!=='number' || typeof b!=='number' || b<=0 || b>20) return null;
+ const end = isAdd ? a+b : a-b;
+ const lo = Math.min(a,end), hi = Math.max(a,end);
+ const span = Math.max(1, hi-lo);
+ const W=300, H=64, padL=18, padR=18, y=40;
+ const x = v => padL + (v-lo)/span*(W-padL-padR);
+ let ticks='';
+ for(let v=lo; v<=hi; v++){
+  const tall = (v===a || v===end);
+  ticks += `<line x1="${x(v)}" y1="${y-(tall?9:5)}" x2="${x(v)}" y2="${y+(tall?9:5)}" stroke="#fff" stroke-opacity="${tall?0.9:0.4}" stroke-width="${tall?2:1}"/>`;
+  if(tall) ticks += `<text x="${x(v)}" y="${y+24}" font-size="12" fill="${v===end?'#2ecc71':'#f1c40f'}" text-anchor="middle" font-weight="700">${v}</text>`;
+ }
+ const arcY = y-22;
+ const col = isAdd ? '#2ecc71' : '#e74c3c';
+ return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:280px;height:auto;">
+  <line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#fff" stroke-opacity="0.5" stroke-width="1.5"/>
+  ${ticks}
+  <path d="M ${x(a)} ${y} Q ${(x(a)+x(end))/2} ${arcY} ${x(end)} ${y}" fill="none" stroke="${col}" stroke-width="2.5" marker-end="url(#arrowhead)"/>
+  <defs><marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="${col}"/></marker></defs>
+ </svg>`;
+}
+function _svgGroupingDots(groups, perGroup){
+ if(typeof groups!=='number' || typeof perGroup!=='number') return null;
+ if(groups<1 || perGroup<1 || groups*perGroup>48 || groups>12 || perGroup>12) return null;
+ const cell=22, gapG=10, r=6;
+ const W = groups*(perGroup*cell+gapG)+gapG;
+ const H = cell+16;
+ let html='';
+ for(let g=0; g<groups; g++){
+  const gx = gapG + g*(perGroup*cell+gapG);
+  html += `<rect x="${gx-4}" y="4" width="${perGroup*cell+4}" height="${cell+6}" rx="6" fill="#fff" fill-opacity="0.08"/>`;
+  for(let i=0; i<perGroup; i++){
+   html += `<circle cx="${gx+i*cell+cell/2}" cy="${H/2}" r="${r}" fill="#f1c40f"/>`;
+  }
+ }
+ return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:280px;height:auto;">${html}</svg>`;
+}
+function _svgFractionBar(n, d){
+ if(typeof n!=='number' || typeof d!=='number' || d<2 || d>12 || n<0 || n>d) return null;
+ const W=280, H=40, part=W/d;
+ let html='';
+ for(let i=0;i<d;i++){
+  html += `<rect x="${i*part}" y="0" width="${part-2}" height="${H}" rx="3" fill="${i<n?'#2ecc71':'#ffffff22'}" stroke="#fff" stroke-opacity="0.4"/>`;
+ }
+ return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:280px;height:auto;">${html}</svg>`;
+}
+function _svgContrastCard(correct, wrong, rule){
+ const esc = s => String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+ return `<div style="display:flex;gap:8px;align-items:center;justify-content:center;margin-top:4px;flex-wrap:wrap;">
+  <span style="background:#2ecc7133;border:2px solid #2ecc71;border-radius:8px;padding:4px 10px;font-weight:800;color:#2ecc71;">✓ ${esc(correct)}</span>
+  <span style="opacity:.6;">≠</span>
+  <span style="background:#e74c3c22;border:2px solid #e74c3c66;border-radius:8px;padding:4px 10px;font-weight:800;color:#e74c3c;text-decoration:line-through;">${esc(wrong)}</span>
+ </div>`;
+}
+function _mathVisualAid(q){
+ if(!q) return null;
+ if(q.type==='fraction'){
+  const m=String(q.display||'').match(/^(\d+)\/(\d+)\s*de\s*\d+$/);
+  if(m) return _svgFractionBar(+m[1], +m[2]);
+  return null;
+ }
+ const op=q.opKey;
+ if(op==='+' && typeof q.a==='number' && typeof q.b==='number') return _svgNumberLine(q.a, q.b, true);
+ if(op==='-' && typeof q.a==='number' && typeof q.b==='number') return _svgNumberLine(q.a, q.b, false);
+ if(op==='x' && typeof q.a==='number' && typeof q.b==='number') return _svgGroupingDots(q.a, q.b);
+ if(op==='/'){
+  const m=String(q.display||'').match(/^(\d+)\s*[÷\/]\s*(\d+)$/);
+  if(m){ const total=+m[1], divisor=+m[2]; if(divisor>0 && total%divisor===0) return _svgGroupingDots(divisor, total/divisor); }
+  return null;
+ }
+ return null;
+}
+function _frVisualAid(q){
+ if(!q || !['fr-homo','fr-homo3','fr5-homo'].includes(q.opKey)) return null;
+ if(!Array.isArray(q.choices) || q.choices.length<2) return null;
+ const okC = q.choices.find(c=>c.val===q.res);
+ const badC = q.choices.find(c=>c.val!==q.res);
+ if(!okC || !badC) return null;
+ return _svgContrastCard(okC.label!==undefined?okC.html||okC.label:okC.html, badC.html||badC.label, q.hint);
+}
+/**
+ * Point d'entrée générique — toute matière future peut ajouter sa propre branche
+ * ici (ou fournir son propre générateur si le pattern diffère significativement).
+ */
+function getVisualAid(subj, q){
+ try{
+  if(subj==='fr') return _frVisualAid(q);
+  if(subj==='hist') return null; // déjà couvert nativement (visuel dès la question, cf. commentaire d'en-tête)
+  return _mathVisualAid(q); // maths et défaut
+ }catch(e){ return null; }
+}

@@ -861,7 +861,16 @@ function showCorr(q){
   :q.type==='missing'?`${q.display} → réponse : ${q.res}`
   :q.op?`${q.a} ${_OP_LABEL[q.op]||q.op} ${q.b} = ${q.res}`
   :`Réponse : ${q.res}`);
- el.innerText='💡 '+txt;el.classList.remove('hidden');
+ // Lot 4 (audit pédagogique) : après 2 échecs consécutifs sur CETTE question précise,
+ // une aide visuelle remplace la simple répétition de la correction textuelle.
+ let aidHtml=null;
+ try{
+  if(q.display && q.res!==undefined && typeof getFailStreak==='function' && getFailStreak(q.display,q.res)>=2 && typeof getVisualAid==='function'){
+   aidHtml = getVisualAid(GM.subject||'math', q);
+  }
+ }catch(e){}
+ el.innerHTML = '💡 '+esc(txt) + (aidHtml ? `<div style="margin-top:6px;">${aidHtml}</div>` : '');
+ el.classList.remove('hidden');
 }
 function hitPlayer(msg){
  const pw=powers[P.name];
