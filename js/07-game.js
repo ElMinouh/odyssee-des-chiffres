@@ -385,13 +385,13 @@ function startGame(){
  }
  showView('v-game');
  $('hud-name').innerText=(P.avatar||'👤')+' '+P.name;
- $('hud-chrono').classList.toggle('hidden',GM.mode2!=='chrono' || !(GM.subject==='math'||!GM.subject));
+ $('hud-chrono').classList.toggle('hidden',GM.mode2!=='chrono');
  $('hud-combo').classList.add('hidden');
  $('qcm-options').classList.toggle('hidden',GM.mode!=='qcm');
  $('input-zone').classList.toggle('hidden',GM.mode==='qcm');
   toggleNumpadForMode(GM.mode);
  $('BODY').classList.remove('body-alert');
- if(GM.mode2==='chrono' && (GM.subject==='math'||!GM.subject))startChrono();else stopChrono();
+ if(GM.mode2==='chrono')startChrono();else stopChrono();
  nextTurn();
 }
 function startRevision(){
