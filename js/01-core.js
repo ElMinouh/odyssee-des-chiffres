@@ -393,7 +393,7 @@ function showConfirm(message, onConfirm, opts={}){
   +'</div></div>';
  document.body.appendChild(ov);
  const closeIt=()=>_closeStyledDialog('sd-confirm-overlay');
- ov.querySelector('#sd-confirm-cancel').onclick=closeIt;
+ ov.querySelector('#sd-confirm-cancel').onclick=()=>{ closeIt(); if(typeof opts.onCancel==='function') opts.onCancel(); };
  ov.querySelector('#sd-confirm-ok').onclick=()=>{ closeIt(); if(typeof onConfirm==='function') onConfirm(); };
  ov.addEventListener('keydown', e=>{ if(e.key==='Escape') closeIt(); });
  setTimeout(()=>{ const b=document.getElementById('sd-confirm-cancel'); if(b) b.focus(); }, 50);
@@ -574,10 +574,9 @@ function returnMenu(){
 // dest='back' → page précédente · dest='home' → écran d'accueil.
 // Demande confirmation pour éviter les abandons accidentels.
 function quitGame(dest){
- const ok = (typeof confirm==='function')
-  ? confirm('Quitter la partie en cours ? Ta progression de cette partie sera perdue.')
-  : true;
- if(!ok) return;
+ showConfirm('Quitter la partie en cours ? Ta progression de cette partie sera perdue.', ()=>_quitGameConfirmed(dest));
+}
+function _quitGameConfirmed(dest){
  // Arrêt propre de la partie (comme returnMenu mais sans forcer l'écran)
  gameActive=false;
  if(typeof clearPendingTimers==='function') clearPendingTimers();

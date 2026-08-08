@@ -263,9 +263,10 @@ async function chatDeclineContact(from){
  if(res && res.ok) renderContactsScreen();
 }
 async function chatRemoveContact(other, name){
- if(!confirm('Retirer '+name+' de tes amis ? Vous ne pourrez plus vous écrire.')) return;
- const res = await chatFriendRemove(_msgProf, other);
- if(res && res.ok){ if(typeof toast==='function') toast('Contact retiré.',1800); renderContactsScreen(); }
+ showConfirm('Retirer '+name+' de tes amis ? Vous ne pourrez plus vous écrire.', async ()=>{
+  const res = await chatFriendRemove(_msgProf, other);
+  if(res && res.ok){ if(typeof toast==='function') toast('Contact retiré.',1800); renderContactsScreen(); }
+ });
 }
 async function _chatParentGate(){
  if(_msgReadOnly) return true;
@@ -624,11 +625,12 @@ function chatStartBadgePoll(){
 // ═══════════════════════════════════════════════════════
 // Actions parent : bloquer/débloquer un contact, accepter/refuser une demande (déjà dans l'espace parent).
 async function chatBlockContact(name, otherId, otherName){
- if(!confirm('Bloquer '+(otherName||otherId)+' ?\n\nCe contact ne pourra plus échanger avec '+name+' et ses messages seront ignorés. Tu pourras le débloquer plus tard.')) return;
- const prof=_chatLoad(name); if(!prof.chatId) return;
- const r=await chatFriendBlock(prof, otherId);
- if(typeof toast==='function') toast((r&&r.ok)?'\uD83D\uDEAB Contact bloqué.':'Échec du blocage.',2000);
- _renderOptMsgManage(name); if(typeof chatRefreshBadges==='function') chatRefreshBadges();
+ showConfirm('Bloquer '+(otherName||otherId)+' ?\n\nCe contact ne pourra plus échanger avec '+name+' et ses messages seront ignorés. Tu pourras le débloquer plus tard.', async ()=>{
+  const prof=_chatLoad(name); if(!prof.chatId) return;
+  const r=await chatFriendBlock(prof, otherId);
+  if(typeof toast==='function') toast((r&&r.ok)?'\uD83D\uDEAB Contact bloqué.':'Échec du blocage.',2000);
+  _renderOptMsgManage(name); if(typeof chatRefreshBadges==='function') chatRefreshBadges();
+ }, {danger:true, confirmLabel:'Bloquer'});
 }
 async function chatUnblockContact(name, otherId){
  const prof=_chatLoad(name); if(!prof.chatId) return;
@@ -711,20 +713,23 @@ function renderOptMessaging(name){
 async function optToggleMessaging(name){
  const prof = _chatLoad(name);
  if(prof.chatEnabled){
-  if(!confirm('Suspendre la messagerie pour '+name+' ?\n\nLe code ami, les amis et l\u2019historique sont conservés. Tu pourras réactiver à tout moment avec le même code.')) return;
-  chatDisableForProfile(name);
-  if(typeof toast==='function') toast('\u23F8 Messagerie suspendue (identité conservée).',2200);
- } else {
-  if(typeof toast==='function') toast('Réactivation\u2026',1500);
-  const res = await chatEnableForProfile(name);
-  if(res && res.ok){ if(typeof toast==='function') toast('\u25B6 Messagerie réactivée !',2000); }
-  else { if(typeof toast==='function') toast('\u25B6 Réactivée. Le code se synchronisera à la prochaine ouverture.',3200); }
-  // Audit performances #6 : le polling de fond ne démarre plus automatiquement
-  // au chargement de la page si la messagerie était désactivée (voir plus
-  // haut) — s'il s'agit du profil actuellement actif, on le démarre donc ici,
-  // sans attendre un rechargement de page.
-  if(typeof chatStartBadgePoll==='function' && typeof _curName==='function' && name===_curName()) chatStartBadgePoll();
+  showConfirm('Suspendre la messagerie pour '+name+' ?\n\nLe code ami, les amis et l\u2019historique sont conservés. Tu pourras réactiver à tout moment avec le même code.', ()=>{
+   chatDisableForProfile(name);
+   if(typeof toast==='function') toast('\u23F8 Messagerie suspendue (identité conservée).',2200);
+   renderOptMessaging(name);
+   if(typeof chatRefreshBadges==='function') chatRefreshBadges();
+  }, {confirmLabel:'Suspendre'});
+  return;
  }
+ if(typeof toast==='function') toast('Réactivation\u2026',1500);
+ const res = await chatEnableForProfile(name);
+ if(res && res.ok){ if(typeof toast==='function') toast('\u25B6 Messagerie réactivée !',2000); }
+ else { if(typeof toast==='function') toast('\u25B6 Réactivée. Le code se synchronisera à la prochaine ouverture.',3200); }
+ // Audit performances #6 : le polling de fond ne démarre plus automatiquement
+ // au chargement de la page si la messagerie était désactivée (voir plus
+ // haut) — s'il s'agit du profil actuellement actif, on le démarre donc ici,
+ // sans attendre un rechargement de page.
+ if(typeof chatStartBadgePoll==='function' && typeof _curName==='function' && name===_curName()) chatStartBadgePoll();
  renderOptMessaging(name);
  if(typeof chatRefreshBadges==='function') chatRefreshBadges();
 }
@@ -794,18 +799,19 @@ async function chatAdoptCloudIdentity(name){
  let prof=null; try{ prof = (typeof P!=='undefined' && P && P.name===name) ? P : _readProfile(name); }catch(e){}
  const cc = prof && prof.cloudCode;
  if(!cc){ if(typeof toast==='function') toast('Ce profil n\u2019est pas en sauvegarde cloud.',3000); return; }
- if(!confirm('Aligner le code ami de '+name+' sur celui des autres appareils ?\n\nLe code ami actuel de CET appareil sera remplacé par le code commun (cloud). Tu retrouveras alors les amis et l\u2019historique communs.')) return;
- if(typeof toast==='function') toast('Récupération\u2026',1500);
- let cloudChat=null;
- try{ const r = await pullProfileFromCloud(cc); if(r && r.ok && r.profile && r.profile._chat) cloudChat = r.profile._chat; }catch(e){}
- if(!cloudChat || !cloudChat.id){ if(typeof toast==='function') toast('Aucune identité commune trouvée sur le cloud. Lance d\u2019abord « Forcer la synchro » depuis l\u2019appareil de référence.',5000); return; }
- const s=_chatStore();
- s[name]={ id:cloudChat.id, secret:cloudChat.secret, enabled:true, registered:false, seen:cloudChat.seen||{}, ts:cloudChat.ts||Date.now() };
- _chatSaveStore(s);
- try{ const p=_chatLoad(name); const rr=await chatRegister(p); if(rr&&rr.ok){ p.chatRegistered=true; _chatPersist(p); } }catch(e){}
- if(typeof toast==='function') toast('✅ Code ami aligné ('+cloudChat.id+'). Amis et historique communs récupérés.',5000);
- if(typeof renderOptMessaging==='function') renderOptMessaging(name);
- if(typeof chatRefreshBadges==='function') chatRefreshBadges();
+ showConfirm('Aligner le code ami de '+name+' sur celui des autres appareils ?\n\nLe code ami actuel de CET appareil sera remplacé par le code commun (cloud). Tu retrouveras alors les amis et l\u2019historique communs.', async ()=>{
+  if(typeof toast==='function') toast('Récupération\u2026',1500);
+  let cloudChat=null;
+  try{ const r = await pullProfileFromCloud(cc); if(r && r.ok && r.profile && r.profile._chat) cloudChat = r.profile._chat; }catch(e){}
+  if(!cloudChat || !cloudChat.id){ if(typeof toast==='function') toast('Aucune identité commune trouvée sur le cloud. Lance d\u2019abord « Forcer la synchro » depuis l\u2019appareil de référence.',5000); return; }
+  const s=_chatStore();
+  s[name]={ id:cloudChat.id, secret:cloudChat.secret, enabled:true, registered:false, seen:cloudChat.seen||{}, ts:cloudChat.ts||Date.now() };
+  _chatSaveStore(s);
+  try{ const p=_chatLoad(name); const rr=await chatRegister(p); if(rr&&rr.ok){ p.chatRegistered=true; _chatPersist(p); } }catch(e){}
+  if(typeof toast==='function') toast('✅ Code ami aligné ('+cloudChat.id+'). Amis et historique communs récupérés.',5000);
+  if(typeof renderOptMessaging==='function') renderOptMessaging(name);
+  if(typeof chatRefreshBadges==='function') chatRefreshBadges();
+ }, {confirmLabel:'Aligner'});
 }
 
 // ── Transfert MANUEL du code de messagerie (force le même code ami entre appareils) ──

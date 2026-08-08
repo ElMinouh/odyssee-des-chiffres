@@ -1826,14 +1826,15 @@ function _initFigArms(id){
 function resetProfile(playerName){
   if(!playerName)return;
   const msg=`Réinitialiser le profil de ${playerName} ? Cette action supprime toutes les étoiles, figurines, XP et badges. Elle est irréversible.`;
-  if(!confirm(msg))return;
-  localStorage.removeItem('user_'+playerName);
-  toast(`✅ Profil de ${playerName} réinitialisé !`);
-  // Si c'est le joueur actif, recharger
-  if(P&&P.name===playerName){
-    loadProfile();updateHUD();renderSkills();renderBadges();renderQuests();
-  }
-  renderResetZone();
+  showConfirm(msg, ()=>{
+    localStorage.removeItem('user_'+playerName);
+    toast(`✅ Profil de ${playerName} réinitialisé !`);
+    // Si c'est le joueur actif, recharger
+    if(P&&P.name===playerName){
+      loadProfile();updateHUD();renderSkills();renderBadges();renderQuests();
+    }
+    renderResetZone();
+  }, {danger:true, confirmLabel:'Réinitialiser'});
 }
 // v8.7.31 : reset spécifique à L'Odyssée (l'aventure mathématique sur la carte).
 // Ne touche PAS aux étoiles, figurines, XP, badges, skills, inventaire.
@@ -1844,32 +1845,33 @@ function resetProfile(playerName){
 function resetAdventure(playerName){
   if(!playerName) return;
   const msg=`Réinitialiser uniquement L'Odyssée (l'aventure mathématique) pour ${playerName} ?\n\nToutes les zones de la carte seront à reconquérir, l'avatar repart de la Plaine des Débuts.\n\nLes étoiles, figurines, XP, badges, skills et inventaire sont CONSERVÉS.`;
-  if(!confirm(msg)) return;
-  try{
-    const raw = localStorage.getItem('user_'+playerName);
-    if(!raw){ toast(`Aucun profil trouvé pour ${playerName}.`); return; }
-    const data = JSON.parse(raw);
-    // Données carte qui matérialisent la progression
-    data.mapBossBeaten = [];
-    data.mapAvatarZone = 'plaine';
-    data.zoneProgress  = {};   // v8.7.32 : ré-initialisé à validateProfile au prochain load
-    if(data.levelWins){
-      Object.keys(data.levelWins).forEach(k => { data.levelWins[k] = 0; });
-    }
-    localStorage.setItem('user_'+playerName, JSON.stringify(data));
-    toast(`🗺️ Aventure de ${playerName} réinitialisée !`);
-    // Si c'est le joueur actif, recharger
-    if(P && P.name === playerName){
-      loadProfile(); updateHUD();
-      if(typeof renderMap === 'function' && document.getElementById('v-map') && !document.getElementById('v-map').classList.contains('hidden')){
-        renderMap();
+  showConfirm(msg, ()=>{
+    try{
+      const raw = localStorage.getItem('user_'+playerName);
+      if(!raw){ toast(`Aucun profil trouvé pour ${playerName}.`); return; }
+      const data = JSON.parse(raw);
+      // Données carte qui matérialisent la progression
+      data.mapBossBeaten = [];
+      data.mapAvatarZone = 'plaine';
+      data.zoneProgress  = {};   // v8.7.32 : ré-initialisé à validateProfile au prochain load
+      if(data.levelWins){
+        Object.keys(data.levelWins).forEach(k => { data.levelWins[k] = 0; });
       }
+      localStorage.setItem('user_'+playerName, JSON.stringify(data));
+      toast(`🗺️ Aventure de ${playerName} réinitialisée !`);
+      // Si c'est le joueur actif, recharger
+      if(P && P.name === playerName){
+        loadProfile(); updateHUD();
+        if(typeof renderMap === 'function' && document.getElementById('v-map') && !document.getElementById('v-map').classList.contains('hidden')){
+          renderMap();
+        }
+      }
+      renderResetZone();
+    }catch(e){
+      console.warn('resetAdventure failed', e);
+      toast(`Erreur lors du reset de l'aventure de ${playerName}.`);
     }
-    renderResetZone();
-  }catch(e){
-    console.warn('resetAdventure failed', e);
-    toast(`Erreur lors du reset de l'aventure de ${playerName}.`);
-  }
+  }, {confirmLabel:'Réinitialiser'});
 }
 function renderResetZone(){
   const z=$('reset-zone');if(!z)return;

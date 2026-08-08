@@ -865,11 +865,11 @@ function importProfileFile(event){
  if(!file.name.endsWith('.json')){if(msg){msg.innerText='❌ Le fichier doit être un .json';msg.style.color='#e74c3c';}return;}
  const reader=new FileReader();
  reader.onload=(e)=>{
+  let players, totalCnt=0, lines=[];
   try{
    const text=String(e.target.result||'');
    const payload=JSON.parse(text);
    // Compat : soit format v1 (avec wrapper), soit ancien (juste un dict de joueurs)
-   let players;
    if(payload.app==='odyssee-des-chiffres' && payload.players){
     players=payload.players;
    } else if(typeof payload==='object'&&!Array.isArray(payload)){
@@ -879,8 +879,6 @@ function importProfileFile(event){
     throw new Error('format inconnu');
    }
    // Construire un résumé pour confirmation
-   const lines=[];
-   let totalCnt=0;
    Object.entries(players).forEach(([name, d])=>{
     if(!sanitizePlayerKey(name)||!isValidPlayerData(d))return;
     const stars=d.stars||0;
@@ -889,17 +887,22 @@ function importProfileFile(event){
     lines.push(`• ${name} : ${stars}⭐, ${figs} figurines, ${wins} parties gagnées`);
     totalCnt++;
    });
-   if(totalCnt===0){
-    if(msg){msg.innerText='❌ Aucun profil valide trouvé dans le fichier.';msg.style.color='#e74c3c';}
-    event.target.value='';
-    return;
-   }
-   const recap=lines.join('\n');
-   if(!confirm(`Importer ${totalCnt} profil(s) ? Cela écrasera les profils existants portant les mêmes noms.\n\n${recap}`)){
-    event.target.value='';
-    if(msg){msg.innerText='⚠️ Import annulé.';msg.style.color='#e67e22';}
-    return;
-   }
+  }catch(err){
+   console.error('[import] erreur :',err);
+   if(msg){msg.innerText='❌ Fichier invalide ou corrompu.';msg.style.color='#e74c3c';}
+   event.target.value='';
+   return;
+  }
+  // Le fichier est déjà entièrement lu en mémoire : la suite (confirmation,
+  // asynchrone avec la modale stylée) ne dépend plus de l'input, on le
+  // réinitialise donc dès maintenant pour permettre un réimport du même fichier.
+  event.target.value='';
+  if(totalCnt===0){
+   if(msg){msg.innerText='❌ Aucun profil valide trouvé dans le fichier.';msg.style.color='#e74c3c';}
+   return;
+  }
+  const recap=lines.join('\n');
+  showConfirm(`Importer ${totalCnt} profil(s) ? Cela écrasera les profils existants portant les mêmes noms.\n\n${recap}`, ()=>{
    // Effectuer l'import
    let cnt=0,skip=0;
    Object.entries(players).forEach(([name,d])=>{
@@ -913,12 +916,10 @@ function importProfileFile(event){
    setTimeout(()=>{
     if(typeof loadProfile==='function')loadProfile();
    },800);
-  }catch(err){
-   console.error('[import] erreur :',err);
-   if(msg){msg.innerText='❌ Fichier invalide ou corrompu.';msg.style.color='#e74c3c';}
-  }finally{
-   event.target.value=''; // reset pour pouvoir réimporter le même fichier
-  }
+  }, {
+   confirmLabel:'Importer',
+   onCancel:()=>{ if(msg){msg.innerText='⚠️ Import annulé.';msg.style.color='#e67e22';} }
+  });
  };
  reader.onerror=()=>{
   if(msg){msg.innerText='❌ Erreur de lecture du fichier.';msg.style.color='#e74c3c';}
@@ -1212,23 +1213,24 @@ function saveHomework(){
 function clearHomework(){
  const sel = $('hw-player')?.value;
  if(!sel) return;
- if(!confirm(`Annuler le devoir de ${sel} ?`)) return;
- try{
-  const raw = localStorage.getItem('user_'+sel);
-  if(!raw) return;
-  const data = JSON.parse(raw);
-  delete data.homework;
-  localStorage.setItem('user_'+sel, JSON.stringify(data));
-  const status = $('hw-status');
-  if(status) status.innerHTML = `<span style="color:#bdc3c7;">Devoir annulé.</span>`;
-  toast(`🚫 Devoir annulé pour ${sel}`, 2000);
-  if(P && P.name === sel){
-   delete P.homework;
-   if(typeof renderHomework === 'function') renderHomework();
+ showConfirm(`Annuler le devoir de ${sel} ?`, ()=>{
+  try{
+   const raw = localStorage.getItem('user_'+sel);
+   if(!raw) return;
+   const data = JSON.parse(raw);
+   delete data.homework;
+   localStorage.setItem('user_'+sel, JSON.stringify(data));
+   const status = $('hw-status');
+   if(status) status.innerHTML = `<span style="color:#bdc3c7;">Devoir annulé.</span>`;
+   toast(`🚫 Devoir annulé pour ${sel}`, 2000);
+   if(P && P.name === sel){
+    delete P.homework;
+    if(typeof renderHomework === 'function') renderHomework();
+   }
+  }catch(e){
+   console.error('[homework] clear error:', e);
   }
- }catch(e){
-  console.error('[homework] clear error:', e);
- }
+ });
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1466,18 +1468,25 @@ async function doForceCloudRestore(){
     const localXp = localRaw.xp||0, cloudXp = peek.profile.xp||0;
     const sameCode = localRaw.cloudCode === code.toUpperCase();
     if(!sameCode){
-     const ok = confirm(
+     showConfirm(
       `⚠️ Un profil local nommé « ${localName} » existe déjà sur cet appareil (${localXp} XP), `+
       `avec un code cloud différent.\n\n`+
       `Le profil du code que tu restaures a ${cloudXp} XP.\n\n`+
       `Continuer VA REMPLACER le profil local « ${localName} » par celui du cloud. Cette action est irréversible.\n\n`+
-      `Continuer quand même ?`
+      `Continuer quand même ?`,
+      ()=>_doForceCloudRestoreProceed(code, input, msg),
+      { danger:true, confirmLabel:'Continuer', onCancel:()=>{ msg.style.color='#bdc3c7'; msg.textContent='Récupération annulée.'; } }
      );
-     if(!ok){ msg.style.color='#bdc3c7'; msg.textContent='Récupération annulée.'; return; }
+     return;
     }
    }
   }
  }
+ await _doForceCloudRestoreProceed(code, input, msg);
+}
+// Étape de restauration proprement dite, exécutée directement si aucun conflit
+// n'a été détecté, ou depuis le callback de confirmation sinon.
+async function _doForceCloudRestoreProceed(code, input, msg){
  msg.style.color='#bdc3c7'; msg.textContent='⏳ Récupération en cours…';
  const result = await forceRestoreFromCloud(code);
  if(!result.ok){
@@ -1736,13 +1745,53 @@ function exportAllProfiles(){
   if(typeof toast==='function') toast('💾 Sauvegarde de tous les profils téléchargée !',2500);
  }catch(e){ if(typeof toast==='function') toast('Échec de la sauvegarde globale.',2500); }
 }
-// Réinitialisation globale (double confirmation).
+// Réinitialisation globale — retype de la liste exacte des prénoms pour
+// confirmer (Audit qualité perçue #2, lot 2b), remplace l'ancienne double
+// confirm() en chaîne. Même grammaire visuelle que pmRemoveProfile().
+let _resetAllTarget = null;
 function resetAllProfiles(){
  const roster=(typeof getRoster==='function')?getRoster():[];
  if(!roster.length){ if(typeof toast==='function') toast('Aucun profil.',2000); return; }
- if(!confirm('⚠️ Réinitialiser TOUS les profils ('+roster.join(', ')+') ?\n\nÉtoiles, figurines, XP, badges : tout sera remis à zéro. Action irréversible.')) return;
- if(!confirm('Confirmation finale : tout remettre à zéro ?')) return;
+ _resetAllTarget = roster.join(', ');
+ const _e=(typeof esc==='function')?esc:(s=>String(s));
+ const ov = document.createElement('div');
+ ov.id='reset-all-overlay';
+ ov.style.cssText='position:fixed;inset:0;z-index:620;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:20px;';
+ ov.innerHTML = '<div style="background:#2c1414;border:1px solid rgba(231,76,60,.4);border-radius:18px;padding:24px 20px;text-align:center;max-width:380px;width:100%;box-shadow:var(--shadow-modal);">'
+  + '<div style="font-size:2.6em;margin-bottom:6px;">⚠️</div>'
+  + '<div style="font-size:1.2em;font-weight:800;color:#e74c3c;margin-bottom:8px;">Réinitialiser TOUS les profils ?</div>'
+  + '<div style="font-size:.88em;color:#dce3f0;line-height:1.5;margin-bottom:16px;">Étoiles, figurines, XP, badges : tout sera remis à zéro pour ces '+roster.length+' profil(s). Action irréversible.<br><br>Pour confirmer, retape la liste exacte des prénoms : <b style="color:#f1c40f;">'+_e(_resetAllTarget)+'</b></div>'
+  + '<input type="text" id="reset-all-input" placeholder="Tape « '+_e(_resetAllTarget)+' »" autocomplete="off" style="width:100%;box-sizing:border-box;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;padding:10px;text-align:center;font-size:1em;margin-bottom:6px;" oninput="_resetAllCheckInput()" onkeydown="if(event.key===\'Enter\')_resetAllConfirm()">'
+  + '<div id="reset-all-err" style="font-size:.78em;color:#e74c3c;min-height:1.1em;margin-bottom:10px;"></div>'
+  + '<div style="display:flex;gap:10px;justify-content:center;">'
+  +  '<button onclick="_resetAllClose()" style="background:#555;color:#fff;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:.88em;">Annuler</button>'
+  +  '<button id="reset-all-btn" onclick="_resetAllConfirm()" disabled style="background:#7f1d1d;color:#ffb4ac;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:.88em;cursor:not-allowed;">🗑 Tout réinitialiser</button>'
+  + '</div></div>';
+ document.body.appendChild(ov);
+ setTimeout(()=>{ const inp=document.getElementById('reset-all-input'); if(inp) inp.focus(); }, 50);
+ if(typeof trapFocus==='function') ov._releaseTrap=trapFocus(ov);
+}
+function _resetAllCheckInput(){
+ const inp=document.getElementById('reset-all-input'), btn=document.getElementById('reset-all-btn'), err=document.getElementById('reset-all-err');
+ if(!inp||!btn) return;
+ const match = inp.value === _resetAllTarget;
+ btn.disabled = !match;
+ btn.style.background = match ? '#e74c3c' : '#7f1d1d';
+ btn.style.color = match ? '#fff' : '#ffb4ac';
+ btn.style.cursor = match ? 'pointer' : 'not-allowed';
+ if(err) err.textContent = (inp.value && !match) ? 'La liste ne correspond pas exactement.' : '';
+}
+function _resetAllClose(){
+ const ov=document.getElementById('reset-all-overlay');
+ if(ov){ if(ov._releaseTrap){ov._releaseTrap();delete ov._releaseTrap;} ov.remove(); }
+ _resetAllTarget=null;
+}
+function _resetAllConfirm(){
+ const inp=document.getElementById('reset-all-input');
+ if(!inp || inp.value !== _resetAllTarget) return;
+ const roster=(typeof getRoster==='function')?getRoster():[];
  roster.forEach(n=>{ try{ localStorage.removeItem('user_'+n); }catch(e){} });
+ _resetAllClose();
  if(typeof toast==='function') toast('Tous les profils ont été réinitialisés.',2500);
  setTimeout(()=>{ try{ location.reload(); }catch(e){} }, 900);
 }
