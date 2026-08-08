@@ -65,7 +65,7 @@ function _encFillMsgPlayer(){
  sel.innerHTML=names.map(n=>`<option>${n}</option>`).join('');
  const cur=(P&&P.name&&names.includes(P.name))?P.name:(names[0]||'');
  if(cur){ sel.value=cur; if(typeof renderOptMessaging==='function') renderOptMessaging(cur); }
- else if($('opt-messaging')){ $('opt-messaging').innerHTML='<span style="font-size:.78em;color:#bdc3c7;">Ajoute un profil dans « Comptes ».</span>'; }
+ else if($('opt-messaging')){ $('opt-messaging').innerHTML='<span style="font-size:.8em;color:#bdc3c7;">Ajoute un profil dans « Comptes ».</span>'; }
 }
 // ── Cartes profils unifiées : photo, renommer, retirer (v11.6.6) ──
 let _pmRenameOpen = null;   // nom du profil dont la carte "renommer" est dépliée (une seule à la fois)
@@ -174,13 +174,13 @@ function renderOptPlayerCode(name){
  const _e=(typeof esc==='function')?esc:(s=>String(s));
  let code=null;
  try{ const d=JSON.parse(localStorage.getItem('user_'+name)||'null'); code=d&&d.playerCode||null; }catch(e){}
- box.innerHTML = `<p style="font-size:.74em;color:#bdc3c7;margin:0 0 8px;line-height:1.4;">Si activé, ce code à 2 chiffres est demandé à la connexion de ce profil, à la place de la simple confirmation ("C'est bien toi ?") affichée par défaut.</p>
+ box.innerHTML = `<p style="font-size:.72em;color:#bdc3c7;margin:0 0 8px;line-height:1.4;">Si activé, ce code à 2 chiffres est demandé à la connexion de ce profil, à la place de la simple confirmation ("C'est bien toi ?") affichée par défaut.</p>
   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-   <input type="text" id="pc-code-input" data-n="${_e(name)}" maxlength="2" inputmode="numeric" placeholder="${code?'••':'--'}" style="width:60px;text-align:center;font-family:monospace;font-size:1.2em;letter-spacing:4px;">
-   <button data-n="${_e(name)}" onclick="pmSavePlayerCode(this.dataset.n)" style="background:var(--ok);font-size:.82em;padding:7px 12px;">${code?'Changer':'Activer'}</button>
-   ${code?`<button data-n="${_e(name)}" onclick="pmClearPlayerCode(this.dataset.n)" style="background:var(--neutral);font-size:.82em;padding:7px 12px;">Désactiver</button>`:''}
+   <input type="text" id="pc-code-input" data-n="${_e(name)}" maxlength="2" inputmode="numeric" placeholder="${code?'••':'--'}" style="width:60px;text-align:center;font-family:monospace;font-size:1.3em;letter-spacing:4px;">
+   <button data-n="${_e(name)}" onclick="pmSavePlayerCode(this.dataset.n)" style="background:var(--ok);font-size:.8em;padding:7px 12px;">${code?'Changer':'Activer'}</button>
+   ${code?`<button data-n="${_e(name)}" onclick="pmClearPlayerCode(this.dataset.n)" style="background:var(--neutral);font-size:.8em;padding:7px 12px;">Désactiver</button>`:''}
   </div>
-  <p id="pc-code-msg" style="font-size:.76em;margin-top:6px;"></p>`;
+  <p id="pc-code-msg" style="font-size:.72em;margin-top:6px;"></p>`;
 }
 function pmSavePlayerCode(name){
  const inp=$('pc-code-input'); const msg=$('pc-code-msg');
@@ -223,7 +223,7 @@ function pGuide(key){
  let ov=document.getElementById('p-guide-ov');
  if(!ov){ ov=document.createElement('div'); ov.id='p-guide-ov'; ov.className='p-guide-ov hidden'; ov.onclick=function(e){ if(e.target===ov) pGuideClose(); }; document.body.appendChild(ov); }
  ov.innerHTML='<div class="p-guide-box">'
-  +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span style="font-weight:700;color:#7fd4f0;">'+g.t+' — pas à pas</span><button onclick="pGuideClose()" aria-label="Fermer" style="cursor:pointer;font-size:1.2em;color:#9fc3cf;background:none;border:none;padding:0;">\u2715</button></div>'
+  +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span style="font-weight:700;color:#7fd4f0;">'+g.t+' — pas à pas</span><button onclick="pGuideClose()" aria-label="Fermer" style="cursor:pointer;font-size:1.3em;color:#9fc3cf;background:none;border:none;padding:0;">\u2715</button></div>'
   +g.s.map((st,i)=>'<div class="p-guide-step"><span class="p-guide-num">'+(i+1)+'</span><span>'+st+'</span></div>').join('')
   +'<button onclick="pGuideClose()" style="margin-top:8px;width:100%;background:#3aa0c4;">J\u2019ai compris</button></div>';
  ov.classList.remove('hidden');
@@ -266,8 +266,8 @@ function renderParentFigurines(){
  if(licFilter==='none' && !(_pfigSearch||'').trim()){
   el.innerHTML=`<div style="text-align:center;padding:30px 16px;color:#bdc3c7;">
    <div style="font-size:2.6em;margin-bottom:8px;">🎴</div>
-   <p style="font-size:.95em;margin:6px 0;"><strong>Sélectionne une licence dans le menu déroulant</strong></p>
-   <p style="font-size:.78em;margin:4px 0;">ou utilise la barre de recherche pour trouver un personnage.</p>
+   <p style="font-size:.9em;margin:6px 0;"><strong>Sélectionne une licence dans le menu déroulant</strong></p>
+   <p style="font-size:.8em;margin:4px 0;">ou utilise la barre de recherche pour trouver un personnage.</p>
    <p style="font-size:.72em;margin-top:14px;color:#7f8c8d;">${total} figurines réparties dans 25 univers</p>
   </div>`;
   return;
@@ -307,14 +307,14 @@ function renderParentFigurines(){
    const col=RARITY_COL[fig.r]||'#888';
    const portrait=getCharPortrait(fig.id, {size:56, emoji:fig.em});
 html+=`<div class="pfig-card${isOwned?' owned':' pfig-locked'}${fig.r==='exclusif'?' rarity-exclusif':''}" onclick="pfigCardClick('${fig.id}',${isOwned})" title="${fig.name} — ${isOwned?'Voir animation & son':'Aperçu disponible'}">`;
-   if(!isOwned) html+=`<div style="position:absolute;top:2px;left:2px;font-size:.55em;background:rgba(0,0,0,.5);border-radius:4px;padding:1px 4px;color:#aaa;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>`;
+   if(!isOwned) html+=`<div style="position:absolute;top:2px;left:2px;font-size:.65em;background:rgba(0,0,0,.5);border-radius:4px;padding:1px 4px;color:#aaa;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>`;
    html+=`<div class="pfig-mini" style="border-bottom:2px solid ${col}${isOwned?'88':'22'};${!isOwned?'filter:grayscale(.5) brightness(.8)':''}">${portrait}</div>
     <div class="pfig-name">${fig.name}</div>
     <div class="pfig-price" style="color:${isOwned?RARITY_COL[fig.r]:'rgba(255,255,255,.3)'};">${isOwned?RARITY_STARS[fig.r]:fig.p+'⭐'}</div>`;
    if(isOwned){
-    html+=`<div style="font-size:.45em;color:#2ecc71;font-weight:700;margin-top:1px;">▶ Voir + son</div>`;
+    html+=`<div style="font-size:.65em;color:#2ecc71;font-weight:700;margin-top:1px;">▶ Voir + son</div>`;
    }else{
-    html+=`<div style="font-size:.45em;color:#f1c40f;font-weight:700;margin-top:1px;">👁 Aperçu</div>`;
+    html+=`<div style="font-size:.65em;color:#f1c40f;font-weight:700;margin-top:1px;">👁 Aperçu</div>`;
    }
    html+=`</div>`;
   });
@@ -325,14 +325,14 @@ html+=`<div class="pfig-card${isOwned?' owned':' pfig-locked'}${fig.r==='exclusi
      <div style="background:rgba(0,0,0,.3);border-radius:4px;height:5px;overflow:hidden;">
       <div style="width:${Math.round(uOwned/uFigs.length*100)}%;height:100%;background:linear-gradient(90deg,var(--accent),#f1c40f);border-radius:4px;transition:width .5s;"></div>
      </div>
-     <div style="font-size:.55em;color:rgba(255,255,255,.35);margin-top:2px;text-align:right;">${Math.round(uOwned/uFigs.length*100)}% complété</div>
+     <div style="font-size:.65em;color:rgba(255,255,255,.35);margin-top:2px;text-align:right;">${Math.round(uOwned/uFigs.length*100)}% complété</div>
     </div>
    </div>
   </div>`;
  });
 
  if(!html){
-  el.innerHTML='<div style="text-align:center;padding:16px;color:rgba(255,255,255,.4);font-size:.82em;">Aucune figurine dans ce filtre.</div>';
+  el.innerHTML='<div style="text-align:center;padding:16px;color:rgba(255,255,255,.4);font-size:.8em;">Aucune figurine dans ce filtre.</div>';
   return;
  }
  el.innerHTML=html;
@@ -386,7 +386,7 @@ function renderReport(){
   ${weak.length?`<div style="margin-top:8px;padding:7px;background:rgba(231,76,60,.2);border-radius:8px;">⚠️ Points faibles : ${weak.join(', ')}</div>`:'<div style="margin-top:8px;padding:7px;background:rgba(46,204,113,.2);border-radius:8px;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg> Aucun point faible !</div>'}
   ${typeof _matBilanHtml==='function'?_matBilanHtml(d):''}
   ${typeof _progPanelHtml==='function'?_progPanelHtml(d):''}
-  ${h.slice(-7).map(x=>`<div style="display:flex;justify-content:space-between;font-size:.78em;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span>${x.date} · ${x.level||'?'} · ${x.mode||'?'}</span><span style="color:${x.won?'#2ecc71':'#e74c3c'}">${x.won?'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>':'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'} ${x.score}⭐</span></div>`).join('')}
+  ${h.slice(-7).map(x=>`<div style="display:flex;justify-content:space-between;font-size:.8em;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span>${x.date} · ${x.level||'?'} · ${x.mode||'?'}</span><span style="color:${x.won?'#2ecc71':'#e74c3c'}">${x.won?'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>':'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'} ${x.score}⭐</span></div>`).join('')}
  </div>`;
 }
 
@@ -419,12 +419,12 @@ function renderErrorsList(){
  const el = $('errors-list-zone');
  if(!el) return;
  if(!d){
-  el.innerHTML = '<span style="color:#bdc3c7;font-size:.82em;">Aucune donnée pour '+player+'.</span>';
+  el.innerHTML = '<span style="color:#bdc3c7;font-size:.8em;">Aucune donnée pour '+player+'.</span>';
   return;
  }
  const log = Array.isArray(d.errorLog) ? d.errorLog.slice() : [];
  if(!log.length){
-  el.innerHTML = '<div style="text-align:center;padding:20px 10px;color:#2ecc71;font-size:.85em;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg> Aucune opération ratée enregistrée pour '+player+' !<br><span style="color:#7f8c8d;font-size:.9em;">(Les erreurs apparaissent ici au fil des parties)</span></div>';
+  el.innerHTML = '<div style="text-align:center;padding:20px 10px;color:#2ecc71;font-size:.9em;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg> Aucune opération ratée enregistrée pour '+player+' !<br><span style="color:#7f8c8d;font-size:.9em;">(Les erreurs apparaissent ici au fil des parties)</span></div>';
   return;
  }
  // Tri par date décroissante (plus récentes d'abord), max 100
@@ -440,13 +440,13 @@ function renderErrorsList(){
   const when = e.t ? new Date(e.t) : null;
   const dateStr = when ? `${String(when.getDate()).padStart(2,'0')}/${String(when.getMonth()+1).padStart(2,'0')} ${String(when.getHours()).padStart(2,'0')}:${String(when.getMinutes()).padStart(2,'0')}` : '';
   const triesBadge = tries>1 ? `<span style="background:rgba(231,76,60,.3);color:#e74c3c;border-radius:4px;padding:1px 6px;font-size:.72em;margin-left:6px;">×${tries}</span>` : '';
-  return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:.82em;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.06);">
+  return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:.8em;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.06);">
    <span><strong style="color:#fff;">${op}</strong> = <strong style="color:#2ecc71;">${good}</strong>${triesBadge}</span>
-   <span style="color:#7f8c8d;font-size:.85em;">${dateStr}</span>
+   <span style="color:#7f8c8d;font-size:.9em;">${dateStr}</span>
   </div>`;
  }).join('');
  el.innerHTML = `<div style="background:rgba(255,255,255,.04);border-radius:10px;padding:6px;margin-top:6px;">
-  <p style="font-size:.74em;color:#bdc3c7;margin:4px 8px 8px;">${items.length} opération(s) ratée(s) · la bonne réponse est en vert · ×N = nombre d'échecs</p>
+  <p style="font-size:.72em;color:#bdc3c7;margin:4px 8px 8px;">${items.length} opération(s) ratée(s) · la bonne réponse est en vert · ×N = nombre d'échecs</p>
   ${rows}
  </div>`;
 }
@@ -690,8 +690,8 @@ function renderWeeklySummary(){
  const html = `
   <div class="wreport">
    <div class="wreport-head">
-    <strong style="color:#f1c40f;font-size:1.05em;">📊 Semaine du ${fmtD(wThis.start)} au ${fmtD(wThis.end)}</strong>
-    <div style="margin-top:6px;font-size:.92em;line-height:1.4;">${verdict}</div>
+    <strong style="color:#f1c40f;font-size:1em;">📊 Semaine du ${fmtD(wThis.start)} au ${fmtD(wThis.end)}</strong>
+    <div style="margin-top:6px;font-size:.9em;line-height:1.4;">${verdict}</div>
    </div>
    ${kThis.total === 0 ? '' : `
    <div class="wreport-section">
@@ -726,7 +726,7 @@ function renderWeeklySummary(){
    </div>
    ${(typeof chatIsEnabledByName==='function' && chatIsEnabledByName(player)) ? `
    <div class="wreport-section no-print" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:.85em;color:#9aa6b2;">✉️ Messagerie de ${_esc_player}</span>
+    <span style="font-size:.9em;color:#9aa6b2;">✉️ Messagerie de ${_esc_player}</span>
     <button onclick="openMessaging('${_jsAttrPlayer}')" style="background:#9b59b6;font-size:.8em;padding:6px 12px;">Voir →</button>
    </div>` : ''}
    <div class="wreport-actions no-print">
@@ -1283,7 +1283,7 @@ function renderCloudPanel(){
  _populateCloudPlayerSelect();
  const sel = document.getElementById('cloud-sync-player');
  const name = sel ? sel.value : (P && P.name);
- if(!name){ container.innerHTML = '<p style="font-size:.78em;color:#bdc3c7;">Aucun profil détecté.</p>'; return; }
+ if(!name){ container.innerHTML = '<p style="font-size:.8em;color:#bdc3c7;">Aucun profil détecté.</p>'; return; }
  // Si c'est le profil actif, on génère le code si manquant
  if(P && P.name === name){
   if(typeof ensureCloudCode === 'function') ensureCloudCode(P);
@@ -1302,7 +1302,7 @@ function renderCloudPanel(){
  const savedProf = isActiveSession ? P : _readProfile(name);
  const neverPlayed = !isActiveSession && !savedProf;
  const prof = savedProf || (typeof defProfile === 'function' ? defProfile(name) : null);
- if(!prof){ container.innerHTML = '<p style="font-size:.78em;color:#bdc3c7;">Profil introuvable.</p>'; return; }
+ if(!prof){ container.innerHTML = '<p style="font-size:.8em;color:#bdc3c7;">Profil introuvable.</p>'; return; }
  // Pour les profils non-actifs, on génère aussi le code si manquant
  if(!prof.cloudCode && typeof generateCloudCode === 'function'){
   prof.cloudCode = generateCloudCode(prof.name);
@@ -1324,26 +1324,26 @@ function renderCloudPanel(){
  let statusBlock, actionBlock;
  if(neverPlayed){
   statusBlock = '';
-  actionBlock = '<p style="font-size:.74em;color:#3498db;margin:6px 0;background:rgba(52,152,219,.1);border-radius:6px;padding:6px 8px;">ℹ️ <b>'+_nH+'</b> ne s\'est encore jamais connecté(e). Le code est prêt : la sauvegarde deviendra activable dès sa première connexion — reviens alors sur cet écran.</p>';
+  actionBlock = '<p style="font-size:.72em;color:#3498db;margin:6px 0;background:rgba(52,152,219,.1);border-radius:6px;padding:6px 8px;">ℹ️ <b>'+_nH+'</b> ne s\'est encore jamais connecté(e). Le code est prêt : la sauvegarde deviendra activable dès sa première connexion — reviens alors sur cet écran.</p>';
  } else {
   statusBlock = '<p style="font-size:.72em;color:#bdc3c7;margin:8px 0 4px;">Statut : <strong style="color:'+(isActive?'#2ecc71':'#e67e22')+';">'+(isActive?'☁️ Activé':'⏸ Désactivé')+'</strong></p>'
    + (isActive
       ? '<p style="font-size:.72em;color:#bdc3c7;margin:4px 0;">Dernière sync : '+lastSyncStr+'</p>'
-      : '<p style="font-size:.74em;color:#e67e22;margin:6px 0;background:rgba(230,126,34,.12);border-radius:6px;padding:6px 8px;">⚠️ <b>Sauvegarde non activée</b> : tant que ce bouton n\'est pas activé, la progression de '+_nH+' n\'est <b>pas envoyée au cloud</b> et ne peut pas être récupérée sur un autre appareil. Active-la ci-dessous.</p>');
+      : '<p style="font-size:.72em;color:#e67e22;margin:6px 0;background:rgba(230,126,34,.12);border-radius:6px;padding:6px 8px;">⚠️ <b>Sauvegarde non activée</b> : tant que ce bouton n\'est pas activé, la progression de '+_nH+' n\'est <b>pas envoyée au cloud</b> et ne peut pas être récupérée sur un autre appareil. Active-la ci-dessous.</p>');
   actionBlock = '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">'
    + (isActive
-      ? '<button onclick="doCloudSyncNow(\''+_nJ+'\',this)" style="background:var(--info);font-size:.82em;">🔄 Synchroniser maintenant</button>'
-        + '<button onclick="doCloudDisable(\''+_nJ+'\')" style="background:var(--neutral);font-size:.82em;">⏸ Désactiver</button>'
-      : '<button onclick="doCloudEnable(\''+_nJ+'\',this)" style="background:var(--ok);font-size:.82em;">☁️ Activer la sauvegarde cloud</button>')
+      ? '<button onclick="doCloudSyncNow(\''+_nJ+'\',this)" style="background:var(--info);font-size:.8em;">🔄 Synchroniser maintenant</button>'
+        + '<button onclick="doCloudDisable(\''+_nJ+'\')" style="background:var(--neutral);font-size:.8em;">⏸ Désactiver</button>'
+      : '<button onclick="doCloudEnable(\''+_nJ+'\',this)" style="background:var(--ok);font-size:.8em;">☁️ Activer la sauvegarde cloud</button>')
    + '</div>';
  }
 
  container.innerHTML = `
   <div style="background:rgba(52,152,219,.08);border:1px solid rgba(52,152,219,.3);border-radius:8px;padding:10px;margin-top:6px;">
-   <p style="font-size:.78em;color:#bdc3c7;margin:0 0 4px;">Code de sauvegarde de <strong style="color:#fff;">${_nH}</strong> :</p>
+   <p style="font-size:.8em;color:#bdc3c7;margin:0 0 4px;">Code de sauvegarde de <strong style="color:#fff;">${_nH}</strong> :</p>
    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-    <code style="font-size:1.05em;color:#3498db;font-weight:700;background:rgba(0,0,0,.25);padding:6px 10px;border-radius:6px;letter-spacing:1px;font-family:monospace;">${code}</code>
-    <button onclick="doCloudCopyFor('${_nJ}')" style="font-size:.78em;padding:5px 10px;background:#34495e;">📋 Copier</button>
+    <code style="font-size:1em;color:#3498db;font-weight:700;background:rgba(0,0,0,.25);padding:6px 10px;border-radius:6px;letter-spacing:1px;font-family:monospace;">${code}</code>
+    <button onclick="doCloudCopyFor('${_nJ}')" style="font-size:.8em;padding:5px 10px;background:#34495e;">📋 Copier</button>
    </div>
    ${statusBlock}
    ${actionBlock}
@@ -1569,7 +1569,7 @@ function renderProfileManager(){
   try{ const d=JSON.parse(localStorage.getItem('user_'+n)||'null'); photo=(d&&d.photo)||null; }catch(e){}
   const thumb = photo
    ? `<img src="${photo}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid #f1c40f;">`
-   : `<div style="width:52px;height:52px;border-radius:50%;background:#3a3a55;border:2px solid #f1c40f;display:flex;align-items:center;justify-content:center;font-size:1.5em;">🙂</div>`;
+   : `<div style="width:52px;height:52px;border-radius:50%;background:#3a3a55;border:2px solid #f1c40f;display:flex;align-items:center;justify-content:center;font-size:1.6em;">🙂</div>`;
   const renaming = _pmRenameOpen===n;
   return `<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px;margin-bottom:10px;">
     <div style="display:flex;align-items:center;gap:12px;">
@@ -1578,14 +1578,14 @@ function renderProfileManager(){
       <span data-n="${_e(n)}" onclick="pmChoosePhoto(this.dataset.n)" title="Changer la photo" style="position:absolute;right:-4px;bottom:-2px;width:20px;height:20px;border-radius:50%;background:#2980b9;border:2px solid #232342;display:flex;align-items:center;justify-content:center;font-size:.65em;cursor:pointer;">📷</span>
       ${photo?`<span data-n="${_e(n)}" onclick="pmRemovePhoto(this.dataset.n)" title="Retirer la photo" style="position:absolute;right:-4px;top:-2px;width:20px;height:20px;border-radius:50%;background:var(--danger);border:2px solid #232342;display:flex;align-items:center;justify-content:center;font-size:.65em;cursor:pointer;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></span>`:''}
      </div>
-     <div style="flex:1;font-size:1.05em;font-weight:800;color:#f1c40f;">${_e(n)}</div>
+     <div style="flex:1;font-size:1em;font-weight:800;color:#f1c40f;">${_e(n)}</div>
     </div>
     <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
-     <button data-n="${_e(n)}" onclick="pmToggleRename(this.dataset.n)" style="background:${renaming?'#f1c40f':'#34495e'};color:${renaming?'#1a1a2e':'#fff'};border:none;border-radius:7px;padding:6px 11px;font-size:.78em;font-weight:700;">✏️ Renommer</button>
-     <button data-n="${_e(n)}" onclick="pmRemoveProfile(this.dataset.n)" style="background:var(--danger);color:#fff;border:none;border-radius:7px;padding:6px 11px;font-size:.78em;font-weight:700;">🗑 Supprimer</button>
+     <button data-n="${_e(n)}" onclick="pmToggleRename(this.dataset.n)" style="background:${renaming?'#f1c40f':'#34495e'};color:${renaming?'#1a1a2e':'#fff'};border:none;border-radius:7px;padding:6px 11px;font-size:.8em;font-weight:700;">✏️ Renommer</button>
+     <button data-n="${_e(n)}" onclick="pmRemoveProfile(this.dataset.n)" style="background:var(--danger);color:#fff;border:none;border-radius:7px;padding:6px 11px;font-size:.8em;font-weight:700;">🗑 Supprimer</button>
     </div>
     ${renaming?`<div style="display:flex;gap:6px;margin-top:10px;">
-     <input id="pm-rename-input" type="text" value="${_e(n)}" maxlength="20" style="flex:1;font-size:.85em;padding:6px 8px;" onkeydown="if(event.key==='Enter')pmConfirmRename(_pmRenameOpen)">
+     <input id="pm-rename-input" type="text" value="${_e(n)}" maxlength="20" style="flex:1;font-size:.9em;padding:6px 8px;" onkeydown="if(event.key==='Enter')pmConfirmRename(_pmRenameOpen)">
      <button data-n="${_e(n)}" onclick="pmConfirmRename(this.dataset.n)" style="background:var(--ok);color:#fff;border:none;border-radius:7px;padding:0 12px;font-size:.8em;font-weight:700;">OK</button>
      <button data-n="${_e(n)}" onclick="pmToggleRename(this.dataset.n)" style="background:var(--neutral);color:#fff;border:none;border-radius:7px;padding:0 12px;font-size:.8em;font-weight:700;">Annuler</button>
     </div>`:''}
@@ -1639,13 +1639,13 @@ function pmRemoveProfile(n){
  ov.style.cssText='position:fixed;inset:0;z-index:610;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:20px;';
  ov.innerHTML = '<div style="background:#2c1414;border:1px solid rgba(231,76,60,.4);border-radius:18px;padding:24px 20px;text-align:center;max-width:340px;width:100%;">'
   + '<div style="font-size:2.6em;margin-bottom:6px;">⚠️</div>'
-  + '<div style="font-size:1.2em;font-weight:800;color:#e74c3c;margin-bottom:8px;">Supprimer ce profil ?</div>'
-  + '<div style="font-size:.88em;color:#dce3f0;line-height:1.5;margin-bottom:16px;">Pour confirmer, retape le prénom exact du profil à retirer : <b style="color:#f1c40f;">'+_e(n)+'</b><br>Sa progression restera stockée sur l\'appareil et réapparaîtra si tu le rajoutes.</div>'
+  + '<div style="font-size:1.3em;font-weight:800;color:#e74c3c;margin-bottom:8px;">Supprimer ce profil ?</div>'
+  + '<div style="font-size:.9em;color:#dce3f0;line-height:1.5;margin-bottom:16px;">Pour confirmer, retape le prénom exact du profil à retirer : <b style="color:#f1c40f;">'+_e(n)+'</b><br>Sa progression restera stockée sur l\'appareil et réapparaîtra si tu le rajoutes.</div>'
   + '<input type="text" id="pm-delete-input" placeholder="Tape « '+_e(n)+' »" autocomplete="off" style="width:100%;box-sizing:border-box;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;padding:10px;text-align:center;font-size:1em;margin-bottom:6px;" oninput="_pmCheckDeleteInput()" onkeydown="if(event.key===\'Enter\')_pmConfirmDelete()">'
-  + '<div id="pm-delete-err" style="font-size:.78em;color:#e74c3c;min-height:1.1em;margin-bottom:10px;"></div>'
+  + '<div id="pm-delete-err" style="font-size:.8em;color:#e74c3c;min-height:1.1em;margin-bottom:10px;"></div>'
   + '<div style="display:flex;gap:10px;justify-content:center;">'
-  +  '<button onclick="_pmCloseDeleteConfirm()" style="background:#555;color:#fff;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:.88em;">Annuler</button>'
-  +  '<button id="pm-delete-btn" onclick="_pmConfirmDelete()" disabled style="background:#7f1d1d;color:#ffb4ac;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:.88em;cursor:not-allowed;">🗑 Supprimer</button>'
+  +  '<button onclick="_pmCloseDeleteConfirm()" style="background:#555;color:#fff;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:.9em;">Annuler</button>'
+  +  '<button id="pm-delete-btn" onclick="_pmConfirmDelete()" disabled style="background:#7f1d1d;color:#ffb4ac;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:.9em;cursor:not-allowed;">🗑 Supprimer</button>'
   + '</div></div>';
  document.body.appendChild(ov);
  setTimeout(()=>{ const inp=document.getElementById('pm-delete-input'); if(inp) inp.focus(); }, 50);
@@ -1698,7 +1698,7 @@ function optFillProfiles(){
 }
 function optSelectProfile(){
  const sel=$('opt-profile'); if(!sel) return;
- const name=sel.value; if(!name){ const b=$('opt-birthday'); if(b)b.innerHTML='<span style="font-size:.78em;color:#bdc3c7;">Aucun profil. Ajoute-en un dans « Général ».</span>'; return; }
+ const name=sel.value; if(!name){ const b=$('opt-birthday'); if(b)b.innerHTML='<span style="font-size:.8em;color:#bdc3c7;">Aucun profil. Ajoute-en un dans « Général ».</span>'; return; }
  const roster=(typeof getRoster==='function')?getRoster():[];
  const opts=roster.map(n=>`<option>${n}</option>`).join('');
  const cs=$('cloud-sync-player'); if(cs){ cs.innerHTML=opts; cs.value=name; }
@@ -1714,9 +1714,9 @@ function renderOptBirthday(name){
  const dd=(b&&b.d)?b.d:'', mm=(b&&b.m)?b.m:'';
  const _e=(typeof esc==='function')?esc:(s=>String(s));
  box.innerHTML=`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-   <label style="font-size:.78em;color:#bdc3c7;">Jour d'anniversaire</label>
+   <label style="font-size:.8em;color:#bdc3c7;">Jour d'anniversaire</label>
    <input type="number" min="1" max="31" value="${dd}" data-n="${_e(name)}" onchange="pmSetBirthday(this.dataset.n,'d',this.value)" style="width:56px;text-align:center;">
-   <label style="font-size:.78em;color:#bdc3c7;">Mois d'anniversaire</label>
+   <label style="font-size:.8em;color:#bdc3c7;">Mois d'anniversaire</label>
    <input type="number" min="1" max="12" value="${mm}" data-n="${_e(name)}" onchange="pmSetBirthday(this.dataset.n,'m',this.value)" style="width:56px;text-align:center;">
   </div>`;
 }
@@ -1727,8 +1727,8 @@ function renderOptResetOne(name){
  try{const p=JSON.parse(localStorage.getItem('user_'+name)||'null'); if(p){stars=p.stars||0;figs=(p.ownedFigurines||[]).length;lvl=p.xp?Math.floor(p.xp/100)+1:1;zb=(p.mapBossBeaten||[]).length;}}catch(e){}
  box.innerHTML=`<div style="font-size:.72em;color:#bdc3c7;margin-bottom:6px;">Niv.${lvl} · ${stars} étoiles · ${figs} figurines · ${zb}/23 zones</div>
   <div style="display:flex;gap:6px;">
-   <button data-pname="${en}" onclick="resetAdventure(decodeURIComponent(this.dataset.pname))" style="flex:1;background:#16a085;color:#fff;padding:8px 10px;font-size:.78em;font-weight:700;border-radius:8px;border:2px solid #1abc9c;cursor:pointer;">🗺 Reset Aventure</button>
-   <button data-pname="${en}" onclick="resetProfile(decodeURIComponent(this.dataset.pname))" style="flex:1;background:var(--danger);color:#fff;padding:8px 10px;font-size:.78em;font-weight:700;border-radius:8px;border:2px solid #ff6b6b;cursor:pointer;">🗑 Reset Total</button>
+   <button data-pname="${en}" onclick="resetAdventure(decodeURIComponent(this.dataset.pname))" style="flex:1;background:#16a085;color:#fff;padding:8px 10px;font-size:.8em;font-weight:700;border-radius:8px;border:2px solid #1abc9c;cursor:pointer;">🗺 Reset Aventure</button>
+   <button data-pname="${en}" onclick="resetProfile(decodeURIComponent(this.dataset.pname))" style="flex:1;background:var(--danger);color:#fff;padding:8px 10px;font-size:.8em;font-weight:700;border-radius:8px;border:2px solid #ff6b6b;cursor:pointer;">🗑 Reset Total</button>
   </div>`;
 }
 // Sauvegarde globale : un seul fichier contenant tous les profils.
@@ -1759,13 +1759,13 @@ function resetAllProfiles(){
  ov.style.cssText='position:fixed;inset:0;z-index:620;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:20px;';
  ov.innerHTML = '<div style="background:#2c1414;border:1px solid rgba(231,76,60,.4);border-radius:18px;padding:24px 20px;text-align:center;max-width:380px;width:100%;box-shadow:var(--shadow-modal);">'
   + '<div style="font-size:2.6em;margin-bottom:6px;">⚠️</div>'
-  + '<div style="font-size:1.2em;font-weight:800;color:#e74c3c;margin-bottom:8px;">Réinitialiser TOUS les profils ?</div>'
-  + '<div style="font-size:.88em;color:#dce3f0;line-height:1.5;margin-bottom:16px;">Étoiles, figurines, XP, badges : tout sera remis à zéro pour ces '+roster.length+' profil(s). Action irréversible.<br><br>Pour confirmer, retape la liste exacte des prénoms : <b style="color:#f1c40f;">'+_e(_resetAllTarget)+'</b></div>'
+  + '<div style="font-size:1.3em;font-weight:800;color:#e74c3c;margin-bottom:8px;">Réinitialiser TOUS les profils ?</div>'
+  + '<div style="font-size:.9em;color:#dce3f0;line-height:1.5;margin-bottom:16px;">Étoiles, figurines, XP, badges : tout sera remis à zéro pour ces '+roster.length+' profil(s). Action irréversible.<br><br>Pour confirmer, retape la liste exacte des prénoms : <b style="color:#f1c40f;">'+_e(_resetAllTarget)+'</b></div>'
   + '<input type="text" id="reset-all-input" placeholder="Tape « '+_e(_resetAllTarget)+' »" autocomplete="off" style="width:100%;box-sizing:border-box;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;padding:10px;text-align:center;font-size:1em;margin-bottom:6px;" oninput="_resetAllCheckInput()" onkeydown="if(event.key===\'Enter\')_resetAllConfirm()">'
-  + '<div id="reset-all-err" style="font-size:.78em;color:#e74c3c;min-height:1.1em;margin-bottom:10px;"></div>'
+  + '<div id="reset-all-err" style="font-size:.8em;color:#e74c3c;min-height:1.1em;margin-bottom:10px;"></div>'
   + '<div style="display:flex;gap:10px;justify-content:center;">'
-  +  '<button onclick="_resetAllClose()" style="background:#555;color:#fff;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:.88em;">Annuler</button>'
-  +  '<button id="reset-all-btn" onclick="_resetAllConfirm()" disabled style="background:#7f1d1d;color:#ffb4ac;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:.88em;cursor:not-allowed;">🗑 Tout réinitialiser</button>'
+  +  '<button onclick="_resetAllClose()" style="background:#555;color:#fff;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:.9em;">Annuler</button>'
+  +  '<button id="reset-all-btn" onclick="_resetAllConfirm()" disabled style="background:#7f1d1d;color:#ffb4ac;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:.9em;cursor:not-allowed;">🗑 Tout réinitialiser</button>'
   + '</div></div>';
  document.body.appendChild(ov);
  setTimeout(()=>{ const inp=document.getElementById('reset-all-input'); if(inp) inp.focus(); }, 50);
