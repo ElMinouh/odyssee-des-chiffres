@@ -2119,8 +2119,9 @@ function _maybeShowTwist(zone, afterCb){
 }
 
 // v12.1.5 (Lot C, pt.5) : compteur de progression dans les pages du chapitre
-// d'une région, persistant par région. Permet d'étaler les pages déjà écrites
-// au fil des zones conquises, au lieu de tout montrer d'un bloc à l'entrée.
+// d'une région — n'est PLUS utilisé pour fragmenter l'entrée d'îlot (retour au
+// chapitre entier d'un bloc, v12.2.0, voir plus bas) mais reste disponible si
+// besoin futur. Conservé pour compatibilité avec d'anciens profils sauvegardés.
 function _nextStoryPage(regionId){
  if(typeof P==='undefined' || !P) return 0;
  P.storyPageIdx = P.storyPageIdx || {};
@@ -2157,25 +2158,7 @@ function _maybeShowStory(afterCb){
    const win = _STORY.victories && _STORY.victories[r.id];
    if(win && !P.storySeen.includes(win.id) && _regionConquered(r.id)){
     _markStorySeen(win.id);
-    // v12.1.5 (Lot C, pt.5) : si des pages du chapitre n'ont pas encore été
-    // montrées (îlot avec plus de pages que de zones intermédiaires, ou la
-    // toute dernière page — volontairement réservée à ce moment), on les
-    // regroupe avec la scène de victoire : rien du texte déjà écrit n'est
-    // perdu, seulement étalé différemment.
-    let combinedPages = win.pages;
-    try{
-     const chap = _STORY.chapters[r.id];
-     if(chap && Array.isArray(chap.pages) && chap.pages.length){
-      const idx = _nextStoryPage(r.id);
-      const leftover = chap.pages.slice(Math.max(idx, 0));
-      if(leftover.length){
-       combinedPages = [...leftover, ...win.pages];
-       P.storyPageIdx = P.storyPageIdx || {};
-       P.storyPageIdx[r.id] = chap.pages.length;
-      }
-     }
-    }catch(e){}
-    _showStoryModal({ id:win.id, title:win.title, pages:combinedPages }, _done);
+    _showStoryModal(win, _done);
     return;
    }
   }
@@ -2210,6 +2193,13 @@ function _maybeShowStory(afterCb){
   }
  }catch(e){}
  // 4) Chapitre d'entrée de la région où se trouve l'avatar (si pas encore vu)
+ // v12.2.0 : RETOUR au chapitre entier montré d'un bloc (annule la fragmentation
+ // du Lot C, v12.1.5). Raison : le chapitre d'un îlot fonctionne comme un
+ // briefing — il explique la situation et la mission AVANT d'agir. Le fragmenter
+ // faisait découvrir la mission après coup, parfois après avoir déjà conquis des
+ // zones : incohérent. La continuité pendant l'îlot est maintenant assurée par
+ // _ZONE_OUTRO (texte unique par zone, voir plus bas), pas par un découpage du
+ // chapitre lui-même.
  try{
   const avZone = MAP_ZONES.find(z => z.id === _getAvatarZone());
   if(!avZone){ _done(); return; }
@@ -2218,49 +2208,727 @@ function _maybeShowStory(afterCb){
   const chap = _STORY.chapters[reg.id];
   if(chap && !P.storySeen.includes(chap.id)){
    _markStorySeen(chap.id);
-   // v12.1.5 (Lot C, pt.5) : au lieu du chapitre entier d'un bloc, on ne montre
-   // ICI que sa première page (l'accroche). Les pages suivantes seront révélées
-   // une à une, au fil des zones conquises dans cet îlot (_maybeShowZoneFragment),
-   // pour que l'histoire vive tout au long de l'îlot et pas seulement à l'entrée.
-   if(Array.isArray(chap.pages) && chap.pages.length > 1){
-    _advanceStoryPage(reg.id); // page 0 consommée ici
-    const hook = { id:chap.id+'_p0', title:chap.title, pages:[chap.pages[0]], closeLabel:'En avant ! ⚔️' };
-    _showStoryModal(hook, _done);
-   } else {
-    _showStoryModal(chap, _done);
-   }
+   _showStoryModal(chap, _done);
    return;
   }
   _done();
  }catch(e){ _done(); }
 }
 
-// v12.1.5 (Lot C, pt.5) : fragment de carnet après CHAQUE zone conquise (pas
-// seulement au début/à la fin de l'îlot). Réutilise le texte déjà écrit du
-// chapitre de la région, distribué progressivement au fil des zones plutôt que
-// montré d'un bloc à l'entrée — garantie de cohérence parfaite avec le reste
-// de l'histoire, puisque c'est exactement le même texte, simplement étalé.
-function _maybeShowZoneFragment(zone, afterCb){
+// ════════════════════════════════════════════════════════════════════════
+// v12.2.0 (remplace le Lot C fragmenté) : un texte UNIQUE et écrit à la main
+// par zone conquise (172 zones, toutes aventures confondues), plutôt qu'un
+// fragment générique ou un extrait du chapitre. Chaque texte est cohérent
+// avec le lieu, l'histoire en cours et l'étape de la progression — jamais un
+// indice sur la mission (réservé au chapitre d'entrée, cf. ADR-49).
+// ════════════════════════════════════════════════════════════════════════
+
+const _ZONE_OUTRO = {
+ "plaine": {
+  "emoji": "🌾",
+  "text": "Le berger que tu as aidé plus tôt te fait un signe de la main : « Grâce à toi, je n'ai plus perdu un seul mouton ! »"
+ },
+ "village": {
+  "emoji": "🏡",
+  "text": "Lumo virevolte au-dessus du village : « Regarde comme les maisons sont bien numérotées, maintenant ! »"
+ },
+ "prairie": {
+  "emoji": "🌻",
+  "text": "Les tournesols se sont enfin tous tournés dans la même direction. Un petit vent chaud te salue en passant."
+ },
+ "bonbons": {
+  "emoji": "🍭",
+  "text": "Le Donut Maléfique s'effondre en mille miettes sucrées. Au loin, tu devines déjà que {villain} a suivi chacun de tes pas."
+ },
+ "foret": {
+  "emoji": "🌲",
+  "text": "Lumo se pose sur ton épaule, radieuse : « J'ai un vague souvenir de cette forêt... je crois que je m'y sens chez moi. »"
+ },
+ "champignons": {
+  "emoji": "🍄",
+  "text": "La famille de hérissons dont tu as recompté les épines te salue depuis leur terrier, tout sourire."
+ },
+ "trolls": {
+  "emoji": "⛺",
+  "text": "Un rire glacial résonne entre les arbres, plus proche que jamais. {villain} sait désormais qu'un héros le défie."
+ },
+ "plage": {
+  "emoji": "🏖️",
+  "text": "Le vieux crabe agite fièrement ses pinces : ses coquillages sont enfin rangés du plus petit au plus grand."
+ },
+ "desert": {
+  "emoji": "🏜️",
+  "text": "Le marchand de tapis recompte son or sans se tromper, pour la première fois depuis l'arrivée du brouillard. Il te salue d'un grand sourire."
+ },
+ "plaines_venteuses": {
+  "emoji": "🌪️",
+  "text": "Lumo tournoie, un peu essoufflée : « Le Sergent Virgule a filé se plaindre à {villain}. Je crois qu'on l'inquiète, tu sais. »"
+ },
+ "temple": {
+  "emoji": "🏛️",
+  "text": "Les hiéroglyphes du Temple Antique s'illuminent doucement derrière toi, comme s'ils se souvenaient enfin de leur ordre."
+ },
+ "profondeurs": {
+  "emoji": "🌊",
+  "text": "Dans les profondeurs, un ancien chant marin reprend son cours, libéré du silence qui l'étouffait."
+ },
+ "glace": {
+  "emoji": "🏔️",
+  "text": "La glace craque doucement derrière toi, comme si le froid lui-même relâchait son emprise, ne serait-ce qu'un instant."
+ },
+ "marais": {
+  "emoji": "🕷️",
+  "text": "Lumo frissonne : « Je sens {villain} de plus en plus nerveux. On doit vraiment le déranger, maintenant. »"
+ },
+ "forteresse": {
+  "emoji": "🏰",
+  "text": "Les bannières de la Forteresse Médiévale, autrefois en lambeaux, flottent de nouveau fièrement dans le vent."
+ },
+ "sakura": {
+  "emoji": "🌸",
+  "text": "Un pétale de cerisier se pose sur ta main. Même le silencieux Mont Sakura semble te remercier à sa façon."
+ },
+ "nocturne": {
+  "emoji": "🌙",
+  "text": "La nuit du Royaume Nocturne paraît un peu moins épaisse qu'à ton arrivée. Quelque chose a changé, tu le sens."
+ },
+ "volcan": {
+  "emoji": "🌋",
+  "text": "La lave du Volcan Maudit ralentit sa course, presque apaisée. Lumo souffle : « On approche du bout, {hero}. »"
+ },
+ "espace": {
+  "emoji": "🌌",
+  "text": "Loin dans la Galaxie Infinie, une étoile que tu croyais éteinte scintille de nouveau, timidement."
+ },
+ "cimes": {
+  "emoji": "⛰️",
+  "text": "Le vent des Cimes Vertigineuses porte un murmure : quelque part, {villain} vient d'apprendre ta dernière victoire."
+ },
+ "mecanique": {
+  "emoji": "⚙️",
+  "text": "Les rouages de la Cité Mécanique, longtemps grippés, se remettent à tourner avec un bel ensemble."
+ },
+ "ile": {
+  "emoji": "🏝️",
+  "text": "Le Capitaine Fantôme rend les armes en silence. Lumo se blottit contre toi : « Il ne reste presque plus rien entre toi et {villain}. »"
+ },
+ "primfr_plaine": {
+  "emoji": "🌾",
+  "text": "Zoé referme son carnet, satisfaite : « Les Faubourgs ont retrouvé leurs mots. On avance bien. »"
+ },
+ "primfr_village": {
+  "emoji": "🏡",
+  "text": "Malo mime une pancarte bien orthographiée et éclate de rire : « La Place des Lettres, propre comme un sou neuf ! »"
+ },
+ "primfr_prairie": {
+  "emoji": "🌻",
+  "text": "Les voyelles de l'Allée retrouvent leur chant clair. Zoé hoche la tête : « Ça sonne juste, maintenant. »"
+ },
+ "primfr_bonbons": {
+  "emoji": "🍭",
+  "text": "Le Marché aux Syllabes reprend vie dans un joyeux brouhaha de mots retrouvés. {villain} n'a pas dû apprécier."
+ },
+ "primfr_foret": {
+  "emoji": "🌲",
+  "text": "« Deux autres élèves de l'Académie s'entraînent avec moi ici, » te rappelle Zoé, un sourire discret aux lèvres."
+ },
+ "primfr_champignons": {
+  "emoji": "🍄",
+  "text": "Malo bafouille exprès une blague dans le Passage des Conteurs, juste pour te voir sourire."
+ },
+ "primfr_trolls": {
+  "emoji": "⛺",
+  "text": "Un rire glacial traverse l'Impasse des Syllabes. {villain} sait désormais qu'un élève de l'Académie le défie."
+ },
+ "primfr_plage": {
+  "emoji": "🏖️",
+  "text": "Les Quais de la Lecture résonnent enfin de vraies phrases, portées par le vent du large."
+ },
+ "primfr_desert": {
+  "emoji": "🏜️",
+  "text": "Les Halles aux Mots reprennent leur agitation joyeuse, chaque étal retrouvant son étiquette exacte."
+ },
+ "primfr_plaines_venteuses": {
+  "emoji": "🌪️",
+  "text": "Zoé tape du pied, presque satisfaite : « Le Conjurateur n'aime pas qu'on lui résiste. Tant mieux. »"
+ },
+ "primfr_temple": {
+  "emoji": "🏛️",
+  "text": "La Grande Bibliothèque retrouve peu à peu son silence studieux, débarrassé de la confusion qui y régnait."
+ },
+ "primfr_profondeurs": {
+  "emoji": "🌊",
+  "text": "Dans les Souterrains du Sens, un écho longtemps étouffé se remet enfin à porter clairement les mots."
+ },
+ "primfr_glace": {
+  "emoji": "🏔️",
+  "text": "Le Quartier des Horloges retrouve un tic-tac régulier, comme si le temps lui-même respirait mieux."
+ },
+ "primfr_marais": {
+  "emoji": "🕷️",
+  "text": "Malo trébuche sur un imparfait mal placé, mais tu le rattrapes juste à temps. « Bien joué, » souffle-t-il."
+ },
+ "primfr_forteresse": {
+  "emoji": "🏰",
+  "text": "La Tour des Verbes se dresse à nouveau bien droite, chaque conjugaison remise à sa place."
+ },
+ "primfr_sakura": {
+  "emoji": "🌸",
+  "text": "Le Beffroi des Conjugaisons sonne enfin à l'heure. Zoé lève les yeux, presque émue par ce petit miracle."
+ },
+ "primfr_nocturne": {
+  "emoji": "🌙",
+  "text": "L'Observatoire du Temps s'éclaire d'une lumière plus stable. {villain} doit sentir que son emprise faiblit."
+ },
+ "primfr_volcan": {
+  "emoji": "🌋",
+  "text": "L'Imprimerie du Scribe Noir crache un dernier nuage de fautes, puis se tait enfin, vaincue."
+ },
+ "primfr_espace": {
+  "emoji": "🌌",
+  "text": "Les Toits de la Syntaxe s'alignent à nouveau, phrase après phrase, sous le regard fier de Zoé."
+ },
+ "primfr_cimes": {
+  "emoji": "⛰️",
+  "text": "Sur le Grand Pont des Mots, Malo souffle : « On dirait que {villain} commence enfin à s'inquiéter pour de bon. »"
+ },
+ "primfr_mecanique": {
+  "emoji": "⚙️",
+  "text": "L'Atelier des Phrases retrouve son ordre : sujet, verbe, complément, chacun bien à sa place."
+ },
+ "primfr_ile": {
+  "emoji": "🏝️",
+  "text": "La Citadelle de la Phrase se dresse, presque entièrement réparée. Zoé et Malo échangent un regard : la fin approche."
+ },
+ "mat_cp_1": {
+  "emoji": "🌱",
+  "text": "Le Pré Vert retrouve un peu de sa couleur. Iris scintille doucement, toute contente."
+ },
+ "mat_cp_2": {
+  "emoji": "🌼",
+  "text": "Les pâquerettes se redressent une à une. « On dirait qu'elles te disent merci ! » chuchote Iris."
+ },
+ "mat_cp_3": {
+  "emoji": "💧",
+  "text": "La Petite Mare est toute calme maintenant. Un petit poisson te fait un clin d'œil."
+ },
+ "mat_cp_4": {
+  "emoji": "🐾",
+  "text": "Sur le Sentier des Câlins, un petit animal vient frotter sa tête contre toi, tout content."
+ },
+ "mat_cp_5": {
+  "emoji": "🌈",
+  "text": "Un petit bout d'arc-en-ciel apparaît au-dessus de la Colline. Iris applaudit de ses petites ailes."
+ },
+ "mat_ce1_1": {
+  "emoji": "🍎",
+  "text": "Le Verger Sucré sent bon les fruits mûrs. Iris se pose sur une pomme et sourit."
+ },
+ "mat_ce1_2": {
+  "emoji": "🍓",
+  "text": "Les fraises du buisson brillent joliment au soleil. « Bravo, {hero} ! » couine Iris."
+ },
+ "mat_ce1_3": {
+  "emoji": "🍯",
+  "text": "Le Rucher Doré bourdonne doucement, tout paisible. Les abeilles semblent te remercier."
+ },
+ "mat_ce1_4": {
+  "emoji": "🌰",
+  "text": "Les petits écureuils de l'Allée des Noisettes retrouvent le sourire, blottis les uns contre les autres."
+ },
+ "mat_ce1_5": {
+  "emoji": "🌸",
+  "text": "Le Jardin Fleuri s'ouvre tout doucement. Iris tournoie de joie autour de toi."
+ },
+ "mat_ce2_1": {
+  "emoji": "🌿",
+  "text": "La Clairière Mousse devient toute douce sous tes pas. Iris se love contre ton épaule."
+ },
+ "mat_ce2_2": {
+  "emoji": "🍄",
+  "text": "Les petits champignons du bois se redressent, comme s'ils te faisaient un petit signe."
+ },
+ "mat_ce2_3": {
+  "emoji": "🌳",
+  "text": "Le Vieux Chêne semble sourire, ses feuilles bruissant doucement au-dessus de toi."
+ },
+ "mat_ce2_4": {
+  "emoji": "💧",
+  "text": "Le Ruisseau Frais chantonne à nouveau, tout joyeux. Iris y trempe le bout des ailes."
+ },
+ "mat_ce2_5": {
+  "emoji": "✨",
+  "text": "De petites étoiles scintillent dans le Sous-Bois. « C'est presque magique, » murmure Iris."
+ },
+ "mat_cm1_1": {
+  "emoji": "🏖️",
+  "text": "Le sable de la Plage des Palmiers est tout chaud et tout doux sous tes pieds."
+ },
+ "mat_cm1_2": {
+  "emoji": "🌊",
+  "text": "Le Lagon Émeraude scintille de mille reflets. Iris s'y regarde, ravie."
+ },
+ "mat_cm1_3": {
+  "emoji": "🪸",
+  "text": "Les couleurs du Récif reviennent une à une. Un petit poisson te suit en riant."
+ },
+ "mat_cm1_4": {
+  "emoji": "🫧",
+  "text": "De jolies bulles s'échappent de la Grotte. Iris s'amuse à les faire éclater avec toi."
+ },
+ "mat_cm1_5": {
+  "emoji": "⭐",
+  "text": "Sur l'Île aux Tortues, une petite tortue te fait un signe avant de replonger doucement."
+ },
+ "mat_cm2_1": {
+  "emoji": "🌻",
+  "text": "Le Champ de Bleuets se redresse tout entier. Iris vole d'une fleur à l'autre, ravie."
+ },
+ "mat_cm2_2": {
+  "emoji": "🍏",
+  "text": "Le Grand Cerf-Volant s'envole enfin bien haut dans le ciel, porté par un vent tout doux."
+ },
+ "mat_cm2_3": {
+  "emoji": "🌾",
+  "text": "La Prairie du Ciel ondule tranquillement. Iris ferme les yeux, bercée par le vent."
+ },
+ "mat_cm2_4": {
+  "emoji": "🌾",
+  "text": "Le Moulin des Vents tourne à nouveau, tout content de retrouver son rythme."
+ },
+ "mat_cm2_5": {
+  "emoji": "🌞",
+  "text": "Depuis la Colline de l'Horizon, {villain} paraît un peu moins grognon. Iris sourit : « Presque, {hero}. »"
+ },
+ "matfr_cp_1": {
+  "emoji": "🌱",
+  "text": "La Clairière Silencieuse laisse échapper un tout petit bruit joyeux. Plume frémit de plaisir."
+ },
+ "matfr_cp_2": {
+  "emoji": "🌼",
+  "text": "Le Terrier du Lapin retrouve un petit bruit de pas pressés. « Il court partout, content ! » glousse Plume."
+ },
+ "matfr_cp_3": {
+  "emoji": "💧",
+  "text": "Les canards de la Mare se remettent à cancaner tout doucement, ravis de retrouver leur voix."
+ },
+ "matfr_cp_4": {
+  "emoji": "🐾",
+  "text": "Sur le Sentier des Bêtes, un petit cri joyeux résonne enfin. Plume voltige de bonheur."
+ },
+ "matfr_cp_5": {
+  "emoji": "🌈",
+  "text": "Le Grand Chêne Creux laisse échapper un petit chuchotement de feuilles, comme un souffle de vie."
+ },
+ "matfr_ce1_1": {
+  "emoji": "🍎",
+  "text": "Le Pré aux Mille Choses retrouve peu à peu ses petits noms. Plume voltige, ravie."
+ },
+ "matfr_ce1_2": {
+  "emoji": "🍓",
+  "text": "Le Panier Renversé se range tout doucement. « Chaque chose a son mot, » chuchote Plume."
+ },
+ "matfr_ce1_3": {
+  "emoji": "🍯",
+  "text": "Le Jardin des Noms fleurit à nouveau, chaque fleur retrouvant son petit nom."
+ },
+ "matfr_ce1_4": {
+  "emoji": "🌰",
+  "text": "L'Allée des Images s'anime, pleine de jolis mots retrouvés."
+ },
+ "matfr_ce1_5": {
+  "emoji": "🌸",
+  "text": "Le Sentier des Trouvailles scintille de petits mots tout neufs. Plume applaudit de ses ailes."
+ },
+ "matfr_ce2_1": {
+  "emoji": "🌿",
+  "text": "La Colline de l'Écho renvoie un petit son joyeux. Plume rit, un peu surprise."
+ },
+ "matfr_ce2_2": {
+  "emoji": "🍄",
+  "text": "Le Sentier qui Résonne chantonne tout doucement, comme s'il te remerciait."
+ },
+ "matfr_ce2_3": {
+  "emoji": "🌳",
+  "text": "Les Trois Sommets renvoient un petit écho tout content. Plume tend l'oreille, émerveillée."
+ },
+ "matfr_ce2_4": {
+  "emoji": "💧",
+  "text": "La Vallée des Tambours bat un joli petit rythme, tout léger."
+ },
+ "matfr_ce2_5": {
+  "emoji": "✨",
+  "text": "Le Pic des Refrains fredonne une petite mélodie toute neuve."
+ },
+ "matfr_cm1_1": {
+  "emoji": "🏖️",
+  "text": "La Rive aux Rimes clapote doucement, comme si elle chantonnait pour toi."
+ },
+ "matfr_cm1_2": {
+  "emoji": "🌊",
+  "text": "L'Îlot des Reflets scintille, plein de petits mots qui dansent à la surface de l'eau."
+ },
+ "matfr_cm1_3": {
+  "emoji": "🪸",
+  "text": "Le Ponton Chantant vibre d'une jolie petite musique. Plume tape du bout des ailes."
+ },
+ "matfr_cm1_4": {
+  "emoji": "🫧",
+  "text": "La Crique des Échos répète tes mots avec un petit rire cristallin."
+ },
+ "matfr_cm1_5": {
+  "emoji": "⭐",
+  "text": "Le Miroir d'Eau reflète ton sourire, tout paisible."
+ },
+ "matfr_cm2_1": {
+  "emoji": "🌻",
+  "text": "L'Entrée Murmurante laisse passer un petit souffle de mots retrouvés."
+ },
+ "matfr_cm2_2": {
+  "emoji": "🍏",
+  "text": "La Galerie des Sons résonne d'un joli petit écho tout neuf."
+ },
+ "matfr_cm2_3": {
+  "emoji": "🌾",
+  "text": "La Source Chuchotante murmure doucement, comme pour te remercier."
+ },
+ "matfr_cm2_4": {
+  "emoji": "🌾",
+  "text": "Le Couloir Bleu laisse filtrer un petit son tout léger, presque une berceuse."
+ },
+ "matfr_cm2_5": {
+  "emoji": "🌞",
+  "text": "Dans la Chambre des Murmures, {villain} semble un peu moins silencieux. Plume sourit : « Presque, {hero}. »"
+ },
+ "col_cp_1": {
+  "emoji": "⚓",
+  "text": "Le Port des Décimales retrouve son activité. Elara, appuyée contre un mât : « Pas mal. Pour un début. »"
+ },
+ "col_cp_2": {
+  "emoji": "⚖️",
+  "text": "Les marchands du quai recomptent enfin juste. « Ils te doivent une fière chandelle, » lâche Elara, presque impressionnée."
+ },
+ "col_cp_3": {
+  "emoji": "🗼",
+  "text": "Le Phare Brisé se rallume, faiblement. Elara plisse les yeux : « Ça devrait suffire à tenir {villain} à distance. Pour l'instant. »"
+ },
+ "col_cp_4": {
+  "emoji": "🪸",
+  "text": "Le Récif Trompeur perd de sa dangerosité. « Un piège de moins, » note Elara, presque satisfaite."
+ },
+ "col_cp_5": {
+  "emoji": "🌀",
+  "text": "L'Hydre des Profondeurs sombre enfin. Elara croise les bras : « {villain} va forcément l'apprendre. Tant pis pour lui. »"
+ },
+ "col_ce1_1": {
+  "emoji": "🍰",
+  "text": "La Reine des Parts rend les armes. « Chaque part à sa juste place, » commente Elara. « J'aime ça. »"
+ },
+ "col_ce1_2": {
+  "emoji": "🌳",
+  "text": "Le Bois des Numérateurs retrouve son calme. Elara effleure un tronc : « Ce bois se souvient de toi, maintenant. »"
+ },
+ "col_ce1_3": {
+  "emoji": "➗",
+  "text": "Le Sentier Partagé se répartit enfin équitablement. « Simple, net, précis, » approuve Elara."
+ },
+ "col_ce1_4": {
+  "emoji": "🕳️",
+  "text": "La Grotte aux Échos cesse enfin de répéter les mêmes menaces. Elara écoute : « Silence radio. Bon signe. »"
+ },
+ "col_ce1_5": {
+  "emoji": "💚",
+  "text": "Le Dragon des Fractions s'effondre. Elara pose une main sur ton épaule, brièvement : « Bien joué. Vraiment. »"
+ },
+ "col_ce2_1": {
+  "emoji": "🌡️",
+  "text": "Le froid du Plateau des Relatifs se fait moins mordant. « Même le climat te doit une faveur, » sourit Elara."
+ },
+ "col_ce2_2": {
+  "emoji": "➖",
+  "text": "La Faille Négative se referme lentement. Elara observe, pensive : « {villain} perd du terrain. Littéralement. »"
+ },
+ "col_ce2_3": {
+  "emoji": "➕",
+  "text": "La Crête des Signes retrouve son équilibre. « Chaque signe à sa place, comme il se doit, » note Elara."
+ },
+ "col_ce2_4": {
+  "emoji": "🧭",
+  "text": "Le Glacier Gradué cesse enfin de dériver. Elara ajuste sa boussole : « On garde le cap. »"
+ },
+ "col_ce2_5": {
+  "emoji": "⛰️",
+  "text": "Le Titan de l'Abîme recule dans l'ombre. « Un titan de moins, » souffle Elara, presque admirative."
+ },
+ "col_cm1_1": {
+  "emoji": "🏰",
+  "text": "La Citadelle Algébrique ouvre enfin ses portes. « Elle ne s'ouvrait plus pour personne, » lâche Elara, surprise."
+ },
+ "col_cm1_2": {
+  "emoji": "🔣",
+  "text": "La Salle des Variables se stabilise. Elara hausse un sourcil : « Tu commences vraiment à m'impressionner. »"
+ },
+ "col_cm1_3": {
+  "emoji": "⚒️",
+  "text": "La Forge des Identités refroidit enfin. « Plus rien à y cacher, » constate Elara en s'y appuyant."
+ },
+ "col_cm1_4": {
+  "emoji": "📚",
+  "text": "La Bibliothèque Secrète retrouve son ordre. Elara feuillette un vieux grimoire : « Intéressant. Très intéressant. »"
+ },
+ "col_cm1_5": {
+  "emoji": "🗝️",
+  "text": "Le Dragon Algébrique s'incline enfin. Elara garde le silence un instant, puis : « {villain} ne pourra plus t'ignorer. »"
+ },
+ "col_cm2_1": {
+  "emoji": "📐",
+  "text": "Les Gorges de Pythagore résonnent d'un écho plus calme. « Une belle démonstration, » admet Elara du bout des lèvres."
+ },
+ "col_cm2_2": {
+  "emoji": "🟥",
+  "text": "La Crête des Carrés se stabilise enfin. Elara trace un carré du bout du doigt, satisfaite."
+ },
+ "col_cm2_3": {
+  "emoji": "√",
+  "text": "Le Pont des Racines tient enfin bon. « Solide. Comme tes raisonnements, » note Elara."
+ },
+ "col_cm2_4": {
+  "emoji": "🌋",
+  "text": "La Caldeira Brûlante s'apaise peu à peu. Elara essuie son front : « Ça chauffait vraiment, ici. »"
+ },
+ "col_cm2_5": {
+  "emoji": "❤️‍🔥",
+  "text": "Le Dragon Pythagoricien s'effondre dans un dernier grondement. Elara, sérieuse : « Il ne reste plus que Léthéas, maintenant. »"
+ },
+ "col_titan_1": {
+  "emoji": "🌑",
+  "text": "Le Seuil de Cendres cède enfin sous tes pas. Elara resserre sa cape : « On approche du cœur de son repaire. »"
+ },
+ "col_titan_2": {
+  "emoji": "💫",
+  "text": "La Galerie des Étoiles Mortes s'éteint tout à fait. « Même {villain} doit sentir que quelque chose a changé, » murmure Elara."
+ },
+ "col_titan_3": {
+  "emoji": "👑",
+  "text": "Le silence retombe sur le Trône de l'Oubli. Elara, presque grave : « C'est le moment, {hero}. Il n'y a plus que lui. »"
+ },
+ "colfr_col_cp_1": {
+  "emoji": "⚓",
+  "text": "Le Fleuve des Langues coule plus librement. Solène chuchote : « On vient de réveiller quelque chose d'ancien. »"
+ },
+ "colfr_col_cp_2": {
+  "emoji": "⚖️",
+  "text": "Les Ruines Latines laissent entendre un murmure presque familier. « Elles se souviennent de leurs mots, » sourit Solène."
+ },
+ "colfr_col_cp_3": {
+  "emoji": "🗼",
+  "text": "Le Bois Gaulois retrouve une rumeur de voix libres. Solène te fait signe de continuer, discrètement."
+ },
+ "colfr_col_cp_4": {
+  "emoji": "🪸",
+  "text": "Le Cloître des Moines résonne d'un chant retrouvé. « Même les pierres semblent respirer mieux, » glisse Solène."
+ },
+ "colfr_col_cp_5": {
+  "emoji": "🌀",
+  "text": "La Source du Verbe jaillit de nouveau, claire. Solène te fait un clin d'œil : « Le Chancelier va détester ça. »"
+ },
+ "colfr_col_ce1_1": {
+  "emoji": "🍰",
+  "text": "La Caverne aux Mille Reflets scintille de mots retrouvés. « Chacun a sa juste place, » murmure Solène, admirative."
+ },
+ "colfr_col_ce1_2": {
+  "emoji": "🌳",
+  "text": "Le Verger des Familles porte à nouveau tous ses fruits de mots. Solène en cueille un, songeuse."
+ },
+ "colfr_col_ce1_3": {
+  "emoji": "➗",
+  "text": "Le Marché des Synonymes reprend vie, chaque mot trouvant enfin son double. « Belle récolte, » chuchote Solène."
+ },
+ "colfr_col_ce1_4": {
+  "emoji": "🕳️",
+  "text": "La Galerie des Registres retrouve son ordre. « On sait enfin qui parle à qui, ici, » note Solène."
+ },
+ "colfr_col_ce1_5": {
+  "emoji": "💚",
+  "text": "Le Prisme du Sens irradie de nouveau. Solène pose une main sur ton épaule, brièvement : « Bien vu, {hero}. »"
+ },
+ "colfr_col_ce2_1": {
+  "emoji": "🌡️",
+  "text": "L'Agora retrouve ses débats animés. « On dirait presque une vraie cité, » sourit Solène."
+ },
+ "colfr_col_ce2_2": {
+  "emoji": "➖",
+  "text": "La Tribune des Orateurs résonne à nouveau de vrais arguments. Solène chuchote : « Ça, c'est convaincant. »"
+ },
+ "colfr_col_ce2_3": {
+  "emoji": "➕",
+  "text": "L'Amphithéâtre s'anime d'un murmure d'assentiment. « Le public est conquis, » lâche Solène, amusée."
+ },
+ "colfr_col_ce2_4": {
+  "emoji": "🧭",
+  "text": "Le Forum du Débat retrouve son équilibre. « Chaque camp a enfin voix au chapitre, » observe Solène."
+ },
+ "colfr_col_ce2_5": {
+  "emoji": "⛰️",
+  "text": "La Flamme de Cicéron brûle plus vive que jamais. « Le Chancelier a dû sentir passer ce discours, » sourit Solène."
+ },
+ "colfr_col_cm1_1": {
+  "emoji": "🏰",
+  "text": "La Cité-Horlogerie retrouve son tic-tac régulier. « Chaque rouage à l'heure, » constate Solène, satisfaite."
+ },
+ "colfr_col_cm1_2": {
+  "emoji": "🔣",
+  "text": "Les Grands Engrenages du verbe s'emboîtent enfin sans grincer. Solène observe, fascinée."
+ },
+ "colfr_col_cm1_3": {
+  "emoji": "⚒️",
+  "text": "La Salle des Temps retrouve son fil. « Passé, présent, futur : tout est en ordre, » murmure Solène."
+ },
+ "colfr_col_cm1_4": {
+  "emoji": "📚",
+  "text": "Le Pont des Subordonnées tient enfin bon sous tes phrases. « Du solide, » approuve Solène."
+ },
+ "colfr_col_cm1_5": {
+  "emoji": "🗝️",
+  "text": "Le Cœur de la Machine bat à nouveau, régulier. Solène, grave : « {villain} va devoir compter avec toi, maintenant. »"
+ },
+ "colfr_col_cm2_1": {
+  "emoji": "📐",
+  "text": "Le Théâtre-Monde retrouve ses lumières. « Le rideau se relève, » sourit Solène, presque émue."
+ },
+ "colfr_col_cm2_2": {
+  "emoji": "🟥",
+  "text": "La Galerie des Masques révèle enfin ses vrais visages. Solène observe chacun, songeuse."
+ },
+ "colfr_col_cm2_3": {
+  "emoji": "√",
+  "text": "La Scène aux Mille Voix retrouve son harmonie. « Chaque voix compte, » chuchote Solène."
+ },
+ "colfr_col_cm2_4": {
+  "emoji": "🌋",
+  "text": "Le Cabinet des Miroirs cesse enfin de brouiller les reflets. « On y voit clair, maintenant, » note Solène."
+ },
+ "colfr_col_cm2_5": {
+  "emoji": "❤️‍🔥",
+  "text": "L'Étoile des Genres brille de tous ses feux. Solène, sérieuse : « Il ne reste plus qu'Ulrich Morne, {hero}. »"
+ },
+ "colfr_col_titan_1": {
+  "emoji": "🌑",
+  "text": "Le Palais de Cendre s'entrouvre devant toi. « On entre dans son antre, » souffle Solène, la voix tendue."
+ },
+ "colfr_col_titan_2": {
+  "emoji": "💫",
+  "text": "La Galerie des Mots Morts s'éteint tout à fait. « Même lui doit sentir que ses mots lui échappent, » murmure Solène."
+ },
+ "colfr_col_titan_3": {
+  "emoji": "👑",
+  "text": "Un silence pesant s'installe sur le Trône du Chancelier. Solène serre ton bras : « C'est le moment, {hero}. »"
+ },
+ "primhist_plaine": {
+  "emoji": "🌾",
+  "text": "Tu notes dans ton carnet : la Clairière du Foyer garde désormais la trace d'un feu bien maîtrisé."
+ },
+ "primhist_village": {
+  "emoji": "🏡",
+  "text": "Le Campement des Chasseurs semble presque vivant, comme si les temps anciens t'avaient laissé passer."
+ },
+ "primhist_prairie": {
+  "emoji": "🌻",
+  "text": "Sur la Plaine aux Mammouths, tu devines encore les traces d'un troupeau disparu depuis des millénaires."
+ },
+ "primhist_bonbons": {
+  "emoji": "🍭",
+  "text": "Dans la Grotte aux Peintures, les silhouettes ocres semblent presque bouger à la lueur de ta torche."
+ },
+ "primhist_foret": {
+  "emoji": "🌲",
+  "text": "Les Rives du Nil scintillent sous le soleil. Tu notes : la crue a encore fait son œuvre, fidèle au rendez-vous."
+ },
+ "primhist_champignons": {
+  "emoji": "🍄",
+  "text": "Le Chantier de Gizeh résonne du bruit des pierres qu'on taille. Une pyramide de plus prend forme, patiemment."
+ },
+ "primhist_trolls": {
+  "emoji": "⛺",
+  "text": "La Vallée des Tombeaux garde jalousement ses secrets. L'Horloger, lui, semble s'impatienter."
+ },
+ "primhist_plage": {
+  "emoji": "🏖️",
+  "text": "Le Port de Thèbes s'anime de marchands et de récits venus de loin. Ton carnet se remplit page après page."
+ },
+ "primhist_desert": {
+  "emoji": "🏜️",
+  "text": "La Voie Appienne s'étend, rectiligne, sous tes pas. « Toutes les routes mènent quelque part, » notes-tu, songeur."
+ },
+ "primhist_plaines_venteuses": {
+  "emoji": "🌪️",
+  "text": "Le Forum Romain bruisse de débats animés. L'Horloger semble suivre chacun de tes progrès, de loin."
+ },
+ "primhist_temple": {
+  "emoji": "🏛️",
+  "text": "Le Circus Maximus résonne encore des acclamations d'une foule depuis longtemps disparue."
+ },
+ "primhist_profondeurs": {
+  "emoji": "🌊",
+  "text": "Les Thermes de Caracalla gardent la chaleur d'un empire qui, un temps, semblait éternel."
+ },
+ "primhist_glace": {
+  "emoji": "🏔️",
+  "text": "Les Remparts d'Hiver tiennent encore bon, malgré le gel. Tu inscris une nouvelle date dans ton carnet."
+ },
+ "primhist_marais": {
+  "emoji": "🕷️",
+  "text": "Le Marécage du Fief cache bien des rumeurs. L'Horloger, dit-on, n'aime pas qu'on fouille trop près de son antre."
+ },
+ "primhist_forteresse": {
+  "emoji": "🏰",
+  "text": "Le Château Assiégé retrouve un semblant de calme. Les archers redescendent lentement des remparts."
+ },
+ "primhist_sakura": {
+  "emoji": "🌸",
+  "text": "La Foire Médiévale s'anime de couleurs et de musique, comme si le temps s'était arrêté pour un jour."
+ },
+ "primhist_nocturne": {
+  "emoji": "🌙",
+  "text": "La Veillée des Gardes s'achève enfin. Tu notes : même les nuits les plus longues ont une fin."
+ },
+ "primhist_volcan": {
+  "emoji": "🌋",
+  "text": "Les Forges de la Révolution crachent leur fumée noire. Une époque semble vaciller sous tes yeux."
+ },
+ "primhist_espace": {
+  "emoji": "🌌",
+  "text": "Le Ciel de 1889 s'illumine d'une tour de fer toute neuve. Tu la dessines, fasciné, dans ton carnet."
+ },
+ "primhist_cimes": {
+  "emoji": "⛰️",
+  "text": "Les Ateliers du Progrès bourdonnent d'inventions nouvelles. L'Horloger semble de plus en plus pressé."
+ },
+ "primhist_mecanique": {
+  "emoji": "⚙️",
+  "text": "La Gare à Vapeur souffle son premier grand cri. Le monde, autour de toi, change de vitesse."
+ },
+ "primhist_ile": {
+  "emoji": "🏝️",
+  "text": "Le Salon des Inventeurs bruisse d'idées nouvelles. Ton carnet est presque plein — la dernière page approche."
+ }
+};
+
+function _maybeShowZoneOutro(zone, afterCb){
  const _done = (typeof afterCb === 'function') ? afterCb : function(){};
  try{
   if(typeof P==='undefined' || !P || !zone){ _done(); return; }
   P.storySeen = P.storySeen || [];
-  const reg = (typeof _regionOfZone==='function') ? _regionOfZone(zone) : null;
-  if(!reg){ _done(); return; }
-  const chap = _STORY.chapters[reg.id];
-  if(!chap || !Array.isArray(chap.pages) || chap.pages.length < 2){ _done(); return; }
-  const idx = _nextStoryPage(reg.id);
-  // La toute dernière page reste réservée à la scène de victoire (Cristal),
-  // pour clore le chapitre en beauté plutôt que sur un fragment isolé.
-  if(idx <= 0 || idx >= chap.pages.length - 1){ _done(); return; }
-  const fragId = chap.id + '_p' + idx;
-  if(P.storySeen.includes(fragId)){ _done(); return; }
-  _markStorySeen(fragId);
-  _advanceStoryPage(reg.id);
-  const frag = { id:fragId, title:chap.title, pages:[chap.pages[idx]], closeLabel:'Continuer ›' };
-  _showStoryModal(frag, _done);
+  const entry = _ZONE_OUTRO[zone.id];
+  if(!entry){ _done(); return; }
+  const outroId = 'outro_' + zone.id;
+  if(P.storySeen.includes(outroId)){ _done(); return; }
+  _markStorySeen(outroId);
+  const page = { emoji: entry.emoji, text: (typeof _storyText==='function' ? _storyText(entry.text) : entry.text) };
+  _showStoryModal({ id:outroId, title:zone.label||'', pages:[page], closeLabel:'Continuer ›' }, _done);
  }catch(e){ _done(); }
 }
+
 
 // ═══════════════════════════════════════════════════════
 // v8.7.69 (O5) : JOURNAL DE QUÊTE — relire les chapitres de l'histoire.

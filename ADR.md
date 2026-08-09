@@ -348,4 +348,35 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-48 — Le système narratif automatique est générique par construction, y compris pour les futures Odyssées
+
+**Contexte** (14e conversation) : Cyril a demandé confirmation que le système d'affichage automatique (entrée d'îlot, fragments de carnet, rebondissement, victoire, questgiver) fonctionne bien sur les 7 aventures existantes ET s'appliquera automatiquement à toute future Odyssée, sans code supplémentaire.
+
+**Vérification effectuée** : inspection directe des données réelles (`_PRIM_STORY`, `_MAT_STORY`, `_MAT_STORY_FR`, `_PRIM_STORY_FR`, `_PRIM_STORY_HIST`, `_COL_STORY_FR`…) confirmant que `_maybeShowStory`/`_maybeShowZoneFragment`/`_maybeShowTwist`/`_pickQuestGiverLine` ne référencent jamais un nom d'aventure, de matière ou de niveau en dur — uniquement `_STORY`, `MAP_ZONES` et `_ARCH_REGIONS`, qui sont substitués dynamiquement par `07-map.js` selon `GM.adventure`.
+
+**Décision / règle pour l'avenir** : toute nouvelle Odyssée (nouvelle matière, nouveau niveau, ou refonte narrative) hérite AUTOMATIQUEMENT de tout le système construit en 14e conversation (entrée d'îlot automatique, carnet fragmenté, rebondissement mi-îlot, carte vivante, questgiver, ton adapté à la maternelle), à condition de respecter les conventions déjà en place :
+- une entrée dans `_ARCH_REGIONS_*` par région/îlot, avec un `id` stable ;
+- un chapitre dans `_STORY.chapters[regionId]` avec un tableau `pages` (idéalement autant de pages que de zones + 1, pour une répartition régulière — voir limite ci-dessous) ;
+- une scène dans `_STORY.victories[regionId]` pour chaque région non-finale ;
+- les zones de la région listées dans `MAP_ZONES` avec `region: regionId` (ou `levels` correspondants).
+
+**Limite connue** : si un chapitre a beaucoup plus de pages que de zones dans son îlot (ex. 11 pages pour 4 zones), les pages excédentaires s'accumulent et sont montrées d'un bloc avec la scène de victoire plutôt que d'être bien réparties. Pas de perte de contenu, mais moins fluide. Non corrigé à ce stade — à traiter si Cyril le demande.
+
+---
+
+## ADR-49 — Annulation de la fragmentation du chapitre (ADR-46) : le briefing d'îlot doit rester un bloc
+
+**Contexte** (14e conversation) : Cyril a fait remarquer, à juste titre, que le chapitre d'un îlot fonctionne comme un BRIEFING — il explique la situation et la mission (pourquoi le héros doit intervenir, ce qu'il doit y faire) AVANT que le joueur commence à agir. Or la fragmentation introduite par l'ADR-46 pouvait faire apparaître ces informations critiques (parfois dès la page 1, parfois bien plus loin) APRÈS que le joueur a déjà conquis une ou plusieurs zones, voire tout l'îlot. C'est une rupture de cohérence de fond, pas un détail cosmétique — quel que soit le découpage choisi, rien ne garantissait que l'information essentielle arrive avant l'action.
+
+**Décision** : **ADR-46 est annulée.** Le chapitre d'entrée d'un îlot est de nouveau montré ENTIER, d'un bloc, à l'entrée de l'îlot — exactement comme avant le Lot C. `_nextStoryPage()`/`_advanceStoryPage()` sont conservées dans le code (compatibilité avec d'anciens profils ayant un `P.storyPageIdx` en cours) mais ne sont plus appelées activement.
+
+**Remplacement** : la continuité narrative pendant l'îlot est désormais assurée par `_ZONE_OUTRO` — un texte **unique, écrit à la main, par zone** (172 zones au total, toutes les 7 aventures existantes), affiché après CHAQUE zone conquise via `_maybeShowZoneOutro()`. Contrairement à l'ancien fragment de chapitre, ce texte :
+- ne révèle jamais d'information sur la mission (réservée au chapitre d'entrée) ;
+- reste cohérent avec le lieu exact (nom de la zone, thème, boss vaincu) et le ton de l'aventure (fantaisie pour prim/mat, littéraire pour colfr, historique et sans compagnon pour primhist, etc.) ;
+- varie par catégorie (remerciement des habitants, encouragement du compagnon, inquiétude du méchant, changement du décor, doute du héros, teaser) selon la position de la zone dans l'îlot.
+
+**Conséquence pour l'avenir** : toute nouvelle région/îlot ajoutée à une aventure existante, ou toute nouvelle Odyssée, doit avoir une entrée `_ZONE_OUTRO[zoneId]` écrite à la main pour CHAQUE zone (pas de texte générique de repli). Le chapitre de région, lui, reste toujours un bloc unique montré à l'entrée — ne jamais le refragmenter sans repasser par cette même discussion de cohérence.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
