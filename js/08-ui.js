@@ -27,12 +27,22 @@ function renderLevelUnlocks(){
    `<div class="level-group-title">${g.icon} ${g.name}</div>` + g.levels.map(l=>row(l,g.icon)).join('')
  ).join('');
 }
+// Lot 2 (audit engagement, 13e conversation, pt.26) : le graphique lisait déjà
+// P.history toutes matières confondues (le libellé HTML annonçait à tort "maths
+// uniquement"). On ajoute un vrai filtre par matière pour rendre la comparaison
+// lisible (les échelles de score diffèrent d'une matière à l'autre).
+var _chartSubj='all';
+function setChartSubj(s){_chartSubj=s;renderChart();}
 function renderChart(){
- const h=(P.history||[]).slice(-7);const el=$('p-chart');
- if(!h.length){el.innerHTML='<span style="color:#bdc3c7;align-self:center;">Aucune partie encore !</span>';return;}
+ const bar='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">'+
+  [['all','🌈 Toutes']].concat((typeof IMPLEMENTED_SUBJECTS!=='undefined')?IMPLEMENTED_SUBJECTS:[['math','🔢 Maths'],['fr','📖 Français'],['hist','🏛️ Histoire']])
+  .map(a=>`<button onclick="setChartSubj('${a[0]}')" style="font-size:.8em;padding:9px 14px;border-radius:8px;background:${_chartSubj===a[0]?'#27ae60':'#2c3e50'};">${a[1]}</button>`).join('')+'</div>';
+ const filtered=(P.history||[]).filter(x=>_chartSubj==='all'||(x.subject||'math')===_chartSubj);
+ const h=filtered.slice(-7);const el=$('p-chart');
+ if(!h.length){el.innerHTML=bar+'<span style="color:#bdc3c7;align-self:center;">Aucune partie encore !</span>';return;}
  const mx=Math.max(...h.map(x=>x.score),1);
  const ic=s=>s==='fr'?'📖':s==='hist'?'🏛️':'🔢';
- el.innerHTML=h.map(x=>`<div class="chart-bar-wrap"><div class="chart-bar" style="height:${Math.round(x.score/mx*70)}px"></div><span class="chart-label">${ic(x.subject)} ${x.date}<br>${x.score}⭐</span></div>`).join('');
+ el.innerHTML=bar+h.map(x=>`<div class="chart-bar-wrap"><div class="chart-bar" style="height:${Math.round(x.score/mx*70)}px"></div><span class="chart-label">${ic(x.subject)} ${x.date}<br>${x.score}⭐</span></div>`).join('');
 }
 function setOpStatSubj(s){_dashSubj=s;if(_histSubj!=='all')_histSubj=s;_dashSyncAll();}
 function renderOpStats(){
@@ -84,11 +94,36 @@ function renderRecords(){
  const xp=P.xp||0,lvl=levelFromXP(xp);
  $('p-records').innerHTML=`<div class="lb-row"><span>🔮 Niveau XP</span><span class="lb-score">Niv.${lvl} (${xp} XP)</span></div><div class="lb-row"><span>🏅 Meilleur score</span><span class="lb-score">${best}</span></div><div class="lb-row"><span>🎮 Parties jouées</span><span>${h.length}</span></div><div class="lb-row"><span>⏱️ Temps de jeu</span><span>${P.sessionMinutes||0} min</span></div><div class="lb-row"><span>⭐ Trésor total</span><span class="lb-score">${P.stars||0}</span></div><div class="lb-row"><span>🗺️ Boss battus</span><span>${(P.mapBossBeaten||[]).length}/${MAP_ZONES.length}</span></div>`;
 }
+// Lot 2 (audit engagement, 13e conversation, pt.5) : vue alternative "toi vs
+// toi-même" à côté du classement familial — protège l'estime de soi de l'enfant
+// structurellement le plus faible du classement, sans retirer le classement
+// existant (apprécié par ailleurs).
+var _lbView='family';
+function setLbView(v){_lbView=v;renderLB();}
 function renderLB(){
+ const bar='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">'
+  +`<button onclick="setLbView('family')" style="font-size:.8em;padding:9px 14px;border-radius:8px;background:${_lbView==='family'?'#27ae60':'#2c3e50'};">🏆 Classement</button>`
+  +`<button onclick="setLbView('self')" style="font-size:.8em;padding:9px 14px;border-radius:8px;background:${_lbView==='self'?'#27ae60':'#2c3e50'};">📈 Ma progression</button>`
+  +'</div>';
+ if(_lbView==='self'){
+  const h=P.history||[];
+  const last5=h.slice(-5),prev5=h.slice(-10,-5);
+  const avg=arr=>arr.length?Math.round(arr.reduce((s,x)=>s+(x.score||0),0)/arr.length):0;
+  const a1=avg(last5),a0=avg(prev5);
+  let body;
+  if(!prev5.length){
+   body='<span style="color:#bdc3c7;">Encore quelques parties et on pourra comparer ta progression !</span>';
+  }else{
+   const diff=a1-a0,col=diff>0?'#2ecc71':diff<0?'#e67e22':'#bdc3c7',arrow=diff>0?'📈':diff<0?'📉':'➡️';
+   body=`<div class="lb-row"><span>${arrow} Moyenne des 5 dernières parties</span><span class="lb-score" style="color:${col};">${a1} pts (${diff>=0?'+':''}${diff} vs avant)</span></div>`;
+  }
+  $('p-lb').innerHTML=bar+body;
+  return;
+ }
  const all=[...getRoster()];const cu=localStorage.getItem('customPlayerName');if(cu&&!all.includes(cu))all.push(cu);
  const rows=[];all.forEach(n=>{try{const d=JSON.parse(localStorage.getItem('user_'+n)||'null');if(d&&((d.stars||0)>0||(d.history||[]).length))rows.push({name:n,stars:d.stars||0,xp:d.xp||0});}catch(e){}});
  rows.sort((a,b)=>b.xp-a.xp);const m=['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣'];
- $('p-lb').innerHTML=rows.length?rows.map((r,i)=>`<div class="lb-row"><span>${m[i]||'•'}</span><span class="lb-name">${esc(r.name)}${r.name===P.name?' (moi)':''}</span><span class="lb-score">Niv.${levelFromXP(r.xp)} · ${r.stars}⭐</span></div>`).join(''):'<span style="color:#bdc3c7;">Aucune donnée.</span>';
+ $('p-lb').innerHTML=bar+(rows.length?rows.map((r,i)=>`<div class="lb-row"><span>${m[i]||'•'}</span><span class="lb-name">${esc(r.name)}${r.name===P.name?' (moi)':''}</span><span class="lb-score">Niv.${levelFromXP(r.xp)} · ${r.stars}⭐</span></div>`).join(''):'<span style="color:#bdc3c7;">Aucune donnée.</span>');
 }
 
 // ═══════════════════════════════════════════════════════

@@ -21,8 +21,18 @@ function resetGS(){
   // pour proposer une pause après une série de mauvaises réponses, sans pénaliser
   // ni interrompre la partie automatiquement.
   consecFail:0,_pauseSuggested:false,
+  // Lot 2 (audit engagement, 13e conversation, pt.11) : opérateurs/catégories
+  // rencontrés dans CETTE partie, pour proposer une annonce de maîtrise en fin
+  // de partie (distincte du score ponctuel).
+  _opsPlayed:[],
   recentQ:[],bossTypeQ:{},errList:[]});
 }
+// Lot 2 (audit engagement, 13e conversation, pt.21) : compteur de session (pas
+// sauvegardé dans le profil, remis à zéro seulement au retour au vrai menu
+// d'accueil) — sert à afficher un bilan global positif à la fermeture, plutôt
+// que de laisser l'enfant sur le résultat de sa toute dernière partie (effet de
+// fin / peak-end rule). Ne couvre pas le mode Combat (hors périmètre du lot).
+let SESSION_STATS={games:0,wins:0,stars:0};
 // Enregistre une question dans l'historique et évite les répétitions
 function _trackQ(q){
  GS.recentQ=GS.recentQ||[];
@@ -528,6 +538,15 @@ function stab(name){
 function dashCollapseAll(tabId){ const t=$(tabId); if(!t)return; t.querySelectorAll('.panel').forEach(p=>{ p.style.display='none'; }); }
 function returnMenu(){
  gameActive=false;clearPendingTimers();clearMonsterSpeech();
+ // Lot 2 (audit engagement, 13e conversation, pt.21) : bilan de session positif
+ // si plusieurs parties ont été jouées, avant de repartir sur le résultat brut
+ // de la toute dernière. N'affiche rien pour une session d'une seule partie
+ // (déjà couvert par l'écran de fin) ni en mode Combat (SESSION_STATS non
+ // alimenté dans ce mode).
+ if(typeof SESSION_STATS!=='undefined' && SESSION_STATS.games>=2 && typeof toast==='function'){
+  toast(`✨ Cette session : ${SESSION_STATS.wins}/${SESSION_STATS.games} réussies · +${SESSION_STATS.stars} ⭐ au total !`, 4500);
+ }
+ if(typeof SESSION_STATS!=='undefined') SESSION_STATS={games:0,wins:0,stars:0};
  // v8.7.9 (O1) : annuler aussi les boucles requestAnimationFrame en cours
  if(typeof stopTimer==='function') stopTimer();
  if(typeof stopChrono==='function') stopChrono();

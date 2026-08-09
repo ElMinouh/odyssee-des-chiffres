@@ -755,6 +755,7 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);GS.consecFail=0;
   const pw=powers[P.name];if(pw?.dbl){pts*=2;pw.dbl=false;toast('⚡ Double !');}
   GS.score+=pts;
   const opK=q.opKey||'+';P.opStats[opK]=P.opStats[opK]||{ok:0,fail:0};P.opStats[opK].ok++;
+  if(Array.isArray(GS._opsPlayed) && !GS._opsPlayed.includes(opK)) GS._opsPlayed.push(opK);
   _trackSubjCatStat(GM.subject, q.opKey, true);
   if(typeof _progUpdate==="function") _progUpdate(GM.level, true);
   if(typeof _classStatUpdate==="function") _classStatUpdate(GM.subject||'math', GM.level, q.opKey, true);
@@ -846,6 +847,7 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);GS.consecFail=0;
  }else{
 GS.errInGame++;GS.combo=0;GS.opCombo=0;GS.lastOpKey=null;GS.consecFail=(GS.consecFail||0)+1;$('gc').classList.remove('combo-breaker');
   const opK=q.opKey||'+';P.opStats[opK]=P.opStats[opK]||{ok:0,fail:0};P.opStats[opK].fail++;
+  if(Array.isArray(GS._opsPlayed) && !GS._opsPlayed.includes(opK)) GS._opsPlayed.push(opK);
   _trackSubjCatStat(GM.subject, q.opKey, false);
   if(typeof _progUpdate==="function") _progUpdate(GM.level, false);
   if(typeof _classStatUpdate==="function") _classStatUpdate(GM.subject||'math', GM.level, q.opKey, false);
@@ -1132,6 +1134,41 @@ function renderEndStars(n){
  $('end-stars-visual').innerHTML=['0','1','2'].map(i=>`<span id="es${i}" style="${+i<n?'':'opacity:.3'}">${+i<n?'⭐':'☆'}</span>`).join('');
  for(let i=0;i<n;i++)setTimeout(()=>{const s=$('es'+i);if(s){s.classList.add('star-earned');beep(523+i*150,'sine',.2,.12);}},i*350+200);
 }
+// Lot 2 (audit engagement, 13e conversation, pt.11) : indicateur de maîtrise
+// stable, distinct du score d'une seule partie — s'appuie sur les stats déjà
+// suivies (P.opStats / P.opStatsFr / P.opStatsHist), simplement jamais
+// restituées à l'enfant jusqu'ici. Une notion n'est annoncée qu'une seule fois
+// (P.masteryAnnounced) pour ne pas répéter le même message à chaque partie.
+function _checkMasteryAnnouncements(){
+ try{
+  const subj=(typeof GM!=='undefined' && GM.subject)||'math';
+  let statsObj,names,keysPlayed;
+  if(subj==='math'){
+   statsObj=P.opStats;
+   names={'+':'Addition','-':'Soustraction','x':'Multiplication','/':'Division','geo':'Géométrie'};
+   keysPlayed=[...new Set(GS._opsPlayed||[])];
+  }else{
+   const cfg=(typeof _SUBJ_CAT_STATS!=='undefined')?_SUBJ_CAT_STATS[subj]:null; if(!cfg) return [];
+   const catOf=globalThis[cfg.catOfFnName]; if(typeof catOf!=='function') return [];
+   statsObj=P[cfg.statsProp]||{};
+   names = subj==='fr'
+    ? {conj:'Conjugaison',orth:'Orthographe',gram:'Grammaire',vocab:'Vocabulaire'}
+    : {frise:'Frises & repères',personnages:'Personnages',evenements:'Événements',civilisation:'Vie & civilisation',temps:'Le temps qui passe',repere:'Repérage visuel'};
+   keysPlayed=[...new Set((GS._opsPlayed||[]).map(k=>catOf(k)).filter(Boolean))];
+  }
+  if(!statsObj) return [];
+  P.masteryAnnounced=P.masteryAnnounced||{};
+  const out=[];
+  keysPlayed.forEach(k=>{
+   const annKey=subj+'|'+k;
+   if(P.masteryAnnounced[annKey]) return;
+   const s=statsObj[k]; if(!s) return;
+   const t=(s.ok||0)+(s.fail||0);
+   if(t>=15 && (s.ok/t)>=0.85){ P.masteryAnnounced[annKey]=true; out.push(names[k]||k); }
+  });
+  return out;
+ }catch(e){ return []; }
+}
 function endGame(won){
  gameActive=false;clearPendingTimers();
  stopTimer();stopChrono();
@@ -1179,6 +1216,13 @@ function endGame(won){
  // éviter la frustration). Math.round pour garder des entiers.
  const _starsGain = Math.round(GS.score * 1.5);
  P.stars=(P.stars||0)+_starsGain;
+ // Lot 2 (audit engagement, 13e conversation, pt.21) : suivi de session pour le
+ // bilan de fermeture — hors mode Combat (compétitif, hors périmètre du lot).
+ if(GM.mode2!=='combat' && typeof SESSION_STATS!=='undefined'){
+  SESSION_STATS.games=(SESSION_STATS.games||0)+1;
+  if(won) SESSION_STATS.wins=(SESSION_STATS.wins||0)+1;
+  SESSION_STATS.stars=(SESSION_STATS.stars||0)+_starsGain;
+ }
  // Chantier 2.1 : stats cumulatives pour les paliers
  P._totalStarsEarned=(P._totalStarsEarned||0)+_starsGain;
  P._bestCombo=Math.max(P._bestCombo||0, GS.maxCombo||0);
@@ -1371,6 +1415,12 @@ if(typeof checkMilestones==='function') checkMilestones();
  $('end-enc').innerText=won?String(msgs[ri(0,msgs.length-1)]).replace(/\{name\}/g,P.name||''):(_progressNote||'On retente ? Chaque partie aide à progresser 💪');
  renderEndStars(computeStars(GS.score,won));
  $('end-badges').innerHTML=newBadges.length?'<p style="color:#f1c40f;margin:3px 0;">🏅 '+newBadges.map(b=>b.e+' '+b.l).join(', ')+'</p>':'';
+ // Lot 2 (audit engagement, 13e conversation, pt.11) : annonce de maîtrise,
+ // indépendante du résultat won/lost de cette partie précise.
+ const _masteryNew = (GM.mode2!=='combat' && typeof _checkMasteryAnnouncements==='function') ? _checkMasteryAnnouncements() : [];
+ if(_masteryNew.length){
+  $('end-badges').innerHTML += '<p style="color:#2ecc71;margin:3px 0;">🎓 Notion maîtrisée : '+_masteryNew.join(', ')+' !</p>';
+ }
  _renderEndRecap(won);
  if(won)startConfetti();
  // v8.7.10 : NE PAS reset GM.mapZone ici. Le contexte doit être préservé
