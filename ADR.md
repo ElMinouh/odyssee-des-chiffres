@@ -326,4 +326,14 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-46 — Carnet fragmenté : le chapitre d'un îlot s'étale sur ses zones (pt.5)
+
+**Contexte** (14e conversation, Lot C engagement narratif) : le chapitre d'une région (10-14 pages) s'affichait entièrement d'un bloc à l'entrée de l'îlot, puis plus rien jusqu'à la scène de victoire — l'histoire ressemblait à un prétexte plaqué au début/à la fin plutôt qu'à un fil continu.
+
+**Décision** : le texte du chapitre n'est PAS réécrit. Il est simplement étalé : la page 0 s'affiche à l'entrée de l'îlot (`_maybeShowStory`, cas 4), les pages suivantes s'affichent une à une après chaque zone conquise (`_maybeShowZoneFragment`, appelée depuis le callback de `playZoneVictory` dans `07-game.js`), et la toute dernière page est systématiquement regroupée avec la scène de victoire du Cristal pour clore le chapitre en beauté. Un compteur persistant `P.storyPageIdx[regionId]` retient la prochaine page à montrer. Si un îlot a plus de pages que de zones intermédiaires, les pages non montrées s'accumulent et sont regroupées avec la victoire (aucun texte perdu). Le journal de quête (relecture manuelle) continue d'afficher le chapitre complet d'un bloc, inchangé — seul le déclenchement automatique en jeu est fragmenté.
+
+**Conséquence** : un chapitre à une seule page n'est jamais fragmenté (comportement inchangé). Toute future page ajoutée à un chapitre existant profite automatiquement du même étalement, sans code supplémentaire. Ne jamais faire avancer `P.storyPageIdx` en dehors de `_advanceStoryPage()`.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

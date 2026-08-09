@@ -1969,7 +1969,7 @@ function _showStoryModal(chapter, onDone){
     <div class="story-nav">
      ${page>0?`<button class="story-btn story-prev">‹</button>`:`<span class="story-spacer"></span>`}
      <div class="story-dots">${chapter.pages.map((_,i)=>`<span class="story-dot${i===page?' on':''}"></span>`).join('')}</div>
-     <button class="story-btn story-next">${last?'Commencer ! ⚔️':'Suivant ›'}</button>
+     <button class="story-btn story-next">${last?(chapter.closeLabel||'Commencer ! ⚔️'):'Suivant ›'}</button>
     </div>
     ${!last?`<button class="story-skip">Passer l'histoire</button>`:''}
    </div>`;
@@ -2050,6 +2050,21 @@ function _zoneReachable(p, beaten, starsTotal){
   return true;
  }catch(e){ return false; }
 }
+// v12.1.5 (Lot C, pt.5) : compteur de progression dans les pages du chapitre
+// d'une région, persistant par région. Permet d'étaler les pages déjà écrites
+// au fil des zones conquises, au lieu de tout montrer d'un bloc à l'entrée.
+function _nextStoryPage(regionId){
+ if(typeof P==='undefined' || !P) return 0;
+ P.storyPageIdx = P.storyPageIdx || {};
+ return P.storyPageIdx[regionId] || 0;
+}
+function _advanceStoryPage(regionId){
+ if(typeof P==='undefined' || !P) return;
+ P.storyPageIdx = P.storyPageIdx || {};
+ P.storyPageIdx[regionId] = (P.storyPageIdx[regionId] || 0) + 1;
+ if(typeof saveProfile==='function') saveProfile();
+}
+
 // Déclencheur principal : prologue, puis victoire de Cristal, puis épilogue, puis chapitre d'entrée.
 // v12.1.2 : accepte un callback optionnel `afterCb`, appelé une fois la (ou les)
 // page(s) d'histoire refermée(s) — ou immédiatement si rien de nouveau à montrer.
@@ -2074,7 +2089,25 @@ function _maybeShowStory(afterCb){
    const win = _STORY.victories && _STORY.victories[r.id];
    if(win && !P.storySeen.includes(win.id) && _regionConquered(r.id)){
     _markStorySeen(win.id);
-    _showStoryModal(win, _done);
+    // v12.1.5 (Lot C, pt.5) : si des pages du chapitre n'ont pas encore été
+    // montrées (îlot avec plus de pages que de zones intermédiaires, ou la
+    // toute dernière page — volontairement réservée à ce moment), on les
+    // regroupe avec la scène de victoire : rien du texte déjà écrit n'est
+    // perdu, seulement étalé différemment.
+    let combinedPages = win.pages;
+    try{
+     const chap = _STORY.chapters[r.id];
+     if(chap && Array.isArray(chap.pages) && chap.pages.length){
+      const idx = _nextStoryPage(r.id);
+      const leftover = chap.pages.slice(Math.max(idx, 0));
+      if(leftover.length){
+       combinedPages = [...leftover, ...win.pages];
+       P.storyPageIdx = P.storyPageIdx || {};
+       P.storyPageIdx[r.id] = chap.pages.length;
+      }
+     }
+    }catch(e){}
+    _showStoryModal({ id:win.id, title:win.title, pages:combinedPages }, _done);
     return;
    }
   }
@@ -2117,10 +2150,47 @@ function _maybeShowStory(afterCb){
   const chap = _STORY.chapters[reg.id];
   if(chap && !P.storySeen.includes(chap.id)){
    _markStorySeen(chap.id);
-   _showStoryModal(chap, _done);
+   // v12.1.5 (Lot C, pt.5) : au lieu du chapitre entier d'un bloc, on ne montre
+   // ICI que sa première page (l'accroche). Les pages suivantes seront révélées
+   // une à une, au fil des zones conquises dans cet îlot (_maybeShowZoneFragment),
+   // pour que l'histoire vive tout au long de l'îlot et pas seulement à l'entrée.
+   if(Array.isArray(chap.pages) && chap.pages.length > 1){
+    _advanceStoryPage(reg.id); // page 0 consommée ici
+    const hook = { id:chap.id+'_p0', title:chap.title, pages:[chap.pages[0]], closeLabel:'En avant ! ⚔️' };
+    _showStoryModal(hook, _done);
+   } else {
+    _showStoryModal(chap, _done);
+   }
    return;
   }
   _done();
+ }catch(e){ _done(); }
+}
+
+// v12.1.5 (Lot C, pt.5) : fragment de carnet après CHAQUE zone conquise (pas
+// seulement au début/à la fin de l'îlot). Réutilise le texte déjà écrit du
+// chapitre de la région, distribué progressivement au fil des zones plutôt que
+// montré d'un bloc à l'entrée — garantie de cohérence parfaite avec le reste
+// de l'histoire, puisque c'est exactement le même texte, simplement étalé.
+function _maybeShowZoneFragment(zone, afterCb){
+ const _done = (typeof afterCb === 'function') ? afterCb : function(){};
+ try{
+  if(typeof P==='undefined' || !P || !zone){ _done(); return; }
+  P.storySeen = P.storySeen || [];
+  const reg = (typeof _regionOfZone==='function') ? _regionOfZone(zone) : null;
+  if(!reg){ _done(); return; }
+  const chap = _STORY.chapters[reg.id];
+  if(!chap || !Array.isArray(chap.pages) || chap.pages.length < 2){ _done(); return; }
+  const idx = _nextStoryPage(reg.id);
+  // La toute dernière page reste réservée à la scène de victoire (Cristal),
+  // pour clore le chapitre en beauté plutôt que sur un fragment isolé.
+  if(idx <= 0 || idx >= chap.pages.length - 1){ _done(); return; }
+  const fragId = chap.id + '_p' + idx;
+  if(P.storySeen.includes(fragId)){ _done(); return; }
+  _markStorySeen(fragId);
+  _advanceStoryPage(reg.id);
+  const frag = { id:fragId, title:chap.title, pages:[chap.pages[idx]], closeLabel:'Continuer ›' };
+  _showStoryModal(frag, _done);
  }catch(e){ _done(); }
 }
 

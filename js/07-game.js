@@ -1377,20 +1377,30 @@ if(typeof checkMilestones==='function') checkMilestones();
    setTimeout(()=>{
     if(typeof playZoneVictory==='function'){
      try{startConfetti();}catch(e){}
-     // v8.7.30 : si l'îlot est entièrement conquis, enchaîne playZoneVictory → playIslandVictory
-     playZoneVictory(_zone, _conqueredRegionId ? () => {
+     // v12.1.5 (Lot C) : le callback de playZoneVictory se déclenche désormais
+     // TOUJOURS (plus seulement quand l'îlot est entièrement conquis), pour
+     // laisser la place au fragment de carnet de cette zone avant d'enchaîner,
+     // le cas échéant, sur la cinématique d'îlot conquis.
+     playZoneVictory(_zone, () => {
       try{
-       if(typeof startConfetti==='function') startConfetti();
-       // v12.1.2 : dès que le boss de l'îlot est vaincu (îlot entièrement conquis),
-       // le chapitre de victoire ("Cristal") s'affiche automatiquement à la fin
-       // de la cinématique — plus besoin de rouvrir la carte pour le découvrir.
-       if(typeof playIslandVictory==='function'){
-        playIslandVictory(_conqueredRegionId, ()=>{
-         if(typeof _maybeShowStory==='function') _maybeShowStory();
-        });
-       }
-      }catch(e){ console.warn('Island victory chain failed', e); }
-     } : undefined);
+       const _afterFragment = () => {
+        if(!_conqueredRegionId) return;
+        try{
+         if(typeof startConfetti==='function') startConfetti();
+         // v12.1.2 : dès que le boss de l'îlot est vaincu (îlot entièrement conquis),
+         // le chapitre de victoire ("Cristal") s'affiche automatiquement à la fin
+         // de la cinématique — plus besoin de rouvrir la carte pour le découvrir.
+         if(typeof playIslandVictory==='function'){
+          playIslandVictory(_conqueredRegionId, ()=>{
+           if(typeof _maybeShowStory==='function') _maybeShowStory();
+          });
+         }
+        }catch(e){ console.warn('Island victory chain failed', e); }
+       };
+       if(typeof _maybeShowZoneFragment==='function') _maybeShowZoneFragment(_zone, _afterFragment);
+       else _afterFragment();
+      }catch(e){ console.warn('Zone fragment chain failed', e); }
+     });
     } else {
      // Fallback ancien comportement si le module cinematics n'est pas chargé
      const trans=$('transition-screen');
