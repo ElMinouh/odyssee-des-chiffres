@@ -313,6 +313,17 @@ const MONSTER_DIALOGUES = {
   "On m'appelle ${name}. C'est le dernier nom que tu entendras.",
   "Avant moi, des armées ont marché sur ${zone}. Aucune n'a survécu.",
  ],
+ // v12.1.3 (Lot A, pt.3) : enjeu narratif du combat de boss — remplace l'objectif
+ // purement mécanique ("X questions à résoudre") par ce qui se joue réellement
+ // dans l'histoire si le héros gagne ou perd. Toujours affiché, boss uniquement.
+ stakes: [
+  "Si tu échoues, ${zone} restera plongée dans l'ombre à jamais.",
+  "Vaincs-moi, et les portes de ${zone} s'ouvriront enfin devant toi.",
+  "Ta réussite ici décidera du sort de tout ${zone}.",
+  "Tant que je me dresserai, personne ne pourra traverser ${zone} en paix.",
+  "Un seul de nous deux quittera ${zone} la tête haute.",
+  "L'issue de ce combat scellera l'avenir de ${zone}, pour longtemps.",
+ ],
 };
 
 // Fisher-Yates seedé par zoneId+kind : renvoie un pool mélangé de façon
@@ -331,6 +342,25 @@ function _pickDialogue(kind, zoneId, withinKindIdx){
  const shuffled = _shuffledDialogues(kind, zoneId || 'def');
  const i = Math.max(0, withinKindIdx || 0) % shuffled.length;
  return shuffled[i];
+}
+
+// v12.1.3 (Lot A, pt.9) : callback discret sur une performance réelle et
+// persistée du joueur, ajouté à la réplique d'intro d'un boss pour donner
+// l'impression que le monde "se souvient" de lui. Reste rare (35% de chance)
+// et silencieux si aucune donnée pertinente n'existe — jamais de callback
+// inventé ou approximatif.
+function _perfCallbackLine(){
+ try{
+  if(typeof P==='undefined' || !P) return '';
+  if(Math.random() > 0.35) return '';
+  const beaten = (P.mapBossBeaten||[]).length;
+  const candidates = [];
+  if((P.streak||0) >= 3) candidates.push(` Rien ne semble pouvoir t'arrêter depuis ${P.streak} jours.`);
+  if(beaten >= 3) candidates.push(` Déjà ${beaten} gardiens vaincus avant celui-ci...`);
+  if((P._bestCombo||0) >= 5) candidates.push(` On raconte que tes combos font trembler jusqu'ici.`);
+  if(!candidates.length) return '';
+  return candidates[Math.floor(Math.random()*candidates.length)];
+ }catch(e){ return ''; }
 }
 
 function startMapStep(zoneId, stepIdx){
@@ -376,7 +406,12 @@ function startMapStep(zoneId, stepIdx){
     return s.type !== 'boss' && s.type !== 'minibss';
    }).length - 1;
    const tpl = _pickDialogue(kind, zoneId, withinKindIdx);
-   return tpl.replace(/\$\{zone\}/g, zone.label).replace(/\$\{name\}/g, step.name || 'l\'Inconnu');
+   const base = tpl.replace(/\$\{zone\}/g, zone.label).replace(/\$\{name\}/g, step.name || 'l\'Inconnu');
+   if(!isBoss) return base;
+   // v12.1.3 (Lot A, pt.3/pt.9) : boss uniquement — enjeu narratif + callback de performance
+   const stakes = _pickDialogue('stakes', zoneId, 0).replace(/\$\{zone\}/g, zone.label).replace(/\$\{name\}/g, step.name || 'l\'Inconnu');
+   const perf = (typeof _perfCallbackLine==='function') ? _perfCallbackLine() : '';
+   return base + ' ' + stakes + perf;
   })(),
   anim: 'glow',
   col:  isBoss ? '#e74c3c' : (isMiniBoss ? '#e67e22' : '#3498db')
@@ -2301,7 +2336,9 @@ function startMapBoss(zoneId){
  applyTheme(zone.theme);
  const bossMonster={emoji:zone.boss,name:zone.bossName,title:`Gardien de : ${zone.label}`,
   // v8.7.28 : tirage diversifié (boss legacy entry point, 1 seul boss → withinKindIdx=0)
-  intro: _pickDialogue('boss', zoneId, 0).replace(/\$\{zone\}/g, zone.label).replace(/\$\{name\}/g, zone.bossName || 'l\'Inconnu'),
+  intro: _pickDialogue('boss', zoneId, 0).replace(/\$\{zone\}/g, zone.label).replace(/\$\{name\}/g, zone.bossName || 'l\'Inconnu')
+   + ' ' + _pickDialogue('stakes', zoneId, 0).replace(/\$\{zone\}/g, zone.label).replace(/\$\{name\}/g, zone.bossName || 'l\'Inconnu')
+   + (typeof _perfCallbackLine==='function' ? _perfCallbackLine() : ''),
   anim:'glow',col:'#e74c3c'};
  // Chantier 3.10 : cinématique d'entrée de zone, puis intro boss, puis combat
  const _startCombat = ()=>{

@@ -1176,6 +1176,15 @@ html[data-appearance="light"] .settings-icon:hover{
  opacity:.30;
  transition:opacity .8s;
 }
+/* Chantier B4.2 (v12.1.3) : le décor s'éclaircit progressivement à mesure que
+   le boss perd des HP — traduit visuellement l'avancée du combat dans l'histoire. */
+.zone-skin{transition:opacity .8s, filter 1.2s ease;}
+.zone-skin.zs-tier2{filter:brightness(1.12) saturate(1.08);opacity:.38;}
+.zone-skin.zs-tier3{filter:brightness(1.28) saturate(1.18);opacity:.48;}
+@media (max-width:620px){
+ .zone-skin.zs-tier2{opacity:.32;}
+ .zone-skin.zs-tier3{opacity:.4;}
+}
 .zs-particles{position:absolute;inset:0;}
 .zs-particle{
  position:absolute;

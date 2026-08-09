@@ -1015,6 +1015,8 @@ function updateMonsterHP(){
   $('mhp-val').innerText=GS.monsterHP;$('mhp-max').innerText=GS.monsterMaxHP;
   const pct=Math.max(0,GS.monsterHP/GS.monsterMaxHP*100);
   const bar=$('monster-hp-bar');bar.style.width=pct+'%';
+  // v12.1.3 (Lot A) : décor de zone qui s'éclaircit avec les HP du boss
+  if(GS.isBoss && typeof _updateZoneSkinBossProgress==='function') _updateZoneSkinBossProgress(pct);
   // v8.7.55 (O4.3) : en phase enragée la barre vire au rouge sombre menaçant,
   // sinon dégradé vert→jaune→rouge classique selon le niveau de vie.
   const enraged = !!(GS.isBoss && GS.bossEnraged);

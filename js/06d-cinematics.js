@@ -322,6 +322,17 @@ function stopZoneSkin(){
  }
 }
 
+// v12.1.3 (Lot A) : le décor de zone s'éclaircit par paliers à mesure que le
+// boss perd des HP — rend visible, dans le décor lui-même, que le combat
+// fait réellement avancer l'histoire (pas seulement une barre de vie).
+// Appelée depuis updateMonsterHP() (07-game.js), boss uniquement.
+function _updateZoneSkinBossProgress(pctHpRemaining){
+ if(!_zoneSkinEl) return;
+ _zoneSkinEl.classList.remove('zs-tier2','zs-tier3');
+ if(pctHpRemaining <= 33) _zoneSkinEl.classList.add('zs-tier3');
+ else if(pctHpRemaining <= 66) _zoneSkinEl.classList.add('zs-tier2');
+}
+
 /**
  * Sauvegarde la préférence d'ambiance dans localStorage (global, pas par profil
  * car c'est un confort visuel comme la musique).
