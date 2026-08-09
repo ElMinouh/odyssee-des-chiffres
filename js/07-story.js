@@ -2082,6 +2082,23 @@ function _twistZoneIdx(regionId, nZones){
  const frac = 0.33 + _archHash(regionId + '_twist', 17) * 0.33; // entre 33% et 66%
  return Math.min(nZones - 2, Math.max(1, Math.round(frac * nZones)));
 }
+// v12.1.8 : chaque page de rebondissement ne doit jamais réapparaître deux fois
+// dans la MÊME Odyssée (ex. Maths Primaire), tous îlots confondus — tirage sans
+// remise mémorisé par aventure dans le profil (P.twistLinesUsedByAdv), pour ne
+// pas mélanger la consommation entre Odyssées différentes (maths/français/
+// histoire × maternelle/primaire/collège), qui restent des histoires distinctes.
+function _pickTwistLine(){
+ if(typeof P==='undefined' || !P) return _TWIST_LINES[0];
+ const advKey = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
+ P.twistLinesUsedByAdv = P.twistLinesUsedByAdv || {};
+ P.twistLinesUsedByAdv[advKey] = Array.isArray(P.twistLinesUsedByAdv[advKey]) ? P.twistLinesUsedByAdv[advKey] : [];
+ const used = P.twistLinesUsedByAdv[advKey];
+ let avail = _TWIST_LINES.map((_,i)=>i).filter(i => !used.includes(i));
+ if(!avail.length){ P.twistLinesUsedByAdv[advKey] = []; avail = _TWIST_LINES.map((_,i)=>i); } // plus de régions que de lignes : on repuise
+ const idx = avail[Math.floor(Math.random()*avail.length)];
+ P.twistLinesUsedByAdv[advKey].push(idx);
+ return _TWIST_LINES[idx];
+}
 function _maybeShowTwist(zone, afterCb){
  const _done = (typeof afterCb === 'function') ? afterCb : function(){};
  try{
@@ -2095,7 +2112,7 @@ function _maybeShowTwist(zone, afterCb){
   const idx = zones.findIndex(z => z.id === zone.id);
   if(idx < 0 || idx !== _twistZoneIdx(reg.id, zones.length)){ _done(); return; }
   _markStorySeen(twistId);
-  const line = _TWIST_LINES[Math.floor(_archHash(reg.id + '_twistline', 19) * _TWIST_LINES.length)];
+  const line = _pickTwistLine();
   const page = { emoji:'⚡', text: (typeof _storyText==='function' ? _storyText(line) : line) };
   _showStoryModal({ id:twistId, title:'Rebondissement', pages:[page], closeLabel:'Continuer ›' }, _done);
  }catch(e){ _done(); }
