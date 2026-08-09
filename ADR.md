@@ -379,4 +379,28 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-50 — Moment charnière à mi-Odyssée : conseil + choix à poids narratif (pts 4 et 6, contenu validé)
+
+**Contexte** (14e conversation) : ajout de deux nouveaux points d'engagement narratif — un "conseil" qui fait le point avec le compagnon en citant la progression réelle du joueur (pt.6), et un choix à 2 options dont une phrase de l'épilogue varie en conséquence (pt.4). Emplacement voulu par Cyril : **entre 1/3 et 2/3 de l'Odyssée**, sur une région choisie pour sa cohérence avec le lieu et le scénario — jamais un calcul arithmétique brut, jamais un copier-coller de situation d'une aventure à l'autre.
+
+**Erreur initiale corrigée avant validation** : une première proposition plaquait un schéma "conseil de guerre contre le méchant" sur TOUTES les aventures, y compris la maternelle — alors qu'après relecture complète de `_MAT_STORY` et `_MAT_STORY_FR`, le méchant (Nuage Grognon / le Silence) n'apparaît JAMAIS avant la toute dernière région de ces deux histoires. Les régions intermédiaires n'ont aucune confrontation, juste "aider un petit ami à retrouver sa couleur/son mot". Leçon : **toujours relire le texte réel d'une histoire avant d'y greffer un nouveau système**, ne jamais supposer qu'une structure valable pour une aventure s'applique telle quelle à une autre.
+
+**Décision (contenu validé par Cyril, à coder)** :
+
+| Aventure | Région choisie | Nature du choix |
+|---|---|---|
+| Maths primaire | Royaumes Périlleux (cm1) | Pont fragile : traverser vite seul, ou consolider pour le groupe |
+| Français primaire | Les Halles du Vocabulaire (ce2) | Texte effacé : déchiffrer vite au risque de se tromper, ou vérifier chaque mot |
+| Maths maternelle | Les Bois Dorés (ce2, fin PS/début MS) | **Pas de méchant, pas d'enjeu** — juste un petit moment ludique avec le hibou |
+| Français maternelle | Les Collines qui Chantent (ce2, fin PS/début MS) | **Pas de méchant, pas d'enjeu** — petit moment ludique avec l'écho |
+| Maths collège | La Citadelle Algébrique (cm1) | Grimoire qui se désagrège : le recopier (temps perdu) ou le laisser (savoir perdu) |
+| Français collège | Livre III — L'Art de Convaincre (ce2) | Pamphlet contre le Chancelier : publier tout de suite (risqué) ou attendre |
+| Histoire primaire | Le Moyen Âge (cm1) | Choix stratégique (réparer les remparts vs partir en reconnaissance), pas moral — cohérent avec le contenu pédagogique réel |
+
+**Règle pour toute future Odyssée** : ce moment charnière doit être conçu APRÈS relecture complète de l'histoire concernée, jamais par analogie avec une autre aventure. Pour les histoires sans confrontation directe au méchant en milieu de parcours (comme la maternelle), le mécanisme reste présent (conseil + petit choix) mais SANS enjeu moral ni mention du méchant — un simple moment de reconnaissance des amis déjà aidés.
+
+**Statut technique à la clôture de cette conversation** : contenu validé, **pas encore codé**. Implémentation prévue : nouvel élément d'UI (2 boutons dans une page d'histoire) → maquette à valider avant tout code (règle de validation de maquette obligatoire), puis code du choix (mémorisation `P.majorChoice` par aventure) + du conseil (réutilise `_showStoryModal` existant, pas de nouvelle UI).
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
