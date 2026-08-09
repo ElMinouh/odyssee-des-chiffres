@@ -1836,29 +1836,55 @@ function resetProfile(playerName){
     renderResetZone();
   }, {danger:true, confirmLabel:'Réinitialiser'});
 }
-// v8.7.31 : reset spécifique à L'Odyssée (l'aventure mathématique sur la carte).
-// Ne touche PAS aux étoiles, figurines, XP, badges, skills, inventaire.
+// v8.7.31 : reset spécifique à L'Odyssée. Ne touche PAS aux étoiles, figurines,
+// XP, badges, skills, inventaire.
 // v8.7.32 : ajout du reset de zoneProgress (les étapes complétées par zone).
 // Sans ça, une zone restait affichée "5/5 étapes franchies" même après reset,
 // alors que mapBossBeaten était vide → la zone suivante restait verrouillée
 // (inaccessible) car la condition de débloquage utilise mapBossBeaten.
+// v12.2.2 : correctif complet suite à un signalement de Cyril — ce reset :
+//   1) touche en réalité les 7 aventures (mapBossBeaten est une liste UNIQUE
+//      partagée par toutes les matières/niveaux, pas seulement les maths) —
+//      le texte affiché mentait en ne parlant que de "l'aventure mathématique" ;
+//   2) NE remettait PAS à zéro P.storySeen : les chapitres/victoires/épilogues
+//      déjà vus restaient marqués comme lus, et les histoires bonus ("Livre")
+//      débloquées restaient accessibles alors que toute la progression de
+//      carte, elle, avait bien été effacée — incohérent ;
+//   3) ne touchait que l'ancien champ P.mapAvatarZone (compat prim uniquement),
+//      jamais P.mapAvatarZoneByAdv : l'avatar des 6 autres aventures restait
+//      positionné sur sa dernière zone jouée au lieu de repartir du début.
+// Après ce correctif, un reset remet TOUT le mode Odyssée à zéro, comme si le
+// joueur n'y avait jamais joué, sur les 7 aventures à la fois.
 function resetAdventure(playerName){
   if(!playerName) return;
-  const msg=`Réinitialiser uniquement L'Odyssée (l'aventure mathématique) pour ${playerName} ?\n\nToutes les zones de la carte seront à reconquérir, l'avatar repart de la Plaine des Débuts.\n\nLes étoiles, figurines, XP, badges, skills et inventaire sont CONSERVÉS.`;
+  const msg=`Réinitialiser TOUT le mode Odyssée pour ${playerName} ?\n\nCeci concerne les 7 aventures (maths, français, histoire × maternelle, primaire, collège) : toutes les zones seront à reconquérir, tous les avatars repartent du début, tous les chapitres/histoires de l'Odyssée seront à redécouvrir.\n\nLes étoiles, figurines, XP, badges, skills et inventaire sont CONSERVÉS.`;
   showConfirm(msg, ()=>{
     try{
       const raw = localStorage.getItem('user_'+playerName);
       if(!raw){ toast(`Aucun profil trouvé pour ${playerName}.`); return; }
       const data = JSON.parse(raw);
-      // Données carte qui matérialisent la progression
+      // Données carte qui matérialisent la progression (7 aventures)
       data.mapBossBeaten = [];
-      data.mapAvatarZone = 'plaine';
-      data.zoneProgress  = {};   // v8.7.32 : ré-initialisé à validateProfile au prochain load
+      data.mapAvatarZone = 'plaine';       // compat héritée (aventure 'prim')
+      data.mapAvatarZoneByAdv = {};        // v12.2.2 : position par aventure
+      data.zoneProgress  = {};             // ré-initialisé à validateProfile au prochain load
+      // v12.2.2 : chapitres/victoires/épilogues/livres bonus/fragments/rebondissements/
+      // moment charnière — sur les 7 aventures.
+      if(Array.isArray(data.storySeen) && typeof _allOdysseyStorySeenIds==='function'){
+       const clearIds = _allOdysseyStorySeenIds();
+       data.storySeen = data.storySeen.filter(id => !clearIds.has(id) && !/_p\d+$/.test(id));
+      } else {
+       data.storySeen = [];
+      }
+      data.storyPageIdx = {};
+      data.majorChoiceByAdv = {};
+      data.twistLinesUsedByAdv = {};
+      data._epilogueBonusCredited = [];
       if(data.levelWins){
         Object.keys(data.levelWins).forEach(k => { data.levelWins[k] = 0; });
       }
       localStorage.setItem('user_'+playerName, JSON.stringify(data));
-      toast(`🗺️ Aventure de ${playerName} réinitialisée !`);
+      toast(`🗺️ Mode Odyssée de ${playerName} entièrement réinitialisé !`);
       // Si c'est le joueur actif, recharger
       if(P && P.name === playerName){
         loadProfile(); updateHUD();

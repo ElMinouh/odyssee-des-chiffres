@@ -403,4 +403,17 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-51 — Correctif du reset Odyssée : remise à zéro réellement complète (signalement Cyril)
+
+**Contexte** (14e conversation) : Cyril a signalé 3 problèmes sur `resetAdventure()` (bouton "Reset Aventure", écran parent) :
+1. Le message affiché ne parlait que de "l'aventure mathématique", alors que `P.mapBossBeaten` est une liste UNIQUE partagée par les 7 aventures (maths/français/histoire × maternelle/primaire/collège) — le reset touchait donc déjà, en réalité, les 7 à la fois, mais le texte mentait sur la portée.
+2. `P.storySeen` (chapitres, victoires, épilogues déjà vus) n'était JAMAIS remis à zéro : après un reset, la progression de carte repartait de zéro mais les pages d'histoire déjà débloquées restaient marquées comme lues — incohérence directe avec le principe "comme si le joueur n'y avait jamais joué".
+3. Seul l'ancien champ `P.mapAvatarZone` (compat historique, aventure `prim` uniquement) était réinitialisé — `P.mapAvatarZoneByAdv` (position par aventure, introduite quand le multi-aventures a été généralisé) ne l'était jamais : l'avatar des 6 autres aventures restait sur sa dernière zone jouée.
+
+**Décision** : nouvelle fonction `_allOdysseyStorySeenIds()` (07-story.js) qui énumère, en lisant directement les 7 objets `_STORY` et les tableaux de zones/régions correspondants, la liste EXHAUSTIVE de tous les IDs `storySeen` possibles (intro, chapitres, victoires, épilogues, histoires bonus "Livre", fragments `outro_*` par zone, rebondissements `twist_*` par région, moment charnière `majormoment_*`). `resetAdventure()` filtre `P.storySeen` avec cette liste (+ un filet de sécurité regex `_p\d+$` pour d'anciens fragments de l'ADR-46, annulée) plutôt que de tenter une remise à zéro totale aveugle — pour ne jamais effacer par erreur un `storySeen` qui contiendrait, à l'avenir, une entrée sans rapport avec l'Odyssée. Reset désormais complet : `mapBossBeaten`, `mapAvatarZone` + `mapAvatarZoneByAdv`, `zoneProgress`, `storySeen` (filtré), `storyPageIdx`, `majorChoiceByAdv`, `twistLinesUsedByAdv`, `_epilogueBonusCredited`, `levelWins`. Message utilisateur corrigé pour annoncer honnêtement la portée réelle (7 aventures).
+
+**Conséquence pour l'avenir** : toute nouvelle donnée persistée liée à l'Odyssée (nouveau système narratif, nouvelle Odyssée ajoutée) DOIT être ajoutée soit à `_allOdysseyStorySeenIds()` (si c'est un id dans `storySeen`), soit explicitement à la liste des champs réinitialisés dans `resetAdventure()` (si c'est un champ à part, comme `majorChoiceByAdv`) — sous peine de reproduire exactement ce bug pour la prochaine fonctionnalité.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

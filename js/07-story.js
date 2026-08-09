@@ -2024,6 +2024,60 @@ function _markStorySeen(id){
   if(typeof saveProfile==='function') saveProfile();
  }
 }
+// v12.2.2 : liste exhaustive de tous les IDs "storySeen" possibles, toutes
+// aventures confondues (intro, chapitres, victoires, épilogue, histoire bonus,
+// fragments de carnet par zone, rebondissements, moment charnière). Utilisée
+// par resetAdventure() (10-figurines.js) pour garantir un reset complet et
+// honnête du mode Odyssée — sans ça, les chapitres déjà vus restaient marqués
+// comme lus après un reset, et les histoires bonus débloquées restaient
+// accessibles alors que toute la progression de carte était effacée.
+function _allOdysseyStorySeenIds(){
+ const ids = new Set();
+ const storyObjs = [
+  (typeof _PRIM_STORY!=='undefined'?_PRIM_STORY:null),
+  (typeof _MAT_STORY!=='undefined'?_MAT_STORY:null),
+  (typeof _MAT_STORY_FR!=='undefined'?_MAT_STORY_FR:null),
+  (typeof _PRIM_STORY_FR!=='undefined'?_PRIM_STORY_FR:null),
+  (typeof _PRIM_STORY_HIST!=='undefined'?_PRIM_STORY_HIST:null),
+  (typeof _COL_STORY!=='undefined'?_COL_STORY:null),
+  (typeof _COL_STORY_FR!=='undefined'?_COL_STORY_FR:null),
+ ];
+ storyObjs.forEach(st=>{
+  if(!st) return;
+  if(st.intro && st.intro.id) ids.add(st.intro.id);
+  if(st.chapters) Object.values(st.chapters).forEach(c=>{ if(c && c.id) ids.add(c.id); });
+  if(st.victories) Object.values(st.victories).forEach(v=>{ if(v && v.id) ids.add(v.id); });
+  if(st.epilogue && st.epilogue.id) ids.add(st.epilogue.id);
+  if(st.bookTale && st.bookTale.id) ids.add(st.bookTale.id);
+ });
+ const zoneArrays = [
+  (typeof PRIM_ZONES!=='undefined'?PRIM_ZONES:[]),
+  (typeof MAT_ZONES!=='undefined'?MAT_ZONES:[]),
+  (typeof MAT_ZONES_FR!=='undefined'?MAT_ZONES_FR:[]),
+  (typeof PRIM_ZONES_FR!=='undefined'?PRIM_ZONES_FR:[]),
+  (typeof PRIM_ZONES_HIST!=='undefined'?PRIM_ZONES_HIST:[]),
+  (typeof COL_ZONES!=='undefined'?COL_ZONES:[]),
+  (typeof COL_ZONES_FR!=='undefined'?COL_ZONES_FR:[]),
+ ];
+ zoneArrays.forEach(arr=>(arr||[]).forEach(z=>{ if(z && z.id) ids.add('outro_'+z.id); }));
+ const regionArrays = [
+  (typeof _PRIM_REGIONS!=='undefined'?_PRIM_REGIONS:[]),
+  (typeof _MAT_REGIONS!=='undefined'?_MAT_REGIONS:[]),
+  (typeof _MAT_REGIONS_FR!=='undefined'?_MAT_REGIONS_FR:[]),
+  (typeof _PRIM_REGIONS_FR!=='undefined'?_PRIM_REGIONS_FR:[]),
+  (typeof _PRIM_REGIONS_HIST!=='undefined'?_PRIM_REGIONS_HIST:[]),
+  (typeof _COL_REGIONS!=='undefined'?_COL_REGIONS:[]),
+  (typeof _COL_REGIONS_FR!=='undefined'?_COL_REGIONS_FR:[]),
+ ];
+ regionArrays.forEach(arr=>(arr||[]).forEach(r=>{ if(r && r.id) ids.add('twist_'+r.id); }));
+ if(typeof _MAJOR_MOMENT!=='undefined'){
+  Object.keys(_MAJOR_MOMENT).forEach(advKey=>{
+   ids.add('majormoment_'+advKey);
+   ids.add('majormoment_'+advKey+'_council');
+  });
+ }
+ return ids;
+}
 // Une région est « conquise » quand toutes ses zones sont battues (cohérent avec
 // la détection de conquête d'îlot du moteur). Extensible via _ARCH_REGIONS/MAP_ZONES.
 // v10.2.0 — Helpers génériques zone↔région (compatibles 3 aventures).
