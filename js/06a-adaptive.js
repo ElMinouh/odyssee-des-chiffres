@@ -1104,3 +1104,46 @@ function getVisualAid(subj, q){
   return _mathVisualAid(q); // maths et défaut
  }catch(e){ return null; }
 }
+
+// ═══════════════════════════════════════════════════════
+// CONTEXTUALISATION NARRATIVE DES CALCULS (Lot 9, audit pédagogique 12e conversation, pt.15)
+// ═══════════════════════════════════════════════════════
+// Habille certaines questions d'addition/soustraction/multiplication (mode normal
+// uniquement — pas nombres manquants, fractions, géométrie, ni collège abstrait) dans
+// une courte mise en situation à la 2e personne ("tu"), pour rapprocher calcul et
+// aventure sans dupliquer ni fouiller le contenu narratif existant (07-story.js).
+// Le calcul interne (a, b, opérateur, résultat, opKey) reste strictement identique —
+// zéro impact sur l'adaptativité (Lots précédents), l'interleaving (Lot 3) ou les
+// visuels (Lots 4/8), qui s'appuient tous sur q.a/q.b/q.opKey, jamais sur q.display.
+// Limite connue et acceptée : le replay automatique de la révision espacée (Lot 2)
+// reconstruit une question depuis un motif "12 - 5" reconnaissable dans q.display —
+// une question narrativisée ne matche pas ce motif et ne sera donc pas rejouée via ce
+// mécanisme précis (elle reste suivie/comptée normalement, juste pas replayable ainsi).
+const _NARRATIVE_ADD = [
+ (a,b)=>`Tu trouves ${a} cristaux, puis ${b} de plus. Combien en as-tu en tout ?`,
+ (a,b)=>`Tu ramasses ${a} pièces d'or le matin et ${b} le soir. Combien de pièces au total ?`,
+ (a,b)=>`Tu as ${a} parchemins, un allié t'en donne ${b} de plus. Combien en as-tu maintenant ?`,
+];
+const _NARRATIVE_SUB = [
+ (a,b)=>`Tu as ${a} potions, tu en utilises ${b}. Combien t'en reste-t-il ?`,
+ (a,b)=>`Tu possèdes ${a} cristaux et en donnes ${b} à un allié. Combien t'en reste-t-il ?`,
+ (a,b)=>`Le coffre contenait ${a} pièces, tu en dépenses ${b}. Combien en reste-t-il ?`,
+];
+const _NARRATIVE_MULT = [
+ (a,b)=>`Tu trouves ${b} coffres contenant chacun ${a} pièces. Combien de pièces au total ?`,
+ (a,b)=>`${a} équipes de ${b} aventuriers partent en expédition. Combien d'aventuriers en tout ?`,
+];
+const NARRATIVE_WRAP_PROBA = 0.20;
+/**
+ * Habille éventuellement une question maths normale dans une mise en situation.
+ * Ne modifie rien si le type/opérateur ne s'y prête pas, ou par tirage (80% du temps
+ * inchangé) — pour ne pas alourdir CHAQUE question et garder aussi du calcul "brut"
+ * (utile pour la fluence/récupération pure, cf. section Mémorisation de l'audit).
+ */
+function narrativeWrapMath(q){
+ if(!q || q.type!=='normal' || typeof q.a!=='number' || typeof q.b!=='number') return q;
+ const templates = q.opKey==='+' ? _NARRATIVE_ADD : q.opKey==='-' ? _NARRATIVE_SUB : q.opKey==='x' ? _NARRATIVE_MULT : null;
+ if(!templates || Math.random()>=NARRATIVE_WRAP_PROBA) return q;
+ const tpl = templates[ri(0,templates.length-1)];
+ return Object.assign({}, q, {display:tpl(q.a,q.b), _rawDisplay:q.display});
+}

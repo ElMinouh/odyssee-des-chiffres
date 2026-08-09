@@ -544,6 +544,12 @@ function generateQ(){
  let q=(_interleaveOk && typeof applyInterleaveGuard==='function')
   ? applyInterleaveGuard(_subjKey, ()=>fn(GS.isBoss))
   : fn(GS.isBoss);
+ // Lot 9 (audit pédagogique, pt.15) : contextualisation narrative — habille certaines
+ // questions maths de base dans une mise en situation d'aventure. N'affecte jamais les
+ // types collège/fractions/géométrie (ils n'ont pas de q.a/q.b bruts, cf. narrativeWrapMath).
+ if(_interleaveOk && _subjKey==='math' && typeof narrativeWrapMath==='function'){
+  q = narrativeWrapMath(q);
+ }
  if(GS.activeEvent?.effect==='next_golden'){GS.isGolden=true;GS.activeEvent=null;}
  return q;
 }

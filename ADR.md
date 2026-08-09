@@ -235,4 +235,18 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-37 — Contextualisation narrative des calculs (pt.15)
+
+**Contexte** (12e conversation, audit pédagogique, Lot 9, pt.15, dernier point de cette série) : les calculs restaient presque toujours décontextualisés ("7 × 8") malgré une couche narrative riche par ailleurs, offrant peu d'occasions de transfert contextualisé.
+
+**Décision** : `narrativeWrapMath()` (`06a-adaptive.js`) habille ~20% des questions d'addition/soustraction/multiplication de base (primaire, mode normal, hors boss/maternelle) dans une mise en situation à la 2e personne, en réutilisant uniquement des éléments génériques d'aventure (cristaux, pièces, parchemins, coffres) plutôt que de fouiller `07-story.js` en profondeur — portée volontairement scopée pour rester proportionnée. Le calcul interne (`a`, `b`, `res`, `opKey`) n'est jamais modifié, seul `q.display` change.
+
+**Limite connue et acceptée** : la révision espacée (ADR-30, Lot 2) reconstruit une question rejouée à partir d'un motif `"12 - 5"` reconnaissable dans `q.display`. Une question narrativisée ne matche pas ce motif — elle reste suivie et comptée normalement dans le journal d'erreurs, mais ne sera pas reconstruite pour un replay automatique via ce mécanisme précis. Corriger ce point demanderait de dupliquer le stockage (snapshot complet comme pour les QCM) pour un gain marginal ; non traité dans ce lot.
+
+**Portée** : maths uniquement — le français et l'histoire ont déjà des questions intrinsèquement contextualisées.
+
+**Conséquence** : une future extension de ce mécanisme (autres opérateurs, mise en scène plus riche puisant dans le contenu narratif réel des chapitres) devrait garder le même principe : ne jamais modifier `a`/`b`/`res`/`opKey`, uniquement `display`.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
