@@ -774,6 +774,59 @@ function _taunt(kind){
  const pool = kind==='wrong' ? (tender?WRONG_TAUNTS_TENDER:WRONG_TAUNTS) : (tender?CORRECT_TAUNTS_TENDER:CORRECT_TAUNTS);
  return pool[ri(0,pool.length-1)];
 }
+// v12.1.9 (Lot E, pt.8) : personnalise l'ouverture de chaque combat en nommant
+// l'épreuve dans la fiction plutôt qu'un exercice anonyme. 2 pools génériques
+// avec placeholders {role}/{topic}, substitués selon la matière en cours —
+// applicable à toute matière/niveau sans texte dédié par cas.
+const _QUESTGIVER_ROLE = {
+ math: { role:'Gardien',     topic:'calcul' },
+ fr:   { role:'Scribe',      topic:'mots' },
+ hist: { role:'Chroniqueur', topic:'histoire' },
+};
+const _QUESTGIVER_TENDER = [
+ "Le petit {role} te propose un jeu de {topic} !",
+ "{role} sort son plus beau jeu de {topic}, rien que pour toi !",
+ "Coucou ! {role} a préparé un petit défi de {topic} !",
+ "{role} sourit : « Prêt pour un peu de {topic} ensemble ? »",
+ "Un petit jeu de {topic} t'attend avec {role} !",
+ "{role} sautille de joie : un nouveau jeu de {topic} commence !",
+ "« On joue un peu avec {topic} ? » demande gentiment {role}.",
+ "{role} a plein d'idées de {topic} à partager avec toi aujourd'hui !",
+ "Un tout petit défi de {topic}, juste pour s'amuser avec {role} !",
+ "{role} t'attendait pour un nouveau jeu de {topic} !",
+];
+const _QUESTGIVER_STANDARD = [
+ "{role} pose son énigme de {topic}…",
+ "{role} déroule son parchemin de {topic}…",
+ "« Voyons ce que tu vaux vraiment, » lance {role}, prêt à te tester sur {topic}.",
+ "{role} ouvre son grand livre de {topic}, le regard sérieux.",
+ "Un nouveau défi de {topic} t'attend, posé par {role}.",
+ "{role} croise les bras : « À toi de jouer, prouve-moi ta maîtrise du {topic}. »",
+ "Le silence s'installe : {role} s'apprête à te tester sur {topic}.",
+ "{role} esquisse un sourire : « Voyons si tu es à la hauteur, en {topic}. »",
+ "Une nouvelle épreuve de {topic} commence, sous le regard attentif de {role}.",
+ "{role} claque des doigts : le défi de {topic} peut commencer.",
+ "« Concentre-toi, » prévient {role}. « Ce défi de {topic} ne sera pas simple. »",
+ "{role} te tend un vieux grimoire de {topic}, patiemment annoté.",
+ "Un frisson parcourt l'air : {role} lance son épreuve de {topic}.",
+ "{role} hoche la tête : « Le moment est venu de tester ton {topic}. »",
+ "Le défi de {topic} s'annonce redoutable, à en croire le sourire de {role}.",
+ "{role} pose calmement sa question de {topic}, sûr de son fait.",
+ "« À nous deux, » murmure {role}, avant de dévoiler son épreuve de {topic}.",
+ "Un nouveau round commence : {role} et son inévitable défi de {topic}.",
+ "{role} lève un sourcil, curieux de voir comment tu t'en sortiras en {topic}.",
+ "Le duel de {topic} face à {role} peut enfin commencer.",
+];
+let _lastQuestGiverIdx = null;
+function _pickQuestGiverLine(subj){
+ const tender = (typeof _isMaternelle==='function' && typeof GM!=='undefined' && GM && _isMaternelle(GM.level));
+ const pool = tender ? _QUESTGIVER_TENDER : _QUESTGIVER_STANDARD;
+ const rt = _QUESTGIVER_ROLE[subj] || _QUESTGIVER_ROLE.math;
+ let idx = Math.floor(Math.random()*pool.length);
+ if(pool.length>1 && idx===_lastQuestGiverIdx) idx = (idx+1)%pool.length; // jamais 2 fois de suite
+ _lastQuestGiverIdx = idx;
+ return pool[idx].replace(/\{role\}/g, rt.role).replace(/\{topic\}/g, rt.topic);
+}
 let _currentMonster=null;
 let _speechTimer=null;
 let _speechBubble=null;

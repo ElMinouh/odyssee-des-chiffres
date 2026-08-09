@@ -453,6 +453,14 @@ function startGame(){
    }
   }
  }
+ // pt.8 (Lot E, v12.1.9) : personnalise l'ouverture du combat en la nommant dans
+ // la fiction ("Le Gardien pose son énigme...") plutôt qu'un exercice anonyme.
+ // 2 pools génériques (tendre/standard) + rôle-thème par matière, jamais 2 fois
+ // de suite la même ligne. Affiché une fois par partie, pas par question.
+ if(GM.mode2==='normal' && !GM.homework && typeof _pickQuestGiverLine==='function'){
+  const _qgLine = _pickQuestGiverLine(GM.subject||'math');
+  if(_qgLine) _startMsgs.push({text:_qgLine, dur:3000});
+ }
  // Défilement séquentiel : un message à la fois, avec une courte pause entre deux.
  if(_startMsgs.length && typeof toast==='function'){
   let _cum=_objChoicePending?400:300; // laisse la modale d'objectif s'afficher en priorité si présente
