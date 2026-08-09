@@ -390,54 +390,76 @@ function startGame(){
  }
  if(typeof _matApplyAmbiance==='function') _matApplyAmbiance(GM.level);
  resetGS();powers={};isRevision=false;
+ // Lot 4 (audit engagement, 13e conversation) : les messages de début de partie
+ // (accueil, série, objectif, Mode serein, sens) partagent tous le même élément
+ // #toast — un second appel écrase le premier. On les empile donc dans une file
+ // séquentielle plutôt que via des délais fixes qui se chevauchaient.
+ const _startMsgs=[];
+ // pt.19 : accueil bienveillant si l'enfant revient après une absence — calculé
+ // AVANT checkInterSessionRevision() qui met à jour P.lastPlayTs juste après
+ // (sinon l'écart serait déjà écrasé). Aucune mention de l'absence elle-même.
+ if(GM.mode2==='normal' && !GM.homework && P.lastPlayTs && typeof INTERSESSION_MIN_DAYS!=='undefined'){
+  const _daysAway=(Date.now()-P.lastPlayTs)/86400000;
+  if(_daysAway>=INTERSESSION_MIN_DAYS) _startMsgs.push({text:'👋 Content de te revoir ! On reprend en douceur.', dur:3000});
+ }
  // Lot 2 (audit pédagogique) : rappel inter-session — priorise 2-3 révisions
  // en tête de session si l'enfant revient après ≥1 jour, avant tout contenu neuf.
  GS.forceRevisionCount = (typeof checkInterSessionRevision==='function') ? checkInterSessionRevision() : 0;
- // Lot 5 (audit pédagogique) : objectif de session visible, en toast plutôt qu'un
- // encart supplémentaire sur l'accueil (déjà chargé). Pas de superposition avec un
- // devoir parent actif (qui a déjà sa propre carte + logique). Toutes matières.
- // Lot 3 (audit engagement, 13e conversation, pt.7) : si un vrai choix pertinent
- // existe (force ET faiblesse distinctes), on le propose à l'enfant au lieu
- // d'imposer un objectif unique. Sinon, comportement inchangé (toast simple).
+ // pt.18 : petite célébration de série en cours (à partir de 2 jours), sans
+ // jamais mentionner ni pénaliser une rupture.
+ if(GM.mode2==='normal' && !GM.homework && (P.streak||0)>=2){
+  _startMsgs.push({text:`🔥 ${P.streak} jours d'affilée !`, dur:2600});
+ }
+ // Lot 5 (audit pédagogique) : objectif de session visible. Lot 3 (pt.7) : si un
+ // vrai choix pertinent existe (force ET faiblesse distinctes), une boîte de
+ // dialogue le propose à l'enfant à la place (modale séparée, n'entre pas en
+ // conflit avec la file de toasts).
+ let _objChoicePending=false;
  if(GM.mode2==='normal' && !GM.homework){
-  const _today=new Date().toISOString().slice(0,10);
+  const _todayObj=new Date().toISOString().slice(0,10);
   const _subj=GM.subject||'math';
-  const _alreadySet = P.sessionObjective && P.sessionObjective.date===_today && P.sessionObjective.subj===_subj;
-  if(_alreadySet && typeof toast==='function'){
-   setTimeout(()=>toast(P.sessionObjective.text, 3800), 400);
+  const _alreadySet = P.sessionObjective && P.sessionObjective.date===_todayObj && P.sessionObjective.subj===_subj;
+  if(_alreadySet){
+   _startMsgs.push({text:P.sessionObjective.text, dur:3800});
   }else{
    const _cands=(typeof getSessionObjectiveCandidates==='function') ? getSessionObjectiveCandidates(_subj) : null;
    if(_cands && _cands.length===2 && typeof showObjectiveChoice==='function'){
+    _objChoicePending=true;
     setTimeout(()=>showObjectiveChoice(_cands, _subj), 500);
    }else if(typeof getSessionObjectiveText==='function'){
     const _objTxt=getSessionObjectiveText(_subj);
-    if(_objTxt && typeof toast==='function') setTimeout(()=>toast(_objTxt, 3800), 400);
+    if(_objTxt) _startMsgs.push({text:_objTxt, dur:3800});
    }
   }
  }
- // Lot 1 (audit engagement, 13e conversation, pt.25) : la première fois que le Mode
- // serein est actif sur ce profil, on l'explique une fois à l'enfant lui-même
- // (jusqu'ici visible seulement du parent, cf. 09-parent.js). Affiché après le toast
- // d'objectif pour ne pas superposer deux messages.
+ // pt.25 : la première fois que le Mode serein est actif sur ce profil, on
+ // l'explique une fois à l'enfant lui-même (jusqu'ici visible seulement du
+ // parent, cf. 09-parent.js).
  if(GM.mode2==='normal' && !GM.homework && P?.prefs?.calmMode===true && !P.calmModeExplained){
   P.calmModeExplained=true;
   if(typeof saveProfile==='function') saveProfile();
-  setTimeout(()=>{ if(typeof toast==='function') toast('😊 Ici, se tromper ne fait pas perdre de vie : tu peux essayer sans stress !', 4500); }, 4400);
+  _startMsgs.push({text:'😊 Ici, se tromper ne fait pas perdre de vie : tu peux essayer sans stress !', dur:4200});
  }
- // Lot 3 (audit engagement, 13e conversation, pt.8) : message de sens occasionnel
- // (utilité concrète de la matière), maximum une fois par jour, pour ne jamais
- // devenir un bruit de fond répétitif.
+ // pt.8 : message de sens occasionnel (utilité concrète de la matière), maximum
+ // une fois par jour, pour ne jamais devenir un bruit de fond répétitif.
  if(GM.mode2==='normal' && !GM.homework){
-  const _today2=new Date().toISOString().slice(0,10);
-  if(P.senseMsgDate!==_today2 && Math.random()<0.4 && typeof SENSE_MESSAGES!=='undefined'){
+  const _todaySense=new Date().toISOString().slice(0,10);
+  if(P.senseMsgDate!==_todaySense && Math.random()<0.4 && typeof SENSE_MESSAGES!=='undefined'){
    const _pool=SENSE_MESSAGES[(GM.subject)||'math']||SENSE_MESSAGES.math;
    if(_pool && _pool.length){
-    P.senseMsgDate=_today2;
+    P.senseMsgDate=_todaySense;
     if(typeof saveProfile==='function') saveProfile();
-    const _msg=_pool[ri(0,_pool.length-1)];
-    setTimeout(()=>{ if(typeof toast==='function') toast(_msg, 4500); }, 6200);
+    _startMsgs.push({text:_pool[ri(0,_pool.length-1)], dur:4200});
    }
   }
+ }
+ // Défilement séquentiel : un message à la fois, avec une courte pause entre deux.
+ if(_startMsgs.length && typeof toast==='function'){
+  let _cum=_objChoicePending?400:300; // laisse la modale d'objectif s'afficher en priorité si présente
+  _startMsgs.forEach(m=>{
+   setTimeout(()=>toast(m.text, m.dur), _cum);
+   _cum += m.dur + 500;
+  });
  }
  if(GM.mode2==='combat'){
   const valid=combatCfg.filter(p=>p.name&&p.name.trim());

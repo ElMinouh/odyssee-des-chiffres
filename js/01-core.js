@@ -113,6 +113,9 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 function _jsAttr(s){ return esc(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
 const todayKey=()=>{const d=new Date();return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;};
 const weekKey=()=>{const d=new Date(),j=new Date(d.getFullYear(),0,1);return `${d.getFullYear()}-W${Math.ceil(((d-j)/86400000+j.getDay()+1)/7)}`;};
+// Lot 4 (audit engagement, 13e conversation, pt.18) : même format que todayKey(),
+// décalé de `offsetDays` jours — sert à détecter "hier" pour le streak.
+const _dayKeyOffset=(offsetDays)=>{const d=new Date();d.setDate(d.getDate()+offsetDays);return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;};
 const fmtDate=()=>{const d=new Date();return `${d.getDate()}/${d.getMonth()+1}`;};
 const $=id=>document.getElementById(id);
 function getAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx;}

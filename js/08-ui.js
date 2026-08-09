@@ -92,7 +92,11 @@ function renderErrors(){
 function renderRecords(){
  const h=P.history||[];const best=h.length?Math.max(...h.map(x=>x.score)):0;
  const xp=P.xp||0,lvl=levelFromXP(xp);
- $('p-records').innerHTML=`<div class="lb-row"><span>🔮 Niveau XP</span><span class="lb-score">Niv.${lvl} (${xp} XP)</span></div><div class="lb-row"><span>🏅 Meilleur score</span><span class="lb-score">${best}</span></div><div class="lb-row"><span>🎮 Parties jouées</span><span>${h.length}</span></div><div class="lb-row"><span>⏱️ Temps de jeu</span><span>${P.sessionMinutes||0} min</span></div><div class="lb-row"><span>⭐ Trésor total</span><span class="lb-score">${P.stars||0}</span></div><div class="lb-row"><span>🗺️ Boss battus</span><span>${(P.mapBossBeaten||[]).length}/${MAP_ZONES.length}</span></div>`;
+ // Lot 4 (audit engagement, 13e conversation, pt.18) : série de jours consécutifs,
+ // affichée sobrement parmi les records existants — pas de mise en scène anxiogène,
+ // pas de pénalité visible en cas de rupture (le compteur repart juste à 1).
+ const streakRow = (P.streak||0)>=2 ? `<div class="lb-row"><span>🔥 Série en cours</span><span class="lb-score">${P.streak} jours</span></div>` : '';
+ $('p-records').innerHTML=streakRow+`<div class="lb-row"><span>🔮 Niveau XP</span><span class="lb-score">Niv.${lvl} (${xp} XP)</span></div><div class="lb-row"><span>🏅 Meilleur score</span><span class="lb-score">${best}</span></div><div class="lb-row"><span>🎮 Parties jouées</span><span>${h.length}</span></div><div class="lb-row"><span>⏱️ Temps de jeu</span><span>${P.sessionMinutes||0} min</span></div><div class="lb-row"><span>⭐ Trésor total</span><span class="lb-score">${P.stars||0}</span></div><div class="lb-row"><span>🗺️ Boss battus</span><span>${(P.mapBossBeaten||[]).length}/${MAP_ZONES.length}</span></div>`;
 }
 // Lot 2 (audit engagement, 13e conversation, pt.5) : vue alternative "toi vs
 // toi-même" à côté du classement familial — protège l'estime de soi de l'enfant

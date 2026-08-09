@@ -375,6 +375,18 @@ function loadProfile(){
   P=defProfile(name);
  }
  if(P.questsDate!==todayKey()){P.quests=genQuests();P.questsDate=todayKey();}
+ // Lot 4 (audit engagement, 13e conversation, pt.18) : série de jours consécutifs,
+ // affichée avec bienveillance (cf. affichage dashboard, 08-ui.js). Aucune perte
+ // d'acquis en cas de rupture — on repart simplement à 1, sans pénalité ni
+ // message culpabilisant, conformément à l'esprit du lot (pt.19).
+ {
+  const _today=todayKey();
+  if(P.streakLastDate!==_today){
+   const _yesterday=(typeof _dayKeyOffset==='function')?_dayKeyOffset(-1):null;
+   P.streak=(P.streakLastDate===_yesterday)?(P.streak||0)+1:1;
+   P.streakLastDate=_today;
+  }
+ }
  if(P.wcDate!==weekKey()){
   // Lot 3 (audit engagement, 13e conversation, pt.22) : quand une opération faible
   // est identifiable (mêmes seuils qu'analyzeOpProfile), le défi hebdo ciblant
