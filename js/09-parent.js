@@ -13,7 +13,7 @@ function openParent(){
  const hint=$('pin-default-hint');
  if(hint) hint.classList.toggle('hidden', !!localStorage.getItem('parentPin'));
  const opts=getRoster().map(n=>`<option>${n}</option>`).join('');
-['parent-player','obj-player','block-player','filter-player','hw-player','bsubj-player'].forEach(id=>{const e=$(id);if(e)e.innerHTML=opts;});
+['parent-player','obj-player','block-player','filter-player','hw-player','bsubj-player','calm-player'].forEach(id=>{const e=$(id);if(e)e.innerHTML=opts;});
  $('cloud-player').innerHTML='<option value="ALL">Tous les joueurs</option>'+opts;
  if(typeof navTo==='function') navTo('v-parent'); else showView('v-parent');
 }
@@ -42,6 +42,7 @@ function ptab(name){
  if(name==='encadrement'){
   if(typeof onHwLevelChange==='function')onHwLevelChange();
   if(typeof loadHomework==='function')loadHomework();
+  if(typeof loadCalmMode==='function')loadCalmMode();
   loadBlockSettings();loadFilterSettings();
   if(typeof onFilterSubjectChange==='function')onFilterSubjectChange();
   if(typeof loadBlockedSubjects==='function')loadBlockedSubjects();
@@ -1176,6 +1177,43 @@ function loadHomework(){
 }
 
 /**
+ * Lot 6 (audit pédagogique, pt.2) — "Mode serein" : actif par défaut (pas de perte
+ * de vie sur erreur en mode normal solo). Un parent peut le désactiver ici pour
+ * retrouver la pression/conséquence classique. Réutilise le pattern de loadHomework.
+ */
+function loadCalmMode(){
+ const sel = $('calm-player')?.value;
+ const cb = $('calm-toggle');
+ if(!sel || !cb) return;
+ try{
+  const raw = localStorage.getItem('user_'+sel);
+  if(!raw){ cb.checked = true; return; }
+  const data = JSON.parse(raw);
+  cb.checked = !data.prefs || data.prefs.calmMode !== false; // actif par défaut
+ }catch(e){
+  console.warn('[calmMode] load error:', e);
+ }
+}
+function toggleCalmMode(){
+ const sel = $('calm-player')?.value;
+ const cb = $('calm-toggle');
+ if(!sel || !cb) return;
+ try{
+  const raw = localStorage.getItem('user_'+sel);
+  if(!raw){ toast('⚠️ Profil introuvable.', 3000); return; }
+  const data = JSON.parse(raw);
+  data.prefs = data.prefs || {};
+  data.prefs.calmMode = cb.checked;
+  localStorage.setItem('user_'+sel, JSON.stringify(data));
+  toast(cb.checked ? `🕊️ Mode serein activé pour ${sel}` : `⚡ Mode serein désactivé pour ${sel}`, 2200);
+  if(P && P.name === sel){ P.prefs = P.prefs || {}; P.prefs.calmMode = cb.checked; }
+ }catch(e){
+  console.error('[calmMode] save error:', e);
+  toast('❌ Erreur lors de la sauvegarde', 3000);
+ }
+}
+
+/**
  * Sauvegarde un devoir pour le joueur sélectionné.
  */
 function saveHomework(){
@@ -1632,7 +1670,7 @@ function pmAddProfile(){
 // en cours quand elle reste valide.
 function _refreshAllParentPlayerSelects(){
  const opts=(typeof getRoster==='function'?getRoster():[]).map(n=>`<option>${n}</option>`).join('');
- ['parent-player','obj-player','block-player','filter-player','hw-player','bsubj-player'].forEach(id=>{
+ ['parent-player','obj-player','block-player','filter-player','hw-player','bsubj-player','calm-player'].forEach(id=>{
   const e=$(id); if(!e) return;
   const cur=e.value;
   e.innerHTML=opts;

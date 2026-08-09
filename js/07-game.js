@@ -882,10 +882,19 @@ function showCorr(q){
 function hitPlayer(msg){
  const pw=powers[P.name];
  if(pw?.shielded){pw.shielded=false;$('feedback').style.color='#3498db';$('feedback').innerText='🛡️ Bouclier ! Erreur annulée !';setTimeout(nextTurn,1200);return;}
- GS.pv--;updateHUD();beep(150,'sawtooth',.5);vibrate(VIBE.bad);
+ // Lot 6 (audit pédagogique, pt.2) : "Mode serein" — actif par défaut (P.prefs.calmMode
+ // non défini ou true), désactivable par un parent dans l'onglet Encadrement. En mode
+ // serein, l'erreur reste visible et traitée (son, tremblement, feedback rouge) mais ne
+ // coûte pas de vie et ne peut pas terminer la partie — cohérent avec le droit à l'erreur
+ // (cf. ADR-24 sur l'équilibre motivation extrinsèque/intrinsèque). Ne concerne que le
+ // mode normal solo (hitPlayer) ; le mode Combat multijoueur reste inchangé (compétitif
+ // par nature, hors périmètre de ce lot).
+ const _calm = !P?.prefs || P.prefs.calmMode!==false;
+ if(!_calm) GS.pv--;
+ updateHUD();beep(150,'sawtooth',.5);vibrate(VIBE.bad);
  $('gc').classList.add('shake');setTimeout(()=>$('gc').classList.remove('shake'),400);
  $('feedback').style.color='#e74c3c';$('feedback').innerText=msg;$('BODY').classList.add('body-alert');
- if(GS.pv<=0)safeTimeout(()=>endGame(false),1200);else safeTimeout(nextTurn,1600);
+ if(!_calm && GS.pv<=0)safeTimeout(()=>endGame(false),1200);else safeTimeout(nextTurn,1600);
 }
 function updateHUD(){
  $('hud-pv').innerText=GS.pv;$('hud-score').innerText=GS.score;
