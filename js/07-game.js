@@ -362,6 +362,13 @@ function startGame(){
  // Lot 2 (audit pédagogique) : rappel inter-session — priorise 2-3 révisions
  // en tête de session si l'enfant revient après ≥1 jour, avant tout contenu neuf.
  GS.forceRevisionCount = (typeof checkInterSessionRevision==='function') ? checkInterSessionRevision() : 0;
+ // Lot 5 (audit pédagogique) : objectif de session visible, en toast plutôt qu'un
+ // encart supplémentaire sur l'accueil (déjà chargé). Pas de superposition avec un
+ // devoir parent actif (qui a déjà sa propre carte + logique). Toutes matières.
+ if(GM.mode2==='normal' && !GM.homework && typeof getSessionObjectiveText==='function'){
+  const _objTxt = getSessionObjectiveText(GM.subject||'math');
+  if(_objTxt && typeof toast==='function') setTimeout(()=>toast(_objTxt, 3800), 400);
+ }
  if(GM.mode2==='combat'){
   const valid=combatCfg.filter(p=>p.name&&p.name.trim());
   if(valid.length<2){showAlert('Il faut au moins 2 joueurs nommés !');return;}

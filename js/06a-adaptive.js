@@ -432,6 +432,72 @@ function analyzeOpProfile(){
  };
 }
 
+// ═══════════════════════════════════════════════════════
+// OBJECTIF DE SESSION VISIBLE (Lot 5, audit pédagogique 12e conversation)
+// ═══════════════════════════════════════════════════════
+// Même principe qu'analyzeOpProfile() mais générique pour les matières à
+// catégories (français, histoire, et toute matière future du même type),
+// pour donner à l'enfant un objectif clair et STABLE sur la journée plutôt
+// que de choisir en silence. Recalculé une fois par jour seulement (cf.
+// _computeSessionObjective) pour ne pas changer de message à chaque partie.
+function analyzeCatProfile(subj){
+ const stats = subj==='fr' ? P?.opStatsFr : subj==='hist' ? P?.opStatsHist : null;
+ if(!stats) return {weakest:null, confidence:0};
+ const ratios = {};
+ let totalAttempts = 0;
+ for(const cat in stats){
+  const s = stats[cat]; const t=(s.ok||0)+(s.fail||0);
+  if(t<5) continue;
+  ratios[cat] = {ratio:s.ok/t, total:t};
+  totalAttempts += t;
+ }
+ const cats = Object.keys(ratios);
+ if(cats.length<2) return {weakest:null, confidence:0};
+ cats.sort((a,b)=>ratios[a].ratio-ratios[b].ratio);
+ return {weakest:cats[0], weakRatio:ratios[cats[0]].ratio, confidence:Math.min(1, totalAttempts/50)};
+}
+/**
+ * Libellé enfant d'une catégorie faible, pour une matière donnée.
+ * CONVENTION pour une future matière à catégories : ajouter un cas ici,
+ * réutilisant son propre XXX_CAT_FILTERS comme le fait déjà _hwOpLabel().
+ */
+function _catLabel(subj, cat){
+ if(subj==='fr'){ const c=(typeof FR_CAT_FILTERS!=='undefined'?FR_CAT_FILTERS:[]).find(x=>x.key===cat); return c?c.label.toLowerCase():'questions'; }
+ if(subj==='hist'){ const c=(typeof HIST_CAT_FILTERS!=='undefined'?HIST_CAT_FILTERS:[]).find(x=>x.key===cat); return c?c.label.toLowerCase():'questions'; }
+ return 'questions';
+}
+const _OBJECTIVE_DEFAULTS = [
+ 'Progresse à ton rythme, une question à la fois 🚀',
+ 'Chaque partie te fait progresser un peu plus 🌟',
+ 'Prends ton temps, la régularité paie 💪',
+];
+/**
+ * Calcule (ou réutilise si déjà fait aujourd'hui) le texte d'objectif du jour
+ * pour la matière en cours. Toutes matières confondues via analyzeOpProfile
+ * (maths) / analyzeCatProfile (fr/hist/futures matières à catégories).
+ */
+function getSessionObjectiveText(subj){
+ if(!P) return null;
+ const today = new Date().toISOString().slice(0,10);
+ if(P.sessionObjective && P.sessionObjective.date===today && P.sessionObjective.subj===subj){
+  return P.sessionObjective.text;
+ }
+ let text;
+ if(subj==='fr' || subj==='hist'){
+  const profile = analyzeCatProfile(subj);
+  text = (profile.weakest && profile.confidence>=0.2)
+   ? `🎯 Aujourd'hui : entraîne-toi sur ${_catLabel(subj,profile.weakest)} 💪`
+   : _OBJECTIVE_DEFAULTS[ri(0,_OBJECTIVE_DEFAULTS.length-1)];
+ } else {
+  const profile = analyzeOpProfile();
+  text = (profile.weakest && profile.confidence>=0.2)
+   ? `🎯 Aujourd'hui : entraîne-toi sur ${_OP_NAMES[profile.weakest]||'ces questions'} 💪`
+   : _OBJECTIVE_DEFAULTS[ri(0,_OBJECTIVE_DEFAULTS.length-1)];
+ }
+ P.sessionObjective = {date:today, subj, text};
+ return text;
+}
+
 /**
  * Génère 3 quêtes personnalisées pour le joueur.
  * Si pas assez de données : fallback sur les quêtes génériques (shuffle de QUESTS).
