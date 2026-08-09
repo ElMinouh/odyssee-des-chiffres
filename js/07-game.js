@@ -892,7 +892,7 @@ function hitPlayer(msg){
  // par un parent dans l'onglet Encadrement (P.prefs.calmMode===true). En mode serein,
  // l'erreur reste visible et traitée (son, tremblement, feedback rouge) mais ne coûte
  // pas de vie et ne peut pas terminer la partie — cohérent avec le droit à l'erreur
- // (cf. ADR-24 sur l'équilibre motivation extrinsèque/intrinsèque). Ne concerne que le
+ // (cf. ADR-38 sur l'équilibre motivation extrinsèque/intrinsèque). Ne concerne que le
  // mode normal solo (hitPlayer) ; le mode Combat multijoueur reste inchangé (compétitif
  // par nature, hors périmètre de ce lot).
  const _calm = !!(P?.prefs && P.prefs.calmMode===true);

@@ -193,7 +193,7 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
-## ADR-24 — Équilibre motivation extrinsèque/intrinsèque (choix assumé)
+## ADR-38 — Équilibre motivation extrinsèque/intrinsèque (choix assumé)
 
 **Contexte** (12e conversation, audit pédagogique, Lot 6, pt.24) : l'audit a identifié une boucle de motivation presque exclusivement extrinsèque (étoiles, score, combos, PV, boss, figurines, badges) avec peu de leviers d'autonomie ou de sens. La littérature (Deci & Ryan, théorie de l'autodétermination) montre qu'une motivation extrinsèque forte peut, sur la durée, éroder la motivation intrinsèque si elle n'est pas équilibrée.
 
