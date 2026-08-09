@@ -185,7 +185,7 @@ const _MAT_PH_BY_LEVEL = {
 // plutôt que de boucler (jamais de blocage). Réinitialisée par partie.
 let _matRecent = [];
 const _MAT_RECENT_MAX = 20;
-function _matSig(q){ return (q.consigne||'')+'¦'+(q.visuelHtml||'')+'¦'+(q.res); }
+function _matSig(q){ return (q.matKey!==undefined ? String(q.matKey) : (q.consigne||'')+'¦'+(q.visuelHtml||'')+'¦'+(q.res)); }
 function _matRecentSeen(sig){ return _matRecent.indexOf(sig) >= 0; }
 function _matRecentTrack(sig){ _matRecent.push(sig); if(_matRecent.length>_MAT_RECENT_MAX) _matRecent.shift(); }
 function _matRecentUntrack(sig){ let i; while((i=_matRecent.indexOf(sig))>=0) _matRecent.splice(i,1); }
@@ -380,7 +380,7 @@ function _matForme(level){
  const opts=shuffle(_MAT_SHAPES.slice());
  const choices=opts.map((s,i)=>({val:i, html:_matShapeHtml(s.id)}));
  const res=opts.findIndex(s=>s.id===target.id);
- return _matBase(level,{ consigne:`Touche le ${target.n}.`, visuelHtml:'', choices, res });
+ return _matBase(level,{ consigne:`Touche le ${target.n}.`, visuelHtml:'', choices, res, matKey:'forme:'+target.id });
 }
 
 // ── Les suites à motifs (algorithmes) ───────────────────────────────
@@ -401,7 +401,7 @@ function _matIntrus(level){
  const len=ri(3,4); const pos=ri(0,len-1); const arr=[];
  for(let i=0;i<len;i++) arr.push(i===pos?intr:main);
  const choices=arr.map((o,i)=>({val:i, html:_matCollectionHtml(o,1)}));
- return _matBase(level,{ consigne:`Touche celui qui n'est pas comme les autres.`, visuelHtml:'', choices, res:pos });
+ return _matBase(level,{ consigne:`Touche celui qui n'est pas comme les autres.`, visuelHtml:'', choices, res:pos, matKey:'intrus:'+main+':'+intr });
 }
 
 // ── Problèmes racontés par Étincelle ────────────────────────────────
@@ -437,7 +437,7 @@ function _matRanger(level){
  while(perms.length<2 && g++<40){ const p=shuffle([...vals]); if(p.join()!==sorted.join() && !perms.some(x=>x.join()===p.join())) perms.push(p); }
  const all=shuffle([sorted,...perms]); const res=all.findIndex(a=>a.join()===sorted.join());
  const choices=all.map((arr,i)=>({val:i, html:_matRowHtml(arr,obj)}));
- return _matBase(level,{ consigne:`Touche la rangée du plus petit au plus grand.`, visuelHtml:'', choices, res });
+ return _matBase(level,{ consigne:`Touche la rangée du plus petit au plus grand.`, visuelHtml:'', choices, res, matKey:'ranger:'+obj+':'+vals.join(',') });
 }
 
 // ── Comparer des grandeurs (taille, pas quantité) ───────────────────
@@ -446,7 +446,7 @@ function _matGrandeur(level){
  const sizes=shuffle([1.4,2.1,2.9]).slice(0,3); const big=ri(0,1);
  const target=big?Math.max(...sizes):Math.min(...sizes);
  const choices=sizes.map((sz,i)=>({val:i, html:`<div class="mat-collection"><span class="mat-obj" style="font-size:${sz}em;animation:none;">${obj}</span></div>`}));
- return _matBase(level,{ consigne: big?`Touche le plus grand ${o.s}.`:`Touche le plus petit ${o.s}.`, visuelHtml:'', choices, res:sizes.indexOf(target) });
+ return _matBase(level,{ consigne: big?`Touche le plus grand ${o.s}.`:`Touche le plus petit ${o.s}.`, visuelHtml:'', choices, res:sizes.indexOf(target), matKey:'grandeur:'+obj+':'+(big?'big':'small') });
 }
 
 // ── Reconnaître le chiffre écrit (« Touche le 3 ») ──────────────────

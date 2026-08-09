@@ -1415,13 +1415,18 @@ if(typeof checkMilestones==='function') checkMilestones();
  // v8.7.27 : bouton "Retour au module" affiché si on vient d'une étape de map.
  // Mémorise la zone pour pouvoir y revenir directement.
  const _btnReturnModule = $('btn-return-module');
+ const _btnReturnMenu = $('btn-return-menu');
  if(_btnReturnModule){
   if(GM.mapZone && GM.mapStep){
    _btnReturnModule.classList.remove('hidden');
    _btnReturnModule.dataset.zoneId = GM.mapZone.id;
+   // v12.1.1 : en mode odyssée (carte), "Retour au menu" disparaît — seuls
+   // "Retour au module" et "Retour à la carte" restent pertinents.
+   if(_btnReturnMenu) _btnReturnMenu.classList.add('hidden');
   } else {
    _btnReturnModule.classList.add('hidden');
    _btnReturnModule.dataset.zoneId = '';
+   if(_btnReturnMenu) _btnReturnMenu.classList.remove('hidden');
   }
  }
  showView('v-end');
