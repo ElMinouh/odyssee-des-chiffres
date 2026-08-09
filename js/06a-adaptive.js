@@ -361,7 +361,9 @@ function checkMilestones(){
   const current = m.count(P);
   for(let i=0;i<m.tiers.length;i++){
    const tier = m.tiers[i];
-   const key = `${m.id}_${i}`;
+   // Lot 3 (audit engagement, 13e conversation, pt.16) : clé basée sur le SEUIL,
+   // pas sur l'index — cf. migration V8 (05-profile.js) pour la raison.
+   const key = `${m.id}_${tier.goal}`;
    if(current >= tier.goal && !P.milestonesClaimed.includes(key)){
     // Palier franchi pour la première fois !
     P.milestonesClaimed.push(key);
@@ -506,6 +508,25 @@ function getSessionObjectiveText(subj){
  }
  P.sessionObjective = {date:today, subj, text};
  return text;
+}
+
+// Lot 3 (audit engagement, 13e conversation, pt.7) : quand une force ET une
+// faiblesse nettement distinctes existent, on propose 2 objectifs plutôt
+// qu'un seul imposé — l'enfant choisit (autonomie, SDT). S'il n'y a pas de
+// vrai choix pertinent (pas de force distincte identifiable), retourne null :
+// getSessionObjectiveText() garde alors son comportement à message unique.
+function getSessionObjectiveCandidates(subj){
+ if(!P) return null;
+ const isCatSubj = (subj==='fr' || subj==='hist');
+ const profile = isCatSubj ? analyzeCatProfile(subj) : analyzeOpProfile();
+ if(!profile.weakest || profile.confidence<0.2) return null;
+ const hasDistinctStrength = profile.strongest && profile.strongest!==profile.weakest && (profile.strongRatio-profile.weakRatio)>=0.25;
+ if(!hasDistinctStrength) return null;
+ const labelOf = k => isCatSubj ? _catLabel(subj,k) : (_OP_NAMES[k]||'ces questions');
+ return [
+  {id:'reinforce', text:`🎯 Aujourd'hui : entraîne-toi sur ${labelOf(profile.weakest)} 💪`},
+  {id:'challenge', text:`🌟 Aujourd'hui : lance-toi un défi sur ${labelOf(profile.strongest)} !`},
+ ];
 }
 
 /**

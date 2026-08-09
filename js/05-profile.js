@@ -8,12 +8,38 @@
 // ═══════════════════════════════════════════════════════
 // Incrémenter SAVE_VERSION quand le format change. Ajouter une fonction de
 // migration `migrate_v{N-1}_to_v{N}` qui transforme l'ancien format en nouveau.
-const SAVE_VERSION = 7;
+const SAVE_VERSION = 8;
 
 const _MIGRATIONS = {
  // De V5 vers V6 : ajout du champ opFilters et mapBossBeaten.
  // De V6 vers V7 : ajout du champ heroStageId (chantier B2).
  7: (raw) => { raw.heroStageId = raw.heroStageId || 'oeuf'; return raw; },
+ // De V7 vers V8 (Lot 3, audit engagement, 13e conversation, pt.16) : les clés de
+ // paliers déjà validées (`P.milestonesClaimed`) utilisaient l'INDEX du palier
+ // dans le tableau (`id_0`, `id_1`...) — fragile dès qu'on insère un palier
+ // intermédiaire (les index suivants se décaleraient et fausseraient les
+ // récompenses déjà obtenues). On les convertit ici en clés basées sur le SEUIL
+ // lui-même (`id_goal`), stables même si de nouveaux paliers sont insérés
+ // n'importe où dans la liste. Mapping figé sur la structure MILESTONES telle
+ // qu'elle existait AVANT ce lot (donc AVANT l'ajout des paliers intermédiaires).
+ 8: (raw) => {
+  const OLD_GOALS = {
+   veteran:['10','50','100','500'], collector:['10','25','50','100'],
+   combo:['10','20','30','50'], mastermath:['100','500','1000','5000'],
+   fortune:['100','500','1000','5000'], explorer:['1','3','5','10'],
+  };
+  if(Array.isArray(raw.milestonesClaimed)){
+   raw.milestonesClaimed = raw.milestonesClaimed.map(k=>{
+    const m=/^([a-z]+)_(\d+)$/.exec(k);
+    if(!m) return k;
+    const id=m[1], idx=+m[2];
+    const goals=OLD_GOALS[id];
+    if(!goals || idx>=goals.length) return k; // déjà au nouveau format ou id inconnu
+    return `${id}_${goals[idx]}`;
+   });
+  }
+  return raw;
+ },
 };
 
 function migrateProfile(raw){
@@ -350,7 +376,16 @@ function loadProfile(){
  }
  if(P.questsDate!==todayKey()){P.quests=genQuests();P.questsDate=todayKey();}
  if(P.wcDate!==weekKey()){
-  const wc=WEEKLY_CH[ri(0,WEEKLY_CH.length-1)];
+  // Lot 3 (audit engagement, 13e conversation, pt.22) : quand une opération faible
+  // est identifiable (mêmes seuils qu'analyzeOpProfile), le défi hebdo ciblant
+  // cette opération est favorisé (70% du temps) plutôt qu'un tirage purement
+  // aléatoire. Reste aléatoire si aucune correspondance ou données insuffisantes.
+  let wc;
+  try{
+   const _prof=(typeof analyzeOpProfile==='function')?analyzeOpProfile():null;
+   const _match=(_prof && _prof.weakest) ? WEEKLY_CH.filter(c=>c.weakOpKey===_prof.weakest) : [];
+   wc=(_match.length && Math.random()<0.7) ? _match[ri(0,_match.length-1)] : WEEKLY_CH[ri(0,WEEKLY_CH.length-1)];
+  }catch(e){ wc=WEEKLY_CH[ri(0,WEEKLY_CH.length-1)]; }
   P.weeklyChallenge={id:wc.id,label:wc.label,target:wc.target,reward:wc.reward,progress:0,done:false};
   P.wcDate=weekKey();
  }

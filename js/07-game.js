@@ -129,8 +129,33 @@ function updateQuests(key,amt=1){
   if(q.progress>=q.goal){q.done=true;P.stars+=q.reward;toast(`🎉 Quête ! +${q.reward}⭐`);}
  });saveProfile();
 }
+// Lot 3 (audit engagement, 13e conversation, pt.17) : mise en avant du badge
+// non obtenu le plus proche du déblocage. Calculable seulement pour les badges
+// dont la progression dépend de données PERSISTANTES du profil (P), pas de
+// l'état d'une partie en cours (GS) — les badges "combo dans la partie",
+// "score dans la partie", etc. ne sont pas concernés (progression illisible
+// en dehors d'une partie active).
+const _BADGE_PROGRESS = {
+ first_win: p=>Math.min(1, (p.history||[]).length/1),
+ veteran:   p=>Math.min(1, (p.history||[]).length/10),
+ lvl10:     p=>Math.min(1, (p.xp||0)/xpForLevel(10)),
+ combo5:    p=>Math.min(1, (p._bestCombo||0)/5),
+ combo10:   p=>Math.min(1, (p._bestCombo||0)/10),
+ map_boss1: p=>Math.min(1, (p.mapBossBeaten||[]).length/1),
+};
+function _nextBadgeHint(){
+ const locked=BADGES.filter(b=>!(P.badgesEarned||[]).includes(b.id) && _BADGE_PROGRESS[b.id]);
+ if(!locked.length) return null;
+ locked.sort((a,b)=>_BADGE_PROGRESS[b.id](P)-_BADGE_PROGRESS[a.id](P));
+ const best=locked[0];
+ const pct=Math.round(_BADGE_PROGRESS[best.id](P)*100);
+ if(pct<=0) return null; // rien d'engagé, pas de mise en avant utile
+ return {badge:best, pct};
+}
 function renderBadges(){
- $('p-badges').innerHTML='<div class="badge-g">'+BADGES.map(b=>{
+ const hint=_nextBadgeHint();
+ const hintHtml=hint?`<div style="background:rgba(241,196,15,.12);border:1px solid rgba(241,196,15,.35);border-radius:10px;padding:8px 10px;margin-bottom:8px;font-size:.82em;">${hint.badge.e} <strong>${hint.badge.l}</strong> — ${hint.pct}% en route !</div>`:'';
+ $('p-badges').innerHTML=hintHtml+'<div class="badge-g">'+BADGES.map(b=>{
   const e=(P.badgesEarned||[]).includes(b.id);
   return `<span class="badge ${e?'earned':'locked'}">${b.e} ${b.l}</span>`;
  }).join('')+'</div>';
@@ -371,9 +396,24 @@ function startGame(){
  // Lot 5 (audit pédagogique) : objectif de session visible, en toast plutôt qu'un
  // encart supplémentaire sur l'accueil (déjà chargé). Pas de superposition avec un
  // devoir parent actif (qui a déjà sa propre carte + logique). Toutes matières.
- if(GM.mode2==='normal' && !GM.homework && typeof getSessionObjectiveText==='function'){
-  const _objTxt = getSessionObjectiveText(GM.subject||'math');
-  if(_objTxt && typeof toast==='function') setTimeout(()=>toast(_objTxt, 3800), 400);
+ // Lot 3 (audit engagement, 13e conversation, pt.7) : si un vrai choix pertinent
+ // existe (force ET faiblesse distinctes), on le propose à l'enfant au lieu
+ // d'imposer un objectif unique. Sinon, comportement inchangé (toast simple).
+ if(GM.mode2==='normal' && !GM.homework){
+  const _today=new Date().toISOString().slice(0,10);
+  const _subj=GM.subject||'math';
+  const _alreadySet = P.sessionObjective && P.sessionObjective.date===_today && P.sessionObjective.subj===_subj;
+  if(_alreadySet && typeof toast==='function'){
+   setTimeout(()=>toast(P.sessionObjective.text, 3800), 400);
+  }else{
+   const _cands=(typeof getSessionObjectiveCandidates==='function') ? getSessionObjectiveCandidates(_subj) : null;
+   if(_cands && _cands.length===2 && typeof showObjectiveChoice==='function'){
+    setTimeout(()=>showObjectiveChoice(_cands, _subj), 500);
+   }else if(typeof getSessionObjectiveText==='function'){
+    const _objTxt=getSessionObjectiveText(_subj);
+    if(_objTxt && typeof toast==='function') setTimeout(()=>toast(_objTxt, 3800), 400);
+   }
+  }
  }
  // Lot 1 (audit engagement, 13e conversation, pt.25) : la première fois que le Mode
  // serein est actif sur ce profil, on l'explique une fois à l'enfant lui-même
@@ -383,6 +423,21 @@ function startGame(){
   P.calmModeExplained=true;
   if(typeof saveProfile==='function') saveProfile();
   setTimeout(()=>{ if(typeof toast==='function') toast('😊 Ici, se tromper ne fait pas perdre de vie : tu peux essayer sans stress !', 4500); }, 4400);
+ }
+ // Lot 3 (audit engagement, 13e conversation, pt.8) : message de sens occasionnel
+ // (utilité concrète de la matière), maximum une fois par jour, pour ne jamais
+ // devenir un bruit de fond répétitif.
+ if(GM.mode2==='normal' && !GM.homework){
+  const _today2=new Date().toISOString().slice(0,10);
+  if(P.senseMsgDate!==_today2 && Math.random()<0.4 && typeof SENSE_MESSAGES!=='undefined'){
+   const _pool=SENSE_MESSAGES[(GM.subject)||'math']||SENSE_MESSAGES.math;
+   if(_pool && _pool.length){
+    P.senseMsgDate=_today2;
+    if(typeof saveProfile==='function') saveProfile();
+    const _msg=_pool[ri(0,_pool.length-1)];
+    setTimeout(()=>{ if(typeof toast==='function') toast(_msg, 4500); }, 6200);
+   }
+  }
  }
  if(GM.mode2==='combat'){
   const valid=combatCfg.filter(p=>p.name&&p.name.trim());

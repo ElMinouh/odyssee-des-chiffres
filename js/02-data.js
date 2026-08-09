@@ -999,10 +999,33 @@ const QUESTS=[
 ];
 // WEEKLY_CH : les filtres sont des fonctions → non-sérialisables en JSON.
 // On stocke un id et on reconstruit le filtre à la volée.
+// Lot 3 (audit engagement, 13e conversation, pt.8) : messages occasionnels reliant
+// une matière à son utilité concrète, pour nourrir le "sens" (théorie de
+// l'autodétermination) — affichés au maximum une fois par jour (cf. startGame(),
+// 07-game.js), pour ne jamais devenir un bruit de fond répétitif et ignoré.
+const SENSE_MESSAGES = {
+ math: [
+  "Les fractions ? Comme partager une pizza en parts égales entre copains ! 🍕",
+  "Les multiplications servent à calculer vite : par exemple, combien de bonbons dans 4 sachets de 6 ! 🍬",
+  "Compter la monnaie, mesurer une recette, lire l'heure… les maths sont partout dans la vraie vie ! ⏰",
+ ],
+ fr: [
+  "Bien conjuguer, c'est se faire comprendre clairement quand on raconte une histoire ! 📖",
+  "Un bon vocabulaire, c'est plus de mots pour dire exactement ce qu'on pense ! 💬",
+ ],
+ hist: [
+  "Connaître l'Histoire, c'est comprendre pourquoi le monde d'aujourd'hui est comme il est ! 🏛️",
+  "Chaque personnage historique a affronté de grands défis… un peu comme toi dans ce jeu ! ⚔️",
+ ],
+};
 const WEEKLY_CH=[
  {id:'w0',label:'Tables de 2',   target:20,reward:32,filter:q=>q.a===2||q.b===2},
  {id:'w1',label:'Tables de 7',   target:20,reward:48,filter:q=>q.a===7||q.b===7},
- {id:'w2',label:'Soustractions', target:15,reward:32,filter:q=>q.op==='-'},
+ // Lot 3 (audit engagement, 13e conversation, pt.22) : weakOpKey relie ce défi à
+ // une clé de P.opStats — permet de le favoriser si c'est la faiblesse détectée
+ // du joueur (cf. logique de sélection dans 05-profile.js). Uniquement renseigné
+ // quand la correspondance est fiable (pas de lien clair table↔opStats pour w0/w1).
+ {id:'w2',label:'Soustractions', target:15,reward:32,filter:q=>q.op==='-', weakOpKey:'-'},
  {id:'w3',label:'Fractions',     target:10,reward:56,filter:q=>q.type==='fraction'},
  {id:'w4',label:'Nbs manquants', target:15,reward:32,filter:q=>q.type==='missing'},
 ];
@@ -1125,6 +1148,9 @@ const MILESTONES = [
    {goal:10,  xp:20, stars:1},
    {goal:50,  xp:30, stars:3},
    {goal:100, xp:40, stars:5},
+   // Lot 3 (audit engagement, 13e conversation, pt.16) : palier intermédiaire
+   // ajouté (écart 100→500 jugé trop lointain pour un jeune enfant).
+   {goal:250, xp:45, stars:8},
    {goal:500, xp:50, stars:10, badge:'veteran_gold'},
   ],
  },
@@ -1158,6 +1184,9 @@ const MILESTONES = [
    {goal:100,  xp:20, stars:2},
    {goal:500,  xp:30, stars:4},
    {goal:1000, xp:40, stars:6},
+   // Lot 3 (audit engagement, 13e conversation, pt.16) : palier intermédiaire
+   // ajouté (écart 1000→5000 jugé trop lointain).
+   {goal:2500, xp:45, stars:8},
    {goal:5000, xp:50, stars:10, badge:'math_gold'},
   ],
  },
@@ -1169,6 +1198,9 @@ const MILESTONES = [
    {goal:100,  xp:20, stars:0},
    {goal:500,  xp:30, stars:0},
    {goal:1000, xp:40, stars:0},
+   // Lot 3 (audit engagement, 13e conversation, pt.16) : palier intermédiaire
+   // ajouté (écart 1000→5000 jugé trop lointain).
+   {goal:2500, xp:45, stars:0},
    {goal:5000, xp:50, stars:0, badge:'fortune_gold'},
   ],
  },

@@ -414,6 +414,33 @@ function showConfirm(message, onConfirm, opts={}){
  ov._releaseTrap=trapFocus(ov);
 }
 
+// Lot 3 (audit engagement, 13e conversation, pt.7) : petite boîte de choix pour
+// l'objectif du jour, sur le même gabarit visuel que showAlert/showConfirm.
+function showObjectiveChoice(candidates, subj){
+ const _e=(typeof esc==='function')?esc:(s=>String(s));
+ const ov=document.createElement('div');
+ ov.id='sd-objective-overlay';
+ ov.style.cssText='position:fixed;inset:0;z-index:620;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:20px;';
+ ov.innerHTML='<div style="background:#182449;border:1px solid rgba(241,196,15,.35);border-radius:18px;padding:22px 20px;text-align:center;max-width:360px;width:100%;box-shadow:var(--shadow-modal);">'
+  +'<div style="font-size:1em;font-weight:800;color:#f1c40f;margin-bottom:14px;">Choisis ton objectif du jour</div>'
+  +candidates.map((c,i)=>`<button data-idx="${i}" style="display:block;width:100%;margin-bottom:10px;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:12px 14px;font-weight:700;font-size:.88em;cursor:pointer;">${_e(c.text)}</button>`).join('')
+  +'</div>';
+ document.body.appendChild(ov);
+ const today=new Date().toISOString().slice(0,10);
+ const closeIt=()=>_closeStyledDialog('sd-objective-overlay');
+ ov.querySelectorAll('button[data-idx]').forEach(b=>{
+  b.onclick=()=>{
+   const c=candidates[+b.dataset.idx];
+   P.sessionObjective={date:today, subj, text:c.text};
+   if(typeof saveProfile==='function') saveProfile();
+   closeIt();
+   if(typeof toast==='function') toast(c.text, 3800);
+  };
+ });
+ ov.addEventListener('keydown', e=>{ if(e.key==='Escape') closeIt(); });
+ setTimeout(()=>{ const b=ov.querySelector('button[data-idx]'); if(b) b.focus(); }, 50);
+ ov._releaseTrap=trapFocus(ov);
+}
 // ── PIN sécurisé (V5/V7, audit sécurité) ──
 // Format de stockage : "pbkdf2:<selHex>:<hashHex>" (SHA-256, sel aléatoire
 // par valeur, 150 000 itérations pour ralentir une attaque hors-ligne).
