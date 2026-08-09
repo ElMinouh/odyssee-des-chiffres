@@ -1990,6 +1990,32 @@ function _showStoryModal(chapter, onDone){
  if(typeof trapFocus==='function') overlay._releaseTrap=trapFocus(overlay);
  document.addEventListener('keydown',_escHandler);
 }
+// v12.2.1 (pt.4) : modale de choix à 2 options, même habillage visuel que
+// _showStoryModal (parchemin), sans navigation/narration — le joueur doit
+// choisir pour continuer (pas d'échap, pas de "passer").
+function _showChoiceModal(scene, onChoice){
+ const overlay = document.createElement('div');
+ overlay.className = 'story-overlay';
+ overlay.innerHTML = `
+  <div class="story-parchment">
+   <div class="story-title">${scene.title||''}</div>
+   <div class="story-emoji">${scene.emoji||'❓'}</div>
+   <div class="story-text">${scene.text||''}</div>
+   <div class="story-choice-btns">
+    <button class="story-btn story-choice-a">${scene.btnA||''}</button>
+    <button class="story-btn story-choice-b">${scene.btnB||''}</button>
+   </div>
+  </div>`;
+ function pick(val){
+  overlay.classList.add('story-out');
+  setTimeout(()=>{ try{ overlay.remove(); }catch(e){} if(onChoice) onChoice(val); }, 300);
+ }
+ const ba = overlay.querySelector('.story-choice-a'); if(ba) ba.onclick = ()=>pick('A');
+ const bb = overlay.querySelector('.story-choice-b'); if(bb) bb.onclick = ()=>pick('B');
+ document.body.appendChild(overlay);
+ if(typeof trapFocus==='function') overlay._releaseTrap=trapFocus(overlay);
+ if(typeof focusFirstIn==='function') focusFirstIn(overlay);
+}
 function _markStorySeen(id){
  if(typeof P==='undefined' || !P) return;
  P.storySeen = P.storySeen || [];
@@ -2134,6 +2160,113 @@ function _advanceStoryPage(regionId){
  if(typeof saveProfile==='function') saveProfile();
 }
 
+// v12.2.1 (pt.4 + pt.6, ADR-50) : moment charnière à mi-Odyssée, unique par
+// aventure, placé sur une région choisie pour sa cohérence narrative (voir
+// ADR-50 pour la justification de chaque emplacement). Un conseil (citant la
+// progression réelle) suivi d'un choix à 2 options ; une phrase d'épilogue en
+// varie ensuite pour les aventures qui affrontent un vrai antagoniste. Pour la
+// maternelle (mat/matfr), pas de méchant ni d'enjeu à ce stade de l'histoire
+// (relecture complète de _MAT_STORY/_MAT_STORY_FR) : epilogueA/B sont null.
+const _MAJOR_MOMENT = {
+ prim: {
+  region:'cm1',
+  council:"Lumo se pose sur un rocher, sérieuse pour une fois : « {hero}, quatre royaumes déjà repris à {villain}... Il doit commencer à paniquer, tu sais. Mais le plus dur reste devant nous. »",
+  choice:{ title:'Le pont fragile', emoji:'🌉',
+   text:"Le pont de corde grince sous tes pas. Derrière toi, un petit groupe de villageois attend, inquiet — il ne supportera pas leur poids à tous en même temps.",
+   btnA:'🏃 Je traverse vite, seul', btnB:"🤝 J'aide à consolider le pont pour tous" },
+  epilogueA:"Et l'on raconte encore, à {kingdom}, ta rapidité légendaire ce jour-là sur le pont de corde.",
+  epilogueB:"Et l'on raconte encore que pas un seul villageois n'a été laissé derrière, ce jour-là sur le pont de corde.",
+ },
+ primfr: {
+  region:'ce2',
+  council:"Zoé referme son carnet : « {hero}, le Docteur Babel doit sentir que son silence recule. » Malo ajoute, plus sérieux que d'habitude : « Reste un peu de chemin. Mais on y est presque. »",
+  choice:{ title:'Le texte effacé', emoji:'📜',
+   text:"Dans la Grande Bibliothèque, un vieux texte à moitié effacé attire ton regard. Il pourrait être important... ou pas.",
+   btnA:'⚡ Je le déchiffre tout de suite', btnB:'🔍 Je vérifie chaque mot avant de le lire' },
+  epilogueA:"Et l'on raconte encore ton audace, ce jour où tu as osé lire un texte encore incertain à voix haute.",
+  epilogueB:"Et l'on raconte encore ta rigueur, qui n'a jamais laissé le moindre mot au hasard.",
+ },
+ mat: {
+  region:'ce2',
+  council:"Iris voltige, ravie : « {hero}, tu as déjà aidé tant d'amis ! Le lapin, l'ourson... et maintenant le hibou des Bois Dorés ! »",
+  choice:{ title:'Un petit moment avec le hibou', emoji:'🦉',
+   text:"Le hibou, tout content, te propose de jouer encore un peu avant de continuer ton chemin.",
+   btnA:'🎵 On chante une petite chanson', btnB:'🍂 On joue à cache-cache dans les feuilles' },
+  epilogueA:null, epilogueB:null,
+ },
+ matfr: {
+  region:'ce2',
+  council:"Plume voltige, ravie : « {hero}, la forêt a retrouvé ses cris, le pré ses petits noms... et maintenant, écoute cet écho ! »",
+  choice:{ title:"Un petit moment avec l'écho", emoji:'🏞️',
+   text:"L'écho des collines te répond joyeusement. Plume te propose de t'amuser encore un peu avec lui.",
+   btnA:'👏 On tape des syllabes ensemble', btnB:"😄 On écoute l'écho encore un peu, juste pour rire" },
+  epilogueA:null, epilogueB:null,
+ },
+ col: {
+  region:'cm1',
+  council:"Elara s'adosse à un mur de la Citadelle : « Quatre bastions repris. Léthéas doit sentir le sol trembler sous lui, pour une fois. » Un silence, puis, presque grave : « La suite ne sera pas une promenade. »",
+  choice:{ title:"Le grimoire qui s'effrite", emoji:'📖',
+   text:"Dans la Bibliothèque Secrète, un vieux grimoire de formules commence à se désagréger entre tes mains.",
+   btnA:'✍️ Je prends le temps de le recopier', btnB:'⏱️ Je le laisse, le temps presse' },
+  epilogueA:"Et l'on raconte encore qu'un savoir oublié depuis des siècles a survécu, ce jour-là, grâce à toi.",
+  epilogueB:"Et l'on raconte encore ta détermination sans faille, même au prix d'un savoir perdu à jamais.",
+ },
+ colfr: {
+  region:'ce2',
+  council:"Solène, pensive : « {hero}, on commence à raconter ton histoire, à mots couverts. Mais Ulrich Morne n'a pas dit son dernier mot. »",
+  choice:{ title:'Le pamphlet', emoji:'📰',
+   text:"Un pamphlet contre le Chancelier, à peine achevé, brûle d'être diffusé. Le risque est réel.",
+   btnA:'🔥 Je le publie maintenant', btnB:'🕰️ J\'attends un moment plus sûr' },
+  epilogueA:"Et l'on raconte encore comment ce texte, publié dans l'urgence, a rallié tout un quartier à ta cause.",
+  epilogueB:"Et l'on raconte encore ta prudence, qui a permis à ce texte de circuler sans qu'un seul exemplaire ne soit intercepté.",
+ },
+ primhist: {
+  region:'cm1',
+  council:"Tu relis ton carnet : quatre grandes époques déjà traversées. L'Égypte, Rome, la Préhistoire... et maintenant le Moyen Âge. L'Horloger semble toujours un peu plus pressé à chaque page que tu tournes.",
+  choice:{ title:'Au pied du château assiégé', emoji:'🏰',
+   text:"Les villageois ont besoin d'aide pour réparer les remparts. Mais le donjon, plus loin, garde peut-être des réponses urgentes.",
+   btnA:"🧱 J'aide d'abord à réparer les remparts", btnB:'🔭 Je pars aussitôt en reconnaissance' },
+  epilogueA:"...et ton carnet garde la trace d'un détour qui a sauvé bien des vies.",
+  epilogueB:"...et ton carnet garde la trace d'une audace qui a devancé l'Horloger d'un jour entier.",
+ },
+};
+// Déclenché juste après l'affichage du chapitre d'entrée (case 4 de
+// _maybeShowStory), qu'il vienne d'être montré ou qu'il l'ait déjà été. Ne fait
+// rien hors de la région désignée pour l'aventure en cours, et ne se déclenche
+// qu'une seule fois par Odyssée (P.storySeen).
+function _maybeShowMajorMoment(afterCb){
+ const _done = (typeof afterCb === 'function') ? afterCb : function(){};
+ try{
+  if(typeof P==='undefined' || !P){ _done(); return; }
+  const advKey = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
+  const moment = _MAJOR_MOMENT[advKey];
+  if(!moment){ _done(); return; }
+  const avZone = MAP_ZONES.find(z => z.id === _getAvatarZone());
+  if(!avZone){ _done(); return; }
+  const reg = (typeof _regionOfZone==='function') ? _regionOfZone(avZone) : null;
+  if(!reg || reg.id !== moment.region){ _done(); return; }
+  P.storySeen = P.storySeen || [];
+  const momentId = 'majormoment_' + advKey;
+  if(P.storySeen.includes(momentId)){ _done(); return; }
+  _markStorySeen(momentId);
+  const councilPage = { emoji:'💬', text:(typeof _storyText==='function' ? _storyText(moment.council) : moment.council) };
+  _showStoryModal({ id:momentId+'_council', title:'', pages:[councilPage], closeLabel:'Continuer ›' }, ()=>{
+   _showChoiceModal({
+    title: moment.choice.title,
+    emoji: moment.choice.emoji,
+    text: (typeof _storyText==='function' ? _storyText(moment.choice.text) : moment.choice.text),
+    btnA: moment.choice.btnA,
+    btnB: moment.choice.btnB,
+   }, (val)=>{
+    P.majorChoiceByAdv = P.majorChoiceByAdv || {};
+    P.majorChoiceByAdv[advKey] = val;
+    if(typeof saveProfile==='function') saveProfile();
+    _done();
+   });
+  });
+ }catch(e){ _done(); }
+}
+
 // Déclencheur principal : prologue, puis victoire de Cristal, puis épilogue, puis chapitre d'entrée.
 // v12.1.2 : accepte un callback optionnel `afterCb`, appelé une fois la (ou les)
 // page(s) d'histoire refermée(s) — ou immédiatement si rien de nouveau à montrer.
@@ -2188,7 +2321,22 @@ function _maybeShowStory(afterCb){
     }catch(e){}
     _done();
    };
-   _showStoryModal(_STORY.epilogue, _after);
+   // v12.2.1 (pt.4, ADR-50) : ajoute une page de conséquence du choix mi-Odyssée,
+   // si l'aventure en a un et que le joueur a bien tranché (pas de branche pour
+   // la maternelle, epilogueA/B restent null — voir _MAJOR_MOMENT).
+   let _epiPages = _STORY.epilogue.pages;
+   try{
+    const advKey = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
+    const moment = _MAJOR_MOMENT[advKey];
+    const choice = P.majorChoiceByAdv && P.majorChoiceByAdv[advKey];
+    if(moment && choice){
+     const variantText = choice==='A' ? moment.epilogueA : moment.epilogueB;
+     if(variantText){
+      _epiPages = [..._epiPages, { emoji:'📜', text:(typeof _storyText==='function' ? _storyText(variantText) : variantText) }];
+     }
+    }
+   }catch(e){}
+   _showStoryModal({ id:_STORY.epilogue.id, title:_STORY.epilogue.title, pages:_epiPages }, _after);
    return;
   }
  }catch(e){}
@@ -2208,9 +2356,15 @@ function _maybeShowStory(afterCb){
   const chap = _STORY.chapters[reg.id];
   if(chap && !P.storySeen.includes(chap.id)){
    _markStorySeen(chap.id);
-   _showStoryModal(chap, _done);
+   _showStoryModal(chap, ()=>{
+    if(typeof _maybeShowMajorMoment==='function') _maybeShowMajorMoment(_done);
+    else _done();
+   });
    return;
   }
+  // Chapitre déjà vu : le moment charnière (pt.4/pt.6) peut quand même rester
+  // à déclencher si le joueur est déjà dans la bonne région.
+  if(typeof _maybeShowMajorMoment==='function'){ _maybeShowMajorMoment(_done); return; }
   _done();
  }catch(e){ _done(); }
 }

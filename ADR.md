@@ -399,7 +399,7 @@ Décisions actées, non remises en cause à ce jour :
 
 **Règle pour toute future Odyssée** : ce moment charnière doit être conçu APRÈS relecture complète de l'histoire concernée, jamais par analogie avec une autre aventure. Pour les histoires sans confrontation directe au méchant en milieu de parcours (comme la maternelle), le mécanisme reste présent (conseil + petit choix) mais SANS enjeu moral ni mention du méchant — un simple moment de reconnaissance des amis déjà aidés.
 
-**Statut technique à la clôture de cette conversation** : contenu validé, **pas encore codé**. Implémentation prévue : nouvel élément d'UI (2 boutons dans une page d'histoire) → maquette à valider avant tout code (règle de validation de maquette obligatoire), puis code du choix (mémorisation `P.majorChoice` par aventure) + du conseil (réutilise `_showStoryModal` existant, pas de nouvelle UI).
+**Statut technique** : **codé et testé** (v12.2.1). `_MAJOR_MOMENT` (07-story.js) centralise les 7 contenus. `_maybeShowMajorMoment()` se déclenche juste après l'affichage du chapitre d'entrée de la région désignée (chaînée depuis le cas 4 de `_maybeShowStory`) : conseil (`_showStoryModal`, 1 page) puis choix (`_showChoiceModal`, nouvelle fonction, 2 boutons empilés, même habillage visuel que le parchemin d'histoire — maquette validée avant code). Le choix est mémorisé dans `P.majorChoiceByAdv[advKey]`. La phrase de conséquence est ajoutée dynamiquement comme page supplémentaire de l'épilogue (cas 3 de `_maybeShowStory`), sans jamais modifier les tableaux `pages` statiques de `_STORY` eux-mêmes. Pour la maternelle, `epilogueA`/`epilogueB` valent `null` : aucune page n'est ajoutée à l'épilogue, conformément à la règle "pas d'enjeu, pas de branche".
 
 ---
 
