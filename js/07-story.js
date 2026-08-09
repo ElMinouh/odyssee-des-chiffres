@@ -2050,6 +2050,43 @@ function _zoneReachable(p, beaten, starsTotal){
   return true;
  }catch(e){ return false; }
 }
+// v12.1.6 (Lot D, pt.6) : rebondissement mi-îlot. Une seule fois par région,
+// sur une zone choisie entre 33% et 66% de sa progression (position variable
+// par région, déterministe mais non prévisible sans lire le code, pour éviter
+// que le joueur s'attende systématiquement au même moment). Contenu générique
+// (6 variantes) réutilisable sur toute matière/niveau sans prose dédiée.
+const _TWIST_LINES = [
+ "Rebondissement soudain : {villain} vient de repérer ta progression, et n'apprécie pas du tout.",
+ "Sans prévenir, un allié inattendu surgit sur ta route et te glisse un secret sur {villain} avant de disparaître aussitôt.",
+ "Le ciel s'assombrit un instant : {villain} vient de comprendre que tu es plus proche du but qu'il ne le pensait.",
+ "Un tremblement parcourt les environs — quelque chose vient de changer, loin d'ici, dans le repaire de {villain}.",
+ "Une créature autrefois docile se rebelle soudain contre {villain}, comme si ta présence redonnait du courage à tous.",
+ "Une rumeur circule : {villain} aurait envoyé un émissaire spécial rien que pour toi. Reste sur tes gardes.",
+];
+function _twistZoneIdx(regionId, nZones){
+ if(nZones < 3) return -1; // pas assez de zones pour un vrai "milieu"
+ const frac = 0.33 + _archHash(regionId + '_twist', 17) * 0.33; // entre 33% et 66%
+ return Math.min(nZones - 2, Math.max(1, Math.round(frac * nZones)));
+}
+function _maybeShowTwist(zone, afterCb){
+ const _done = (typeof afterCb === 'function') ? afterCb : function(){};
+ try{
+  if(typeof P==='undefined' || !P || !zone){ _done(); return; }
+  P.storySeen = P.storySeen || [];
+  const reg = (typeof _regionOfZone==='function') ? _regionOfZone(zone) : null;
+  if(!reg){ _done(); return; }
+  const twistId = 'twist_' + reg.id;
+  if(P.storySeen.includes(twistId)){ _done(); return; }
+  const zones = (typeof _zonesOfRegion==='function') ? _zonesOfRegion(reg.id) : [];
+  const idx = zones.findIndex(z => z.id === zone.id);
+  if(idx < 0 || idx !== _twistZoneIdx(reg.id, zones.length)){ _done(); return; }
+  _markStorySeen(twistId);
+  const line = _TWIST_LINES[Math.floor(_archHash(reg.id + '_twistline', 19) * _TWIST_LINES.length)];
+  const page = { emoji:'⚡', text: (typeof _storyText==='function' ? _storyText(line) : line) };
+  _showStoryModal({ id:twistId, title:'Rebondissement', pages:[page], closeLabel:'Continuer ›' }, _done);
+ }catch(e){ _done(); }
+}
+
 // v12.1.5 (Lot C, pt.5) : compteur de progression dans les pages du chapitre
 // d'une région, persistant par région. Permet d'étaler les pages déjà écrites
 // au fil des zones conquises, au lieu de tout montrer d'un bloc à l'entrée.

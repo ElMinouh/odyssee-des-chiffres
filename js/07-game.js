@@ -1397,8 +1397,13 @@ if(typeof checkMilestones==='function') checkMilestones();
          }
         }catch(e){ console.warn('Island victory chain failed', e); }
        };
-       if(typeof _maybeShowZoneFragment==='function') _maybeShowZoneFragment(_zone, _afterFragment);
-       else _afterFragment();
+       const _afterTwist = () => {
+        if(typeof _maybeShowZoneFragment==='function') _maybeShowZoneFragment(_zone, _afterFragment);
+        else _afterFragment();
+       };
+       // v12.1.6 (Lot D, pt.6) : rebondissement mi-îlot, avant le fragment de carnet normal
+       if(typeof _maybeShowTwist==='function') _maybeShowTwist(_zone, _afterTwist);
+       else _afterTwist();
       }catch(e){ console.warn('Zone fragment chain failed', e); }
      });
     } else {

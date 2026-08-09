@@ -336,4 +336,16 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-47 — Rebondissement mi-îlot et carte vivante (Lot D)
+
+**Contexte** (14e conversation, Lot D engagement narratif) : au-delà du carnet fragmenté (ADR-46), Cyril souhaitait (1) un vrai rebondissement narratif au milieu de chaque îlot, et (2) que la carte du monde elle-même "vive" entre deux zones plutôt que de rester muette.
+
+**Décision** :
+- **pt.6** : `_maybeShowTwist()` déclenche, une seule fois par région, sur une zone choisie entre 33% et 66% de la progression de l'îlot (position variable par région via `_archHash`, non prévisible), une page générique de rebondissement (6 variantes, placeholder `{villain}`). Chaîné juste avant le fragment de carnet normal dans `07-game.js`.
+- **pt.10** : `_maybeShowLivingMapCaption()`, appelée depuis `openMap()` (après vérification qu'aucune page d'histoire ne vient de s'afficher), montre ~35% du temps un bandeau sous l'avatar avec une phrase générique sur la zone suivante/précédente. Maquette validée par Cyril (Option A — bandeau flottant) avant tout code.
+
+**Conséquence** : toute nouvelle mécanique narrative "ambiante" (déclenchée par le temps/la position plutôt que par une action précise) devrait suivre le même principe : contenu générique templaté + placeholders `{villain}`/`${zone}`, fréquence limitée, jamais deux fois de suite sur le même déclencheur.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

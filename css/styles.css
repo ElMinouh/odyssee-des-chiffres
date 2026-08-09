@@ -1185,8 +1185,7 @@ html[data-appearance="light"] .settings-icon:hover{
  .zone-skin.zs-tier2{opacity:.32;}
  .zone-skin.zs-tier3{opacity:.4;}
 }
-.zs-particles{position:absolute;inset:0;}
-.zs-particle{
+.zs-particles{position:absolute;inset:0;}.zs-particle{
  position:absolute;
  bottom:-10%;
  font-size:1.6em;
@@ -2787,6 +2786,29 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  background:radial-gradient(ellipse, rgba(0,0,0,.5), transparent);
  border-radius:50%;
 }
+/* v12.1.6 (Lot D, pt.10) : carte vivante — bandeau sous l'avatar (Option A validée) */
+.living-map-caption{
+ position:absolute;
+ transform:translateX(-50%);
+ z-index:9;
+ max-width:200px;
+ background:rgba(20,20,18,.78);
+ border:.5px solid rgba(255,255,255,.15);
+ border-radius:var(--radius,8px);
+ padding:6px 10px;
+ font-size:.78em;
+ line-height:1.35;
+ color:#f0ead6;
+ text-align:center;
+ pointer-events:none;
+ opacity:0;
+ animation:lmcFadeIn .4s ease forwards;
+}
+.living-map-caption.lmc-out{
+ animation:lmcFadeOut .5s ease forwards;
+}
+@keyframes lmcFadeIn{ from{opacity:0;transform:translateX(-50%) translateY(-4px);} to{opacity:1;transform:translateX(-50%) translateY(0);} }
+@keyframes lmcFadeOut{ from{opacity:1;} to{opacity:0;} }
 @keyframes archAvatarFloat{
  0%,100%{ transform:translate(-50%,-130%); }
  50%{    transform:translate(-50%,-140%); }

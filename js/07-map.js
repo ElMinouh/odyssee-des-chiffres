@@ -7,6 +7,54 @@
 // ═══════════════════════════════════════════════════════
 // CARTE D'EXPLORATION + PARALLAXE (chantier B3)
 // ═══════════════════════════════════════════════════════
+// v12.1.6 (Lot D, pt.10) : carte vivante — bandeau occasionnel sous l'avatar,
+// qui fait vivre le monde entre deux zones. Générique (toutes matières/niveaux),
+// ~35% de chance à chaque ouverture de carte, jamais deux fois de suite sur la
+// même zone. Validé sur maquette (Option A) avant implémentation.
+const _LIVING_MAP_LINES = [
+ "Plus loin, {villain} rôde encore près de ${nextZone}.",
+ "On raconte que ${nextZone} cache un secret que tu n'as pas encore découvert.",
+ "Le vent porte une rumeur : ${nextZone} n'attend plus que toi.",
+ "Quelque chose semble avoir changé du côté de ${nextZone} depuis peu.",
+ "Les habitants de ${prevZone} parlent encore de ton passage.",
+ "Au loin, ${nextZone} scintille faiblement. Bientôt, ce sera ton tour.",
+];
+let _lastLivingMapZone = null;
+function _maybeShowLivingMapCaption(){
+ try{
+  if(typeof P==='undefined' || !P) return;
+  if(!(P.mapBossBeaten||[]).length) return; // rien à raconter avant la 1re zone conquise
+  if(Math.random() > 0.35) return;
+  const avatarZoneId = _getAvatarZone();
+  if(avatarZoneId === _lastLivingMapZone) return; // jamais 2 fois de suite sur la même zone
+  const layout = _computeArchipelLayout();
+  const { positions } = layout;
+  const avIdx = positions.findIndex(p => p.zone.id === avatarZoneId);
+  if(avIdx < 0) return;
+  const nextP = positions[avIdx+1];
+  const prevP = positions[avIdx-1];
+  if(!nextP && !prevP) return;
+  const nextZone = nextP ? nextP.zone.label : '';
+  const prevZone = prevP ? prevP.zone.label : '';
+  const pool = _LIVING_MAP_LINES.filter(l => (l.includes('${nextZone}') ? !!nextZone : true) && (l.includes('${prevZone}') ? !!prevZone : true));
+  if(!pool.length) return;
+  let line = pool[Math.floor(Math.random()*pool.length)]
+   .replace(/\$\{nextZone\}/g, nextZone).replace(/\$\{prevZone\}/g, prevZone);
+  if(typeof _storyText==='function') line = _storyText(line);
+  const avatarEl = document.querySelector('.archipel-avatar');
+  const mapZones = document.getElementById('map-zones');
+  if(!avatarEl || !mapZones) return;
+  _lastLivingMapZone = avatarZoneId;
+  const cap = document.createElement('div');
+  cap.className = 'living-map-caption';
+  cap.style.left = avatarEl.style.left;
+  cap.style.top = (parseInt(avatarEl.style.top,10) + 34) + 'px';
+  cap.textContent = line;
+  mapZones.appendChild(cap);
+  setTimeout(()=>{ cap.classList.add('lmc-out'); setTimeout(()=>cap.remove(), 500); }, 4500);
+ }catch(e){}
+}
+
 function openMap(){
  if(typeof navTo==='function') navTo('v-map'); else showView('v-map');
  _mapAutoFocus = true;  // v8.7.57 (O3-C.6) : cadrage caméra sur la région active à l'ouverture
@@ -16,7 +64,13 @@ function openMap(){
   if(typeof initMapParallax==='function') initMapParallax();
  }, 50);
  // v8.7.67 (O5) : déclencher la narration (prologue, ou chapitre de la région active)
- setTimeout(()=>{ if(typeof _maybeShowStory==='function') _maybeShowStory(); }, 500);
+ setTimeout(()=>{
+  if(typeof _maybeShowStory==='function') _maybeShowStory(()=>{
+   // v12.1.6 (Lot D, pt.10) : carte vivante — seulement si aucune page d'histoire
+   // ne vient de s'afficher (sinon on surcharge l'écran de texte d'un coup).
+   if(typeof _maybeShowLivingMapCaption==='function') _maybeShowLivingMapCaption();
+  });
+ }, 500);
 }
 
 /**
