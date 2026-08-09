@@ -1363,7 +1363,14 @@ if(typeof checkMilestones==='function') checkMilestones();
      playZoneVictory(_zone, _conqueredRegionId ? () => {
       try{
        if(typeof startConfetti==='function') startConfetti();
-       if(typeof playIslandVictory==='function') playIslandVictory(_conqueredRegionId);
+       // v12.1.2 : dès que le boss de l'îlot est vaincu (îlot entièrement conquis),
+       // le chapitre de victoire ("Cristal") s'affiche automatiquement à la fin
+       // de la cinématique — plus besoin de rouvrir la carte pour le découvrir.
+       if(typeof playIslandVictory==='function'){
+        playIslandVictory(_conqueredRegionId, ()=>{
+         if(typeof _maybeShowStory==='function') _maybeShowStory();
+        });
+       }
       }catch(e){ console.warn('Island victory chain failed', e); }
      } : undefined);
     } else {

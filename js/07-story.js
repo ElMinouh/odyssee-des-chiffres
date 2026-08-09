@@ -2051,14 +2051,20 @@ function _zoneReachable(p, beaten, starsTotal){
  }catch(e){ return false; }
 }
 // Déclencheur principal : prologue, puis victoire de Cristal, puis épilogue, puis chapitre d'entrée.
-function _maybeShowStory(){
- if(typeof P==='undefined' || !P) return;
+// v12.1.2 : accepte un callback optionnel `afterCb`, appelé une fois la (ou les)
+// page(s) d'histoire refermée(s) — ou immédiatement si rien de nouveau à montrer.
+// Permet d'enchaîner automatiquement l'affichage à des moments précis du jeu
+// (boss d'îlot vaincu, arrivée sur un nouvel îlot) sans attendre une réouverture
+// manuelle de la carte.
+function _maybeShowStory(afterCb){
+ const _done = (typeof afterCb === 'function') ? afterCb : function(){};
+ if(typeof P==='undefined' || !P){ _done(); return; }
  P.storySeen = P.storySeen || [];
  // 1) Prologue, une seule fois, au tout début
  const _introId = (_STORY.intro && _STORY.intro.id) || 'intro';
  if(!P.storySeen.includes(_introId)){
   _markStorySeen(_introId);
-  _showStoryModal(_STORY.intro, null);
+  _showStoryModal(_STORY.intro, _done);
   return;
  }
  // 2) Scène de victoire : une région vient d'être conquise et son Cristal n'a pas été célébré
@@ -2068,7 +2074,7 @@ function _maybeShowStory(){
    const win = _STORY.victories && _STORY.victories[r.id];
    if(win && !P.storySeen.includes(win.id) && _regionConquered(r.id)){
     _markStorySeen(win.id);
-    _showStoryModal(win, null);
+    _showStoryModal(win, _done);
     return;
    }
   }
@@ -2092,7 +2098,12 @@ function _maybeShowStory(){
    }
    // Si l'aventure a une « histoire du Livre » (Histoire B), elle s'enchaîne juste
    // après l'épilogue, en récompense.
-   const _after = (_STORY.bookTale) ? (function(){ try{ _markStorySeen(_STORY.bookTale.id); _showStoryModal(_STORY.bookTale, null); }catch(e){} }) : null;
+   const _after = function(){
+    try{
+     if(_STORY.bookTale){ _markStorySeen(_STORY.bookTale.id); _showStoryModal(_STORY.bookTale, _done); return; }
+    }catch(e){}
+    _done();
+   };
    _showStoryModal(_STORY.epilogue, _after);
    return;
   }
@@ -2100,15 +2111,17 @@ function _maybeShowStory(){
  // 4) Chapitre d'entrée de la région où se trouve l'avatar (si pas encore vu)
  try{
   const avZone = MAP_ZONES.find(z => z.id === _getAvatarZone());
-  if(!avZone) return;
+  if(!avZone){ _done(); return; }
   const reg = (typeof _regionOfZone==='function') ? _regionOfZone(avZone) : _ARCH_REGIONS.find(r => r.levels.includes(avZone.level));
-  if(!reg) return;
+  if(!reg){ _done(); return; }
   const chap = _STORY.chapters[reg.id];
   if(chap && !P.storySeen.includes(chap.id)){
    _markStorySeen(chap.id);
-   _showStoryModal(chap, null);
+   _showStoryModal(chap, _done);
+   return;
   }
- }catch(e){}
+  _done();
+ }catch(e){ _done(); }
 }
 
 // ═══════════════════════════════════════════════════════

@@ -1301,7 +1301,13 @@ function requestZoneOpen(zoneId){
  }
  _animateAlongSegments(avatarEl, seqPositions, W, '#map-zones').then(()=>{
   // Petite pause avant l'ouverture de la modale, pour que l'utilisateur voie l'avatar arrivé
-  setTimeout(()=> openArchipelZoom(zoneId), 180);
+  setTimeout(()=>{
+   // v12.1.2 : si l'avatar vient d'atteindre un nouvel îlot, son chapitre
+   // d'entrée s'affiche automatiquement ICI (plus besoin de rouvrir la carte).
+   // La modale de zone ne s'ouvre qu'une fois la page d'histoire refermée.
+   if(typeof _maybeShowStory==='function') _maybeShowStory(()=> openArchipelZoom(zoneId));
+   else openArchipelZoom(zoneId);
+  }, 180);
  });
 }
 
