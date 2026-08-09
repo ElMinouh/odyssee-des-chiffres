@@ -866,8 +866,16 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);GS.consecFail=0;
   spawnP(_monsterCenter.x||0,_monsterCenter.y||0,_partN);
   floatScore(`+${pts} ⭐`, _monsterCenter.x||window.innerWidth/2, _monsterCenter.y||window.innerHeight/2, GS.combo>=5);
   if(COMBO_MILESTONES.has(GS.combo))comboBanner(GS.combo);
-  // Monster reacts to being hit
-  if(!(typeof _isMaternelle==='function'&&_isMaternelle(GM.level)) && Math.random()<.55)monsterSpeak(CORRECT_TAUNTS[ri(0,CORRECT_TAUNTS.length-1)],1800);
+  // Monster reacts to being hit (v12.1.4 : réplique spéciale à combo=5, sinon taunt normal)
+  if(!(typeof _isMaternelle==='function'&&_isMaternelle(GM.level))){
+   if(GS.combo===5 && Math.random()<.7) monsterSpeak(_bossReaction('combo'),1800);
+   else if(Math.random()<.55) monsterSpeak(CORRECT_TAUNTS[ri(0,CORRECT_TAUNTS.length-1)],1800);
+  }
+  // v12.1.4 (Lot B, pt.2) : commentaire du compagnon toutes les ~3 questions
+  if(GS.qCount%3===0 && typeof _companionComment==='function'){
+   const _cLine = _companionComment(true);
+   if(_cLine && typeof toast==='function') toast('💬 '+_cLine, 2400);
+  }
   if(GM.mode==='qcm'||(GS.q&&GS.q.choices&&GS.q.choices.length))markQCM(ans,true);updateHUD();
   if(typeof _isMaternelle==='function'&&_isMaternelle(GM.level)&&typeof _matCelebrate==='function')_matCelebrate();
   // v8.7.54 (O4.2c) : bouclier du boss — absorbe le 1er coup, cède au 2e.
@@ -947,8 +955,16 @@ GS.errInGame++;GS.combo=0;GS.opCombo=0;GS.lastOpKey=null;GS.consecFail=(GS.conse
    // normal) — un retrait anticipé (entraînement ciblé immédiat) avait été
    // envisagé (_untrackQ) mais jamais implémenté ; décision : retiré (audit).
   }
-  // Monster taunts on wrong answer
-  monsterSpeak(WRONG_TAUNTS[ri(0,WRONG_TAUNTS.length-1)],2200);
+  // Monster taunts on wrong answer (v12.1.4 : ton adapté au cycle + réplique
+  // "difficulté" dès le 2e échec consécutif, à la place du taunt normal)
+  const _isMat = (typeof _isMaternelle==='function'&&_isMaternelle(GM.level));
+  if(!_isMat && GS.consecFail===2) monsterSpeak(_bossReaction('struggle'),2200);
+  else monsterSpeak(_taunt('wrong'),2200);
+  // v12.1.4 (Lot B, pt.2) : commentaire du compagnon toutes les ~3 questions
+  if(GS.qCount%3===0 && typeof _companionComment==='function'){
+   const _cLineW = _companionComment(false);
+   if(_cLineW && typeof toast==='function') toast('💬 '+_cLineW, 2400);
+  }
   showCorr(q);if(GM.mode==='qcm'||(q&&q.choices&&q.choices.length))markQCM(ans,false,q.res);hitPlayer('💥 FAUX !');
   // Lot 1 (audit engagement, 13e conversation, pt.27) : après 4 échecs consécutifs
   // dans la partie, suggestion douce de pause (une seule fois par partie). N'apparaît

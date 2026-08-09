@@ -306,4 +306,24 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-44 — Histoire déclenchée automatiquement aux moments-clés (chantier engagement narratif)
+
+**Contexte** (14e conversation) : Cyril a signalé que les pages d'histoire (victoire d'îlot, chapitre d'entrée) n'apparaissaient qu'en rouvrant manuellement la carte (`_maybeShowStory()` n'était appelée que depuis `openMap()`), ce qui cassait l'immersion — le joueur devait "aller chercher" la suite de l'histoire au lieu qu'elle vienne à lui.
+
+**Décision** : `_maybeShowStory()` accepte désormais un callback optionnel `afterCb`, permettant de la déclencher directement à la fin de la cinématique "ÎLOT CONQUIS" (`playIslandVictory`, boss d'îlot vaincu) et à la fin de l'animation de marche de l'avatar vers un nouvel îlot (`requestZoneOpen`), en chaînant l'action suivante (ouverture de la modale de zone) après la fermeture de la page d'histoire. `openMap()` conserve son appel existant en filet de sécurité (si le joueur ferme l'app avant de voir l'histoire, elle apparaîtra à la prochaine ouverture de la carte).
+
+**Conséquence** : toute future page d'histoire à déclenchement automatique doit passer par `_maybeShowStory(afterCb)` plutôt que par un appel direct à `_showStoryModal()`, pour rester cohérente avec la chaîne d'affichage.
+
+---
+
+## ADR-45 — Ton des dialogues de combat adapté au cycle (maternelle vs primaire/collège)
+
+**Contexte** (14e conversation, Lot B engagement narratif) : les dialogues de monstres/boss (`MONSTER_DIALOGUES`) et les taunts de mauvaise réponse (`WRONG_TAUNTS`) étaient un pool UNIQUE partagé par tous les niveaux, y compris la maternelle (3-6 ans) — un enfant de PS pouvait voir "${zone} sera ton tombeau" ou "Pathétique. Recommence." Le taunt de bonne réponse était déjà exclu en maternelle (remplacé par `_matCelebrate()`, un mécanisme visuel), mais pas le reste.
+
+**Décision** : `MONSTER_DIALOGUES` est réorganisé en deux tons (`standard`, `tender`), sélectionnés via `_dialogueTone()` selon `_isMaternelle(GM.level)`. `WRONG_TAUNTS`/`CORRECT_TAUNTS` ont chacun un pendant `_TENDER`, sélectionné via `_taunt(kind)`. Le contenu `standard` est inchangé (primaire/collège).
+
+**Conséquence** : toute future réplique de combat (monstre, taunt, réaction) doit être ajoutée aux DEUX pools (`standard` et `tender`) ou passer par un mécanisme équivalent — ne jamais réintroduire un pool unique partagé avec la maternelle.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

@@ -264,72 +264,161 @@ function renderZoneMap(){
 // la position du monstre dans la séquence d'étapes du MÊME type (withinKindIdx).
 // Garantie : dans une même zone, deux étapes "monster" ne tirent jamais la même phrase
 // (tant que pool.length >= nb d'étapes de ce type).
+// v12.1.4 (Lot B, pt.7) : deux tons distincts. `standard` (primaire/collège,
+// contenu inchangé) et `tender` (maternelle, NOUVEAU) — la maternelle recevait
+// jusqu'ici les mêmes répliques sombres ("ton tombeau", "tu mourras") que les
+// grands, ce qui n'était pas adapté à des enfants de 3 à 6 ans.
 const MONSTER_DIALOGUES = {
- monster: [
-  "Te voilà donc l'aventurier qui ose s'aventurer ici…",
-  "Encore un curieux à terrasser. Le temps presse !",
-  "Tu pensais traverser ${zone} sans m'affronter ? Quelle erreur.",
-  "Approche, petit téméraire. Ton voyage s'arrête ici.",
-  "Mes énigmes ont fait pleurer plus d'un héros…",
-  "Sens-tu mon souffle ? Il porte le défi.",
-  "Voyons si ton esprit vaut mieux que tes pas.",
-  "Tu trembles déjà ? Et pourtant je n'ai rien dit…",
-  "Réponds vite, ou tombe à mes pieds !",
-  "Beaucoup ont essayé. Beaucoup ont échoué.",
-  "On m'appelle ${name}, et je ne fais jamais de cadeaux.",
-  "Tu sens cette odeur ? C'est celle de mes précédentes victimes.",
-  "${zone} n'est pas pour toi. Rebrousse chemin.",
-  "Petit, mon ombre est plus dangereuse que mes griffes.",
-  "Tu crois pouvoir filer ? Pas avant d'avoir résolu mes questions.",
-  "J'ai dévoré des sorciers, des chevaliers, des rois. Pourquoi pas toi ?",
-  "Bienvenue dans ma tanière. La sortie sera plus difficile.",
-  "Je vais te poser une question. Réponds, ou disparais.",
- ],
- miniboss: [
-  "Avant d'atteindre le boss, tu devras me passer !",
-  "Je garde le chemin. Personne ne passe sans payer le prix.",
-  "Tu crois avoir vaincu mes serviteurs ? Mauvaise nouvelle : me voilà.",
-  "Le boss de ${zone} m'attend de l'autre côté. Mais d'abord… moi !",
-  "Ton ascension s'arrête ici, intrus.",
-  "Je suis le dernier rempart avant le maître des lieux.",
-  "Sans m'abattre, tu ne verras jamais ce qui se cache plus loin.",
-  "On ne devient pas légende sans m'avoir affronté.",
-  "Si tu chutes ici, le boss n'aura même pas à se déplacer.",
-  "Petite leçon avant la fin : combien de chances te reste-t-il ?",
-  "Le maître de ${zone} a choisi son lieutenant avec soin. Devine qui.",
-  "${name} ne laisse passer aucun aventurier. Tu n'échapperas pas à la règle.",
- ],
- boss: [
-  "Tu oses entrer dans mon territoire ? ${zone} n'a pas de pitié pour les ignorants.",
-  "Bienvenue à ${zone}, mortel. Personne n'en repart vivant.",
-  "${zone} est ma forteresse. Tu ne franchiras pas mes portes.",
-  "Tu as combattu pour arriver jusqu'ici. Tu mourras pour en repartir.",
-  "Je règne sur ${zone} depuis des siècles. Tu n'es qu'un grain de poussière.",
-  "Mes serviteurs t'ont laissé passer pour mieux savourer ta défaite.",
-  "Tant d'héros sont tombés ici… Veux-tu vraiment être le suivant ?",
-  "${zone} sera ton tombeau, aventurier.",
-  "Tu sens cette aura ? C'est celle de ta propre fin.",
-  "Beaucoup parlent de courage. Peu en montrent face à moi.",
-  "On m'appelle ${name}. C'est le dernier nom que tu entendras.",
-  "Avant moi, des armées ont marché sur ${zone}. Aucune n'a survécu.",
- ],
- // v12.1.3 (Lot A, pt.3) : enjeu narratif du combat de boss — remplace l'objectif
- // purement mécanique ("X questions à résoudre") par ce qui se joue réellement
- // dans l'histoire si le héros gagne ou perd. Toujours affiché, boss uniquement.
- stakes: [
-  "Si tu échoues, ${zone} restera plongée dans l'ombre à jamais.",
-  "Vaincs-moi, et les portes de ${zone} s'ouvriront enfin devant toi.",
-  "Ta réussite ici décidera du sort de tout ${zone}.",
-  "Tant que je me dresserai, personne ne pourra traverser ${zone} en paix.",
-  "Un seul de nous deux quittera ${zone} la tête haute.",
-  "L'issue de ce combat scellera l'avenir de ${zone}, pour longtemps.",
- ],
+ standard: {
+  monster: [
+   "Te voilà donc l'aventurier qui ose s'aventurer ici…",
+   "Encore un curieux à terrasser. Le temps presse !",
+   "Tu pensais traverser ${zone} sans m'affronter ? Quelle erreur.",
+   "Approche, petit téméraire. Ton voyage s'arrête ici.",
+   "Mes énigmes ont fait pleurer plus d'un héros…",
+   "Sens-tu mon souffle ? Il porte le défi.",
+   "Voyons si ton esprit vaut mieux que tes pas.",
+   "Tu trembles déjà ? Et pourtant je n'ai rien dit…",
+   "Réponds vite, ou tombe à mes pieds !",
+   "Beaucoup ont essayé. Beaucoup ont échoué.",
+   "On m'appelle ${name}, et je ne fais jamais de cadeaux.",
+   "Tu sens cette odeur ? C'est celle de mes précédentes victimes.",
+   "${zone} n'est pas pour toi. Rebrousse chemin.",
+   "Petit, mon ombre est plus dangereuse que mes griffes.",
+   "Tu crois pouvoir filer ? Pas avant d'avoir résolu mes questions.",
+   "J'ai dévoré des sorciers, des chevaliers, des rois. Pourquoi pas toi ?",
+   "Bienvenue dans ma tanière. La sortie sera plus difficile.",
+   "Je vais te poser une question. Réponds, ou disparais.",
+  ],
+  miniboss: [
+   "Avant d'atteindre le boss, tu devras me passer !",
+   "Je garde le chemin. Personne ne passe sans payer le prix.",
+   "Tu crois avoir vaincu mes serviteurs ? Mauvaise nouvelle : me voilà.",
+   "Le boss de ${zone} m'attend de l'autre côté. Mais d'abord… moi !",
+   "Ton ascension s'arrête ici, intrus.",
+   "Je suis le dernier rempart avant le maître des lieux.",
+   "Sans m'abattre, tu ne verras jamais ce qui se cache plus loin.",
+   "On ne devient pas légende sans m'avoir affronté.",
+   "Si tu chutes ici, le boss n'aura même pas à se déplacer.",
+   "Petite leçon avant la fin : combien de chances te reste-t-il ?",
+   "Le maître de ${zone} a choisi son lieutenant avec soin. Devine qui.",
+   "${name} ne laisse passer aucun aventurier. Tu n'échapperas pas à la règle.",
+  ],
+  boss: [
+   "Tu oses entrer dans mon territoire ? ${zone} n'a pas de pitié pour les ignorants.",
+   "Bienvenue à ${zone}, mortel. Personne n'en repart vivant.",
+   "${zone} est ma forteresse. Tu ne franchiras pas mes portes.",
+   "Tu as combattu pour arriver jusqu'ici. Tu mourras pour en repartir.",
+   "Je règne sur ${zone} depuis des siècles. Tu n'es qu'un grain de poussière.",
+   "Mes serviteurs t'ont laissé passer pour mieux savourer ta défaite.",
+   "Tant d'héros sont tombés ici… Veux-tu vraiment être le suivant ?",
+   "${zone} sera ton tombeau, aventurier.",
+   "Tu sens cette aura ? C'est celle de ta propre fin.",
+   "Beaucoup parlent de courage. Peu en montrent face à moi.",
+   "On m'appelle ${name}. C'est le dernier nom que tu entendras.",
+   "Avant moi, des armées ont marché sur ${zone}. Aucune n'a survécu.",
+  ],
+  // v12.1.3 (Lot A, pt.3) : enjeu narratif du combat de boss — remplace l'objectif
+  // purement mécanique ("X questions à résoudre") par ce qui se joue réellement
+  // dans l'histoire si le héros gagne ou perd. Toujours affiché, boss uniquement.
+  stakes: [
+   "Si tu échoues, ${zone} restera plongée dans l'ombre à jamais.",
+   "Vaincs-moi, et les portes de ${zone} s'ouvriront enfin devant toi.",
+   "Ta réussite ici décidera du sort de tout ${zone}.",
+   "Tant que je me dresserai, personne ne pourra traverser ${zone} en paix.",
+   "Un seul de nous deux quittera ${zone} la tête haute.",
+   "L'issue de ce combat scellera l'avenir de ${zone}, pour longtemps.",
+  ],
+ },
+ // Ton doux, jamais menaçant : les "adversaires" de la maternelle sont grognons,
+ // tristes ou timides — jamais dangereux. Cohérent avec Iris/Plume et les
+ // histoires déjà écrites (ex. "{villain} n'est pas méchant, juste très triste").
+ tender: {
+  monster: [
+   "Coucou ${name} ! Tu veux jouer un peu avec moi ?",
+   "Oh, un ami curieux par ici ! On essaie un petit jeu ensemble ?",
+   "Je suis un peu grognon aujourd'hui… tu m'aides à retrouver le sourire ?",
+   "${zone} a besoin d'un peu de ta magie aujourd'hui !",
+   "Prêt pour un petit défi tout doux ?",
+   "J'ai perdu mes couleurs… tu veux bien jouer avec moi pour les retrouver ?",
+  ],
+  miniboss: [
+   "Avant la suite, jouons un peu tous les deux !",
+   "Je garde ce chemin, mais avec le sourire !",
+   "${name} adore les petits défis, tout comme toi !",
+   "Un dernier jeu avant de continuer ton aventure ?",
+  ],
+  boss: [
+   "${zone} est un peu triste en ce moment… tu m'aides à la faire sourire ?",
+   "Je suis ${name}, et j'ai un peu peur du changement… on joue ensemble ?",
+   "On dit que je suis terrible, mais je crois surtout que je suis maladroit.",
+   "${zone} attend un peu de lumière. Tu veux bien m'aider à la retrouver ?",
+  ],
+  stakes: [
+   "Si tu m'aides, ${zone} retrouvera toutes ses couleurs !",
+   "Ensemble, on peut redonner le sourire à tout ${zone}.",
+   "Chaque bonne réponse rend ${zone} un peu plus joyeux !",
+  ],
+ },
 };
+
+// v12.1.4 (Lot B, pt.2) : compagnon qui commente en direct pendant le combat,
+// toutes les 3 questions environ. N'utilise QUE des personnages déjà présents
+// dans les histoires existantes (aucun n'est inventé pour cette fonctionnalité).
+// 'primhist' n'a volontairement pas d'entrée : cette histoire n'a pas de
+// compagnon dédié (carnet d'aventure en solo) — la fonctionnalité y reste
+// silencieuse plutôt que d'inventer un personnage.
+const _ADV_COMPANIONS = {
+ mat:    { name:'Iris',   voice:'douce' },       // maternelle maths
+ matfr:  { name:'Plume',  voice:'douce' },        // maternelle français
+ prim:   { name:'Lumo',   voice:'enjouee' },       // primaire maths
+ primfr: { name:'Zoé',    voice:'serieuse' },      // primaire français
+ col:    { name:'Elara',  voice:'sarcastique' },   // collège maths
+ colfr:  { name:'Solène', voice:'complice' },      // collège français
+};
+const _COMPANION_LINES = {
+ douce: {
+  correct: ["{c} scintille de joie à chaque bonne réponse !","Un petit clignotement ravi de {c} accompagne ta réussite.","{c} chuchote : « C'est exactement ça ! »"],
+  wrong:   ["{c} se blottit contre toi : « Ce n'est rien, on continue. »","{c} chuchote doucement : « Encore un essai, tu y es presque. »"],
+ },
+ enjouee: {
+  correct: ["« Bien joué ! » couine {c} en tournoyant sur elle-même.","{c} brille plus fort, ravie de te voir réussir !","« On continue comme ça ! » pépie {c}."],
+  wrong:   ["« Oups ! » rigole {c}. « On retente, ce n'est pas grave ! »","{c} te fait un clin d'œil : « Allez, la prochaine est pour toi. »"],
+ },
+ serieuse: {
+  correct: ["{c} hoche la tête, satisfaite : « Précis. Continue comme ça. »","« Beau travail, » note {c} sans un sourire, mais avec fierté."],
+  wrong:   ["{c} fronce les sourcils : « Regarde bien, tu vas y arriver. »","« Ce n'est qu'un essai, » dit {c}. « Le suivant sera le bon. »"],
+ },
+ sarcastique: {
+  correct: ["« Pas mal, » lâche {c} du bout des lèvres. « Pour une fois. »","{c} lève un sourcil, presque impressionnée."],
+  wrong:   ["{c} soupire : « Bon. Ce n'était pas ton meilleur essai. Suivant. »","« On efface et on recommence, » dit {c}, déjà tournée vers la suite."],
+ },
+ complice: {
+  correct: ["{c} te fait un clin d'œil discret : « Joli coup. »","« Continue comme ça, » chuchote {c}, « personne ne nous arrêtera. »"],
+  wrong:   ["{c} murmure : « Chut… on se reprend, personne n'a rien vu. »","« Ce n'est rien, » glisse {c} à voix basse. « On retente. »"],
+ },
+};
+function _companionComment(wasCorrect){
+ try{
+  const adv = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
+  const comp = _ADV_COMPANIONS[adv];
+  if(!comp) return '';
+  const pool = _COMPANION_LINES[comp.voice] && _COMPANION_LINES[comp.voice][wasCorrect?'correct':'wrong'];
+  if(!pool || !pool.length) return '';
+  return pool[Math.floor(Math.random()*pool.length)].replace(/\{c\}/g, comp.name);
+ }catch(e){ return ''; }
+}
+function _dialogueTone(){
+ try{
+  return (typeof _isMaternelle==='function' && typeof GM!=='undefined' && GM && _isMaternelle(GM.level)) ? 'tender' : 'standard';
+ }catch(e){ return 'standard'; }
+}
 
 // Fisher-Yates seedé par zoneId+kind : renvoie un pool mélangé de façon
 // déterministe (même zone → même ordre, donc cohérent entre rejeux).
 function _shuffledDialogues(kind, zoneId){
- const base = MONSTER_DIALOGUES[kind] || MONSTER_DIALOGUES.monster;
+ const tone = MONSTER_DIALOGUES[_dialogueTone()] || MONSTER_DIALOGUES.standard;
+ const base = tone[kind] || tone.monster;
  const arr = [...base];
  for(let i = arr.length - 1; i > 0; i--){
   const j = Math.floor(_archHash(zoneId + '_' + kind + '_' + i, 13) * (i + 1));

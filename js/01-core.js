@@ -742,6 +742,38 @@ const CORRECT_TAUNTS=[
 const TIMER_TAUNTS=[
  'Le temps presse… !','Dépêche-toi !','Tu n\'auras pas le temps…','Tic tac… tic tac…','Allez, réfléchis !',
 ];
+// v12.1.4 (Lot B, pt.7) : variantes "tendres" pour la maternelle — même fonction
+// (réagir à la réponse), ton doux et jamais moqueur. Comble un vrai manque :
+// avant ce lot, un enfant de maternelle pouvait voir "Pathétique. Recommence."
+// après une erreur, sans aucune adaptation à son âge.
+const WRONG_TAUNTS_TENDER=[
+ 'Presque ! On retente ensemble ?','Oh, pas tout à fait cette fois… Essaie encore !','Hihi, pas celle-là ! Une autre idée ?','Ce n\'est pas grave du tout, on continue !','Pas cette fois, mais tu vas y arriver !',
+];
+const CORRECT_TAUNTS_TENDER=[
+ 'Bravo, c\'est ça !','Oh oui, exactement !','Super, tu as trouvé !','C\'est tout bon !','Youpi, bien joué !',
+];
+// v12.1.4 (Lot B, pt.7) : le monstre réagit à la façon de jouer du joueur —
+// pas seulement à chaque réponse, mais à une vraie série (combo qui s'envole,
+// ou enchaînement d'échecs). Primaire/collège uniquement (la maternelle a déjà
+// _matCelebrate, un mécanisme visuel plus adapté). Les répliques "difficulté"
+// restent taquines mais jamais démoralisantes.
+const BOSS_REACTION_COMBO=[
+ 'Impressionnant… mais ça ne va pas durer !','Tu commences à m\'inquiéter, petit héros.','Un joli combo. Voyons si tu tiens la distance !',
+];
+const BOSS_REACTION_STRUGGLE=[
+ 'Allez, reprends ton souffle… la suite arrive.','On dirait que ça se complique, hein ? Respire un coup.','Même les meilleurs héros trébuchent parfois. Recommence !',
+];
+function _bossReaction(kind){
+ // kind: 'combo' | 'struggle'
+ const pool = kind==='combo' ? BOSS_REACTION_COMBO : BOSS_REACTION_STRUGGLE;
+ return pool[ri(0,pool.length-1)];
+}
+// Sélectionne le bon pool selon le cycle du joueur. kind: 'wrong' | 'correct'.
+function _taunt(kind){
+ const tender = (typeof _isMaternelle==='function' && typeof GM!=='undefined' && GM && _isMaternelle(GM.level));
+ const pool = kind==='wrong' ? (tender?WRONG_TAUNTS_TENDER:WRONG_TAUNTS) : (tender?CORRECT_TAUNTS_TENDER:CORRECT_TAUNTS);
+ return pool[ri(0,pool.length-1)];
+}
 let _currentMonster=null;
 let _speechTimer=null;
 let _speechBubble=null;
