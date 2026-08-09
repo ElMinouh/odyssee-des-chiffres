@@ -736,7 +736,7 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
   const opK=q.opKey||'+';P.opStats[opK]=P.opStats[opK]||{ok:0,fail:0};P.opStats[opK].ok++;
   _trackSubjCatStat(GM.subject, q.opKey, true);
   if(typeof _progUpdate==="function") _progUpdate(GM.level, true);
-  if(typeof _classStatUpdate==="function") _classStatUpdate(GM.level, q.opKey, true);
+  if(typeof _classStatUpdate==="function") _classStatUpdate(GM.subject||'math', GM.level, q.opKey, true);
   // Chantier 1.2 : si c'était une question de révision et que l'enfant a réussi → on réduit sa présence
   if(q.isRevision && typeof clearErrorFromLog==='function' && q.display && q.res!==undefined) clearErrorFromLog(q.display, q.res);
   if(q.type==='fraction')GS.fracOk++;
@@ -827,7 +827,7 @@ GS.errInGame++;GS.combo=0;GS.opCombo=0;GS.lastOpKey=null;$('gc').classList.remov
   const opK=q.opKey||'+';P.opStats[opK]=P.opStats[opK]||{ok:0,fail:0};P.opStats[opK].fail++;
   _trackSubjCatStat(GM.subject, q.opKey, false);
   if(typeof _progUpdate==="function") _progUpdate(GM.level, false);
-  if(typeof _classStatUpdate==="function") _classStatUpdate(GM.level, q.opKey, false);
+  if(typeof _classStatUpdate==="function") _classStatUpdate(GM.subject||'math', GM.level, q.opKey, false);
   if(q.display&&q.res!==undefined){
    const _subj=(q.subj && _SUBJ_CAT_STATS[q.subj]) ? q.subj : (typeof GM!=='undefined' ? GM.subject : undefined);
    if(!_trackSubjCatError(_subj, q)){
@@ -882,14 +882,14 @@ function showCorr(q){
 function hitPlayer(msg){
  const pw=powers[P.name];
  if(pw?.shielded){pw.shielded=false;$('feedback').style.color='#3498db';$('feedback').innerText='🛡️ Bouclier ! Erreur annulée !';setTimeout(nextTurn,1200);return;}
- // Lot 6 (audit pédagogique, pt.2) : "Mode serein" — actif par défaut (P.prefs.calmMode
- // non défini ou true), désactivable par un parent dans l'onglet Encadrement. En mode
- // serein, l'erreur reste visible et traitée (son, tremblement, feedback rouge) mais ne
- // coûte pas de vie et ne peut pas terminer la partie — cohérent avec le droit à l'erreur
+ // Lot 6 (audit pédagogique, pt.2) : "Mode serein" — désactivé par défaut, activable
+ // par un parent dans l'onglet Encadrement (P.prefs.calmMode===true). En mode serein,
+ // l'erreur reste visible et traitée (son, tremblement, feedback rouge) mais ne coûte
+ // pas de vie et ne peut pas terminer la partie — cohérent avec le droit à l'erreur
  // (cf. ADR-24 sur l'équilibre motivation extrinsèque/intrinsèque). Ne concerne que le
  // mode normal solo (hitPlayer) ; le mode Combat multijoueur reste inchangé (compétitif
  // par nature, hors périmètre de ce lot).
- const _calm = !P?.prefs || P.prefs.calmMode!==false;
+ const _calm = !!(P?.prefs && P.prefs.calmMode===true);
  if(!_calm) GS.pv--;
  updateHUD();beep(150,'sawtooth',.5);vibrate(VIBE.bad);
  $('gc').classList.add('shake');setTimeout(()=>$('gc').classList.remove('shake'),400);

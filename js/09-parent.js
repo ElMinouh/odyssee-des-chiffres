@@ -1187,9 +1187,9 @@ function loadCalmMode(){
  if(!sel || !cb) return;
  try{
   const raw = localStorage.getItem('user_'+sel);
-  if(!raw){ cb.checked = true; return; }
+  if(!raw){ cb.checked = false; return; }
   const data = JSON.parse(raw);
-  cb.checked = !data.prefs || data.prefs.calmMode !== false; // actif par défaut
+  cb.checked = !!(data.prefs && data.prefs.calmMode === true); // désactivé par défaut
  }catch(e){
   console.warn('[calmMode] load error:', e);
  }

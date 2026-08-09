@@ -442,7 +442,7 @@ function analyzeOpProfile(){
 // _computeSessionObjective) pour ne pas changer de message à chaque partie.
 function analyzeCatProfile(subj){
  const stats = subj==='fr' ? P?.opStatsFr : subj==='hist' ? P?.opStatsHist : null;
- if(!stats) return {weakest:null, confidence:0};
+ if(!stats) return {weakest:null, strongest:null, confidence:0};
  const ratios = {};
  let totalAttempts = 0;
  for(const cat in stats){
@@ -452,9 +452,13 @@ function analyzeCatProfile(subj){
   totalAttempts += t;
  }
  const cats = Object.keys(ratios);
- if(cats.length<2) return {weakest:null, confidence:0};
+ if(cats.length<2) return {weakest:null, strongest:null, confidence:0};
  cats.sort((a,b)=>ratios[a].ratio-ratios[b].ratio);
- return {weakest:cats[0], weakRatio:ratios[cats[0]].ratio, confidence:Math.min(1, totalAttempts/50)};
+ return {
+  weakest:cats[0], strongest:cats[cats.length-1],
+  weakRatio:ratios[cats[0]].ratio, strongRatio:ratios[cats[cats.length-1]].ratio,
+  confidence:Math.min(1, totalAttempts/50)
+ };
 }
 /**
  * Libellé enfant d'une catégorie faible, pour une matière donnée.
@@ -475,6 +479,10 @@ const _OBJECTIVE_DEFAULTS = [
  * Calcule (ou réutilise si déjà fait aujourd'hui) le texte d'objectif du jour
  * pour la matière en cours. Toutes matières confondues via analyzeOpProfile
  * (maths) / analyzeCatProfile (fr/hist/futures matières à catégories).
+ * Lot 7 (audit pédagogique, pt.11) : quand une force ET une faiblesse nettes sont
+ * identifiables, la formulation devient positive et double ("tu progresses bien
+ * en X — continuons Y") plutôt qu'un simple rappel de la faiblesse seule — fusionné
+ * ici avec le toast du Lot 5 plutôt que d'ajouter un second message à chaque partie.
  */
 function getSessionObjectiveText(subj){
  if(!P) return null;
@@ -482,17 +490,19 @@ function getSessionObjectiveText(subj){
  if(P.sessionObjective && P.sessionObjective.date===today && P.sessionObjective.subj===subj){
   return P.sessionObjective.text;
  }
+ const isCatSubj = (subj==='fr' || subj==='hist');
+ const profile = isCatSubj ? analyzeCatProfile(subj) : analyzeOpProfile();
+ const labelOf = k => isCatSubj ? _catLabel(subj,k) : (_OP_NAMES[k]||'ces questions');
  let text;
- if(subj==='fr' || subj==='hist'){
-  const profile = analyzeCatProfile(subj);
-  text = (profile.weakest && profile.confidence>=0.2)
-   ? `🎯 Aujourd'hui : entraîne-toi sur ${_catLabel(subj,profile.weakest)} 💪`
-   : _OBJECTIVE_DEFAULTS[ri(0,_OBJECTIVE_DEFAULTS.length-1)];
+ if(profile.weakest && profile.confidence>=0.2){
+  // Double formulation possible seulement si force ET faiblesse sont bien distinctes
+  // (au moins 2 catégories/opérateurs avec des données, et un net écart de réussite).
+  const hasDistinctStrength = profile.strongest && profile.strongest!==profile.weakest && (profile.strongRatio-profile.weakRatio)>=0.25;
+  text = hasDistinctStrength
+   ? `🎯 Tu progresses bien en ${labelOf(profile.strongest)} — continuons ${labelOf(profile.weakest)} 💪`
+   : `🎯 Aujourd'hui : entraîne-toi sur ${labelOf(profile.weakest)} 💪`;
  } else {
-  const profile = analyzeOpProfile();
-  text = (profile.weakest && profile.confidence>=0.2)
-   ? `🎯 Aujourd'hui : entraîne-toi sur ${_OP_NAMES[profile.weakest]||'ces questions'} 💪`
-   : _OBJECTIVE_DEFAULTS[ri(0,_OBJECTIVE_DEFAULTS.length-1)];
+  text = _OBJECTIVE_DEFAULTS[ri(0,_OBJECTIVE_DEFAULTS.length-1)];
  }
  P.sessionObjective = {date:today, subj, text};
  return text;
@@ -850,12 +860,18 @@ function _progBilanHtml(d){
 //  3) ouvrir la console : _progSelfCheck() ne doit signaler AUCUN générateur sans phase
 //  4) vérifier le gating (variété en phase 1 < phase 3) avant livraison
 // ═══════════════════════════════════════════════════════
-function _classStatUpdate(level, opKey, correct){
+function _classStatUpdate(subj, level, opKey, correct){
  if(typeof P==='undefined' || !level || !opKey) return;
+ subj = subj || 'math';
+ // Lot 7 (audit pédagogique, pt.28) : cloisonnement par matière — avant cette version,
+ // toutes les matières partageaient la même clé de niveau (P.classStats[level][opKey]),
+ // ce qui mélangeait par exemple des catégories de français avec des opérateurs de
+ // maths dans le calcul du "point faible". Nouveau format : P.classStats[subj][level][opKey].
  if(!P.classStats || typeof P.classStats!=='object') P.classStats={};
- if(!P.classStats[level]) P.classStats[level]={};
- if(!P.classStats[level][opKey]) P.classStats[level][opKey]={ok:0,fail:0};
- if(correct) P.classStats[level][opKey].ok++; else P.classStats[level][opKey].fail++;
+ if(!P.classStats[subj]) P.classStats[subj]={};
+ if(!P.classStats[subj][level]) P.classStats[subj][level]={};
+ if(!P.classStats[subj][level][opKey]) P.classStats[subj][level][opKey]={ok:0,fail:0};
+ if(correct) P.classStats[subj][level][opKey].ok++; else P.classStats[subj][level][opKey].fail++;
 }
 const _PROG_OPLABEL = {
  '+':'Additions','-':'Soustractions','x':'Multiplications','/':'Divisions',
@@ -864,8 +880,20 @@ const _PROG_OPLABEL = {
  'pyth':'Th. de Pythagore','thal':'Th. de Thalès','trig':'Trigonométrie','fct':'Fonctions',
  'stat':'Statistiques','prob':'Probabilités','equ':'Équations','vol':'Volumes & aires'
 };
-function _progWeakType(level){
- const cs = (typeof P!=='undefined' && P.classStats && P.classStats[level]) || null;
+/**
+ * Point faible n°1 pour une matière et un niveau donnés.
+ * Compatibilité ascendante : les profils créés avant le Lot 7 avaient leurs stats
+ * maths stockées "à plat" (P.classStats[level][opKey], sans dimension matière) —
+ * on les relit dans ce format si aucune donnée n'existe encore au nouveau format.
+ */
+function _progWeakType(subj, level){
+ subj = subj || 'math';
+ let cs = (typeof P!=='undefined' && P.classStats && P.classStats[subj] && P.classStats[subj][level]) || null;
+ if(!cs && subj==='math' && typeof P!=='undefined' && P.classStats && P.classStats[level] && typeof P.classStats[level]==='object'){
+  const legacy = P.classStats[level];
+  const looksLegacy = Object.keys(legacy).some(k=>_PROG_OPLABEL[k]!==undefined);
+  if(looksLegacy) cs = legacy;
+ }
  if(!cs) return null;
  let worst=null;
  for(const k in cs){ const s=cs[k]; const n=(s.ok||0)+(s.fail||0); if(n<4) continue; const rate=(s.fail||0)/n;
@@ -902,14 +930,15 @@ function _progPanelHtml(d){
     </div>
     <div style="display:flex;justify-content:space-between;font-size:.65em;opacity:.85;"><span>Début</span><span>Milieu</span><span>Fin</span></div>
     <div style="text-align:center;font-weight:800;color:${col};margin-top:5px;">${sel} — ${lab} · ${Math.round(v*100)}%</div>`;
-  // Point faible : suivi par notion disponible pour les maths
+  // Point faible : suivi par notion, disponible pour toute matière jouée (Lot 7, pt.28)
   let weakBox='';
-  if(curSubj==='math'){
-   const w=_progWeakType(sel);
+  {
+   const w=_progWeakType(curSubj, sel);
+   const _label = curSubj==='math' ? (_PROG_OPLABEL[(w&&w.key)]||(w&&w.key)) : _catLabel(curSubj, (w&&w.key));
    weakBox = w
     ? `<div style="margin-top:10px;padding:10px;border:2px solid #e74c3c;border-radius:10px;background:rgba(231,76,60,.13);">
          <div style="font-weight:800;color:#ff6b6b;">⚠️ Point faible n°1 en ${sel}</div>
-         <div style="margin-top:3px;">${_PROG_OPLABEL[w.key]||w.key} — ${Math.round(w.rate*100)}% d'erreurs (${w.fail} sur ${w.n})</div>
+         <div style="margin-top:3px;">${_label} — ${Math.round(w.rate*100)}% d'erreurs (${w.fail} sur ${w.n})</div>
        </div>`
     : `<div style="margin-top:10px;padding:10px;border:2px dashed rgba(255,255,255,.25);border-radius:10px;font-size:.9em;opacity:.8;">Pas encore assez de réponses en ${sel} pour repérer un point faible.</div>`;
   }
