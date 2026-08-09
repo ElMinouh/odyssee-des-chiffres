@@ -2062,6 +2062,20 @@ const _TWIST_LINES = [
  "Un tremblement parcourt les environs — quelque chose vient de changer, loin d'ici, dans le repaire de {villain}.",
  "Une créature autrefois docile se rebelle soudain contre {villain}, comme si ta présence redonnait du courage à tous.",
  "Une rumeur circule : {villain} aurait envoyé un émissaire spécial rien que pour toi. Reste sur tes gardes.",
+ "Un message griffonné à la hâte atterrit à tes pieds : quelqu'un, quelque part, veut t'aider contre {villain}.",
+ "Au loin, une tour vacille et s'effondre dans un nuage de poussière — un des repaires de {villain}, dit-on.",
+ "Un frisson inattendu parcourt l'air : {villain} vient d'ordonner à ses serviteurs de redoubler de vigilance.",
+ "Un vieux souvenir te revient soudain en mémoire, et tu comprends enfin pourquoi {villain} te déteste tant.",
+ "Un animal effrayé traverse ton chemin en courant — quelque chose l'a poursuivi, tout près d'ici.",
+ "Une lettre scellée, portée par le vent, se pose devant toi. Elle ne porte qu'un mot : « Méfie-toi. »",
+ "Loin derrière toi, un cri retentit. Puis plus rien. Tu choisis de continuer, le cœur battant.",
+ "Une ombre familière s'éloigne rapidement dès qu'elle te voit approcher — un espion de {villain}, sûrement.",
+ "Le sol tremble légèrement sous tes pieds, comme si {villain} venait de frapper du poing quelque part, très en colère.",
+ "Un étrange silence s'installe soudain autour de toi. Même les oiseaux semblent retenir leur souffle.",
+ "Tu retrouves, à moitié enfoui, un objet qui ne t'appartient pas… et qui semble appartenir à {villain} lui-même.",
+ "Une voix lointaine, presque un murmure, semble t'encourager à continuer. Tu ne sais pas d'où elle vient.",
+ "Le vent tourne brusquement, chargé d'une odeur inconnue. Quelque chose approche, ou quelque chose s'éloigne.",
+ "Un éclat de rire glacial résonne au loin — {villain} vient peut-être d'apprendre une mauvaise nouvelle.",
 ];
 function _twistZoneIdx(regionId, nZones){
  if(nZones < 3) return -1; // pas assez de zones pour un vrai "milieu"
