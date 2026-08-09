@@ -114,7 +114,7 @@ function genQ_CM2(boss,_d2=0){
   const pick=_nextBossType(validTypes.length?validTypes:['div'],'CM2');
   if(pick==='div'){const b=_ari(2,9,'/'),res=_ari(2,12,'/');q={display:`${b*res} ÷ ${b}`,res,type:'normal',opKey:'/',img:'',hint:`Combien de fois ${b} tient dans ${b*res} ?`};}
   else if(pick==='miss_div'){const b=_ari(2,8,'/'),r=_ari(3,10,'/');q={display:`${b*r} ÷ ? = ${r}`,res:b,type:'missing',opKey:'/',img:'',hint:`${b*r} ÷ ? = ${r} → fais ${b*r} ÷ ${r}.`};}
-  else if(pick==='frac'){const d=[2,4,5,10][ri(0,3)];const w=_ari(2,20,'/')*d,n=ri(1,d-1)||1;const r=Math.round(w*n/d);q={display:`${n}/${d} de ${w}`,res:r,type:'fraction',opKey:'/',img:'',hint:`${n}/${d} de ${w} : fais (${w} ÷ ${d}) × ${n}.`};}
+  else if(pick==='frac'){const d=[2,4,5,10][ri(0,3)];const w=_ari(2,20,'/')*d,n=ri(1,d-1)||1;const r=Math.round(w*n/d);q={display:`${n}/${d} de ${w}`,res:r,type:'fraction',opKey:'/',img:'',hint:`${n}/${d} de ${w} : fais (${w} ÷ ${d}) × ${n}.`,visualHtml:(typeof _svgFractionBar==='function'?_svgFractionBar(n,d):'')};}
   else if(pick==='mult_hard'){const a=[6,7,8,9,11,12][ri(0,5)],b=_ari(4,12,'x');q={display:`${a} × ${b}`,res:a*b,type:'normal',opKey:'x',img:'',hint:`Pense à la table de ${a}.`};}
   else q=GEO_Q[ri(0,GEO_Q.length-1)]();
  } else {
@@ -122,7 +122,7 @@ function genQ_CM2(boss,_d2=0){
   if(af.geo)pool.push('geo','geo');if(af.frac)pool.push('frac','frac');
   const pick=pool[ri(0,pool.length-1)];
   if(pick==='geo')q=GEO_Q[ri(0,GEO_Q.length-1)]();
-  else if(pick==='frac'){const d=[2,4,5,10][ri(0,3)];const w=_ari(2,20,'/')*d,n=ri(1,d-1)||1;const r=Math.round(w*n/d);q={display:`${n}/${d} de ${w}`,res:r,type:'fraction',opKey:'/',img:'',hint:`${n}/${d} de ${w} : fais (${w} ÷ ${d}) × ${n}.`};}
+  else if(pick==='frac'){const d=[2,4,5,10][ri(0,3)];const w=_ari(2,20,'/')*d,n=ri(1,d-1)||1;const r=Math.round(w*n/d);q={display:`${n}/${d} de ${w}`,res:r,type:'fraction',opKey:'/',img:'',hint:`${n}/${d} de ${w} : fais (${w} ÷ ${d}) × ${n}.`,visualHtml:(typeof _svgFractionBar==='function'?_svgFractionBar(n,d):'')};}
   else if(!af.div)return genQ_CM1(boss);
   else{const b=_ari(2,6,'/'),r=_ari(2,10,'/');q={display:`${b*r} ÷ ${b}`,res:r,type:'normal',opKey:'/',img:'',hint:`Combien de fois ${b} tient dans ${b*r} ?`};}
  }
@@ -162,7 +162,7 @@ function genQ_6E(boss,_d=0){
  if(t==='dmul'){ const base=_pick([10,100,1000]); const x=ri(11,boss?999:199)/10; q=_mkQ(`${_fr(x)} × ${base}`, x*base, 'x', `Multiplier par ${base}, c'est déplacer la virgule vers la droite.`); }
  else if(t==='ddiv'){ const base=_pick([10,100]); const n=ri(11,boss?999:499); q=_mkQ(`${n} ÷ ${base}`, n/base, '/', `Diviser par ${base}, c'est déplacer la virgule vers la gauche.`); }
  else if(t==='dadd'){ const a=ri(11,199)/10, b=ri(11,199)/10; q=_mkQ(`${_fr(a)} + ${_fr(b)}`, a+b, '+', `Aligne les virgules avant d'additionner.`); }
- else if(t==='fqty'){ const d=_pick([2,3,4,5,10]); const n=ri(1,d-1); const w=d*ri(2,boss?12:8); q=_mkQ(`${n}/${d} de ${w}`, w*n/d, '/', `${n}/${d} de ${w} : fais (${w} ÷ ${d}) × ${n}.`); }
+ else if(t==='fqty'){ const d=_pick([2,3,4,5,10]); const n=ri(1,d-1); const w=d*ri(2,boss?12:8); q=_mkQ(`${n}/${d} de ${w}`, w*n/d, '/', `${n}/${d} de ${w} : fais (${w} ÷ ${d}) × ${n}.`); if(typeof _svgFractionBar==='function') q.visualHtml=_svgFractionBar(n,d); }
  else if(t==='conv'){ const c=_pick([
     ()=>{const m=ri(2,9);return [`${m} m = ? cm`, m*100, `1 m = 100 cm, donc ${m} m × 100.`];},
     ()=>{const k=ri(2,9);return [`${k} km = ? m`, k*1000, `1 km = 1000 m, donc ${k} km × 1000.`];},

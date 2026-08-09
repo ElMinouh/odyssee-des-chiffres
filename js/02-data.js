@@ -1061,11 +1061,11 @@ const GIFS=[
  {url:'assets/gifs/zl_link.gif',           n:'Link'},
 ];
 const GEO_Q=[
- ()=>{const s=ri(2,9);return{display:`Périmètre carré côté ${s}`,res:s*4,type:'geo',opKey:'geo',hint:`${s}×4=${s*4}`};},
- ()=>{const l=ri(2,9),w=ri(1,6);return{display:`Périmètre rectangle ${l}×${w}`,res:2*(l+w),type:'geo',opKey:'geo',hint:`(${l}+${w})×2=${2*(l+w)}`};},
- ()=>{const s=ri(2,8);return{display:`Aire carré côté ${s}`,res:s*s,type:'geo',opKey:'geo',hint:`${s}×${s}=${s*s}`};},
- ()=>{const l=ri(2,9),w=ri(1,6);return{display:`Aire rectangle ${l}×${w}`,res:l*w,type:'geo',opKey:'geo',hint:`${l}×${w}=${l*w}`};},
- ()=>{const a=ri(3,7)*10,b=ri(2,5)*10;return{display:`Triangle : angles ${a}° et ${b}°, 3ème ?`,res:180-a-b,type:'geo',opKey:'geo',hint:`180-${a}-${b}=${180-a-b}`};},
+ ()=>{const s=ri(2,9);return{display:`Périmètre carré côté ${s}`,res:s*4,type:'geo',opKey:'geo',hint:`${s}×4=${s*4}`,visualHtml:(typeof _svgSquare==='function'?_svgSquare(s):'')};},
+ ()=>{const l=ri(2,9),w=ri(1,6);return{display:`Périmètre rectangle ${l}×${w}`,res:2*(l+w),type:'geo',opKey:'geo',hint:`(${l}+${w})×2=${2*(l+w)}`,visualHtml:(typeof _svgRectangle==='function'?_svgRectangle(l,w):'')};},
+ ()=>{const s=ri(2,8);return{display:`Aire carré côté ${s}`,res:s*s,type:'geo',opKey:'geo',hint:`${s}×${s}=${s*s}`,visualHtml:(typeof _svgSquare==='function'?_svgSquare(s):'')};},
+ ()=>{const l=ri(2,9),w=ri(1,6);return{display:`Aire rectangle ${l}×${w}`,res:l*w,type:'geo',opKey:'geo',hint:`${l}×${w}=${l*w}`,visualHtml:(typeof _svgRectangle==='function'?_svgRectangle(l,w):'')};},
+ ()=>{const a=ri(3,7)*10,b=ri(2,5)*10;return{display:`Triangle : angles ${a}° et ${b}°, 3ème ?`,res:180-a-b,type:'geo',opKey:'geo',hint:`180-${a}-${b}=${180-a-b}`,visualHtml:(typeof _svgTriangleAngles==='function'?_svgTriangleAngles(a,b):'')};},
 ];
 // ── FILTRES OPS DISPONIBLES ──
 const OP_FILTERS=[

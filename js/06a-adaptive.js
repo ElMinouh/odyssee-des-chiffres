@@ -1064,6 +1064,39 @@ function _frVisualAid(q){
  * Point d'entrée générique — toute matière future peut ajouter sa propre branche
  * ici (ou fournir son propre générateur si le pattern diffère significativement).
  */
+// ═══════════════════════════════════════════════════════
+// DOUBLE CODAGE VISUEL — GÉOMÉTRIE (Lot 8, audit pédagogique 12e conversation, pt.17)
+// ═══════════════════════════════════════════════════════
+// Contrairement aux aides du Lot 4 (affichées seulement après 2 échecs), ces visuels
+// accompagnent la question DÈS SA PREMIÈRE PRÉSENTATION (double codage verbal+visuel,
+// Mayer) — posés dans q.visualHtml comme le fait déjà GEO_Q pour son texte (02-data.js).
+function _svgSquare(side){
+ const W=140,H=140,pad=20,s=W-2*pad;
+ return `<svg viewBox="0 0 ${W} ${H+22}" style="width:100%;max-width:160px;height:auto;">
+  <rect x="${pad}" y="${pad}" width="${s}" height="${s}" fill="none" stroke="#f1c40f" stroke-width="2.5"/>
+  <text x="${W/2}" y="${H+16}" font-size="14" fill="#fff" text-anchor="middle" font-weight="700">côté = ${side}</text>
+ </svg>`;
+}
+function _svgRectangle(l,w){
+ const W=180,H=110,pad=16;
+ const rw=W-2*pad, ratio=Math.max(0.35,Math.min(1,w/l)); const rh=Math.max(28,(H-2*pad)*ratio);
+ const y0=(H-rh)/2;
+ return `<svg viewBox="0 0 ${W} ${H+22}" style="width:100%;max-width:200px;height:auto;">
+  <rect x="${pad}" y="${y0}" width="${rw}" height="${rh}" fill="none" stroke="#f1c40f" stroke-width="2.5"/>
+  <text x="${W/2}" y="${y0-6}" font-size="13" fill="#fff" text-anchor="middle" font-weight="700">${l}</text>
+  <text x="${pad-8}" y="${y0+rh/2}" font-size="13" fill="#fff" text-anchor="end" font-weight="700" dominant-baseline="middle">${w}</text>
+ </svg>`;
+}
+function _svgTriangleAngles(a,b){
+ const W=180,H=140;
+ const p1=[20,120], p2=[160,120], p3=[70,20];
+ return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:200px;height:auto;">
+  <polygon points="${p1.join(',')} ${p2.join(',')} ${p3.join(',')}" fill="none" stroke="#f1c40f" stroke-width="2.5"/>
+  <text x="${p1[0]+18}" y="${p1[1]-6}" font-size="13" fill="#2ecc71" font-weight="800">${a}°</text>
+  <text x="${p2[0]-24}" y="${p2[1]-6}" font-size="13" fill="#2ecc71" font-weight="800">${b}°</text>
+  <text x="${p3[0]-2}" y="${p3[1]+22}" font-size="15" fill="#e74c3c" font-weight="800">?</text>
+ </svg>`;
+}
 function getVisualAid(subj, q){
  try{
   if(subj==='fr') return _frVisualAid(q);
