@@ -17,6 +17,10 @@ function resetGS(){
  Object.assign(GS,{pv:3+(P.skills.shield||0),score:0,combo:0,maxCombo:0,qCount:0,q:null,answering:false,
   isBoss:false,isGolden:false,errInGame:0,fracOk:0,missingOk:0,combatWon:false,mapBossWon:false,
   sessionStart:Date.now(),frozen:false,monsterHP:1,monsterMaxHP:1,activeEvent:null,eventLeft:0,
+  // Lot 1 (audit engagement, 13e conversation) : compteur d'échecs consécutifs (pt.27)
+  // pour proposer une pause après une série de mauvaises réponses, sans pénaliser
+  // ni interrompre la partie automatiquement.
+  consecFail:0,_pauseSuggested:false,
   recentQ:[],bossTypeQ:{},errList:[]});
 }
 // Enregistre une question dans l'historique et évite les répétitions

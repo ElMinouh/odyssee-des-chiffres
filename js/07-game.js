@@ -308,7 +308,13 @@ function showTrans(emoji,msg,dur,cb){
 // ═══════════════════════════════════════════════════════
 function maybeEvent(){
  if(GS.activeEvent||GS.qCount%3!==0||Math.random()>.15)return;
- GS.activeEvent=EVENTS[ri(0,EVENTS.length-1)];GS.eventLeft=GS.activeEvent.dur;
+ // Lot 1 (audit engagement, 13e conversation, pt.3) : en Mode serein, on exclut
+ // l'événement "Monstre Enragé" (réduction du timer) — stress temporel superflu,
+ // incohérent avec l'objectif du Mode serein (ADR-34). Les autres événements
+ // (bonus) restent inchangés, y compris en Mode serein.
+ const _calmEv = !!(P?.prefs && P.prefs.calmMode===true);
+ const _eventPool = _calmEv ? EVENTS.filter(e=>e.effect!=='reduce_timer') : EVENTS;
+ GS.activeEvent=_eventPool[ri(0,_eventPool.length-1)];GS.eventLeft=GS.activeEvent.dur;
  const ev=GS.activeEvent;
  const b=$('event-banner');
  b.innerHTML=`<div style="background:${ev.color};padding:10px;font-size:1em;font-weight:700;">${ev.label} — ${ev.desc}</div>`;
@@ -368,6 +374,15 @@ function startGame(){
  if(GM.mode2==='normal' && !GM.homework && typeof getSessionObjectiveText==='function'){
   const _objTxt = getSessionObjectiveText(GM.subject||'math');
   if(_objTxt && typeof toast==='function') setTimeout(()=>toast(_objTxt, 3800), 400);
+ }
+ // Lot 1 (audit engagement, 13e conversation, pt.25) : la première fois que le Mode
+ // serein est actif sur ce profil, on l'explique une fois à l'enfant lui-même
+ // (jusqu'ici visible seulement du parent, cf. 09-parent.js). Affiché après le toast
+ // d'objectif pour ne pas superposer deux messages.
+ if(GM.mode2==='normal' && !GM.homework && P?.prefs?.calmMode===true && !P.calmModeExplained){
+  P.calmModeExplained=true;
+  if(typeof saveProfile==='function') saveProfile();
+  setTimeout(()=>{ if(typeof toast==='function') toast('😊 Ici, se tromper ne fait pas perdre de vie : tu peux essayer sans stress !', 4500); }, 4400);
  }
  if(GM.mode2==='combat'){
   const valid=combatCfg.filter(p=>p.name&&p.name.trim());
@@ -721,7 +736,7 @@ function validate(ans){
  }
  const q=GS.q;
  if(ans!==null && Math.abs(ans-q.res)<1e-6){
-GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
+GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);GS.consecFail=0;
   // Chantier A4 : flash de milestone à 10/20/30/50
   if([10,20,30,50].includes(GS.combo) && typeof flashComboMilestone==='function'){
    flashComboMilestone(GS.combo);
@@ -829,7 +844,7 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);
    safeTimeout(playCongrats,600);
   }else safeTimeout(nextTurn,750);}
  }else{
-GS.errInGame++;GS.combo=0;GS.opCombo=0;GS.lastOpKey=null;$('gc').classList.remove('combo-breaker');
+GS.errInGame++;GS.combo=0;GS.opCombo=0;GS.lastOpKey=null;GS.consecFail=(GS.consecFail||0)+1;$('gc').classList.remove('combo-breaker');
   const opK=q.opKey||'+';P.opStats[opK]=P.opStats[opK]||{ok:0,fail:0};P.opStats[opK].fail++;
   _trackSubjCatStat(GM.subject, q.opKey, false);
   if(typeof _progUpdate==="function") _progUpdate(GM.level, false);
@@ -856,6 +871,14 @@ GS.errInGame++;GS.combo=0;GS.opCombo=0;GS.lastOpKey=null;$('gc').classList.remov
   // Monster taunts on wrong answer
   monsterSpeak(WRONG_TAUNTS[ri(0,WRONG_TAUNTS.length-1)],2200);
   showCorr(q);if(GM.mode==='qcm'||(q&&q.choices&&q.choices.length))markQCM(ans,false,q.res);hitPlayer('💥 FAUX !');
+  // Lot 1 (audit engagement, 13e conversation, pt.27) : après 4 échecs consécutifs
+  // dans la partie, suggestion douce de pause (une seule fois par partie). N'apparaît
+  // pas si la partie se termine entre-temps (safeTimeout ne s'exécute que si
+  // gameActive est encore vrai).
+  if(GS.consecFail>=4 && !GS._pauseSuggested){
+   GS._pauseSuggested=true;
+   safeTimeout(()=>{ if(typeof toast==='function') toast('😌 On fait une petite pause, ou on essaie autre chose ?', 4000); }, 2200);
+  }
  }
 }
 function markQCM(chosen,correct,right){
@@ -1324,12 +1347,28 @@ if(typeof checkMilestones==='function') checkMilestones();
   $('end-correction').innerHTML='';$('end-badges').innerHTML='';renderEndStars(3);startConfetti();return;
  }
  const msgs=ENC[P.name]||ENC.def;
- $('end-title').innerText=won?'🏆 RÉUSSI !':'💀 DÉFAITE…';
+ // Lot 1 (audit engagement, 13e conversation, pt.1 + pt.23) : cadrage de la défaite
+ // moins brutal, et reconnaissance du progrès réel quand il existe (le système a
+ // déjà les données via P.history, simplement inexploitées jusqu'ici). On compare
+ // le score de cette partie aux 5 dernières parties comparables (même niveau, même
+ // mode, même matière) — hors partie en cours, déjà poussée dans P.history plus haut.
+ let _progressNote='';
+ if(!won){
+  try{
+   const _comparable=(P.history||[]).slice(0,-1).filter(h=>h.level===fl && h.mode===GM.mode2 && h.subject===((GM.subject)||'math'));
+   const _recent=_comparable.slice(-5);
+   if(_recent.length>=2){
+    const _avg=_recent.reduce((s,h)=>s+(h.score||0),0)/_recent.length;
+    if(GS.score>_avg) _progressNote=`Ton score (${GS.score} pts) est meilleur que ta moyenne récente sur ce niveau !`;
+   }
+  }catch(e){}
+ }
+ $('end-title').innerText=won?'🏆 RÉUSSI !':(_progressNote?'💪 PRESQUE !':'😕 Partie terminée…');
  $('end-mode').innerText=`${GM.mapZone?'🗺️ Carte : '+GM.mapZone.label:'Mode : '+GM.mode2} · Niv. ${GM.level}`;
  $('end-score').innerText=`Score : ${GS.score} pts · Combo max : ×${GS.maxCombo}`;
  $('end-stars').innerText=`+${won?Math.round(GS.score*1.5):0} ⭐`;
  $('end-xp').innerText=`+${xpGained} XP · Niv.${levelFromXP(P.xp)}`;
- $('end-enc').innerText=won?String(msgs[ri(0,msgs.length-1)]).replace(/\{name\}/g,P.name||''):'';
+ $('end-enc').innerText=won?String(msgs[ri(0,msgs.length-1)]).replace(/\{name\}/g,P.name||''):(_progressNote||'On retente ? Chaque partie aide à progresser 💪');
  renderEndStars(computeStars(GS.score,won));
  $('end-badges').innerHTML=newBadges.length?'<p style="color:#f1c40f;margin:3px 0;">🏅 '+newBadges.map(b=>b.e+' '+b.l).join(', ')+'</p>':'';
  _renderEndRecap(won);
