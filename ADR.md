@@ -249,4 +249,61 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+---
+
+## ADR-39 — Clés de paliers basées sur le seuil, pas sur l'index (pt.16)
+
+**Contexte** (13e conversation, audit engagement, Lot 3, pt.16) : les paliers longue durée (`MILESTONES`, `02-data.js`) étaient trop espacés pour un jeune enfant (ex. Maître Calcul : 1000 → 5000 d'un coup). L'ajout de paliers intermédiaires était nécessaire, mais `checkMilestones()` identifiait chaque palier déjà validé par son INDEX dans le tableau (`id_0`, `id_1`...) — un ajout au milieu de la liste aurait décalé tous les index suivants et faussé rétroactivement les récompenses déjà obtenues par les enfants qui jouent déjà.
+
+**Décision** : la clé de validation passe de `${id}_${index}` à `${id}_${goal}` (le seuil lui-même), stable quel que soit l'ordre ou le nombre de paliers ajoutés par la suite. Migration ponctuelle en V8 (`SAVE_VERSION`, `05-profile.js`) qui convertit les anciennes clés indexées vers le nouveau format, à partir d'une table figée des seuils tels qu'ils existaient AVANT ce lot (`_MIGRATIONS[8]`). Vérifiée manuellement (`mastermath_0`→`mastermath_100`, `explorer_1`→`explorer_3`, clé inconnue laissée intacte).
+
+**Conséquence** : toute future insertion de palier intermédiaire dans `MILESTONES` est désormais sans risque pour les profils existants. Ne jamais revenir à une clé basée sur l'index.
+
+---
+
+## ADR-40 — File de messages séquentielle au démarrage de partie
+
+**Contexte** (13e conversation, audit engagement, Lot 4) : `startGame()` (`07-game.js`) avait accumulé plusieurs messages d'accueil indépendants (objectif du jour, Mode serein, sens de la matière, accueil après absence, série de jours) chacun sur un délai fixe. Tous partagent le même élément `#toast` (`toast()`, `01-core.js`) : un second appel écrase le premier avant la fin de son affichage — les délais fixes se chevauchaient et rendaient certains messages invisibles.
+
+**Décision** : les messages candidats sont empilés dans un tableau local (`_startMsgs`) puis défilés séquentiellement (délai cumulé = durée du message précédent + pause), au lieu de délais fixes indépendants. La boîte de dialogue de choix d'objectif (modale, pas un toast) reste prioritaire et s'affiche en premier quand elle est présente.
+
+**Conséquence** : toute future addition de message de démarrage DOIT passer par `_startMsgs.push({text, dur})` plutôt que par un `setTimeout(()=>toast(...), délai_fixe)` isolé, sous peine de recréer le bug de chevauchement.
+
+---
+
+## ADR-41 — "Prochain badge" limité aux badges à données persistantes (pt.17)
+
+**Contexte** (13e conversation, audit engagement, Lot 3, pt.17) : mise en avant du badge non obtenu le plus proche du déblocage. Plusieurs badges (`BADGES`, `02-data.js`) dépendent de l'état d'une partie EN COURS (`GS`, ex. `score50`, `no_error`) plutôt que de données persistantes du profil (`P`) — leur progression n'est pas mesurable en dehors d'une partie active.
+
+**Décision** : `_BADGE_PROGRESS` (`07-game.js`) ne couvre que les badges calculables depuis `P` seul (`first_win`, `veteran`, `lvl10`, `combo5`, `combo10`, `map_boss1`). Les badges liés à `GS` sont exclus de la mise en avant plutôt que d'afficher une progression fictive ou toujours à 0%.
+
+**Conséquence** : tout futur badge dont la condition ne dépend QUE de données persistantes de `P` peut être ajouté à `_BADGE_PROGRESS` pour bénéficier de la mise en avant ; un badge dépendant de `GS` ne le peut pas sans refonte (ex. stocker un meilleur score persistant par mode).
+
+---
+
+## ADR-42 — Ciblage partiel du défi hebdomadaire par faiblesse détectée (pt.22)
+
+**Contexte** (13e conversation, audit engagement, Lot 3, pt.22) : le défi hebdomadaire (`WEEKLY_CH`, `02-data.js`) était tiré au hasard. L'audit recommandait de le cibler sur la faiblesse réelle du joueur, comme déjà fait pour les quêtes journalières intelligentes.
+
+**Décision assumée** : seul le défi "Soustractions" (`w2`) a une correspondance fiable avec une clé de `P.opStats` (`weakOpKey:'-'`). Les défis "Tables de 2/7" et "Nombres manquants/Fractions" n'ont pas d'équivalent direct dans les stats persistantes actuelles (`P.opStats` ne distingue pas par table de multiplication) — leur ajouter un `weakOpKey` aurait fabriqué une correspondance artificielle. Quand la faiblesse détectée correspond à un `weakOpKey` connu, ce défi est favorisé à 70% (pas 100%, pour garder une part de variété) ; sinon, tirage aléatoire inchangé.
+
+**Conséquence** : un ciblage plus complet nécessiterait un suivi de performance par table de multiplication (actuellement absent de `P.opStats`) — non traité dans ce lot, à envisager si ce niveau de granularité devient utile ailleurs.
+
+---
+
+## ADR-43 — Créateur d'avatar par calques : mis en pause (pt.28)
+
+**Contexte** (13e conversation, audit engagement/gamification, point 28) : l'audit avait identifié à tort une absence de personnalisation d'avatar — le jeu permet déjà de choisir un avatar emoji parmi ceux débloqués selon le stade du héros (`renderAvatars()`/`selectAvatar()`, `08-ui.js`). Cyril souhaitait en réalité un système bien plus ambitieux : un vrai créateur par calques (silhouette, teint, coiffure, yeux, chapeau, visage, haut, bas, chaussures, accessoire en main), avec des centaines de combinaisons débloquées par la progression ou achetables en étoiles.
+
+**Décision** : concept validé sur le fond (catégories, volume, double économie progression/étoiles sans nouvelle monnaie) après une maquette en style chibi. Le chantier est mis en pause avant tout code — Cyril a choisi de ne pas poursuivre pour l'instant, sans rejet du concept.
+
+**Ce qui reste à faire si le chantier est repris** :
+- Choisir et figer le style visuel final (base chibi validée, déclinaisons à approfondir).
+- Concevoir le moteur de rendu (formes SVG paramétrables recolorées dynamiquement, plutôt que des centaines d'images dessinées à la main).
+- Découper en lots successifs (moteur de rendu → écran de création → intégration boutique étoiles → déblocages par niveau → remplacement de l'avatar emoji dans les écrans qui l'affichent : combat, classement, dashboard, etc.).
+
+**Conséquence** : le système d'avatar emoji actuel reste la personnalisation en place. Aucune régression, aucun code résiduel de ce chantier n'a été introduit.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
