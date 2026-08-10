@@ -490,4 +490,20 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-57 — QA contenu narratif : cohérence rebondissements, ton tender/standard testé, double codage Pythagore (méta-audit, Lot 6)
+
+**Contexte** (méta-audit stratégique, prompt 12, Lot 6) : audit qualité du contenu narratif produit lors des conversations précédentes, sans repasser par un audit formel complet.
+
+**Décision** :
+1. **Rebondissements (ADR-47)** : 14 des 20 variantes mentionnent `{villain}` avec une agence active (« vient de repérer », « vient d'ordonner »...). Vérification faite : l'histoire maternelle (`_MAT_STORY`) établit que le méchant est nommé dès le prologue mais ne parle/n'agit que dans la toute dernière région. `_pickTwistLine()` restreint désormais le tirage, pour `mat`/`matfr` uniquement, aux 6 variantes sans `{villain}` (`_TWIST_LINES_VILLAIN_FREE_IDX`). Les 5 autres aventures gardent les 20 variantes.
+2. **Ton tender/standard (ADR-45)** : nouveau test `tests/dialogue-tone.test.js` — vérifie que `_dialogueTone()` renvoie `tender` pour PS/MS/GS et `standard` pour tout le reste, et que les 2 pools de `MONSTER_DIALOGUES` ont des clés identiques et non vides. Garde-fou contre une régression du type de celle corrigée par ADR-45 (`WRONG_TAUNTS` unique et sombre, partagé par tous les niveaux avant correctif).
+3. **172 textes de zone (v12.2.0)** : sondage sur 15/172 textes répartis sur les 7 aventures — aucune incohérence de ton trouvée (voix des compagnons fidèles à travers l'échantillon). Pas de relecture exhaustive (disproportionnée pour ce lot) — à refaire plus en profondeur seulement si un signalement concret apparaît.
+4. **Double codage visuel (ADR-36)** : `_colPythReciproque` (seul générateur de géométrie collège sans `visualHtml`, oublié lors d'ADR-36) reçoit désormais le même triangle SVG que `_colPythHyp`/`_colPythCote` (`_colRightTriSvg`, sans `unknown` puisque les 3 côtés sont donnés).
+
+**Reporté à un lot dédié** : extension du moment charnière (ADR-50) à 2-3 choix par Odyssée — chantier de contenu substantiel (14 nouveaux textes par point de choix ajouté, relecture complète des 7 histoires requise à nouveau par discipline ADR-50), volontairement sorti de ce lot pour ne pas le noyer dans des correctifs rapides.
+
+**Conséquence** : toute future ligne ajoutée à `_TWIST_LINES` qui mentionnerait `{villain}` avec une agence active doit être exclue par défaut du pool maternelle, sauf vérification explicite de compatibilité avec `_MAT_STORY`/`_MAT_STORY_FR`.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

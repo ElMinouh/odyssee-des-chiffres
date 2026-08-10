@@ -301,6 +301,9 @@ globalThis.__api = {
   setShowConfirm: (fn) => { globalThis.showConfirm = fn; },
   resetAdventure: (typeof resetAdventure==='function') ? resetAdventure : undefined,
   _allOdysseyStorySeenIds: (typeof _allOdysseyStorySeenIds==='function') ? _allOdysseyStorySeenIds : undefined,
+  // --- ADR-57 (Lot 6, garde-fou ton tender/standard, ADR-45) ---
+  _dialogueTone: (typeof _dialogueTone==='function') ? _dialogueTone : undefined,
+  MONSTER_DIALOGUES: (typeof MONSTER_DIALOGUES!=='undefined') ? MONSTER_DIALOGUES : undefined,
 };
 `;
 

@@ -2157,6 +2157,14 @@ const _TWIST_LINES = [
  "Le vent tourne brusquement, chargé d'une odeur inconnue. Quelque chose approche, ou quelque chose s'éloigne.",
  "Un éclat de rire glacial résonne au loin — {villain} vient peut-être d'apprendre une mauvaise nouvelle.",
 ];
+// v12.2.7 (ADR-57, méta-audit Lot 6, pt.1) : 14 des 20 lignes ci-dessus
+// mentionnent {villain} avec une vraie agence (« vient de repérer »,
+// « vient d'ordonner »...). Pour la maternelle (mat/matfr), l'histoire établit
+// que le méchant est nommé dès le prologue mais ne PARLE/N'AGIT que dans la
+// toute dernière région (voir _MAT_STORY) — un rebondissement villain-actif
+// dès la 1ère région casserait cette mise en scène. Indices (0-based) des
+// lignes SANS {villain}, seules utilisables pour mat/matfr :
+const _TWIST_LINES_VILLAIN_FREE_IDX = [10, 11, 12, 15, 17, 18];
 function _twistZoneIdx(regionId, nZones){
  if(nZones < 3) return -1; // pas assez de zones pour un vrai "milieu"
  const frac = 0.33 + _archHash(regionId + '_twist', 17) * 0.33; // entre 33% et 66%
@@ -2170,11 +2178,14 @@ function _twistZoneIdx(regionId, nZones){
 function _pickTwistLine(){
  if(typeof P==='undefined' || !P) return _TWIST_LINES[0];
  const advKey = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
+ // v12.2.7 (ADR-57) : maternelle -> uniquement les rebondissements sans {villain}.
+ const isMat = (advKey === 'mat' || advKey === 'matfr');
+ const eligible = isMat ? _TWIST_LINES_VILLAIN_FREE_IDX : _TWIST_LINES.map((_,i)=>i);
  P.twistLinesUsedByAdv = P.twistLinesUsedByAdv || {};
  P.twistLinesUsedByAdv[advKey] = Array.isArray(P.twistLinesUsedByAdv[advKey]) ? P.twistLinesUsedByAdv[advKey] : [];
  const used = P.twistLinesUsedByAdv[advKey];
- let avail = _TWIST_LINES.map((_,i)=>i).filter(i => !used.includes(i));
- if(!avail.length){ P.twistLinesUsedByAdv[advKey] = []; avail = _TWIST_LINES.map((_,i)=>i); } // plus de régions que de lignes : on repuise
+ let avail = eligible.filter(i => !used.includes(i));
+ if(!avail.length){ P.twistLinesUsedByAdv[advKey] = []; avail = eligible.slice(); } // plus de régions que de lignes : on repuise
  const idx = avail[Math.floor(Math.random()*avail.length)];
  P.twistLinesUsedByAdv[advKey].push(idx);
  return _TWIST_LINES[idx];

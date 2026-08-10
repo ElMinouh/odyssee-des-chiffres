@@ -378,7 +378,13 @@ function _colPythReciproque(level){
  const t = _colPick(_PYTH_TRIPLES); const rect = ri(0,1) === 1; let c = t[2];
  if(!rect){ c = t[2] + _colPick([-2,-1,1,2]); }
  const opts = ['Vrai','Faux']; const correct = rect ? 'Vrai' : 'Faux';
+ // v12.2.7 (ADR-57, méta-audit Lot 6, pt.4) : cette question était le seul
+ // générateur de géométrie collège sans visualHtml (ADR-36 avait couvert
+ // Pythagore/Thalès/angles/symétrie, mais pas celui-ci, resté oublié) —
+ // réutilise le même triangle SVG que _colPythHyp/_colPythCote, sans "?"
+ // puisque les 3 côtés sont ici tous connus (aucun `unknown`).
  return { display:`Un triangle a pour côtés ${t[0]}, ${t[1]} et ${c}. Est-il rectangle ?`,
+  visualHtml:_colRightTriSvg({a:t[0], b:t[1], hyp:c}),
   choices:opts.map((v,i)=>({val:i, label:v})), res:opts.indexOf(correct), type:'normal', opKey:'geo', img:'' };
 }
 // Somme des angles d'un triangle
