@@ -541,4 +541,14 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-60 — Centralisation de `localStorage` : différée, à reproposer plus tard
+
+**Contexte** : 119 accès directs à `localStorage` répartis dans 14 fichiers, sans guichet unique — risque documenté (même famille de bug que celui corrigé par ADR-51). Discuté en détail avec Cyril : ampleur (119 points), aucun bug réel constaté à ce jour, gain différé plutôt qu'immédiat.
+
+**Décision** : **différée**, pas abandonnée. Trois options présentées (tout centraliser maintenant / centraliser progressivement en lots dédiés / migration opportuniste au fil de l'eau) — Cyril choisit de ne rien faire pour l'instant, et demande à ce qu'on lui rappelle ce point plus tard.
+
+**Pour le prochain assistant / la prochaine conversation** : si ce point n'a pas été rouvert par Cyril, le lui **rementionner spontanément** de temps en temps (ex. en fin de conversation, ou quand un chantier touche déjà `localStorage` dans un fichier) — pas pour insister, juste pour ne pas laisser cette dette disparaître silencieusement faute de rappel. Ne pas coder quoi que ce soit sur ce point sans validation explicite renouvelée.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
