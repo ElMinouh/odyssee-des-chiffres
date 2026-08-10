@@ -429,4 +429,18 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-53 — Nettoyage du code mort d'ADR-49 + garde-fou de non-régression pour le reset (méta-audit, Lot 2)
+
+**Contexte** (méta-audit stratégique, prompt 12, Lot 2) : `P.storyPageIdx`, `_nextStoryPage()` et `_advanceStoryPage()` (07-story.js) n'avaient plus aucun appelant depuis l'annulation de la fragmentation du carnet (ADR-46 → ADR-49), mais restaient dans le code. Par ailleurs, le bug corrigé par ADR-51 (champs persistants Odyssée oubliés dans `resetAdventure()`) n'avait aucune protection automatisée contre sa réapparition.
+
+**Décision** :
+1. `_nextStoryPage()` et `_advanceStoryPage()` supprimées de `07-story.js` (vérifié au préalable : aucun test, aucun autre fichier du jeu ne les référence). Le champ `P.storyPageIdx` lui-même n'est PAS retiré du reset (`resetAdventure()`, 10-figurines.js) — il continue d'être remis à `{}` par précaution pour d'anciens profils sauvegardés qui le porteraient encore.
+2. Nouveau test `tests/reset-adventure.test.js` : construit un profil couvrant tous les champs persistants Odyssée actuellement connus (dont des ids `storySeen` obtenus dynamiquement via `_allOdysseyStorySeenIds()`, jamais recopiés à la main), appelle `resetAdventure()` via un `showConfirm` court-circuité, puis vérifie que chaque champ est bien nettoyé ET qu'un marqueur `storySeen` étranger à l'Odyssée survit (le filtre ne doit jamais tout effacer aveuglément). `tests/helpers/loadGame.js` a été enrichi de 3 nouvelles expositions pour permettre ce test : `resetAdventure`, `_allOdysseyStorySeenIds`, `setShowConfirm` (override du stub de confirmation, qui n'existait pas encore dans le harness — `showConfirm()` ouvre une vraie boîte de dialogue DOM que le sandbox de test ne simule pas).
+
+**Limite assumée** : ce test protège contre une régression sur les champs déjà listés dans son `buildFullProfile()`. Il ne peut pas détecter automatiquement l'oubli d'un TOUT NOUVEAU champ persistant introduit par un futur système narratif — celui-ci doit être ajouté manuellement au test en même temps qu'à `resetAdventure()` (voir ADR-51, conséquence inchangée).
+
+**Conséquence** : `tests/helpers/loadGame.js` expose désormais un point d'extension générique (`setShowConfirm`) réutilisable par tout futur test qui aurait besoin de déclencher une boîte de confirmation sans DOM réel.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

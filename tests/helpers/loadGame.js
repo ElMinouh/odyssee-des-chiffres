@@ -294,6 +294,13 @@ globalThis.__api = {
   _openBossCard: (typeof _openBossCard==='function') ? _openBossCard : undefined,
   _renderTaleIllus: (typeof _renderTaleIllus==='function') ? _renderTaleIllus : undefined,
   openAdventureLog: (typeof openAdventureLog==='function') ? openAdventureLog : undefined,
+  // --- ADR-52 (Lot 2, garde-fou de non-régression pour le reset Odyssée) ---
+  // resetAdventure() passe par showConfirm() (boîte de dialogue réelle, DOM) ;
+  // ce stub minimal permet aux tests de déclencher directement le onConfirm
+  // sans simuler un vrai clic sur un bouton fictif.
+  setShowConfirm: (fn) => { globalThis.showConfirm = fn; },
+  resetAdventure: (typeof resetAdventure==='function') ? resetAdventure : undefined,
+  _allOdysseyStorySeenIds: (typeof _allOdysseyStorySeenIds==='function') ? _allOdysseyStorySeenIds : undefined,
 };
 `;
 

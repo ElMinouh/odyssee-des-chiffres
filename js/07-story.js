@@ -2198,21 +2198,13 @@ function _maybeShowTwist(zone, afterCb){
  }catch(e){ _done(); }
 }
 
-// v12.1.5 (Lot C, pt.5) : compteur de progression dans les pages du chapitre
-// d'une région — n'est PLUS utilisé pour fragmenter l'entrée d'îlot (retour au
-// chapitre entier d'un bloc, v12.2.0, voir plus bas) mais reste disponible si
-// besoin futur. Conservé pour compatibilité avec d'anciens profils sauvegardés.
-function _nextStoryPage(regionId){
- if(typeof P==='undefined' || !P) return 0;
- P.storyPageIdx = P.storyPageIdx || {};
- return P.storyPageIdx[regionId] || 0;
-}
-function _advanceStoryPage(regionId){
- if(typeof P==='undefined' || !P) return;
- P.storyPageIdx = P.storyPageIdx || {};
- P.storyPageIdx[regionId] = (P.storyPageIdx[regionId] || 0) + 1;
- if(typeof saveProfile==='function') saveProfile();
-}
+// v12.1.5 (Lot C, pt.5) : un compteur de progression dans les pages du chapitre
+// d'une région avait été introduit ici (P.storyPageIdx, _nextStoryPage(),
+// _advanceStoryPage()) pour fragmenter l'entrée d'îlot. Retiré (ADR-52,
+// nettoyage du code mort d'ADR-49) : plus aucun appelant depuis le retour au
+// chapitre entier d'un bloc (v12.2.0). Le champ P.storyPageIdx lui-même reste
+// remis à {} dans resetAdventure() par précaution pour d'anciens profils
+// sauvegardés qui le porteraient encore — voir ADR-51.
 
 // v12.2.1 (pt.4 + pt.6, ADR-50) : moment charnière à mi-Odyssée, unique par
 // aventure, placé sur une région choisie pour sa cohérence narrative (voir
