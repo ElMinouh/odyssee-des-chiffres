@@ -416,4 +416,17 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-52 — Lint en routine de livraison + CI minimal + checklist annotée (méta-audit, Lot 1)
+
+**Contexte** (méta-audit stratégique, prompt 12, Lot 1) : `eslintrc.json`/`_prettierrc.json` existaient depuis longtemps mais rien ne garantissait leur exécution avant chaque livraison, contrairement aux 182 tests Vitest, systématiquement lancés. Vérification du code réel : `npm run lint` (portée réelle `eslint js/`, pas les fichiers de test) renvoie **0 erreur, 457 avertissements** (essentiellement `no-unused-vars`/`no-undef`, non bloquants dans la config actuelle) — le code est donc déjà propre au sens strict du terme, aucun correctif nécessaire pour ce lot.
+
+**Décision** :
+1. `npm run lint` est désormais exécuté avant chaque livraison de code, au même titre que les tests — discipline de process, pas de changement de fichier source.
+2. Ajout de `.github/workflows/ci.yml` (GitHub Actions) : lance `npm install && npm test && npm run lint` à chaque push/pull request. Utilise `npm install` et non `npm ci`, car `_gitignore` exclut volontairement `package-lock.json` (choix déjà en place, pas remis en cause ici). Ne change rien au déploiement manuel existant (PowerShell + copier-coller Cloudflare) — c'est un garde-fou supplémentaire, pas un remplacement. Non vérifiable depuis cet environnement (pas d'accès à l'exécution réelle de GitHub Actions) — à confirmer par Cyril après le premier push.
+3. `CHECKLIST-non-regression.md` annotée point par point : chaque item déjà couvert (même partiellement) par un test Vitest porte désormais un repère 🧪 avec le nom du fichier de test concerné, pour éviter de re-tester à la main ce qui l'est déjà côté logique — la vérification manuelle reste nécessaire pour tout ce qui touche au rendu visuel/audio réel, qu'aucun test ne couvre.
+
+**Conséquence** : toute nouvelle fonctionnalité livrée doit passer `npm run lint` sans nouvelle erreur (les avertissements existants ne sont pas bloquants, mais aucune nouvelle erreur ne doit apparaître). Tout nouveau test Vitest ajouté à `tests/` devrait être répercuté dans `CHECKLIST-non-regression.md` par un repère 🧪 sur le point qu'il couvre, pour que la checklist reste un reflet fidèle de ce qui est déjà automatisé.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

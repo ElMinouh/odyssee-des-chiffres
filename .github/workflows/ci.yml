@@ -1,0 +1,33 @@
+name: CI
+
+# Filet de sécurité automatique : lance les 182 tests Vitest et le lint ESLint
+# à chaque push / pull request. Ne remplace pas le déploiement manuel existant
+# (toujours fait par Cyril), c'est un contrôle en plus, pas un changement de process.
+# Voir ADR-52 (ADR.md) pour le contexte de cette décision.
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-and-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Installer les dépendances
+        # npm install (pas npm ci) : le dépôt ignore volontairement package-lock.json
+        # (_gitignore), donc aucun lockfile n'est disponible à commit.
+        run: npm install --no-audit --no-fund
+
+      - name: Lancer les tests (Vitest)
+        run: npm test
+
+      - name: Lancer le lint (ESLint)
+        run: npm run lint
