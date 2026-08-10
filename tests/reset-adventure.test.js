@@ -34,7 +34,7 @@ describe('resetAdventure() — remise à zéro complète (ADR-51)', () => {
       // retiré en ADR-52) — doit rester nettoyable sans erreur pour
       // d'anciens profils qui le porteraient encore.
       storyPageIdx: { cm1: 2 },
-      majorChoiceByAdv: { prim: 'A', col: 'B' },
+      majorChoiceByAdv: { prim: {0:'A', 1:'B'}, col: {0:'B'} },
       twistLinesUsedByAdv: { prim: [1, 4, 7] },
       _epilogueBonusCredited: ['prim'],
       levelWins: { CE1: 12, '6e': 4 },

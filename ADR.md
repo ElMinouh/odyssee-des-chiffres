@@ -522,4 +522,23 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-59 — Moment charnière étendu à 2 points de choix par Odyssée (méta-audit, point dédié)
+
+**Contexte** : sur demande de Cyril, extension du moment charnière (ADR-50) de 1 à 2 points de choix par Odyssée sur les 7 aventures. Relecture complète des 7 histoires refaite avant proposition (discipline ADR-50), pour la région `ce1` cette fois — 7 concepts de choix proposés et validés par Cyril avant toute écriture de contenu.
+
+**Décision** :
+- `_MAJOR_MOMENT[advKey]` passe d'un objet unique à un **tableau de moments** (même forme interne : `region`/`council`/`choice`/`epilogueA`/`epilogueB`), pour permettre une extension future à un 3e point sans nouveau changement de structure.
+- `_maybeShowMajorMoment()` retrouve désormais le bon moment par correspondance de région dans le tableau (`moments.findIndex`), plutôt que par un objet fixe — généricité complète, aucune limite codée en dur sur le nombre de moments.
+- Chaque moment a son propre id (`majormoment_<adv>_<idx>`), donc son propre suivi `storySeen` indépendant — les 2 points d'une même Odyssée ne s'écrasent jamais l'un l'autre.
+- `P.majorChoiceByAdv[advKey]` passe d'une simple lettre (`'A'`/`'B'`) à un **objet indexé par n° de moment** (`{0:'A', 1:'B'}`), pour mémoriser plusieurs choix indépendants.
+- L'épilogue ajoute désormais une page bonus **par choix réellement fait** (0, 1 ou plusieurs selon combien de moments l'aventure définit) — pour mat/matfr, toujours aucune (epilogueA/B restent `null` sur les 2 moments, cohérent avec l'absence de méchant confronté avant la toute dernière région).
+- `_allOdysseyStorySeenIds()` boucle désormais sur le tableau de chaque aventure pour générer tous les ids possibles (`_0`, `_0_council`, `_1`, `_1_council`...).
+- Nouveau point de choix (région `ce1`, plus tôt dans l'Odyssée que le point existant) : hérissons (prim), lecture à voix haute (primfr), ourson triste (mat, sans enjeu), panier renversé (matfr, sans enjeu), partage de gâteau (col), marché des synonymes (colfr), bloc de pierre du chantier (primhist) — aucun ne touche au méchant, cohérent avec la leçon d'ADR-50.
+
+**Vérification faite avant livraison** : simulation `vm` ciblée (méthode héritée des conversations précédentes) — positionnement successif de l'avatar sur les 2 régions d'une même Odyssée (`prim`), déclenchement des 2 moments avec des choix différents (A puis B), vérification que : les 2 `storySeen` sont bien indépendants, qu'un moment déjà vu ne se redéclenche pas, que les 2 choix cohabitent sans s'écraser, et que `_allOdysseyStorySeenIds()` connaît bien les 4 ids dérivés. Logique de construction des pages bonus d'épilogue vérifiée isolément (2 pages, dans l'ordre des moments). 186/186 tests Vitest réels passés après implémentation.
+
+**Conséquence** : toute aventure future qui voudrait un 3e point de choix n'a qu'à ajouter une entrée au tableau `_MAJOR_MOMENT[advKey]` — aucun autre changement de code nécessaire, la structure est déjà généralisée pour un nombre arbitraire de moments.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

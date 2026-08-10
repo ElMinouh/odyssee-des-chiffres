@@ -2072,8 +2072,11 @@ function _allOdysseyStorySeenIds(){
  regionArrays.forEach(arr=>(arr||[]).forEach(r=>{ if(r && r.id) ids.add('twist_'+r.id); }));
  if(typeof _MAJOR_MOMENT!=='undefined'){
   Object.keys(_MAJOR_MOMENT).forEach(advKey=>{
-   ids.add('majormoment_'+advKey);
-   ids.add('majormoment_'+advKey+'_council');
+   const moments = _MAJOR_MOMENT[advKey] || [];
+   moments.forEach((_, idx)=>{
+    ids.add('majormoment_'+advKey+'_'+idx);
+    ids.add('majormoment_'+advKey+'_'+idx+'_council');
+   });
   });
  }
  return ids;
@@ -2224,68 +2227,149 @@ function _maybeShowTwist(zone, afterCb){
 // varie ensuite pour les aventures qui affrontent un vrai antagoniste. Pour la
 // maternelle (mat/matfr), pas de méchant ni d'enjeu à ce stade de l'histoire
 // (relecture complète de _MAT_STORY/_MAT_STORY_FR) : epilogueA/B sont null.
+// v12.2.9 (ADR-59, méta-audit, point « étendre le moment charnière ») :
+// _MAJOR_MOMENT[advKey] est désormais un TABLEAU de moments (au lieu d'un
+// objet unique), pour permettre plusieurs points de choix par Odyssée. Chaque
+// entrée garde exactement la même forme qu'avant (region/council/choice/
+// epilogueA/epilogueB). L'ordre du tableau n'a pas besoin de suivre l'ordre
+// des régions — _maybeShowMajorMoment() retrouve le bon moment par sa région.
 const _MAJOR_MOMENT = {
- prim: {
-  region:'cm1',
-  council:"Lumo se pose sur un rocher, sérieuse pour une fois : « {hero}, quatre royaumes déjà repris à {villain}... Il doit commencer à paniquer, tu sais. Mais le plus dur reste devant nous. »",
-  choice:{ title:'Le pont fragile', emoji:'🌉',
-   text:"Le pont de corde grince sous tes pas. Derrière toi, un petit groupe de villageois attend, inquiet — il ne supportera pas leur poids à tous en même temps.",
-   btnA:'🏃 Je traverse vite, seul', btnB:"🤝 J'aide à consolider le pont pour tous" },
-  epilogueA:"Et l'on raconte encore, à {kingdom}, ta rapidité légendaire ce jour-là sur le pont de corde.",
-  epilogueB:"Et l'on raconte encore que pas un seul villageois n'a été laissé derrière, ce jour-là sur le pont de corde.",
- },
- primfr: {
-  region:'ce2',
-  council:"Zoé referme son carnet : « {hero}, le Docteur Babel doit sentir que son silence recule. » Malo ajoute, plus sérieux que d'habitude : « Reste un peu de chemin. Mais on y est presque. »",
-  choice:{ title:'Le texte effacé', emoji:'📜',
-   text:"Dans la Grande Bibliothèque, un vieux texte à moitié effacé attire ton regard. Il pourrait être important... ou pas.",
-   btnA:'⚡ Je le déchiffre tout de suite', btnB:'🔍 Je vérifie chaque mot avant de le lire' },
-  epilogueA:"Et l'on raconte encore ton audace, ce jour où tu as osé lire un texte encore incertain à voix haute.",
-  epilogueB:"Et l'on raconte encore ta rigueur, qui n'a jamais laissé le moindre mot au hasard.",
- },
- mat: {
-  region:'ce2',
-  council:"Iris voltige, ravie : « {hero}, tu as déjà aidé tant d'amis ! Le lapin, l'ourson... et maintenant le hibou des Bois Dorés ! »",
-  choice:{ title:'Un petit moment avec le hibou', emoji:'🦉',
-   text:"Le hibou, tout content, te propose de jouer encore un peu avant de continuer ton chemin.",
-   btnA:'🎵 On chante une petite chanson', btnB:'🍂 On joue à cache-cache dans les feuilles' },
-  epilogueA:null, epilogueB:null,
- },
- matfr: {
-  region:'ce2',
-  council:"Plume voltige, ravie : « {hero}, la forêt a retrouvé ses cris, le pré ses petits noms... et maintenant, écoute cet écho ! »",
-  choice:{ title:"Un petit moment avec l'écho", emoji:'🏞️',
-   text:"L'écho des collines te répond joyeusement. Plume te propose de t'amuser encore un peu avec lui.",
-   btnA:'👏 On tape des syllabes ensemble', btnB:"😄 On écoute l'écho encore un peu, juste pour rire" },
-  epilogueA:null, epilogueB:null,
- },
- col: {
-  region:'cm1',
-  council:"Elara s'adosse à un mur de la Citadelle : « Quatre bastions repris. Léthéas doit sentir le sol trembler sous lui, pour une fois. » Un silence, puis, presque grave : « La suite ne sera pas une promenade. »",
-  choice:{ title:"Le grimoire qui s'effrite", emoji:'📖',
-   text:"Dans la Bibliothèque Secrète, un vieux grimoire de formules commence à se désagréger entre tes mains.",
-   btnA:'✍️ Je prends le temps de le recopier', btnB:'⏱️ Je le laisse, le temps presse' },
-  epilogueA:"Et l'on raconte encore qu'un savoir oublié depuis des siècles a survécu, ce jour-là, grâce à toi.",
-  epilogueB:"Et l'on raconte encore ta détermination sans faille, même au prix d'un savoir perdu à jamais.",
- },
- colfr: {
-  region:'ce2',
-  council:"Solène, pensive : « {hero}, on commence à raconter ton histoire, à mots couverts. Mais Ulrich Morne n'a pas dit son dernier mot. »",
-  choice:{ title:'Le pamphlet', emoji:'📰',
-   text:"Un pamphlet contre le Chancelier, à peine achevé, brûle d'être diffusé. Le risque est réel.",
-   btnA:'🔥 Je le publie maintenant', btnB:'🕰️ J\'attends un moment plus sûr' },
-  epilogueA:"Et l'on raconte encore comment ce texte, publié dans l'urgence, a rallié tout un quartier à ta cause.",
-  epilogueB:"Et l'on raconte encore ta prudence, qui a permis à ce texte de circuler sans qu'un seul exemplaire ne soit intercepté.",
- },
- primhist: {
-  region:'cm1',
-  council:"Tu relis ton carnet : quatre grandes époques déjà traversées. L'Égypte, Rome, la Préhistoire... et maintenant le Moyen Âge. L'Horloger semble toujours un peu plus pressé à chaque page que tu tournes.",
-  choice:{ title:'Au pied du château assiégé', emoji:'🏰',
-   text:"Les villageois ont besoin d'aide pour réparer les remparts. Mais le donjon, plus loin, garde peut-être des réponses urgentes.",
-   btnA:"🧱 J'aide d'abord à réparer les remparts", btnB:'🔭 Je pars aussitôt en reconnaissance' },
-  epilogueA:"...et ton carnet garde la trace d'un détour qui a sauvé bien des vies.",
-  epilogueB:"...et ton carnet garde la trace d'une audace qui a devancé l'Horloger d'un jour entier.",
- },
+ prim: [
+  {
+   region:'ce1',
+   council:"Lumo virevolte, tout juste sortie du Cristal de l'Unité : « Un royaume déjà libéré, {hero} ! Les Bois et Plages n'attendent plus que nous. »",
+   choice:{ title:'La famille de hérissons', emoji:'🦔',
+    text:"Une famille de hérissons a perdu le compte de ses épines — chacun donne un nombre différent, et personne ne s'y retrouve.",
+    btnA:'🔢 Je les aide un par un, chacun son tour', btnB:'👨\u200d👩\u200d👧\u200d👦 Je leur montre une astuce pour compter tous ensemble' },
+   epilogueA:"Et l'on raconte encore la patience que tu as montrée avec chaque hérisson, un par un, ce jour-là dans les Bois et Plages.",
+   epilogueB:"Et l'on raconte encore l'astuce maligne que tu as enseignée à toute la famille hérisson, ce jour-là dans les Bois et Plages.",
+  },
+  {
+   region:'cm1',
+   council:"Lumo se pose sur un rocher, sérieuse pour une fois : « {hero}, quatre royaumes déjà repris à {villain}... Il doit commencer à paniquer, tu sais. Mais le plus dur reste devant nous. »",
+   choice:{ title:'Le pont fragile', emoji:'🌉',
+    text:"Le pont de corde grince sous tes pas. Derrière toi, un petit groupe de villageois attend, inquiet — il ne supportera pas leur poids à tous en même temps.",
+    btnA:'🏃 Je traverse vite, seul', btnB:"🤝 J'aide à consolider le pont pour tous" },
+   epilogueA:"Et l'on raconte encore, à {kingdom}, ta rapidité légendaire ce jour-là sur le pont de corde.",
+   epilogueB:"Et l'on raconte encore que pas un seul villageois n'a été laissé derrière, ce jour-là sur le pont de corde.",
+  },
+ ],
+ primfr: [
+  {
+   region:'ce1',
+   council:"Zoé feuillette son carnet, enthousiaste : « Le Quartier de la Lecture respire enfin, {hero} ! Cacophon n'a qu'à bien se tenir. » Malo hoche la tête, pour une fois d'accord avec elle.",
+   choice:{ title:'Le livre de la vieille dame', emoji:'📖',
+    text:"La vieille bibliothécaire te tend un livre ouvert, patiente : « Lis-moi ce mot, jeune Verbe. »",
+    btnA:'⚡ Je le lis d\'un trait, avec assurance', btnB:'🐢 Je le lis syllabe après syllabe, sans me presser' },
+   epilogueA:"Et l'on raconte encore ton aplomb, ce jour où tu as lu sans la moindre hésitation.",
+   epilogueB:"Et l'on raconte encore ta minutie, qui n'a laissé passer aucune syllabe.",
+  },
+  {
+   region:'ce2',
+   council:"Zoé referme son carnet : « {hero}, le Docteur Babel doit sentir que son silence recule. » Malo ajoute, plus sérieux que d'habitude : « Reste un peu de chemin. Mais on y est presque. »",
+   choice:{ title:'Le texte effacé', emoji:'📜',
+    text:"Dans la Grande Bibliothèque, un vieux texte à moitié effacé attire ton regard. Il pourrait être important... ou pas.",
+    btnA:'⚡ Je le déchiffre tout de suite', btnB:'🔍 Je vérifie chaque mot avant de le lire' },
+   epilogueA:"Et l'on raconte encore ton audace, ce jour où tu as osé lire un texte encore incertain à voix haute.",
+   epilogueB:"Et l'on raconte encore ta rigueur, qui n'a jamais laissé le moindre mot au hasard.",
+  },
+ ],
+ mat: [
+  {
+   region:'ce1',
+   council:"Iris frétille, une lueur orangée scintillant autour d'elle : « {hero}, regarde comme le Verger des Oranges reprend déjà des couleurs ! »",
+   choice:{ title:'Le petit ourson triste', emoji:'🐻',
+    text:"Un ourson soupire : il n'a plus d'oranges à croquer. Il te propose de jouer encore un peu avec toi, pour se consoler.",
+    btnA:'🎈 On joue longtemps ensemble, pour le consoler', btnB:'🍊 On l\'aide vite, pour que les oranges reviennent' },
+   epilogueA:null, epilogueB:null,
+  },
+  {
+   region:'ce2',
+   council:"Iris voltige, ravie : « {hero}, tu as déjà aidé tant d'amis ! Le lapin, l'ourson... et maintenant le hibou des Bois Dorés ! »",
+   choice:{ title:'Un petit moment avec le hibou', emoji:'🦉',
+    text:"Le hibou, tout content, te propose de jouer encore un peu avant de continuer ton chemin.",
+    btnA:'🎵 On chante une petite chanson', btnB:'🍂 On joue à cache-cache dans les feuilles' },
+   epilogueA:null, epilogueB:null,
+  },
+ ],
+ matfr: [
+  {
+   region:'ce1',
+   council:"Plume voltige joyeusement : « {hero}, regarde, le Pré des Premiers Mots a retrouvé ses couleurs ! »",
+   choice:{ title:'Le panier renversé', emoji:'🧺',
+    text:"Un panier plein d'objets mélangés gît au milieu du pré. Tu peux les ranger calmement, en les nommant, ou vite fait pour retourner jouer.",
+    btnA:'🐌 Je range chaque chose calmement, en la nommant', btnB:'🏃 Je range vite, pour retourner jouer' },
+   epilogueA:null, epilogueB:null,
+  },
+  {
+   region:'ce2',
+   council:"Plume voltige, ravie : « {hero}, la forêt a retrouvé ses cris, le pré ses petits noms... et maintenant, écoute cet écho ! »",
+   choice:{ title:"Un petit moment avec l'écho", emoji:'🏞️',
+    text:"L'écho des collines te répond joyeusement. Plume te propose de t'amuser encore un peu avec lui.",
+    btnA:'👏 On tape des syllabes ensemble', btnB:"😄 On écoute l'écho encore un peu, juste pour rire" },
+   epilogueA:null, epilogueB:null,
+  },
+ ],
+ col: [
+  {
+   region:'ce1',
+   council:"Elara, adossée à l'entrée des Cavernes Fractionnaires : « Un bastion de repris, {hero}. Léthéas ne le sait sans doute pas encore. »",
+   choice:{ title:'Le partage impossible', emoji:'🥧',
+    text:"Un jeune garçon pleure, incapable de partager équitablement un gâteau entre ses 3 frères.",
+    btnA:'🧮 Je résous le calcul à sa place, plus rapide', btnB:'👨\u200d🏫 Je lui explique patiemment la méthode' },
+   epilogueA:"Et l'on raconte encore ta rapidité ce jour-là dans les Cavernes Fractionnaires — mais ce garçon n'a jamais vraiment compris comment tu avais fait.",
+   epilogueB:"Et l'on raconte encore que ce garçon sait, depuis ce jour, partager n'importe quel gâteau tout seul.",
+  },
+  {
+   region:'cm1',
+   council:"Elara s'adosse à un mur de la Citadelle : « Quatre bastions repris. Léthéas doit sentir le sol trembler sous lui, pour une fois. » Un silence, puis, presque grave : « La suite ne sera pas une promenade. »",
+   choice:{ title:"Le grimoire qui s'effrite", emoji:'📖',
+    text:"Dans la Bibliothèque Secrète, un vieux grimoire de formules commence à se désagréger entre tes mains.",
+    btnA:'✍️ Je prends le temps de le recopier', btnB:'⏱️ Je le laisse, le temps presse' },
+   epilogueA:"Et l'on raconte encore qu'un savoir oublié depuis des siècles a survécu, ce jour-là, grâce à toi.",
+   epilogueB:"Et l'on raconte encore ta détermination sans faille, même au prix d'un savoir perdu à jamais.",
+  },
+ ],
+ colfr: [
+  {
+   region:'ce1',
+   council:"Solène, un sourire discret aux lèvres : « {hero}, la Caverne aux Mille Reflets scintille à nouveau. Un tome de repris, déjà. »",
+   choice:{ title:'Le mot qui manque', emoji:'💬',
+    text:"Au Marché des Synonymes, un mot parfait te coûterait cher. Un mot moins précis, mais économique, ferait presque aussi bien l'affaire.",
+    btnA:'💰 Je paie le mot parfait, quel qu\'en soit le prix', btnB:'🪙 Je choisis un mot moins précis, mais économique' },
+   epilogueA:"Et l'on raconte encore la justesse de tes mots, ce jour-là au Marché des Synonymes.",
+   epilogueB:"Et l'on raconte encore ton sens de la mesure, ce jour-là au Marché des Synonymes.",
+  },
+  {
+   region:'ce2',
+   council:"Solène, pensive : « {hero}, on commence à raconter ton histoire, à mots couverts. Mais Ulrich Morne n'a pas dit son dernier mot. »",
+   choice:{ title:'Le pamphlet', emoji:'📰',
+    text:"Un pamphlet contre le Chancelier, à peine achevé, brûle d'être diffusé. Le risque est réel.",
+    btnA:'🔥 Je le publie maintenant', btnB:'🕰️ J\'attends un moment plus sûr' },
+   epilogueA:"Et l'on raconte encore comment ce texte, publié dans l'urgence, a rallié tout un quartier à ta cause.",
+   epilogueB:"Et l'on raconte encore ta prudence, qui a permis à ce texte de circuler sans qu'un seul exemplaire ne soit intercepté.",
+  },
+ ],
+ primhist: [
+  {
+   region:'ce1',
+   council:"Tu relis ton carnet : la Préhistoire déjà traversée, et maintenant l'Égypte antique s'ouvre devant vous, sous un soleil de plomb.",
+   choice:{ title:'Le bloc de pierre', emoji:'🪨',
+    text:"Un bloc de calcaire massif, mal arrimé, bloque la rampe principale du chantier. Les ouvriers attendent, inquiets.",
+    btnA:"⚙️ J'aide à calculer les leviers pour le déplacer", btnB:'🗺️ Je cherche un chemin de contournement' },
+   epilogueA:"...et ton carnet garde la trace d'un chantier remis en marche grâce à toi, ce jour-là en Égypte.",
+   epilogueB:"...et ton carnet garde la trace d'un raccourci malin trouvé ce jour-là en Égypte.",
+  },
+  {
+   region:'cm1',
+   council:"Tu relis ton carnet : quatre grandes époques déjà traversées. L'Égypte, Rome, la Préhistoire... et maintenant le Moyen Âge. L'Horloger semble toujours un peu plus pressé à chaque page que tu tournes.",
+   choice:{ title:'Au pied du château assiégé', emoji:'🏰',
+    text:"Les villageois ont besoin d'aide pour réparer les remparts. Mais le donjon, plus loin, garde peut-être des réponses urgentes.",
+    btnA:"🧱 J'aide d'abord à réparer les remparts", btnB:'🔭 Je pars aussitôt en reconnaissance' },
+   epilogueA:"...et ton carnet garde la trace d'un détour qui a sauvé bien des vies.",
+   epilogueB:"...et ton carnet garde la trace d'une audace qui a devancé l'Horloger d'un jour entier.",
+  },
+ ],
 };
 // Déclenché juste après l'affichage du chapitre d'entrée (case 4 de
 // _maybeShowStory), qu'il vienne d'être montré ou qu'il l'ait déjà été. Ne fait
@@ -2296,14 +2380,20 @@ function _maybeShowMajorMoment(afterCb){
  try{
   if(typeof P==='undefined' || !P){ _done(); return; }
   const advKey = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
-  const moment = _MAJOR_MOMENT[advKey];
-  if(!moment){ _done(); return; }
+  const moments = _MAJOR_MOMENT[advKey];
+  if(!moments || !moments.length){ _done(); return; }
   const avZone = MAP_ZONES.find(z => z.id === _getAvatarZone());
   if(!avZone){ _done(); return; }
   const reg = (typeof _regionOfZone==='function') ? _regionOfZone(avZone) : null;
-  if(!reg || reg.id !== moment.region){ _done(); return; }
+  if(!reg){ _done(); return; }
+  // v12.2.9 (ADR-59) : plusieurs moments possibles par aventure — on cherche
+  // celui, s'il y en a un, dont la région correspond à la région actuelle ET
+  // qui n'a pas encore été vu (chaque moment a son propre id, par index).
+  const idx = moments.findIndex(m => m.region === reg.id);
+  if(idx < 0){ _done(); return; }
+  const moment = moments[idx];
   P.storySeen = P.storySeen || [];
-  const momentId = 'majormoment_' + advKey;
+  const momentId = 'majormoment_' + advKey + '_' + idx;
   if(P.storySeen.includes(momentId)){ _done(); return; }
   _markStorySeen(momentId);
   const councilPage = { emoji:'💬', text:(typeof _storyText==='function' ? _storyText(moment.council) : moment.council) };
@@ -2315,8 +2405,14 @@ function _maybeShowMajorMoment(afterCb){
     btnA: moment.choice.btnA,
     btnB: moment.choice.btnB,
    }, (val)=>{
+    // v12.2.9 (ADR-59) : P.majorChoiceByAdv[advKey] est désormais un OBJET
+    // indexé par n° de moment (ex. {0:'A', 1:'B'}) plutôt qu'une simple
+    // lettre — pour mémoriser plusieurs choix indépendants par Odyssée.
     P.majorChoiceByAdv = P.majorChoiceByAdv || {};
-    P.majorChoiceByAdv[advKey] = val;
+    if(typeof P.majorChoiceByAdv[advKey] !== 'object' || !P.majorChoiceByAdv[advKey] || Array.isArray(P.majorChoiceByAdv[advKey])){
+     P.majorChoiceByAdv[advKey] = {};
+    }
+    P.majorChoiceByAdv[advKey][idx] = val;
     if(typeof saveProfile==='function') saveProfile();
     _done();
    });
@@ -2378,19 +2474,24 @@ function _maybeShowStory(afterCb){
     }catch(e){}
     _done();
    };
-   // v12.2.1 (pt.4, ADR-50) : ajoute une page de conséquence du choix mi-Odyssée,
-   // si l'aventure en a un et que le joueur a bien tranché (pas de branche pour
-   // la maternelle, epilogueA/B restent null — voir _MAJOR_MOMENT).
+   // v12.2.1 (pt.4, ADR-50), étendu v12.2.9 (ADR-59) : ajoute une page de
+   // conséquence par choix mi-Odyssée effectivement fait (0, 1 ou plusieurs
+   // selon combien de moments l'aventure définit et combien ont été vus) —
+   // pas de branche pour la maternelle, epilogueA/B y restent null.
    let _epiPages = _STORY.epilogue.pages;
    try{
     const advKey = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
-    const moment = _MAJOR_MOMENT[advKey];
-    const choice = P.majorChoiceByAdv && P.majorChoiceByAdv[advKey];
-    if(moment && choice){
-     const variantText = choice==='A' ? moment.epilogueA : moment.epilogueB;
-     if(variantText){
-      _epiPages = [..._epiPages, { emoji:'📜', text:(typeof _storyText==='function' ? _storyText(variantText) : variantText) }];
-     }
+    const moments = _MAJOR_MOMENT[advKey] || [];
+    const choices = P.majorChoiceByAdv && P.majorChoiceByAdv[advKey];
+    if(choices && typeof choices === 'object'){
+     const bonusPages = [];
+     moments.forEach((moment, idx)=>{
+      const choice = choices[idx];
+      if(!choice) return;
+      const variantText = choice==='A' ? moment.epilogueA : moment.epilogueB;
+      if(variantText) bonusPages.push({ emoji:'📜', text:(typeof _storyText==='function' ? _storyText(variantText) : variantText) });
+     });
+     if(bonusPages.length) _epiPages = [..._epiPages, ...bonusPages];
     }
    }catch(e){}
    _showStoryModal({ id:_STORY.epilogue.id, title:_STORY.epilogue.title, pages:_epiPages }, _after);
