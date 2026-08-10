@@ -2464,6 +2464,11 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 .archipel-zone.locked{
  cursor:not-allowed;
 }
+/* v12.3.0 (audit UX #6) : anneau de focus visible pour la navigation clavier */
+.archipel-zone[tabindex]:focus-visible .archipel-zone-circle{
+ outline:3px solid #ffd97a;
+ outline-offset:3px;
+}
 .archipel-zone.locked .archipel-zone-circle{
  /* Cercle un peu plus sombre que current/completed pour rester identifiable */
  background:rgba(20,30,45,0.78);
@@ -2576,7 +2581,12 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  font-size:.72em;
  color:#fff;
  font-weight:700;
- text-shadow:1px 1px 4px rgba(0,0,0,.85), 0 0 6px rgba(0,0,0,.6);
+ /* v12.3.0 (audit UX #15) : contour renforcé + symétrique (au lieu d'une seule
+    ombre portée en bas à droite) pour rester lisible sur les biomes clairs
+    (désert, plage, glace) et pas seulement sur les fonds sombres. */
+ text-shadow:1px 1px 3px rgba(0,0,0,.9), -1px -1px 3px rgba(0,0,0,.9),
+             1px -1px 3px rgba(0,0,0,.9), -1px 1px 3px rgba(0,0,0,.9),
+             0 0 8px rgba(0,0,0,.7);
  margin-top:var(--space-1);
  line-height:1.15;
  font-family:'Cinzel Decorative','Cinzel',Georgia,serif;
@@ -4008,6 +4018,11 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 /* Mini-carte / Livre : mêmes dimensions, un peu plus anguleux */
 .map-tool-btn{ background:#2c3e50; border-radius:9px; }
 .map-tool-btn:hover{ background:#34495e; transform:none; }
+/* v12.3.0 (audit UX #16) : le Livre a sa propre couleur (bleu), distincte du
+   Carnet (violet) et de la Mini-carte (gris-bleu par défaut), pour que les
+   3 boutons se distinguent au premier coup d'œil plutôt qu'à la lecture. */
+.map-livre-btn{ background:#2471a3; }
+.map-livre-btn:hover{ background:#2e86c1; }
 .drawer-caret{ font-size:.85em; transition:transform var(--dur-base); }
 .map-tool-btn.drawer-open .drawer-caret{ transform:rotate(180deg); }
 /* Boussole : AUCUN fond/contour — seulement l'emoji (qui tourne au clic) */
@@ -4054,6 +4069,8 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 .drawer-row.locked{ opacity:.5; cursor:default; }
 .drawer-row.locked:hover{ background:rgba(255,255,255,.06); }
 .drawer-row.active{ outline:2px solid #ffd97a; outline-offset:-1px; }
+/* v12.3.0 (audit UX #19) : repère visuel du prochain chapitre non lu */
+.drawer-row-next{ box-shadow:0 0 0 2px #ffd97a inset; background:rgba(255,217,122,.12); }
 .drawer-row-badge{
  width:28px; height:28px; flex:0 0 28px; border-radius:7px;
  display:flex; align-items:center; justify-content:center;
@@ -4070,30 +4087,37 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
    Les boutons d'outils descendent sous le bandeau pour ne jamais chevaucher la
    barre de commandes ; le bandeau et les commandes sont compactés. */
 @media (max-width:600px){
- #map-zoom-label{ display:none; }              /* compacte la barre de commandes */
+ /* v12.3.0 (audit UX #7) : on ne masque plus le repère de zoom, on le compacte —
+    l'enfant garde un indice textuel de son niveau de zoom même sur mobile. */
+ #map-zoom-label{ font-size:.68em; min-width:0; padding:0 2px; }
  #map-zoom-bar{ gap:var(--space-2); margin-top:var(--space-1); }
  .map-cmd-btn{ padding:var(--space-1) var(--space-2); font-size:.8em; }
  .map-top-row{ gap:var(--space-1); }
  .map-title{ font-size:.9em; }
  /* Boutons d'outils : sous le bandeau, sur les bords (centre dégagé) */
- .map-side-col{ top:64px; width:100px; }
+ .map-side-col{ top:64px; width:106px; }
  .map-side-left{ left:5px; }
  .map-side-right{ right:5px; }
- .map-side-col .back-top-btn{ font-size:.64em; padding:var(--space-1) var(--space-2); }
+ /* v12.3.0 (audit UX #2) : plancher de lisibilité relevé (.64em → .68em) */
+ .map-side-col .back-top-btn{ font-size:.68em; padding:var(--space-1) var(--space-2); }
  .compass-btn{ font-size:1.45em !important; height:30px; }
  .map-drawer{ width:190px; max-width:84vw; }
 }
 @media (max-width:380px){
- .map-side-col{ width:86px; }
- .map-side-col .back-top-btn{ font-size:.58em; padding:var(--space-1) var(--space-1); }
- .map-drawer{ width:172px; }
+ .map-side-col{ width:94px; }
+ /* v12.3.0 (audit UX #2) : plancher de lisibilité relevé (.58em → .64em) —
+    en-dessous, le texte des boutons Carnet/Mini-carte/Livre devenait illisible
+    pour de jeunes lecteurs sur petit écran. */
+ .map-side-col .back-top-btn{ font-size:.64em; padding:var(--space-1) var(--space-1); }
+ .map-drawer{ width:178px; }
 }
 #map-header h2{ margin:2px 0; }
 @media (prefers-reduced-motion:reduce){
  #map-header{ backdrop-filter:none; -webkit-backdrop-filter:none; background:rgba(14,28,42,.94); }
 }
 
-/* ═══ v8.7.62 (O3-C.6.4) : Surbrillance de la prochaine zone (bouton 🚩) ═══ */
+/* ═══ v8.7.62 (O3-C.6.4) : Surbrillance de la prochaine zone
+   (déclenchée depuis v12.3.0 par la boussole, fusionnée avec l'ex-bouton 🚩) ═══ */
 .archipel-zone.zone-highlight-pulse{
  z-index:8 !important;
 }

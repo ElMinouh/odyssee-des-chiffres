@@ -17,7 +17,7 @@
 <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png?v=1058">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=1058">
 <link rel="stylesheet" href="assets/fonts/google-fonts.css">
-<link rel="stylesheet" href="css/styles.css?v=1057">
+<link rel="stylesheet" href="css/styles.css?v=1060">
 </head>
 <body id="BODY">
 <!-- ═══ SPLASH SCREEN (Chantier v8.5.1 — durée 10s narrative) ═══
@@ -137,6 +137,9 @@
    <div id="menu1-avatar" style="font-size:3em;line-height:1;">&#129497;</div>
    <div id="menu1-name" style="font-size:1.3em;font-weight:800;color:#f1c40f;margin-top:6px;">Joueur</div>
    <div id="menu1-sub" style="font-size:.8em;color:#bdc3c7;margin-top:2px;"></div>
+   <!-- v12.3.0 (audit UX #4) : raccourci direct vers l'étape en cours, masqué tant
+        qu'aucune Odyssée n'a été démarrée (voir refreshMenu1Card). -->
+   <button id="menu1-continue-btn" class="hidden" onclick="continueAdventure()" style="margin-top:12px;width:100%;background:#16a085;font-weight:800;padding:12px 10px;border-radius:12px;">&#9654;&#65039; Continuer l'aventure</button>
   </div>
 
   <!-- Sélecteurs principaux -->
@@ -495,7 +498,6 @@
    <span id="map-zoom-label">Vue régions</span>
    <button onclick="mapZoomIn()" class="map-cmd-btn" aria-label="Zoomer la carte">&#128270;&#43;</button>
    <button onclick="mapCenterOnAvatar()" title="Centrer sur ma position" aria-label="Centrer la carte sur ma position" class="map-cmd-btn" style="background:#16a085;">&#127919;</button>
-   <button onclick="mapGoToNextZone()" title="Aller à ma prochaine zone" aria-label="Aller à ma prochaine zone" class="map-cmd-btn" style="background:#e67e22;">&#128681;</button>
   </div>
   <!-- v9.0.2 : boutons fixes (sous Retour/Accueil) + panneaux déroulants verticaux larges -->
   <div class="map-side-col map-side-left">
@@ -504,8 +506,8 @@
    <div class="map-drawer drawer-left" id="drawer-minimap"><div class="map-drawer-pad"><div id="minimap-body"></div></div></div>
   </div>
   <div class="map-side-col map-side-right">
-   <button class="back-top-btn compass-btn" onclick="_spinCompass(this)" title="Boussole" aria-label="Faire tourner la boussole">&#129517;</button>
-   <button class="back-top-btn map-tool-btn" id="btn-quest" onclick="_toggleDrawer('quest')" title="Livre d'aventure">&#128214; Livre <span class="drawer-caret">&#9662;</span></button>
+   <button class="back-top-btn compass-btn" onclick="_spinCompass(this);mapGoToNextZone();" title="Boussole — aller à ma prochaine zone" aria-label="Boussole : aller à ma prochaine zone">&#129517;</button>
+   <button class="back-top-btn map-tool-btn map-livre-btn" id="btn-quest" onclick="_toggleDrawer('quest')" title="Livre d'aventure">&#128214; Livre <span class="drawer-caret">&#9662;</span></button>
    <div class="map-drawer drawer-right" id="drawer-quest"><div class="map-drawer-pad"><div id="quest-body"></div></div></div>
   </div>
   </div>
@@ -607,7 +609,7 @@
  <!-- ═══ JEU ═══ -->
  <div id="v-game" class="hidden">
   <div class="back-top-bar" style="display:flex;justify-content:space-between;align-items:center;">
-   <button class="back-top-btn" onclick="quitGame('back')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Retour</button>
+   <button class="back-top-btn" id="game-back-btn" onclick="quitGame('back')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> <span id="game-back-btn-label">Retour</span></button>
    <button class="back-top-btn" onclick="quitGame('home')" style="background:#16a085;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg> Accueil</button>
   </div>
   <div id="combat-bar" class="hidden"><div id="combat-players-row"></div></div>

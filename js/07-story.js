@@ -1582,7 +1582,7 @@ function _renderColBook(book,idx,pages){
   const nextLbl=step===0?'Feuilleter ›':(step===total-1?'Fermer le livre':'Suivant ›');
   let counter; if(step===0) counter='Couverture'; else if(step===total-1) counter='Dos de couverture'; else { const a=(step-1)*2+1, b=Math.min(a+1,pages.length); counter=(a===b?('page '+a):('pages '+a+'–'+b))+' / '+pages.length; }
   ov.innerHTML='<div class="story-parchment" style="max-width:'+((step===0||step===total-1)?'360':'600')+'px;border-top:6px solid '+acc+';position:relative;">'
-   +'<button class="story-btn cb-close" title="Fermer" style="position:absolute;top:8px;right:8px;width:30px;height:30px;padding:0;line-height:1;border-radius:50%;font-size:16px;z-index:2;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>'
+   +'<button class="story-btn cb-close" title="Fermer" aria-label="Fermer" style="position:absolute;top:8px;right:8px;width:30px;height:30px;padding:0;line-height:1;border-radius:50%;font-size:16px;z-index:2;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>'
    +inner
    +'<div class="story-nav">'
    +(step>0?'<button class="story-btn cb-prev">'+prevLbl+'</button>':'<span class="story-spacer"></span>')
@@ -1804,7 +1804,7 @@ function _renderHistBook(book,idx,pages){
   const nextLbl=step===0?'Feuilleter ›':(step===total-1?'Fermer le livre':'Suivant ›');
   let counter; if(step===0) counter='Couverture'; else if(step===total-1) counter='Dos de couverture'; else { const a=(step-1)*2+1, b=Math.min(a+1,pages.length); counter=(a===b?('page '+a):('pages '+a+'–'+b))+' / '+pages.length; }
   ov.innerHTML='<div class="story-parchment" style="max-width:'+((step===0||step===total-1)?'360':'600')+'px;border-top:6px solid '+acc+';position:relative;">'
-   +'<button class="story-btn hb-close" title="Fermer" style="position:absolute;top:8px;right:8px;width:30px;height:30px;padding:0;line-height:1;border-radius:50%;font-size:16px;z-index:2;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>'
+   +'<button class="story-btn hb-close" title="Fermer" aria-label="Fermer" style="position:absolute;top:8px;right:8px;width:30px;height:30px;padding:0;line-height:1;border-radius:50%;font-size:16px;z-index:2;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>'
    +inner
    +'<div class="story-nav">'
    +(step>0?'<button class="story-btn cb-prev">'+prevLbl+'</button>':'<span class="story-spacer"></span>')
@@ -1967,7 +1967,7 @@ function _showStoryModal(chapter, onDone){
      <button class="story-audio-btn snarr-stop" title="Arrêter la lecture" aria-label="Stop">⏹</button>
     </div>
     <div class="story-nav">
-     ${page>0?`<button class="story-btn story-prev">‹</button>`:`<span class="story-spacer"></span>`}
+     ${page>0?`<button class="story-btn story-prev" aria-label="Page précédente">‹</button>`:`<span class="story-spacer"></span>`}
      <div class="story-dots">${chapter.pages.map((_,i)=>`<span class="story-dot${i===page?' on':''}"></span>`).join('')}</div>
      <button class="story-btn story-next">${last?(chapter.closeLabel||'Commencer ! ⚔️'):'Suivant ›'}</button>
     </div>
@@ -3296,6 +3296,11 @@ function _refreshQuestJournal(foggedMap){
  if(!q) return;
  _questUnlockedCache = {};
  const _qv = _questVocab();
+ const seen = (typeof P!=='undefined' && P && Array.isArray(P.storySeen)) ? P.storySeen : [];
+ // v12.3.0 (audit UX #19) : repère le premier chapitre débloqué mais jamais
+ // encore lu — c'est celui vers lequel un enfant qui ouvre le Livre veut
+ // aller en premier, plutôt que de parcourir toute la liste depuis le début.
+ let nextUnreadId = null;
  const rows = _questEntries().map(e => {
   const unlocked = _chapterUnlocked(e, foggedMap);
   _questUnlockedCache[e.id] = unlocked;
@@ -3306,14 +3311,22 @@ function _refreshQuestJournal(foggedMap){
   else if(e.kind === 'chapter') label = _qv.region;
   else if(e.kind === 'epilogue') label = _qv.end;
   else label = 'Verrouillé';
-  return `<div class="drawer-row${unlocked?'':' locked'}" style="--row-c:${e.color};" `
+  const isNextUnread = unlocked && !seen.includes(e.id);
+  if(isNextUnread && !nextUnreadId) nextUnreadId = e.id;
+  return `<div class="drawer-row${unlocked?'':' locked'}${isNextUnread?' drawer-row-next':''}" style="--row-c:${e.color};" `
        + (unlocked?`onclick="_replayChapter('${e.id}')"`:'') + ` role="button" `
+       + (isNextUnread?`id="drawer-row-next-mark" `:'')
        + `title="${unlocked?'Relire ce chapitre':'Chapitre verrouillé'}">`
        + `<div class="drawer-row-badge">${unlocked?e.label:'🔒'}</div>`
        + `<div class="drawer-row-label">${label}</div>`
        + `</div>`;
  }).join('');
  q.innerHTML = rows;
+ // Défilement automatique vers ce chapitre à l'ouverture du tiroir.
+ if(nextUnreadId){
+  const mark = document.getElementById('drawer-row-next-mark');
+  if(mark) requestAnimationFrame(()=>{ try{ mark.scrollIntoView({block:'nearest'}); }catch(e){} });
+ }
 }
 // v9.0.1 : ouvre/ferme un panneau déroulant VERTICAL (mini-carte / livre d'aventure)
 function _toggleDrawer(name){

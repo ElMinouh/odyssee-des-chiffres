@@ -87,7 +87,7 @@ function closeMap(){
 // (zones, régions, histoire, antagoniste, royaume) puis ouverture
 // de la carte. Le primaire est l'aventure par défaut.
 // ═══════════════════════════════════════════════════════
-function startAdventure(advId){
+function startAdventure(advId, skipMapOpen){
  // v11.6.9 — filet de sécurité : au cas où cette fonction serait appelée
  // directement (pas via la tuile verrouillée de openOdysseeSelect), on
  // bloque quand même les combinaisons sans Odyssée écrite plutôt que de
@@ -155,7 +155,31 @@ function startAdventure(advId){
   }
  }
  if(typeof P==='object' && P) P.lastAdventure = GM.adventure;
- openMap();
+ if(!skipMapOpen) openMap();
+}
+
+// v12.3.0 (audit UX #4) : reprendre directement l'étape en cours de la dernière
+// Odyssée jouée, depuis l'écran d'accueil — sans repasser par la sélection
+// d'Odyssée puis toute la carte. Repli propre sur la carte si la zone
+// mémorisée est introuvable, déjà terminée, ou en tout début de partie.
+function continueAdventure(){
+ if(typeof P==='undefined' || !P || !P.lastAdventure){
+  if(typeof toast==='function') toast('Choisis d\u2019abord une Odyssée pour commencer ton aventure !');
+  return;
+ }
+ startAdventure(P.lastAdventure, true); // restaure MAP_ZONES/_STORY/GM.subject sans ouvrir la carte
+ try{
+  const zoneId = (typeof _getAvatarZone==='function') ? _getAvatarZone() : null;
+  const zone = zoneId && MAP_ZONES.find(z=>z.id===zoneId);
+  const beaten = (typeof P!=='undefined' && P && P.mapBossBeaten) || [];
+  if(zone && !beaten.includes(zoneId)){
+   const prog = (P.zoneProgress && P.zoneProgress[zoneId]) || { stepsCompleted:0 };
+   const stepIdx = Math.min(prog.stepsCompleted, (zone.steps||[]).length-1);
+   if(stepIdx>=0 && typeof startMapStep==='function'){ startMapStep(zoneId, stepIdx); return; }
+  }
+ }catch(e){}
+ // Repli : zone introuvable ou déjà entièrement terminée → ouvrir la carte normalement
+ if(typeof openMap==='function') openMap();
 }
 
 // v10.2.1 — Zone-avatar PAR AVENTURE (corrige le mélange entre primaire / maternelle /
@@ -1600,9 +1624,17 @@ function renderMap(){
   const trophyHtml = done ? `<div class="archipel-zone-trophy" title="Boss vaincu : ${z.bossName||'Inconnu'}">${z.boss||'🏆'}</div>` : '';
   const lockHtml = (!canPlay && !done) ? `<div class="archipel-zone-lock">🔒</div>` : '';
   const reqHtml = ''; // progression linéaire : plus de seuil d'étoiles affiché
-  const onclick = (canPlay || done) ? `onclick="requestZoneOpen('${z.id}')"` : ''; // 'done' : zone conquise toujours re-jouable
+  const interactive = (canPlay || done); // 'done' : zone conquise toujours re-jouable
+  const onclick = interactive ? `onclick="requestZoneOpen('${z.id}')"` : '';
+  // v12.3.0 (audit UX #6) : les zones jouables/terminées deviennent focusables
+  // et activables au clavier (Entrée/Espace), au même titre qu'au clic/tap.
+  // Les zones verrouillées restent hors du parcours clavier, comme elles le
+  // sont déjà hors du parcours au clic.
+  const a11y = interactive
+   ? `tabindex="0" role="button" aria-label="${esc(z.label)}${done?' — zone terminée, rejouer':' — ouvrir cette zone'}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();requestZoneOpen('${z.id}')}"`
+   : '';
   return `
-   <div class="${cls}" style="left:${p.xPct.toFixed(1)}%;top:${p.y}px;" data-zone-id="${z.id}" ${onclick}>
+   <div class="${cls}" style="left:${p.xPct.toFixed(1)}%;top:${p.y}px;" data-zone-id="${z.id}" ${onclick} ${a11y}>
     <div class="archipel-zone-circle">${z.emoji}${checkHtml}${lockHtml}</div>
     ${trophyHtml}
     <div class="archipel-zone-label">${z.label}</div>
