@@ -443,4 +443,20 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-54 — Réévaluation d'ADR-20 + stratégie de chargement documentée (méta-audit, Lot 3)
+
+**Contexte** (méta-audit stratégique, prompt 12, Lot 3) : ADR-20 (refus du bundler) posait une condition de réévaluation explicite si `07-story.js` continuait de grossir — franchie (488 Ko, contre 448 Ko lors de l'audit performances, 9e conversation), jamais retranchée depuis. Le méta-audit avait aussi relevé que tout le JS du projet est chargé en `<script defer>` synchrone dès le premier écran (`index.html`), y compris `07-story.js` et `03-figurines-data.js` (356 Ko), dont le contenu n'est utile qu'une fois en Odyssée / en boutique de figurines.
+
+**Décision sur ADR-20** : **maintien du refus de bundler**, reconfirmé une 3e fois. La lisibilité pour un développeur non technicien reste prioritaire sur le gain de performance d'un build. La taille croissante de `07-story.js` est un vrai sujet, mais c'est un problème de **stratégie de chargement**, pas de tooling de build — traité séparément ci-dessous plutôt que par un bundler.
+
+**Analyse sur `07-story.js`** : un vrai chargement différé (après l'écran d'accueil) nécessiterait de scinder le fichier, car il ne contient pas QUE des données narratives — il définit aussi `_regionOfZone()`/`_zonesOfRegion()`, utilisées par `07-map.js` (11 points d'appel). Un chargement différé naïf de tout le fichier casserait la carte. **Recommandation pour un futur lot dédié** (non fait ici) : extraire ces 2 fonctions structurelles + tout ce qui est appelé en dehors de `07-story.js` vers un petit fichier séparé chargé en synchrone, et ne différer que le reste (textes des 7 `_STORY`, `_ZONE_OUTRO`, `_MAJOR_MOMENT` — la quasi-totalité du poids du fichier). Non entrepris dans ce lot : c'est un vrai chantier de refactoring, pas une simple bascule de balise `<script>`.
+
+**Analyse sur `03-figurines-data.js`** : contrairement à `07-story.js`, ce fichier est presque pur (données `FIGURINES`/`FIG_PAGES` + helpers d'images), et ses rares usages ailleurs (`07-game.js`, `09-parent.js`) sont dans des fonctions, pas au chargement — donc plus facilement différable en théorie. **Non implémenté dans ce lot** (étude seulement, comme demandé) : le risque principal serait un écran non repéré qui afficherait une figurine dès l'accueil (à vérifier avant toute implémentation future).
+
+**Indicateur de poids du précache** : le précache critique du Service Worker (`CRITICAL_URLS` : tous les JS + CSS + HTML + manifest) pèse **~2,55 Mo** au total (mesuré à cette conversation). Commentaire daté ajouté dans `sw.js` au-dessus de `CRITICAL_URLS` — à remettre à jour à chaque livraison qui touche un fichier de cette liste, pour suivre l'évolution dans le temps sans outillage automatisé supplémentaire.
+
+**Conséquence** : toute future demande de lazy-load de `07-story.js` doit d'abord passer par l'extraction des helpers structurels documentée ci-dessus — ne jamais différer le fichier entier tel quel.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

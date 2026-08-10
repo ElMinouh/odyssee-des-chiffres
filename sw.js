@@ -9,10 +9,14 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v12.2.3';
+const CACHE_VERSION = 'v12.2.4';
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources critiques précachées au premier chargement.
+// Poids total mesuré (méta-audit, Lot 3, ADR-54) : ~2,55 Mo — à remettre à
+// jour à chaque livraison qui ajoute/modifie un fichier de cette liste, pour
+// suivre l'évolution dans le temps sans outillage automatisé.
+// Dernière mesure : v12.2.3, tous les JS + CSS + HTML + manifest ci-dessous.
 const CRITICAL_URLS = [
   './',
   './index.html',
