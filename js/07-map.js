@@ -158,7 +158,7 @@ function startAdventure(advId, skipMapOpen){
  if(!skipMapOpen) openMap();
 }
 
-// v12.3.0 (audit UX #4) : reprendre directement l'étape en cours de la dernière
+// v12.3.2 (audit UX #4) : reprendre directement l'étape en cours de la dernière
 // Odyssée jouée, depuis l'écran d'accueil — sans repasser par la sélection
 // d'Odyssée puis toute la carte. Repli propre sur la carte si la zone
 // mémorisée est introuvable, déjà terminée, ou en tout début de partie.
@@ -1626,7 +1626,7 @@ function renderMap(){
   const reqHtml = ''; // progression linéaire : plus de seuil d'étoiles affiché
   const interactive = (canPlay || done); // 'done' : zone conquise toujours re-jouable
   const onclick = interactive ? `onclick="requestZoneOpen('${z.id}')"` : '';
-  // v12.3.0 (audit UX #6) : les zones jouables/terminées deviennent focusables
+  // v12.3.2 (audit UX #6) : les zones jouables/terminées deviennent focusables
   // et activables au clavier (Entrée/Espace), au même titre qu'au clic/tap.
   // Les zones verrouillées restent hors du parcours clavier, comme elles le
   // sont déjà hors du parcours au clic.

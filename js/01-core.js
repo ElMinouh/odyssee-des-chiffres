@@ -510,12 +510,12 @@ let _monsterCenter={x:0,y:0}; // position précalculée du monstre (OPT-5)
 // ═══════════════════════════════════════════════════════
 const VIEWS=['v-menu','v-subjects','v-menu2','v-params','v-mode-config','v-settings','v-game','v-end','v-mult','v-parent','v-odyssey-select','v-map','v-zone'];
 function showView(id){VIEWS.forEach(v=>$(v).classList.toggle('hidden',v!==id));const si=document.querySelector('.settings-icon');if(si)si.classList.toggle('si-hidden',id!=='v-menu');
- // v12.3.0 (audit UX #18) : à chaque entrée sur l'écran de jeu, on resynchronise
+ // v12.3.2 (audit UX #18) : à chaque entrée sur l'écran de jeu, on resynchronise
  // le libellé du bouton "Retour" avec sa vraie destination (carte de zone ou
  // accueil), pour que le texte du bouton ne mente jamais sur ce qu'il va faire.
  if(id==='v-game' && typeof _syncQuitBtnLabel==='function') _syncQuitBtnLabel();
 }
-// v12.3.0 (audit UX #18) : calcule la vraie destination du bouton "Retour" en jeu
+// v12.3.2 (audit UX #18) : calcule la vraie destination du bouton "Retour" en jeu
 // et met à jour son libellé visible en conséquence.
 function _syncQuitBtnLabel(){
  const lbl = $('game-back-btn-label');
@@ -640,7 +640,7 @@ function returnMenu(){
 // dest='back' → page précédente · dest='home' → écran d'accueil.
 // Demande confirmation pour éviter les abandons accidentels.
 function quitGame(dest){
- // v12.3.0 (audit UX #5) : le message ne doit plus être identique dans tous les
+ // v12.3.2 (audit UX #5) : le message ne doit plus être identique dans tous les
  // cas — on distingue "retour à la carte de zone" (l'étape reprendra au même
  // point, rien n'est vraiment perdu à part le combat en cours) de "sortie
  // réelle" (accueil, ou retour hors d'une étape de zone). Dans tous les cas,
@@ -1280,7 +1280,7 @@ function refreshMenu1Card(){
    const ttl = (P && P.heroTitle) ? P.heroTitle : '';
    sb.textContent = 'Niveau ' + lvl + (ttl ? ' · ' + ttl : '');
   }
-  // v12.3.0 (audit UX #4) : le bouton "Continuer l'aventure" n'apparaît que si
+  // v12.3.2 (audit UX #4) : le bouton "Continuer l'aventure" n'apparaît que si
   // le joueur a déjà démarré une Odyssée — sinon il n'a rien à reprendre.
   const cbtn = $('menu1-continue-btn');
   if(cbtn) cbtn.classList.toggle('hidden', !(P && P.lastAdventure));

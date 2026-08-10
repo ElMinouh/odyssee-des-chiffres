@@ -912,7 +912,7 @@ function _advTalismanHtml(){
   </div>`;
 }
 
-// v12.3.0 (lot 6) : dernier onglet du Carnet consulté, mémorisé le temps de la
+// v12.3.2 (lot 6) : dernier onglet du Carnet consulté, mémorisé le temps de la
 // session pour ne pas retomber sur "Progression" à chaque réouverture.
 let _advlogLastTab = 'prog';
 function openAdventureLog(){
@@ -959,7 +959,7 @@ function openAdventureLog(){
  const figs = (P.ownedFigurines || []).length;
  const xp = P.xp || 0;
  const lvl = Math.floor(xp / 100) + 1;
- // v12.3.0 (lot 6, audit UX #3/#8) : onglet Journal — fusionne l'ex-Livre.
+ // v12.3.2 (lot 6, audit UX #3/#8) : onglet Journal — fusionne l'ex-Livre.
  const journal = (typeof _advlogJournalHtml==='function') ? _advlogJournalHtml() : { html:'', unreadCount:0, nextUnreadId:null };
  const tabs = [
   { id:'prog',    label:'Progression', badge:0 },
@@ -1019,7 +1019,7 @@ function openAdventureLog(){
  overlay.addEventListener('click', (ev) => {
   if(ev.target === overlay) closeAdventureLog();
  });
- // v12.3.0 (lot 6) : bascule d'onglet — clic + flèches gauche/droite (activation
+ // v12.3.2 (lot 6) : bascule d'onglet — clic + flèches gauche/droite (activation
  // automatique au clavier, cf. patron ARIA "tabs").
  const tabBtns = Array.from(overlay.querySelectorAll('.advlog-tab'));
  function _activateTab(id){

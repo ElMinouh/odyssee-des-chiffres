@@ -2464,7 +2464,7 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 .archipel-zone.locked{
  cursor:not-allowed;
 }
-/* v12.3.0 (audit UX #6) : anneau de focus visible pour la navigation clavier */
+/* v12.3.2 (audit UX #6) : anneau de focus visible pour la navigation clavier */
 .archipel-zone[tabindex]:focus-visible .archipel-zone-circle{
  outline:3px solid #ffd97a;
  outline-offset:3px;
@@ -2581,7 +2581,7 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  font-size:.72em;
  color:#fff;
  font-weight:700;
- /* v12.3.0 (audit UX #15) : contour renforcé + symétrique (au lieu d'une seule
+ /* v12.3.2 (audit UX #15) : contour renforcé + symétrique (au lieu d'une seule
     ombre portée en bas à droite) pour rester lisible sur les biomes clairs
     (désert, plage, glace) et pas seulement sur les fonds sombres. */
  text-shadow:1px 1px 3px rgba(0,0,0,.9), -1px -1px 3px rgba(0,0,0,.9),
@@ -4064,7 +4064,7 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 .drawer-row.locked{ opacity:.5; cursor:default; }
 .drawer-row.locked:hover{ background:rgba(255,255,255,.06); }
 .drawer-row.active{ outline:2px solid #ffd97a; outline-offset:-1px; }
-/* v12.3.0 (audit UX #19) : repère visuel du prochain chapitre non lu */
+/* v12.3.2 (audit UX #19) : repère visuel du prochain chapitre non lu */
 .drawer-row-next{ box-shadow:0 0 0 2px #ffd97a inset; background:rgba(255,217,122,.12); }
 .drawer-row-badge{
  width:28px; height:28px; flex:0 0 28px; border-radius:7px;
@@ -4082,7 +4082,7 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
    Les boutons d'outils descendent sous le bandeau pour ne jamais chevaucher la
    barre de commandes ; le bandeau et les commandes sont compactés. */
 @media (max-width:600px){
- /* v12.3.0 (audit UX #7) : on ne masque plus le repère de zoom, on le compacte —
+ /* v12.3.2 (audit UX #7) : on ne masque plus le repère de zoom, on le compacte —
     l'enfant garde un indice textuel de son niveau de zoom même sur mobile. */
  #map-zoom-label{ font-size:.68em; min-width:0; padding:0 2px; }
  #map-zoom-bar{ gap:var(--space-2); margin-top:var(--space-1); }
@@ -4093,14 +4093,14 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  .map-side-col{ top:64px; width:106px; }
  .map-side-left{ left:5px; }
  .map-side-right{ right:5px; }
- /* v12.3.0 (audit UX #2) : plancher de lisibilité relevé (.64em → .68em) */
+ /* v12.3.2 (audit UX #2) : plancher de lisibilité relevé (.64em → .68em) */
  .map-side-col .back-top-btn{ font-size:.68em; padding:var(--space-1) var(--space-2); }
  .compass-btn{ font-size:1.45em !important; height:30px; }
  .map-drawer{ width:190px; max-width:84vw; }
 }
 @media (max-width:380px){
  .map-side-col{ width:94px; }
- /* v12.3.0 (audit UX #2) : plancher de lisibilité relevé (.58em → .64em) —
+ /* v12.3.2 (audit UX #2) : plancher de lisibilité relevé (.58em → .64em) —
     en-dessous, le texte des boutons Carnet/Mini-carte/Livre devenait illisible
     pour de jeunes lecteurs sur petit écran. */
  .map-side-col .back-top-btn{ font-size:.64em; padding:var(--space-1) var(--space-1); }
@@ -4112,7 +4112,7 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 }
 
 /* ═══ v8.7.62 (O3-C.6.4) : Surbrillance de la prochaine zone
-   (déclenchée depuis v12.3.0 par la boussole, fusionnée avec l'ex-bouton 🚩) ═══ */
+   (déclenchée depuis v12.3.2 par la boussole, fusionnée avec l'ex-bouton 🚩) ═══ */
 .archipel-zone.zone-highlight-pulse{
  z-index:8 !important;
 }
@@ -4328,7 +4328,7 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 .advlog-quest-label{ font-size:.9em; font-weight:600; }
 .advlog-quest-sub{ font-size:.75em; opacity:.7; }
 
-/* v12.3.0 (lot 6) : onglets du Carnet d'aventure — remplace l'ancien accordéon.
+/* v12.3.2 (lot 6) : onglets du Carnet d'aventure — remplace l'ancien accordéon.
    Le Journal (ex-Livre) et les Trophées ont chacun leur propre onglet plutôt
    qu'un long scroll unique (audit UX #8). */
 .advlog-tabs{
@@ -4354,7 +4354,7 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 .advlog-panel.active{ display:block; animation:advlogPanelIn .2s ease-out; }
 @keyframes advlogPanelIn{ from{opacity:0;transform:translateY(4px);} to{opacity:1;transform:none;} }
 @media (prefers-reduced-motion:reduce){ .advlog-panel.active{ animation:none; } }
-/* v12.3.0 (lot 6) : repère visuel du prochain chapitre non lu, dans l'onglet Journal
+/* v12.3.2 (lot 6) : repère visuel du prochain chapitre non lu, dans l'onglet Journal
    (même traitement que .drawer-row-next, réutilisé pour rester cohérent). */
 .advlog-quest-next{ box-shadow:0 0 0 2px #ffd97a inset; background:rgba(255,217,122,.12); }
 

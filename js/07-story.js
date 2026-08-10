@@ -3291,7 +3291,7 @@ function _chapterUnlocked(entry, foggedMap){
  if(entry.kind === 'epilogue')return _regionConquered('final');
  return false;
 }
-// v12.3.0 (lot 6) : le tiroir "Livre" a été fusionné dans l'onglet "Journal" du
+// v12.3.2 (lot 6) : le tiroir "Livre" a été fusionné dans l'onglet "Journal" du
 // Carnet — cette fonction ne construit donc plus de DOM de tiroir. Elle continue
 // à rafraîchir _questUnlockedCache (l'état débloqué/verrouillé de chaque chapitre),
 // utilisé à la fois par renderMap() à chaque affichage de la carte et par l'onglet
@@ -3333,7 +3333,7 @@ function _replayChapter(id){
  if(chap) _showStoryModal(chap, null);
 }
 
-// v12.3.0 (lot 6, audit UX #3/#8/#19) : contenu de l'onglet "Journal" du Carnet.
+// v12.3.2 (lot 6, audit UX #3/#8/#19) : contenu de l'onglet "Journal" du Carnet.
 // Fusionne l'ancien tiroir "Livre" (supprimé) et l'ancienne section "Journal de
 // quête" du Carnet en une seule source. Rafraîchit systématiquement le cache de
 // déblocage avant de construire la liste (plutôt que de dépendre d'un rendu de

@@ -17,7 +17,7 @@
 <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png?v=1058">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=1058">
 <link rel="stylesheet" href="assets/fonts/google-fonts.css">
-<link rel="stylesheet" href="css/styles.css?v=1060">
+<link rel="stylesheet" href="css/styles.css?v=1061">
 </head>
 <body id="BODY">
 <!-- ═══ SPLASH SCREEN (Chantier v8.5.1 — durée 10s narrative) ═══
@@ -129,7 +129,7 @@
  <!-- ═══ MENU ═══ -->
  <!-- ═══ ÉCRAN 1 : QUI JOUE ? ═══ -->
  <div id="v-menu">
-  <div id="app-version">v11.0.0</div>
+  <div id="app-version">v12.3.2</div>
   <img src="assets/logo-savoir.webp?v=1057" alt="L'Odyssée du Savoir" class="game-logo" id="game-logo-menu" loading="eager" decoding="async" style="max-width:min(110px,34%);width:100%;height:auto;display:block;margin:0 auto 10px;">
 
   <!-- Aperçu du joueur sélectionné -->
@@ -137,7 +137,7 @@
    <div id="menu1-avatar" style="font-size:3em;line-height:1;">&#129497;</div>
    <div id="menu1-name" style="font-size:1.3em;font-weight:800;color:#f1c40f;margin-top:6px;">Joueur</div>
    <div id="menu1-sub" style="font-size:.8em;color:#bdc3c7;margin-top:2px;"></div>
-   <!-- v12.3.0 (audit UX #4) : raccourci direct vers l'étape en cours, masqué tant
+   <!-- v12.3.2 (audit UX #4) : raccourci direct vers l'étape en cours, masqué tant
         qu'aucune Odyssée n'a été démarrée (voir refreshMenu1Card). -->
    <button id="menu1-continue-btn" class="hidden" onclick="continueAdventure()" style="margin-top:12px;width:100%;background:#16a085;font-weight:800;padding:12px 10px;border-radius:12px;">&#9654;&#65039; Continuer l'aventure</button>
   </div>
@@ -500,7 +500,7 @@
    <button onclick="mapCenterOnAvatar()" title="Centrer sur ma position" aria-label="Centrer la carte sur ma position" class="map-cmd-btn" style="background:#16a085;">&#127919;</button>
   </div>
   <!-- v9.0.2 : boutons fixes (sous Retour/Accueil) + panneaux déroulants verticaux larges -->
-  <!-- v12.3.0 (lot 6, audit UX #3/#8) : le Carnet absorbe le Livre (fusionnés en un
+  <!-- v12.3.2 (lot 6, audit UX #3/#8) : le Carnet absorbe le Livre (fusionnés en un
        onglet "Journal") — seule la Mini-carte reste un tiroir rapide indépendant,
        désormais positionnée à droite (ex-place du Livre). -->
   <div class="map-side-col map-side-left">
