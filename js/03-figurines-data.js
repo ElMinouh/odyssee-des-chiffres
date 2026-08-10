@@ -196,13 +196,19 @@ if(typeof window !== 'undefined'){
 function getCharPortrait(id, opts = {}){
  const size = opts.size || 100;
  const emoji = opts.emoji || '❓';
+ // v12.2.8 (ADR-58, méta-audit Lot 7, pt.1) : alt="" était utilisé même sur
+ // les vraies figurines nommées (pas de la décoration) — un lecteur d'écran
+ // ne disait alors rien du tout sur l'image affichée. opts.name (optionnel,
+ // rétrocompatible) permet aux appelants de fournir le nom réel de la
+ // figurine ; sans lui, on retombe sur alt="" plutôt que d'inventer un texte.
+ const altAttr = opts.name ? ` alt="${String(opts.name).replace(/'/g,'&#39;').replace(/"/g,'&quot;')}"` : ' alt=""';
  // 1. Image HD si disponible (préchargée OU détectée)
  if(FIG_IMG_AVAILABLE.has(id)){
   const fallbackHTML = (CHAR_PORTRAITS[id] || `<div style="font-size:${size*0.45}px;line-height:${size}px;text-align:center;">${emoji}</div>`)
     .replace(/'/g, '&#39;').replace(/"/g, '&quot;');
   // Le onerror : si le fichier .webp n'existe pas (404), on log pour diagnostic
   // et on bascule sur le fallback (SVG ou emoji).
-  return `<img src="assets/figurines/${id}.webp" alt="" loading="lazy" decoding="async"
+  return `<img src="assets/figurines/${id}.webp"${altAttr} loading="lazy" decoding="async"
     style="width:100%;height:100%;object-fit:contain;display:block;"
     onerror="console.warn('[fig img 404] Fichier manquant : assets/figurines/${id}.webp');FIG_IMG_AVAILABLE.delete('${id}');FIG_IMG_FAILED.add('${id}');this.outerHTML='${fallbackHTML}'"/>`;
  }

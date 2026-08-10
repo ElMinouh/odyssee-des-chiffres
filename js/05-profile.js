@@ -701,7 +701,7 @@ function _pcShowConfirm(){
  const ov = _pcEl();
  const _e = (typeof esc==='function') ? esc : (s=>String(s));
  const av = P.photo
-  ? '<img src="'+P.photo+'" style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid #f1c40f;margin:0 auto 12px;display:block;">'
+  ? '<img src="'+P.photo+'" alt="" style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid #f1c40f;margin:0 auto 12px;display:block;">'
   : '<div style="font-size:4em;margin-bottom:8px;">'+(P.avatar||'🙂')+'</div>';
  ov.innerHTML = '<div style="background:linear-gradient(135deg,rgba(241,196,15,.10),rgba(241,196,15,.02));border:1px solid rgba(241,196,15,.3);border-radius:18px;padding:26px 20px;text-align:center;max-width:340px;width:100%;">'
   + av

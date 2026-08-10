@@ -306,7 +306,7 @@ function renderParentFigurines(){
   displayFigs.forEach(fig=>{
    const isOwned=owned.includes(fig.id);
    const col=RARITY_COL[fig.r]||'#888';
-   const portrait=getCharPortrait(fig.id, {size:56, emoji:fig.em});
+   const portrait=getCharPortrait(fig.id, {size:56, emoji:fig.em, name:fig.name});
 html+=`<div class="pfig-card${isOwned?' owned':' pfig-locked'}${fig.r==='exclusif'?' rarity-exclusif':''}" onclick="pfigCardClick('${fig.id}',${isOwned})" title="${fig.name} — ${isOwned?'Voir animation & son':'Aperçu disponible'}">`;
    if(!isOwned) html+=`<div style="position:absolute;top:2px;left:2px;font-size:.65em;background:rgba(0,0,0,.5);border-radius:4px;padding:1px 4px;color:#aaa;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>`;
    html+=`<div class="pfig-mini" style="border-bottom:2px solid ${col}${isOwned?'88':'22'};${!isOwned?'filter:grayscale(.5) brightness(.8)':''}">${portrait}</div>
@@ -1624,7 +1624,7 @@ function renderProfileManager(){
   let photo=null;
   try{ const d=JSON.parse(localStorage.getItem('user_'+n)||'null'); photo=(d&&d.photo)||null; }catch(e){}
   const thumb = photo
-   ? `<img src="${photo}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid #f1c40f;">`
+   ? `<img src="${photo}" alt="" style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid #f1c40f;">`
    : `<div style="width:52px;height:52px;border-radius:50%;background:#3a3a55;border:2px solid #f1c40f;display:flex;align-items:center;justify-content:center;font-size:1.6em;">🙂</div>`;
   const renaming = _pmRenameOpen===n;
   return `<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px;margin-bottom:10px;">

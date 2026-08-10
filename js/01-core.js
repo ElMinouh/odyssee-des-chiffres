@@ -1233,7 +1233,7 @@ function _setAvatarEl(el, p, sizePx){
  if(!el) return;
  sizePx = sizePx || 52;
  if(p && p.photo){
-  el.innerHTML = '<img src="'+p.photo+'" style="width:'+sizePx+'px;height:'+sizePx+'px;border-radius:50%;object-fit:cover;border:2px solid #f1c40f;vertical-align:middle;">';
+  el.innerHTML = '<img src="'+p.photo+'" alt="Photo de profil de '+esc(p.name||'')+'" style="width:'+sizePx+'px;height:'+sizePx+'px;border-radius:50%;object-fit:cover;border:2px solid #f1c40f;vertical-align:middle;">';
  } else {
   el.textContent = (p && p.avatar) ? p.avatar : '🧙';
  }

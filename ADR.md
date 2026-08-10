@@ -360,7 +360,7 @@ Décisions actées, non remises en cause à ce jour :
 - une scène dans `_STORY.victories[regionId]` pour chaque région non-finale ;
 - les zones de la région listées dans `MAP_ZONES` avec `region: regionId` (ou `levels` correspondants).
 
-**Limite connue** : si un chapitre a beaucoup plus de pages que de zones dans son îlot (ex. 11 pages pour 4 zones), les pages excédentaires s'accumulent et sont montrées d'un bloc avec la scène de victoire plutôt que d'être bien réparties. Pas de perte de contenu, mais moins fluide. Non corrigé à ce stade — à traiter si Cyril le demande.
+**Limite connue — ⚠️ OBSOLÈTE, voir ADR-58** : ~~si un chapitre a beaucoup plus de pages que de zones dans son îlot (ex. 11 pages pour 4 zones), les pages excédentaires s'accumulent et sont montrées d'un bloc avec la scène de victoire plutôt que d'être bien réparties. Pas de perte de contenu, mais moins fluide. Non corrigé à ce stade — à traiter si Cyril le demande.~~ Cette limite décrivait un symptôme de l'ancien système de fragmentation du carnet (Lot C, ADR-46), retiré depuis par ADR-49 (v12.2.0). Un chapitre est désormais toujours montré entièrement d'un bloc à l'entrée de région ; la scène de victoire (`_STORY.victories[regionId]`) est un contenu totalement séparé, jamais mélangé aux pages du chapitre. Aucune correction nécessaire.
 
 ---
 
@@ -503,6 +503,22 @@ Décisions actées, non remises en cause à ce jour :
 **Reporté à un lot dédié** : extension du moment charnière (ADR-50) à 2-3 choix par Odyssée — chantier de contenu substantiel (14 nouveaux textes par point de choix ajouté, relecture complète des 7 histoires requise à nouveau par discipline ADR-50), volontairement sorti de ce lot pour ne pas le noyer dans des correctifs rapides.
 
 **Conséquence** : toute future ligne ajoutée à `_TWIST_LINES` qui mentionnerait `{villain}` avec une agence active doit être exclue par défaut du pool maternelle, sauf vérification explicite de compatibilité avec `_MAT_STORY`/`_MAT_STORY_FR`.
+
+---
+
+## ADR-58 — Accessibilité alt=, correction ADR-48, coexistence des 2 systèmes de contextualisation (méta-audit, Lot 7)
+
+**Contexte** (méta-audit stratégique, prompt 12, Lot 7) : dernier lot autonome avant blocage sur les documents d'audit manquants (points engagement/pédagogique/qualité perçue).
+
+**Décision** :
+1. **Accessibilité `alt=`** : recensement complet des balises `<img>` du projet (statiques dans `index.html` + générées dynamiquement en JS). Deux vrais gaps trouvés et corrigés :
+   - Photos de profil (`01-core.js` `_setAvatarEl`, `05-profile.js`, `09-parent.js`) n'avaient **aucun `alt`** — corrigé : `alt="Photo de profil de {nom}"` là où le nom n'est pas déjà visible juste à côté (`_setAvatarEl`), `alt=""` là où il l'est déjà (confirmation profil, liste de gestion des profils) pour éviter la redondance.
+   - Images de figurines (`03-figurines-data.js` `getCharPortrait()`) avaient `alt=""` **alors que ce sont de vraies figurines nommées**, pas de la décoration. `getCharPortrait()` accepte désormais `opts.name` (rétrocompatible, alt="" par défaut si absent) ; les 3 appelants qui n'affichent pas déjà le nom en texte adjacent (`09-parent.js`, grille de collection et étagère de `10-figurines.js`) le fournissent désormais. Le 4e appelant (visionneuse de figurine, nom déjà affiché dans `fig-vtitle` juste au-dessus) reste volontairement en `alt=""`.
+   - Les logos statiques (`index.html`) avaient déjà un `alt` correct ou `aria-hidden="true"` — rien à changer.
+2. **Correction d'ADR-48** : sa "limite connue" (pages de chapitre excédentaires accumulées à la scène de victoire) décrivait un symptôme de l'ancienne fragmentation du carnet (ADR-46), retirée depuis par ADR-49 (v12.2.0) — marquée obsolète, barrée, avec explication. Aucune correction de code nécessaire : un chapitre de 11 pages pour 4 zones est aujourd'hui simplement un livre plus long, lu d'un bloc à l'entrée de région, sans aucun lien avec la scène de victoire (contenu séparé).
+3. **Coexistence documentée** : `narrativeWrapMath()` (`06a-adaptive.js`, ADR-37, ~20% des calculs primaire habillés d'un contexte narratif générique) et `_perfCallbackLine()` (`07-map.js`, Lot A/14e conv., callback de performance en intro de boss) poursuivent un objectif proche (ancrer le jeu dans l'histoire) via 2 fonctions indépendantes, écrites à des moments différents, sans référence croisée. Ce n'est pas un doublon nuisible — elles se déclenchent à des moments différents (pendant une question / à l'ouverture d'un combat) — mais **toute future contextualisation narrative d'un calcul doit d'abord vérifier l'existence de ces 2 fonctions avant d'en créer une 3e**, pour ne pas répéter cette dérive.
+
+**Conséquence** : tout nouvel appel à `getCharPortrait()` doit fournir `opts.name` sauf si le nom de la figurine est déjà visible en texte adjacent à l'image.
 
 ---
 

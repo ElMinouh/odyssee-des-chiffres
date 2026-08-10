@@ -105,7 +105,7 @@ function _renderFigurinesShop(filter){
   const isOwned=owned.includes(fig.id);
   html+=`<div class="fig-card${isOwned?' owned':''}${fig.r==='exclusif'?' rarity-exclusif':''}"${isOwned?` onclick="openFigViewer('${fig.id}')" title="Voir en 3D 🎬"`:''}>`;
   if(isOwned) html+='<div class="fig-mark">✓</div>';
-  html+=`<span class="fig-em">${getCharPortrait(fig.id, {size:75, emoji:fig.em})}</span>`;
+  html+=`<span class="fig-em">${getCharPortrait(fig.id, {size:75, emoji:fig.em, name:fig.name})}</span>`;
   html+=`<div class="fig-rv" style="color:${RARITY_COL[fig.r]}">${RARITY_STARS[fig.r]}</div>`;
   html+=`<div class="fig-nm">${fig.name}</div>`;
   html+=`<span class="fig-unib u-${fig.uk}">${UNI_ICON[fig.uk]} ${fig.uni}</span><br>`;
@@ -176,7 +176,7 @@ function _sortedFigs(list){
 
 function _figShelfCard(fig, anim=false){
  const col=RARITY_COL[fig.r]||'#888';
- const portrait=getCharPortrait(fig.id, {size:58, emoji:fig.em});
+ const portrait=getCharPortrait(fig.id, {size:58, emoji:fig.em, name:fig.name});
  return `<div class="shelf-fig" data-r="${fig.r}" onclick="openFigViewer('${fig.id}')" title="${fig.name}">
   <div class="shelf-fig-img" style="border-color:${col}22;border-width:1.5px;border-style:solid;">${portrait}</div>
   <div class="shelf-fig-glow" style="background:${col};"></div>
