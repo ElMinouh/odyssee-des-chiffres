@@ -459,4 +459,21 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-55 — Adoption complète des tokens `--space-*` + guide du dépôt (méta-audit, Lot 4)
+
+**Contexte** (méta-audit stratégique, prompt 12, Lot 4) : les tokens `--space-1` à `--space-6` (créés lors de l'audit DA, 6e conversation, maintenus en base dormante par ADR-25) avaient 0 usage réel dans `styles.css` après 8 conversations, contre 458 déclarations `margin`/`padding`/`gap` en valeurs brutes. Décision explicitement redemandée à Cyril (retirer / adopter / laisser en l'état), avec clarification préalable que le gain visuel d'une adoption serait quasi invisible (différences typiques d'1-2px) — **Cyril a choisi l'adoption malgré ce gain surtout technique**, en connaissance de cause.
+
+**Décision** : adoption par **unification complète** (Option B), via un script de transformation automatisé plutôt qu'une édition manuelle sur 458+ points (trop de surface d'erreur humaine) :
+- Toute valeur `Npx` dans une déclaration `margin`/`padding`/`gap` (et leurs variantes `-top`/`-bottom`/`-left`/`-right`/`-inline`/`-block`) comprise entre 4 et 32px est remplacée par le token de l'échelle (4/8/12/16/24/32) le plus proche, égalité tranchée vers le haut.
+- Les valeurs `0` et `auto` sont laissées inchangées (pas de token pour "aucun espace").
+- Les valeurs hors échelle (<4px, ex. `1px 2px 3px` — décoratif fin — ou >32px, ex. grandes marges de mise en page) sont **laissées en px brut**, volontairement : les forcer sur l'échelle aurait produit des changements trop visibles (ex. `62px` compressé à `32px`, soit -48%).
+- Les déclarations à unités mixtes non gérables sans risque (offsets négatifs de positionnement, `cm`, `env()`/`clamp()`) sont explicitement exclues et laissées intactes (9 cas).
+- Résultat : 574 valeurs converties en `var(--space-N)`, dont 282 avec une valeur réellement arrondie (changement visuel mineur, 1-4px selon les cas) et 292 en renommage pur (valeur identique). Validé par un parseur CSS réel (`css` npm) après transformation : structure intacte, 1692 règles, aucune erreur de syntaxe. Diff visuel humain non fait depuis cet environnement (pas d'accès navigateur) — **à vérifier par Cyril via la checklist de non-régression**, section rendu visuel, avant de considérer ce lot définitivement clos.
+
+**Guide du dépôt** : nouveau `GUIDE-DU-DEPOT.md` à la racine — point d'entrée pour un humain (pas un assistant IA) reprenant le projet sans historique de conversation : architecture en un schéma, où sont les choses, comment lancer/tester/déployer, et le principe du cycle de retest des scores d'audit (revérifier après ~5 conversations de changements substantiels sur le périmètre concerné, consigner dans `ADR.md`).
+
+**Conséquence** : toute nouvelle règle de style margin/padding/gap devrait désormais utiliser `var(--space-N)` directement plutôt qu'une valeur brute, pour ne pas recréer la dérive corrigée ici. Le script de transformation n'est pas conservé dans le dépôt (usage ponctuel) — une future extension du même principe (ex. à `border-radius` ou aux couleurs) devrait repartir d'un script similaire, pas d'une édition manuelle.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
