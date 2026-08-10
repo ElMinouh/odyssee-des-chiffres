@@ -476,4 +476,18 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-56 — Sécurité messagerie enfant : filtre serveur, migration SQL, signalement parent, headers durcis (méta-audit, Lot 5)
+
+**Contexte** (méta-audit stratégique, prompt 12, Lot 5) : après obtention du code réel des 2 Workers Cloudflare (`odyssee-sync`, `odyssee-chat`) et de `schema.sql`, correction d'une erreur du méta-audit initial (la CSP n'était pas "limitée à `frame-ancestors`" comme affirmé en ne lisant que `_headers` — une CSP complète existe déjà via balise meta dans `index.html`). Deux vrais problèmes confirmés en lisant `odyssee-chat.js` : (1) le filtre de mots interdits (`_CHAT_BLOCKED_WORDS`, 17-messaging.js) n'existait QUE côté client, contournable par un client modifié ou un appel API direct ; (2) `schema.sql` ne définissait pas les tables `blocks`/`reads` pourtant utilisées par le code du Worker (écart entre le fichier versionné et la réalité probable de la base).
+
+**Décision** :
+1. `_headers` complété : `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` (caméra/micro/géoloc refusés, inutilisés par le jeu).
+2. `odyssee-chat.js` : même filtre de mots bloqués qu'au client, réappliqué côté serveur dans `msgSend()` avant insertion (défense en profondeur — le client reste la première ligne pour le message d'erreur immédiat ; le serveur devient la ligne qui ne peut pas être contournée). **La liste doit être maintenue identique des deux côtés manuellement** — pas de source unique possible entre un Worker et un fichier front séparés, aucune infrastructure de partage de code entre les deux dans ce projet.
+3. `schema.sql` mis à jour pour refléter la réalité du code (`blocks`, `reads` ajoutées, `CREATE TABLE IF NOT EXISTS`) + fichier `migration-blocks-reads.sql` séparé, sans danger à rejouer sur la base réelle que les tables existent déjà ou non (non vérifiable depuis cet environnement, pas d'accès à la console D1).
+4. Signalement parent (`P.chatFlags`, tableau d'événements `{ts, kind}`) : incrémenté côté client (blocage client) ET côté serveur (si le serveur devait bloquer un mot que le client n'a pas intercepté — signal plus fort). Affiché comme badge passif dans le résumé hebdomadaire de la Vue Parent (« ⚠️ N messages bloqués cette semaine »), filtré sur la fenêtre de la semaine affichée. Pas d'alerte push (aucune infrastructure serveur pour ça dans ce projet) — signalement passif, visible dès l'ouverture de l'écran, pas besoin d'aller chercher.
+
+**Conséquence** : tout nouveau champ de contenu texte envoyé par un enfant vers un autre (s'il en apparaît un jour ailleurs que la messagerie) devrait suivre le même principe de défense en profondeur (filtre client ET serveur). `P.chatFlags` est un nouveau champ persistant **hors du périmètre Odyssée** — volontairement PAS ajouté à `_allOdysseyStorySeenIds()`/`resetAdventure()` (ADR-51), qui ne concernent que la progression narrative Odyssée ; un futur "Reset complet du profil" (s'il existe/est créé) devrait en revanche l'inclure.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

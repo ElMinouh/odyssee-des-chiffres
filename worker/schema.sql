@@ -21,3 +21,22 @@ CREATE TABLE IF NOT EXISTS messages (
 );
 CREATE INDEX IF NOT EXISTS idx_msg_conv  ON messages (conv, id);
 CREATE INDEX IF NOT EXISTS idx_contacts_b ON contacts (b, status);
+
+-- Ajoutées ADR-56 (méta-audit Lot 5) : utilisées par le code (blocage de
+-- contact, accusés de lecture) mais absentes de ce fichier jusqu'ici — voir
+-- migration-blocks-reads.sql pour la migration à rejouer sur la base réelle.
+CREATE TABLE IF NOT EXISTS blocks (
+  blocker TEXT NOT NULL,
+  blocked TEXT NOT NULL,
+  ts      INTEGER,
+  PRIMARY KEY (blocker, blocked)
+);
+CREATE INDEX IF NOT EXISTS idx_blocks_blocker ON blocks (blocker);
+
+CREATE TABLE IF NOT EXISTS reads (
+  conv   TEXT NOT NULL,
+  reader TEXT NOT NULL,
+  upto   INTEGER,
+  ts     INTEGER,
+  PRIMARY KEY (conv, reader)
+);

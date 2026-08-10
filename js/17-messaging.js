@@ -395,6 +395,16 @@ async function _chatSend(body){
  body=String(body==null?'':body).trim(); if(!body) return;
  if(_chatContainsBlockedWord(body)){
   if(typeof toast==='function') toast('⚠️ Message bloqué : merci de rester poli(e) 🙂', 3000);
+  // v12.2.6 (ADR-56, méta-audit Lot 5, pt.3) : signalement passif pour le
+  // parent — pas d'alerte push (aucune infra serveur pour ça), juste un
+  // compteur persistant, affiché dans le résumé hebdomadaire (Vue Parent).
+  try{
+   if(typeof P!=='undefined' && P){
+    P.chatFlags = P.chatFlags || [];
+    P.chatFlags.push({ ts: Date.now(), kind: 'blocked_word' });
+    if(typeof saveProfile==='function') saveProfile();
+   }
+  }catch(e){ /* signalement best-effort : ne doit jamais bloquer l'envoi */ }
   return;
  }
  const res = await chatMsgSend(_msgProf, _msgConv.id, body);
@@ -404,9 +414,21 @@ async function _chatSend(body){
   _msgJustSent = true;
   _chatMarkSeen(_msgProf, _msgConv.id, _msgConv.lastId);
   _renderBubbles(_convCache);
- } else if(res && (res.error==='not_contact'||res.error==='blocked'||res.error==='empty')){
-  const m = res.error==='not_contact' ? 'Vous n\u2019êtes plus amis.' : (res.error==='blocked' ? 'Ce contact est bloqué.' : 'Message vide.');
+ } else if(res && (res.error==='not_contact'||res.error==='blocked'||res.error==='empty'||res.error==='blocked_word')){
+  const m = res.error==='not_contact' ? 'Vous n\u2019êtes plus amis.' : (res.error==='blocked' ? 'Ce contact est bloqué.' : (res.error==='blocked_word' ? 'Message bloqué : merci de rester poli(e) 🙂' : 'Message vide.'));
   if(typeof toast==='function') toast('\u274C '+m, 2500);
+  // v12.2.6 (ADR-56) : si le SERVEUR a dû bloquer un mot que le filtre
+  // client n'a pas intercepté (client modifié, ou liste désynchronisée),
+  // c'est un signal plus fort qu'un simple blocage client — signalé pareil.
+  if(res.error==='blocked_word'){
+   try{
+    if(typeof P!=='undefined' && P){
+     P.chatFlags = P.chatFlags || [];
+     P.chatFlags.push({ ts: Date.now(), kind: 'blocked_word_server' });
+     if(typeof saveProfile==='function') saveProfile();
+    }
+   }catch(e){}
+  }
  } else {
   _chatEnqueue(_msgProf, _msgConv.id, body); // hors-ligne → file d'attente
   _msgJustSent = true;

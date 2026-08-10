@@ -213,7 +213,7 @@ var PARENT_GUIDES = {
  matieres:{t:'📖 Matières autorisées',s:['Choisis l\u2019enfant.','Coche les matières à interdire (ex. ne garder que les maths).','Touche « Enregistrer ».']},
  cloud:{t:'☁️ Sauvegarde en ligne',s:['Sur l\u2019appareil principal : un code s\u2019affiche pour ce profil. Note-le.','Sur un autre appareil : ouvre cette même section.','Entre le code dans « Récupérer depuis un code » puis touche « Récupérer ».','Le profil apparaît alors sur ce nouvel appareil.']},
  fichier:{t:'💾 Sauvegarde fichier',s:['Touche « Télécharger le fichier » : un fichier .json est enregistré.','Range ce fichier en lieu sûr (clé USB, cloud perso…).','Pour restaurer : touche « Importer un fichier » et choisis-le.']},
- messagerie:{t:'✉️ Messagerie',s:['Choisis l\u2019enfant.','« Suspendre » met en pause sans perdre le code ni les amis ; « Réactiver » reprend.','« Voir les conversations » permet de surveiller les échanges.','Dans la liste des contacts, « Bloquer » empêche un contact d\u2019écrire.','Les demandes d\u2019ami en attente s\u2019acceptent ou se refusent ici.']},
+ messagerie:{t:'✉️ Messagerie',s:['Choisis l\u2019enfant.','« Suspendre » met en pause sans perdre le code ni les amis ; « Réactiver » reprend.','« Voir les conversations » permet de surveiller les échanges.','Dans la liste des contacts, « Bloquer » empêche un contact d\u2019écrire.','Les demandes d\u2019ami en attente s\u2019acceptent ou se refusent ici.','Si un message est bloqué par le filtre de langage, un badge ⚠️ apparaît dans le résumé hebdomadaire de l\u2019enfant.']},
  profils:{t:'👥 Profils',s:['Ajoute un enfant en tapant son prénom puis « Ajouter ».','Touche 📷 sur l\u2019avatar d\u2019un profil pour lui ajouter/changer sa photo (✕ pour la retirer).','Touche « Renommer » sur sa carte : un champ s\u2019ouvre pour taper le nouveau prénom (amis et progression sont conservés).','Touche « Supprimer » pour retirer un profil (confirmation demandée ; sa progression reste sur l\u2019appareil).']},
  synchro:{t:'🔄 Réparer la synchronisation',s:['Va sur l\u2019appareil principal (celui qui a les bonnes données, en général le PC).','Touche « Envoyer vers les autres appareils ».','Sur les autres appareils (tablette, téléphone), ferme puis rouvre le jeu.','Les profils et messages sont alors identiques partout.']},
  playercode:{t:'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Code du profil',s:['Choisis l\u2019enfant concerné en haut de l\u2019onglet.','Tape un code à 2 chiffres puis touche « Activer ».','Ce code sera demandé à la connexion de ce profil, à la place de la simple confirmation par défaut.','Touche « Désactiver » pour revenir à la simple confirmation.']},
@@ -684,6 +684,9 @@ function renderWeeklySummary(){
  const advice = _weeklyAdvice(kThis, kPrev, d.opStats, topErrors);
  // Graph d'activité
  const chart = _renderActivityChart(eThis, wThis.start);
+ // v12.2.6 (ADR-56, méta-audit Lot 5, pt.3) : signalements messagerie de la
+ // semaine (mots bloqués tentés) — signalement passif, pas d'alerte push.
+ const chatFlagsThis = (d.chatFlags||[]).filter(f => f.ts >= wThis.start.getTime() && f.ts <= wThis.end.getTime());
  // ────── RENDU HTML ──────
  const fmtD = (date) => date.toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit'});
  const _esc_player = (typeof esc==='function') ? esc(player) : player;
@@ -728,6 +731,7 @@ function renderWeeklySummary(){
    ${(typeof chatIsEnabledByName==='function' && chatIsEnabledByName(player)) ? `
    <div class="wreport-section no-print" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
     <span style="font-size:.9em;color:#9aa6b2;">✉️ Messagerie de ${_esc_player}</span>
+    ${chatFlagsThis.length ? `<span style="font-size:.78em;color:#f39c12;font-weight:700;" title="Messages bloqués par le filtre de langage cette semaine">⚠️ ${chatFlagsThis.length} message${chatFlagsThis.length>1?'s':''} bloqué${chatFlagsThis.length>1?'s':''}</span>` : ''}
     <button onclick="openMessaging('${_jsAttrPlayer}')" style="background:#9b59b6;font-size:.8em;padding:6px 12px;">Voir →</button>
    </div>` : ''}
    <div class="wreport-actions no-print">
