@@ -4018,11 +4018,6 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 /* Mini-carte / Livre : mêmes dimensions, un peu plus anguleux */
 .map-tool-btn{ background:#2c3e50; border-radius:9px; }
 .map-tool-btn:hover{ background:#34495e; transform:none; }
-/* v12.3.0 (audit UX #16) : le Livre a sa propre couleur (bleu), distincte du
-   Carnet (violet) et de la Mini-carte (gris-bleu par défaut), pour que les
-   3 boutons se distinguent au premier coup d'œil plutôt qu'à la lecture. */
-.map-livre-btn{ background:#2471a3; }
-.map-livre-btn:hover{ background:#2e86c1; }
 .drawer-caret{ font-size:.85em; transition:transform var(--dur-base); }
 .map-tool-btn.drawer-open .drawer-caret{ transform:rotate(180deg); }
 /* Boussole : AUCUN fond/contour — seulement l'emoji (qui tourne au clic) */
@@ -4310,9 +4305,7 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  box-shadow:0 3px 12px rgba(0,0,0,.55);
  user-select:none; -webkit-user-select:none;
 }
-.quest-body{ display:flex; flex-direction:column; gap:3px; }
 /* Section journal de quête dans le carnet d'aventure */
-.advlog-quest{ margin:var(--space-4) 0 var(--space-2); }
 .advlog-quest-list{ display:flex; flex-direction:column; gap:var(--space-2); }
 .advlog-quest-item{
  display:flex; align-items:center; gap:var(--space-3);
@@ -4335,23 +4328,35 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 .advlog-quest-label{ font-size:.9em; font-weight:600; }
 .advlog-quest-sub{ font-size:.75em; opacity:.7; }
 
-/* v9.0.1 : accordéon du journal de quête dans le carnet d'aventure */
-.advlog-accordion-btn{
- display:flex; align-items:center; justify-content:center; gap:var(--space-2);
- width:100%; margin-top:var(--space-4);
- background:rgba(255,217,122,.16);
- border:1px solid rgba(255,217,122,.4);
- color:#ffd97a; font-weight:800; font-size:.95em;
- padding:var(--space-3); border-radius:10px; cursor:pointer;
+/* v12.3.0 (lot 6) : onglets du Carnet d'aventure — remplace l'ancien accordéon.
+   Le Journal (ex-Livre) et les Trophées ont chacun leur propre onglet plutôt
+   qu'un long scroll unique (audit UX #8). */
+.advlog-tabs{
+ display:flex; gap:var(--space-1);
+ border-bottom:1px solid rgba(255,255,255,.14);
+ margin:var(--space-3) 0 var(--space-4);
 }
-.advlog-accordion-btn .drawer-caret{ transition:transform var(--dur-base); }
-.advlog-accordion-btn.open .drawer-caret{ transform:rotate(180deg); }
-.advlog-accordion{
- max-height:0; overflow:hidden;
- transition:max-height var(--dur-base) ease;
+.advlog-tab{
+ flex:1;
+ display:flex; align-items:center; justify-content:center; gap:6px;
+ background:transparent; border:none; border-bottom:3px solid transparent;
+ color:rgba(255,255,255,.6); font-weight:700; font-size:.86em;
+ padding:var(--space-2) var(--space-1); cursor:pointer;
+ border-radius:0;
 }
-.advlog-accordion.open{ max-height:2000px; }
-.advlog-accordion .advlog-quest-list{ padding-top:var(--space-3); }
+.advlog-tab:hover{ color:#fff; background:rgba(255,255,255,.06); }
+.advlog-tab.active{ color:#f1c40f; border-bottom-color:#f1c40f; }
+.advlog-tab-badge{
+ background:#e74c3c; color:#fff; font-size:.72em; font-weight:800;
+ border-radius:8px; padding:0 6px; line-height:1.5;
+}
+.advlog-panel{ display:none; }
+.advlog-panel.active{ display:block; animation:advlogPanelIn .2s ease-out; }
+@keyframes advlogPanelIn{ from{opacity:0;transform:translateY(4px);} to{opacity:1;transform:none;} }
+@media (prefers-reduced-motion:reduce){ .advlog-panel.active{ animation:none; } }
+/* v12.3.0 (lot 6) : repère visuel du prochain chapitre non lu, dans l'onglet Journal
+   (même traitement que .drawer-row-next, réutilisé pour rester cohérent). */
+.advlog-quest-next{ box-shadow:0 0 0 2px #ffd97a inset; background:rgba(255,217,122,.12); }
 
 /* v9.0.1 : la boussole-bouton hérite de l'animation erratique au clic */
 .compass-btn.compass-spinning{

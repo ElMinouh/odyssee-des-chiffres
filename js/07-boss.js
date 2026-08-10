@@ -912,6 +912,9 @@ function _advTalismanHtml(){
   </div>`;
 }
 
+// v12.3.0 (lot 6) : dernier onglet du Carnet consulté, mémorisé le temps de la
+// session pour ne pas retomber sur "Progression" à chaque réouverture.
+let _advlogLastTab = 'prog';
 function openAdventureLog(){
  if(typeof P === 'undefined' || !P) return;
  const beaten = P.mapBossBeaten || [];
@@ -956,6 +959,21 @@ function openAdventureLog(){
  const figs = (P.ownedFigurines || []).length;
  const xp = P.xp || 0;
  const lvl = Math.floor(xp / 100) + 1;
+ // v12.3.0 (lot 6, audit UX #3/#8) : onglet Journal — fusionne l'ex-Livre.
+ const journal = (typeof _advlogJournalHtml==='function') ? _advlogJournalHtml() : { html:'', unreadCount:0, nextUnreadId:null };
+ const tabs = [
+  { id:'prog',    label:'Progression', badge:0 },
+  { id:'journal', label:'Journal',     badge:journal.unreadCount },
+  { id:'trophees',label:'Trophées',    badge:0 },
+ ];
+ // Si l'onglet mémorisé n'a plus de sens (ex. premier lancement), repli sur "prog".
+ const startTab = tabs.some(t=>t.id===_advlogLastTab) ? _advlogLastTab : 'prog';
+ const tabsHtml = tabs.map(t => `
+  <button class="advlog-tab${t.id===startTab?' active':''}" id="advlog-tab-${t.id}" role="tab"
+          aria-selected="${t.id===startTab}" aria-controls="advlog-panel-${t.id}"
+          tabindex="${t.id===startTab?'0':'-1'}" data-tab="${t.id}">
+   ${t.label}${t.badge>0?`<span class="advlog-tab-badge">${t.badge}</span>`:''}
+  </button>`).join('');
  // Construction de l'overlay
  const overlay = document.createElement('div');
  overlay.className = 'advlog-overlay';
@@ -969,24 +987,31 @@ function openAdventureLog(){
      <div class="advlog-hero-level">Niveau ${lvl} · Aventurier${heroGender(P.name,P.gender)==='f'?'ère':''}</div>
     </div>
    </div>
-   <div class="advlog-global">
-    <div class="advlog-global-label">Progression de l'Odyssée</div>
-    <div class="advlog-bar-track advlog-bar-big">
-     <div class="advlog-bar-fill" style="width:${globalPct}%;background:linear-gradient(90deg,#f1c40f,#f39c12,#fff5d6);"></div>
-     <span class="advlog-global-pct">${totalBeaten}/${totalZones} zones · ${globalPct}%</span>
+   <div class="advlog-tabs" role="tablist" aria-label="Sections du carnet">${tabsHtml}</div>
+   <div class="advlog-panel${startTab==='prog'?' active':''}" id="advlog-panel-prog" role="tabpanel" aria-labelledby="advlog-tab-prog">
+    <div class="advlog-global">
+     <div class="advlog-global-label">Progression de l'Odyssée</div>
+     <div class="advlog-bar-track advlog-bar-big">
+      <div class="advlog-bar-fill" style="width:${globalPct}%;background:linear-gradient(90deg,#f1c40f,#f39c12,#fff5d6);"></div>
+      <span class="advlog-global-pct">${totalBeaten}/${totalZones} zones · ${globalPct}%</span>
+     </div>
     </div>
+    <div class="advlog-stats">
+     <div class="advlog-stat"><span class="advlog-stat-ico">⭐</span><span class="advlog-stat-val">${stars}</span><span class="advlog-stat-lbl">étoiles</span></div>
+     <div class="advlog-stat"><span class="advlog-stat-ico">🎭</span><span class="advlog-stat-val">${figs}</span><span class="advlog-stat-lbl">figurines</span></div>
+     <div class="advlog-stat"><span class="advlog-stat-ico">⚡</span><span class="advlog-stat-val">${xp}</span><span class="advlog-stat-lbl">XP</span></div>
+    </div>
+    ${(typeof _advCollectionHtml==='function')?_advCollectionHtml():''}
+    <div class="advlog-section-title">🗺️ Progression par région</div>
+    <div class="advlog-regions">${regionRows}</div>
    </div>
-   <div class="advlog-stats">
-    <div class="advlog-stat"><span class="advlog-stat-ico">⭐</span><span class="advlog-stat-val">${stars}</span><span class="advlog-stat-lbl">étoiles</span></div>
-    <div class="advlog-stat"><span class="advlog-stat-ico">🎭</span><span class="advlog-stat-val">${figs}</span><span class="advlog-stat-lbl">figurines</span></div>
-    <div class="advlog-stat"><span class="advlog-stat-ico">⚡</span><span class="advlog-stat-val">${xp}</span><span class="advlog-stat-lbl">XP</span></div>
+   <div class="advlog-panel${startTab==='journal'?' active':''}" id="advlog-panel-journal" role="tabpanel" aria-labelledby="advlog-tab-journal">
+    ${journal.html}
    </div>
-   ${(typeof _advCollectionHtml==='function')?_advCollectionHtml():''}
-   <div class="advlog-section-title">🗺️ Progression par région</div>
-   <div class="advlog-regions">${regionRows}</div>
-   <div class="advlog-section-title">🏆 Boss vaincus (${totalBeaten})</div>
-   ${bossGallery}
-   ${(typeof _questJournalCarnetHtml==='function')?_questJournalCarnetHtml():''}
+   <div class="advlog-panel${startTab==='trophees'?' active':''}" id="advlog-panel-trophees" role="tabpanel" aria-labelledby="advlog-tab-trophees">
+    <div class="advlog-section-title">🏆 Boss vaincus (${totalBeaten})</div>
+    ${bossGallery}
+   </div>
   </div>
  `;
  document.body.appendChild(overlay);
@@ -994,6 +1019,37 @@ function openAdventureLog(){
  overlay.addEventListener('click', (ev) => {
   if(ev.target === overlay) closeAdventureLog();
  });
+ // v12.3.0 (lot 6) : bascule d'onglet — clic + flèches gauche/droite (activation
+ // automatique au clavier, cf. patron ARIA "tabs").
+ const tabBtns = Array.from(overlay.querySelectorAll('.advlog-tab'));
+ function _activateTab(id){
+  _advlogLastTab = id;
+  tabBtns.forEach(b => {
+   const on = b.dataset.tab === id;
+   b.classList.toggle('active', on);
+   b.setAttribute('aria-selected', String(on));
+   b.tabIndex = on ? 0 : -1;
+  });
+  overlay.querySelectorAll('.advlog-panel').forEach(p => {
+   p.classList.toggle('active', p.id === 'advlog-panel-'+id);
+  });
+  if(typeof beep==='function'){ try{ beep(420,'sine',.07,.04); }catch(e){} }
+ }
+ tabBtns.forEach((b, i) => {
+  b.addEventListener('click', () => _activateTab(b.dataset.tab));
+  b.addEventListener('keydown', (ev) => {
+   if(ev.key!=='ArrowRight' && ev.key!=='ArrowLeft') return;
+   ev.preventDefault();
+   const next = tabBtns[(i + (ev.key==='ArrowRight'?1:-1) + tabBtns.length) % tabBtns.length];
+   next.focus(); _activateTab(next.dataset.tab);
+  });
+ });
+ // Défilement automatique vers le prochain chapitre non lu (si l'onglet Journal
+ // est déjà actif à l'ouverture — sinon inutile tant qu'on ne l'a pas ouvert).
+ if(startTab==='journal' && journal.nextUnreadId){
+  const mark = overlay.querySelector('#advlog-quest-next-mark');
+  if(mark) requestAnimationFrame(()=>{ try{ mark.scrollIntoView({block:'nearest'}); }catch(e){} });
+ }
  // Animation d'entrée
  requestAnimationFrame(() => overlay.classList.add('advlog-show'));
  if(typeof trapFocus==='function') overlay._releaseTrap=trapFocus(overlay);

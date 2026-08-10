@@ -3291,44 +3291,16 @@ function _chapterUnlocked(entry, foggedMap){
  if(entry.kind === 'epilogue')return _regionConquered('final');
  return false;
 }
+// v12.3.0 (lot 6) : le tiroir "Livre" a été fusionné dans l'onglet "Journal" du
+// Carnet — cette fonction ne construit donc plus de DOM de tiroir. Elle continue
+// à rafraîchir _questUnlockedCache (l'état débloqué/verrouillé de chaque chapitre),
+// utilisé à la fois par renderMap() à chaque affichage de la carte et par l'onglet
+// Journal du Carnet, pour ne jamais recalculer l'état à partir de données périmées.
 function _refreshQuestJournal(foggedMap){
- const q = document.getElementById('quest-body');
- if(!q) return;
  _questUnlockedCache = {};
- const _qv = _questVocab();
- const seen = (typeof P!=='undefined' && P && Array.isArray(P.storySeen)) ? P.storySeen : [];
- // v12.3.0 (audit UX #19) : repère le premier chapitre débloqué mais jamais
- // encore lu — c'est celui vers lequel un enfant qui ouvre le Livre veut
- // aller en premier, plutôt que de parcourir toute la liste depuis le début.
- let nextUnreadId = null;
- const rows = _questEntries().map(e => {
-  const unlocked = _chapterUnlocked(e, foggedMap);
-  _questUnlockedCache[e.id] = unlocked;
-  const chap = _findChapter(e.id);
-  let label;
-  if(unlocked && chap) label = chap.title;
-  else if(e.kind === 'victory') label = _qv.lockCollect;
-  else if(e.kind === 'chapter') label = _qv.region;
-  else if(e.kind === 'epilogue') label = _qv.end;
-  else label = 'Verrouillé';
-  const isNextUnread = unlocked && !seen.includes(e.id);
-  if(isNextUnread && !nextUnreadId) nextUnreadId = e.id;
-  return `<div class="drawer-row${unlocked?'':' locked'}${isNextUnread?' drawer-row-next':''}" style="--row-c:${e.color};" `
-       + (unlocked?`onclick="_replayChapter('${e.id}')"`:'') + ` role="button" `
-       + (isNextUnread?`id="drawer-row-next-mark" `:'')
-       + `title="${unlocked?'Relire ce chapitre':'Chapitre verrouillé'}">`
-       + `<div class="drawer-row-badge">${unlocked?e.label:'🔒'}</div>`
-       + `<div class="drawer-row-label">${label}</div>`
-       + `</div>`;
- }).join('');
- q.innerHTML = rows;
- // Défilement automatique vers ce chapitre à l'ouverture du tiroir.
- if(nextUnreadId){
-  const mark = document.getElementById('drawer-row-next-mark');
-  if(mark) requestAnimationFrame(()=>{ try{ mark.scrollIntoView({block:'nearest'}); }catch(e){} });
- }
+ _questEntries().forEach(e => { _questUnlockedCache[e.id] = _chapterUnlocked(e, foggedMap); });
 }
-// v9.0.1 : ouvre/ferme un panneau déroulant VERTICAL (mini-carte / livre d'aventure)
+// v9.0.1 : ouvre/ferme un panneau déroulant VERTICAL (mini-carte)
 function _toggleDrawer(name){
  const el = document.getElementById('drawer-'+name);
  const btn = document.getElementById('btn-'+name);
@@ -3339,7 +3311,6 @@ function _toggleDrawer(name){
  if(open){
   try{
    if(name==='minimap' && typeof _refreshMiniMap==='function') _refreshMiniMap(_lastActiveRegionId, _lastFog, null, (typeof P!=='undefined'&&P&&P.avatar)||'🧙');
-   if(name==='quest' && typeof _refreshQuestJournal==='function') _refreshQuestJournal(_lastFog);
   }catch(e){}
  }
  if(typeof beep==='function'){ try{ beep(open?520:320,'sine',.08,.04); }catch(e){} }
@@ -3362,14 +3333,19 @@ function _replayChapter(id){
  if(chap) _showStoryModal(chap, null);
 }
 
-// v8.7.69 (O5) : HTML de la section « Journal de quête » dans le carnet d'aventure
-function _questJournalCarnetHtml(){
+// v12.3.0 (lot 6, audit UX #3/#8/#19) : contenu de l'onglet "Journal" du Carnet.
+// Fusionne l'ancien tiroir "Livre" (supprimé) et l'ancienne section "Journal de
+// quête" du Carnet en une seule source. Rafraîchit systématiquement le cache de
+// déblocage avant de construire la liste (plutôt que de dépendre d'un rendu de
+// carte antérieur), et met en avant le premier chapitre débloqué jamais encore lu.
+function _advlogJournalHtml(){
+ if(typeof _refreshQuestJournal==='function') _refreshQuestJournal(_lastFog);
  const entries = _questEntries();
  const _qv = _questVocab();
  const seen = (typeof P!=='undefined' && P && Array.isArray(P.storySeen)) ? P.storySeen : [];
+ let unreadCount = 0, nextUnreadId = null;
  const items = entries.map(e => {
-  const cached = _questUnlockedCache[e.id];
-  const unlocked = (cached !== undefined) ? cached : seen.includes(e.id);
+  const unlocked = !!_questUnlockedCache[e.id];
   const chap = _findChapter(e.id);
   const title = chap ? chap.title : '';
   let sub = '';
@@ -3381,18 +3357,18 @@ function _questJournalCarnetHtml(){
   if(e.kind === 'victory') lockedLabel = _qv.lockCollect;
   else if(e.kind === 'chapter') lockedLabel = _qv.region;
   else if(e.kind === 'epilogue') lockedLabel = _qv.end;
-  return `<div class="advlog-quest-item${unlocked?'':' locked'}" `
+  const isNextUnread = unlocked && !seen.includes(e.id);
+  if(isNextUnread){ unreadCount++; if(!nextUnreadId) nextUnreadId = e.id; }
+  return `<div class="advlog-quest-item${unlocked?'':' locked'}${isNextUnread?' advlog-quest-next':''}" `
        + (unlocked?`onclick="closeAdventureLog();setTimeout(()=>_replayChapter('${e.id}'),320);"`:'')
+       + (isNextUnread?` id="advlog-quest-next-mark"`:'')
        + `>`
        + `<div class="advlog-quest-badge" style="background:${unlocked?e.color:'#777'};">${unlocked?e.label:'🔒'}</div>`
        + `<div><div class="advlog-quest-label">${unlocked?title:lockedLabel}</div>`
        + `${(unlocked&&sub)?`<div class="advlog-quest-sub">${sub}</div>`:''}</div>`
        + `</div>`;
  }).join('');
- return `<div class="advlog-quest">`
-      + `<button class="advlog-accordion-btn" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open');">📜 Journal de quête <span class="drawer-caret">▾</span></button>`
-      + `<div class="advlog-accordion"><div class="advlog-quest-list">${items}</div></div>`
-      + `</div>`;
+ return { html: `<div class="advlog-quest-list">${items}</div>`, unreadCount, nextUnreadId };
 }
 
 // ═══════════════════════════════════════════════════════

@@ -500,15 +500,16 @@
    <button onclick="mapCenterOnAvatar()" title="Centrer sur ma position" aria-label="Centrer la carte sur ma position" class="map-cmd-btn" style="background:#16a085;">&#127919;</button>
   </div>
   <!-- v9.0.2 : boutons fixes (sous Retour/Accueil) + panneaux déroulants verticaux larges -->
+  <!-- v12.3.0 (lot 6, audit UX #3/#8) : le Carnet absorbe le Livre (fusionnés en un
+       onglet "Journal") — seule la Mini-carte reste un tiroir rapide indépendant,
+       désormais positionnée à droite (ex-place du Livre). -->
   <div class="map-side-col map-side-left">
    <button class="back-top-btn map-carnet-btn" onclick="openAdventureLog()" title="Carnet d'aventure">&#128212; Carnet</button>
-   <button class="back-top-btn map-tool-btn" id="btn-minimap" onclick="_toggleDrawer('minimap')" title="Mini-carte">&#128506;&#65039; Mini-carte <span class="drawer-caret">&#9662;</span></button>
-   <div class="map-drawer drawer-left" id="drawer-minimap"><div class="map-drawer-pad"><div id="minimap-body"></div></div></div>
   </div>
   <div class="map-side-col map-side-right">
    <button class="back-top-btn compass-btn" onclick="_spinCompass(this);mapGoToNextZone();" title="Boussole — aller à ma prochaine zone" aria-label="Boussole : aller à ma prochaine zone">&#129517;</button>
-   <button class="back-top-btn map-tool-btn map-livre-btn" id="btn-quest" onclick="_toggleDrawer('quest')" title="Livre d'aventure">&#128214; Livre <span class="drawer-caret">&#9662;</span></button>
-   <div class="map-drawer drawer-right" id="drawer-quest"><div class="map-drawer-pad"><div id="quest-body"></div></div></div>
+   <button class="back-top-btn map-tool-btn" id="btn-minimap" onclick="_toggleDrawer('minimap')" title="Mini-carte">&#128506;&#65039; Mini-carte <span class="drawer-caret">&#9662;</span></button>
+   <div class="map-drawer drawer-right" id="drawer-minimap"><div class="map-drawer-pad"><div id="minimap-body"></div></div></div>
   </div>
   </div>
   <div class="map-scroll" id="map-zones"></div>
