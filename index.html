@@ -17,9 +17,84 @@
 <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png?v=1058">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=1058">
 <link rel="stylesheet" href="assets/fonts/google-fonts.css">
-<link rel="stylesheet" href="css/styles.css?v=1061">
+<link rel="stylesheet" href="css/styles.css?v=1062">
+<link rel="stylesheet" href="css/nav-icons.css?v=1">
 </head>
 <body id="BODY">
+<svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true">
+<defs>
+
+<symbol id="icon-compass-maternelle" viewBox="0 0 48 48">
+  <circle cx="24" cy="24" r="19" fill="#ffd97a" stroke="#e67e22" stroke-width="3"/>
+  <circle cx="24" cy="24" r="4.5" fill="#e67e22"/>
+  <path d="M24 10 L29 24 L24 22 L19 24 Z" fill="#e74c3c"/>
+  <path d="M24 38 L19 24 L24 26 L29 24 Z" fill="#fff"/>
+</symbol>
+
+<symbol id="icon-compass-primaire" viewBox="0 0 48 48">
+  <circle cx="24" cy="24" r="18" fill="none" stroke="#ffd97a" stroke-width="2"/>
+  <circle cx="24" cy="24" r="14" fill="none" stroke="#ffd97a" stroke-width="1" opacity=".5"/>
+  <circle cx="24" cy="24" r="3" fill="#ffd97a"/>
+  <path d="M24 9 L30 24 L24 21 L18 24 Z" fill="#e67e22"/>
+  <path d="M24 39 L18 24 L24 27 L30 24 Z" fill="#f5f5f5"/>
+  <text x="24" y="7" text-anchor="middle" font-size="5" fill="#ffd97a" font-family="Nunito">N</text>
+</symbol>
+
+<symbol id="icon-compass-college" viewBox="0 0 48 48">
+  <circle cx="24" cy="24" r="17.5" fill="none" stroke="#c9a24a" stroke-width="1.4"/>
+  <circle cx="24" cy="24" r="17.5" fill="none" stroke="#c9a24a" stroke-width=".6" stroke-dasharray="1 3"/>
+  <path d="M24 11 L28 24 L24 22.5 L20 24 Z" fill="#c9a24a"/>
+  <path d="M24 37 L20 24 L24 25.5 L28 24 Z" fill="#6b7d8f"/>
+  <circle cx="24" cy="24" r="1.6" fill="#c9a24a"/>
+</symbol>
+
+<symbol id="icon-carnet-maternelle" viewBox="0 0 48 48">
+  <rect x="12" y="10" width="24" height="28" rx="4" fill="#e67e22" stroke="#fff" stroke-width="1.5"/>
+  <rect x="12" y="10" width="6" height="28" rx="3" fill="#c96518"/>
+  <circle cx="27" cy="24" r="3.2" fill="#ffd97a"/>
+  <path d="M25.5 24 l1 1.3 2-2.6" stroke="#e67e22" stroke-width="1" fill="none"/>
+</symbol>
+
+<symbol id="icon-carnet-primaire" viewBox="0 0 48 48">
+  <rect x="13" y="9" width="22" height="30" rx="2.5" fill="#3d5166" stroke="#ffd97a" stroke-width="1.4"/>
+  <rect x="13" y="9" width="5" height="30" rx="1.5" fill="#26333f"/>
+  <line x1="22" y1="16" x2="31" y2="16" stroke="#ffd97a" stroke-width="1" opacity=".7"/>
+  <line x1="22" y1="21" x2="31" y2="21" stroke="#ffd97a" stroke-width="1" opacity=".7"/>
+  <circle cx="30" cy="28" r="2.6" fill="#e67e22"/>
+</symbol>
+
+<symbol id="icon-carnet-college" viewBox="0 0 48 48">
+  <rect x="14" y="8" width="20" height="32" rx="1" fill="#1c2530" stroke="#c9a24a" stroke-width="1.2"/>
+  <rect x="14" y="8" width="4" height="32" fill="#0f151b"/>
+  <line x1="21" y1="15" x2="30" y2="15" stroke="#c9a24a" stroke-width=".8"/>
+  <line x1="21" y1="19" x2="30" y2="19" stroke="#c9a24a" stroke-width=".8"/>
+  <line x1="21" y1="23" x2="27" y2="23" stroke="#c9a24a" stroke-width=".8"/>
+  <path d="M21 30 l3 3 5-6" stroke="#c9a24a" stroke-width="1.2" fill="none"/>
+</symbol>
+
+<symbol id="icon-minimap-maternelle" viewBox="0 0 48 48">
+  <path d="M10 14 L19 10 L29 14 L38 10 L38 34 L29 38 L19 34 L10 38 Z" fill="#7fb069" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M19 10 L19 34" stroke="#fff" stroke-width="1.2" stroke-dasharray="2 2"/>
+  <path d="M29 14 L29 38" stroke="#fff" stroke-width="1.2" stroke-dasharray="2 2"/>
+  <circle cx="24" cy="24" r="2.6" fill="#e74c3c"/>
+</symbol>
+
+<symbol id="icon-minimap-primaire" viewBox="0 0 48 48">
+  <path d="M9 13 L18 9 L30 13 L39 9 L39 35 L30 39 L18 35 L9 39 Z" fill="#3f6b4a" stroke="#ffd97a" stroke-width="1.3" stroke-linejoin="round"/>
+  <path d="M18 9 L18 35 M30 13 L30 39" stroke="#ffd97a" stroke-width="1" stroke-dasharray="2 2" opacity=".8"/>
+  <circle cx="23" cy="23" r="2.4" fill="#e67e22"/>
+  <path d="M23 18 v3 M23 25 v3 M18 23 h3 M25 23 h3" stroke="#ffd97a" stroke-width=".8"/>
+</symbol>
+
+<symbol id="icon-minimap-college" viewBox="0 0 48 48">
+  <path d="M9 12 L18 8 L30 12 L39 8 L39 36 L30 40 L18 36 L9 40 Z" fill="#233240" stroke="#c9a24a" stroke-width="1" stroke-linejoin="round"/>
+  <path d="M18 8 L18 36 M30 12 L30 40" stroke="#c9a24a" stroke-width=".6" stroke-dasharray="1 3" opacity=".7"/>
+  <circle cx="23.5" cy="22" r="1.8" fill="#c9a24a"/>
+  <path d="M14 30 q9 -6 20 -4" stroke="#c9a24a" stroke-width=".8" fill="none" opacity=".6"/>
+</symbol>
+
+</defs>
+</svg>
 <!-- ═══ SPLASH SCREEN (Chantier v8.5.1 — durée 10s narrative) ═══
      Animation en 4 phases :
      1. (0-2.5s)   La carte parchemin apparaît PETITE EN HAUT comme une vignette
@@ -129,7 +204,7 @@
  <!-- ═══ MENU ═══ -->
  <!-- ═══ ÉCRAN 1 : QUI JOUE ? ═══ -->
  <div id="v-menu">
-  <div id="app-version">v12.3.2</div>
+  <div id="app-version">v12.3.3</div>
   <img src="assets/logo-savoir.webp?v=1057" alt="L'Odyssée du Savoir" class="game-logo" id="game-logo-menu" loading="eager" decoding="async" style="max-width:min(110px,34%);width:100%;height:auto;display:block;margin:0 auto 10px;">
 
   <!-- Aperçu du joueur sélectionné -->
@@ -504,11 +579,11 @@
        onglet "Journal") — seule la Mini-carte reste un tiroir rapide indépendant,
        désormais positionnée à droite (ex-place du Livre). -->
   <div class="map-side-col map-side-left">
-   <button class="back-top-btn map-carnet-btn" onclick="openAdventureLog()" title="Carnet d'aventure">&#128212; Carnet</button>
+   <button class="back-top-btn map-carnet-btn" onclick="openAdventureLog()" title="Carnet d'aventure"><svg class="nav-icon nav-icon-maternelle" aria-hidden="true"><use href="#icon-carnet-maternelle"/></svg><svg class="nav-icon nav-icon-primaire" aria-hidden="true"><use href="#icon-carnet-primaire"/></svg><svg class="nav-icon nav-icon-college" aria-hidden="true"><use href="#icon-carnet-college"/></svg> Carnet</button>
   </div>
   <div class="map-side-col map-side-right">
-   <button class="back-top-btn compass-btn" onclick="_spinCompass(this);mapGoToNextZone();" title="Boussole — aller à ma prochaine zone" aria-label="Boussole : aller à ma prochaine zone">&#129517;</button>
-   <button class="back-top-btn map-tool-btn" id="btn-minimap" onclick="_toggleDrawer('minimap')" title="Mini-carte">&#128506;&#65039; Mini-carte <span class="drawer-caret">&#9662;</span></button>
+   <button class="back-top-btn compass-btn" onclick="_spinCompass(this);mapGoToNextZone();" title="Boussole — aller à ma prochaine zone" aria-label="Boussole : aller à ma prochaine zone"><svg class="nav-icon nav-icon-maternelle" aria-hidden="true"><use href="#icon-compass-maternelle"/></svg><svg class="nav-icon nav-icon-primaire" aria-hidden="true"><use href="#icon-compass-primaire"/></svg><svg class="nav-icon nav-icon-college" aria-hidden="true"><use href="#icon-compass-college"/></svg></button>
+   <button class="back-top-btn map-tool-btn" id="btn-minimap" onclick="_toggleDrawer('minimap')" title="Mini-carte"><svg class="nav-icon nav-icon-maternelle" aria-hidden="true"><use href="#icon-minimap-maternelle"/></svg><svg class="nav-icon nav-icon-primaire" aria-hidden="true"><use href="#icon-minimap-primaire"/></svg><svg class="nav-icon nav-icon-college" aria-hidden="true"><use href="#icon-minimap-college"/></svg> Mini-carte <span class="drawer-caret">&#9662;</span></button>
    <div class="map-drawer drawer-right" id="drawer-minimap"><div class="map-drawer-pad"><div id="minimap-body"></div></div></div>
   </div>
   </div>
@@ -539,7 +614,7 @@
    <button class="back-top-btn" onclick="navBack()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Retour</button>
    <button class="back-top-btn" onclick="goHome()" style="background:#16a085;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg> Accueil</button>
   </div>
-  
+
   <img src="assets/logo-circle.webp?v=1057" alt="" class="page-logo-circle" aria-hidden="true">
   <h3>&#128202; Tableau de Bord &mdash; <span id="dash-player-name" style="color:#f1c40f;"></span></h3>
   <div style="text-align:center;margin:2px 0 8px;">
@@ -695,7 +770,7 @@
  <!-- ═══ PARENT ═══ -->
  <div id="v-parent" class="hidden">
   <div class="back-top-bar" style="display:flex;justify-content:space-between;align-items:center;"><button class="back-top-btn" onclick="navBack()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Retour</button><button class="back-top-btn" onclick="goHome()" style="background:#16a085;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg> Accueil</button></div>
-  
+
   <img src="assets/logo-circle.webp?v=1057" alt="" class="page-logo-circle" aria-hidden="true">
   <h2>&#128106; Vue Parent</h2>
   <div id="parent-content-tours" class="hidden" style="text-align:center;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:0 0 10px;">

@@ -1,0 +1,11 @@
+/* v12.4.0 (audit DA Aventure, Lot 1) : icônes de navigation SVG différenciées par cycle scolaire,
+   remplacent les émojis système (🧭 📕 🗺️) pour une direction artistique cohérente avec les
+   illustrations existantes (armure, talisman, carnets). Fichier séparé de styles.css pour limiter
+   la taille des livraisons de ce chantier. */
+.nav-icon{ display:none; width:1.3em; height:1.3em; vertical-align:-0.28em; flex-shrink:0; margin-right:4px; }
+.nav-icon-primaire{ display:inline-block; }
+html[data-cycle="maternelle"] .nav-icon-primaire{ display:none; }
+html[data-cycle="maternelle"] .nav-icon-maternelle{ display:inline-block; }
+html[data-cycle="college"] .nav-icon-primaire{ display:none; }
+html[data-cycle="college"] .nav-icon-college{ display:inline-block; }
+.compass-btn .nav-icon{ width:1.6em; height:1.6em; margin-right:0; vertical-align:middle; }

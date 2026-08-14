@@ -9,7 +9,7 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v12.3.2';
+const CACHE_VERSION = 'v12.3.3';
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources critiques précachées au premier chargement.
@@ -22,6 +22,7 @@ const CRITICAL_URLS = [
   './index.html',
   './manifest.webmanifest',
   './css/styles.css',
+  './css/nav-icons.css',
   './js/01-core.js',
   './js/02-data.js',
   './js/03-figurines-data.js',
@@ -220,7 +221,7 @@ self.addEventListener('fetch', (event) => {
   // - Images et autres : stale-while-revalidate (perf optimale, MAJ en arrière-plan)
   const pathname = url.pathname;
   const isCodeAsset = /\.(css|js|webmanifest|json)$/i.test(pathname);
-  
+
   if (isCodeAsset) {
     // NETWORK FIRST : indispensable pour que les nouvelles versions soient
     // détectées immédiatement (résout les bugs de cache CSS/JS persistant).
