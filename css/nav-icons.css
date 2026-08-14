@@ -6,14 +6,14 @@
    font-size du bouton et faisaient déborder la boussole) + overflow:hidden en filet de
    sécurité. Chaque icône embarque désormais sa propre plaque de fond (voir index.html,
    symboles SVG), donc plus besoin de fond ici : juste la taille/l'alignement. */
-.nav-icon{ display:none; width:22px; height:22px; vertical-align:-6px; flex-shrink:0; margin-right:4px; }
+.nav-icon{ display:none; width:28px; height:28px; vertical-align:middle; flex-shrink:0; margin-right:5px; }
 .nav-icon-primaire{ display:inline-block; }
 html[data-cycle="maternelle"] .nav-icon-primaire{ display:none; }
 html[data-cycle="maternelle"] .nav-icon-maternelle{ display:inline-block; }
 html[data-cycle="college"] .nav-icon-primaire{ display:none; }
 html[data-cycle="college"] .nav-icon-college{ display:inline-block; }
-.compass-btn{ overflow:hidden; }
-.compass-btn .nav-icon{ width:30px; height:30px; margin-right:0; vertical-align:middle; }
+.compass-btn{ overflow:hidden; width:40px; height:40px; }
+.compass-btn .nav-icon{ width:34px; height:34px; margin-right:0; vertical-align:middle; }
 
 /* v12.4.2 : la Boussole rejoint la barre de zoom (#map-zoom-bar), horizontale —
    on neutralise les réglages hérités de .back-top-btn/.compass-btn pensés pour
@@ -23,6 +23,10 @@ html[data-cycle="college"] .nav-icon-college{ display:inline-block; }
 .compass-btn-bar{
   align-self:center;
   margin:0 0 0 var(--space-1);
-  width:34px; height:34px;
+  width:40px; height:38px;
 }
-.compass-btn-bar .nav-icon{ width:26px; height:26px; }
+/* v12.4.3 : icônes agrandies (Carnet/Mini-carte : 22px→28px ; Boussole : 26px→32px)
+   pour la lisibilité — overflow:hidden sur .compass-btn/.compass-btn-bar garantit
+   qu'elles restent bien contenues dans leur bouton, marge de sécurité conservée
+   (32px d'icône dans une case de 38-40px). */
+.compass-btn-bar .nav-icon{ width:32px; height:32px; }
