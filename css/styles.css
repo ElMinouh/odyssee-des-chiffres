@@ -2603,9 +2603,14 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  }
 }
 .archipel-zone-label{
- font-size:.72em;
+ /* v12.4.9 (audit DA, Lot 4 #25) : Cinzel Decorative à .72em (~11,5px) est une
+    police ornementale trop petite pour rester confortable à un jeune lecteur —
+    remplacée par Nunito (déjà la police de lecture courante du jeu), taille
+    légèrement relevée par sécurité. Cinzel reste réservé aux titres/bannières
+    assez grands pour rester élégants sans nuire à la lisibilité. */
+ font-size:.76em;
  color:#fff;
- font-weight:700;
+ font-weight:800;
  /* v12.3.2 (audit UX #15) : contour renforcé + symétrique (au lieu d'une seule
     ombre portée en bas à droite) pour rester lisible sur les biomes clairs
     (désert, plage, glace) et pas seulement sur les fonds sombres. */
@@ -2614,8 +2619,8 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
              0 0 8px rgba(0,0,0,.7);
  margin-top:var(--space-1);
  line-height:1.15;
- font-family:'Cinzel Decorative','Cinzel',Georgia,serif;
- letter-spacing:.02em;
+ font-family:'Nunito',sans-serif;
+ letter-spacing:.01em;
  padding:0 2px;
 }
 .archipel-zone-req{
@@ -2982,7 +2987,8 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  padding:var(--space-1) var(--space-3);
  background:rgba(0,0,0,.35);
  color:#fff;
- border-radius:14px;
+ /* v12.4.6 (audit DA, Lot 1 #15) : 14px → --radius-md (12px) */
+ border-radius:var(--radius-md);
  font-size:.9em; font-weight:700;
 }
 .archipel-shop-section{ margin:var(--space-4) 0 var(--space-2); }
@@ -2998,7 +3004,8 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 .shop-row{
  display:flex; align-items:center; gap:var(--space-3);
  background:rgba(255,255,255,.7);
- border-radius:11px;
+ /* v12.4.6 (audit DA, Lot 1 #15) : 11px → --radius-md (12px) */
+ border-radius:var(--radius-md);
  padding:var(--space-2) var(--space-3);
  margin:var(--space-2) 0;
  box-shadow:0 2px 5px rgba(0,0,0,.15);
@@ -3474,8 +3481,12 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  overflow-y:auto;
  background:linear-gradient(165deg,#1e2a44 0%,#16203a 60%,#101830 100%);
  border:2.5px solid #f1c40f;
- border-radius:20px;
- box-shadow:0 16px 50px rgba(0,0,0,.7), 0 0 30px rgba(241,196,15,.25);
+ /* v12.4.6 (audit DA, Lot 1 #15/#26) : 20px → --radius-lg (18px), aligné sur
+    les autres modales plein écran du module (Story, Boutique). */
+ border-radius:var(--radius-lg);
+ /* v12.4.7 (audit DA, Lot 2 #9) : migré vers le token --shadow-modal (valeur
+    quasi identique), le halo doré supplémentaire est conservé à part. */
+ box-shadow:var(--shadow-modal), 0 0 30px rgba(241,196,15,.25);
  padding:var(--space-5) var(--space-5) var(--space-5);
  transform:translateY(20px) scale(.96);
  transition:transform var(--dur-base) cubic-bezier(.34,1.56,.64,1);
@@ -4055,6 +4066,18 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
    ici quand le tiroir Mini-carte est ouvert. Réutilisable pour d'autres états
    (ex. Carnet actif) sans retoucher les icônes. */
 .map-tool-btn.drawer-open .nav-icon{ color:#ffd97a; }
+/* v12.4.6 (audit DA, Lot 1 #11) : même mécanisme que Mini-carte, appliqué au
+   Carnet — classe posée/retirée par openAdventureLog()/closeAdventureLog(). */
+.map-carnet-btn.carnet-open .nav-icon{ color:#ffd97a; }
+/* v12.4.6 (audit DA, Lot 1 #14) : focus clavier harmonisé avec .archipel-zone
+   (même style déjà éprouvé) — jusqu'ici seul le style par défaut du navigateur
+   s'appliquait sur ces 3 boutons. */
+.compass-btn:focus-visible,
+.map-carnet-btn:focus-visible,
+.map-tool-btn:focus-visible{
+ outline:3px solid #ffd97a;
+ outline-offset:2px;
+}
 /* v12.4.0 (audit DA Aventure, Lot 1) : icônes de navigation SVG par cycle scolaire
    (maternelle/primaire/collège), remplacent les émojis système (🧭 📕 🗺️).
    v12.4.3 : fusionné depuis nav-icons.css (fichier séparé abandonné — voir Lot correctif
@@ -4068,18 +4091,35 @@ html[data-cycle="college"] .nav-icon-college{ display:inline-block; }
 /* Boussole : aucun fond/contour de bouton — le plateau visuel vient de l'icône SVG
    elle-même (rond=action immédiate). overflow:hidden protège des débordements quelle
    que soit la taille exacte de l'icône embarquée. */
+/* v12.4.8 (audit DA, Lot 3 #2/#5) : léger halo de fond au lieu d'un fond
+   totalement transparent — la Boussole reste plus légère que Carnet/Mini-carte
+   (rond = action immédiate, cohérent avec la maquette validée), mais gagne
+   assez de poids visuel pour se lire comme un vrai bouton, pas juste une icône
+   qui flotte. */
 .compass-btn{
- background:transparent !important;
+ background:radial-gradient(circle, rgba(255,255,255,.10), rgba(255,255,255,0) 72%) !important;
  border:none !important;
  border-bottom:none !important;
  box-shadow:none !important;
- padding:0; border-radius:0; overflow:hidden;
+ padding:0; border-radius:50%; overflow:hidden;
  width:40px; height:40px;
  align-self:flex-end; margin-bottom:var(--space-2);
  display:flex; align-items:center; justify-content:center;
  filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));
 }
-.compass-btn:hover{ transform:scale(1.1); background:transparent !important; }
+.compass-btn:hover{ transform:scale(1.1); background:radial-gradient(circle, rgba(255,255,255,.16), rgba(255,255,255,0) 72%) !important; }
+/* v12.4.8 (audit DA, Lot 3 #17) : état désactivé standardisé pour les 3
+   boutons de la barre d'outils — n'est déclenché nulle part aujourd'hui
+   (aucun des 3 n'est jamais réellement verrouillé), prêt pour un futur usage
+   plutôt qu'improvisé au dernier moment. */
+.compass-btn:disabled,
+.map-carnet-btn:disabled,
+.map-tool-btn:disabled{
+ opacity:.45;
+ cursor:not-allowed;
+ pointer-events:none;
+ filter:grayscale(.6);
+}
 .compass-btn .nav-icon{ width:34px; height:34px; margin-right:0; vertical-align:middle; }
 /* La Boussole vit dans #map-zoom-bar (horizontale) : on neutralise les réglages
    hérités de .compass-btn pensés pour une colonne verticale (align-self, margin-bottom),
@@ -4097,8 +4137,12 @@ html[data-cycle="college"] .nav-icon-college{ display:inline-block; }
  width:222px; max-width:76vw;
  max-height:0; overflow:hidden;
  background:var(--surface-1);
- border-radius:13px;
- box-shadow:0 8px 22px rgba(0,0,0,.6);
+ /* v12.4.6 (audit DA, Lot 1 #15/#26) : 13px (valeur en dur) → --radius-md,
+    pour rejoindre le token le plus proche au lieu d'une valeur "presque" alignée. */
+ border-radius:var(--radius-md);
+ /* v12.4.7 (audit DA, Lot 2 #9) : migré vers --shadow-popup (le plus proche
+    des tokens existants pour un panneau ancré, non plein écran). */
+ box-shadow:var(--shadow-popup);
  border:0 solid rgba(255,255,255,.18);
  transition:max-height var(--dur-base) ease, border-width var(--dur-fast);
 }
@@ -4285,7 +4329,9 @@ html[data-cycle="college"] .nav-icon-college{ display:inline-block; }
  color:#4a3418;
  border:3px solid #b8893f;
  border-radius:var(--radius-lg);
- box-shadow:0 16px 50px rgba(0,0,0,.7), inset 0 0 30px rgba(150,110,50,.25);
+ /* v12.4.7 (audit DA, Lot 2 #9/#22) : migré vers --shadow-modal, aligné sur
+    .advlog-modal et .archipel-shop-content (même rôle : modale plein écran). */
+ box-shadow:var(--shadow-modal), inset 0 0 30px rgba(150,110,50,.25);
  padding:var(--space-5) var(--space-5) var(--space-4);
  text-align:center;
  animation:storyPop .4s cubic-bezier(.34,1.56,.64,1);
@@ -4346,21 +4392,9 @@ html[data-cycle="college"] .nav-icon-college{ display:inline-block; }
  .story-overlay,.story-parchment,.story-emoji{ animation:none; }
 }
 
-/* ═══ v8.7.69 (O5) : Journal de quête (panneau droite, symétrique mini-map) ═══ */
-.archipel-quest{
- position:absolute;
- top:90px; right:6px;
- z-index:51;
- width:48px;
- background:rgba(10,12,30,.74);
- border:1.5px solid rgba(255,255,255,.22);
- border-radius:10px;
- padding:var(--space-1) var(--space-1) var(--space-1);
- backdrop-filter:blur(3px);
- -webkit-backdrop-filter:blur(3px);
- box-shadow:0 3px 12px rgba(0,0,0,.55);
- user-select:none; -webkit-user-select:none;
-}
+/* v12.4.6 (audit DA, Lot 1 #12) : .archipel-quest (ancien tiroir "Livre",
+   panneau droite) supprimé — orphelin depuis la fusion du Livre dans le
+   Carnet d'aventure, plus aucune référence dans le HTML/JS. */
 /* Section journal de quête dans le carnet d'aventure */
 .advlog-quest-list{ display:flex; flex-direction:column; gap:var(--space-2); }
 .advlog-quest-item{

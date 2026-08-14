@@ -1015,6 +1015,9 @@ function openAdventureLog(){
   </div>
  `;
  document.body.appendChild(overlay);
+ // v12.4.6 (audit DA, Lot 1 #11) : état actif sur le bouton Carnet, symétrique
+ // à celui déjà en place sur la Mini-carte (.drawer-open).
+ document.querySelector('.map-carnet-btn')?.classList.add('carnet-open');
  // Fermeture au clic sur le fond
  overlay.addEventListener('click', (ev) => {
   if(ev.target === overlay) closeAdventureLog();
@@ -1059,6 +1062,7 @@ function closeAdventureLog(){
  if(!overlay) return;
  if(overlay._releaseTrap){overlay._releaseTrap();delete overlay._releaseTrap;}
  overlay.classList.remove('advlog-show');
+ document.querySelector('.map-carnet-btn')?.classList.remove('carnet-open');
  setTimeout(() => overlay.remove(), 300);
 }
 
