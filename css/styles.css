@@ -32,7 +32,11 @@
 /* v11.7.23 (Audit DA #15) : échelle d'espacement, base pour les prochains lots */
 --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;
 /* v11.7.32 (Audit DA #26, Lot 10) : tokens de durée, appliqués aux composants déjà touchés dans ce chantier */
---dur-fast:150ms;--dur-base:300ms;--dur-slow:600ms;}
+--dur-fast:150ms;--dur-base:300ms;--dur-slow:600ms;
+/* v12.4.3 (audit DA Aventure, Lot 2 point C — fusionné depuis lot2-fixes.css) :
+   tokens de surface neutres pour les panneaux secondaires (tiroir mini-carte),
+   distincts de --primary/--accent. */
+--surface-1:#1c2530;--surface-2:#26323f;--surface-3:#34424f;}
 /* v11.7.29 (Lot 7 renforcé) : différenciation de cycle nettement plus marquée */
 html[data-cycle="maternelle"]{--radius-sm:16px;--radius-md:22px;--radius-lg:30px;}
 html[data-cycle="college"]{--radius-sm:4px;--radius-md:6px;--radius-lg:9px;}
@@ -2452,6 +2456,27 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  box-shadow:0 0 20px rgba(241,196,15,.85);
  animation:archZonePulse 1.8s ease-in-out infinite;
 }
+/* v12.4.3 (audit DA Aventure, Lot 2 point D — fusionné depuis lot2-fixes.css) :
+   les états de zone reposaient surtout sur la couleur (conquise=vert, actuelle=or,
+   verrouillée=grisée). Conquise a déjà une coche (.archipel-zone-check, en haut à
+   droite) ; on ajoute ici une pastille étoile en haut à gauche pour "actuelle" —
+   même traitement visuel, lisible même sans percevoir la couleur. */
+.archipel-zone.current .archipel-zone-circle::after{
+ content:'★';
+ position:absolute;
+ top:-6px; left:-2px;
+ width:20px; height:20px;
+ border-radius:50%;
+ background:#f1c40f;
+ color:#3a2c00;
+ font-size:.68em;
+ font-weight:900;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ border:2px solid #0f0f12;
+ box-shadow:0 2px 5px rgba(0,0,0,.5);
+}
 /* v8.7.36 (O3-B.4) : Brouillard de guerre sur zones non débloquées. */
 /* Effet global (cercle + label + badges) + transition douce de débloquage. */
 .archipel-zone{
@@ -3991,6 +4016,7 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 #map-zoom-bar{
  display:flex; justify-content:center; align-items:center; gap:var(--space-2);
  margin:var(--space-1) 0 0; z-index:6; position:relative;
+ flex-wrap:wrap;
 }
 .map-cmd-btn{ background:#34495e; font-size:.82em; padding:var(--space-1) var(--space-3); margin:0; }
 #map-zoom-label{
@@ -4013,33 +4039,58 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  margin-bottom:var(--space-2); white-space:nowrap;
 }
 /* Carnet : style Retour, couleur distincte + icône (façon Accueil) */
-.map-carnet-btn{ background:#8e44ad; }
+/* v12.4.3 (audit DA Aventure, Lot 2 point B — fusionné depuis lot2-fixes.css) :
+   radius carré arrondi (9px) au lieu de la pilule générique héritée par erreur,
+   pour que "carré arrondi = ouvre un panneau" soit cohérent avec Mini-carte. */
+.map-carnet-btn{ background:#8e44ad; border-radius:9px; }
 .map-carnet-btn:hover{ background:#9b59b6; transform:none; }
 /* Mini-carte / Livre : mêmes dimensions, un peu plus anguleux */
 .map-tool-btn{ background:#2c3e50; border-radius:9px; }
 .map-tool-btn:hover{ background:#34495e; transform:none; }
 .drawer-caret{ font-size:.85em; transition:transform var(--dur-base); }
 .map-tool-btn.drawer-open .drawer-caret{ transform:rotate(180deg); }
-/* Boussole : AUCUN fond/contour — seulement l'emoji (qui tourne au clic) */
+/* v12.4.0 (audit DA Aventure, Lot 1) : icônes de navigation SVG par cycle scolaire
+   (maternelle/primaire/collège), remplacent les émojis système (🧭 📕 🗺️).
+   v12.4.3 : fusionné depuis nav-icons.css (fichier séparé abandonné — voir Lot correctif
+   pour le détail des deux bugs de cascade que ce fichier séparé avait provoqués). */
+.nav-icon{ display:none; width:28px; height:28px; vertical-align:middle; flex-shrink:0; margin-right:5px; }
+.nav-icon-primaire{ display:inline-block; }
+html[data-cycle="maternelle"] .nav-icon-primaire{ display:none; }
+html[data-cycle="maternelle"] .nav-icon-maternelle{ display:inline-block; }
+html[data-cycle="college"] .nav-icon-primaire{ display:none; }
+html[data-cycle="college"] .nav-icon-college{ display:inline-block; }
+/* Boussole : aucun fond/contour de bouton — le plateau visuel vient de l'icône SVG
+   elle-même (rond=action immédiate). overflow:hidden protège des débordements quelle
+   que soit la taille exacte de l'icône embarquée. */
 .compass-btn{
  background:transparent !important;
  border:none !important;
  border-bottom:none !important;
  box-shadow:none !important;
- width:38px; height:34px; padding:0; border-radius:0;
- font-size:1.6em; line-height:1;
+ padding:0; border-radius:0; overflow:hidden;
+ width:40px; height:40px;
  align-self:flex-end; margin-bottom:var(--space-2);
  display:flex; align-items:center; justify-content:center;
  filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));
 }
 .compass-btn:hover{ transform:scale(1.1); background:transparent !important; }
+.compass-btn .nav-icon{ width:34px; height:34px; margin-right:0; vertical-align:middle; }
+/* La Boussole vit dans #map-zoom-bar (horizontale) : on neutralise les réglages
+   hérités de .compass-btn pensés pour une colonne verticale (align-self, margin-bottom),
+   et on agrandit légèrement l'icône (32px, marge de sécurité dans une case 38-40px). */
+.compass-btn-bar{
+ align-self:center;
+ margin:0 0 0 var(--space-1);
+ width:40px; height:38px;
+}
+.compass-btn-bar .nav-icon{ width:32px; height:32px; }
 /* Panneaux déroulants : LARGES et aérés (lisibilité tous supports) */
 .map-drawer{
  position:absolute;
  top:calc(100% + 3px);
  width:222px; max-width:76vw;
  max-height:0; overflow:hidden;
- background:rgba(12,16,34,.96);
+ background:var(--surface-1);
  border-radius:13px;
  box-shadow:0 8px 22px rgba(0,0,0,.6);
  border:0 solid rgba(255,255,255,.18);
@@ -4054,15 +4105,15 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  display:flex; align-items:center; gap:var(--space-2);
  padding:var(--space-2) var(--space-3); border-radius:9px;
  cursor:pointer; margin-bottom:var(--space-2);
- background:rgba(255,255,255,.06);
+ background:var(--surface-2);
  border-left:3px solid var(--row-c,#888);
  transition:background var(--dur-fast), transform .1s;
 }
 .drawer-row:last-child{ margin-bottom:0; }
-.drawer-row:hover{ background:rgba(255,255,255,.14); }
+.drawer-row:hover{ background:var(--surface-3); }
 .drawer-row:active{ transform:scale(.985); }
 .drawer-row.locked{ opacity:.5; cursor:default; }
-.drawer-row.locked:hover{ background:rgba(255,255,255,.06); }
+.drawer-row.locked:hover{ background:var(--surface-2); }
 .drawer-row.active{ outline:2px solid #ffd97a; outline-offset:-1px; }
 /* v12.3.2 (audit UX #19) : repère visuel du prochain chapitre non lu */
 .drawer-row-next{ box-shadow:0 0 0 2px #ffd97a inset; background:rgba(255,217,122,.12); }
@@ -4095,7 +4146,6 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  .map-side-right{ right:5px; }
  /* v12.3.2 (audit UX #2) : plancher de lisibilité relevé (.64em → .68em) */
  .map-side-col .back-top-btn{ font-size:.68em; padding:var(--space-1) var(--space-2); }
- .compass-btn{ font-size:1.45em !important; height:30px; }
  .map-drawer{ width:190px; max-width:84vw; }
 }
 @media (max-width:380px){
@@ -4955,17 +5005,23 @@ body.mat-mode #v-game{
 .p-guide-step{display:flex;gap:var(--space-2);margin-bottom:var(--space-2);font-size:.86em;line-height:1.55;color:#e4eef1;}
 .p-guide-num{flex-shrink:0;width:22px;height:22px;border-radius:50%;background:#3aa0c4;color:#fff;text-align:center;line-height:22px;font-size:.8em;font-weight:700;}
 
-/* Menu principal : poster « Odyssée du Savoir » en fond plein cadre (contain, depuis le haut) + voile */
+/* Menu principal : poster « Odyssée du Savoir » en fond plein cadre (contain, depuis le haut) + voile.
+   v12.4.3 (audit DA Aventure, Lot 2 point A — fusionné depuis lot2-fixes.css, corrigé) :
+   --bg est intercalé comme fond de secours SOUS le logo (letterboxing), et non au-dessus —
+   une première version le plaçait au-dessus, ce qui le rendait totalement invisible
+   (--bg est opaque). Donne la continuité de palette avec le splash tout en gardant le
+   logo visible. */
 #v-menu{
  position:relative;
  border-radius:16px;
  overflow:hidden;
  background-image:
-   linear-gradient(rgba(12,30,52,.58), rgba(12,30,52,.72)),
-   url('../assets/logo-savoir.webp?v=1047');
- background-size: cover, contain;
- background-position: center, top center;
- background-repeat: no-repeat, no-repeat;
+   linear-gradient(rgba(12,30,52,.4), rgba(12,30,52,.6)),
+   url('../assets/logo-savoir.webp?v=1047'),
+   var(--bg);
+ background-size: cover, contain, cover;
+ background-position: center, top center, center;
+ background-repeat: no-repeat, no-repeat, no-repeat;
  padding-top: clamp(150px, 42vw, 340px);
 }
 #game-logo-menu{ display:none !important; } /* la vignette du haut est remplacée par le fond */
