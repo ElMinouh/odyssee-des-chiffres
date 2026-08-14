@@ -225,7 +225,7 @@
  <!-- ═══ MENU ═══ -->
  <!-- ═══ ÉCRAN 1 : QUI JOUE ? ═══ -->
  <div id="v-menu">
-  <div id="app-version">v12.4.4</div>
+  <div id="app-version">v12.4.5</div>
   <img src="assets/logo-savoir.webp?v=1057" alt="L'Odyssée du Savoir" class="game-logo" id="game-logo-menu" loading="eager" decoding="async" style="max-width:min(110px,34%);width:100%;height:auto;display:block;margin:0 auto 10px;">
 
   <!-- Aperçu du joueur sélectionné -->
@@ -1111,6 +1111,7 @@
 if ('serviceWorker' in navigator) {
   let _updateNotified = false;    // évite de notifier plusieurs fois
   let _refreshing = false;         // évite la boucle de reload sur controllerchange
+  let _swReg = null;               // registration courante, réutilisée par visibilitychange
 
   // Notification visuelle : nouvelle version dispo
   function _showUpdateBanner(){
@@ -1193,6 +1194,7 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js')
       .then(reg => {
+        _swReg = reg;
         console.info('[PWA] Service Worker actif (scope: ' + reg.scope + ')');
         // Récupère la version actuellement servie pour le titre
         if(navigator.serviceWorker.controller){
@@ -1216,6 +1218,18 @@ if ('serviceWorker' in navigator) {
         });
       })
       .catch(err => console.warn('[PWA] Échec d\'enregistrement du Service Worker :', err));
+  });
+
+  // v12.4.5 : une PWA installée reste ouverte en arrière-plan sans jamais être
+  // "rechargée" — le navigateur ne revérifie une mise à jour qu'à des moments
+  // qui ne coïncident pas forcément avec un déploiement. On force une
+  // vérification à chaque fois que l'app repasse au premier plan (retour
+  // depuis l'accueil du téléphone, changement d'onglet, etc.), pour que la
+  // bannière "Actualiser" ait une vraie chance de se déclencher.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && _swReg) {
+      _swReg.update().catch(() => {});
+    }
   });
 }
 </script>
