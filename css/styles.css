@@ -2621,8 +2621,23 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  line-height:1.15;
  font-family:'Nunito',sans-serif;
  letter-spacing:.01em;
- padding:0 2px;
+ /* v12.4.10 (audit DA, Lot 5 #4) : petit ruban + ornements ❖, même pattern que
+    .archipel-region-name (maquette validée), miniaturisé pour ce contexte plus
+    petit — remplace le texte nu à plat. */
+ display:inline-block;
+ background:rgba(0,0,0,.5);
+ border-radius:5px;
+ padding:1px 8px;
 }
+.archipel-zone-label::before,
+.archipel-zone-label::after{
+ content:'❖';
+ font-size:.68em;
+ color:#f1c40f;
+ opacity:.8;
+}
+.archipel-zone-label::before{ margin-right:4px; }
+.archipel-zone-label::after{ margin-left:4px; }
 .archipel-zone-req{
  font-size:.6em;
  color:#ffd6a0;
