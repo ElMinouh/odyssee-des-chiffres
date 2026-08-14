@@ -4049,11 +4049,17 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 .map-tool-btn:hover{ background:#34495e; transform:none; }
 .drawer-caret{ font-size:.85em; transition:transform var(--dur-base); }
 .map-tool-btn.drawer-open .drawer-caret{ transform:rotate(180deg); }
+/* v12.4.4 (contre-proposition maquette Lot 1) : anneau d'état en currentColor,
+   ajouté dans chaque symbole SVG (voir index.html) sans toucher au dessin interne
+   ni à la plaque de fond propres à chaque cycle — transparent par défaut, visible
+   ici quand le tiroir Mini-carte est ouvert. Réutilisable pour d'autres états
+   (ex. Carnet actif) sans retoucher les icônes. */
+.map-tool-btn.drawer-open .nav-icon{ color:#ffd97a; }
 /* v12.4.0 (audit DA Aventure, Lot 1) : icônes de navigation SVG par cycle scolaire
    (maternelle/primaire/collège), remplacent les émojis système (🧭 📕 🗺️).
    v12.4.3 : fusionné depuis nav-icons.css (fichier séparé abandonné — voir Lot correctif
    pour le détail des deux bugs de cascade que ce fichier séparé avait provoqués). */
-.nav-icon{ display:none; width:28px; height:28px; vertical-align:middle; flex-shrink:0; margin-right:5px; }
+.nav-icon{ display:none; width:28px; height:28px; vertical-align:middle; flex-shrink:0; margin-right:5px; color:transparent; }
 .nav-icon-primaire{ display:inline-block; }
 html[data-cycle="maternelle"] .nav-icon-primaire{ display:none; }
 html[data-cycle="maternelle"] .nav-icon-maternelle{ display:inline-block; }
