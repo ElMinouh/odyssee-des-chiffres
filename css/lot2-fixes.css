@@ -7,13 +7,17 @@
    Avant : #v-menu affichait un voile bleu marine fixe + le poster, sans lien visuel
    avec le dégradé --bg utilisé par le splash juste avant. On insère --bg comme couche
    intermédiaire (le poster reste lisible grâce au voile, désormais plus léger). */
+/* v12.4.2 : correctif — le logo (couche du bas à l'origine) était recouvert par
+   --bg (couche opaque insérée au-dessus de lui). On remet le logo au-dessus de
+   --bg : celui-ci ne sert plus que de fond de secours visible dans les zones
+   que le logo, en taille "contain", ne couvre pas. */
 #v-menu{
   background-image:
     linear-gradient(rgba(12,30,52,.4), rgba(12,30,52,.6)),
-    var(--bg),
-    url('../assets/logo-savoir.webp?v=1047');
-  background-size: cover, cover, contain;
-  background-position: center, center, top center;
+    url('../assets/logo-savoir.webp?v=1047'),
+    var(--bg);
+  background-size: cover, contain, cover;
+  background-position: center, top center, center;
   background-repeat: no-repeat, no-repeat, no-repeat;
 }
 
