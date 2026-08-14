@@ -14,3 +14,15 @@ html[data-cycle="college"] .nav-icon-primaire{ display:none; }
 html[data-cycle="college"] .nav-icon-college{ display:inline-block; }
 .compass-btn{ overflow:hidden; }
 .compass-btn .nav-icon{ width:30px; height:30px; margin-right:0; vertical-align:middle; }
+
+/* v12.4.2 : la Boussole rejoint la barre de zoom (#map-zoom-bar), horizontale —
+   on neutralise les réglages hérités de .back-top-btn/.compass-btn pensés pour
+   une colonne verticale (align-self, margin-bottom) pour qu'elle s'aligne
+   proprement à côté des boutons de zoom. */
+#map-zoom-bar{ flex-wrap:wrap; }
+.compass-btn-bar{
+  align-self:center;
+  margin:0 0 0 var(--space-1);
+  width:34px; height:34px;
+}
+.compass-btn-bar .nav-icon{ width:26px; height:26px; }

@@ -18,7 +18,7 @@
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=1058">
 <link rel="stylesheet" href="assets/fonts/google-fonts.css">
 <link rel="stylesheet" href="css/styles.css?v=1062">
-<link rel="stylesheet" href="css/nav-icons.css?v=2">
+<link rel="stylesheet" href="css/nav-icons.css?v=3">
 </head>
 <body id="BODY">
 <svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true">
@@ -49,11 +49,11 @@
 </symbol>
 
 <symbol id="icon-compass-college" viewBox="0 0 48 48">
-  <circle cx="24" cy="24" r="21" fill="#0d1420"/>
-  <circle cx="24" cy="24" r="17.5" fill="none" stroke="#c9a24a" stroke-width="1.6"/>
-  <path d="M24 12 L27.5 24 L24 22.6 L20.5 24 Z" fill="#c9a24a"/>
-  <path d="M24 36 L20.5 24 L24 25.4 L27.5 24 Z" fill="#7d8ea0"/>
-  <circle cx="24" cy="24" r="1.8" fill="#c9a24a"/>
+  <circle cx="24" cy="24" r="21" fill="#2b2013" stroke="#d9b769" stroke-width="1.6"/>
+  <circle cx="24" cy="24" r="16.5" fill="none" stroke="#e0be79" stroke-width="1.8"/>
+  <path d="M24 12 L27.5 24 L24 22.6 L20.5 24 Z" fill="#e0be79"/>
+  <path d="M24 36 L20.5 24 L24 25.4 L27.5 24 Z" fill="#dfe5ec"/>
+  <circle cx="24" cy="24" r="1.8" fill="#e0be79"/>
 </symbol>
 
 <symbol id="icon-carnet-maternelle" viewBox="0 0 48 48">
@@ -74,12 +74,12 @@
 </symbol>
 
 <symbol id="icon-carnet-college" viewBox="0 0 48 48">
-  <rect x="4" y="4" width="40" height="40" rx="6" fill="#141b26"/>
-  <rect x="14" y="8" width="20" height="32" rx="1" fill="#1c2530" stroke="#c9a24a" stroke-width="1.3"/>
-  <rect x="14" y="8" width="4" height="32" fill="#0f151b"/>
-  <line x1="21" y1="15" x2="30" y2="15" stroke="#c9a24a" stroke-width=".9"/>
-  <line x1="21" y1="19" x2="30" y2="19" stroke="#c9a24a" stroke-width=".9"/>
-  <path d="M21 29 l3 3 5-6" stroke="#c9a24a" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+  <rect x="4" y="4" width="40" height="40" rx="6" fill="#2b2013" stroke="#d9b769" stroke-width="1.6"/>
+  <rect x="14" y="8" width="20" height="32" rx="1" fill="#2a3a52" stroke="#e0be79" stroke-width="1.4"/>
+  <rect x="14" y="8" width="4" height="32" fill="#1a2740"/>
+  <line x1="21" y1="15" x2="30" y2="15" stroke="#e0be79" stroke-width="1"/>
+  <line x1="21" y1="19" x2="30" y2="19" stroke="#e0be79" stroke-width="1"/>
+  <path d="M21 29 l3 3 5-6" stroke="#e0be79" stroke-width="1.4" fill="none" stroke-linecap="round"/>
 </symbol>
 
 <symbol id="icon-minimap-maternelle" viewBox="0 0 48 48">
@@ -95,9 +95,9 @@
 </symbol>
 
 <symbol id="icon-minimap-college" viewBox="0 0 48 48">
-  <rect x="9" y="9" width="30" height="30" rx="4" fill="#0a1812" transform="rotate(45 24 24)"/>
-  <path d="M10 13 L19 9 L30 13 L38 9 L38 36 L30 40 L19 36 L10 40 Z" fill="#233240" stroke="#c9a24a" stroke-width="1.1" stroke-linejoin="round"/>
-  <circle cx="23.5" cy="22" r="1.9" fill="#c9a24a"/>
+  <rect x="9" y="9" width="30" height="30" rx="4" fill="#1c2f18" stroke="#d9b769" stroke-width="1.6" transform="rotate(45 24 24)"/>
+  <path d="M10 13 L19 9 L30 13 L38 9 L38 36 L30 40 L19 36 L10 40 Z" fill="#33506a" stroke="#e0be79" stroke-width="1.3" stroke-linejoin="round"/>
+  <circle cx="23.5" cy="22" r="2" fill="#e0be79"/>
 </symbol>
 
 </defs>
@@ -211,7 +211,7 @@
  <!-- ═══ MENU ═══ -->
  <!-- ═══ ÉCRAN 1 : QUI JOUE ? ═══ -->
  <div id="v-menu">
-  <div id="app-version">v12.3.4</div>
+  <div id="app-version">v12.3.5</div>
   <img src="assets/logo-savoir.webp?v=1057" alt="L'Odyssée du Savoir" class="game-logo" id="game-logo-menu" loading="eager" decoding="async" style="max-width:min(110px,34%);width:100%;height:auto;display:block;margin:0 auto 10px;">
 
   <!-- Aperçu du joueur sélectionné -->
@@ -579,7 +579,11 @@
    <button onclick="mapZoomOut()" class="map-cmd-btn" aria-label="Dézoomer la carte">&#128270;&#8722;</button>
    <span id="map-zoom-label">Vue régions</span>
    <button onclick="mapZoomIn()" class="map-cmd-btn" aria-label="Zoomer la carte">&#128270;&#43;</button>
-   <button onclick="mapCenterOnAvatar()" title="Centrer sur ma position" aria-label="Centrer la carte sur ma position" class="map-cmd-btn" style="background:#16a085;">&#127919;</button>
+   <!-- v12.4.2 (audit DA Aventure, Lot 1 — réagencement) : le bouton "Centrer sur ma
+        position" (🎯) est retiré ; la Boussole prend sa place ici, dans la barre de
+        commandes. La Mini-carte remonte à l'ancien emplacement de la Boussole,
+        alignée avec le Carnet. -->
+   <button class="back-top-btn compass-btn compass-btn-bar" onclick="_spinCompass(this);mapGoToNextZone();" title="Boussole — aller à ma prochaine zone" aria-label="Boussole : aller à ma prochaine zone"><svg class="nav-icon nav-icon-maternelle" aria-hidden="true"><use href="#icon-compass-maternelle"/></svg><svg class="nav-icon nav-icon-primaire" aria-hidden="true"><use href="#icon-compass-primaire"/></svg><svg class="nav-icon nav-icon-college" aria-hidden="true"><use href="#icon-compass-college"/></svg></button>
   </div>
   <!-- v9.0.2 : boutons fixes (sous Retour/Accueil) + panneaux déroulants verticaux larges -->
   <!-- v12.3.2 (lot 6, audit UX #3/#8) : le Carnet absorbe le Livre (fusionnés en un
@@ -589,7 +593,6 @@
    <button class="back-top-btn map-carnet-btn" onclick="openAdventureLog()" title="Carnet d'aventure"><svg class="nav-icon nav-icon-maternelle" aria-hidden="true"><use href="#icon-carnet-maternelle"/></svg><svg class="nav-icon nav-icon-primaire" aria-hidden="true"><use href="#icon-carnet-primaire"/></svg><svg class="nav-icon nav-icon-college" aria-hidden="true"><use href="#icon-carnet-college"/></svg> Carnet</button>
   </div>
   <div class="map-side-col map-side-right">
-   <button class="back-top-btn compass-btn" onclick="_spinCompass(this);mapGoToNextZone();" title="Boussole — aller à ma prochaine zone" aria-label="Boussole : aller à ma prochaine zone"><svg class="nav-icon nav-icon-maternelle" aria-hidden="true"><use href="#icon-compass-maternelle"/></svg><svg class="nav-icon nav-icon-primaire" aria-hidden="true"><use href="#icon-compass-primaire"/></svg><svg class="nav-icon nav-icon-college" aria-hidden="true"><use href="#icon-compass-college"/></svg></button>
    <button class="back-top-btn map-tool-btn" id="btn-minimap" onclick="_toggleDrawer('minimap')" title="Mini-carte"><svg class="nav-icon nav-icon-maternelle" aria-hidden="true"><use href="#icon-minimap-maternelle"/></svg><svg class="nav-icon nav-icon-primaire" aria-hidden="true"><use href="#icon-minimap-primaire"/></svg><svg class="nav-icon nav-icon-college" aria-hidden="true"><use href="#icon-minimap-college"/></svg> Mini-carte <span class="drawer-caret">&#9662;</span></button>
    <div class="map-drawer drawer-right" id="drawer-minimap"><div class="map-drawer-pad"><div id="minimap-body"></div></div></div>
   </div>
