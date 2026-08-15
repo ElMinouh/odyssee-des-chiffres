@@ -707,17 +707,41 @@ const _REGION_TRANSPORTS = {
  final: '✨',  // téléportation — Sanctuaire Final
 };
 
-// v8.7.40 (O3-C.1) : Bannière de transition entre biomes.
-// Affichée quand l'avatar franchit la frontière entre deux îlots pendant son
-// déplacement animé. Emoji, couleurs et phrase d'accueil thématiques par région.
-const _BIOME_BANNER_META = {
- cp:    { emoji:'🌾', accent:'#a8e6a2', bgGrad:'linear-gradient(135deg,#27ae60,#74b9ff)',     subtitle:'Région des Débuts' },
- ce1:   { emoji:'🌲', accent:'#5fb95a', bgGrad:'linear-gradient(135deg,#1b6b3a,#2ecc71)',     subtitle:'Bois et Plages' },
- ce2:   { emoji:'🏜️', accent:'#f6cb8b', bgGrad:'linear-gradient(135deg,#c87b27,#e67e22)',     subtitle:'Terres d\'Aventure' },
- cm1:   { emoji:'🏰', accent:'#b6c8d4', bgGrad:'linear-gradient(135deg,#4b6584,#1f2733)',     subtitle:'Royaumes Périlleux' },
- cm2:   { emoji:'🌌', accent:'#cbb1ee', bgGrad:'linear-gradient(135deg,#3a0a4a,#9b59b6)',     subtitle:'Au-delà des Étoiles' },
- final: { emoji:'🕉️', accent:'#fff4c0', bgGrad:'linear-gradient(135deg,#b7950b,#f1c40f)',     subtitle:'Sanctuaire Final' },
+// v12.4.23 (audit Esthétique/Ergonomie/Narratif, Lot 2, #A2/#A3/#A5/#A6) :
+// _BIOME_BANNER_META (indexée par regionId, donc fausse dès qu'une Odyssée
+// dérivée n'a pas gardé le thème "d'origine" de sa région) est remplacée par
+// _THEME_META, indexée par le THÈME RÉEL — les 9 valeurs déjà utilisées pour
+// les îlots (_renderIslandSvg, Phase 11) et la météo (_WEATHER_BY_THEME,
+// Phase 12). Emoji repris de styles[theme].deco[0], accent de la teinte
+// médiane (55%) et bgGrad des arrêts 0%/100% des dégradés SVG d'îlot
+// (archGrad*), pour une cohérence totale avec la carte. Supprime au passage
+// la duplication avec regionAccent (07-boss.js, voir #A5) et donne enfin à
+// "titan" un habillage cohérent sans entrée dédiée à maintenir (#A6) :
+// il hérite simplement de son thème réel comme toute autre région.
+const _THEME_META = {
+ standard: { emoji:'🌾', accent:'#2ecc71', bgGrad:'linear-gradient(135deg,#a8e8b0,#1a6b3a)', subtitle:'Prairies Paisibles' },
+ foret:    { emoji:'🌲', accent:'#2ecc71', bgGrad:'linear-gradient(135deg,#5fd085,#0f3d20)', subtitle:'Forêt Mystérieuse' },
+ volcan:   { emoji:'🌋', accent:'#e67e22', bgGrad:'linear-gradient(135deg,#ffb366,#7a2010)', subtitle:'Terres de Feu' },
+ ocean:    { emoji:'🐚', accent:'#fcbf49', bgGrad:'linear-gradient(135deg,#fffaf0,#a87820)', subtitle:'Rivages Océaniques' },
+ banquise: { emoji:'❄️', accent:'#74b9ff', bgGrad:'linear-gradient(135deg,#d6f0ff,#155a8a)', subtitle:'Contrées Glacées' },
+ chateau:  { emoji:'🏛️', accent:'#d4af37', bgGrad:'linear-gradient(135deg,#f0dfa0,#5c4713)', subtitle:'Royaume de Pierre' },
+ sakura:   { emoji:'🌸', accent:'#ffb3d9', bgGrad:'linear-gradient(135deg,#ffe8f2,#c9628f)', subtitle:'Vergers Fleuris' },
+ nuit:     { emoji:'🌙', accent:'#1b2735', bgGrad:'linear-gradient(135deg,#3d4a63,#050508)', subtitle:'Ombres Nocturnes' },
+ espace:   { emoji:'✨', accent:'#6b3f8a', bgGrad:'linear-gradient(135deg,#4a3a5c,#1a0530)', subtitle:'Confins Étoilés' },
 };
+// Thème réel d'une région, pour l'Odyssée en cours (même principe que
+// _renderIslandSvg : on lit le thème de la première zone de la région,
+// puisque toutes les zones d'une même région partagent le même thème —
+// vérifié en Phase 10). _zonesOfRegion() est définie dans 07-story.js,
+// chargé après ce fichier ; sans effet ici car cette fonction n'est jamais
+// appelée au chargement, seulement à l'usage (déplacement de l'avatar,
+// ouverture de la Mini-carte/du Carnet), une fois tous les scripts prêts.
+function _themeOfRegion(regionId){
+ try{
+  const zones = (typeof _zonesOfRegion==='function') ? _zonesOfRegion(regionId) : [];
+  return (zones[0] && zones[0].theme) || 'standard';
+ }catch(e){ return 'standard'; }
+}
 // v8.7.48 (O3-C.5) : Signature sonore régionale.
 // Court motif mélodique synthétisé (via beep) joué à l'entrée d'une région.
 // Chaque biome a sa "couleur" musicale. Pas de nappe continue (fatigante et
@@ -744,7 +768,7 @@ function _playRegionSignature(regionId){
  });
 }
 function _showBiomeBanner(regionId){
- const meta = _BIOME_BANNER_META[regionId] || { emoji:'📖', accent:'#ffe08a', bgGrad:'linear-gradient(135deg,#27ae60,#74b9ff)' };
+ const meta = _THEME_META[_themeOfRegion(regionId)] || _THEME_META.standard;
  // v10.13.7 — Le NOM affiché ET prononcé vient TOUJOURS de l'aventure courante
  // (_ARCH_REGIONS), jamais du libellé math par défaut. Vrai pour toutes les
  // odyssées (maths/français/futures), même celles aux ids de région inédits.
@@ -2233,7 +2257,7 @@ function _refreshMiniMap(avatarRegionId, foggedMap, avatarRatioY, avatarEmoji){
  const mm = document.getElementById('minimap-body');
  if(!mm) return;
  const rows = _ARCH_REGIONS.map(r => {
-  const meta = _BIOME_BANNER_META[r.id] || {};
+  const meta = _THEME_META[_themeOfRegion(r.id)] || _THEME_META.standard;
   const fogged = !!(foggedMap && foggedMap[r.id]);
   const active = (r.id === avatarRegionId);
   return `<div class="drawer-row${fogged?' locked':''}${active?' active':''}" style="--row-c:${meta.accent||'#888'};" `

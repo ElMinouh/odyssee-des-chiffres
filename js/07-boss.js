@@ -918,10 +918,12 @@ let _advlogLastTab = 'prog';
 function openAdventureLog(){
  if(typeof P === 'undefined' || !P) return;
  const beaten = P.mapBossBeaten || [];
- // Couleurs accent par région (réutilise la palette des cinématiques d'îlot)
- const regionAccent = {
-  cp:'#a8e6a2', ce1:'#5fb95a', ce2:'#f6cb8b', cm1:'#b6c8d4', cm2:'#cbb1ee', final:'#fff4c0', titan:'#ff9a5a',
- };
+ // v12.4.23 (Lot 2, #A5) : l'ex-table regionAccent (dupliquée, non
+ // synchronisée avec _BIOME_BANNER_META, "titan" y avait une couleur
+ // différente ou absente selon le composant) est supprimée. La couleur
+ // par région vient maintenant de _THEME_META (thème réel, 07-map.js),
+ // seule source, partagée avec la bannière de transition, la Mini-carte
+ // et le Journal.
  // Progression globale
  const totalZones = MAP_ZONES.length;
  const totalBeaten = MAP_ZONES.filter(z => beaten.includes(z.id)).length;
@@ -932,7 +934,8 @@ function openAdventureLog(){
   if(zonesOfRegion.length === 0) return '';
   const done = zonesOfRegion.filter(z => beaten.includes(z.id)).length;
   const pct = Math.round((done / zonesOfRegion.length) * 100);
-  const accent = regionAccent[r.id] || '#f1c40f';
+  const _theme = (zonesOfRegion[0] && zonesOfRegion[0].theme) || 'standard';
+  const accent = (typeof _THEME_META!=='undefined' && _THEME_META[_theme] && _THEME_META[_theme].accent) || '#f1c40f';
   const isComplete = done === zonesOfRegion.length && done > 0;
   return `
    <div class="advlog-region-row">

@@ -3399,7 +3399,11 @@ function _questEntries(){
  _ARCH_REGIONS.forEach(r => {
   const chap = _STORY.chapters[r.id];
   if(!chap) return;
-  const meta = _BIOME_BANNER_META[r.id] || {};
+  // v12.4.23 (Lot 2, #A4) : _THEME_META (thème réel, 07-map.js) remplace
+  // l'ex-_BIOME_BANNER_META (regionId) — la frise du Journal reflète enfin
+  // le thème réellement traversé, pas celui de l'Odyssée d'origine.
+  const meta = (typeof _THEME_META!=='undefined' && typeof _themeOfRegion==='function')
+    ? (_THEME_META[_themeOfRegion(r.id)] || _THEME_META.standard) : {};
   const col = meta.accent || '#888';
   entries.push({ id:chap.id, kind:'chapter', label:(roman[i]||String(i+1)), regionId:r.id, color:col });
   const win = _STORY.victories && _STORY.victories[r.id];
