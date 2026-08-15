@@ -19,6 +19,13 @@ const _LIVING_MAP_LINES = [
  "Les habitants de ${prevZone} parlent encore de ton passage.",
  "Au loin, ${nextZone} scintille faiblement. Bientôt, ce sera ton tour.",
 ];
+// v12.4.25 (audit Esthétique/Ergonomie/Narratif, Lot 4, #C1) : la ligne à
+// l'index 0 mentionne {villain} avec une agence active — interdit en
+// maternelle depuis ADR-57 (le méchant n'agit jamais avant la toute
+// dernière région dans _MAT_STORY/_MAT_STORY_FR). _pickTwistLine() avait
+// déjà été corrigée pour ça, pas ce système jumeau : même règle appliquée
+// ici, sur le même modèle (_TWIST_LINES_VILLAIN_FREE_IDX).
+const _LIVING_MAP_LINES_VILLAIN_FREE_IDX = [1, 2, 3, 4, 5];
 let _lastLivingMapZone = null;
 function _maybeShowLivingMapCaption(){
  try{
@@ -36,7 +43,12 @@ function _maybeShowLivingMapCaption(){
   if(!nextP && !prevP) return;
   const nextZone = nextP ? nextP.zone.label : '';
   const prevZone = prevP ? prevP.zone.label : '';
-  const pool = _LIVING_MAP_LINES.filter(l => (l.includes('${nextZone}') ? !!nextZone : true) && (l.includes('${prevZone}') ? !!prevZone : true));
+  const advKey = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
+  const isMat = (advKey === 'mat' || advKey === 'matfr');
+  const eligibleLines = isMat
+   ? _LIVING_MAP_LINES_VILLAIN_FREE_IDX.map(i => _LIVING_MAP_LINES[i])
+   : _LIVING_MAP_LINES;
+  const pool = eligibleLines.filter(l => (l.includes('${nextZone}') ? !!nextZone : true) && (l.includes('${prevZone}') ? !!prevZone : true));
   if(!pool.length) return;
   let line = pool[Math.floor(Math.random()*pool.length)]
    .replace(/\$\{nextZone\}/g, nextZone).replace(/\$\{prevZone\}/g, prevZone);
@@ -58,6 +70,7 @@ function _maybeShowLivingMapCaption(){
 function openMap(){
  if(typeof navTo==='function') navTo('v-map'); else showView('v-map');
  _mapAutoFocus = true;  // v8.7.57 (O3-C.6) : cadrage caméra sur la région active à l'ouverture
+ if(typeof _updateMapHeaderTitle==='function') _updateMapHeaderTitle();
  renderMap();
  // Chantier B3 : démarrer la parallaxe une fois le DOM stabilisé
  setTimeout(()=>{
@@ -1049,6 +1062,57 @@ function _archHash(str, salt=0){
  for(let i=0;i<str.length;i++){ h = ((h<<5)+h) + str.charCodeAt(i); h |= 0; }
  // Normaliser entre 0 et 1
  return (Math.abs(h % 10000) / 10000);
+}
+
+// v12.4.25 (audit Esthétique/Ergonomie/Narratif, Lot 4, D1 + titre de carte) :
+// titre narratif DÉJÀ ÉCRIT de l'Odyssée en cours (_STORY.intro.title — "Le
+// Pays des Couleurs", "L'Ombre sur Calcultopia", "Le Forgeron des Étoiles"...
+// aucun nom inventé) + libellé discret matière/niveau. Utilisé par l'en-tête
+// de la carte et le sous-titre du Carnet (une seule source, pas de duplication).
+const _ODYSSEY_SUBJECT = { mat:'Maths', prim:'Maths', col:'Maths', matfr:'Français', primfr:'Français', colfr:'Français', primhist:'Histoire' };
+const _ODYSSEY_CYCLE = { mat:'Maternelle', matfr:'Maternelle', prim:'Primaire', primfr:'Primaire', primhist:'Primaire', col:'Collège', colfr:'Collège' };
+function _odysseyDisplayMeta(){
+ const advKey = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
+ const story = (typeof _STORY!=='undefined' && _STORY) ? _STORY : null;
+ let title = (story && story.intro && story.intro.title) || '';
+ title = title.replace(/^Prologue\s*[—-]\s*/, '');
+ const subject = _ODYSSEY_SUBJECT[advKey] || 'Maths';
+ const cycle = _ODYSSEY_CYCLE[advKey] || 'Primaire';
+ return { title, subject, cycle, subjectCycle: subject + ' · ' + cycle };
+}
+// Met à jour le titre stylisé de l'en-tête de la carte (remplace l'ancien
+// "🗺️ Carte d'Exploration" générique). Appelée à chaque ouverture de carte.
+function _updateMapHeaderTitle(){
+ try{
+  const meta = _odysseyDisplayMeta();
+  const titleEl = document.getElementById('map-title-text');
+  const subEl = document.getElementById('map-title-sub');
+  if(titleEl){
+   titleEl.textContent = meta.title || "Carte d'Exploration";
+   titleEl.classList.remove('subj-math', 'subj-fr', 'subj-hist');
+   const subj = (typeof GM!=='undefined' && GM && GM.subject) ? GM.subject : 'math';
+   titleEl.classList.add(subj==='fr' ? 'subj-fr' : (subj==='hist' ? 'subj-hist' : 'subj-math'));
+  }
+  if(subEl) subEl.textContent = meta.subjectCycle;
+ }catch(e){ /* jamais bloquant pour l'ouverture de la carte */ }
+}
+// v12.4.25 (Lot 4, #C2) : titre du héros différencié par Odyssée dans le
+// Carnet — sur le modèle déjà établi par _questVocab() pour le reste du
+// vocabulaire de progression. Contenu validé avec Cyril avant implémentation.
+const _HERO_TITLE = {
+ mat:      { m:'Petit Explorateur', f:'Petite Exploratrice' },
+ matfr:    { m:'Petit Conteur',     f:'Petite Conteuse' },
+ prim:     { m:'Aventurier',        f:'Aventurière' },
+ primfr:   { m:'Éclaireur',         f:'Éclaireuse' },
+ primhist: { m:'Chroniqueur',       f:'Chroniqueuse' },
+ col:      { m:'Bâtisseur',         f:'Bâtisseuse' },
+ colfr:    { m:'Érudit',            f:'Érudite' },
+};
+function _heroTitle(){
+ const advKey = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
+ const g = (typeof heroGender==='function' && typeof P!=='undefined' && P) ? heroGender(P.name, P.gender) : 'm';
+ const t = _HERO_TITLE[advKey] || _HERO_TITLE.prim;
+ return g==='f' ? t.f : t.m;
 }
 
 // ─── v8.7.27 / v8.7.28 : Boutiques par îlot ───

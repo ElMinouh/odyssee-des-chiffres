@@ -3566,6 +3566,14 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  text-shadow:0 2px 4px rgba(0,0,0,.5);
 }
 .advlog-hero-level{ font-size:.85em; color:#f1c40f; font-weight:600; margin-top:2px; }
+/* v12.4.25 (Lot 4, D1) : titre narratif de l'Odyssée + matière/niveau, sous
+   le titre du héros — identifie quelle Odyssée est affichée dans le Carnet. */
+.advlog-hero-odyssey{
+ font-family:'Cinzel Decorative','Cinzel',Georgia,serif;
+ font-size:.72em; color:rgba(255,255,255,.75);
+ margin-top:3px; letter-spacing:.02em;
+}
+.advlog-hero-cycle{ font-family:var(--font-sans,inherit); color:rgba(255,255,255,.5); font-size:.92em; }
 .advlog-global{ margin-bottom:var(--space-4); }
 .advlog-global-label{
  font-size:.8em; color:#bdc3c7; text-transform:uppercase;
@@ -4070,10 +4078,38 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 .map-top-row{
  display:flex; align-items:center; justify-content:space-between; gap:var(--space-2);
 }
+.map-title-wrap{
+ flex:1; display:flex; flex-direction:column; align-items:center; min-width:0;
+}
 .map-title{
- margin:0; flex:1; text-align:center;
- font-size:1.02em; line-height:1.1;
- white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+ margin:0; text-align:center;
+ font-size:1.05em; line-height:1.15;
+ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;
+ font-family:'Cinzel Decorative','Cinzel',Georgia,serif; font-weight:700; letter-spacing:.02em;
+ color:#fff; text-shadow:0 2px 4px rgba(0,0,0,.6);
+}
+/* v12.4.25 (audit Esthétique/Ergonomie/Narratif, Lot 4) : titre narratif
+   existant de l'Odyssée (_STORY.intro.title, cf. _odysseyDisplayMeta) en
+   lieu et place de l'ancien "🗺️ Carte d'Exploration" générique — dégradé
+   par matière pour un repère visuel immédiat. */
+.map-title.subj-math{
+ background:linear-gradient(135deg,#ffd97a,#c99a1f);
+ -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+ filter:drop-shadow(0 1px 2px rgba(0,0,0,.6));
+}
+.map-title.subj-fr{
+ background:linear-gradient(135deg,#d9a7f5,#8e44ad);
+ -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+ filter:drop-shadow(0 1px 2px rgba(0,0,0,.6));
+}
+.map-title.subj-hist{
+ background:linear-gradient(135deg,#e0c896,#8b6f3f);
+ -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+ filter:drop-shadow(0 1px 2px rgba(0,0,0,.6));
+}
+.map-title-sub{
+ font-size:.62em; color:rgba(255,255,255,.65); margin-top:1px; letter-spacing:.03em;
+ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;
 }
 .map-top-row .back-top-btn{ flex:0 0 auto; }
 /* v9.0.0 : barre de commandes compacte, remontée */

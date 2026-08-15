@@ -17,7 +17,7 @@
 <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png?v=1058">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=1058">
 <link rel="stylesheet" href="assets/fonts/google-fonts.css">
-<link rel="stylesheet" href="css/styles.css?v=1073">
+<link rel="stylesheet" href="css/styles.css?v=1074">
 </head>
 <body id="BODY">
 <svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true">
@@ -248,7 +248,7 @@
  <!-- ═══ MENU ═══ -->
  <!-- ═══ ÉCRAN 1 : QUI JOUE ? ═══ -->
  <div id="v-menu">
-  <div id="app-version">v12.4.24</div>
+  <div id="app-version">v12.4.25</div>
   <img src="assets/logo-savoir.webp?v=1057" alt="L'Odyssée du Savoir" class="game-logo" id="game-logo-menu" loading="eager" decoding="async" style="max-width:min(110px,34%);width:100%;height:auto;display:block;margin:0 auto 10px;">
 
   <!-- Aperçu du joueur sélectionné -->
@@ -608,7 +608,10 @@
   <!-- v9.0.0 : ligne 1 compacte — Retour | Titre | Accueil -->
   <div class="map-top-row">
    <button class="back-top-btn" onclick="closeMap()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Retour</button>
-   <h2 class="map-title">&#128506;&#65039; Carte d'Exploration</h2>
+   <div class="map-title-wrap">
+    <h2 class="map-title" id="map-title-text">Carte d'Exploration</h2>
+    <div class="map-title-sub" id="map-title-sub"></div>
+   </div>
    <button class="back-top-btn" onclick="if(typeof teardownMapParallax==='function')teardownMapParallax();goHome();" style="background:#16a085;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg> Accueil</button>
   </div>
   <!-- v9.0.0 : ligne 2 — commandes remontées -->

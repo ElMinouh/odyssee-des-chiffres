@@ -987,7 +987,11 @@ function openAdventureLog(){
     <div class="advlog-avatar">${P.avatar || '🧒'}</div>
     <div class="advlog-header-text">
      <div class="advlog-hero-name">${P.name || 'Héros'}</div>
-     <div class="advlog-hero-level">Niveau ${lvl} · Aventurier${heroGender(P.name,P.gender)==='f'?'ère':''}</div>
+     <div class="advlog-hero-level">Niveau ${lvl} · ${(typeof _heroTitle==='function') ? _heroTitle() : ('Aventurier'+(heroGender(P.name,P.gender)==='f'?'ère':''))}</div>
+     ${(typeof _odysseyDisplayMeta==='function') ? (function(){
+       const meta = _odysseyDisplayMeta();
+       return meta.title ? `<div class="advlog-hero-odyssey">${meta.title} <span class="advlog-hero-cycle">— ${meta.subjectCycle}</span></div>` : '';
+     })() : ''}
     </div>
    </div>
    <div class="advlog-tabs" role="tablist" aria-label="Sections du carnet">${tabsHtml}</div>
