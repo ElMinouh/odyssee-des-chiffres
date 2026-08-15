@@ -309,6 +309,45 @@ const PRIM_ZONES=[
 // ═══════════════════════════════════════════════════════
 let MAP_ZONES = PRIM_ZONES;
 
+// v12.4.16 (points hors-lot — répliques de boss uniques par Odyssée) : une
+// réplique dédiée par boss, écrite pour SON lieu et SA personnalité — au lieu
+// d'une pioche dans le pool générique partagé (MONSTER_DIALOGUES.boss dans
+// 07-map.js, qui reste le repli pour toute zone pas encore couverte ici).
+// Odyssée 1/7 — Maths Maternelle (30 zones). Les 6 autres Odyssées suivront,
+// livrées une par une.
+const _BOSS_LINES = {
+ mat_cp_1: "Je garde ce pré bien au chaud... tu veux venir faire un gros câlin avec moi ?",
+ mat_cp_2: "Mes petits poussins ont peur de tout ! Montre-leur que tu es un ami, pas un renard.",
+ mat_cp_3: "L'eau de ma mare est calme comme moi... enfin, presque toujours calme.",
+ mat_cp_4: "Je trotte partout sur ce sentier, mais je m'arrête toujours pour un petit câlin.",
+ mat_cp_5: "On dit que je suis terrible, mais je crois surtout que je suis maladroit.",
+ mat_ce1_1: "Mmmh, ce verger sent trop bon... j'ai croqué toutes les pommes, il ne reste plus que les problèmes !",
+ mat_ce1_2: "Je me cache dans les fraisiers... trouve-moi, si tu es aussi malin qu'un petit renard !",
+ mat_ce1_3: "Toutes mes abeilles bourdonnent d'impatience... sauras-tu répondre avant qu'elles s'envolent ?",
+ mat_ce1_4: "J'ai caché toutes mes noisettes... et mes plus beaux secrets avec !",
+ mat_ce1_5: "Je virevolte de fleur en fleur... attrape-moi si tu peux, petit jardinier !",
+ mat_ce2_1: "Je tremble un peu... mais je crois que j'ai vraiment envie de jouer avec toi.",
+ mat_ce2_2: "Je fouille sous les champignons toute la journée... viens m'aider à chercher !",
+ mat_ce2_3: "Du haut de mon chêne, je vois tout... même si tu as un peu peur, héhou !",
+ mat_ce2_4: "Splash ! L'eau est fraîche et je n'attends que toi pour jouer dedans !",
+ mat_ce2_5: "Mon pelage brille comme la lune... viens voir de plus près, si tu oses.",
+ mat_cm1_1: "Je marche de travers, mais mes pinces ne servent qu'à faire des câlins !",
+ mat_cm1_2: "Je suis lente, mais j'ai tout mon temps pour t'apprendre mes secrets.",
+ mat_cm1_3: "Huit bras, huit façons de dire bonjour... lequel préfères-tu ?",
+ mat_cm1_4: "Mes bulles chatouillent, mon rire aussi... prêt à plonger avec moi ?",
+ mat_cm1_5: "Je suis tout petit encore, mais mon cœur est aussi grand que l'océan.",
+ mat_cm2_1: "Je bourdonne tout doucement entre les bleuets... viens fredonner avec moi.",
+ mat_cm2_2: "Mes piquants font peur, mais mon cœur est tout doux, promis.",
+ mat_cm2_3: "Je broute tranquillement sous les nuages... tu veux voir le ciel avec moi ?",
+ mat_cm2_4: "Le vent tourne mon moulin, et moi je tourne autour de toi, coin coin !",
+ mat_cm2_5: "Je souffle un tout petit peu de fumée... mais jamais de feu, promis juré.",
+ mat_final_1: "La nuit est tombée sur mon pont... mais avec toi, elle ne me fait plus peur.",
+ mat_final_2: "Je flotte tout doux dans le ciel du soir... viens faire un dernier câlin avant la nuit.",
+ mat_final_3: "Mon pelage scintille sous la lune... c'est peut-être ici que notre histoire se termine, ou commence.",
+ mat_final_4: "Tout en haut de ma tour, une dernière poussière de magie t'attend.",
+ mat_final_5: "Tu es arrivé jusqu'à mon château... les étoiles elles-mêmes applaudissent ton courage.",
+};
+
 const MAT_ZONES = [
  {id:'mat_cp_1', region:'cp', label:'Le Pré Vert', bg:'linear-gradient(135deg,#a8e6cf,#dcedc1)', emoji:'🌱', boss:'🐻', bossName:'Gros Nounours', level:'PS', starsReq:0, theme:'standard',
   parallax:{sky:['#b8e0d2','#dcedc1','#fff5d6'], mountains:['#7ab87a','#4a884a'], decor:['🌼','🦋','🍃'], astro:'☀️'},

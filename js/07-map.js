@@ -567,6 +567,14 @@ function startMapStep(zoneId, stepIdx){
   // (ex: si la zone a 3 "monster", ils prendront shuffled[0], [1], [2] → tous distincts).
   intro: (() => {
    const kind = isBoss ? 'boss' : (isMiniBoss ? 'miniboss' : 'monster');
+   // v12.4.16 (points hors-lot — répliques de boss uniques, ancrées dans
+   // l'histoire de chaque Odyssée) : réplique écrite à la main pour CE lieu
+   // précis, prioritaire sur le pool partagé ci-dessous. Couverture en cours,
+   // Odyssée par Odyssée — le pool reste le repli pour les zones pas encore
+   // écrites.
+   if(kind === 'boss' && typeof _BOSS_LINES !== 'undefined' && _BOSS_LINES[zoneId]){
+    return _BOSS_LINES[zoneId];
+   }
    const withinKindIdx = (Array.isArray(zone.steps) ? zone.steps : []).slice(0, stepIdx + 1).filter(s => {
     if(kind === 'boss')     return s.type === 'boss';
     if(kind === 'miniboss') return s.type === 'minibss';
