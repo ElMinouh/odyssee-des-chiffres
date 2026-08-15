@@ -273,6 +273,18 @@ input::placeholder,textarea::placeholder{color:rgba(255,255,255,.5);}
 @keyframes speechFade{to{opacity:0;transform:translateX(-50%) translateY(-8px);}}
 /* ── Monster intro overlay enhancements ── */
 #monster-intro-name{font-family:'Cinzel Decorative','Cinzel',Georgia,serif;font-size:1.4em;margin:var(--space-1) 0;}
+/* v12.4.21 (audit DA, #30 — réemploi du motif ❖) : même ornement que
+   .archipel-region-name/.archipel-zone-label, hérite de la couleur propre à
+   chaque boss (déjà posée en inline style, currentColor la reprend telle quelle). */
+#monster-intro-name::before,
+#monster-intro-name::after{
+ content:'❖';
+ font-size:.65em;
+ opacity:.75;
+ color:currentColor;
+}
+#monster-intro-name::before{ margin-right:8px; }
+#monster-intro-name::after{ margin-left:8px; }
 #monster-intro-badge{font-size:.75em;padding:3px var(--space-4);border-radius:16px;font-weight:700;display:inline-block;margin-bottom:var(--space-2);}
 #monster-intro-quote{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18);border-radius:var(--radius-md);padding:var(--space-3) var(--space-4);font-size:.95em;font-style:italic;margin-top:var(--space-3);max-width:300px;line-height:1.5;}
 /* ── Urgency heartbeat ── */
@@ -3602,6 +3614,18 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  padding-bottom:var(--space-1);
  border-bottom:1px solid rgba(241,196,15,.3);
 }
+/* v12.4.21 (audit DA, #30 — réemploi du motif ❖) : même ornement que le nom de
+   boss et le nom de région — s'applique aux 9 titres de section du Carnet
+   (Progression, Journal, Trophées, Collections) via cette classe partagée. */
+.advlog-section-title::before,
+.advlog-section-title::after{
+ content:'❖';
+ font-size:.75em;
+ opacity:.7;
+ color:#f1c40f;
+}
+.advlog-section-title::before{ margin-right:8px; }
+.advlog-section-title::after{ margin-left:8px; }
 .advlog-region-row{ margin-bottom:var(--space-3); }
 .advlog-region-head{
  display:flex; justify-content:space-between; align-items:center;
