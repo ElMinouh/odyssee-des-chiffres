@@ -1911,15 +1911,25 @@ function openArchipelZoom(zoneId){
  const prog = (P.zoneProgress && P.zoneProgress[zoneId]) || { stepsCompleted: 0 };
  const steps = Array.isArray(zone.steps) ? zone.steps : [];
  const done = prog.stepsCompleted;
- // Couleur de fond de l'îlot zoomé selon le niveau de la zone
+ // v12.4.22 (audit Esthétique/Ergonomie/Narratif, Lot 1, #A1) : couleur de fond de la
+ // fiche de zone désormais pilotée par le THÈME RÉEL de la zone (zone.theme, les 9
+ // valeurs déjà utilisées par _renderIslandSvg depuis la Phase 11), et non plus par
+ // zone.level — qui ne couvrait que CP/CE1/CE2/CM1/CM2 et retombait donc silencieusement
+ // sur le vert prairie de "CP" pour TOUTE la maternelle (PS/MS/GS) et TOUT le collège
+ // (6E/5E/4E/3E). Couleurs reprises des arrêts 0%/100% des dégradés SVG d'îlot
+ // (archGrad*) pour rester cohérent avec la carte et l'écran de combat qui suit.
  const bgColors = {
-  CP:  {top:'#a8e8a8', bot:'#2c5a1c'},
-  CE1: {top:'#3a8c5a', bot:'#0a2418'},
-  CE2: {top:'#f4c578', bot:'#5e3208'},
-  CM1: {top:'#dfe6e9', bot:'#1a3a5a'},
-  CM2: {top:'#b074d4', bot:'#1a0530'},
+  standard: {top:'#a8e8b0', bot:'#1a6b3a'},
+  foret:    {top:'#5fd085', bot:'#0f3d20'},
+  volcan:   {top:'#ffb366', bot:'#7a2010'},
+  ocean:    {top:'#fffaf0', bot:'#a87820'},
+  banquise: {top:'#d6f0ff', bot:'#155a8a'},
+  chateau:  {top:'#f0dfa0', bot:'#5c4713'},
+  sakura:   {top:'#ffe8f2', bot:'#c9628f'},
+  nuit:     {top:'#3d4a63', bot:'#050508'},
+  espace:   {top:'#4a3a5c', bot:'#1a0530'},
  };
- const bg = bgColors[zone.level] || bgColors.CP;
+ const bg = bgColors[zone.theme] || bgColors.standard;
  // Layout des étapes : positions VRAIMENT VARIÉES selon la zone
  // - Côté de départ aléatoire (par zone, déterministe)
  // - Amplitude de bruit plus large
