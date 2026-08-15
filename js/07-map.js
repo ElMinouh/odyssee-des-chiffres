@@ -759,22 +759,38 @@ function _themeOfRegion(regionId){
 // Court motif mélodique synthétisé (via beep) joué à l'entrée d'une région.
 // Chaque biome a sa "couleur" musicale. Pas de nappe continue (fatigante et
 // difficile à rendre convaincante sans assets audio) — un jingle ponctuel.
-const _REGION_AUDIO_SIGNATURE = {
- // CP : fanfare douce ascendante, accueillante (do-mi-sol-do aigu)
- cp:    { notes:[523, 659, 784, 1047],        type:'sine',     gap:130, dur:.35, vol:.10 },
- // CE1 : quintes boisées, mystère doux de forêt (sol-si-ré-si)
- ce1:   { notes:[392, 494, 587, 494],         type:'triangle', gap:150, dur:.40, vol:.10 },
- // CE2 : motif oriental/désertique légèrement mineur (la-do-si-sol-la)
- ce2:   { notes:[440, 523, 494, 392, 440],    type:'triangle', gap:140, dur:.38, vol:.10 },
- // CM1 : accord héroïque puissant de montagne (do grave-sol-do-mi)
- cm1:   { notes:[262, 392, 523, 659],         type:'triangle', gap:150, dur:.42, vol:.11 },
- // CM2 : intervalles larges éthérés, cosmiques (do-sol-mi-do aigu)
- cm2:   { notes:[523, 784, 659, 1047],        type:'sine',     gap:170, dur:.50, vol:.09 },
- // Final : montée glorieuse et sacrée (do-mi-sol-do-mi aigus)
- final: { notes:[523, 659, 784, 1047, 1319],  type:'sine',     gap:160, dur:.50, vol:.11 },
+// v12.4.26 (audit Esthétique/Ergonomie/Narratif, hors-lot #A7) : reconstruite
+// par THÈME RÉEL (les 9 valeurs déjà utilisées par _THEME_META depuis le
+// Lot 2) plutôt que par regionId — même défaut, même correctif que A2/A3/A4.
+// standard/foret/chateau/espace reprennent les motifs déjà existants (cp/ce1/
+// cm1/cm2), qui s'avèrent déjà justes une fois raisonnés par thème plutôt
+// que par région. ocean/banquise/sakura/nuit composés spécifiquement.
+// volcan : première version (dents de scie) jugée "trop jeu vidéo, trop
+// artificielle" par Cyril à l'écoute sur maquette ; remplacée par l'option B
+// (triangle, plus lent, plus grave — une "braise qui couve").
+const _THEME_AUDIO_SIGNATURE = {
+ // Standard : fanfare douce ascendante, accueillante (do-mi-sol-do aigu)
+ standard: { notes:[523, 659, 784, 1047],   type:'sine',     gap:130, dur:.35, vol:.10 },
+ // Forêt : quintes boisées, mystère doux (sol-si-ré-si)
+ foret:    { notes:[392, 494, 587, 494],    type:'triangle', gap:150, dur:.40, vol:.10 },
+ // Volcan : braise qui couve — triangle grave, lent, progressif (option B validée à l'écoute)
+ volcan:   { notes:[165, 208, 262],         type:'triangle', gap:180, dur:.50, vol:.10 },
+ // Océan : arpège qui monte puis redescend, comme une vague qui roule
+ ocean:    { notes:[330, 440, 523, 440, 330], type:'sine',   gap:160, dur:.45, vol:.09 },
+ // Banquise : notes hautes, cristallines, espacées — cloches de glace
+ banquise: { notes:[784, 988, 1175, 1568],  type:'sine',     gap:190, dur:.55, vol:.08 },
+ // Château : accord héroïque puissant, royaume de pierre (do grave-sol-do-mi)
+ chateau:  { notes:[262, 392, 523, 659],    type:'triangle', gap:150, dur:.42, vol:.11 },
+ // Sakura : motif léger et bondissant, comme un pétale qui virevolte
+ sakura:   { notes:[659, 784, 880, 1047, 880], type:'triangle', gap:120, dur:.32, vol:.09 },
+ // Nuit : grave, feutré, très espacé — accord mineur chuchoté dans le noir
+ nuit:     { notes:[220, 262, 330, 262],    type:'sine',     gap:200, dur:.60, vol:.07 },
+ // Espace : intervalles larges éthérés, cosmiques (do-sol-mi-do aigu)
+ espace:   { notes:[523, 784, 659, 1047],   type:'sine',     gap:170, dur:.50, vol:.09 },
 };
 function _playRegionSignature(regionId){
- const sig = _REGION_AUDIO_SIGNATURE[regionId];
+ const theme = (typeof _themeOfRegion==='function') ? _themeOfRegion(regionId) : 'standard';
+ const sig = _THEME_AUDIO_SIGNATURE[theme] || _THEME_AUDIO_SIGNATURE.standard;
  if(!sig || typeof beep !== 'function') return;
  sig.notes.forEach((f, i) => {
   setTimeout(() => { try{ beep(f, sig.type, sig.dur, sig.vol); }catch(e){} }, i * sig.gap);
