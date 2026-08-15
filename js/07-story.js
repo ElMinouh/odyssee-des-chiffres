@@ -337,7 +337,14 @@ const _MATFR_BOSS_OVERRIDES = {
 const MAT_ZONES_FR = (typeof MAT_ZONES!=='undefined' ? MAT_ZONES : []).map(z => {
  const id = String(z.id).replace('mat_','matfr_');
  const ov = _MATFR_BOSS_OVERRIDES[id] || {};
- return Object.assign({}, z, { id, label: _MATFR_ZONE_LABELS[id] || z.label }, ov);
+ // v12.4.18 : le nom/emoji RÉELLEMENT affiché pendant le combat vient de
+ // steps[].name/emoji (pas de bossName/boss, qui ne servent qu'au trophée de
+ // zone) — un premier passage n'avait corrigé que bossName/boss, laissant le
+ // combat lui-même afficher encore l'ancienne identité héritée de MAT_ZONES.
+ const steps = Array.isArray(z.steps) ? z.steps.map(s =>
+  (s.type === 'boss' && ov.bossName) ? Object.assign({}, s, { emoji: ov.boss, name: ov.bossName }) : s
+ ) : z.steps;
+ return Object.assign({}, z, { id, label: _MATFR_ZONE_LABELS[id] || z.label, steps }, ov);
 });
 const _MAT_REGIONS_FR = [
  { id:'cp',    label:'La Forêt des Animaux Muets', levels:['PS'], shape:'colline' },
