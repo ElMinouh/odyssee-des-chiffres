@@ -492,11 +492,40 @@ const _PRIMFR_ZONE_LABELS = {
 // on assigne désormais un `region` explicite à chaque zone pour ne plus dépendre
 // de ce fallback ambigu.
 const _PRIMFR_LEVEL_TO_REGION = {CP:'cp',CE1:'ce1',CE2:'ce2',CM1:'cm1',CM2:'cm2'};
-const PRIM_ZONES_FR = (typeof PRIM_ZONES!=='undefined' ? PRIM_ZONES : []).map(z => Object.assign({}, z, {
- id:'primfr_'+z.id,
- label: _PRIMFR_ZONE_LABELS[z.id] || z.label,
- region: z.id==='sanctuaire' ? 'final' : (_PRIMFR_LEVEL_TO_REGION[z.level] || null),
-}));
+// v12.4.19 (points hors-lot — cohérence boss/histoire) : bossName/boss étaient
+// hérités tels quels de PRIM_ZONES (aventure fantastique : loups, dragons,
+// krakens...), sans rapport avec l'univers "Verbopolis" (ville des mots/de la
+// grammaire) de cette Odyssée. Chaque boss est désormais un personnage de
+// Verbopolis cohérent avec SON quartier.
+const _PRIMFR_BOSS_OVERRIDES = {
+ plaine:{bossName:'Écho Vagabond',boss:'🗣️'}, village:{bossName:'Cloche Bavarde',boss:'🔔'},
+ prairie:{bossName:'Grand A Facétieux',boss:'🅰️'}, bonbons:{bossName:'Camelot des Syllabes',boss:'🗨️'},
+ foret:{bossName:'Libraire Fantôme',boss:'📚'}, champignons:{bossName:'Vieux Conteur Masqué',boss:'🎭'},
+ trolls:{bossName:'Troll des Syllabes Perdues',boss:'👺'}, plage:{bossName:'Moussaillon Lettré',boss:'📖'},
+ desert:{bossName:'Marchand de Mots Rares',boss:'🏺'}, plaines_venteuses:{bossName:'Jardinier des Synonymes',boss:'🌿'},
+ temple:{bossName:'Gardien de Pierre',boss:'🗿'}, profondeurs:{bossName:'Fouilleur de Sens',boss:'🔦'},
+ glace:{bossName:'Grand Horloger Gelé',boss:'⏰'}, marais:{bossName:'Chef de Gare Temporel',boss:'🚉'},
+ forteresse:{bossName:'Seigneur des Verbes',boss:'📜'}, sakura:{bossName:'Sonneur de Beffroi',boss:'⏱️'},
+ nocturne:{bossName:'Astronome du Temps',boss:'🔭'},
+ volcan:{bossName:'Scribe Noir',boss:'🖋️'}, espace:{bossName:'Acrobate des Toits',boss:'🤹'},
+ cimes:{bossName:'Gardien du Pont',boss:'🌉'}, mecanique:{bossName:'Mécanicien des Phrases',boss:'🔧'},
+ ile:{bossName:'Commandant de la Citadelle',boss:'🏛️'},
+ sanctuaire:{bossName:'Docteur Babel',boss:'🧪'},
+};
+const PRIM_ZONES_FR = (typeof PRIM_ZONES!=='undefined' ? PRIM_ZONES : []).map(z => {
+ const ov = _PRIMFR_BOSS_OVERRIDES[z.id] || {};
+ // v12.4.19 : même correctif que Français Maternelle (v12.4.18) — le nom/emoji
+ // réellement affiché en combat vient de steps[], pas seulement de bossName/boss.
+ const steps = Array.isArray(z.steps) ? z.steps.map(s =>
+  (s.type === 'boss' && ov.bossName) ? Object.assign({}, s, { emoji: ov.boss, name: ov.bossName }) : s
+ ) : z.steps;
+ return Object.assign({}, z, {
+  id:'primfr_'+z.id,
+  label: _PRIMFR_ZONE_LABELS[z.id] || z.label,
+  region: z.id==='sanctuaire' ? 'final' : (_PRIMFR_LEVEL_TO_REGION[z.level] || null),
+  steps,
+ }, ov);
+});
 const _PRIM_REGIONS_FR = [
  { id:'cp',    label:'Le district des Sons',       levels:['CP'],    shape:'colline' },
  { id:'ce1',   label:'Le quartier de la Lecture',  levels:['CE1'],   shape:'feuille' },
@@ -725,13 +754,41 @@ const _PRIMHIST_ZONE_LABELS = {
 // Résolution explicite de la région par zone (évite tout repli ambigu sur `level`
 // pour la zone finale — cf. ADR de prudence : chaque zone porte son `region`).
 const _PRIMHIST_LEVEL_TO_REGION = {CP:'cp',CE1:'ce1',CE2:'ce2',CM1:'cm1',CM2:'cm2'};
-const PRIM_ZONES_HIST = (typeof PRIM_ZONES!=='undefined' ? PRIM_ZONES : []).map(z => Object.assign({}, z, {
- id:'primhist_'+z.id,
- label: _PRIMHIST_ZONE_LABELS[z.id] || z.label,
- region: z.id==='sanctuaire' ? 'final' : (_PRIMHIST_LEVEL_TO_REGION[z.level] || null),
- bossName: z.id==='sanctuaire' ? 'L\u2019Écho de l\u2019Instant' : z.bossName,
- boss: z.id==='sanctuaire' ? '⏳' : z.boss,
-}));
+// v12.4.19 (points hors-lot — cohérence boss/histoire) : même logique que
+// _PRIMFR_BOSS_OVERRIDES — bossName/boss hérités de PRIM_ZONES (fantastique)
+// n'avaient aucun rapport avec les périodes historiques traversées ici
+// (Préhistoire → Égypte → Rome → Moyen Âge → Temps modernes). Remplace
+// l'ancien correctif ponctuel (seul `sanctuaire` était traité, en v11.x) par
+// une couverture complète des 23 zones.
+const _PRIMHIST_BOSS_OVERRIDES = {
+ plaine:{bossName:'Gardien du Feu Sacré',boss:'🔥'}, village:{bossName:'Chef Chasseur',boss:'🏹'},
+ prairie:{bossName:'Mammouth Ancestral',boss:'🦣'}, bonbons:{bossName:'Peintre des Cavernes',boss:'🎨'},
+ foret:{bossName:'Gardien du Nil',boss:'🐊'}, champignons:{bossName:'Pharaon Bâtisseur',boss:'👑'},
+ trolls:{bossName:'Momie Vengeresse',boss:'🧟'}, plage:{bossName:'Amiral de Thèbes',boss:'⚓'},
+ desert:{bossName:'Légionnaire Vétéran',boss:'🛡️'}, plaines_venteuses:{bossName:'Sénateur Orateur',boss:'🏛️'},
+ temple:{bossName:'Gladiateur Invaincu',boss:'⚔️'}, profondeurs:{bossName:'Gardien des Thermes',boss:'💧'},
+ glace:{bossName:'Chevalier des Neiges',boss:'⚔️'}, marais:{bossName:'Sorcière du Marais',boss:'🧙‍♀️'},
+ forteresse:{bossName:'Seigneur Assiégé',boss:'🏰'}, sakura:{bossName:'Bouffon du Roi',boss:'🃏'},
+ nocturne:{bossName:'Capitaine de Nuit',boss:'🕯️'},
+ volcan:{bossName:'Forgeron Révolutionnaire',boss:'⚒️'}, espace:{bossName:'Aéronaute Intrépide',boss:'🎈'},
+ cimes:{bossName:'Ingénieur Visionnaire',boss:'⚙️'}, mecanique:{bossName:'Chef Mécanicien',boss:'🚂'},
+ ile:{bossName:'Inventeur Fou',boss:'💡'},
+ sanctuaire:{bossName:'L\u2019Écho de l\u2019Instant',boss:'⏳'},
+};
+const PRIM_ZONES_HIST = (typeof PRIM_ZONES!=='undefined' ? PRIM_ZONES : []).map(z => {
+ const ov = _PRIMHIST_BOSS_OVERRIDES[z.id] || {};
+ // v12.4.19 : steps[] corrigé — l'ancien code n'overridait que bossName/boss
+ // (utilisés pour le trophée), pas le nom/emoji réellement affiché en combat.
+ const steps = Array.isArray(z.steps) ? z.steps.map(s =>
+  (s.type === 'boss' && ov.bossName) ? Object.assign({}, s, { emoji: ov.boss, name: ov.bossName }) : s
+ ) : z.steps;
+ return Object.assign({}, z, {
+  id:'primhist_'+z.id,
+  label: _PRIMHIST_ZONE_LABELS[z.id] || z.label,
+  region: z.id==='sanctuaire' ? 'final' : (_PRIMHIST_LEVEL_TO_REGION[z.level] || null),
+  steps,
+ }, ov);
+});
 const _PRIM_REGIONS_HIST = [
  { id:'cp',    label:'La Préhistoire',         levels:['CP'],    shape:'colline' },
  { id:'ce1',   label:'L\u2019Égypte antique',   levels:['CE1'],   shape:'feuille' },

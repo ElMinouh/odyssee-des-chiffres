@@ -273,7 +273,7 @@ const PRIM_ZONES=[
    {type:'minibss', emoji:'🚂', name:'Locomotive d\'acier',questions:6, difficulty:'hard'},
    {type:'boss',    emoji:'🤖', name:'Mecha Suprême',      questions:7, difficulty:'hard', dropRare:true}
   ]},
- {id:'ile',     label:'Île Mystérieuse',  bg:'linear-gradient(135deg,#1b4332,#2d6a4f)',emoji:'🏝️',boss:'🏴‍☠️',bossName:'Capitaine Fantôme',level:'CM2',starsReq:1525,theme:'foret',
+ {id:'ile',     label:'Île Mystérieuse',  bg:'linear-gradient(135deg,#1b4332,#2d6a4f)',emoji:'🏝️',boss:'🏴‍☠️',bossName:'Capitaine Fantôme',level:'CM2',starsReq:1525,theme:'ocean',
   parallax:{sky:['#2d6a4f','#1b4332','#081c15'], mountains:['#06150f','#020a05'], decor:['🌴','🦜','💎'], astro:'🌙'},
   steps:[
    {type:'monster', emoji:'🦜', name:'Perroquet pirate',   questions:6, difficulty:'hard'},
@@ -285,7 +285,7 @@ const PRIM_ZONES=[
  // ═══════════════════════════════════════════════════════
  // SANCTUAIRE FINAL — 8 étapes, climax de l'Odyssée
  // ═══════════════════════════════════════════════════════
- {id:'sanctuaire',label:'Sanctuaire Final',bg:'linear-gradient(135deg,#0a0014,#3a0a4a)',emoji:'⛩️',boss:'👹',bossName:'Empereur Cosmique',level:'CM2',starsReq:1600,theme:'nuit',
+ {id:'sanctuaire',label:'Sanctuaire Final',bg:'linear-gradient(135deg,#0a0014,#3a0a4a)',emoji:'⛩️',boss:'🌌',bossName:'Empereur Cosmique',level:'CM2',starsReq:1600,theme:'nuit',
   parallax:{sky:['#0a0014','#1a0530','#3a0a4a'], mountains:['#050008','#000000'], decor:['✨','💫','🌌'], astro:'🌑'},
   steps:[
    {type:'monster', emoji:'👁️',  name:'Sentinelle astrale',  questions:4, difficulty:'hard'},
@@ -295,7 +295,7 @@ const PRIM_ZONES=[
    {type:'puzzle',  emoji:'🧿',  name:'Énigme cosmique ultime',questions:5, difficulty:'hard'},
    {type:'monster', emoji:'🌟',  name:'Étoile noire',        questions:6, difficulty:'hard'},
    {type:'minibss', emoji:'👁️‍🗨️',name:'Œil de l\'Empereur', questions:6, difficulty:'hard'},
-   {type:'boss',    emoji:'👹',  name:'Empereur Cosmique',   questions:8, difficulty:'hard', dropRare:true}
+   {type:'boss',    emoji:'🌌',  name:'Empereur Cosmique',   questions:8, difficulty:'hard', dropRare:true}
   ]},
 ];
 
@@ -379,6 +379,80 @@ const _BOSS_LINES = {
  matfr_final_3: "J'ai tissé cette salle autour d'une seule lettre... la plus grande de toutes.",
  matfr_final_4: "Je porte tous les mots sur ma carapace, marche après marche... patience, et ils seront à toi.",
  matfr_final_5: "Le Grand Livre du Conteur t'attend... refermé depuis trop longtemps. À toi de lui redonner ses mots.",
+ // v12.4.19 — Odyssée 3/7 : Maths Primaire (23 zones, identités déjà cohérentes).
+ plaine: "Ces plaines sont miennes depuis toujours... crois-tu vraiment pouvoir les traverser ?",
+ village: "Cocorico ! Dans mon village, c'est moi qui donne le signal du matin !",
+ prairie: "Toute ma ruche bourdonne à l'unisson... tiens-tu tête à mille abeilles ?",
+ bonbons: "Beaucoup parlent de courage. Peu en montrent face à moi.",
+ foret: "Cette forêt respire à mon rythme... et bientôt, la tienne aussi.",
+ champignons: "Lent ? Peut-être. Mais j'ai le temps pour toi... tout le temps du monde.",
+ trolls: "Qui ose troubler MA forêt ? Réponds vite, ou je te transforme en pierre !",
+ plage: "Cette plage m'appartient, pince par pince, grain de sable par grain de sable.",
+ desert: "Le désert ne pardonne pas... et moi non plus.",
+ plaines_venteuses: "J'arrive comme le tonnerre, et je repars rarement seul.",
+ temple: "Ce temple garde ses secrets depuis mille ans... et moi avec lui.",
+ profondeurs: "Dans mes profondeurs, même la lumière hésite à descendre.",
+ glace: "Un seul de mes pas fait trembler la glace... et ton courage avec.",
+ marais: "Coupe une de mes têtes... les autres se souviendront de toi.",
+ forteresse: "Cette forteresse n'est jamais tombée. Ce ne sera pas aujourd'hui non plus.",
+ sakura: "Tu ne me verras pas venir... mais tu sentiras que je suis déjà là.",
+ nocturne: "Dans mon royaume, même ton ombre finit par m'appartenir.",
+ volcan: "Approche, et laisse mes flammes juger de ta valeur.",
+ espace: "Dans l'infini de cette galaxie, ta petite existence m'intrigue.",
+ cimes: "Du sommet de mes cimes, je n'ai jamais vu personne redescendre vainqueur.",
+ mecanique: "Systèmes en ligne. Menace détectée. Destruction... imminente.",
+ ile: "Mon navire a coulé mille fois... et mille fois, j'ai survécu à mes adversaires.",
+ sanctuaire: "Tu as traversé sept royaumes pour arriver ici... voyons si tu mérites d'aller plus loin.",
+ // v12.4.19 — Odyssée 4/7 : Français Primaire (23 zones, nouvelles identités
+ // "Verbopolis" — voir _PRIMFR_BOSS_OVERRIDES, 07-story.js).
+ primfr_plaine: "Chaque mot que tu prononces ici résonne... et revient parfois transformé.",
+ primfr_village: "Dring ! J'annonce chaque lettre qui entre dans Verbopolis... et je n'annoncerai pas ta victoire facilement.",
+ primfr_prairie: "A, E, I, O, U... laquelle préfères-tu ? Moi, je les adore toutes, et je ne les lâche pas facilement.",
+ primfr_bonbons: "Une syllabe par-ci, une syllabe par-là... mes syllabes ne se vendent pas si facilement.",
+ primfr_foret: "J'ai lu tous les livres de cette rue... aucun ne parle de ta victoire.",
+ primfr_champignons: "Je connais mille histoires... laisse-moi voir si la tienne mérite d'être racontée.",
+ primfr_trolls: "Dans mon impasse, les syllabes se perdent... et les aventuriers aussi.",
+ primfr_plage: "Sur ces quais, chaque mot est une marchandise précieuse... et je garde les miens.",
+ primfr_desert: "Mes mots sont rares et précieux... prouve-moi que tu mérites d'en emporter un.",
+ primfr_plaines_venteuses: "Dans mon jardin, chaque mot a un frère caché... sauras-tu tous les trouver ?",
+ primfr_temple: "Cette bibliothèque garde ses secrets depuis mille ans... et moi, je veille sur chacun d'eux.",
+ primfr_profondeurs: "Dans ces souterrains, le sens de chaque mot se cache... j'ai la seule lampe qui l'éclaire.",
+ primfr_glace: "Tic. Tac. Chaque seconde qui passe ici est gelée... comme le temps que tu vas perdre face à moi.",
+ primfr_marais: "Présent, passé, futur... tous les trains partent d'ici. Lequel prendras-tu ?",
+ primfr_forteresse: "Dans ma tour, chaque verbe se conjugue à ma façon... pas à la tienne.",
+ primfr_sakura: "Chaque coup de cloche marque un temps différent... écoute bien, ou tu seras perdu.",
+ primfr_nocturne: "De mon observatoire, je vois tous les temps à la fois... passé, présent, et ce qui t'attend.",
+ primfr_volcan: "Chaque mot que j'imprime devient loi... le tien devra attendre son tour.",
+ primfr_espace: "Un mot mal placé, et c'est la chute... regarde-moi jongler avec la syntaxe.",
+ primfr_cimes: "Pour traverser mon pont, chaque mot doit trouver sa juste place dans la phrase.",
+ primfr_mecanique: "Une phrase mal réglée, ça ne tourne pas rond... laisse-moi vérifier la tienne.",
+ primfr_ile: "Cette citadelle est la plus solide de Verbopolis... aucune phrase bancale n'y entre.",
+ primfr_sanctuaire: "Toutes les langues se sont mélangées ici, à cause de moi... sauras-tu remettre de l'ordre ?",
+ // v12.4.19 — Odyssée 5/7 : Histoire Primaire (23 zones, nouvelles identités
+ // "périodes historiques" — voir _PRIMHIST_BOSS_OVERRIDES, 07-story.js).
+ primhist_plaine: "Ce feu ne s'éteint jamais... celui qui le garde non plus.",
+ primhist_village: "Ma tribu a survécu mille hivers... grâce à des épreuves comme celle-ci.",
+ primhist_prairie: "Je foule cette plaine depuis des générations... rien ne m'a jamais fait reculer.",
+ primhist_bonbons: "Chaque trait que je peins raconte une histoire... la tienne mérite-t-elle d'y figurer ?",
+ primhist_foret: "Le Nil m'a vu naître, et j'en garde chaque rive avec la même patience.",
+ primhist_champignons: "Ces pyramides dureront mille ans... ta mémoire, elle, ne durera peut-être pas si longtemps.",
+ primhist_trolls: "Mon repos a été troublé... et ma vengeance sera à la mesure de mon sommeil.",
+ primhist_plage: "Mes navires ont conquis mille rivages... le tien ne sera pas différent.",
+ primhist_desert: "J'ai marché sur toutes les routes de Rome... celle-ci ne fera pas exception.",
+ primhist_plaines_venteuses: "Mes mots ont convaincu des sénats entiers... les tiens devront être bien meilleurs.",
+ primhist_temple: "L'arène ne m'a jamais vu perdre... le public attend un vrai combat.",
+ primhist_profondeurs: "Ces eaux ont vu passer des empereurs... voyons ce que tu vaux, toi.",
+ primhist_glace: "Mon armure a résisté à mille hivers... et à bien des défis comme celui-ci.",
+ primhist_marais: "Mon marais garde tous les secrets du fief... et n'en laisse échapper aucun facilement.",
+ primhist_forteresse: "Mon château tient encore debout... et il tiendra face à toi aussi.",
+ primhist_sakura: "Je fais rire toute la cour... voyons si je peux aussi te faire perdre.",
+ primhist_nocturne: "Je veille chaque nuit sur ce château... rien ne m'échappe, pas même toi.",
+ primhist_volcan: "Chaque coup de marteau forge un monde nouveau... es-tu prêt à en faire partie ?",
+ primhist_espace: "Mon ballon a survolé Paris entière... rien ne m'effraie plus, pas même toi.",
+ primhist_cimes: "Chaque rouage que j'invente change l'avenir... le tien est entre mes mains.",
+ primhist_mecanique: "Mon train n'a jamais eu de retard... et il n'attendra pas non plus pour toi.",
+ primhist_ile: "J'ai mille idées par seconde... laisse-moi voir si tu peux suivre le rythme.",
+ primhist_sanctuaire: "Le temps a passé sur cet atelier... mais son écho, lui, n'a jamais cessé de résonner.",
 };
 
 const MAT_ZONES = [
