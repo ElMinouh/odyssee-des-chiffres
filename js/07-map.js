@@ -574,11 +574,13 @@ function startMapStep(zoneId, stepIdx){
    }).length - 1;
    const tpl = _pickDialogue(kind, zoneId, withinKindIdx);
    const base = tpl.replace(/\$\{zone\}/g, zone.label).replace(/\$\{name\}/g, step.name || 'l\'Inconnu');
-   if(!isBoss) return base;
-   // v12.1.3 (Lot A, pt.3/pt.9) : boss uniquement — enjeu narratif + callback de performance
-   const stakes = _pickDialogue('stakes', zoneId, 0).replace(/\$\{zone\}/g, zone.label).replace(/\$\{name\}/g, step.name || 'l\'Inconnu');
-   const perf = (typeof _perfCallbackLine==='function') ? _perfCallbackLine() : '';
-   return base + ' ' + stakes + perf;
+   // v12.4.14 : pour un boss, une 2e réplique ("enjeu narratif", v12.1.3) était
+   // systématiquement accolée à la 1ère, +parfois une 3e (callback de perf) —
+   // trop lourd et parfois redondant/contradictoire avec la 1ère. On ne garde
+   // que la réplique d'intro du boss lui-même, qui suffit à l'immersion.
+   // Les pools 'stakes' et _perfCallbackLine() restent dans le code (non
+   // appelés ici) si une réutilisation ailleurs est souhaitée un jour.
+   return base;
   })(),
   anim: 'glow',
   col:  isBoss ? '#e74c3c' : (isMiniBoss ? '#e67e22' : '#3498db')
