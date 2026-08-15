@@ -1154,7 +1154,43 @@ const _COLFR_ZONE_LABELS = {
  // Antre du Chancelier
  col_titan_1:'Le Palais de Cendre', col_titan_2:'La Galerie des Mots Morts', col_titan_3:'Le Trône du Chancelier',
 };
-const COL_ZONES_FR = (typeof COL_ZONES!=='undefined' ? COL_ZONES : []).map(z => Object.assign({}, z, { id:'colfr_'+z.id, label: _COLFR_ZONE_LABELS[z.id] || z.label }));
+// v12.4.20 (points hors-lot — cohérence boss/histoire) : bossName/boss
+// hérités de COL_ZONES (donjon fantastique : pirates, dragons, robots...)
+// n'avaient aucun rapport avec l'univers littéraire/dystopique de cette
+// Odyssée (6 "Livres" retraçant l'histoire du français, puis soulèvement
+// contre le "Chancelier" de Monotonia). Chaque boss est désormais cohérent
+// avec SON livre et SON lieu.
+const _COLFR_BOSS_OVERRIDES = {
+ col_cp_1:{bossName:'Passeur des Langues',boss:'🛶'}, col_cp_2:{bossName:'Centurion Oublié',boss:'🏺'},
+ col_cp_3:{bossName:'Druide Sylvestre',boss:'🌳'}, col_cp_4:{bossName:'Moine Copiste',boss:'🖋️'},
+ col_cp_5:{bossName:'Gardienne de la Source',boss:'💧'},
+ col_ce1_1:{bossName:'Écho aux Mille Voix',boss:'🔮'}, col_ce1_2:{bossName:'Jardinier des Racines',boss:'🌱'},
+ col_ce1_3:{bossName:'Marchande de Synonymes',boss:'🏪'}, col_ce1_4:{bossName:'Conservateur des Registres',boss:'🖼️'},
+ col_ce1_5:{bossName:'Gardien du Prisme',boss:'💎'},
+ col_ce2_1:{bossName:'Sophiste de l\u2019Agora',boss:'🎙️'}, col_ce2_2:{bossName:'Tribun Éloquent',boss:'📢'},
+ col_ce2_3:{bossName:'Rhéteur Masqué',boss:'🎭'}, col_ce2_4:{bossName:'Consul du Débat',boss:'🏛️'},
+ col_ce2_5:{bossName:'L\u2019Ombre de Cicéron',boss:'🔥'},
+ col_cm1_1:{bossName:'Horloger du Verbe',boss:'⚙️'}, col_cm1_2:{bossName:'Maître des Engrenages',boss:'🔧'},
+ col_cm1_3:{bossName:'Chronographe Vivant',boss:'⏱️'}, col_cm1_4:{bossName:'Architecte des Subordonnées',boss:'🌉'},
+ col_cm1_5:{bossName:'Le Cœur Mécanique',boss:'🤖'},
+ col_cm2_1:{bossName:'Metteur en Scène du Monde',boss:'🎬'}, col_cm2_2:{bossName:'Marionnettiste des Masques',boss:'🪆'},
+ col_cm2_3:{bossName:'Ventriloque Fantôme',boss:'👤'}, col_cm2_4:{bossName:'Reflet Trompeur',boss:'🪞'},
+ col_cm2_5:{bossName:'L\u2019Étoile Polymorphe',boss:'⭐'},
+ col_final_1:{bossName:'Sentinelle Grise',boss:'🌫️'}, col_final_2:{bossName:'Gardien du Silence',boss:'🤫'},
+ col_final_3:{bossName:'Surveillant de Monotonia',boss:'👁️'}, col_final_4:{bossName:'Ministre de la Grande Tribune',boss:'📯'},
+ col_final_5:{bossName:'Le Dernier Censeur',boss:'⚖️'},
+ col_titan_1:{bossName:'Garde du Palais',boss:'🏚️'}, col_titan_2:{bossName:'Archiviste des Mots Morts',boss:'📕'},
+ col_titan_3:{bossName:'Le Chancelier',boss:'👑'},
+};
+const COL_ZONES_FR = (typeof COL_ZONES!=='undefined' ? COL_ZONES : []).map(z => {
+ const ov = _COLFR_BOSS_OVERRIDES[z.id] || {};
+ // v12.4.20 : même correctif que les Odyssées précédentes — le nom/emoji
+ // réellement affiché en combat vient de steps[], pas seulement de bossName/boss.
+ const steps = Array.isArray(z.steps) ? z.steps.map(s =>
+  (s.type === 'boss' && ov.bossName) ? Object.assign({}, s, { emoji: ov.boss, name: ov.bossName }) : s
+ ) : z.steps;
+ return Object.assign({}, z, { id:'colfr_'+z.id, label: _COLFR_ZONE_LABELS[z.id] || z.label, steps }, ov);
+});
 const _COL_REGIONS_FR = [
  { id:'cp',    label:'Livre I — Le Français des Origines', levels:['6E'],     shape:'colline' },
  { id:'ce1',   label:'Livre II — Le Trésor des Mots',      levels:['5E'],     shape:'feuille' },
