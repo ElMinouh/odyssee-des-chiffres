@@ -573,7 +573,7 @@ function nextTurn(){
  if(!(GM.mapZone && GM.mapStep && !GS.isBoss)){
   _currentMonster=pickMonster(GM.level,GS.isBoss);
  }
- if(GS.isBoss){
+ if(GS.isBoss && !(GM.mapZone && GM.mapStep)){
   // Boss: full cinematic intro
   const mapBoss=GM.mapZone;
   // Chantier 2.2 : si un boss saisonnier ou anniversaire est actif aujourd'hui,
@@ -594,6 +594,13 @@ function nextTurn(){
     ? {emoji:mapBoss.boss,name:mapBoss.bossName,title:'Boss de la Carte',intro:`Bienvenue dans ${mapBoss.label}. Tu ne repartiras pas vivant.`,anim:'glow',col:'#e74c3c'}
     : _currentMonster);
   showMonsterIntro(bossM,renderQ);
+ }else if(GS.isBoss){
+  // v12.4.15 : boss d'étape de zone — startMapStep() a DÉJÀ affiché une intro
+  // personnalisée (ton standard/tendre selon le cycle, une seule réplique,
+  // voir v12.4.14) juste avant d'arriver ici. La réafficher avec le texte
+  // générique ci-dessus créait un doublon ("2 écrans à la suite" signalé par
+  // Cyril) — on va directement à la question.
+  renderQ();
  }else if((GS.qCount===1||(GM.mode2==='survie'&&GS.qCount%4===1)) && !(GM.mapZone && GM.mapStep)){
   // v8.7.9 (O1) : ne PAS rejouer l'intro en étape de zone : on l'a déjà
   // jouée dans startMapStep avec le bon monstre. Sinon un 2e monstre
