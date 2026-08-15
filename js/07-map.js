@@ -2010,6 +2010,52 @@ function openArchipelZoom(zoneId){
   const x = (xPct / 100) * containerW;
   stepPositions.push({x, y, xPct});
  }
+ // v12.4.24 (audit Esthétique/Ergonomie/Narratif, Lot 3, #B1/#B2) : passe de
+ // résolution de collision. L'algorithme ci-dessus (bruit pseudo-aléatoire)
+ // ne garantissait aucune distance minimale entre deux pastilles voisines —
+ // confirmé sur 35/86 zones réelles (41%) à 480px, 50/86 (58%) à largeur
+ // mobile étroite (330px) : cf. maquette de validation (Lot 3). On calcule
+ // la distance dans un espace X "conservateur" (340px, un mobile étroit
+ // réaliste) plutôt que sur les 480px virtuels du canevas, pour que la
+ // sécurité tienne même si le rendu réel est plus étroit — corrige B1 et B2
+ // avec une seule mécanique. Le "chaos" artistique du pattern d'origine
+ // (zigzag/vague/drift/chaotique) reste le point de départ ; seules les
+ // paires trop proches sont légèrement écartées, itérativement.
+ const _CONSERVATIVE_W = 340;
+ const _MIN_STEP_DIST = 88;
+ for(let iter=0; iter<60; iter++){
+  let moved = false;
+  for(let i=0;i<stepPositions.length;i++){
+   for(let j=i+1;j<stepPositions.length;j++){
+    const pi = stepPositions[i], pj = stepPositions[j];
+    const xi = (pi.xPct/100) * _CONSERVATIVE_W, xj = (pj.xPct/100) * _CONSERVATIVE_W;
+    let dx = xj - xi, dy = pj.y - pi.y;
+    let d = Math.hypot(dx, dy);
+    if(d < _MIN_STEP_DIST){
+     moved = true;
+     if(d < 0.01){
+      // Coïncidence quasi exacte (rare) : écart déterministe pour sortir du blocage.
+      dx = (((i*37+j*11)%7)-3) || 1; dy = (((i*23+j*13)%7)-3) || 1;
+      d = Math.hypot(dx, dy);
+     }
+     const nx = dx/d, ny = dy/d;
+     const push = (_MIN_STEP_DIST - d) / 2;
+     pi.xPct -= (nx*push/_CONSERVATIVE_W) * 100;
+     pj.xPct += (nx*push/_CONSERVATIVE_W) * 100;
+     pi.y -= ny*push;
+     pj.y += ny*push;
+    }
+   }
+  }
+  for(const p of stepPositions){
+   p.xPct = Math.max(xMarginPct, Math.min(100 - xMarginPct, p.xPct));
+   p.y = Math.max(yMargin, Math.min(containerH - yMargin, p.y));
+  }
+  if(!moved) break;
+ }
+ // Recalcule x (espace pixel 480, utilisé pour tracer le sentier ci-dessous)
+ // à partir des xPct définitifs, après résolution de collision.
+ stepPositions.forEach(p => { p.x = (p.xPct / 100) * containerW; });
  // Sentier rouge SINUEUX entre les étapes (courbes de Bézier excentrées)
  let stepPathD = '';
  if(stepPositions.length > 0){
