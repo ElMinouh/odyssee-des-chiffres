@@ -308,9 +308,36 @@ const _MATFR_ZONE_LABELS = {
  // Le Château des Lettres (lettres)
  'matfr_final_1':'Le Pont des Lettres','matfr_final_2':"La Tour de l'Alphabet",'matfr_final_3':'La Salle du Grand A','matfr_final_4':"L'Escalier des Mots",'matfr_final_5':'Le Donjon du Conteur',
 };
+// v12.4.17 (points hors-lot — cohérence des boss avec l'histoire suivie) :
+// bossName/boss étaient hérités tels quels de MAT_ZONES (maths), sans rapport
+// avec le thème réel de chaque lieu ici ("Les Animaux Muets" retrouvent voix
+// et mots). Ex. matfr_cp_2 "Le Terrier du Lapin" héritait de "Maman Poule".
+// Chaque boss est désormais un animal cohérent avec SON lieu et l'histoire de
+// Plume (voir _MAT_STORY_FR.intro plus haut).
+const _MATFR_BOSS_OVERRIDES = {
+ matfr_cp_1:{bossName:'Faon Silencieux',boss:'🦌'}, matfr_cp_2:{bossName:'Lapin Chuchoteur',boss:'🐰'},
+ matfr_cp_3:{bossName:'Caneton Muet',boss:'🦆'}, matfr_cp_4:{bossName:'Blaireau Discret',boss:'🦡'},
+ matfr_cp_5:{bossName:'Hibou Silencieux',boss:'🦉'},
+ matfr_ce1_1:{bossName:'Souris Curieuse',boss:'🐭'}, matfr_ce1_2:{bossName:'Écureuil Farceur',boss:'🐿️'},
+ matfr_ce1_3:{bossName:'Coccinelle Savante',boss:'🐞'}, matfr_ce1_4:{bossName:'Pie Collectionneuse',boss:'🦜'},
+ matfr_ce1_5:{bossName:'Renard Chercheur',boss:'🦊'},
+ matfr_ce2_1:{bossName:'Chèvre Montagnarde',boss:'🐐'}, matfr_ce2_2:{bossName:'Grenouille Chanteuse',boss:'🐸'},
+ matfr_ce2_3:{bossName:'Aigle Royal',boss:'🦅'}, matfr_ce2_4:{bossName:'Ours Tambour',boss:'🐻'},
+ matfr_ce2_5:{bossName:'Colombe Mélodieuse',boss:'🕊️'},
+ matfr_cm1_1:{bossName:'Cygne Poète',boss:'🦢'}, matfr_cm1_2:{bossName:'Loutre Miroir',boss:'🦦'},
+ matfr_cm1_3:{bossName:'Poisson Musicien',boss:'🐠'}, matfr_cm1_4:{bossName:'Dauphin Espiègle',boss:'🐬'},
+ matfr_cm1_5:{bossName:'Carpe Dorée',boss:'🐟'},
+ matfr_cm2_1:{bossName:'Chauve-souris Chuchoteuse',boss:'🦇'}, matfr_cm2_2:{bossName:'Salamandre Discrète',boss:'🦎'},
+ matfr_cm2_3:{bossName:'Grillon Musicien',boss:'🦗'}, matfr_cm2_4:{bossName:'Scarabée Bleu',boss:'🪲'},
+ matfr_cm2_5:{bossName:'Corbeau Mystérieux',boss:'🐦\u200d⬛'},
+ matfr_final_1:{bossName:'Fée des Lettres',boss:'🧚'}, matfr_final_2:{bossName:'Lion des Lettres',boss:'🦁'},
+ matfr_final_3:{bossName:'Tisseuse de Lettres',boss:'🕷️'}, matfr_final_4:{bossName:'Tortue des Mots',boss:'🐢'},
+ matfr_final_5:{bossName:'Gardien du Grand Livre',boss:'📖'},
+};
 const MAT_ZONES_FR = (typeof MAT_ZONES!=='undefined' ? MAT_ZONES : []).map(z => {
  const id = String(z.id).replace('mat_','matfr_');
- return Object.assign({}, z, { id, label: _MATFR_ZONE_LABELS[id] || z.label });
+ const ov = _MATFR_BOSS_OVERRIDES[id] || {};
+ return Object.assign({}, z, { id, label: _MATFR_ZONE_LABELS[id] || z.label }, ov);
 });
 const _MAT_REGIONS_FR = [
  { id:'cp',    label:'La Forêt des Animaux Muets', levels:['PS'], shape:'colline' },
