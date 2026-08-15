@@ -4327,6 +4327,22 @@ html[data-cycle="college"] .nav-icon-college{ display:inline-block; }
 .story-overlay.story-out{ animation:storyFadeOut .3s ease-in forwards; }
 @keyframes storyFadeIn{ from{opacity:0;} to{opacity:1;} }
 @keyframes storyFadeOut{ from{opacity:1;} to{opacity:0;} }
+/* v12.4.12 (points hors-lot — pont visuel carte/parchemin) : le parchemin
+   apparaissait à plat (le fondu du fond suffisait à le rendre visible, mais
+   rien ne "l'amenait" à l'écran). Un léger zoom+fondu adoucit le saut entre le
+   chrome sombre de la carte et l'univers parchemin, sans dépendre d'un point
+   de clic (beaucoup d'appels à _showStoryModal ne viennent pas d'un clic
+   précis — victoire de boss, épilogue...). */
+.story-parchment{
+ animation: storyParchmentIn .35s cubic-bezier(.2,.9,.3,1.1);
+}
+.story-overlay.story-out .story-parchment{ animation: storyParchmentOut .3s ease-in forwards; }
+@keyframes storyParchmentIn{ from{ transform:scale(.92); opacity:0; } to{ transform:scale(1); opacity:1; } }
+@keyframes storyParchmentOut{ from{ transform:scale(1); opacity:1; } to{ transform:scale(.94); opacity:0; } }
+@media (prefers-reduced-motion:reduce){
+ .story-parchment,
+ .story-overlay.story-out .story-parchment{ animation:none !important; }
+}
 .story-parchment{
  position:relative;
  width:100%; max-width:480px;

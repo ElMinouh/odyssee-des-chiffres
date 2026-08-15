@@ -1263,18 +1263,27 @@ function _renderIslandSvg(regionId, shape, zonePositions, totalH, W, fogged){
  const h = maxY - minY;
  // Génère un blob organique selon la forme
  const blobPath = _generateBlobPath(shape, cx, cy, w, h);
- // Couleurs et textures selon la région
- // v12.4.x (Audit DA — Lot 3, texture combinée) : motifs vectoriels réutilisables
- // ajoutés en complément (jamais en remplacement) des emojis déco déjà en place.
+ // v12.4.12 (audit DA, points hors-lot — écart figurines/îlots) : les îlots
+ // suivaient jusqu'ici la seule regionId (cp/ce1/ce2/cm1/cm2/final), partagée
+ // par construction entre les 7 Odyssées depuis la v10.1.0 — ce qui donnait une
+ // couleur/des motifs de prairie à "Le Port des Décimales" (collège, thème
+ // narratif réel : océan). On lit désormais le thème RÉEL de la zone jouée
+ // (z.theme, déjà présent dans les données, utilisé pour l'écran de zone) —
+ // toutes les zones d'une même région+Odyssée partagent le même thème, donc un
+ // seul lookup sur la première zone suffit.
+ const theme = (zonePositions[0] && zonePositions[0].zone && zonePositions[0].zone.theme) || 'standard';
  const styles = {
-  cp:    { fill:'url(#archGradCP)',    stroke:'#2c5a1c', deco:['🌾','🌻','🦋','🐝'], motifs:['tuft','pebble'],   motifColor:'#2c5a1c' },
-  ce1:   { fill:'url(#archGradCE1)',   stroke:'#0a2418', deco:['🌳','🍄','🌿','🐌'], motifs:['tuft','pebble'],   motifColor:'#0a2418' },
-  ce2:   { fill:'url(#archGradCE2)',   stroke:'#5e3208', deco:['🌵','🏺','🦅','💨'], motifs:['ripple','pebble'],motifColor:'#5e3208' },
-  cm1:   { fill:'url(#archGradCM1)',   stroke:'#1a3a5a', deco:['❄️','🏰','🗡️','💎'], motifs:['crystal','pebble'],motifColor:'#1a3a5a' },
-  cm2:   { fill:'url(#archGradCM2)',   stroke:'#1a0530', deco:['✨','🌟','🪐','👽'], motifs:['spark','pebble'], motifColor:'#e6d2f7' },
-  final: { fill:'url(#archGradFinal)', stroke:'#8b6914', deco:['⛩️','🌟','✨','💫'], motifs:['spark','gem'],    motifColor:'#fff6d5' },
+  standard: { fill:'url(#archGradStandard)', stroke:'#1a5c33', deco:['🌾','🌻','🦋','🐝'], motifs:['tree','bush'],  motifColor:'#1a5c33' },
+  foret:    { fill:'url(#archGradForet)',    stroke:'#0a3d1f', deco:['🌲','🍄','🐉','🍃'], motifs:['tree','bush'],  motifColor:'#0a3d1f' },
+  volcan:   { fill:'url(#archGradVolcan)',   stroke:'#5a1f0a', deco:['🌋','🔥','🦂','⚫'], motifs:['crystal','ripple'],motifColor:'#5a1f0a' },
+  ocean:    { fill:'url(#archGradOcean)',    stroke:'#8a5a1f', deco:['🐚','⛵','🦀','🌊'], motifs:['ripple','pebble'],motifColor:'#8a5a1f' },
+  banquise: { fill:'url(#archGradBanquise)', stroke:'#1a4d73', deco:['❄️','🏔️','🐧','💎'], motifs:['crystal','pebble'],motifColor:'#1a4d73' },
+  chateau:  { fill:'url(#archGradChateau)',  stroke:'#5c4713', deco:['🏛️','⚔️','🗿','👑'], motifs:['rock','pebble'], motifColor:'#5c4713' },
+  sakura:   { fill:'url(#archGradSakura)',   stroke:'#a34d73', deco:['🌸','🍭','🦋','🍡'], motifs:['tree','bush'],  motifColor:'#a34d73' },
+  nuit:     { fill:'url(#archGradNuit)',     stroke:'#050508', deco:['🌙','⭐','🦇','✨'], motifs:['spark','pebble'], motifColor:'#8a8ac0' },
+  espace:   { fill:'url(#archGradEspace)',   stroke:'#1a0530', deco:['✨','🌟','🪐','👽'], motifs:['spark','pebble'], motifColor:'#e6d2f7' },
  };
- const st = styles[regionId] || styles.cp;
+ const st = styles[theme] || styles.standard;
  // Ajout de quelques décorations thématiques posées sur l'îlot
  const decoElements = [];
  const decoCount = Math.min(6, st.deco.length * 2);
@@ -1300,7 +1309,7 @@ function _renderIslandSvg(regionId, shape, zonePositions, totalH, W, fogged){
  }
  // Cerne d'ombre légère sous le blob (effet de volume) — même forme, agrandie de 6%.
  const rimPath = _generateBlobPath(shape, cx, cy, w * 1.06, h * 1.06);
- return `<g class="archipel-island-svg${fogged?' fogged':''}" data-region="${regionId}">`
+ return `<g class="archipel-island-svg${fogged?' fogged':''}" data-region="${regionId}" data-theme="${theme}">`
   + `<path d="${rimPath}" fill="${st.stroke}" opacity="0.16"/>`
   + `<path d="${blobPath}" fill="${st.fill}" stroke="${st.stroke}" stroke-width="1.5" stroke-opacity="0.45" opacity="0.93"/>`
   + `${motifElements.join('')}`
@@ -1322,6 +1331,15 @@ function _islandMotifSvg(kind, x, y, color){
    return `<path d="M ${X},${(y-6).toFixed(1)} L ${(x+1.5).toFixed(1)},${(y-1.5).toFixed(1)} L ${(x+6).toFixed(1)},${Y} L ${(x+1.5).toFixed(1)},${(y+1.5).toFixed(1)} L ${X},${(y+6).toFixed(1)} L ${(x-1.5).toFixed(1)},${(y+1.5).toFixed(1)} L ${(x-6).toFixed(1)},${Y} L ${(x-1.5).toFixed(1)},${(y-1.5).toFixed(1)} Z" fill="${color}" opacity="0.55"/>`;
   case 'gem':
    return `<path d="M ${X},${(y-7).toFixed(1)} L ${(x+5).toFixed(1)},${(y-1).toFixed(1)} L ${X},${(y+7).toFixed(1)} L ${(x-5).toFixed(1)},${(y-1).toFixed(1)} Z" fill="${color}" opacity="0.55"/>`;
+  case 'tree':
+   // v12.4.12 (points hors-lot) : motif dessiné (validé sur maquette), pas un
+   // simple polygone géométrique — tronc fixe + feuillage dans la couleur du
+   // thème (vert en forêt/prairie, rosé en sakura...).
+   return `<g opacity="0.6"><rect x="${(x-1.5).toFixed(1)}" y="${(y+3).toFixed(1)}" width="3" height="7" fill="#6b4423"/><circle cx="${X}" cy="${(y-3).toFixed(1)}" r="6.5" fill="${color}"/><circle cx="${(x-3.5).toFixed(1)}" cy="${(y-1).toFixed(1)}" r="4.5" fill="${color}"/></g>`;
+  case 'bush':
+   return `<g fill="${color}" opacity="0.5"><circle cx="${(x-3).toFixed(1)}" cy="${Y}" r="3.6"/><circle cx="${(x+2).toFixed(1)}" cy="${(y-1.5).toFixed(1)}" r="4.2"/><circle cx="${(x+4.5).toFixed(1)}" cy="${(y+1).toFixed(1)}" r="3"/></g>`;
+  case 'rock':
+   return `<path d="M ${(x-6).toFixed(1)},${(y+3).toFixed(1)} L ${(x-4).toFixed(1)},${(y-3).toFixed(1)} L ${(x+2).toFixed(1)},${(y-4.5).toFixed(1)} L ${(x+7).toFixed(1)},${(y-1).toFixed(1)} L ${(x+5).toFixed(1)},${(y+4).toFixed(1)} L ${(x-2).toFixed(1)},${(y+5).toFixed(1)} Z" fill="${color}" opacity="0.5"/>`;
   case 'pebble':
   default:
    return `<circle cx="${X}" cy="${Y}" r="3" fill="${color}" opacity="0.45"/>`;
@@ -1780,12 +1798,15 @@ function renderMap(){
   <div class="archipel-stars"></div>
   <svg class="archipel-path-svg" viewBox="0 0 ${W} ${totalHeight}" preserveAspectRatio="none" style="height:${totalHeight}px;">
    <defs>
-    <radialGradient id="archGradCP" cx="0.5" cy="0.5"><stop offset="0%" stop-color="#c8f5c0"/><stop offset="55%" stop-color="#8fd873"/><stop offset="100%" stop-color="#3f8a3f"/></radialGradient>
-    <radialGradient id="archGradCE1" cx="0.5" cy="0.5"><stop offset="0%" stop-color="#5cae7c"/><stop offset="55%" stop-color="#3a8c5a"/><stop offset="100%" stop-color="#123d24"/></radialGradient>
-    <radialGradient id="archGradCE2" cx="0.5" cy="0.5"><stop offset="0%" stop-color="#ffe0a3"/><stop offset="55%" stop-color="#f4c578"/><stop offset="100%" stop-color="#a8620f"/></radialGradient>
-    <radialGradient id="archGradCM1" cx="0.5" cy="0.5"><stop offset="0%" stop-color="#f2f8fb"/><stop offset="55%" stop-color="#a9d3f5"/><stop offset="100%" stop-color="#4f8fd1"/></radialGradient>
-    <radialGradient id="archGradCM2" cx="0.5" cy="0.5"><stop offset="0%" stop-color="#d4a8ec"/><stop offset="55%" stop-color="#9b59b6"/><stop offset="100%" stop-color="#2a0736"/></radialGradient>
-    <radialGradient id="archGradFinal" cx="0.5" cy="0.5"><stop offset="0%" stop-color="#ffe985"/><stop offset="55%" stop-color="#f1c40f"/><stop offset="100%" stop-color="#6b4d0e"/></radialGradient>
+    <radialGradient id="archGradStandard" cx="0.5" cy="0.5"><stop offset="0%" stop-color="#a8e8b0"/><stop offset="55%" stop-color="#2ecc71"/><stop offset="100%" stop-color="#1a6b3a"/></radialGradient>
+    <radialGradient id="archGradForet" cx="0.5" cy="0.5"><stop offset="0%" stop-color="#5fd085"/><stop offset="55%" stop-color="#2ecc71"/><stop offset="100%" stop-color="#0f3d20"/></radialGradient>
+    <radialGradient id="archGradVolcan" cx="0.5" cy="0.5"><stop offset="0%" stop-color="#ffb366"/><stop offset="55%" stop-color="#e67e22"/><stop offset="100%" stop-color="#7a2010"/></radialGradient>
+    <radialGradient id="archGradOcean" cx="0.5" cy="0.5"><stop offset="0%" stop-color="#fffaf0"/><stop offset="55%" stop-color="#fcbf49"/><stop offset="100%" stop-color="#a87820"/></radialGradient>
+    <radialGradient id="archGradBanquise" cx="0.5" cy="0.5"><stop offset="0%" stop-color="#d6f0ff"/><stop offset="55%" stop-color="#74b9ff"/><stop offset="100%" stop-color="#155a8a"/></radialGradient>
+    <radialGradient id="archGradChateau" cx="0.5" cy="0.5"><stop offset="0%" stop-color="#f0dfa0"/><stop offset="55%" stop-color="#d4af37"/><stop offset="100%" stop-color="#5c4713"/></radialGradient>
+    <radialGradient id="archGradSakura" cx="0.5" cy="0.5"><stop offset="0%" stop-color="#ffe8f2"/><stop offset="55%" stop-color="#ffb3d9"/><stop offset="100%" stop-color="#c9628f"/></radialGradient>
+    <radialGradient id="archGradNuit" cx="0.5" cy="0.5"><stop offset="0%" stop-color="#3d4a63"/><stop offset="55%" stop-color="#1b2735"/><stop offset="100%" stop-color="#050508"/></radialGradient>
+    <radialGradient id="archGradEspace" cx="0.5" cy="0.5"><stop offset="0%" stop-color="#4a3a5c"/><stop offset="55%" stop-color="#6b3f8a"/><stop offset="100%" stop-color="#1a0530"/></radialGradient>
    </defs>
    ${islandsSvg}
    <path d="${pathD}" stroke="#f1c40f" stroke-width="3" fill="none" stroke-dasharray="6,4" opacity="0.78" stroke-linecap="round"/>
