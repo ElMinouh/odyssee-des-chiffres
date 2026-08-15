@@ -1659,12 +1659,16 @@ function renderMap(){
     badgeHtml = `<div class="archipel-zone-progress">${zp.stepsCompleted}/${total}</div>`;
    }
   }
-  const checkHtml = done ? `<div class="archipel-zone-check">✓</div>` : '';
+  const checkHtml = done ? `<div class="archipel-zone-check"><svg viewBox="0 0 40 40" aria-hidden="true"><use href="#icon-zone-check"/></svg></div>` : '';
   // v8.7.39 (O3-B.5) : Trophée du boss vaincu sur la zone complétée.
   // Médaillon doré qui montre l'emoji du boss avec un anneau pulsant subtil.
   // Marqueur de fierté permanent sur la carte mondiale.
   const trophyHtml = done ? `<div class="archipel-zone-trophy" title="Boss vaincu : ${z.bossName||'Inconnu'}">${z.boss||'🏆'}</div>` : '';
-  const lockHtml = (!canPlay && !done) ? `<div class="archipel-zone-lock">🔒</div>` : '';
+  const lockHtml = (!canPlay && !done) ? `<div class="archipel-zone-lock"><svg viewBox="0 0 40 40" aria-hidden="true"><use href="#icon-zone-lock"/></svg></div>` : '';
+  // v12.4.11 (audit DA, Lot 6 #6/#24) : étoile "zone actuelle" — remplace le
+  // pseudo-élément CSS ::after (content:'★', glyphe de police) par une vraie
+  // icône SVG cohérente avec check/lock.
+  const starHtml = (canPlay && !done) ? `<div class="archipel-zone-star"><svg viewBox="0 0 40 40" aria-hidden="true"><use href="#icon-zone-star"/></svg></div>` : '';
   const reqHtml = ''; // progression linéaire : plus de seuil d'étoiles affiché
   const interactive = (canPlay || done); // 'done' : zone conquise toujours re-jouable
   const onclick = interactive ? `onclick="requestZoneOpen('${z.id}')"` : '';
@@ -1677,7 +1681,7 @@ function renderMap(){
    : '';
   return `
    <div class="${cls}" style="left:${p.xPct.toFixed(1)}%;top:${p.y}px;" data-zone-id="${z.id}" ${onclick} ${a11y}>
-    <div class="archipel-zone-circle">${z.emoji}${checkHtml}${lockHtml}</div>
+    <div class="archipel-zone-circle">${z.emoji}${checkHtml}${lockHtml}${starHtml}</div>
     ${trophyHtml}
     <div class="archipel-zone-label">${z.label}</div>
     ${badgeHtml}${reqHtml}
