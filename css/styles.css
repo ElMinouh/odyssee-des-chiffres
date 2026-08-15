@@ -3350,6 +3350,30 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  90%  { opacity:.9; }
  100% { transform:translate(-10px,200px) rotate(360deg); opacity:0; }
 }
+/* v12.4.13 (PNJ/météo par thème réel) : "twinkle" et "rising" étaient déjà
+   utilisés par _WEATHER_BY_REGION (cm2, final) sans jamais avoir de CSS
+   correspondant — ces particules étaient donc statiques. Corrigé au passage. */
+/* TWINKLE — scintillement sur place (étoiles, poussière d'espace) */
+.wp-twinkle{
+ animation:wpTwinkle ease-in-out infinite;
+ opacity:0;
+}
+@keyframes wpTwinkle{
+ 0%,100% { opacity:0; transform:scale(.5); }
+ 50%     { opacity:.95; transform:scale(1.15); }
+}
+/* RISING — montée lente avec balancement (braises, étincelles) */
+.wp-rising{
+ animation:wpRising linear infinite;
+ opacity:0;
+}
+@keyframes wpRising{
+ 0%   { transform:translate(0,20px) scale(.7); opacity:0; }
+ 15%  { opacity:.9; }
+ 50%  { transform:translate(18px,-60px) scale(1); }
+ 85%  { opacity:.7; }
+ 100% { transform:translate(-10px,-140px) scale(.6); opacity:0; }
+}
 @media (prefers-reduced-motion:reduce){
  .weather-particle{ animation:none !important; opacity:.5; }
 }

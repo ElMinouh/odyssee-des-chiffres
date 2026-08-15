@@ -772,43 +772,69 @@ function _showBiomeBanner(regionId){
 // v8.7.41 (O3-C.2) : Météo locale par région.
 // Particules ambiantes animées sur les îlots DÉBLOQUÉS (les foggés ont déjà leurs
 // nuages). Animation très légère pour donner vie à chaque biome sans surcharger.
-const _WEATHER_BY_REGION = {
- cp:    { emojis:['🦋','🌸','🐝','🍀'],     count:5, anim:'drift'   },
- ce1:   { emojis:['🍃','🌿','🐚','🍂'],     count:6, anim:'falling' },
- ce2:   { emojis:['🌪️','💨','☀️'],          count:4, anim:'wind'    },
- cm1:   { emojis:['❄️','🌨️','💎'],          count:7, anim:'falling' },
- cm2:   { emojis:['⭐','✨','💫','🌟'],      count:8, anim:'twinkle' },
- final: { emojis:['✨','🌟','💛'],           count:6, anim:'rising'  },
+const _WEATHER_BY_THEME = {
+ standard: { emojis:['🦋','🌸','🐝','🍀'],     count:5, anim:'drift'   },
+ foret:    { emojis:['🍃','🌿','🍂','🦋'],     count:6, anim:'falling' },
+ volcan:   { emojis:['🔥','💨','⚫','✨'],     count:5, anim:'rising'  },
+ ocean:    { emojis:['🌊','🐚','☀️','🕊️'],     count:5, anim:'drift'   },
+ banquise: { emojis:['❄️','🌨️','💎'],          count:7, anim:'falling' },
+ chateau:  { emojis:['🕊️','✨','🍂','⚜️'],     count:5, anim:'falling' },
+ sakura:   { emojis:['🌸','🦋','🍬','🎀'],     count:6, anim:'falling' },
+ nuit:     { emojis:['🌙','⭐','🦇','✨'],     count:8, anim:'twinkle' },
+ espace:   { emojis:['💫','🪐','✨','🌠'],     count:8, anim:'twinkle' },
 };
 // v8.7.42 (O3-C.3) : PNJ et figurants sur les îlots débloqués.
 // 2 personnages secondaires par région qui donnent vie au monde, avec dialogue
 // d'accueil au clic. Position seedée stable, animation idle bobbing.
-const _NPCS_BY_REGION = {
- cp: [
+// v12.4.13 (points hors-lot — cohérence PNJ/thème réel) : passait par regionId
+// (cp/ce1/.../final), partagé par toutes les Odyssées — un mage+berger de
+// prairie apparaissait donc aussi sur "Le Port des Décimales" (collège, thème
+// océan). Reconstruit par thème réel (9 valeurs), comme les îlots. La région
+// "final" garde son propre jeu dédié (_NPCS_FINAL) : son dialogue porte un
+// poids narratif de fin de parcours qui ne doit pas dépendre du thème visuel
+// de l'Odyssée jouée.
+const _NPCS_BY_THEME = {
+ standard: [
   { emoji:'🧙‍♂️', name:'Maître Élio',   line:'Bienvenue, jeune aventurier ! Le courage sera ton allié.' },
   { emoji:'🐑',   name:'Berger Pâquerette', line:'Mes moutons sont presque aussi malins que toi !' },
  ],
- ce1: [
+ foret: [
   { emoji:'🧚',   name:'Fée Lumelle',   line:'Les forêts murmurent leurs secrets, écoute-les !' },
   { emoji:'🦌',   name:'Cerf Sylvain',  line:'Avance avec sagesse, brave héros. Chaque pas compte.' },
  ],
- ce2: [
+ volcan: [
   { emoji:'🧞',   name:'Génie Sablo',   line:'Trois vœux pour qui résout trois énigmes ! Mais d\'abord, prouve-toi.' },
-  { emoji:'🦅',   name:'Aigle Vent-Pur', line:'Mes ailes connaissent tous les secrets du désert.' },
+  { emoji:'🦂',   name:'Scorpios le Sage', line:'Le feu forge les plus grands esprits, petit aventurier.' },
  ],
- cm1: [
+ ocean: [
+  { emoji:'🧜',   name:'Sirène Coralia', line:'Les vagues chantent déjà tes exploits, moussaillon !' },
+  { emoji:'⚓',   name:'Capitaine Flotsam', line:'Navigue avec prudence, les récifs cachent bien des secrets.' },
+ ],
+ banquise: [
+  { emoji:'🐧',   name:'Iceberg Glacius', line:'Brr ! Seuls les cœurs vaillants résistent au froid, petit héros.' },
+  { emoji:'❄️',  name:'Esprit Frimas', line:'La glace garde ses secrets... sauras-tu les percer ?' },
+ ],
+ chateau: [
   { emoji:'🛡️',  name:'Sir Cassel',    line:'Halte ! Seuls les plus braves passent par cette voie.' },
-  { emoji:'🧝',   name:'Elfe Veylis',   line:'Les anciens secrets sont gravés dans la pierre des montagnes.' },
+  { emoji:'🧝',   name:'Elfe Veylis',   line:'Les anciens secrets sont gravés dans la pierre des murailles.' },
  ],
- cm2: [
+ sakura: [
+  { emoji:'🧚',   name:'Fée Bonbonna', line:'Un peu de douceur avant l\'aventure, ça te dit ?' },
+  { emoji:'🐰',   name:'Lapin Guimauve', line:'Suis les pétales roses, ils mènent aux meilleurs trésors !' },
+ ],
+ nuit: [
+  { emoji:'🦉',   name:'Hibou Noctis', line:'La nuit cache autant de mystères que d\'étoiles, jeune brave.' },
+  { emoji:'🕯️',  name:'Gardienne Ombralys', line:'N\'aie crainte de l\'obscurité, elle éclaire ceux qui osent.' },
+ ],
+ espace: [
   { emoji:'👽',   name:'Zorbax du Nébula', line:'Bzzip ! Tes exploits résonnent dans toute la galaxie.' },
   { emoji:'🪐',   name:'Sage Cosmik',    line:'L\'univers entier est une énigme. Perce-la.' },
  ],
- final: [
-  { emoji:'🦄',   name:'Licorne Astralia', line:'Tu es arrivé jusqu\'ici. Le Sanctuaire t\'observe.' },
-  { emoji:'🕊️',  name:'Esprit Aelune',  line:'Les trésors sacrés t\'attendent. Sois digne.' },
- ],
 };
+const _NPCS_FINAL = [
+ { emoji:'🦄',   name:'Licorne Astralia', line:'Tu es arrivé jusqu\'ici. Le Sanctuaire t\'observe.' },
+ { emoji:'🕊️',  name:'Esprit Aelune',  line:'Les trésors sacrés t\'attendent. Sois digne.' },
+];
 // Génère le HTML des PNJ pour un îlot débloqué.
 // v8.7.43 : placement intelligent — chaque PNJ teste 24 positions candidates dans
 // la bbox STRICTE des zones (qui est forcément à l'intérieur du blob, puisque les
@@ -816,9 +842,10 @@ const _NPCS_BY_REGION = {
 // >80px des autres PNJ déjà placés. Score = max(distance aux zones) − 0.3 × distance
 // au centroïde des zones (pour rester dans le ventre de l'îlot).
 function _buildNpcsOverlay(regionId, bbox, zonePositions, shopPos, mapW){
- const npcs = _NPCS_BY_REGION[regionId];
- if(!npcs || npcs.length === 0) return '';
  if(zonePositions.length === 0) return '';
+ const theme = (zonePositions[0].zone && zonePositions[0].zone.theme) || 'standard';
+ const npcs = regionId === 'final' ? _NPCS_FINAL : (_NPCS_BY_THEME[theme] || _NPCS_BY_THEME.standard);
+ if(!npcs || npcs.length === 0) return '';
  const W_vb = mapW || 560; // largeur de référence du viewBox (cohérente avec p.x)
  // Bbox STRICTE = celle des zones (sans marge) — garantie d'être à l'intérieur du blob.
  // On la rétrécit de 8% de chaque côté pour rester bien dans le ventre.
@@ -893,7 +920,7 @@ function _buildNpcsOverlay(regionId, bbox, zonePositions, shopPos, mapW){
   const delay = (_archHash(regionId, 900+i) * 2).toFixed(2);
   return `<div class="archipel-npc" data-region="${regionId}" data-npc-idx="${i}"
               style="left:${lx.toFixed(1)}%;top:${ly.toFixed(1)}%;animation-delay:${delay}s;"
-              onclick="_npcClicked('${regionId}',${i})"
+              onclick="_npcClicked('${regionId}',${i},'${theme}')"
               title="${npc.name}">
            <span class="archipel-npc-emoji">${npc.emoji}</span>
           </div>`;
@@ -901,8 +928,11 @@ function _buildNpcsOverlay(regionId, bbox, zonePositions, shopPos, mapW){
  return `<div class="archipel-npcs-layer" data-region="${regionId}" style="left:${bbox.leftPct.toFixed(1)}%;top:${bbox.topPx.toFixed(0)}px;width:${bbox.widthPct.toFixed(1)}%;height:${bbox.heightPx.toFixed(0)}px;">${html}</div>`;
 }
 // Handler clic sur un PNJ : affiche une bulle de dialogue + narration vocale.
-function _npcClicked(regionId, idx){
- const npc = (_NPCS_BY_REGION[regionId] || [])[idx];
+// v12.4.13 : reçoit désormais le thème résolu au moment du rendu (embarqué dans
+// l'attribut onclick), pour retrouver le bon PNJ sans dépendre de regionId seul.
+function _npcClicked(regionId, idx, theme){
+ const npcs = regionId === 'final' ? _NPCS_FINAL : (_NPCS_BY_THEME[theme] || _NPCS_BY_THEME.standard);
+ const npc = (npcs || [])[idx];
  if(!npc) return;
  // Bulle de dialogue flottante au-dessus du PNJ
  const npcEl = document.querySelector(`.archipel-npc[data-region="${regionId}"][data-npc-idx="${idx}"]`);
@@ -958,8 +988,9 @@ function _npcClicked(regionId, idx){
 }
 // Génère le HTML des particules météo pour un îlot débloqué.
 // bbox = {leftPct, topPx, widthPct, heightPx} relative au conteneur map-zones.
-function _buildWeatherOverlay(regionId, bbox){
- const cfg = _WEATHER_BY_REGION[regionId];
+function _buildWeatherOverlay(regionId, bbox, zonePositions){
+ const theme = (zonePositions && zonePositions[0] && zonePositions[0].zone && zonePositions[0].zone.theme) || 'standard';
+ const cfg = _WEATHER_BY_THEME[theme] || _WEATHER_BY_THEME.standard;
  if(!cfg) return '';
  // Hash déterministe pour répartition pseudo-aléatoire mais stable entre renders
  const seed = _archHash(regionId, 1);
@@ -1780,7 +1811,7 @@ function renderMap(){
   if(_islandFogged[r.id]) return ''; // les foggés ont déjà leurs nuages
   const b = _islandBboxes[r.id];
   if(!b) return '';
-  return _buildWeatherOverlay(r.id, b);
+  return _buildWeatherOverlay(r.id, b, byRegion[r.id] || []);
  }).join('');
  // v8.7.42 (O3-C.3) : PNJ et figurants sur les îlots débloqués.
  const npcsOverlaysHtml = _ARCH_REGIONS.map(r => {
