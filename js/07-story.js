@@ -798,7 +798,11 @@ const _PRIM_REGIONS_HIST = [
  { id:'final', label:'L\u2019Atelier d\u2019Autrefois', levels:['FINAL'], shape:'mandala' },
 ];
 const _PRIM_STORY_HIST = {
- intro: { id:'primhist_intro', title:'Prologue — L\u2019héritage', pages:[
+ // v12.4.28 (correction A1) : titre unifié sur "Les Trois Héritages" (nom même
+ // de l'Odyssée, cf. commentaire ci-dessus) partout où il est affiché — écran
+ // de sélection, carte, Carnet, Journal — puisque ces 4 écrans dérivent tous
+ // désormais de ce seul champ source.
+ intro: { id:'primhist_intro', title:'Prologue — Les Trois Héritages', pages:[
   { emoji:'📜', text:"Grand-père Isidore s\u2019en est allé un soir d\u2019automne, dans le silence de son vieil atelier encombré d\u2019engrenages, de plans jaunis et d\u2019inventions inachevées. Le notaire, un homme sec à lunettes rondes, avait convoqué les trois frères pour la lecture de son testament." },
   { emoji:'🕰️', text:"« À Noé, l\u2019aîné, je lègue ma montre à gousset », lut le notaire, en tendant un boîtier d\u2019argent terni. « À Gaspard, mon cadet d\u2019esprit vif, je lègue ma boussole. » Gaspard reçut l\u2019objet, perplexe : son aiguille ne pointait vers aucun nord connu." },
   { emoji:'🪡', text:"« Et à {hero}, le benjamin... » Le notaire hésita, fouilla dans une petite boîte, et en sortit une simple aiguille de métal noirci, sans manche ni écrin. « ... une aiguille. C\u2019est tout ce qui est inscrit. » Les deux aînés échangèrent un regard amusé. {hero} serra les dents." },

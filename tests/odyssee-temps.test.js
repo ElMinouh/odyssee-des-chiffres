@@ -180,11 +180,11 @@ describe('Odyssée du Temps — histoire primaire (structure)', () => {
 });
 
 describe('Odyssée du Temps — corrections v11.5.1 (oublis "Histoire" dans l\u2019UI)', () => {
-  it('openOdysseeSelect() affiche "L’héritage" (et non « L’Ombre sur Calcultopia ») quand la matière est l\u2019histoire', () => {
+  it('openOdysseeSelect() affiche "Les Trois Héritages" (et non "L\u2019Ombre sur Calcultopia") quand la matière est l\u2019histoire', () => {
     const api = loadGame(FILES);
     api.setGMsubject('hist');
     api.openOdysseeSelect();
-    expect(api._domEl('ody-prim-sub').textContent).toBe('L’héritage');
+    expect(api._domEl('ody-prim-sub').textContent).toBe('Les Trois Héritages');
     expect(api._domEl('ody-sel-title').textContent).toMatch(/historique/);
   });
 
@@ -210,7 +210,7 @@ describe('Odyssée du Temps — corrections v11.5.1 (oublis "Histoire" dans l\u2
     api.openOdysseeSelect();
     expect(api._domEl('ody-mat-sub').textContent).toBe('🔒 Bientôt disponible');
     expect(api._domEl('ody-col-sub').textContent).toBe('🔒 Bientôt disponible');
-    expect(api._domEl('ody-prim-sub').textContent).toBe('L’héritage'); // toujours dispo
+    expect(api._domEl('ody-prim-sub').textContent).toBe('Les Trois Héritages'); // toujours dispo
   });
 
   it('v11.6.9 : cliquer une tuile verrouillée ne lance PAS l\u2019aventure (pas de bascule silencieuse sur les maths)', () => {
