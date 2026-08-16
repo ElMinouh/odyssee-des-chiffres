@@ -341,7 +341,10 @@ function renderZoneMap(){
  const box = document.getElementById('zone-steps-path');
  if(!box) return;
  box.innerHTML = steps.map((s, i)=>{
-  let cls='locked', click='', extra='<span class="zone-step-lock">🔒</span>';
+  // v12.4.35 (audit graphique/DA, Lot 1, #G1) : icône SVG dédiée du jeu
+  // d'icônes du projet (déjà utilisée sur la carte principale), au lieu de
+  // l'emoji 🔒 générique dont le rendu varie selon l'appareil/l'OS.
+  let cls='locked', click='', extra='<span class="zone-step-lock"><svg viewBox="0 0 40 40" aria-hidden="true"><use href="#icon-zone-lock"/></svg></span>';
   if(i < done){ cls='done'; click=`onclick="startMapStep('${zone.id}',${i})"`; extra=''; }
   else if(i === done){ cls='current'; click=`onclick="startMapStep('${zone.id}',${i})"`; extra=''; }
   const tagCls = 'tag-' + (s.type || 'monster');
@@ -2507,7 +2510,9 @@ function _refreshMiniMap(avatarRegionId, foggedMap, avatarRatioY, avatarEmoji){
     // v12.4.33 (audit UX, Lot 1, #U1) : une région verrouillée réagit désormais
     // au clic (toast + bip), au lieu d'être totalement inerte comme avant.
     + (fogged?`onclick="_lockedZoneClicked()"`:`onclick="_miniMapGoTo('${r.id}')"`) + ` role="button" title="${r.label}${fogged?' (verrouillé)':''}">`
-    + `<div class="drawer-row-badge">${fogged?'🔒':(meta.emoji||'•')}</div>`
+    // v12.4.35 (audit graphique/DA, Lot 1, #G1) : même icône SVG que la carte
+    // principale au lieu de l'emoji 🔒 générique.
+    + `<div class="drawer-row-badge">${fogged?'<svg viewBox="0 0 40 40" aria-hidden="true" class="drawer-lock-svg"><use href="#icon-zone-lock"/></svg>':(meta.emoji||'•')}</div>`
     + `<div class="drawer-row-label">${r.label}${active?' <span class="drawer-row-sub">• ici</span>':''}</div>`
     + `</div>`;
  }).join('');

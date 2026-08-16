@@ -17,7 +17,7 @@
 <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png?v=1058">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=1058">
 <link rel="stylesheet" href="assets/fonts/google-fonts.css">
-<link rel="stylesheet" href="css/styles.css?v=1076">
+<link rel="stylesheet" href="css/styles.css?v=1077">
 </head>
 <body id="BODY">
 <svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true">
@@ -350,7 +350,7 @@
 
  <!-- ═══ ÉCRAN « CHOISIS TA MATIÈRE » (multi-matières) ═══ -->
  <div id="v-subjects" class="hidden">
-  <div class="back-top-bar" style="display:flex;justify-content:space-between;align-items:center;"><button class="back-top-btn" onclick="navBack()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Retour</button><button class="back-top-btn" onclick="toggleSettings()" style="background:#34495e;">&#128202; Tableau de bord</button></div>
+  <div class="back-top-bar" style="display:flex;justify-content:space-between;align-items:center;"><button class="back-top-btn is-back" onclick="navBack()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Retour</button><button class="back-top-btn" onclick="toggleSettings()" style="background:#34495e;">&#128202; Tableau de bord</button></div>
   <div style="text-align:center;margin:4px 0 2px;">
    <div style="font-size:.72em;letter-spacing:.19em;color:#8aa0c8;text-transform:uppercase;">Joueur : <span id="subj-player">Joueur</span></div>
    <div style="font-size:1.6em;font-weight:800;color:#f1c40f;margin-top:4px;">Choisis ta matière</div>
@@ -417,7 +417,7 @@
  <!-- ═══ ÉCRAN 2 : CHOISIS TON AVENTURE ═══ -->
  <div id="v-menu2" class="hidden">
   <div id="menu2-header" class="menu2-hdr">
-  <div class="back-top-bar" style="display:flex;justify-content:space-between;align-items:center;"><button class="back-top-btn" onclick="navBack()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Retour</button><button class="back-top-btn" onclick="goHome()" style="background:#16a085;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg> Accueil</button></div>
+  <div class="back-top-bar" style="display:flex;justify-content:space-between;align-items:center;"><button class="back-top-btn is-back" onclick="navBack()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Retour</button><button class="back-top-btn" onclick="goHome()" style="background:#16a085;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg> Accueil</button></div>
 
   <!-- Barre : joueur (gauche, plus bas) · tableau de bord + étoiles (droite) -->
   <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;width:100%;max-width:560px;margin:14px auto 4px;flex-wrap:wrap;">
@@ -528,7 +528,7 @@
  <!-- ═══ SOUS-ÉCRAN CONFIG DE MODE (Étape B) ═══ -->
  <div id="v-mode-config" class="hidden">
   <div class="back-top-bar" style="display:flex;justify-content:space-between;align-items:center;">
-   <button class="back-top-btn" onclick="navBack()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Retour</button>
+   <button class="back-top-btn is-back" onclick="navBack()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Retour</button>
    <button class="back-top-btn" onclick="goHome()" style="background:#16a085;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg> Accueil</button>
   </div>
   <div id="mc-header" style="text-align:center;margin:14px 0 18px;">
@@ -571,7 +571,7 @@
 
  <!-- ═══ CHOIX DE L'AVENTURE (3 niveaux) — v10.1.0 ═══ -->
  <div id="v-odyssey-select" class="hidden">
-  <div class="back-top-bar"><button class="back-top-btn" onclick="navBack()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Retour</button></div>
+  <div class="back-top-bar"><button class="back-top-btn is-back" onclick="navBack()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Retour</button></div>
   <img src="assets/logo-main.webp?v=1057" alt="L'Odyssée des Chiffres" class="game-logo subj-logo" loading="eager" decoding="async" style="max-width:min(140px,40%);width:100%;height:auto;display:block;margin:6px auto 6px;">
   <h2 id="ody-sel-title" style="margin:2px 0 2px;">L'Odyssée : l'aventure mathématique</h2>
   <p id="ody-sel-sub" style="color:#bdc3c7;font-size:.9em;margin:0 0 14px;">Choisis ton aventure</p>
@@ -610,7 +610,7 @@
   <div id="map-header">
   <!-- v9.0.0 : ligne 1 compacte — Retour | Titre | Accueil -->
   <div class="map-top-row">
-   <button class="back-top-btn" onclick="closeMap()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Retour</button>
+   <button class="back-top-btn is-back" onclick="closeMap()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Retour</button>
    <div class="map-title-wrap">
     <h2 class="map-title" id="map-title-text">Carte d'Exploration</h2>
     <div class="map-title-sub" id="map-title-sub"></div>
@@ -646,7 +646,7 @@
  <!-- ═══ CARTE DE ZONE (sous-niveaux O1) ═══ -->
  <div id="v-zone" class="hidden">
   <div class="back-top-bar" style="display:flex;justify-content:space-between;align-items:center;">
-   <button class="back-top-btn" onclick="closeZone()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Retour</button>
+   <button class="back-top-btn is-back" onclick="closeZone()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Retour</button>
    <button class="back-top-btn" onclick="goHome()" style="background:#16a085;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg> Accueil</button>
   </div>
   <div id="zone-header" style="text-align:center;margin:8px 0 4px;">
@@ -664,7 +664,7 @@
  <!-- ═══ SETTINGS ═══ -->
  <div id="v-settings" class="hidden">
   <div class="back-top-bar" style="display:flex;justify-content:space-between;align-items:center;">
-   <button class="back-top-btn" onclick="navBack()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Retour</button>
+   <button class="back-top-btn is-back" onclick="navBack()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Retour</button>
    <button class="back-top-btn" onclick="goHome()" style="background:#16a085;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg> Accueil</button>
   </div>
 
@@ -738,7 +738,7 @@
  <!-- ═══ JEU ═══ -->
  <div id="v-game" class="hidden">
   <div class="back-top-bar" style="display:flex;justify-content:space-between;align-items:center;">
-   <button class="back-top-btn" id="game-back-btn" onclick="quitGame('back')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> <span id="game-back-btn-label">Retour</span></button>
+   <button class="back-top-btn is-back" id="game-back-btn" onclick="quitGame('back')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> <span id="game-back-btn-label">Retour</span></button>
    <button class="back-top-btn" onclick="quitGame('home')" style="background:#16a085;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg> Accueil</button>
   </div>
   <div id="combat-bar" class="hidden"><div id="combat-players-row"></div></div>
@@ -810,7 +810,7 @@
 
  <!-- ═══ TABLES MULT ═══ -->
  <div id="v-mult" class="hidden">
-  <div class="back-top-bar" style="display:flex;justify-content:space-between;align-items:center;"><button class="back-top-btn" onclick="navBack()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Retour</button><button class="back-top-btn" onclick="goHome()" style="background:#16a085;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg> Accueil</button></div>
+  <div class="back-top-bar" style="display:flex;justify-content:space-between;align-items:center;"><button class="back-top-btn is-back" onclick="navBack()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Retour</button><button class="back-top-btn" onclick="goHome()" style="background:#16a085;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg> Accueil</button></div>
   <img src="assets/logo-circle.webp?v=1057" alt="" class="page-logo-circle" aria-hidden="true">
   <h2>&#10006;&#65039; Tables de Multiplication</h2>
   <div style="display:flex;align-items:center;gap:8px;justify-content:center;margin:8px 0;">
@@ -822,7 +822,7 @@
 
  <!-- ═══ PARENT ═══ -->
  <div id="v-parent" class="hidden">
-  <div class="back-top-bar" style="display:flex;justify-content:space-between;align-items:center;"><button class="back-top-btn" onclick="navBack()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Retour</button><button class="back-top-btn" onclick="goHome()" style="background:#16a085;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg> Accueil</button></div>
+  <div class="back-top-bar" style="display:flex;justify-content:space-between;align-items:center;"><button class="back-top-btn is-back" onclick="navBack()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Retour</button><button class="back-top-btn" onclick="goHome()" style="background:#16a085;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg> Accueil</button></div>
 
   <img src="assets/logo-circle.webp?v=1057" alt="" class="page-logo-circle" aria-hidden="true">
   <h2>&#128106; Vue Parent</h2>

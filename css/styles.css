@@ -470,7 +470,13 @@ button.pulse{font-size:1.15em!important;padding:var(--space-3) var(--space-5) !i
 .hero-stat-lbl{font-size:.62em;color:rgba(255,255,255,.6);margin-top:1px;}
 
 .back-top-btn{position:relative;background:rgba(149,165,166,.85);border:1px solid rgba(255,255,255,.15);color:#fff;font-size:.72em;font-weight:700;padding:var(--space-1) var(--space-3);border-radius:var(--radius-pill);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);transition:var(--dur-fast);margin-bottom:var(--space-2);border-bottom:2px solid rgba(0,0,0,.25);}
-.back-top-btn:hover{background:rgba(127,140,141,.95);transform:translateX(-2px);}
+.back-top-btn:hover{background:rgba(127,140,141,.95);}
+/* v12.4.35 (audit graphique/DA, Lot 1, #G2) : le glissement directionnel
+   (translateX) n'a de sens que pour "Retour" — réservé à ce seul bouton via
+   .is-back, au lieu d'être partagé par toute la classe .back-top-btn. */
+.back-top-btn.is-back:hover{ transform:translateX(-2px); }
+/* v12.4.35 (#G3) : retour tactile à la pression, aligné sur .archipel-zone. */
+.back-top-btn:active, .map-cmd-btn:active{ transform:scale(.95); }
 .back-top-bar{display:flex;align-items:center;gap:0;margin-bottom:var(--space-2);}
 
 /* Vue parent — figurines : alignée sur la présentation du tableau de bord joueur */
@@ -2300,6 +2306,13 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  font-size:1.4em;
  opacity:.6;
 }
+/* v12.4.35 (audit graphique/DA, Lot 1, #G1) : dimensionne le SVG icon-zone-lock
+   pour occuper le même espace visuel que l'ancien emoji (1.4em ≈ 22-23px). */
+.zone-step-lock svg{
+ width:1.4em;
+ height:1.4em;
+ display:block;
+}
 @keyframes zoneStepPulse{
  0%,100%{ box-shadow:0 0 18px rgba(241,196,15,.4); }
  50%{ box-shadow:0 0 26px rgba(241,196,15,.7); }
@@ -2497,6 +2510,12 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 .archipel-zone[tabindex]:focus-visible .archipel-zone-circle{
  outline:3px solid #ffd97a;
  outline-offset:3px;
+}
+/* v12.4.35 (audit graphique/DA, Lot 1, #G3) : retour tactile à la pression,
+   déjà présent sur les PNJ (élément secondaire) mais absent des zones
+   (élément principal, le plus sollicité de l'écran) — comblé ici. */
+.archipel-zone[tabindex]:active .archipel-zone-circle{
+ transform:scale(.93);
 }
 .archipel-zone.locked .archipel-zone-circle{
  /* Cercle un peu plus sombre que current/completed pour rester identifiable */
@@ -4279,6 +4298,9 @@ html[data-cycle="college"] .nav-icon-college{ display:inline-block; }
  font-size:.9em; font-weight:800; color:#fff;
  background:var(--row-c,#888); text-shadow:0 1px 2px rgba(0,0,0,.6);
 }
+/* v12.4.35 (audit graphique/DA, Lot 1, #G1) : icône de verrouillage SVG,
+   dimensionnée pour occuper le badge sans déborder. */
+.drawer-lock-svg{ width:20px; height:20px; }
 .drawer-row-label{
  flex:1; min-width:0;
  font-size:.82em; font-weight:600; color:#fff; line-height:1.34;
