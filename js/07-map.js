@@ -795,14 +795,29 @@ const _THEME_AUDIO_SIGNATURE = {
  // Espace : intervalles larges éthérés, cosmiques (do-sol-mi-do aigu)
  espace:   { notes:[523, 784, 659, 1047],   type:'sine',     gap:170, dur:.50, vol:.09 },
 };
+// v12.4.31 (audit fonctionnel, Phase 2, #F2) : les timers en attente (notes du
+// jingle + narration vocale) sont mémorisés pour pouvoir être annulés si une
+// nouvelle région est franchie avant leur fin — sans ce garde-fou, un trajet
+// traversant plusieurs régions d'affilée (rattrapage après plusieurs zones,
+// saut via mini-carte) faisait chevaucher les notes et les voix de 2 régions
+// différentes. Même principe que le cooldown de 30s déjà en place à
+// l'ouverture de carte (_lastRegionSignatureTime), mais ici on ANNULE plutôt
+// qu'on ignore, car ce cas (déplacement) doit rester réactif à chaque région.
+let _pendingRegionSigTimers = [];
 function _playRegionSignature(regionId){
  const theme = (typeof _themeOfRegion==='function') ? _themeOfRegion(regionId) : 'standard';
  const sig = _THEME_AUDIO_SIGNATURE[theme] || _THEME_AUDIO_SIGNATURE.standard;
+ // Annule les notes d'un jingle précédent encore en attente, pour ne jamais
+ // superposer les notes de deux régions différentes.
+ _pendingRegionSigTimers.forEach(id => clearTimeout(id));
+ _pendingRegionSigTimers = [];
  if(!sig || typeof beep !== 'function') return;
  sig.notes.forEach((f, i) => {
-  setTimeout(() => { try{ beep(f, sig.type, sig.dur, sig.vol); }catch(e){} }, i * sig.gap);
+  const id = setTimeout(() => { try{ beep(f, sig.type, sig.dur, sig.vol); }catch(e){} }, i * sig.gap);
+  _pendingRegionSigTimers.push(id);
  });
 }
+let _pendingRegionSpeakTimer = null;
 function _showBiomeBanner(regionId){
  const meta = _THEME_META[_themeOfRegion(regionId)] || _THEME_META.standard;
  // v10.13.7 — Le NOM affiché ET prononcé vient TOUJOURS de l'aventure courante
@@ -830,14 +845,19 @@ function _showBiomeBanner(regionId){
  document.body.appendChild(banner);
  // v8.7.48 : signature sonore du biome (jingle court synthétisé)
  _playRegionSignature(regionId);
- // Narration vocale discrète : annonce du nouveau biome (après le jingle)
+ // Narration vocale discrète : annonce du nouveau biome (après le jingle).
+ // v12.4.31 (#F2) : annule une narration précédente encore en attente, pour
+ // ne jamais annoncer deux noms de région l'un par-dessus l'autre.
+ if(_pendingRegionSpeakTimer){ clearTimeout(_pendingRegionSpeakTimer); _pendingRegionSpeakTimer = null; }
  if(typeof speak === 'function'){
-  setTimeout(()=>{ try{ speak(_regionName); }catch(e){} }, 850);
+  try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
+  _pendingRegionSpeakTimer = setTimeout(()=>{ _pendingRegionSpeakTimer = null; try{ speak(_regionName); }catch(e){} }, 850);
  }
  // Cycle : slide-in (0.5s) → hold (1.6s) → slide-out (0.5s) → remove
  setTimeout(()=> banner.classList.add('biome-banner-out'), 2100);
  setTimeout(()=> banner.remove(), 2700);
 }
+
 
 // v8.7.41 (O3-C.2) : Météo locale par région.
 // Particules ambiantes animées sur les îlots DÉBLOQUÉS (les foggés ont déjà leurs
