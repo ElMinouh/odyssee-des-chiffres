@@ -371,6 +371,28 @@ function loadProfile(){
   const validated = validateProfile(saved, name);
   if(validated){
    P = validated;
+   // v12.4.42 (audit performances, P3) : purge silencieuse des entrées de
+   // zoneProgress/mapAvatarZoneByAdv qui ne correspondent plus à AUCUNE zone
+   // existante dans AUCUNE des 7 Odyssées — évite une croissance non bornée
+   // du profil au fil des années à mesure que du contenu est ajouté/retiré.
+   // Prudence : n'agit QUE si tous les tableaux de zones des 7 Odyssées sont
+   // bien chargés (sinon on risquerait de supprimer des entrées valides d'une
+   // Odyssée pas encore définie à ce stade) — ne supprime jamais en cas de doute.
+   try{
+    const allArrays = [MAT_ZONES, PRIM_ZONES, COL_ZONES, MAT_ZONES_FR, PRIM_ZONES_FR, PRIM_ZONES_HIST, COL_ZONES_FR];
+    if(allArrays.every(a => Array.isArray(a) && a.length > 0)){
+     const validIds = new Set();
+     allArrays.forEach(arr => arr.forEach(z => { if(z && z.id) validIds.add(z.id); }));
+     if(P.zoneProgress && typeof P.zoneProgress === 'object'){
+      Object.keys(P.zoneProgress).forEach(id => { if(!validIds.has(id)) delete P.zoneProgress[id]; });
+     }
+     if(P.mapAvatarZoneByAdv && typeof P.mapAvatarZoneByAdv === 'object'){
+      Object.keys(P.mapAvatarZoneByAdv).forEach(adv => {
+       if(P.mapAvatarZoneByAdv[adv] && !validIds.has(P.mapAvatarZoneByAdv[adv])) delete P.mapAvatarZoneByAdv[adv];
+      });
+     }
+    }
+   }catch(e){} // silencieux : en cas de doute, on ne touche à rien
    if(typeof _diagLog==='function')_diagLog('LOAD-PROFILE: ✅ chargé après validation cloudCode='+P.cloudCode+' cloudEnabled='+P.cloudEnabled);
   }else{
    if(typeof _diagLog==='function')_diagLog('LOAD-PROFILE: ❌ validation échouée → profil défaut');

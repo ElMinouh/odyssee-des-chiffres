@@ -2354,6 +2354,22 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  transition:transform var(--dur-base) ease, height var(--dur-base) ease;
 }
 #map-zones.zoom-overview{ transform:scale(0.62); }
+/* v12.4.42 (audit performances, P1 — proposition de Cyril) : en vue
+   d'ensemble dézoomée, toutes les zones de l'Odyssée sont visibles à
+   l'écran en même temps (jusqu'à 33) — c'est le moment où le coût
+   d'animation est le plus élevé ET où le décor est le moins lisible
+   (échelle 0.62). display:none retire ces éléments du rendu (plus de
+   calcul de style, plus de tick d'animation), sans toucher au JS : dès
+   qu'on rezoome (.zoom-default/.close/.veryclose), tout redevient visible
+   normalement — le nombre d'animations actives suit donc directement le
+   niveau de zoom, comme demandé.
+   Les zones elles-mêmes, le sentier et les PNJ restent visibles (fonction
+   de navigation, pas de simple décoration).
+*/
+#map-zones.zoom-overview .archipel-zone-decor,
+#map-zones.zoom-overview .weather-particle{
+ display:none;
+}
 #map-zones.zoom-default{ transform:scale(1); }
 #map-zones.zoom-close{ transform:scale(1.3); }
 #map-zones.zoom-veryclose{ transform:scale(1.9); }

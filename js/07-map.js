@@ -96,6 +96,12 @@ function openMap(){
  * Remplace l'ancien onclick="showView('v-menu')" du bouton retour.
  */
 function closeMap(){
+ // v12.4.42 (audit performances, P2) : annule les timers de jingle/narration
+ // encore en attente — sans cette ligne, un bip ou une phrase pouvait se
+ // déclencher juste après avoir quitté l'écran de carte (cas : clic sur
+ // Retour dans la seconde suivant un changement de région).
+ if(typeof _pendingRegionSigTimers!=='undefined'){ _pendingRegionSigTimers.forEach(id=>clearTimeout(id)); _pendingRegionSigTimers=[]; }
+ if(typeof _pendingRegionSpeakTimer!=='undefined' && _pendingRegionSpeakTimer){ clearTimeout(_pendingRegionSpeakTimer); _pendingRegionSpeakTimer=null; }
  if(typeof teardownMapParallax==='function') teardownMapParallax();
  if(typeof navBack==='function') navBack(); else showView('v-menu');
 }
