@@ -231,6 +231,7 @@ try{
  loadProfile();
  loadVibrate();
  loadVoice();
+ if(typeof loadSfx==='function') loadSfx(); // v12.4.30 (audit fonctionnel #F1)
  // Chantier B4 : préférence ambiance
  if(typeof loadAmbiancePref==='function') loadAmbiancePref();
  // Chantier B3 : préférence parallaxe (mouvement)

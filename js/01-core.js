@@ -120,7 +120,11 @@ const fmtDate=()=>{const d=new Date();return `${d.getDate()}/${d.getMonth()+1}`;
 const $=id=>document.getElementById(id);
 function getAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx;}
 function pNote(ctx,f,type,dur,vol=0.1){try{const o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.setValueAtTime(f,ctx.currentTime);g.gain.setValueAtTime(vol,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur);o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+dur);}catch(e){}}
-function beep(f,type='square',dur=.2,vol=.1){try{pNote(getAudio(),f,type,dur,vol);}catch(e){}}
+// v12.4.30 (audit fonctionnel, Phase 1, #F1) : point de contrôle unique pour
+// TOUS les bips/jingles du jeu (navigation, onglets, signatures sonores
+// régionales...) — _sfxEnabled() vérifie le réglage "Effets sonores",
+// indépendant de "Musique". Protège tous les appelants sans les modifier un à un.
+function beep(f,type='square',dur=.2,vol=.1){if(!_sfxEnabled())return;try{pNote(getAudio(),f,type,dur,vol);}catch(e){}}
 // ═══════════════════════════════════════════════════════
 // SYNTHÈSE VOCALE (TTS) — chantier 6.1
 // ═══════════════════════════════════════════════════════
@@ -257,6 +261,27 @@ function speakAs(text, monster){
 function saveVoice(){
  const t=$('voiceToggle');if(!t)return;
  localStorage.setItem(VOICE_KEY,t.checked?'1':'0');
+}
+// v12.4.30 (audit fonctionnel, Phase 1, #F1) : réglage "Effets sonores" séparé
+// de "Musique" — jusqu'ici, aucun réglage ne coupait les bips/jingles (beep()),
+// seule la musique de fond en avait un. Même mécanique que VOICE_KEY (localStorage,
+// device-level, activé par défaut) : simple, cohérent avec l'existant, pas besoin
+// de toucher au profil joueur (P) ni à validateProfile().
+const SFX_KEY='odyssee_sfx';
+function saveSfx(){
+ const t=$('sfxToggle');if(!t)return;
+ localStorage.setItem(SFX_KEY,t.checked?'1':'0');
+}
+function loadSfx(){
+ const t=$('sfxToggle');if(!t)return;
+ // Activé par défaut, désactivé seulement si explicitement coupé ('0') — même
+ // convention que loadVoice() ci-dessus.
+ t.checked=localStorage.getItem(SFX_KEY)!=='0';
+}
+// Vérifiée par beep() (voir plus bas) : un seul point de contrôle protège tous
+// les bips/jingles du jeu, pas seulement ceux du module Aventure.
+function _sfxEnabled(){
+ try{ return localStorage.getItem(SFX_KEY)!=='0'; }catch(e){ return true; }
 }
 function loadVoice(){
  const t=$('voiceToggle');if(!t)return;
