@@ -433,11 +433,24 @@
   </div>
   </div>
 
-  <!-- Gros bouton L'Odyssée : pleine largeur, mis en valeur, icône en double -->
-  <button id="btn-start-odyssee" onclick="startOdyssee()" style="width:92%;max-width:540px;font-size:1em;font-weight:800;padding:28px 16px;background:linear-gradient(135deg,#16a085,#1abc9c);border:2px solid rgba(255,255,255,.25);box-shadow:0 6px 24px rgba(26,188,156,.4);line-height:1.3;" class="pulse">&#128506;&#65039;&nbsp; <span id="ody-btn-label">L'ODYSSÉE : L'AVENTURE MATHÉMATIQUE</span> &nbsp;&#128506;&#65039;</button>
+  <!-- v12.4.39 (retour Cyril : bouton Odyssée pas assez mis en évidence,
+       hauteur inférieure aux 4 tuiles de mode) : carte "héros" dédiée au lieu
+       d'un simple bouton pleine largeur — bordure dorée, emoji en grand,
+       titre complet inchangé (toujours mis à jour par _setSubjectLogos()),
+       sous-titre fixe, nettement plus haute que chaque tuile de mode
+       individuelle (corrige l'anomalie de hauteur constatée). -->
+  <button id="btn-start-odyssee" onclick="startOdyssee()" class="pulse" style="width:92%;max-width:540px;display:block;text-align:center;padding:26px 20px 22px;border-radius:18px;border:3px solid #f1c40f;background:radial-gradient(ellipse at 30% 15%, #1fd8a8, #0b7a63 75%);box-shadow:0 10px 34px rgba(0,0,0,.5), 0 0 24px rgba(241,196,15,.35);">
+   <div style="font-size:1.8em;line-height:1;">&#128506;&#65039;</div>
+   <div style="font-family:'Cinzel Decorative','Cinzel',Georgia,serif;font-size:1.05em;font-weight:700;letter-spacing:.03em;line-height:1.3;margin-top:6px;color:#fff;text-shadow:1px 1px 3px rgba(0,0,0,.5);"><span id="ody-btn-label">L'ODYSSÉE : L'AVENTURE MATHÉMATIQUE</span></div>
+   <div style="font-size:.74em;font-weight:700;color:rgba(255,255,255,.92);margin-top:8px;">Explore, combats, progresse : la grande aventure commence</div>
+  </button>
+
+  <!-- Séparation claire : la carte ci-dessus est LE mode principal, les 4
+       tuiles ci-dessous sont des entraînements rapides secondaires. -->
+  <div style="text-align:center;font-size:.74em;color:#7f9a8f;font-weight:700;margin:16px 0 2px;width:92%;max-width:540px;margin-left:auto;margin-right:auto;">— ou entraîne-toi librement —</div>
 
   <!-- 4 modes en grille 2×2 -->
-  <div id="modes-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:92%;max-width:540px;margin:14px auto 0;">
+  <div id="modes-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:92%;max-width:540px;margin:10px auto 0;">
    <button onclick="openModeConfig('normal')" style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:14px 8px;background:linear-gradient(135deg,#2c3e50,#34495e);">
     <span style="font-size:1.6em;">&#9876;&#65039;</span><span style="font-weight:700;">Normal</span><span style="font-size:.72em;color:#bdc3c7;">6 monstres</span>
    </button>

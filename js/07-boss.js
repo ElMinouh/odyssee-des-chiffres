@@ -1666,7 +1666,11 @@ function _buildZoomSceneHtml(zoneId, zone, stepPositions, containerW, sceneH){
  const groundCount = Math.min(8, 5 + groundList.length);
  for(let i=0;i<groundCount;i++){
   const e = groundList[i % groundList.length];
-  const sz = _decorSize(e);
+  // v12.4.39 (retour Cyril : "décors trop petits, trop discrets") : +60% de
+  // taille + opacité relevée (0.85-1.0 au lieu de 0.6-0.85) + léger contour
+  // clair pour détacher l'emoji du fond, sans changer la position/logique
+  // d'évitement des pastilles (le rayon de collision rPx suit la taille).
+  const sz = _decorSize(e) * 1.6;
   const fontPx = 17 * sz;                                 // taille rendue approx (em→px)
   const rPx = fontPx * 0.55;
   let placedOk=false;
@@ -1677,9 +1681,9 @@ function _buildZoomSceneHtml(zoneId, zone, stepPositions, containerW, sceneH){
    const yPx = horizonPx - rPx*0.2 + _archHash(zoneId,i*11+k+2)*26 - 4;
    if(free(xPx, yPx, rPx)){
     placed.push({x:xPx,y:yPx,r:rPx});
-    const op = (0.6 + _archHash(zoneId,i*5+9)*0.25).toFixed(2);
+    const op = (0.85 + _archHash(zoneId,i*5+9)*0.15).toFixed(2);
     const delay = ((i)%5)*0.4, dur=(4.5+(i%3)).toFixed(1);
-    html += `<div class="archipel-zoom-decor" style="left:${xPct.toFixed(1)}%;top:${yPx.toFixed(0)}px;font-size:${(sz).toFixed(2)}em;opacity:${op};animation-delay:${delay}s;animation-duration:${dur}s;">${e}</div>`;
+    html += `<div class="archipel-zoom-decor" style="left:${xPct.toFixed(1)}%;top:${yPx.toFixed(0)}px;font-size:${(sz).toFixed(2)}em;opacity:${op};-webkit-text-stroke:1.5px rgba(255,255,255,.55);animation-delay:${delay}s;animation-duration:${dur}s;">${e}</div>`;
     placedOk=true;
    }
   }
@@ -1688,7 +1692,7 @@ function _buildZoomSceneHtml(zoneId, zone, stepPositions, containerW, sceneH){
  const skyCount = Math.min(5, 3 + skyList.length);
  for(let i=0;i<skyCount;i++){
   const e = skyList[i % skyList.length];
-  const sz = _decorSize(e);
+  const sz = _decorSize(e) * 1.6; // v12.4.39 : voir commentaire au même endroit pour le sol
   const fontPx = 17 * sz;
   const rPx = fontPx * 0.5;
   let placedOk=false;
@@ -1698,9 +1702,9 @@ function _buildZoomSceneHtml(zoneId, zone, stepPositions, containerW, sceneH){
    const yPx = 16 + _archHash(zoneId, i*29+k+4)*(horizonPx*0.42);
    if(free(xPx, yPx, rPx)){
     placed.push({x:xPx,y:yPx,r:rPx});
-    const op = (0.55 + _archHash(zoneId,i*7+1)*0.25).toFixed(2);
+    const op = (0.8 + _archHash(zoneId,i*7+1)*0.15).toFixed(2);
     const delay = ((i)%5)*0.5, dur=(5+(i%3)).toFixed(1);
-    html += `<div class="archipel-zoom-decor sky" style="left:${xPct.toFixed(1)}%;top:${yPx.toFixed(0)}px;font-size:${(sz).toFixed(2)}em;opacity:${op};animation-delay:${delay}s;animation-duration:${dur}s;">${e}</div>`;
+    html += `<div class="archipel-zoom-decor sky" style="left:${xPct.toFixed(1)}%;top:${yPx.toFixed(0)}px;font-size:${(sz).toFixed(2)}em;opacity:${op};-webkit-text-stroke:1.5px rgba(255,255,255,.5);animation-delay:${delay}s;animation-duration:${dur}s;">${e}</div>`;
     placedOk=true;
    }
   }
