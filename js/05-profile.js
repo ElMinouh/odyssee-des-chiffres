@@ -254,6 +254,12 @@ function validateProfile(raw, defaultName){
   // du profil (retour à l'accueil, changement de joueur, etc.), ce qui
   // relançait la visite guidée en boucle malgré ob3MarkCompleted().
   onbAccountSeen: _safeBool(raw.onbAccountSeen, false),
+  // v12.4.38 — même marqueur pour la visite de la carte (Système 4,
+  // 19-onboarding.js, #U3) : oublié de cette liste blanche à sa création
+  // (v12.4.34), reproduisant exactement le bug documenté juste au-dessus
+  // pour onbAccountSeen — la visite se relançait à chaque connexion malgré
+  // ob4MarkCompleted(). Toujours ajouter tout nouveau marqueur ici.
+  onbMapSeen: _safeBool(raw.onbMapSeen, false),
   // v11.6.6 — photo de profil (facultative, recadrée/compressée côté appareil
   // avant stockage, 200 Ko max) et code du profil (2 chiffres, facultatif).
   photo: _safeDataUrl(raw.photo, 200000, null),
@@ -323,7 +329,7 @@ function defProfile(name){
   histCatFilters:{frise:true,personnages:true,evenements:true,civilisation:true,temps:true,repere:true},
   frCatFilters:{conj:true,orth:true,gram:true,vocab:true},
   heroStageId:'oeuf',
-  cloudCode:null,cloudEnabled:false,onbAccountSeen:false,_epilogueBonusCredited:[],photo:null,playerCode:null,
+  cloudCode:null,cloudEnabled:false,onbAccountSeen:false,onbMapSeen:false,_epilogueBonusCredited:[],photo:null,playerCode:null,
   // v11.7.3 (audit n°9) : genre explicite optionnel, réglable par le parent —
   // prioritaire sur l'heuristique orthographique de heroGender() dans 02-data.js.
   gender:null};
