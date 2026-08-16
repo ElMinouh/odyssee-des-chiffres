@@ -885,39 +885,48 @@ function _showBiomeBanner(regionId){
 // avant implémentation — voir maquette de validation. Générique par
 // construction (mots-clés sur le texte, pas une liste d'ids) : toute future
 // zone est reconnue automatiquement, sans rien ajouter ici.
+// v12.4.40 (retour Cyril : "4-5 lieux de la même Odyssée ont exactement le
+// même combo papillon+fleurs+abeille") : chaque décor a désormais un pool de
+// 6 particules (au lieu de 3 fixes) + une liste de familles VOISINES
+// cohérentes (`rel`) dans lesquelles piocher 1-2 éléments supplémentaires.
+// _zoneDecorFor() (plus bas) choisit 4 éléments distincts dans ce pool élargi
+// de façon déterministe par zone (hash sur zoneId) : deux zones "prairie"
+// voisines afficheront des combinaisons différentes, parfois nuancées par un
+// élément emprunté à une famille proche (ex. prairie + 1 pincée de verger),
+// sans jamais perdre la cohérence avec le lieu (jamais de vague sur un pré).
 const _ZONE_DECOR_CATALOG = {
- chateau:     { kw:['château','forteresse','citadelle','donjon','rempart','tour','beffroi'], particles:['🕊️','✨','⚜️'] },
- cloitre:     { kw:['cloître','moine','sanctuaire'], particles:['🕯️','📖','✨'] },
- romain:      { kw:['forum','thermes','circus','voie appienne','ruines latines','cicéron','tribune','agora','amphithéâtre','temple'], particles:['🏛️','🕊️','☀️'] },
- egypte:      { kw:['gizeh','nil','thèbes','pyramide','tombeau'], particles:['🐫','☀️','🏺'] },
- prehistoire: { kw:['mammouth','chasseur','peinture','foyer','tambour'], particles:['🔥','🦴','🪨'] },
- moyenage:    { kw:['médiéval','fief','veillée','assiégé','chancelier','gaulois'], particles:['🕯️','⚔️','🏰'] },
- theatre:     { kw:['théâtre','scène','masque','voix'], particles:['🎭','✨','🎪'] },
- mecanique:   { kw:['mécanique','engrenage','rouage','horlogerie','horloge','machine','atelier','usine','forge','révolution','vapeur','gare','invention','inventeur'], particles:['⚙️','✨','🔧'] },
- bibliotheque:{ kw:['bibliothèque','galerie','livre','conteur','lecture','libraire','chambre','murmure'], particles:['📖','✨','🕯️'] },
- marche:      { kw:['marché','halle','foire'], particles:['🧺','🍞','🎪'] },
- village:     { kw:['village','place','faubourg','quartier','campement','moulin','toits'], particles:['🏡','🕊️','🍞'] },
- port:        { kw:['port','quai','marchand','phare'], particles:['⚓','🌊','🧭'] },
- plage:       { kw:['plage','palmier'], particles:['🏖️','🐚','☀️'] },
- 'ocean-profond': { kw:['profondeur','abysse','fosse','récif','lagon','bulle'], particles:['🐙','🫧','🐠'] },
- ile:         { kw:['île','tortue'], particles:['🐢','🌴','🐚'] },
- glace:       { kw:['glace','glacier','banquise'], particles:['❄️','🌨️','💎'] },
- grotte:      { kw:['grotte','caverne','souterrain','cavernes','antre'], particles:['💎','🦇','✨'] },
- champignon:  { kw:['champignon'], particles:['🍄','🐌','✨'] },
- pont:        { kw:['pont'], particles:['🌉','🕊️','✨'] },
- volcan:      { kw:['volcan','feu','flamme','lave','trône de l'], particles:['🔥','💨','⚫'] },
- desert:      { kw:['désert','cendre','caldeira'], particles:['🏜️','☀️','💨'] },
- montagne:    { kw:['pic','crête','cime','sommet','plateau','falaise','gorge','vallée'], particles:['🦅','☁️','⛰️'] },
- verger:      { kw:['verger','fraise','rucher','noisette','buisson','panier'], particles:['🍓','🐝','🌼'] },
- sakura:      { kw:['sakura','fleuri','pays des bonbons','bonbon'], particles:['🌸','🦋','🍬'] },
- foret:       { kw:['forêt','bois','sous-bois','chêne'], particles:['🍃','🌿','🍂'] },
- ruisseau:    { kw:['ruisseau','rive','source','crique','ponton','lac','mare','étang','fleuve','marais'], particles:['💧','🐸','🌾'] },
- prairie:     { kw:['pré','prairie','champ','clairière','colline','plaine','herbe','pâquerette','jardin','terrier','sentier'], particles:['🦋','🌸','🐝'] },
- langue:      { kw:['mot','langue','syntaxe','synonyme','nom','lettre','verbe','phrase','conjugaison','registre'], particles:['📝','✨','🔤'] },
- abstrait:    { kw:['variable','identité','spirale','relatif','signe','zéro','fonction','affine','image','miroir','prisme','calcul','algébrique','faille','salle','couloir'], particles:['✨','🔷','💠'] },
- observatoire:{ kw:['observatoire','étoile','nuage','ciel','céleste','stellaire','cerf-volant'], particles:['⭐','☁️','✨'] },
- nuit:        { kw:['nocturne','ombre','lune'], particles:['🌙','⭐','🦇'] },
- espace:      { kw:['galaxie','espace','nébuleuse','cosmique'], particles:['💫','🪐','🌠'] },
+ chateau:     { kw:['château','forteresse','citadelle','donjon','rempart','tour','beffroi'], particles:['🕊️','✨','⚜️','🏰','🚩','🛡️'], rel:['cloitre','moyenage'] },
+ cloitre:     { kw:['cloître','moine','sanctuaire'], particles:['🕯️','📖','✨','🔔','🙏','🕊️'], rel:['chateau','bibliotheque'] },
+ romain:      { kw:['forum','thermes','circus','voie appienne','ruines latines','cicéron','tribune','agora','amphithéâtre','temple'], particles:['🏛️','🕊️','☀️','🏺','📜','⚔️'], rel:['egypte','theatre'] },
+ egypte:      { kw:['gizeh','nil','thèbes','pyramide','tombeau'], particles:['🐫','☀️','🏺','📜','⏳','🦂'], rel:['romain','desert'] },
+ prehistoire: { kw:['mammouth','chasseur','peinture','foyer','tambour'], particles:['🔥','🦴','🪨','🦣','🏹','🌑'], rel:['foret','montagne'] },
+ moyenage:    { kw:['médiéval','fief','veillée','assiégé','chancelier','gaulois'], particles:['🕯️','⚔️','🏰','🛡️','🚩','🔔'], rel:['chateau'] },
+ theatre:     { kw:['théâtre','scène','masque','voix'], particles:['🎭','✨','🎪','🎬','🎟️','👑'], rel:['romain'] },
+ mecanique:   { kw:['mécanique','engrenage','rouage','horlogerie','horloge','machine','atelier','usine','forge','révolution','vapeur','gare','invention','inventeur'], particles:['⚙️','✨','🔧','🔩','💡','🛠️'], rel:['abstrait'] },
+ bibliotheque:{ kw:['bibliothèque','galerie','livre','conteur','lecture','libraire','chambre','murmure'], particles:['📖','✨','🕯️','🦉','🖋️','📜'], rel:['cloitre','langue'] },
+ marche:      { kw:['marché','halle','foire'], particles:['🧺','🍞','🎪','🍎','🎭','🕊️'], rel:['village'] },
+ village:     { kw:['village','place','faubourg','quartier','campement','moulin','toits'], particles:['🏡','🕊️','🍞','🐔','🌳','🧺'], rel:['marche','pont'] },
+ port:        { kw:['port','quai','marchand','phare'], particles:['⚓','🌊','🧭','⛵','🐚','🕊️'], rel:['plage','ocean-profond'] },
+ plage:       { kw:['plage','palmier'], particles:['🏖️','🐚','☀️','🌊','🦀','🌴'], rel:['port','ile'] },
+ 'ocean-profond': { kw:['profondeur','abysse','fosse','récif','lagon','bulle'], particles:['🐙','🫧','🐠','🌊','🦑','✨'], rel:['port','ile'] },
+ ile:         { kw:['île','tortue'], particles:['🐢','🌴','🐚','🌊','🦜','☀️'], rel:['plage','ocean-profond'] },
+ glace:       { kw:['glace','glacier','banquise'], particles:['❄️','🌨️','💎','🧊','⛄','✨'], rel:['montagne'] },
+ grotte:      { kw:['grotte','caverne','souterrain','cavernes','antre'], particles:['💎','🦇','✨','🪨','🕳️','💠'], rel:['montagne','foret'] },
+ champignon:  { kw:['champignon'], particles:['🍄','🐌','✨','🌿','🦋','🍂'], rel:['foret'] },
+ pont:        { kw:['pont'], particles:['🌉','🕊️','✨','💧','🍃','🌊'], rel:['ruisseau','village'] },
+ volcan:      { kw:['volcan','feu','flamme','lave','trône de l'], particles:['🔥','💨','⚫','🌋','✨','🪨'], rel:['desert','montagne'] },
+ desert:      { kw:['désert','cendre','caldeira'], particles:['🏜️','☀️','💨','🦂','🌵','🐫'], rel:['volcan','montagne'] },
+ montagne:    { kw:['pic','crête','cime','sommet','plateau','falaise','gorge','vallée'], particles:['🦅','☁️','⛰️','🌬️','🪨','✨'], rel:['desert','glace'] },
+ verger:      { kw:['verger','fraise','rucher','noisette','buisson','panier'], particles:['🍓','🐝','🌼','🍎','🦋','🌸'], rel:['sakura','prairie'] },
+ sakura:      { kw:['sakura','fleuri','pays des bonbons','bonbon'], particles:['🌸','🦋','🍬','🎀','✨','🌺'], rel:['verger'] },
+ foret:       { kw:['forêt','bois','sous-bois','chêne'], particles:['🍃','🌿','🍂','🌲','🐿️','🍄'], rel:['champignon','grotte'] },
+ ruisseau:    { kw:['ruisseau','rive','source','crique','ponton','lac','mare','étang','fleuve','marais'], particles:['💧','🐸','🌾','🐟','🌊','🪷'], rel:['pont','prairie'] },
+ prairie:     { kw:['pré','prairie','champ','clairière','colline','plaine','herbe','pâquerette','jardin','terrier','sentier'], particles:['🦋','🌸','🐝','🌼','🍀','🐞'], rel:['verger','foret'] },
+ langue:      { kw:['mot','langue','syntaxe','synonyme','nom','lettre','verbe','phrase','conjugaison','registre'], particles:['📝','✨','🔤','📖','🖋️','💬'], rel:['bibliotheque','abstrait'] },
+ abstrait:    { kw:['variable','identité','spirale','relatif','signe','zéro','fonction','affine','image','miroir','prisme','calcul','algébrique','faille','salle','couloir'], particles:['✨','🔷','💠','🔶','🧮','➗'], rel:['mecanique','langue'] },
+ observatoire:{ kw:['observatoire','étoile','nuage','ciel','céleste','stellaire','cerf-volant'], particles:['⭐','☁️','✨','🔭','🌙','💫'], rel:['nuit','espace'] },
+ nuit:        { kw:['nocturne','ombre','lune'], particles:['🌙','⭐','🦇','✨','🌌','🦉'], rel:['observatoire','espace'] },
+ espace:      { kw:['galaxie','espace','nébuleuse','cosmique'], particles:['💫','🪐','🌠','⭐','🌌','🚀'], rel:['observatoire','nuit'] },
 };
 // Ordre de priorité : les décors "concrets/architecturaux" sont vérifiés avant
 // les mots-clés génériques/atmosphériques (ex. "Château des Nuages" doit
@@ -935,6 +944,48 @@ function _resolveZoneDecor(label){
   }
  }
  return 'prairie'; // repli neutre si un futur libellé ne matche jamais rien
+}
+
+// v12.4.40 (retour Cyril : variété insuffisante) : construit la liste de 4
+// décors réellement utilisés pour UNE zone donnée — jamais directement
+// `.particles` (fixe et identique pour toutes les zones d'une même famille).
+// Déterministe (hash sur zoneId) : stable d'une ouverture à l'autre, mais
+// distinct d'une zone à l'autre, même au sein de la même famille de décor.
+function _zoneDecorFor(zoneId, label){
+ const key = _resolveZoneDecor(label);
+ const entry = _ZONE_DECOR_CATALOG[key];
+ let pool = entry.particles.slice();
+ // v12.4.40 (correctif) : haché sur `label` (voire zoneId+label), jamais sur
+ // zoneId seul — plusieurs zones d'une même région partagent un id quasi
+ // identique (mat_cp_1, mat_cp_2, mat_cp_4...), qui ne diffère que par le
+ // dernier chiffre. _archHash n'ayant pas un avalanche parfait sur des
+ // chaînes aussi proches, cela produisait presque le même nombre pour
+ // toutes ces zones → le même combo de décor pour 4 zones sur 5 (bug
+ // constaté). Le libellé de la zone ("Le Pré Vert", "Colline Arc-en-ciel"…)
+ // varie bien plus lettre à lettre et donne une distribution correcte.
+ const seed = label + '|' + zoneId;
+ if(entry.rel && entry.rel.length){
+  // Choisit une famille voisine (déterministe) et lui emprunte 1 ou 2
+  // éléments absents du pool principal, pour varier sans perdre la cohérence.
+  const relKey = entry.rel[Math.floor(_archHash(seed, 5001) * entry.rel.length)];
+  const relEntry = _ZONE_DECOR_CATALOG[relKey];
+  if(relEntry){
+   const extra = relEntry.particles.filter(e => pool.indexOf(e) === -1);
+   const borrowCount = 1 + Math.floor(_archHash(seed, 5002) * 2); // 1 ou 2
+   for(let i=0;i<borrowCount && extra.length;i++){
+    const idx = Math.floor(_archHash(seed, 5010+i) * extra.length);
+    pool.push(extra.splice(idx,1)[0]);
+   }
+  }
+ }
+ // Tire 4 éléments distincts du pool élargi (sans remise), ordre mélangé.
+ const chosen = [];
+ const count = Math.min(4, pool.length);
+ for(let i=0;i<count;i++){
+  const idx = Math.floor(_archHash(seed, 5100+i) * pool.length);
+  chosen.push(pool.splice(idx,1)[0]);
+ }
+ return chosen;
 }
 
 // v12.4.37 (correction) : la scène décorative de la fiche de zone est en

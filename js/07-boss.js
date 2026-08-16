@@ -1584,7 +1584,7 @@ function _buildZoneDecorHtml(positions, foggedMap, W){
   // 07-map.js) pour toute zone absente de cette table — couvre les 195 zones
   // réelles des 7 Odyssées, vérifié à 100% avant livraison.
   const decor = _ZONE_DECOR[p.zone.id]
-   || (typeof _resolveZoneDecor==='function' ? _ZONE_DECOR_CATALOG[_resolveZoneDecor(p.zone.label)].particles : null);
+   || (typeof _zoneDecorFor==='function' ? _zoneDecorFor(p.zone.id, p.zone.label) : null);
   if(!decor) return;
   decor.forEach((emoji, i) => {
    // Position déterministe autour du nœud (stable entre les rendus, pas de scintillement)
@@ -1637,7 +1637,7 @@ function _buildZoomSceneHtml(zoneId, zone, stepPositions, containerW, sceneH){
  // v12.4.37 (correction) : repli sur le catalogue par mots-clés si la zone
  // n'a pas d'entrée dans _ZONE_DECOR (couverture 195/195 au lieu de 23/195).
  const decor = _ZONE_DECOR[zoneId]
-  || (typeof _resolveZoneDecor==='function' && zone ? _ZONE_DECOR_CATALOG[_resolveZoneDecor(zone.label)].particles : null);
+  || (typeof _zoneDecorFor==='function' && zone ? _zoneDecorFor(zoneId, zone.label) : null);
  if(!decor || typeof _archHash !== 'function') return '';
  const biome = _BIOME_SCENE[(zone&&zone.theme)] || _BIOME_SCENE.standard;
  const horizonPct = 72;                                  // ligne d'horizon (sol en dessous)
