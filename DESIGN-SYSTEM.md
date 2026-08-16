@@ -168,12 +168,31 @@ par `beep()`/`pNote()` respecte donc automatiquement ce réglage — ne jamais a
 `pNote()` directement en contournant `beep()`, sous peine de rendre ce son insensible au
 réglage « 🔔 Effets sonores ».
 
-### 10. Design system (rayons, ombres, espacements, durées)
+### 10. Le décor de la fiche de zone se déduit automatiquement du libellé
+
+Chaque zone affiche un mini-décor (silhouette + particules flottantes) déterminé par
+`_resolveZoneDecor()`/`_zoneDecorFor()` (`07-map.js`), à partir de mots-clés cherchés dans
+le libellé réel de la zone (`zone.label`) — jamais depuis une liste d'ids à tenir à jour.
+**Toute nouvelle zone, dans n'importe quelle Odyssée présente ou future, est donc décorée
+automatiquement dès qu'elle a un libellé cohérent** (un lieu appelé « Le Port de... »
+recevra automatiquement un décor de port ; « La Bibliothèque de... » un décor de
+bibliothèque) — rien à configurer. Si un futur libellé ne correspond à aucun mot-clé
+connu, le repli est `prairie` (neutre) : vérifier que le nouveau libellé contient au moins
+un mot-clé pertinent, ou ajouter ce mot-clé à `_ZONE_DECOR_CATALOG` si une famille de décor
+existante convient, plutôt que de laisser reposer sur le repli neutre.
+Chaque famille tire 3 à 5 éléments parmi un pool de 8 particules (+ 1-2 empruntés à une
+famille voisine cohérente, ex. prairie↔verger/forêt) de façon déterministe par zone —
+vérifié sans doublon exact sur les 177 libellés réels du jeu (v12.4.41). Si une nouvelle
+famille de décor doit être ajoutée (nouvel univers, ex. jungle, banlieue futuriste...),
+lui donner un pool d'au moins 6-8 particules cohérentes et 1-2 familles voisines (`rel`)
+pour bénéficier du même niveau de variété.
+
+### 11. Design system (rayons, ombres, espacements, durées)
 
 Voir les sections « Règle d'or » et « Tokens disponibles » plus haut dans ce document —
 s'applique à tout nouveau composant visuel, pas seulement aux Odyssées.
 
-### 11. Réutiliser le motif ornemental ❖ plutôt qu'en inventer un nouveau
+### 12. Réutiliser le motif ornemental ❖ plutôt qu'en inventer un nouveau
 
 Pour tout nouveau titre/en-tête ajouté (section de Carnet, nom affiché en grand...),
 reprendre le pattern déjà posé sur `.archipel-region-name`, `.archipel-zone-label`,
