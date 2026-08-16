@@ -775,25 +775,29 @@ function _themeOfRegion(regionId){
 // volcan : première version (dents de scie) jugée "trop jeu vidéo, trop
 // artificielle" par Cyril à l'écoute sur maquette ; remplacée par l'option B
 // (triangle, plus lent, plus grave — une "braise qui couve").
+// v12.4.32 (Phase 3, retour "je n'entends pas bien le jingle") : volumes
+// remontés d'environ +65% chacun (proportions relatives entre thèmes
+// conservées — nuit reste le plus feutré, château le plus fort), sans
+// toucher au timbre/tempo déjà validés à l'écoute.
 const _THEME_AUDIO_SIGNATURE = {
  // Standard : fanfare douce ascendante, accueillante (do-mi-sol-do aigu)
- standard: { notes:[523, 659, 784, 1047],   type:'sine',     gap:130, dur:.35, vol:.10 },
+ standard: { notes:[523, 659, 784, 1047],   type:'sine',     gap:130, dur:.35, vol:.17 },
  // Forêt : quintes boisées, mystère doux (sol-si-ré-si)
- foret:    { notes:[392, 494, 587, 494],    type:'triangle', gap:150, dur:.40, vol:.10 },
+ foret:    { notes:[392, 494, 587, 494],    type:'triangle', gap:150, dur:.40, vol:.17 },
  // Volcan : braise qui couve — triangle grave, lent, progressif (option B validée à l'écoute)
- volcan:   { notes:[165, 208, 262],         type:'triangle', gap:180, dur:.50, vol:.10 },
+ volcan:   { notes:[165, 208, 262],         type:'triangle', gap:180, dur:.50, vol:.17 },
  // Océan : arpège qui monte puis redescend, comme une vague qui roule
- ocean:    { notes:[330, 440, 523, 440, 330], type:'sine',   gap:160, dur:.45, vol:.09 },
+ ocean:    { notes:[330, 440, 523, 440, 330], type:'sine',   gap:160, dur:.45, vol:.15 },
  // Banquise : notes hautes, cristallines, espacées — cloches de glace
- banquise: { notes:[784, 988, 1175, 1568],  type:'sine',     gap:190, dur:.55, vol:.08 },
+ banquise: { notes:[784, 988, 1175, 1568],  type:'sine',     gap:190, dur:.55, vol:.14 },
  // Château : accord héroïque puissant, royaume de pierre (do grave-sol-do-mi)
- chateau:  { notes:[262, 392, 523, 659],    type:'triangle', gap:150, dur:.42, vol:.11 },
+ chateau:  { notes:[262, 392, 523, 659],    type:'triangle', gap:150, dur:.42, vol:.18 },
  // Sakura : motif léger et bondissant, comme un pétale qui virevolte
- sakura:   { notes:[659, 784, 880, 1047, 880], type:'triangle', gap:120, dur:.32, vol:.09 },
+ sakura:   { notes:[659, 784, 880, 1047, 880], type:'triangle', gap:120, dur:.32, vol:.15 },
  // Nuit : grave, feutré, très espacé — accord mineur chuchoté dans le noir
- nuit:     { notes:[220, 262, 330, 262],    type:'sine',     gap:200, dur:.60, vol:.07 },
+ nuit:     { notes:[220, 262, 330, 262],    type:'sine',     gap:200, dur:.60, vol:.12 },
  // Espace : intervalles larges éthérés, cosmiques (do-sol-mi-do aigu)
- espace:   { notes:[523, 784, 659, 1047],   type:'sine',     gap:170, dur:.50, vol:.09 },
+ espace:   { notes:[523, 784, 659, 1047],   type:'sine',     gap:170, dur:.50, vol:.15 },
 };
 // v12.4.31 (audit fonctionnel, Phase 2, #F2) : les timers en attente (notes du
 // jingle + narration vocale) sont mémorisés pour pouvoir être annulés si une
@@ -1008,9 +1012,16 @@ function _buildNpcsOverlay(regionId, bbox, zonePositions, shopPos, mapW){
   const lx = ((pos.absX - layerLeftAbs) / Math.max(1, layerW)) * 100;
   const ly = ((pos.absY - bbox.topPx) / Math.max(1, bbox.heightPx)) * 100;
   const delay = (_archHash(regionId, 900+i) * 2).toFixed(2);
+  // v12.4.32 (audit fonctionnel, Phase 3, #F3) : mêmes attributs d'accessibilité
+  // clavier déjà posés sur .archipel-zone (audit UX #6) — tabindex, role, Entrée/
+  // Espace déclenchent le même handler que le clic. Sans ça, le dialogue du PNJ
+  // (et sa narration vocale) était invisible pour toute navigation au clavier.
+  const npcNameEsc = (typeof esc==='function') ? esc(npc.name) : npc.name;
   return `<div class="archipel-npc" data-region="${regionId}" data-npc-idx="${i}"
               style="left:${lx.toFixed(1)}%;top:${ly.toFixed(1)}%;animation-delay:${delay}s;"
               onclick="_npcClicked('${regionId}',${i},'${theme}')"
+              tabindex="0" role="button" aria-label="${npcNameEsc}"
+              onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();_npcClicked('${regionId}',${i},'${theme}')}"
               title="${npc.name}">
            <span class="archipel-npc-emoji">${npc.emoji}</span>
           </div>`;

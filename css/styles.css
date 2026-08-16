@@ -3416,6 +3416,13 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 .archipel-npc:active{
  transform:translate(-50%,-50%) scale(.95);
 }
+/* v12.4.32 (audit fonctionnel, Phase 3, #F3) : anneau de focus visible pour la
+   navigation clavier — même pattern que .archipel-zone[tabindex]:focus-visible. */
+.archipel-npc[tabindex]:focus-visible{
+ outline:3px solid #ffd97a;
+ outline-offset:3px;
+ border-radius:50%;
+}
 .archipel-npc-emoji{
  display:inline-block;
  font-size:1.7em;
