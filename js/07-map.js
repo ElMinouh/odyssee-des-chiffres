@@ -84,6 +84,11 @@ function openMap(){
    if(typeof _maybeShowLivingMapCaption==='function') _maybeShowLivingMapCaption();
   });
  }, 500);
+ // v12.4.34 (audit UX, Lot 2, #U3) : visite guidée courte des contrôles de
+ // la carte (Boussole, Carnet/Mini-carte, états de zone), à la toute première
+ // ouverture réelle — délai volontairement après la narration ci-dessus pour
+ // ne jamais se superposer à un parchemin d'histoire.
+ if(typeof obMaybeAutoStart4==='function') obMaybeAutoStart4();
 }
 
 /**

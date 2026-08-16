@@ -626,14 +626,14 @@
         position" (🎯) est retiré ; la Boussole prend sa place ici, dans la barre de
         commandes. La Mini-carte remonte à l'ancien emplacement de la Boussole,
         alignée avec le Carnet. -->
-   <button class="back-top-btn compass-btn compass-btn-bar" onclick="_spinCompass(this);mapGoToNextZone();" title="Boussole — aller à ma prochaine zone" aria-label="Boussole : aller à ma prochaine zone"><svg class="nav-icon nav-icon-maternelle" aria-hidden="true"><use href="#icon-compass-maternelle"/></svg><svg class="nav-icon nav-icon-primaire" aria-hidden="true"><use href="#icon-compass-primaire"/></svg><svg class="nav-icon nav-icon-college" aria-hidden="true"><use href="#icon-compass-college"/></svg></button>
+   <button class="back-top-btn compass-btn compass-btn-bar" id="btn-compass-map" onclick="_spinCompass(this);mapGoToNextZone();" title="Boussole — aller à ma prochaine zone" aria-label="Boussole : aller à ma prochaine zone"><svg class="nav-icon nav-icon-maternelle" aria-hidden="true"><use href="#icon-compass-maternelle"/></svg><svg class="nav-icon nav-icon-primaire" aria-hidden="true"><use href="#icon-compass-primaire"/></svg><svg class="nav-icon nav-icon-college" aria-hidden="true"><use href="#icon-compass-college"/></svg></button>
   </div>
   <!-- v9.0.2 : boutons fixes (sous Retour/Accueil) + panneaux déroulants verticaux larges -->
   <!-- v12.3.2 (lot 6, audit UX #3/#8) : le Carnet absorbe le Livre (fusionnés en un
        onglet "Journal") — seule la Mini-carte reste un tiroir rapide indépendant,
        désormais positionnée à droite (ex-place du Livre). -->
   <div class="map-side-col map-side-left">
-   <button class="back-top-btn map-carnet-btn" onclick="openAdventureLog()" title="Carnet d'aventure"><svg class="nav-icon nav-icon-maternelle" aria-hidden="true"><use href="#icon-carnet-maternelle"/></svg><svg class="nav-icon nav-icon-primaire" aria-hidden="true"><use href="#icon-carnet-primaire"/></svg><svg class="nav-icon nav-icon-college" aria-hidden="true"><use href="#icon-carnet-college"/></svg> Carnet</button>
+   <button class="back-top-btn map-carnet-btn" id="btn-carnet-map" onclick="openAdventureLog()" title="Carnet d'aventure"><svg class="nav-icon nav-icon-maternelle" aria-hidden="true"><use href="#icon-carnet-maternelle"/></svg><svg class="nav-icon nav-icon-primaire" aria-hidden="true"><use href="#icon-carnet-primaire"/></svg><svg class="nav-icon nav-icon-college" aria-hidden="true"><use href="#icon-carnet-college"/></svg> Carnet</button>
   </div>
   <div class="map-side-col map-side-right">
    <button class="back-top-btn map-tool-btn" id="btn-minimap" onclick="_toggleDrawer('minimap')" title="Mini-carte"><svg class="nav-icon nav-icon-maternelle" aria-hidden="true"><use href="#icon-minimap-maternelle"/></svg><svg class="nav-icon nav-icon-primaire" aria-hidden="true"><use href="#icon-minimap-primaire"/></svg><svg class="nav-icon nav-icon-college" aria-hidden="true"><use href="#icon-minimap-college"/></svg> Mini-carte <span class="drawer-caret">&#9662;</span></button>

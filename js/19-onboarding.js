@@ -253,10 +253,31 @@ const OB_STEPS_3 = [
    nav:{fn:'gotoParams'}, target:'params-list' },
 ];
 
+// ─────────────────────────────────────────────────────────
+// SYSTÈME 4 — Prise en main de la carte d'exploration (audit UX, #U3)
+// ─────────────────────────────────────────────────────────
+// v12.4.34 : 3 étapes courtes, déclenchées à la toute première ouverture
+// RÉELLE de la carte (pas depuis l'écran d'accueil, où le Système 3 ne fait
+// déjà qu'évoquer l'Odyssée en une phrase). Contrairement aux Systèmes 1/2/3
+// (visites exhaustives), celle-ci reste volontairement très courte : elle ne
+// couvre QUE ce qui n'est pas évident au premier coup d'œil sur cet écran
+// précis (Boussole, distinction Carnet/Mini-carte, sens des 3 états de zone).
+const OB_STEPS_4 = [
+ { icon:'🧭', title:'La Boussole',
+   body:"Ce bouton t'emmène directement à ta prochaine zone à explorer — pratique pour ne jamais chercher longtemps où continuer ton aventure.",
+   target:'btn-compass-map' },
+ { icon:'📖', title:'Carnet et Mini-carte',
+   body:"Le <b>Carnet</b> (à gauche) montre ta progression complète, ton histoire et tes récompenses. La <b>Mini-carte</b> (à droite) sert juste à sauter rapidement à une autre région déjà débloquée, sans tout ouvrir.",
+   target:'btn-carnet-map', extraTarget:'btn-minimap' },
+ { icon:'🔒', title:'Les zones de la carte',
+   body:"Une zone <b>dorée</b> t'attend, une zone avec une <b>coche verte</b> est déjà terminée (tu peux la rejouer !), et une zone avec un <b>cadenas</b> se débloquera une fois la précédente terminée.<br><br>🎉 Tu es prêt·e à explorer !",
+ },
+];
+
 // ═══════════════════════════════════════════════════════
 // MOTEUR GÉNÉRIQUE
 // ═══════════════════════════════════════════════════════
-let _obSystem = null;   // 1, 2 ou 3 (système en cours) ou null
+let _obSystem = null;   // 1, 2, 3 ou 4 (système en cours) ou null
 let _obIdx = 0;
 let _obSteps = [];
 // v11.6.5 : nom du profil créé à l'étape 2 du Système 1 pendant LA VISITE
@@ -265,7 +286,7 @@ let _obSteps = [];
 // sélecteur de profil garde son comportement normal (choix manuel).
 let _obPendingProfile = null;
 
-function _obStepsFor(n){ return n===1?OB_STEPS_1:(n===2?OB_STEPS_2:OB_STEPS_3); }
+function _obStepsFor(n){ return n===1?OB_STEPS_1:(n===2?OB_STEPS_2:(n===3?OB_STEPS_3:OB_STEPS_4)); }
 
 // Appelée par pmAddProfile() (09-parent.js) au moment de la création d'un
 // profil. Ne mémorise le nom que si on est bien en train de dérouler le
@@ -305,6 +326,17 @@ function ob3IsCompleted(){ return !!(typeof P!=='undefined' && P && P.onbAccount
 function ob3MarkCompleted(){
  if(typeof P!=='undefined' && P){
   P.onbAccountSeen = true;
+  if(typeof saveProfileNow==='function') saveProfileNow();
+  else if(typeof saveProfile==='function') saveProfile();
+ }
+}
+
+// ── Système 4 (audit UX, #U3) : même mécanique PAR PROFIL que le Système 3,
+// marqueur dédié pour ne pas interférer avec lui. ──
+function ob4IsCompleted(){ return !!(typeof P!=='undefined' && P && P.onbMapSeen); }
+function ob4MarkCompleted(){
+ if(typeof P!=='undefined' && P){
+  P.onbMapSeen = true;
   if(typeof saveProfileNow==='function') saveProfileNow();
   else if(typeof saveProfile==='function') saveProfile();
  }
@@ -578,6 +610,10 @@ function obSkip(){
  _obPendingProfile = null;
  _obCollapseAllAccordions();
  if(n===1||n===2) _obMarkSeen(n);
+ // v12.4.34 (#U3) : contrairement au Système 3 (visite longue, qui relance
+ // tant qu'elle n'est pas COMPLÉTÉE), la visite de la carte est courte et
+ // volontairement non-insistante — "Passer" suffit à ne plus la reproposer.
+ if(n===4) ob4MarkCompleted();
  if(typeof _obRefreshButtons==='function') _obRefreshButtons();
 }
 
@@ -592,6 +628,7 @@ function _obFinishClick(){
  _obCollapseAllAccordions();
  if(n===1||n===2){ _obMarkSeen(n); _obMarkCompleted(n); }
  if(n===3){ ob3MarkCompleted(); }
+ if(n===4){ ob4MarkCompleted(); }
  if(typeof _obRefreshButtons==='function') _obRefreshButtons();
  if(_obShouldChainToSystem2(n)){
   setTimeout(()=>{ obStart(2); }, 350);
@@ -608,6 +645,15 @@ function _obShouldChainToSystem2(n){ return n===1 && !obIsSeen(2); }
 function _obShouldAutoStart1(){ return !obIsSeen(1); }
 function _obShouldFallbackStart2(){ return obIsCompleted(1) && !obIsSeen(2); }
 function _obShouldAutoStart3(){ return !!(typeof P!=='undefined' && P && P.name && !P.onbAccountSeen); }
+// v12.4.34 (audit UX, #U3) : la visite de la carte ne doit jamais se
+// déclencher PAR-DESSUS une autre modale déjà ouverte sur cet écran (fiche
+// de zone, Carnet, boutique, parchemin d'histoire...) — on réutilise le
+// marqueur `has-overlay` déjà maintenu par 07-story.js (voir commentaire
+// "anti-jank" à sa définition) plutôt que de réinventer une détection.
+function _obShouldAutoStart4(){
+ return !!(typeof P!=='undefined' && P && P.name && !P.onbMapSeen
+  && !(typeof document!=='undefined' && document.body && document.body.classList.contains('has-overlay')));
+}
 // v11.7.44 (correctif signalé par Cyril) : tant qu'AUCUN profil n'existe dans
 // le trousseau, l'installation de démarrage doit revenir à chaque chargement
 // de l'app — même si le parent a déjà cliqué "Passer" une fois. Volontairement
@@ -661,6 +707,18 @@ function obMaybeAutoStart3(){
  if(_obSystem) return;
  if(_obShouldAutoStart3()){
   setTimeout(()=>{ if(!_obSystem) obStart(3); }, 400);
+ }
+}
+
+// v12.4.34 (audit UX, #U3) : appelé depuis openMap() (07-map.js), à chaque
+// ouverture de la carte — la garde _obShouldAutoStart4() (marqueur par
+// profil + absence d'overlay) fait que ça ne se déclenche réellement
+// qu'une fois, à la première ouverture réelle, jamais par-dessus une autre
+// modale (fiche de zone, parchemin d'histoire déjà en train de s'afficher…).
+function obMaybeAutoStart4(){
+ if(_obSystem) return;
+ if(_obShouldAutoStart4()){
+  setTimeout(()=>{ if(!_obSystem && _obShouldAutoStart4()) obStart(4); }, 1400);
  }
 }
 
