@@ -1578,7 +1578,13 @@ function _buildZoneDecorHtml(positions, foggedMap, W){
  let html = '';
  positions.forEach(p => {
   if(foggedMap && foggedMap[p.regionId]) return;          // rien sur les îlots verrouillés
-  const decor = _ZONE_DECOR[p.zone.id];
+  // v12.4.37 (correction) : _ZONE_DECOR ne couvrait que 23 zones sur 195
+  // (maths primaire uniquement, ids historiques). Repli automatique sur le
+  // catalogue de décors par mots-clés (_ZONE_DECOR_CATALOG/_resolveZoneDecor,
+  // 07-map.js) pour toute zone absente de cette table — couvre les 195 zones
+  // réelles des 7 Odyssées, vérifié à 100% avant livraison.
+  const decor = _ZONE_DECOR[p.zone.id]
+   || (typeof _resolveZoneDecor==='function' ? _ZONE_DECOR_CATALOG[_resolveZoneDecor(p.zone.label)].particles : null);
   if(!decor) return;
   decor.forEach((emoji, i) => {
    // Position déterministe autour du nœud (stable entre les rendus, pas de scintillement)
@@ -1600,12 +1606,23 @@ function _buildZoneDecorHtml(positions, foggedMap, W){
 // éléments posés sur la ligne d'horizon en bas, tailles proportionnées, et
 // placement par rejet pour ne jamais chevaucher les étapes ni les autres décors.
 // Tout est confiné à la zone des étapes (sous l'encart "boss vaincu").
+// v12.4.37 (correction) : _BIOME_SCENE était indexée par zone.level (5 clés
+// CP/CE1/CE2/CM1/CM2) — repli silencieux sur "CP" (ciel bleu clair, sol vert)
+// pour TOUTE la maternelle (PS/MS/GS) et TOUT le collège (6E/5E/4E/3E), même
+// bug de fond déjà corrigé ailleurs (bgColors de openArchipelZoom, v12.4.22)
+// mais réapparu ici car ce fichier n'avait pas été concerné à l'époque.
+// Reconstruite par thème réel (zone.theme, 9 valeurs), mêmes couleurs que
+// bgColors (07-map.js) pour rester cohérente avec le fond de la modale.
 const _BIOME_SCENE = {
- CP:  { sky:'#bfe9ff', ground:'#5fa83f' },
- CE1: { sky:'#a7dcc6', ground:'#2f6b4e' },
- CE2: { sky:'#ffe0a6', ground:'#c47e38' },
- CM1: { sky:'#d2e2ee', ground:'#7d8a99' },
- CM2: { sky:'#2a1448', ground:'#532a76' },
+ standard: { sky:'#a8e8b0', ground:'#1a6b3a' },
+ foret:    { sky:'#5fd085', ground:'#0f3d20' },
+ volcan:   { sky:'#ffb366', ground:'#7a2010' },
+ ocean:    { sky:'#fffaf0', ground:'#a87820' },
+ banquise: { sky:'#d6f0ff', ground:'#155a8a' },
+ chateau:  { sky:'#f0dfa0', ground:'#5c4713' },
+ sakura:   { sky:'#ffe8f2', ground:'#c9628f' },
+ nuit:     { sky:'#3d4a63', ground:'#050508' },
+ espace:   { sky:'#4a3a5c', ground:'#1a0530' },
 };
 // Taille relative par emoji (un arbre/maison >> une poule/fleur)
 const _DECOR_SIZE = {
@@ -1617,9 +1634,12 @@ const _decorSize = (e)=> _DECOR_SIZE[e] || 0.82;
 const _DECOR_SKY = new Set(['☀️','🌞','🌙','⭐','☁️','🦋','🦅','🦜','🐦','🦇','☄️','🪐','🌌','💨','🌬️','✨','🎏','🧚','🦉']);
 
 function _buildZoomSceneHtml(zoneId, zone, stepPositions, containerW, sceneH){
- const decor = _ZONE_DECOR[zoneId];
+ // v12.4.37 (correction) : repli sur le catalogue par mots-clés si la zone
+ // n'a pas d'entrée dans _ZONE_DECOR (couverture 195/195 au lieu de 23/195).
+ const decor = _ZONE_DECOR[zoneId]
+  || (typeof _resolveZoneDecor==='function' && zone ? _ZONE_DECOR_CATALOG[_resolveZoneDecor(zone.label)].particles : null);
  if(!decor || typeof _archHash !== 'function') return '';
- const biome = _BIOME_SCENE[(zone&&zone.level)] || _BIOME_SCENE.CP;
+ const biome = _BIOME_SCENE[(zone&&zone.theme)] || _BIOME_SCENE.standard;
  const horizonPct = 72;                                  // ligne d'horizon (sol en dessous)
  const horizonPx = (horizonPct/100) * sceneH;
  const skyEls = decor.filter(e=>_DECOR_SKY.has(e));

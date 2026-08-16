@@ -937,69 +937,17 @@ function _resolveZoneDecor(label){
  return 'prairie'; // repli neutre si un futur libellé ne matche jamais rien
 }
 
-// Familles de silhouette de sol (regroupent les 32 décors en 7 profils de
-// terrain visuellement distincts, pour ne pas avoir à dessiner 32 silhouettes
-// uniques) — un village et un marché partagent la silhouette "toits", un
-// forum romain et l'Égypte antique partagent "colonnades", etc.
-const _ZONE_DECOR_SILHOUETTE = {
- chateau:'M0,70 L0,45 L15,45 L15,30 L25,30 L25,45 L45,45 L45,20 L55,20 L55,45 L75,45 L75,30 L85,30 L85,45 L100,45 L100,70 Z',
- cloitre:'M0,70 L0,45 L15,45 L15,30 L25,30 L25,45 L45,45 L45,20 L55,20 L55,45 L75,45 L75,30 L85,30 L85,45 L100,45 L100,70 Z',
- village:'M0,70 L0,40 L20,25 L40,40 L40,70 M60,70 L60,35 L80,20 L100,35 L100,70',
- marche:'M0,70 L0,40 L20,25 L40,40 L40,70 M60,70 L60,35 L80,20 L100,35 L100,70',
- romain:'M0,70 L0,30 L8,30 L8,70 M20,70 L20,30 L28,30 L28,70 M40,70 L40,30 L48,30 L48,70 M60,70 L60,30 L68,30 L68,70 M80,70 L80,30 L88,30 L88,70',
- egypte:'M0,70 L0,30 L8,30 L8,70 M20,70 L20,30 L28,30 L28,70 M40,70 L40,30 L48,30 L48,70 M60,70 L60,30 L68,30 L68,70 M80,70 L80,30 L88,30 L88,70',
- moyenage:'M0,70 L0,30 L8,30 L8,70 M20,70 L20,30 L28,30 L28,70 M40,70 L40,30 L48,30 L48,70 M60,70 L60,30 L68,30 L68,70 M80,70 L80,30 L88,30 L88,70',
- foret:'M10,70 L10,40 Q0,30 10,20 Q20,10 25,20 Q35,10 30,30 Q40,35 30,45 L30,70 M60,70 L60,35 Q50,25 60,15 Q70,5 75,15 Q85,5 80,25 Q90,30 80,40 L80,70',
- champignon:'M10,70 L10,40 Q0,30 10,20 Q20,10 25,20 Q35,10 30,30 Q40,35 30,45 L30,70 M60,70 L60,35 Q50,25 60,15 Q70,5 75,15 Q85,5 80,25 Q90,30 80,40 L80,70',
- verger:'M10,70 L10,40 Q0,30 10,20 Q20,10 25,20 Q35,10 30,30 Q40,35 30,45 L30,70 M60,70 L60,35 Q50,25 60,15 Q70,5 75,15 Q85,5 80,25 Q90,30 80,40 L80,70',
- sakura:'M10,70 L10,40 Q0,30 10,20 Q20,10 25,20 Q35,10 30,30 Q40,35 30,45 L30,70 M60,70 L60,35 Q50,25 60,15 Q70,5 75,15 Q85,5 80,25 Q90,30 80,40 L80,70',
- prehistoire:'M10,70 L10,40 Q0,30 10,20 Q20,10 25,20 Q35,10 30,30 Q40,35 30,45 L30,70 M60,70 L60,35 Q50,25 60,15 Q70,5 75,15 Q85,5 80,25 Q90,30 80,40 L80,70',
- montagne:'M0,70 L20,25 L35,45 L50,10 L70,45 L85,25 L100,70 Z',
- desert:'M0,70 L20,25 L35,45 L50,10 L70,45 L85,25 L100,70 Z',
- volcan:'M0,70 L20,25 L35,45 L50,10 L70,45 L85,25 L100,70 Z',
- pont:'M0,70 L20,25 L35,45 L50,10 L70,45 L85,25 L100,70 Z',
- grotte:'M0,70 L0,50 Q0,20 30,15 Q60,10 70,30 Q90,20 100,40 L100,70 Z',
- bibliotheque:'M0,70 L0,50 Q0,20 30,15 Q60,10 70,30 Q90,20 100,40 L100,70 Z',
- theatre:'M0,70 L0,50 Q0,20 30,15 Q60,10 70,30 Q90,20 100,40 L100,70 Z',
- mecanique:'M0,70 L0,50 Q0,20 30,15 Q60,10 70,30 Q90,20 100,40 L100,70 Z',
- abstrait:'M0,70 L0,50 Q0,20 30,15 Q60,10 70,30 Q90,20 100,40 L100,70 Z',
- langue:'M0,70 L0,50 Q0,20 30,15 Q60,10 70,30 Q90,20 100,40 L100,70 Z',
- plage:'M0,70 L0,45 Q15,35 30,45 T60,45 T90,45 T100,45 L100,70 Z',
- port:'M0,70 L0,45 Q15,35 30,45 T60,45 T90,45 T100,45 L100,70 Z',
- 'ocean-profond':'M0,70 L0,45 Q15,35 30,45 T60,45 T90,45 T100,45 L100,70 Z',
- ile:'M0,70 L0,45 Q15,35 30,45 T60,45 T90,45 T100,45 L100,70 Z',
- ruisseau:'M0,70 L0,45 Q15,35 30,45 T60,45 T90,45 T100,45 L100,70 Z',
- glace:'M0,70 L0,45 Q15,35 30,45 T60,45 T90,45 T100,45 L100,70 Z',
- prairie:'M0,70 L0,55 Q50,35 100,55 L100,70 Z',
- observatoire:'M0,70 L0,55 Q50,35 100,55 L100,70 Z',
- nuit:'M0,70 L0,55 Q50,35 100,55 L100,70 Z',
- espace:'M0,70 L0,55 Q50,35 100,55 L100,70 Z',
-};
-
-// Génère la scène décorative de fond de la fiche de zone (silhouette de sol +
-// particules flottantes), spécifique au LIEU réel plutôt qu'au thème large.
-// Positions déterministes (par zoneId), stables d'une ouverture à l'autre.
-function _buildZoomSceneHtml(zoneId, zone, stepPositions, containerW, containerH){
- const decor = _resolveZoneDecor(zone.label);
- const cat = _ZONE_DECOR_CATALOG[decor];
- const silhouette = _ZONE_DECOR_SILHOUETTE[decor] || _ZONE_DECOR_SILHOUETTE.prairie;
- const groundColor = 'var(--zone-bg-bot)';
- const positions = [
-  {l:14, t:9}, {l:80, t:7}, {l:70, t:33}, {l:20, t:52}, {l:84, t:64},
- ];
- const particlesHtml = positions.map((p, i) => {
-  const emoji = cat.particles[i % cat.particles.length];
-  const dur = (5.5 + _archHash(zoneId, 4100+i) * 3).toFixed(1);
-  const delay = (_archHash(zoneId, 4200+i) * 3).toFixed(1);
-  const size = (1.1 + _archHash(zoneId, 4300+i) * 0.6).toFixed(2);
-  return `<div class="archipel-zoom-decor" style="left:${p.l}%;top:${p.t}%;font-size:${size}em;animation-duration:${dur}s;animation-delay:-${delay}s;">${emoji}</div>`;
- }).join('');
- return `
-  <svg class="zoom-scene-ground" viewBox="0 0 100 70" preserveAspectRatio="none" style="width:100%;height:70px;">
-   <path d="${silhouette}" style="fill:${groundColor};stroke:${groundColor};" opacity="0.55" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
-  </svg>
-  ${particlesHtml}`;
-}
+// v12.4.37 (correction) : la scène décorative de la fiche de zone est en
+// réalité déjà gérée par un moteur plus riche et préexistant dans 07-boss.js
+// (_buildZoomSceneHtml, ciel/sol séparés, évitement des pastilles) que je
+// n'avais pas repéré lors de la 1ère implémentation — ma propre fonction du
+// même nom, définie plus loin dans 07-map.js, était silencieusement écrasée
+// par celle de 07-boss.js (chargé après, "dernière déclaration globale
+// gagne"), d'où l'absence totale d'effet malgré un code par ailleurs correct.
+// Le catalogue de décors précis (_ZONE_DECOR_CATALOG/_ZONE_DECOR_ORDER/
+// _resolveZoneDecor) ci-dessus reste utilisé, mais désormais comme SOURCE DE
+// SECOURS pour le moteur existant (_ZONE_DECOR dans 07-boss.js), qui ne
+// couvrait que 23 zones sur 195 (maths primaire uniquement) — voir 07-boss.js.
 
 const _WEATHER_BY_THEME = {
  standard: { emojis:['🦋','🌸','🐝','🍀'],     count:5, anim:'drift'   },
