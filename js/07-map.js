@@ -273,7 +273,14 @@ function openOdysseeSelect(){
   const t=document.getElementById('ody-sel-title'); if(t) t.textContent=fr?"L'Odyssée : l'aventure littéraire":hist?"L'Odyssée : l'aventure historique":"L'Odyssée : l'aventure mathématique";
   const su=document.getElementById('ody-sel-sub'); if(su) su.textContent=fr?"Maîtrise les secrets du langage":hist?"Voyage à travers les époques":"Choisis ton aventure";
   const ms=document.getElementById('ody-mat-sub'); if(ms) ms.textContent = matLocked ? '🔒 Bientôt disponible' : (fr?"Le Grand Livre du Conteur":"Le Pays des Couleurs");
-  const ps=document.getElementById('ody-prim-sub'); if(ps) ps.textContent=fr?"Le journal intime":hist?"Les Trois Héritages":"L'Ombre sur Calcultopia";
+  // v12.4.27 (nouvel audit Esthétique/Ergonomie/Narratif, Lot 1, #A1) : le sous-titre
+  // Histoire était codé en dur ("Les Trois Héritages"), différent du vrai titre narratif
+  // (_PRIM_STORY_HIST.intro.title = "Prologue — L'héritage") affiché ensuite sur la carte
+  // et dans le Carnet via _odysseyDisplayMeta(). Lecture directe de la même source pour
+  // qu'il n'existe plus qu'un seul titre visible du début à la fin du parcours joueur.
+  const histTitle = (typeof _PRIM_STORY_HIST!=='undefined' && _PRIM_STORY_HIST.intro && _PRIM_STORY_HIST.intro.title)
+    ? _PRIM_STORY_HIST.intro.title.replace(/^Prologue\s*[—-]\s*/, '') : "Les Trois Héritages";
+  const ps=document.getElementById('ody-prim-sub'); if(ps) ps.textContent=fr?"Le journal intime":hist?histTitle:"L'Ombre sur Calcultopia";
   const cs=document.getElementById('ody-col-sub'); if(cs) cs.textContent = colLocked ? '🔒 Bientôt disponible' : (fr?"La Bibliothèque infinie":"Le Forgeron des Étoiles");
   _setOdysseyTileLock('ody-btn-mat', matLocked, 'mat');
   _setOdysseyTileLock('ody-btn-prim', false, 'prim');
@@ -2196,7 +2203,10 @@ function openArchipelZoom(zoneId){
    <div class="archipel-zoom-header">
     <div style="font-size:2em;line-height:1;">${zone.emoji}</div>
     <div class="archipel-zoom-title">${zone.label}</div>
-    <div class="archipel-zoom-sub">${zone.level} · ${done}/${total} étapes franchies</div>
+    <!-- v12.4.27 (Lot 1, #B1) : zone.level affiché via _levelLabel() (déjà utilisé
+         ailleurs dans le projet) au lieu du code brut ("PS", "6E"), illisible pour
+         les familles de maternelle/collège. -->
+    <div class="archipel-zoom-sub">${(typeof _levelLabel==='function') ? _levelLabel(zone.level) : zone.level} · ${done}/${total} étapes franchies</div>
     ${(P.mapBossBeaten||[]).includes(zoneId) ? `
     <div class="archipel-zoom-trophy-banner" title="Zone conquise">
      <span class="archipel-zoom-trophy-emoji">${zone.boss||'🏆'}</span>
