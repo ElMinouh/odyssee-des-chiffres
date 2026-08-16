@@ -3408,6 +3408,14 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  animation:npcIdleBob 2.4s ease-in-out infinite;
  transition:transform var(--dur-fast) ease;
  filter:drop-shadow(0 2px 4px rgba(0,0,0,.55));
+ /* v12.4.33 (audit UX, Lot 1, #U4) : cible tactile élargie à 44×44px minimum
+    (loi de Fitts + WCAG 2.5.8), sans agrandir le glyphe emoji affiché —
+    la zone .archipel-zone-circle voisine avait déjà ce traitement (54px). */
+ min-width:44px;
+ min-height:44px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
 }
 .archipel-npc:hover{
  transform:translate(-50%,-50%) scale(1.18);
@@ -4126,6 +4134,8 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  flex-wrap:wrap;
 }
 .map-cmd-btn{ background:#34495e; font-size:.82em; padding:var(--space-1) var(--space-3); margin:0; }
+/* v12.4.33 (audit UX, Lot 1, #U2) : état désactivé visible aux bornes de zoom */
+.map-cmd-btn:disabled{ opacity:.35; cursor:not-allowed; filter:grayscale(.4); }
 #map-zoom-label{
  font-size:.8em; color:#fff; min-width:84px; text-align:center;
  text-shadow:0 1px 3px rgba(0,0,0,.85); font-weight:600;

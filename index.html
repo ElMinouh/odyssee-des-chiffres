@@ -17,7 +17,7 @@
 <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png?v=1058">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=1058">
 <link rel="stylesheet" href="assets/fonts/google-fonts.css">
-<link rel="stylesheet" href="css/styles.css?v=1075">
+<link rel="stylesheet" href="css/styles.css?v=1076">
 </head>
 <body id="BODY">
 <svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true">
@@ -619,9 +619,9 @@
   </div>
   <!-- v9.0.0 : ligne 2 — commandes remontées -->
   <div id="map-zoom-bar">
-   <button onclick="mapZoomOut()" class="map-cmd-btn" aria-label="Dézoomer la carte">&#128270;&#8722;</button>
+   <button onclick="mapZoomOut()" id="map-zoom-out-btn" class="map-cmd-btn" aria-label="Dézoomer la carte">&#128270;&#8722;</button>
    <span id="map-zoom-label">Vue régions</span>
-   <button onclick="mapZoomIn()" class="map-cmd-btn" aria-label="Zoomer la carte">&#128270;&#43;</button>
+   <button onclick="mapZoomIn()" id="map-zoom-in-btn" class="map-cmd-btn" aria-label="Zoomer la carte">&#128270;&#43;</button>
    <!-- v12.4.2 (audit DA Aventure, Lot 1 — réagencement) : le bouton "Centrer sur ma
         position" (🎯) est retiré ; la Boussole prend sa place ici, dans la barre de
         commandes. La Mini-carte remonte à l'ancien emplacement de la Boussole,

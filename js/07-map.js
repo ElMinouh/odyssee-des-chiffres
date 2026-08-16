@@ -1755,6 +1755,20 @@ function _animateAlongSegments(avatarEl, segmentPositions, viewportW, containerS
  });
 }
 
+// v12.4.33 (audit UX, Lot 1, #U1) : feedback léger sur un clic/tap sur une
+// zone (ou une région, voir mini-carte) encore verrouillée — auparavant
+// totalement silencieux, ce qui ne permettait pas de distinguer "pas encore
+// débloqué" d'un jeu figé. Réutilise toast()/beep() déjà présents partout
+// ailleurs dans le jeu, aucun nouveau mécanisme.
+let _lockedFeedbackCooldown = 0;
+function _lockedZoneClicked(){
+ const now = Date.now();
+ if(now - _lockedFeedbackCooldown < 1200) return; // évite le spam en cas de taps répétés
+ _lockedFeedbackCooldown = now;
+ if(typeof toast === 'function') toast('🔒 Termine la zone précédente pour débloquer celle-ci !');
+ if(typeof beep === 'function') beep(220, 'square', .15, .08);
+}
+
 // Wrapper public : déplace l'avatar de la carte mondiale vers la zone cliquée,
 // puis ouvre la modale zoom. Multi-segments : parcourt tout le sentier réel.
 function requestZoneOpen(zoneId){
@@ -1918,14 +1932,18 @@ function renderMap(){
   const starHtml = (canPlay && !done) ? `<div class="archipel-zone-star"><svg viewBox="0 0 40 40" aria-hidden="true"><use href="#icon-zone-star"/></svg></div>` : '';
   const reqHtml = ''; // progression linéaire : plus de seuil d'étoiles affiché
   const interactive = (canPlay || done); // 'done' : zone conquise toujours re-jouable
-  const onclick = interactive ? `onclick="requestZoneOpen('${z.id}')"` : '';
+  const onclick = interactive ? `onclick="requestZoneOpen('${z.id}')"`
+   // v12.4.33 (audit UX, Lot 1, #U1) : une zone verrouillée ne restait plus
+   // totalement muette — un tap/clic déclenche un toast + un bip de refus,
+   // au lieu de ne produire aucune réaction visible/sonore.
+   : `onclick="_lockedZoneClicked()"`;
   // v12.3.2 (audit UX #6) : les zones jouables/terminées deviennent focusables
   // et activables au clavier (Entrée/Espace), au même titre qu'au clic/tap.
-  // Les zones verrouillées restent hors du parcours clavier, comme elles le
-  // sont déjà hors du parcours au clic.
   const a11y = interactive
    ? `tabindex="0" role="button" aria-label="${esc(z.label)}${done?' — zone terminée, rejouer':' — ouvrir cette zone'}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();requestZoneOpen('${z.id}')}"`
-   : '';
+   // v12.4.33 (#U1) : verrouillée reste hors du parcours Tab (comme avant),
+   // mais devient tout de même activable au clic/tap avec un vrai feedback.
+   : `aria-label="${esc(z.label)} — verrouillée"`;
   return `
    <div class="${cls}" style="left:${p.xPct.toFixed(1)}%;top:${p.y}px;" data-zone-id="${z.id}" ${onclick} ${a11y}>
     <div class="archipel-zone-circle">${z.emoji}${checkHtml}${lockHtml}${starHtml}</div>
@@ -2462,6 +2480,13 @@ function _applyMapZoom(){
                   : _mapZoom==='veryclose'? 'Vue détaillée'
                   : 'Vue régions';
  }
+ // v12.4.33 (audit UX, Lot 1, #U2) : les boutons +/- restaient cliquables
+ // visuellement même à la borne atteinte, sans donner le moindre signe qu'ils
+ // ne font plus rien. On les désactive désormais (attribut natif `disabled`,
+ // gère à la fois l'aspect visuel et l'accessibilité clavier/lecteur d'écran).
+ const btnOut = $('map-zoom-out-btn'), btnIn = $('map-zoom-in-btn');
+ if(btnOut) btnOut.disabled = (_mapZoom === 'overview');
+ if(btnIn)  btnIn.disabled  = (_mapZoom === 'veryclose');
 }
 // v8.7.59 (O3-C.6.2) : MINI-MAP — vignette verticale des régions sous le carnet.
 // Montre les 6 régions empilées (haut→bas), grise les verrouillées, marque la
@@ -2474,7 +2499,9 @@ function _refreshMiniMap(avatarRegionId, foggedMap, avatarRatioY, avatarEmoji){
   const fogged = !!(foggedMap && foggedMap[r.id]);
   const active = (r.id === avatarRegionId);
   return `<div class="drawer-row${fogged?' locked':''}${active?' active':''}" style="--row-c:${meta.accent||'#888'};" `
-    + (fogged?'':`onclick="_miniMapGoTo('${r.id}')"`) + ` role="button" title="${r.label}${fogged?' (verrouillé)':''}">`
+    // v12.4.33 (audit UX, Lot 1, #U1) : une région verrouillée réagit désormais
+    // au clic (toast + bip), au lieu d'être totalement inerte comme avant.
+    + (fogged?`onclick="_lockedZoneClicked()"`:`onclick="_miniMapGoTo('${r.id}')"`) + ` role="button" title="${r.label}${fogged?' (verrouillé)':''}">`
     + `<div class="drawer-row-badge">${fogged?'🔒':(meta.emoji||'•')}</div>`
     + `<div class="drawer-row-label">${r.label}${active?' <span class="drawer-row-sub">• ici</span>':''}</div>`
     + `</div>`;
