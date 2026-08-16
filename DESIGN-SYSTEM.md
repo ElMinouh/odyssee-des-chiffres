@@ -116,17 +116,64 @@ Histoire Primaire v12.4.19) avant d'être documenté ici.
 Chaque zone doit avoir un champ `theme` cohérent avec SON histoire, choisi parmi les 9
 valeurs existantes (`standard`, `foret`, `volcan`, `ocean`, `banquise`, `chateau`,
 `sakura`, `nuit`, `espace` — voir `styles[theme]` dans `_renderIslandSvg`, `07-map.js`).
-Ce thème pilote automatiquement : la couleur/texture de l'îlot, ses motifs décoratifs,
-les PNJ (`_NPCS_BY_THEME`) et la météo (`_WEATHER_BY_THEME`) de la région — un thème mal
-choisi déforme les quatre à la fois. Ne jamais laisser un thème par défaut/hérité sans
-vérifier qu'il correspond au lieu réellement décrit par le label de la zone.
+Ce thème pilote automatiquement, via la source unique `_THEME_META`/`_themeOfRegion()`
+(`07-map.js`) : la couleur/texture de l'îlot, ses motifs décoratifs, les PNJ
+(`_NPCS_BY_THEME`) et la météo (`_WEATHER_BY_THEME`) de la région, **et aussi** — depuis
+le nouvel audit Esthétique/Ergonomie/Narratif (v12.4.22 à v12.4.26) — le fond de la
+fiche de zone, la bannière de transition entre régions, la mini-carte, le Journal et la
+Progression du Carnet, ainsi que la signature sonore régionale (`_THEME_AUDIO_SIGNATURE`,
+v12.4.26). Un thème mal choisi déforme désormais **tous** ces composants à la fois — pas
+seulement l'îlot/les PNJ/la météo comme avant cette série de correctifs. Ne jamais
+laisser un thème par défaut/hérité sans vérifier qu'il correspond au lieu réellement
+décrit par le label de la zone.
 
-### 5. Design system (rayons, ombres, espacements, durées)
+Deux mécanismes supplémentaires, automatiques, ne nécessitent aucune action pour une
+nouvelle Odyssée :
+- **Variantes de silhouette d'îlot** (`_islandVariantIdx`, v12.4.29) : chaque forme
+  (colline, feuille, dune, citadelle, nébuleuse, mandala) a 3 variantes, choisies de
+  façon déterministe selon l'Odyssée (`GM.adventure`) — une nouvelle Odyssée obtient
+  automatiquement des silhouettes différentes des 7 existantes pour une même forme,
+  sans rien configurer.
+- **Libellé de niveau lisible** (`_levelLabel()`, `05-profile.js`, réutilisé dans la
+  fiche de zone depuis v12.4.27) : ne jamais afficher `zone.level` brut (« PS », « 6E »)
+  dans un nouvel écran — toujours passer par `_levelLabel(zone.level)`.
+
+### 7. Le titre affiché sur la carte et le Carnet doit être le même partout
+
+Le titre narratif en tête de la carte et du Carnet vient de `_STORY.intro.title` (préfixe
+« Prologue — » retiré automatiquement, voir `_odysseyDisplayMeta()`, `07-map.js`,
+v12.4.25). **Ce même titre doit être utilisé partout ailleurs où l'Odyssée est nommée**,
+en particulier l'écran de sélection des Odyssées (`openOdysseeSelect()`) — ne jamais y
+recopier un nom à la main sans vérifier qu'il correspond exactement à `_STORY.intro.title`.
+Une divergence entre les deux (titre différent sur l'écran de sélection et sur la carte)
+s'est déjà produite et a dû être corrigée après coup (v12.4.28, Odyssée Histoire :
+« Les Trois Héritages » vs « L'héritage ») — vérifier ce point avant publication plutôt
+que de le découvrir via un retour utilisateur.
+
+### 8. Tout élément cliquable de la carte doit être accessible au clavier
+
+Zones (`.archipel-zone`) et PNJ (`.archipel-npc`) suivent le même pattern : `tabindex="0"
+role="button" aria-label="..."` + un `onkeydown` qui déclenche le même handler que
+`onclick` sur Entrée/Espace, avec un anneau de focus visible en CSS
+(`[tabindex]:focus-visible{ outline:3px solid #ffd97a; outline-offset:3px; }`). Tout
+nouvel élément interactif posé sur la carte (nouveau type de PNJ, décor cliquable...)
+doit reprendre ce même pattern dès sa création — ne pas attendre un audit d'accessibilité
+pour l'ajouter après coup (voir F3, audit fonctionnel, v12.4.32, pour l'exemple corrigé).
+
+### 9. Les effets sonores respectent déjà un réglage global — ne pas le contourner
+
+Depuis v12.4.30, `beep()` (`01-core.js`) vérifie `_sfxEnabled()` avant de jouer quoi que
+ce soit. Tout nouveau son du module Aventure (jingle, bip de confirmation...) qui passe
+par `beep()`/`pNote()` respecte donc automatiquement ce réglage — ne jamais appeler
+`pNote()` directement en contournant `beep()`, sous peine de rendre ce son insensible au
+réglage « 🔔 Effets sonores ».
+
+### 10. Design system (rayons, ombres, espacements, durées)
 
 Voir les sections « Règle d'or » et « Tokens disponibles » plus haut dans ce document —
 s'applique à tout nouveau composant visuel, pas seulement aux Odyssées.
 
-### 6. Réutiliser le motif ornemental ❖ plutôt qu'en inventer un nouveau
+### 11. Réutiliser le motif ornemental ❖ plutôt qu'en inventer un nouveau
 
 Pour tout nouveau titre/en-tête ajouté (section de Carnet, nom affiché en grand...),
 reprendre le pattern déjà posé sur `.archipel-region-name`, `.archipel-zone-label`,
@@ -139,6 +186,12 @@ réelle (ex. titre de carte : largeur contrainte + troncature, écarté pour cet
 Ce fichier documente l'état du design system tel qu'il ressort de l'audit graphique/DA
 du module Aventure (voir `Audit-Graphique-DA-Module-Aventure.docx`), des correctifs des
 Lots 1 à 7 qui en découlent (v12.4.6 à v12.4.11), des 3 points hors-lot de direction
-artistique (v12.4.12/12.4.13), et du chantier des 86 répliques de boss avec correction
-des identités (v12.4.14 à v12.4.21). À mettre à jour si de nouveaux tokens, familles de
-composants, ou règles de cohérence narrative sont introduits.
+artistique (v12.4.12/12.4.13), du chantier des 86 répliques de boss avec correction des
+identités (v12.4.14 à v12.4.21), du nouvel audit Esthétique/Ergonomie/Narratif du module
+Aventure et de ses 4 lots + 1 hors-lot (v12.4.22 à v12.4.29 — propagation complète du
+thème réel, résolution de collision des pastilles d'étape, titre narratif unifié,
+variantes de silhouette d'îlot, signature sonore par thème), et de l'audit fonctionnel du
+même module (v12.4.30 à v12.4.32 — réglage séparé des effets sonores, annulation des
+jingles/bannières en cas de trajet multi-régions, accessibilité clavier des PNJ). À
+mettre à jour si de nouveaux tokens, familles de composants, ou règles de cohérence sont
+introduits.
