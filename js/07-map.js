@@ -1498,6 +1498,58 @@ function _islandMotifSvg(kind, x, y, color){
  }
 }
 
+// v12.4.29 (nouvel audit Esthétique/Ergonomie/Narratif, Lot 2, #C1) : chaque
+// forme d'îlot dispose désormais de 3 variantes (A/B/C) au lieu d'une seule.
+// La variante A est toujours l'ancien profil unique (aucune régression visuelle
+// pour qui l'a déjà vu) ; B et C sont nouvelles. La variante appliquée à une
+// région donnée est choisie une fois pour toutes par _islandVariantIdx(),
+// déterministe sur (forme, Odyssée) — stable d'une session à l'autre, mais
+// désormais différente d'une Odyssée à l'autre pour une même forme/région,
+// ce qui n'était pas le cas avant (seule la couleur/le thème différait).
+// Générique par construction (basé sur GM.adventure, jamais une liste figée
+// d'Odyssées) : toute future Odyssée bénéficie automatiquement des 3
+// variantes de chaque forme, sans aucun code supplémentaire à écrire.
+const _ISLAND_PROFILE_VARIANTS = {
+ colline:    [
+  [1.1, 1.15, 1.2, 1.15, 1.0, 0.92, 0.88, 0.92, 0.95, 1.0, 1.1, 1.15],
+  [1.15, 1.05, 1.18, 1.08, 0.95, 0.9, 0.92, 0.98, 1.02, 1.12, 1.2, 1.0],
+  [1.15, 0.95, 1.1, 1.18, 0.92, 1.0, 1.15, 0.9, 1.05, 1.2, 0.95, 1.08],
+ ],
+ feuille:    [
+  [0.9, 0.95, 1.1, 1.2, 1.15, 0.95, 0.9, 0.95, 1.1, 1.2, 1.15, 0.95],
+  [0.85, 0.92, 1.05, 1.22, 1.18, 0.98, 0.85, 0.92, 1.05, 1.22, 1.18, 0.98],
+  [0.95, 1.0, 1.15, 1.2, 1.05, 0.9, 0.92, 0.98, 1.12, 1.18, 1.08, 0.95],
+ ],
+ dune:       [
+  [1.0, 1.15, 1.2, 1.1, 0.95, 0.92, 0.88, 0.92, 0.95, 1.1, 1.2, 1.15],
+  [1.1, 1.2, 1.15, 0.98, 0.9, 0.88, 0.92, 1.0, 1.1, 1.2, 1.12, 0.95],
+  [1.15, 1.0, 0.9, 1.1, 1.2, 1.05, 0.9, 0.95, 1.15, 1.2, 1.0, 0.92],
+ ],
+ citadelle:  [
+  [1.15, 0.9, 1.2, 0.9, 1.15, 0.9, 1.2, 0.9, 1.15, 0.9, 1.2, 0.9],
+  [1.2, 0.88, 0.95, 1.2, 0.88, 0.95, 1.2, 0.88, 0.95, 1.2, 0.88, 0.95],
+  [1.18, 0.92, 1.1, 0.9, 1.2, 0.88, 1.15, 0.95, 1.05, 0.9, 1.2, 0.92],
+ ],
+ nebuleuse:  [
+  [1.18, 0.95, 1.15, 0.92, 1.18, 0.95, 1.15, 0.92, 1.18, 0.95, 1.15, 0.92],
+  [1.2, 0.9, 1.0, 1.15, 0.92, 1.2, 0.88, 1.1, 0.95, 1.18, 0.9, 1.05],
+  [1.15, 1.0, 0.9, 1.2, 0.95, 1.1, 0.88, 1.18, 0.92, 1.05, 1.2, 0.9],
+ ],
+ mandala:    [
+  [1.1, 1.0, 1.1, 1.0, 1.1, 1.0, 1.1, 1.0, 1.1, 1.0, 1.1, 1.0],
+  [1.15, 0.95, 1.15, 0.95, 1.15, 0.95, 1.15, 0.95, 1.15, 0.95, 1.15, 0.95],
+  [1.15, 1.05, 0.95, 1.05, 1.15, 1.05, 0.95, 1.05, 1.15, 1.05, 0.95, 1.05],
+ ],
+};
+// Sélection déterministe de la variante — même mécanique de hash que le reste
+// du projet (_archHash), jamais Math.random(). Salt dédié (6060) pour ne
+// jamais entrer en collision avec un autre usage de _archHash sur la même
+// chaîne ailleurs dans le fichier.
+function _islandVariantIdx(shape, advKey){
+ const variants = _ISLAND_PROFILE_VARIANTS[shape] || _ISLAND_PROFILE_VARIANTS.colline;
+ return Math.min(variants.length - 1, Math.floor(_archHash(shape + '_' + advKey, 6060) * variants.length));
+}
+
 // Génère un blob organique selon la forme demandée
 function _generateBlobPath(shape, cx, cy, w, h){
  // 8 points autour du centre, avec variations radiales selon la forme
@@ -1507,15 +1559,9 @@ function _generateBlobPath(shape, cx, cy, w, h){
  // Les creux les plus profonds (0.7-0.75) ont été adoucis vers 0.88-0.92 :
  // les zones first/last d'une région tombent naturellement aux positions HAUT/BAS du blob,
  // où les profils avaient des creux qui faisaient déborder les nœuds hors de l'îlot.
- const profiles = {
-  colline:    [1.1, 1.15, 1.2, 1.15, 1.0, 0.92, 0.88, 0.92, 0.95, 1.0, 1.1, 1.15],
-  feuille:    [0.9, 0.95, 1.1, 1.2, 1.15, 0.95, 0.9, 0.95, 1.1, 1.2, 1.15, 0.95],
-  dune:       [1.0, 1.15, 1.2, 1.1, 0.95, 0.92, 0.88, 0.92, 0.95, 1.1, 1.2, 1.15],
-  citadelle:  [1.15, 0.9, 1.2, 0.9, 1.15, 0.9, 1.2, 0.9, 1.15, 0.9, 1.2, 0.9],
-  nebuleuse:  [1.18, 0.95, 1.15, 0.92, 1.18, 0.95, 1.15, 0.92, 1.18, 0.95, 1.15, 0.92],
-  mandala:    [1.1, 1.0, 1.1, 1.0, 1.1, 1.0, 1.1, 1.0, 1.1, 1.0, 1.1, 1.0],
- };
- const prof = profiles[shape] || profiles.colline;
+ const variants = _ISLAND_PROFILE_VARIANTS[shape] || _ISLAND_PROFILE_VARIANTS.colline;
+ const advKey = (typeof _avAdvKey==='function') ? _avAdvKey() : 'prim';
+ const prof = variants[_islandVariantIdx(shape, advKey)];
  for(let i=0;i<points;i++){
   const angle = (i / points) * Math.PI * 2 - Math.PI/2;
   const r = prof[i % prof.length];
