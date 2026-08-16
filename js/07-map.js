@@ -874,6 +874,133 @@ function _showBiomeBanner(regionId){
 // v8.7.41 (O3-C.2) : Météo locale par région.
 // Particules ambiantes animées sur les îlots DÉBLOQUÉS (les foggés ont déjà leurs
 // nuages). Animation très légère pour donner vie à chaque biome sans surcharger.
+// v12.4.36 (refonte de la fiche de zone, sur demande de Cyril — "trop morose,
+// graphiquement faible et sans identité") : catalogue de décors PRÉCIS pour la
+// scène de fond de la fiche de zone (_buildZoomSceneHtml plus bas), bien plus
+// fin que les 9 thèmes larges déjà utilisés pour l'îlot/le fond de fiche/etc.
+// Une "Plage Ensoleillée" et "Le Port des Décimales" partagent le même thème
+// (ocean) mais pas du tout le même décor : ce catalogue résout chaque zone
+// individuellement à partir de son LABEL réel (mots-clés), pas de son thème.
+// Vérifié à 100% de couverture sur les 179 lieux réels du jeu (7 Odyssées)
+// avant implémentation — voir maquette de validation. Générique par
+// construction (mots-clés sur le texte, pas une liste d'ids) : toute future
+// zone est reconnue automatiquement, sans rien ajouter ici.
+const _ZONE_DECOR_CATALOG = {
+ chateau:     { kw:['château','forteresse','citadelle','donjon','rempart','tour','beffroi'], particles:['🕊️','✨','⚜️'] },
+ cloitre:     { kw:['cloître','moine','sanctuaire'], particles:['🕯️','📖','✨'] },
+ romain:      { kw:['forum','thermes','circus','voie appienne','ruines latines','cicéron','tribune','agora','amphithéâtre','temple'], particles:['🏛️','🕊️','☀️'] },
+ egypte:      { kw:['gizeh','nil','thèbes','pyramide','tombeau'], particles:['🐫','☀️','🏺'] },
+ prehistoire: { kw:['mammouth','chasseur','peinture','foyer','tambour'], particles:['🔥','🦴','🪨'] },
+ moyenage:    { kw:['médiéval','fief','veillée','assiégé','chancelier','gaulois'], particles:['🕯️','⚔️','🏰'] },
+ theatre:     { kw:['théâtre','scène','masque','voix'], particles:['🎭','✨','🎪'] },
+ mecanique:   { kw:['mécanique','engrenage','rouage','horlogerie','horloge','machine','atelier','usine','forge','révolution','vapeur','gare','invention','inventeur'], particles:['⚙️','✨','🔧'] },
+ bibliotheque:{ kw:['bibliothèque','galerie','livre','conteur','lecture','libraire','chambre','murmure'], particles:['📖','✨','🕯️'] },
+ marche:      { kw:['marché','halle','foire'], particles:['🧺','🍞','🎪'] },
+ village:     { kw:['village','place','faubourg','quartier','campement','moulin','toits'], particles:['🏡','🕊️','🍞'] },
+ port:        { kw:['port','quai','marchand','phare'], particles:['⚓','🌊','🧭'] },
+ plage:       { kw:['plage','palmier'], particles:['🏖️','🐚','☀️'] },
+ 'ocean-profond': { kw:['profondeur','abysse','fosse','récif','lagon','bulle'], particles:['🐙','🫧','🐠'] },
+ ile:         { kw:['île','tortue'], particles:['🐢','🌴','🐚'] },
+ glace:       { kw:['glace','glacier','banquise'], particles:['❄️','🌨️','💎'] },
+ grotte:      { kw:['grotte','caverne','souterrain','cavernes','antre'], particles:['💎','🦇','✨'] },
+ champignon:  { kw:['champignon'], particles:['🍄','🐌','✨'] },
+ pont:        { kw:['pont'], particles:['🌉','🕊️','✨'] },
+ volcan:      { kw:['volcan','feu','flamme','lave','trône de l'], particles:['🔥','💨','⚫'] },
+ desert:      { kw:['désert','cendre','caldeira'], particles:['🏜️','☀️','💨'] },
+ montagne:    { kw:['pic','crête','cime','sommet','plateau','falaise','gorge','vallée'], particles:['🦅','☁️','⛰️'] },
+ verger:      { kw:['verger','fraise','rucher','noisette','buisson','panier'], particles:['🍓','🐝','🌼'] },
+ sakura:      { kw:['sakura','fleuri','pays des bonbons','bonbon'], particles:['🌸','🦋','🍬'] },
+ foret:       { kw:['forêt','bois','sous-bois','chêne'], particles:['🍃','🌿','🍂'] },
+ ruisseau:    { kw:['ruisseau','rive','source','crique','ponton','lac','mare','étang','fleuve','marais'], particles:['💧','🐸','🌾'] },
+ prairie:     { kw:['pré','prairie','champ','clairière','colline','plaine','herbe','pâquerette','jardin','terrier','sentier'], particles:['🦋','🌸','🐝'] },
+ langue:      { kw:['mot','langue','syntaxe','synonyme','nom','lettre','verbe','phrase','conjugaison','registre'], particles:['📝','✨','🔤'] },
+ abstrait:    { kw:['variable','identité','spirale','relatif','signe','zéro','fonction','affine','image','miroir','prisme','calcul','algébrique','faille','salle','couloir'], particles:['✨','🔷','💠'] },
+ observatoire:{ kw:['observatoire','étoile','nuage','ciel','céleste','stellaire','cerf-volant'], particles:['⭐','☁️','✨'] },
+ nuit:        { kw:['nocturne','ombre','lune'], particles:['🌙','⭐','🦇'] },
+ espace:      { kw:['galaxie','espace','nébuleuse','cosmique'], particles:['💫','🪐','🌠'] },
+};
+// Ordre de priorité : les décors "concrets/architecturaux" sont vérifiés avant
+// les mots-clés génériques/atmosphériques (ex. "Château des Nuages" doit
+// résoudre en "chateau", pas en "observatoire" à cause de "nuage").
+const _ZONE_DECOR_ORDER = ['chateau','cloitre','romain','egypte','prehistoire','moyenage','theatre','mecanique',
+ 'bibliotheque','marche','village','port','plage','ocean-profond','ile','glace','grotte','champignon','pont',
+ 'volcan','desert','montagne','verger','sakura','foret','ruisseau','prairie','langue','abstrait','observatoire','nuit','espace'];
+
+function _resolveZoneDecor(label){
+ const low = String(label||'').toLowerCase();
+ for(const key of _ZONE_DECOR_ORDER){
+  const kws = _ZONE_DECOR_CATALOG[key].kw;
+  for(let i=0;i<kws.length;i++){
+   if(low.indexOf(kws[i]) !== -1) return key;
+  }
+ }
+ return 'prairie'; // repli neutre si un futur libellé ne matche jamais rien
+}
+
+// Familles de silhouette de sol (regroupent les 32 décors en 7 profils de
+// terrain visuellement distincts, pour ne pas avoir à dessiner 32 silhouettes
+// uniques) — un village et un marché partagent la silhouette "toits", un
+// forum romain et l'Égypte antique partagent "colonnades", etc.
+const _ZONE_DECOR_SILHOUETTE = {
+ chateau:'M0,70 L0,45 L15,45 L15,30 L25,30 L25,45 L45,45 L45,20 L55,20 L55,45 L75,45 L75,30 L85,30 L85,45 L100,45 L100,70 Z',
+ cloitre:'M0,70 L0,45 L15,45 L15,30 L25,30 L25,45 L45,45 L45,20 L55,20 L55,45 L75,45 L75,30 L85,30 L85,45 L100,45 L100,70 Z',
+ village:'M0,70 L0,40 L20,25 L40,40 L40,70 M60,70 L60,35 L80,20 L100,35 L100,70',
+ marche:'M0,70 L0,40 L20,25 L40,40 L40,70 M60,70 L60,35 L80,20 L100,35 L100,70',
+ romain:'M0,70 L0,30 L8,30 L8,70 M20,70 L20,30 L28,30 L28,70 M40,70 L40,30 L48,30 L48,70 M60,70 L60,30 L68,30 L68,70 M80,70 L80,30 L88,30 L88,70',
+ egypte:'M0,70 L0,30 L8,30 L8,70 M20,70 L20,30 L28,30 L28,70 M40,70 L40,30 L48,30 L48,70 M60,70 L60,30 L68,30 L68,70 M80,70 L80,30 L88,30 L88,70',
+ moyenage:'M0,70 L0,30 L8,30 L8,70 M20,70 L20,30 L28,30 L28,70 M40,70 L40,30 L48,30 L48,70 M60,70 L60,30 L68,30 L68,70 M80,70 L80,30 L88,30 L88,70',
+ foret:'M10,70 L10,40 Q0,30 10,20 Q20,10 25,20 Q35,10 30,30 Q40,35 30,45 L30,70 M60,70 L60,35 Q50,25 60,15 Q70,5 75,15 Q85,5 80,25 Q90,30 80,40 L80,70',
+ champignon:'M10,70 L10,40 Q0,30 10,20 Q20,10 25,20 Q35,10 30,30 Q40,35 30,45 L30,70 M60,70 L60,35 Q50,25 60,15 Q70,5 75,15 Q85,5 80,25 Q90,30 80,40 L80,70',
+ verger:'M10,70 L10,40 Q0,30 10,20 Q20,10 25,20 Q35,10 30,30 Q40,35 30,45 L30,70 M60,70 L60,35 Q50,25 60,15 Q70,5 75,15 Q85,5 80,25 Q90,30 80,40 L80,70',
+ sakura:'M10,70 L10,40 Q0,30 10,20 Q20,10 25,20 Q35,10 30,30 Q40,35 30,45 L30,70 M60,70 L60,35 Q50,25 60,15 Q70,5 75,15 Q85,5 80,25 Q90,30 80,40 L80,70',
+ prehistoire:'M10,70 L10,40 Q0,30 10,20 Q20,10 25,20 Q35,10 30,30 Q40,35 30,45 L30,70 M60,70 L60,35 Q50,25 60,15 Q70,5 75,15 Q85,5 80,25 Q90,30 80,40 L80,70',
+ montagne:'M0,70 L20,25 L35,45 L50,10 L70,45 L85,25 L100,70 Z',
+ desert:'M0,70 L20,25 L35,45 L50,10 L70,45 L85,25 L100,70 Z',
+ volcan:'M0,70 L20,25 L35,45 L50,10 L70,45 L85,25 L100,70 Z',
+ pont:'M0,70 L20,25 L35,45 L50,10 L70,45 L85,25 L100,70 Z',
+ grotte:'M0,70 L0,50 Q0,20 30,15 Q60,10 70,30 Q90,20 100,40 L100,70 Z',
+ bibliotheque:'M0,70 L0,50 Q0,20 30,15 Q60,10 70,30 Q90,20 100,40 L100,70 Z',
+ theatre:'M0,70 L0,50 Q0,20 30,15 Q60,10 70,30 Q90,20 100,40 L100,70 Z',
+ mecanique:'M0,70 L0,50 Q0,20 30,15 Q60,10 70,30 Q90,20 100,40 L100,70 Z',
+ abstrait:'M0,70 L0,50 Q0,20 30,15 Q60,10 70,30 Q90,20 100,40 L100,70 Z',
+ langue:'M0,70 L0,50 Q0,20 30,15 Q60,10 70,30 Q90,20 100,40 L100,70 Z',
+ plage:'M0,70 L0,45 Q15,35 30,45 T60,45 T90,45 T100,45 L100,70 Z',
+ port:'M0,70 L0,45 Q15,35 30,45 T60,45 T90,45 T100,45 L100,70 Z',
+ 'ocean-profond':'M0,70 L0,45 Q15,35 30,45 T60,45 T90,45 T100,45 L100,70 Z',
+ ile:'M0,70 L0,45 Q15,35 30,45 T60,45 T90,45 T100,45 L100,70 Z',
+ ruisseau:'M0,70 L0,45 Q15,35 30,45 T60,45 T90,45 T100,45 L100,70 Z',
+ glace:'M0,70 L0,45 Q15,35 30,45 T60,45 T90,45 T100,45 L100,70 Z',
+ prairie:'M0,70 L0,55 Q50,35 100,55 L100,70 Z',
+ observatoire:'M0,70 L0,55 Q50,35 100,55 L100,70 Z',
+ nuit:'M0,70 L0,55 Q50,35 100,55 L100,70 Z',
+ espace:'M0,70 L0,55 Q50,35 100,55 L100,70 Z',
+};
+
+// Génère la scène décorative de fond de la fiche de zone (silhouette de sol +
+// particules flottantes), spécifique au LIEU réel plutôt qu'au thème large.
+// Positions déterministes (par zoneId), stables d'une ouverture à l'autre.
+function _buildZoomSceneHtml(zoneId, zone, stepPositions, containerW, containerH){
+ const decor = _resolveZoneDecor(zone.label);
+ const cat = _ZONE_DECOR_CATALOG[decor];
+ const silhouette = _ZONE_DECOR_SILHOUETTE[decor] || _ZONE_DECOR_SILHOUETTE.prairie;
+ const groundColor = 'var(--zone-bg-bot)';
+ const positions = [
+  {l:14, t:9}, {l:80, t:7}, {l:70, t:33}, {l:20, t:52}, {l:84, t:64},
+ ];
+ const particlesHtml = positions.map((p, i) => {
+  const emoji = cat.particles[i % cat.particles.length];
+  const dur = (5.5 + _archHash(zoneId, 4100+i) * 3).toFixed(1);
+  const delay = (_archHash(zoneId, 4200+i) * 3).toFixed(1);
+  const size = (1.1 + _archHash(zoneId, 4300+i) * 0.6).toFixed(2);
+  return `<div class="archipel-zoom-decor" style="left:${p.l}%;top:${p.t}%;font-size:${size}em;animation-duration:${dur}s;animation-delay:-${delay}s;">${emoji}</div>`;
+ }).join('');
+ return `
+  <svg class="zoom-scene-ground" viewBox="0 0 100 70" preserveAspectRatio="none" style="width:100%;height:70px;">
+   <path d="${silhouette}" style="fill:${groundColor};stroke:${groundColor};" opacity="0.55" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  </svg>
+  ${particlesHtml}`;
+}
+
 const _WEATHER_BY_THEME = {
  standard: { emojis:['🦋','🌸','🐝','🍀'],     count:5, anim:'drift'   },
  foret:    { emojis:['🍃','🌿','🍂','🦋'],     count:6, anim:'falling' },

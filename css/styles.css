@@ -3128,6 +3128,16 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  animation:archContentPop .3s cubic-bezier(.34,1.4,.6,1);
  will-change:transform, opacity;
 }
+/* v12.4.36 (refonte fiche de zone) : voile de lumière en haut + assombri en
+   bas — évite l'effet "dégradé plat/affiche" relevé par Cyril, ajoute une
+   profondeur sans dépendre du thème (fonctionne pour les 9 thèmes). */
+.archipel-zoom-content::before{
+ content:'';
+ position:absolute; inset:0; z-index:0; pointer-events:none;
+ border-radius:20px;
+ background:radial-gradient(ellipse at 50% -10%, rgba(255,255,255,.20), transparent 55%),
+            radial-gradient(ellipse at 50% 110%, rgba(0,0,0,.4), transparent 55%);
+}
 @keyframes archContentPop{
  from{ opacity:0; transform:scale(.94) translateY(8px); }
  to{   opacity:1; transform:scale(1) translateY(0); }
@@ -3164,6 +3174,18 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  text-shadow:2px 2px 4px rgba(0,0,0,.8);
  letter-spacing:.05em;
 }
+/* v12.4.36 (refonte fiche de zone) : ornement ❖ déjà utilisé sur les autres
+   titres du module (design system, point 11) — absent jusqu'ici sur celui-ci. */
+.archipel-zoom-title::before,
+.archipel-zoom-title::after{
+ content:'❖';
+ font-size:.6em;
+ color:#f1c40f;
+ opacity:.85;
+ vertical-align:middle;
+}
+.archipel-zoom-title::before{ margin-right:6px; }
+.archipel-zoom-title::after{ margin-left:6px; }
 .archipel-zoom-sub{
  font-size:.78em;
  color:rgba(255,255,255,.8);
@@ -3198,7 +3220,10 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  font-size:2em;
  line-height:1;
  margin:0 auto;
- box-shadow:0 3px 12px rgba(0,0,0,.6);
+ /* v12.4.36 (refonte fiche de zone) : léger relief permanent (au lieu d'un
+    simple aplat blanc) — cohérent avec l'ajout du même traitement sur la
+    carte principale (audit graphique/DA, #G3). */
+ box-shadow:0 3px 12px rgba(0,0,0,.6), inset 0 -3px 6px rgba(0,0,0,.12), inset 0 2px 3px rgba(255,255,255,.55);
  position:relative;
 }
 .archipel-zoom-step.completed .archipel-zoom-step-circle{
