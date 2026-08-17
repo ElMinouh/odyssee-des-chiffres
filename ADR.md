@@ -793,4 +793,22 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-87 — Généraliser un motif de collection déjà inventé (emplacements vides visibles) plutôt que le laisser isolé à un seul composant
+
+**Contexte** : l'audit Qualité Perçue #3 (19e conversation, restreint au module Aventure) a trouvé que la galerie de Trophées du Carnet masquait entièrement les boss non vaincus (aucun emplacement visible), alors que le Talisman/Arc-en-ciel — collection différente dans le même Carnet — affiche déjà ses emplacements vides (sertissures/bandes non remplies) pour tout ce qui n'est pas encore débloqué. Un second point (Q1) a aussi été trouvé : `aria-label` présent sur le bouton Boussole mais absent sur ses 2 voisins (Carnet, Mini-carte) de la même barre.
+
+**Décision** :
+1. **Q2** : `openAdventureLog()` génère désormais une médaille pour CHAQUE zone de l'Odyssée en cours (`MAP_ZONES`, périmètre identique à l'onglet Progression déjà existant — pas les 86 boss des 7 Odyssées), verrouillée (silhouette grisée + `#icon-zone-lock`, réutilisé tel quel) pour les non-vaincus. Le titre de section passe de `(${totalBeaten})` à `(${totalBeaten}/${totalZones})`, cohérent avec le format déjà utilisé par les barres de progression par région.
+2. **Q1** : `aria-label` ajouté sur `#btn-carnet-map` et `#btn-minimap`.
+
+**Avantages** : exploite l'effet Zeigarnik déjà démontré efficace sur le Talisman (une collection incomplète mais visible pousse davantage à la complétion qu'une liste qui grandit sans repère de fin) ; source unique de vérité (`MAP_ZONES`) déjà utilisée par le reste du Carnet, aucune nouvelle donnée à maintenir.
+
+**Inconvénients** : aucun identifié — le motif de rendu (monture complète + contenu conditionnel) était déjà écrit ailleurs dans le même fichier (`_advTalismanHtml`), il ne restait qu'à l'appliquer au second composant de collection.
+
+**Alternative rejetée** : limiter l'affichage aux boss déjà vaincus + un simple compteur textuel « X restants » — écartée car un compteur textuel n'a pas le même pouvoir d'anticipation visuelle qu'un emplacement réellement affiché (silhouette du boss visible, juste verrouillée).
+
+**Impact** : `openAdventureLog()` (`07-boss.js`), `.advlog-medal.locked` (`styles.css`), v12.4.45. Garde-fou de non-régression : `trophy-locked-slots_test.js`. **Règle à reconduire** : tout futur système de collection ajouté au Carnet doit par défaut afficher ses emplacements non débloqués (jamais les omettre), sauf raison explicite contraire.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

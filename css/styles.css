@@ -3741,6 +3741,14 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  font-size:.85em; color:#bdc3c7; font-style:italic;
  text-align:center; padding:var(--space-4);
 }
+/* v12.4.45 (Audit qualité perçue #3, Q2) : médaille verrouillée pour un boss
+   non vaincu — même filtre grayscale/brightness que .archipel-zone.locked
+   sur la carte, pour rester cohérent avec le langage visuel "verrouillé"
+   déjà établi ailleurs dans le module. */
+.advlog-medal.locked{ background:rgba(255,255,255,.04); border-color:rgba(255,255,255,.15); }
+.advlog-medal.locked .advlog-medal-boss{ filter:grayscale(1) brightness(.5); opacity:.6; }
+.advlog-medal.locked .advlog-medal-zone{ color:#6b7f9e; }
+.advlog-medal-lock{ width:14px; height:14px; opacity:.55; margin-top:-2px; }
 @media (prefers-reduced-motion:reduce){
  .advlog-overlay, .advlog-modal, .advlog-bar-fill{ transition:none; }
 }

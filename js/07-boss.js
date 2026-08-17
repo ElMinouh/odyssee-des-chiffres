@@ -948,15 +948,31 @@ function openAdventureLog(){
     </div>
    </div>`;
  }).join('');
- // Galerie des boss vaincus (dans l'ordre des zones)
- const bossMedals = MAP_ZONES.filter(z => beaten.includes(z.id)).map(z => `
-  <div class="advlog-medal" onclick="closeAdventureLog();setTimeout(()=>_openBossCard('${z.id}'),300);" role="button" title="${z.bossName || 'Boss'} — ${z.label} (voir la carte)">
+ // Galerie des boss (dans l'ordre des zones) — v12.4.45 (Audit qualité perçue
+ // #3, Q2) : affiche désormais TOUS les boss de l'Odyssée en cours, pas
+ // seulement les vaincus. Les non-vaincus reçoivent une médaille verrouillée
+ // (silhouette grisée + cadenas #icon-zone-lock, déjà utilisé sur la carte),
+ // au lieu de disparaître — même motif de collection à emplacements visibles
+ // que le Talisman/Arc-en-ciel (_advTalismanHtml/_advRainbowHtml), qui
+ // exploite mieux l'effet de collection (le joueur voit ce qu'il lui reste
+ // à débloquer, pas seulement ce qu'il a déjà).
+ const bossMedals = MAP_ZONES.map(z => {
+  const won = beaten.includes(z.id);
+  if(won){
+   return `<div class="advlog-medal" onclick="closeAdventureLog();setTimeout(()=>_openBossCard('${z.id}'),300);" role="button" title="${z.bossName || 'Boss'} — ${z.label} (voir la carte)">
    <div class="advlog-medal-boss">${z.boss || '🏆'}</div>
    <div class="advlog-medal-zone">${z.label}</div>
-  </div>`).join('');
- const bossGallery = bossMedals
+  </div>`;
+  }
+  return `<div class="advlog-medal locked" title="Boss non vaincu — continue ton Odyssée pour le débloquer">
+   <div class="advlog-medal-boss">${z.boss || '🏆'}</div>
+   <svg class="advlog-medal-lock" viewBox="0 0 40 40" aria-hidden="true"><use href="#icon-zone-lock"/></svg>
+   <div class="advlog-medal-zone">???</div>
+  </div>`;
+ }).join('');
+ const bossGallery = MAP_ZONES.length
   ? `<div class="advlog-medals">${bossMedals}</div>`
-  : `<div class="advlog-empty">Aucun boss vaincu pour l'instant. À l'aventure !</div>`;
+  : `<div class="advlog-empty">Aucun boss dans cette Odyssée pour l'instant.</div>`;
  // Stats clés
  const stars = P.stars || 0;
  const figs = (P.ownedFigurines || []).length;
@@ -1016,7 +1032,7 @@ function openAdventureLog(){
     ${journal.html}
    </div>
    <div class="advlog-panel${startTab==='trophees'?' active':''}" id="advlog-panel-trophees" role="tabpanel" aria-labelledby="advlog-tab-trophees">
-    <div class="advlog-section-title">🏆 Boss vaincus (${totalBeaten})</div>
+    <div class="advlog-section-title">🏆 Boss vaincus (${totalBeaten}/${totalZones})</div>
     ${bossGallery}
    </div>
   </div>
