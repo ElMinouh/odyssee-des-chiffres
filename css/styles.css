@@ -3741,6 +3741,16 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  font-size:.85em; color:#bdc3c7; font-style:italic;
  text-align:center; padding:var(--space-4);
 }
+/* v12.4.48 (Lot 2, audit immersion narrative N7) : cliffhanger persistant en
+   tête du Journal — même famille visuelle que les autres bandeaux dorés du
+   Carnet (bordure --accent-gold), texte en italique pour signaler qu'il
+   s'agit d'un rappel narratif, pas d'un élément de progression. */
+.advlog-twist-teaser{
+ background:rgba(241,196,15,.08); border:1.5px solid rgba(241,196,15,.4);
+ border-radius:var(--radius-md); padding:var(--space-3); margin-bottom:var(--space-3);
+}
+.advlog-twist-label{ font-weight:800; font-size:.8em; color:#f1c40f; margin-bottom:4px; }
+.advlog-twist-text{ font-size:.85em; font-style:italic; color:#ecf0f1; line-height:1.4; }
 /* v12.4.45 (Audit qualité perçue #3, Q2) : médaille verrouillée pour un boss
    non vaincu — même filtre grayscale/brightness que .archipel-zone.locked
    sur la carte, pour rester cohérent avec le langage visuel "verrouillé"

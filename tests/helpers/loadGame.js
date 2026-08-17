@@ -314,6 +314,12 @@ globalThis.__api = {
   _ISLAND_PROFILE_VARIANTS: (typeof _ISLAND_PROFILE_VARIANTS!=='undefined') ? _ISLAND_PROFILE_VARIANTS : undefined,
   COMBAT_HIT_MSGS: (typeof COMBAT_HIT_MSGS!=='undefined') ? COMBAT_HIT_MSGS : undefined,
   COMBAT_MISS_MSGS: (typeof COMBAT_MISS_MSGS!=='undefined') ? COMBAT_MISS_MSGS : undefined,
+  _npcClicked: (typeof _npcClicked==='function') ? _npcClicked : undefined,
+  _resolveNpcLine: (typeof _resolveNpcLine==='function') ? _resolveNpcLine : undefined,
+  _NPCS_BY_THEME: (typeof _NPCS_BY_THEME!=='undefined') ? _NPCS_BY_THEME : undefined,
+  _advlogJournalHtml: (typeof _advlogJournalHtml==='function') ? _advlogJournalHtml : undefined,
+  _maybeShowTwist: (typeof _maybeShowTwist==='function') ? _maybeShowTwist : undefined,
+  _twistZoneIdx: (typeof _twistZoneIdx==='function') ? _twistZoneIdx : undefined,
 };
 `;
 

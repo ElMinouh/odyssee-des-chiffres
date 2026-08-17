@@ -829,4 +829,22 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-89 — Lot 2 de l'audit Immersion narrative : mémoire du monde (PNJ conscients de la progression, cliffhanger persistant)
+
+**Contexte** : l'audit Immersion Narrative & Motivation a trouvé que les PNJ (`_NPCS_BY_THEME`) avaient une réplique fixe, indépendante de la progression du joueur dans leur région (N5), et que les rebondissements narratifs (`_pickTwistLine`/`_TWIST_LINES`) étaient tirés puis immédiatement perdus, sans aucune trace entre deux sessions (N7).
+
+**Décision** :
+1. **N5** : chaque PNJ des 9 thèmes (18 au total) reçoit un second champ `lineDone`, affiché à la place de `line` quand `_zonesOfRegion(regionId)` est intégralement vaincue (`P.mapBossBeaten`). Logique extraite dans une fonction pure `_resolveNpcLine(regionId, theme, idx)` (`07-map.js`), appelée par `_npcClicked()` — extraction motivée par la testabilité (le clic réel dépend du DOM, la logique de sélection non).
+2. **N7** : `_maybeShowTwist()` (`07-story.js`) sauvegarde désormais le texte déjà substitué (jamais le template brut, pour rester valide si `{villain}` venait à changer) dans `P.lastTwistLineByAdv[advKey]`. `_advlogJournalHtml()` l'affiche en bandeau "⚡ À suivre..." en tête du Journal du Carnet, tant qu'un rebondissement plus récent n'a pas pris sa place.
+
+**Découverte adjacente (corrigée au passage, coût marginal nul)** : `P.twistLinesUsedByAdv` (tirage sans remise des rebondissements par Odyssée, v12.1.8) n'avait jamais été ajouté à la liste blanche de désérialisation de `05-profile.js` — exactement le défaut documenté par ADR-80, mais sur un champ différent, jamais détecté jusqu'ici faute de test dédié. Ce Lot corrige les deux champs (`lastTwistLineByAdv` et `twistLinesUsedByAdv`) dans le même passage.
+
+**Avantages** : renforce le sentiment de monde vivant (PNJ) et le rappel actif entre deux sessions (cliffhanger) sans nouvelle donnée lourde à collecter — tout reposait déjà sur des mécanismes existants (`mapBossBeaten`, `_pickTwistLine`).
+
+**Inconvénients** : `_NPCS_FINAL` (PNJ de la région finale) n'a pas reçu de `lineDone` — hors périmètre de ce lot, repli silencieux sur `line` déjà géré si jamais un jour cette table gagne le même champ.
+
+**Impact** : `07-map.js` (`_NPCS_BY_THEME`, `_resolveNpcLine`, `_npcClicked`), `07-story.js` (`_maybeShowTwist`, `_advlogJournalHtml`), `05-profile.js` (whitelist), `styles.css` (`.advlog-twist-teaser`), v12.4.48. Garde-fous de non-régression : `npc-progression-recognition_test.js`, `twist-cliffhanger-persistence_test.js`.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

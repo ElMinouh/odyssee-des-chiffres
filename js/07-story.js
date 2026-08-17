@@ -2339,6 +2339,13 @@ function _maybeShowTwist(zone, afterCb){
   _markStorySeen(twistId);
   const line = _pickTwistLine();
   const page = { emoji:'⚡', text: (typeof _storyText==='function' ? _storyText(line) : line) };
+  // v12.4.48 (Lot 2, N7) : persiste le texte déjà substitué (jamais le
+  // template brut, pour rester valide même si {villain} change plus tard) —
+  // affiché ensuite comme "à suivre..." dans le Carnet, tant que le joueur
+  // n'a pas revu de rebondissement plus récent pour cette même Odyssée.
+  const _advKeyTwist = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
+  P.lastTwistLineByAdv = P.lastTwistLineByAdv || {};
+  P.lastTwistLineByAdv[_advKeyTwist] = page.text;
   _showStoryModal({ id:twistId, title:'Rebondissement', pages:[page], closeLabel:'Continuer ›' }, _done);
  }catch(e){ _done(); }
 }
@@ -3503,7 +3510,14 @@ function _advlogJournalHtml(){
        + `${(unlocked&&sub)?`<div class="advlog-quest-sub">${sub}</div>`:''}</div>`
        + `</div>`;
  }).join('');
- return { html: `<div class="advlog-quest-list">${items}</div>`, unreadCount, nextUnreadId };
+ // v12.4.48 (Lot 2, N7) : rappel actif entre deux sessions — le dernier
+ // rebondissement tiré pour l'Odyssée en cours reste visible ici tant qu'un
+ // nouveau n'a pas été tiré (pas de logique de péremption : le texte est
+ // simplement remplacé la prochaine fois qu'un rebondissement survient).
+ const _advKeyJournal = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
+ const _twist = (typeof P!=='undefined' && P && P.lastTwistLineByAdv) ? P.lastTwistLineByAdv[_advKeyJournal] : null;
+ const twistHtml = _twist ? `<div class="advlog-twist-teaser"><div class="advlog-twist-label">⚡ À suivre...</div><div class="advlog-twist-text">${esc(_twist)}</div></div>` : '';
+ return { html: `${twistHtml}<div class="advlog-quest-list">${items}</div>`, unreadCount, nextUnreadId };
 }
 
 // ═══════════════════════════════════════════════════════

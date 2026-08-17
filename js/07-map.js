@@ -1037,40 +1037,40 @@ const _WEATHER_BY_THEME = {
 // de l'Odyssée jouée.
 const _NPCS_BY_THEME = {
  standard: [
-  { emoji:'🧙‍♂️', name:'Maître Élio',   line:'Bienvenue, jeune aventurier ! Le courage sera ton allié.' },
-  { emoji:'🐑',   name:'Berger Pâquerette', line:'Mes moutons sont presque aussi malins que toi !' },
+  { emoji:'🧙‍♂️', name:'Maître Élio',   line:'Bienvenue, jeune aventurier ! Le courage sera ton allié.', lineDone:'Tu as prouvé ta valeur ici. La suite de ton Odyssée t\'attend.' },
+  { emoji:'🐑',   name:'Berger Pâquerette', line:'Mes moutons sont presque aussi malins que toi !', lineDone:'Mes moutons parlent encore de tes exploits ! Reviens quand tu veux.' },
  ],
  foret: [
-  { emoji:'🧚',   name:'Fée Lumelle',   line:'Les forêts murmurent leurs secrets, écoute-les !' },
-  { emoji:'🦌',   name:'Cerf Sylvain',  line:'Avance avec sagesse, brave héros. Chaque pas compte.' },
+  { emoji:'🧚',   name:'Fée Lumelle',   line:'Les forêts murmurent leurs secrets, écoute-les !', lineDone:'La forêt se souviendra de ton passage, brave héros.' },
+  { emoji:'🦌',   name:'Cerf Sylvain',  line:'Avance avec sagesse, brave héros. Chaque pas compte.', lineDone:'Tu as traversé mes bois avec sagesse. Le chemin est libre.' },
  ],
  volcan: [
-  { emoji:'🧞',   name:'Génie Sablo',   line:'Trois vœux pour qui résout trois énigmes ! Mais d\'abord, prouve-toi.' },
-  { emoji:'🦂',   name:'Scorpios le Sage', line:'Le feu forge les plus grands esprits, petit aventurier.' },
+  { emoji:'🧞',   name:'Génie Sablo',   line:'Trois vœux pour qui résout trois énigmes ! Mais d\'abord, prouve-toi.', lineDone:'Trois vœux accordés ! Tu as prouvé ton esprit.' },
+  { emoji:'🦂',   name:'Scorpios le Sage', line:'Le feu forge les plus grands esprits, petit aventurier.', lineDone:'Le feu t\'a forgé plus fort. Continue, l\'esprit trempé.' },
  ],
  ocean: [
-  { emoji:'🧜',   name:'Sirène Coralia', line:'Les vagues chantent déjà tes exploits, moussaillon !' },
-  { emoji:'⚓',   name:'Capitaine Flotsam', line:'Navigue avec prudence, les récifs cachent bien des secrets.' },
+  { emoji:'🧜',   name:'Sirène Coralia', line:'Les vagues chantent déjà tes exploits, moussaillon !', lineDone:'Les vagues chantent désormais tes exploits pour de bon !' },
+  { emoji:'⚓',   name:'Capitaine Flotsam', line:'Navigue avec prudence, les récifs cachent bien des secrets.', lineDone:'Tu as bravé les récifs sans trembler. Bon vent pour la suite !' },
  ],
  banquise: [
-  { emoji:'🐧',   name:'Iceberg Glacius', line:'Brr ! Seuls les cœurs vaillants résistent au froid, petit héros.' },
-  { emoji:'❄️',  name:'Esprit Frimas', line:'La glace garde ses secrets... sauras-tu les percer ?' },
+  { emoji:'🐧',   name:'Iceberg Glacius', line:'Brr ! Seuls les cœurs vaillants résistent au froid, petit héros.', lineDone:'Brr ! Ton courage a fait fondre mon respect.' },
+  { emoji:'❄️',  name:'Esprit Frimas', line:'La glace garde ses secrets... sauras-tu les percer ?', lineDone:'Tu as percé les secrets de la glace. Continue !' },
  ],
  chateau: [
-  { emoji:'🛡️',  name:'Sir Cassel',    line:'Halte ! Seuls les plus braves passent par cette voie.' },
-  { emoji:'🧝',   name:'Elfe Veylis',   line:'Les anciens secrets sont gravés dans la pierre des murailles.' },
+  { emoji:'🛡️',  name:'Sir Cassel',    line:'Halte ! Seuls les plus braves passent par cette voie.', lineDone:'Tu as prouvé ta bravoure, chevalier. La voie est ouverte.' },
+  { emoji:'🧝',   name:'Elfe Veylis',   line:'Les anciens secrets sont gravés dans la pierre des murailles.', lineDone:'Les murailles se souviendront de ton passage.' },
  ],
  sakura: [
-  { emoji:'🧚',   name:'Fée Bonbonna', line:'Un peu de douceur avant l\'aventure, ça te dit ?' },
-  { emoji:'🐰',   name:'Lapin Guimauve', line:'Suis les pétales roses, ils mènent aux meilleurs trésors !' },
+  { emoji:'🧚',   name:'Fée Bonbonna', line:'Un peu de douceur avant l\'aventure, ça te dit ?', lineDone:'Tu as trouvé toute la douceur du chemin ! Reviens vite.' },
+  { emoji:'🐰',   name:'Lapin Guimauve', line:'Suis les pétales roses, ils mènent aux meilleurs trésors !', lineDone:'Tu as suivi tous les pétales jusqu\'au bout, bravo !' },
  ],
  nuit: [
-  { emoji:'🦉',   name:'Hibou Noctis', line:'La nuit cache autant de mystères que d\'étoiles, jeune brave.' },
-  { emoji:'🕯️',  name:'Gardienne Ombralys', line:'N\'aie crainte de l\'obscurité, elle éclaire ceux qui osent.' },
+  { emoji:'🦉',   name:'Hibou Noctis', line:'La nuit cache autant de mystères que d\'étoiles, jeune brave.', lineDone:'La nuit t\'a livré ses mystères, jeune brave.' },
+  { emoji:'🕯️',  name:'Gardienne Ombralys', line:'N\'aie crainte de l\'obscurité, elle éclaire ceux qui osent.', lineDone:'Tu n\'as pas craint l\'obscurité. Elle t\'éclaire, désormais.' },
  ],
  espace: [
-  { emoji:'👽',   name:'Zorbax du Nébula', line:'Bzzip ! Tes exploits résonnent dans toute la galaxie.' },
-  { emoji:'🪐',   name:'Sage Cosmik',    line:'L\'univers entier est une énigme. Perce-la.' },
+  { emoji:'👽',   name:'Zorbax du Nébula', line:'Bzzip ! Tes exploits résonnent dans toute la galaxie.', lineDone:'Bzzip ! Toute la galaxie connaît ton nom, maintenant.' },
+  { emoji:'🪐',   name:'Sage Cosmik',    line:'L\'univers entier est une énigme. Perce-la.', lineDone:'Tu as percé l\'énigme de mon univers. Bravo, voyageur.' },
  ],
 };
 const _NPCS_FINAL = [
@@ -1179,10 +1179,28 @@ function _buildNpcsOverlay(regionId, bbox, zonePositions, shopPos, mapW){
 // Handler clic sur un PNJ : affiche une bulle de dialogue + narration vocale.
 // v12.4.13 : reçoit désormais le thème résolu au moment du rendu (embarqué dans
 // l'attribut onclick), pour retrouver le bon PNJ sans dépendre de regionId seul.
-function _npcClicked(regionId, idx, theme){
+// v12.4.48 (Lot 2, audit immersion narrative N5) : logique pure d'un PNJ qui
+// reconnaît la progression du joueur — réplique "région terminée" (lineDone)
+// si toutes les zones de la région où il se trouve sont déjà vaincues,
+// sinon la réplique d'accueil habituelle. Repli silencieux sur `line` si
+// `lineDone` n'existe pas pour ce PNJ (ex. _NPCS_FINAL, hors périmètre de ce
+// lot). Extraite de _npcClicked() pour rester testable sans DOM réel.
+function _resolveNpcLine(regionId, theme, idx){
  const npcs = regionId === 'final' ? _NPCS_FINAL : (_NPCS_BY_THEME[theme] || _NPCS_BY_THEME.standard);
  const npc = (npcs || [])[idx];
- if(!npc) return;
+ if(!npc) return null;
+ let regionDone = false;
+ try{
+  const beaten = (typeof P!=='undefined' && P && P.mapBossBeaten) || [];
+  const zonesOfRegion = (typeof _zonesOfRegion==='function') ? _zonesOfRegion(regionId) : [];
+  regionDone = zonesOfRegion.length > 0 && zonesOfRegion.every(z => beaten.includes(z.id));
+ }catch(e){}
+ return { npc, line: (regionDone && npc.lineDone) ? npc.lineDone : npc.line, regionDone };
+}
+function _npcClicked(regionId, idx, theme){
+ const resolved = _resolveNpcLine(regionId, theme, idx);
+ if(!resolved) return;
+ const npc = resolved.npc, npcLine = resolved.line;
  // Bulle de dialogue flottante au-dessus du PNJ
  const npcEl = document.querySelector(`.archipel-npc[data-region="${regionId}"][data-npc-idx="${idx}"]`);
  if(!npcEl) return;
@@ -1206,12 +1224,12 @@ function _npcClicked(regionId, idx, theme){
  bubble.className = 'archipel-npc-bubble';
  bubble.innerHTML = `
   <div class="archipel-npc-bubble-name">${npc.name}</div>
-  <div class="archipel-npc-bubble-line">${npc.line}</div>
+  <div class="archipel-npc-bubble-line">${npcLine}</div>
  `;
  npcEl.appendChild(bubble);
  // Narration vocale
  if(typeof speak === 'function'){
-  setTimeout(()=>{ try{ speak(npc.line); }catch(e){} }, 150);
+  setTimeout(()=>{ try{ speak(npcLine); }catch(e){} }, 150);
  }
  // Vibration douce
  if(typeof vibrate === 'function' && typeof VIBE !== 'undefined'){

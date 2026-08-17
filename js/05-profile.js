@@ -166,6 +166,27 @@ function validateProfile(raw, defaultName){
    Object.keys(src).forEach(k=>{ if(typeof src[k]==='string' && src[k]) out[k] = src[k]; });
    return out;
   })(),
+  // v12.4.48 (Lot 2, audit immersion narrative N7) : dernier rebondissement
+  // narratif tiré, par Odyssée — texte déjà substitué ({villain} etc.),
+  // affiché comme "à suivre..." dans le Carnet. Objet { advKey: texte }.
+  lastTwistLineByAdv: (function(){
+   const src = (raw.lastTwistLineByAdv && typeof raw.lastTwistLineByAdv === 'object') ? raw.lastTwistLineByAdv : {};
+   const out = {};
+   Object.keys(src).forEach(k=>{ if(typeof src[k]==='string' && src[k]) out[k] = _safeStr(src[k], 400, ''); });
+   return out;
+  })(),
+  // Correctif adjacent (découvert en implémentant N7, même défaut qu'ADR-80) :
+  // twistLinesUsedByAdv (tirage sans remise des rebondissements par Odyssée,
+  // v12.1.8) n'a jamais été ajouté à cette liste blanche — effacé
+  // silencieusement à chaque rechargement de profil, ce qui autorisait des
+  // répétitions dans une même Odyssée malgré le mécanisme prévu pour les
+  // éviter. Objet { advKey: [indices déjà tirés] }.
+  twistLinesUsedByAdv: (function(){
+   const src = (raw.twistLinesUsedByAdv && typeof raw.twistLinesUsedByAdv === 'object') ? raw.twistLinesUsedByAdv : {};
+   const out = {};
+   Object.keys(src).forEach(k=>{ out[k] = _safeArr(src[k]).filter(i => Number.isInteger(i) && i>=0 && i<100); });
+   return out;
+  })(),
   // v8.7.8 (O1) : progression dans chaque zone (sous-niveaux)
   zoneProgress: (function(){
    const src = (raw.zoneProgress && typeof raw.zoneProgress === 'object') ? raw.zoneProgress : {};
