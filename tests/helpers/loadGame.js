@@ -310,6 +310,8 @@ globalThis.__api = {
   ob4MarkCompleted: (typeof ob4MarkCompleted==='function') ? ob4MarkCompleted : undefined,
   resetProfile: (typeof resetProfile==='function') ? resetProfile : undefined,
   resetAllProfiles: (typeof resetAllProfiles==='function') ? resetAllProfiles : undefined,
+  _islandVariantIdx: (typeof _islandVariantIdx==='function') ? _islandVariantIdx : undefined,
+  _ISLAND_PROFILE_VARIANTS: (typeof _ISLAND_PROFILE_VARIANTS!=='undefined') ? _ISLAND_PROFILE_VARIANTS : undefined,
 };
 `;
 

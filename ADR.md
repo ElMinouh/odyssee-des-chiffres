@@ -777,4 +777,20 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-86 — Distinction garantie des formes d'îlot entre les 7 Odyssées connues : table fixe en priorité, repli sur le hash générique pour toute Odyssée future (Option B hybride)
+
+**Contexte** : ADR-29 (méta-audit, 3 variantes de forme par région) réduisait déjà le partage de forme entre Odyssées, mais restait un simple hash déterministe indépendant par (forme, Odyssée) — mathématiquement incapable de garantir l'absence totale de collision, quel que soit le nombre de variantes (vérifié par recherche exhaustive sur 20 000 valeurs de calibrage : aucune ne produit une bijection parfaite sur les 6 formes simultanément). Avec seulement 3 variantes, jusqu'à 4 des 7 Odyssées partageaient la même forme de base sur certaines régions.
+
+**Décision**, validée par Cyril entre 2 options présentées (A. générique pur avec 7 variantes, garantie partielle ; B. table figée, garantie totale) : Option B, en version hybride — `_ISLAND_ODYSSEY_ORDER` (liste fixe des 7 Odyssées connues) donne un index direct et unique par Odyssée ; toute Odyssée absente de cette liste (future) retombe automatiquement sur l'ancien mécanisme de hash générique (`_archHash`), sans erreur ni crash.
+
+**Avantages** : zéro partage de forme garanti dès aujourd'hui entre les 7 Odyssées connues, sur les 6 régions ; compatibilité ascendante préservée pour toute Odyssée future non encore répertoriée (ne casse rien, juste pas encore garantie unique).
+
+**Inconvénients** : une future 8e Odyssée devra être ajoutée manuellement à `_ISLAND_ODYSSEY_ORDER` pour bénéficier à son tour de la garantie — sinon elle reste soumise au même risque résiduel de collision par hash que le système d'origine (ADR-29). Point de vigilance à reconduire dans tout futur document de transition dès qu'une nouvelle Odyssée est créée.
+
+**Alternative rejetée** : Option A pure (rester 100% générique, juste augmenter à 7 variantes) — écartée par Cyril car elle n'éliminait pas le risque de collision (testé : max 2-3 Odyssées encore partagées selon la région, contre 4 avant).
+
+**Impact** : `_ISLAND_PROFILE_VARIANTS` (6 formes × 7 profils, 4 nouveaux par forme validés sur `maquette-formes-ilots.html` avant implémentation), `_islandVariantIdx()`, `_ISLAND_ODYSSEY_ORDER` (v12.4.44). Garde-fou de non-régression : `island-shape-distinctness_test.js`.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
