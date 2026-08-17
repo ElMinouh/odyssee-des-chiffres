@@ -803,9 +803,14 @@ const CORRECT_TAUNTS=[
 // accolé au message de coup réussi (mi-combat), inchangé.
 const COMBAT_HIT_MSGS=[
  'TOUCHÉ !','COUP DIRECT !','EN PLEIN DANS LE MILLE !','IMPACT !','BIEN VISÉ !','ÇA COGNE !','PLEIN FOUET !','PRÉCIS !','RIPOSTE RÉUSSIE !','BOUM !',
+ // v12.4.52 (audit Cohérence Globale, C3) : pool doublé pour rééquilibrer le
+ // ratio variété/fréquence — ce message est vu à CHAQUE question, contrairement
+ // au journal (1 fois par zone) qui avait, lui, 324 combinaisons.
+ 'EN PLEIN CŒUR !','QUEL COUP !','SANS PITIÉ !','SANS APPEL !','PARFAIT !','TU L\'AS EU !','FRAPPE NETTE !','AUCUNE CHANCE POUR LUI !','MAGISTRAL !','TU DOMINES !',
 ];
 const COMBAT_MISS_MSGS=[
  'ESQUIVE !','RATÉ !','IL SE DÉCALE !','DANS LE VIDE !','IL PARE LE COUP !',
+ 'IL SE DÉROBE !','MANQUÉ DE PEU !','IL RECULE !','PRESQUE !','IL FEINTE !',
 ];
 function _pickCombatHit(){ return COMBAT_HIT_MSGS[ri(0,COMBAT_HIT_MSGS.length-1)]; }
 function _pickCombatMiss(){ return COMBAT_MISS_MSGS[ri(0,COMBAT_MISS_MSGS.length-1)]; }

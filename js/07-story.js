@@ -2659,10 +2659,18 @@ function _maybeShowStory(afterCb){
  // un joueur qui a déjà progressé, pour ne pas interrompre une Odyssée en
  // cours). v12.4.50 (Lot 4, audit immersion narrative N8).
  if(!P.heroTrait && (P.mapBossBeaten||[]).length === 0 && typeof _showChoiceModal==='function'){
+  // v12.4.52 (audit Cohérence Globale, C4) : seul texte narratif du module
+  // qui restait identique quel que soit l'âge — aligné sur la discipline
+  // générale (_dialogueTone(), déjà utilisée partout ailleurs) avec une
+  // variante "tender" plus simple pour les plus jeunes.
+  const _tone = (typeof _dialogueTone==='function') ? _dialogueTone() : 'standard';
+  const _choiceText = _tone==='tender'
+   ? 'Avant de partir à l\'aventure, dis-moi : tu es plutôt...'
+   : 'Avant de commencer ton Odyssée, dis-nous qui tu es vraiment.';
   _showChoiceModal({
    title: 'Qui es-tu, héros ?',
    emoji: '✨',
-   text: 'Avant de commencer ton Odyssée, dis-nous qui tu es vraiment.',
+   text: _choiceText,
    btnA: '🦁 Courageux',
    btnB: '🦉 Malin',
   }, (val)=>{

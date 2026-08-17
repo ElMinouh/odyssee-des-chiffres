@@ -30,15 +30,15 @@ describe('N2 — feedback d\'échec combat-cohérent (pool ESQUIVE, v12.4.47)', 
     expect(matches).toBe(true);
   });
 
-  it('le pool de variété contient bien 5 messages distincts', () => {
+  it('le pool de variété contient bien 10 messages distincts', () => {
     const api = setupGame();
-    expect(api.COMBAT_MISS_MSGS.length).toBe(5);
-    expect(new Set(api.COMBAT_MISS_MSGS).size).toBe(5);
+    expect(api.COMBAT_MISS_MSGS.length).toBe(10);
+    expect(new Set(api.COMBAT_MISS_MSGS).size).toBe(10);
   });
 
-  it('le pool "coup réussi" contient bien 10 messages distincts', () => {
+  it('le pool "coup réussi" contient bien 20 messages distincts', () => {
     const api = setupGame();
-    expect(api.COMBAT_HIT_MSGS.length).toBe(10);
-    expect(new Set(api.COMBAT_HIT_MSGS).size).toBe(10);
+    expect(api.COMBAT_HIT_MSGS.length).toBe(20);
+    expect(new Set(api.COMBAT_HIT_MSGS).size).toBe(20);
   });
 });

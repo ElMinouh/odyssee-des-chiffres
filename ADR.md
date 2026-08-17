@@ -931,4 +931,20 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-95 — Lot 2 de l'audit Cohérence Globale : rééquilibrage de la variété de combat, ton adapté au choix de trait
+
+**Contexte** : l'audit de Cohérence Globale a trouvé deux tensions mineures/moyennes : le pool de feedback de combat (C3, vu à chaque question) restait bien plus petit que le pool du journal de voyage (vu 1 fois par zone), un ratio variété/fréquence inversé ; et le texte du choix de trait de héros (C4) restait le seul contenu narratif identique quel que soit l'âge, dans un système par ailleurs entièrement écrit sur mesure via `_dialogueTone()`.
+
+**Décision** :
+1. **C3** : `COMBAT_HIT_MSGS` passe de 10 à 20 entrées, `COMBAT_MISS_MSGS` de 5 à 10 (`01-core.js`) — aucun changement de logique de tirage, extension pure des pools.
+2. **C4** : le texte du choix de trait (`_maybeShowStory`, 07-story.js) se branche désormais sur `_dialogueTone()`, avec une variante « tender » plus simple pour la maternelle (« tu es plutôt... ») en plus du texte standard existant.
+
+**Avantages** : aligne ces deux derniers points sur la discipline déjà appliquée partout ailleurs dans le module (variété proportionnée à l'exposition, ton adapté à l'âge) — zéro nouvelle infrastructure.
+
+**Inconvénients** : aucun identifié.
+
+**Impact** : `01-core.js` (pools étendus), `07-story.js` (texte de choix par ton), v12.4.52. Garde-fou de non-régression : `dialogue-tone-and-combat-variety_test.js`.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
