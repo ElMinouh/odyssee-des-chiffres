@@ -304,6 +304,12 @@ globalThis.__api = {
   // --- ADR-57 (Lot 6, garde-fou ton tender/standard, ADR-45) ---
   _dialogueTone: (typeof _dialogueTone==='function') ? _dialogueTone : undefined,
   MONSTER_DIALOGUES: (typeof MONSTER_DIALOGUES!=='undefined') ? MONSTER_DIALOGUES : undefined,
+  // --- Lot 2 (dette technique v19) : décor, onboarding Système 4, purge profil ---
+  _zoneDecorFor: (typeof _zoneDecorFor==='function') ? _zoneDecorFor : undefined,
+  ob4IsCompleted: (typeof ob4IsCompleted==='function') ? ob4IsCompleted : undefined,
+  ob4MarkCompleted: (typeof ob4MarkCompleted==='function') ? ob4MarkCompleted : undefined,
+  resetProfile: (typeof resetProfile==='function') ? resetProfile : undefined,
+  resetAllProfiles: (typeof resetAllProfiles==='function') ? resetAllProfiles : undefined,
 };
 `;
 
