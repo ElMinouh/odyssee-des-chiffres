@@ -54,7 +54,7 @@ function fakeEl() {
       contains(c) { return cls.has(c); },
       [Symbol.iterator]() { return cls[Symbol.iterator](); },
     },
-    appendChild() {}, removeChild() {}, remove() {}, setAttribute() {}, addEventListener() {},
+    appendChild() {}, removeChild() {}, remove() {}, setAttribute() {}, getAttribute() { return null; }, addEventListener() {},
     querySelector() { return fakeEl(); }, querySelectorAll() { return []; },
   };
 }
@@ -299,6 +299,11 @@ globalThis.__api = {
   // ce stub minimal permet aux tests de déclencher directement le onConfirm
   // sans simuler un vrai clic sur un bouton fictif.
   setShowConfirm: (fn) => { globalThis.showConfirm = fn; },
+  // v12.4.54 (correctif reset multi-appareils) : pushProfileToCloud() est une
+  // fonction async réseau (fetch), hors périmètre réel de test (même
+  // limite que le reste du module cloud, voir note ADR-52 ci-dessus) — ce
+  // stub permet de vérifier QUAND elle est appelée sans réseau réel.
+  setPushProfileToCloud: (fn) => { globalThis.pushProfileToCloud = fn; },
   resetAdventure: (typeof resetAdventure==='function') ? resetAdventure : undefined,
   _allOdysseyStorySeenIds: (typeof _allOdysseyStorySeenIds==='function') ? _allOdysseyStorySeenIds : undefined,
   // --- ADR-57 (Lot 6, garde-fou ton tender/standard, ADR-45) ---

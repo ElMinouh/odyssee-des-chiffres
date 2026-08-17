@@ -1880,6 +1880,22 @@ function resetAdventure(playerName){
       data.majorChoiceByAdv = {};
       data.twistLinesUsedByAdv = {};
       data._epilogueBonusCredited = [];
+      // v12.4.54 (correctif reset multi-appareils, en passant) : champs
+      // narratifs ajoutés après ADR-52, jamais ajoutés ici — exactement le
+      // risque que le commentaire d'ADR-52 avait anticipé ("l'oubli d'un
+      // TOUT NOUVEAU champ persistant introduit par un futur système
+      // narratif"). heroTrait n'est PAS effacé : c'est un trait de
+      // personnage choisi par le joueur, pas une progression d'Odyssée
+      // (même catégorie que l'avatar/les skills, explicitement conservés).
+      data.journalEntriesByAdv = {};
+      data.lastTwistLineByAdv = {};
+      data.talismanRevealShown = false;
+      data.rainbowRevealShown = false;
+      data.bookRevealShown = false;
+      data.badgeRevealShown = false;
+      data.armorRevealShown = false;
+      data.libraryRevealShown = false;
+      data.histLibraryRevealShown = false;
       if(data.levelWins){
         Object.keys(data.levelWins).forEach(k => { data.levelWins[k] = 0; });
       }
@@ -1888,6 +1904,20 @@ function resetAdventure(playerName){
       // Si c'est le joueur actif, recharger
       if(P && P.name === playerName){
         loadProfile(); updateHUD();
+        // v12.4.54 (correctif reset multi-appareils) : pousse immédiatement le
+        // reset vers le cloud plutôt que d'attendre la prochaine synchronisation
+        // périodique — sans ce push explicite, la fusion cloud (_mergeCloudProfiles,
+        // union des zones vaincues) réinjecte silencieusement l'ancienne
+        // progression au premier sync suivant, annulant le reset. Placé AVANT
+        // renderMap() volontairement : ce sont deux préoccupations indépendantes,
+        // un échec de rendu de la carte ne doit jamais empêcher la propagation
+        // cloud du reset. Limite connue : si le serveur répond
+        // "conflict_kept_server" (logique côté serveur hors de portée de ce
+        // correctif), l'ancien profil peut encore être réimporté — à surveiller
+        // si le problème persiste malgré ce correctif.
+        if(P.cloudCode && typeof pushProfileToCloud==='function'){
+         pushProfileToCloud(true).catch(()=>{});
+        }
         if(typeof renderMap === 'function' && document.getElementById('v-map') && !document.getElementById('v-map').classList.contains('hidden')){
           renderMap();
         }

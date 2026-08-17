@@ -963,4 +963,20 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-97 — Correctif du reset Odyssée non propagé entre appareils (Option A) + extension du nettoyage aux champs narratifs récents
+
+**Contexte** : Cyril a signalé qu'un reset d'Odyssée fait sur un appareil n'était pas visible sur d'autres appareils du même profil. Investigation : `resetAdventure()` écrit uniquement dans `localStorage` (jamais de push cloud explicite) ; et même après une synchronisation ultérieure, `_mergeCloudProfiles()` fait l'UNION des zones vaincues (`uniq(local.mapBossBeaten, imported.mapBossBeaten)`) et le MAX des étapes de zone — une stratégie de fusion conçue pour ne jamais perdre de progression, qui réinjecte donc silencieusement l'ancienne progression du cloud par-dessus un reset local dès le sync suivant.
+
+**Décision** : Option A retenue (des 2 présentées à Cyril) — `resetAdventure()` pousse désormais immédiatement le profil reseté vers le cloud (`pushProfileToCloud(true)`) si un code cloud existe, plutôt que d'attendre la synchronisation périodique. Placé délibérément AVANT `renderMap()` dans la fonction (préoccupations indépendantes — un échec de rendu de carte ne doit jamais bloquer la propagation cloud).
+
+**Limite assumée** : ce correctif réduit fortement la fenêtre du bug mais ne l'élimine pas totalement — si le serveur répond `conflict_kept_server` (logique de conflit côté serveur, hors de portée de ce correctif car le code serveur n'est pas dans ce dépôt) ou si un autre appareil se synchronise dans l'intervalle très court avant ce push, l'ancien profil peut encore réapparaître. **Option B (marqueur de reset respecté par la fusion) reste la correction de la cause racine**, à envisager si le problème persiste malgré ce correctif.
+
+**Découverte adjacente (corrigée au même endroit)** : `resetAdventure()` ne nettoyait pas les champs narratifs ajoutés après ADR-52 (`journalEntriesByAdv`, `lastTwistLineByAdv`, les 7 flags de révélation de collection) — exactement le risque que le commentaire d'ADR-52 avait anticipé. Corrigé dans le même passage. `heroTrait` n'est volontairement PAS effacé (trait de personnage, pas progression d'Odyssée).
+
+**Découverte adjacente (harnais de test)** : `document.documentElement.getAttribute` n'était pas stubbé (`loadGame.js`) — bloquait tout test déclenchant `applyAppearance()`. Corrigé au passage (retourne `null`, comportement standard d'un attribut absent).
+
+**Impact** : `10-figurines.js` (`resetAdventure`), `loadGame.js` (stub `getAttribute`, `setPushProfileToCloud`), v12.4.54. Garde-fous de non-régression : `reset-adventure_test.js` (étendu, 4 tests). **Point de vigilance pour l'avenir** : tout nouveau champ persistant lié à une Odyssée doit être ajouté à la fois à `resetAdventure()` ET à la liste blanche de `validateProfile()` (ADR-80) dans la même conversation que sa création.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
