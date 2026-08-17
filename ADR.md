@@ -761,4 +761,20 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-85 — Toujours vérifier le pattern `include` réel de `vitest_config.js` avant de nommer un nouveau fichier de test, jamais se fier au nom affiché dans le projet Claude
+
+**Contexte** : lors du Lot 2 de la 19e conversation (dette technique), 3 nouveaux fichiers de test ont été livrés nommés `*_test.js` (underscore), en calquant le nom tel qu'affiché dans la liste des fichiers du projet Claude (ex. `rename-profile_test.js`). Or le vrai dépôt utilise la convention `*.test.js` (point) depuis ADR-71, et `vitest_config.js` ne scanne que `tests/**/*.test.js`. Résultat : les 3 fichiers ont été poussés sur le dépôt mais jamais exécutés par `npm test` (toujours 186 tests, 18 fichiers, au lieu de 195/21) — bug détecté seulement via une capture d'écran de Cyril après coup.
+
+**Décision** : avant de créer tout nouveau fichier de test, exécuter systématiquement `cat vitest_config.js` (ou équivalent) pour lire le pattern `include` réel, plutôt que de déduire la convention de nommage depuis les noms de fichiers affichés dans le projet Claude — ces derniers peuvent différer du nom réel dans le dépôt Git (l'affichage du projet semble substituer le point par un underscore pour au moins certains types de fichiers, cause exacte non identifiée).
+
+**Avantages** : élimine une classe de bug silencieuse (aucune erreur, `git push` réussi, tests simplement jamais exécutés) déjà survenue une fois.
+
+**Inconvénients** : aucun — une vérification systématique et quasi gratuite (un seul appel).
+
+**Alternative rejetée** : renommer une bonne fois pour toutes les fichiers du projet Claude pour qu'ils correspondent au dépôt — impossible, l'assistant n'a aucun contrôle sur la façon dont le projet Claude nomme/affiche les fichiers qui lui sont fournis en tant que contexte.
+
+**Impact** : règle à appliquer par défaut dans toute future conversation, dès le premier fichier de test créé ou modifié — vérifier `vitest_config.js` AVANT de choisir un nom de fichier, pas après livraison.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
