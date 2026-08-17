@@ -1418,25 +1418,20 @@ if(typeof checkMilestones==='function') checkMilestones();
      }
     }
    }catch(e){}
-   // v12.4.51 (suite immersion narrative, point 4) : le Talisman "s'éveille"
-   // au moment exact où son 5e et dernier cristal se débloque — flag
-   // one-shot (P.talismanRevealShown) plutôt qu'une comparaison avant/après,
-   // plus simple et robuste à l'ordre d'exécution. Scope volontairement
-   // limité à l'Odyssée 'prim' (Talisman) — les 6 autres Odyssées ont
-   // chacune leur propre système de collection (armure, bibliothèque,
-   // arc-en-ciel...), non couvert par cet ajout léger.
+   // v12.4.53 (audit Cohérence Globale, C2) : révélation de collection —
+   // générique aux 7 Odyssées désormais (remplace le bloc Talisman-seul
+   // d'ADR-92), chaque Odyssée ayant sa propre condition de complétion
+   // vérifiée dans `_COLLECTION_REVEAL` (07-boss.js).
    try{
-    const advKeyT = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
-    if(advKeyT==='prim' && !P.talismanRevealShown && typeof _ADV_PRIM_CRYSTALS!=='undefined' && typeof _regionConquered==='function'){
-     const allCrystalsDone = _ADV_PRIM_CRYSTALS.every(c => _regionConquered(c.rid));
-     if(allCrystalsDone){
-      P.talismanRevealShown = true;
-      if(typeof saveProfile==='function') saveProfile();
-      if(typeof _showStoryModal==='function'){
-       _showStoryModal({ id:'talisman_complete_reveal', title:'Le Talisman s\'éveille', pages:[
-        { emoji:'✨', text:'Les cinq cristaux du Talisman s\'illuminent d\'un coup, et une chaleur familière parcourt tes mains. L\'objet semble... vivant.' }
-       ], closeLabel:'Continuer ›' }, ()=>{});
-      }
+    const advKeyR = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
+    const _reveal = (typeof _COLLECTION_REVEAL!=='undefined') ? _COLLECTION_REVEAL[advKeyR] : null;
+    if(_reveal && !P[_reveal.flag] && _reveal.check()){
+     P[_reveal.flag] = true;
+     if(typeof saveProfile==='function') saveProfile();
+     if(typeof _showStoryModal==='function'){
+      _showStoryModal({ id:'collection_complete_reveal_'+advKeyR, title:_reveal.title, pages:[
+       { emoji:_reveal.emoji, text:_reveal.text }
+      ], closeLabel:'Continuer ›' }, ()=>{});
      }
     }
    }catch(e){}

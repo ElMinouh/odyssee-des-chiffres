@@ -947,4 +947,20 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-96 — Lot 3 de l'audit Cohérence Globale : révélation de collection généralisée aux 7 Odyssées
+
+**Contexte** : ADR-92 avait limité l'éveil de collection au Talisman (Odyssée 'prim'), les 6 autres Odyssées (arc-en-ciel, livre, badge, armure, bibliothèque FR, bibliothèque Histoire) restant sans moment de clôture équivalent — asymétrie relevée par l'audit de Cohérence Globale (C2). Chacune des 6 collections a été vérifiée individuellement dans le code réel avant implémentation (ADR-84) : les conditions de complétion diffèrent réellement (flag epilogue additionnel pour `mat`/`primhist`, structure par objet plutôt que tableau pour `col`, périmètre de régions à 5 plutôt que 6 pour `colfr`/`primhist`).
+
+**Décision** : table générique `_COLLECTION_REVEAL` (07-boss.js), une entrée par advKey (flag one-shot, titre, emoji, texte, fonction `check()` propre) — remplace le bloc Talisman-seul d'ADR-92 dans `endGame()` par une lecture générique de cette table. Volontairement PAS de fonction de vérification unique partagée : les 7 conditions étant réellement différentes, une fausse généralisation aurait été plus fragile que 7 fonctions courtes explicites.
+
+**Avantages** : les 7 Odyssées ont désormais un moment de révélation symétrique ; ajouter une 8e Odyssée future n'exige qu'une nouvelle entrée dans la table, pas de nouveau branchement dans `endGame()`.
+
+**Inconvénients** : aucun identifié — chaque condition a été testée individuellement (10 tests dédiés) avant livraison.
+
+**Impact** : `07-boss.js` (`_COLLECTION_REVEAL`), `07-game.js` (bloc générique remplaçant celui d'ADR-92), `05-profile.js` (whitelist des 6 nouveaux flags), v12.4.53. Garde-fou de non-régression : `collection-reveal-all-odysseys_test.js`.
+
+**Clôture** : les 5 décisions "à appliquer immédiatement" de l'audit Cohérence Globale (C1 à C5) sont désormais toutes livrées.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

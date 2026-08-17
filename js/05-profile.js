@@ -304,6 +304,14 @@ function validateProfile(raw, defaultName){
   // v12.4.51 (suite immersion narrative, point 4) : le Talisman ne s'anime
   // qu'une seule fois — flag one-shot.
   talismanRevealShown: _safeBool(raw.talismanRevealShown, false),
+  // v12.4.53 (audit Cohérence Globale, C2) : extension aux 6 autres
+  // Odyssées, même principe de flag one-shot.
+  rainbowRevealShown: _safeBool(raw.rainbowRevealShown, false),
+  bookRevealShown: _safeBool(raw.bookRevealShown, false),
+  badgeRevealShown: _safeBool(raw.badgeRevealShown, false),
+  armorRevealShown: _safeBool(raw.armorRevealShown, false),
+  libraryRevealShown: _safeBool(raw.libraryRevealShown, false),
+  histLibraryRevealShown: _safeBool(raw.histLibraryRevealShown, false),
   // v11.6.6 — photo de profil (facultative, recadrée/compressée côté appareil
   // avant stockage, 200 Ko max) et code du profil (2 chiffres, facultatif).
   photo: _safeDataUrl(raw.photo, 200000, null),

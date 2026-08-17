@@ -15,6 +15,50 @@ const _ADV_COL_PIECES = [
  { key:'torso', name:'Cuirasse',        power:'Cœur d\'Or',   eff:'vitalité',         gem:'radial-gradient(circle at 35% 30%,#ffb13d,#7a4400)' },
  { key:'helm',  name:'Heaume',          power:'Clairvoyance', eff:'lit les attaques', gem:'radial-gradient(circle at 35% 30%,#bfe9ff,#4f86b0)' },
 ];
+// v12.4.53 (audit Cohérence Globale, C2) : révélation de collection —
+// généralise l'éveil du Talisman (ADR-92, 'prim' seul) aux 6 autres
+// Odyssées. Chaque entrée a sa PROPRE condition de complétion (vérifiée
+// individuellement dans le code réel avant d'être retenue ici, ADR-84) —
+// volontairement pas de fonction générique unique, les 7 conditions étant
+// réellement différentes (flag epilogue additionnel pour mat/primhist,
+// structure par objet plutôt que tableau pour col).
+const _COLLECTION_REVEAL = {
+ prim: {
+  flag:'talismanRevealShown', title:'Le Talisman s\'éveille', emoji:'✨',
+  text:'Les cinq cristaux du Talisman s\'illuminent d\'un coup, et une chaleur familière parcourt tes mains. L\'objet semble... vivant.',
+  check: function(){ return typeof _ADV_PRIM_CRYSTALS!=='undefined' && typeof _regionConquered==='function' && _ADV_PRIM_CRYSTALS.every(function(c){ return _regionConquered(c.rid); }); },
+ },
+ mat: {
+  flag:'rainbowRevealShown', title:'L\'Arc-en-ciel s\'unit', emoji:'🌈',
+  text:'Les sept couleurs de l\'arc-en-ciel s\'unissent enfin, et une lumière chaude illumine tout le ciel au-dessus de toi.',
+  check: function(){ return typeof _ADV_MAT_ORDER!=='undefined' && typeof _regionConquered==='function' && _ADV_MAT_ORDER.every(function(rid){ return _regionConquered(rid); }) && ((typeof P!=='undefined' && P && P.storySeen)||[]).includes('mat_epilogue'); },
+ },
+ matfr: {
+  flag:'bookRevealShown', title:'Le Livre s\'achève', emoji:'📖',
+  text:'Les pages du livre se tournent seules, et une douce lueur dorée s\'en échappe. L\'histoire est complète.',
+  check: function(){ return typeof _ADV_MAT_ORDER!=='undefined' && typeof _regionConquered==='function' && _ADV_MAT_ORDER.every(function(rid){ return _regionConquered(rid); }); },
+ },
+ primfr: {
+  flag:'badgeRevealShown', title:'Le Badge complet', emoji:'🎖️',
+  text:'Le dernier insigne se pose sur ta poitrine dans un éclat de lumière. Tu portes désormais la marque complète de ton parcours.',
+  check: function(){ var order = (typeof _ADV_MAT_ORDER!=='undefined') ? _ADV_MAT_ORDER : ['cp','ce1','ce2','cm1','cm2','final']; return typeof _regionConquered==='function' && order.every(function(rid){ return _regionConquered(rid); }); },
+ },
+ col: {
+  flag:'armorRevealShown', title:'L\'Armure complète', emoji:'🛡️',
+  text:'La dernière pièce de l\'armure se verrouille avec un cliquetis satisfaisant. Tu es désormais protégé de la tête aux pieds.',
+  check: function(){ return typeof _ADV_COL_ORDER!=='undefined' && typeof _regionConquered==='function' && _ADV_COL_ORDER.every(function(rid){ return _regionConquered(rid); }); },
+ },
+ colfr: {
+  flag:'libraryRevealShown', title:'La Bibliothèque s\'éveille', emoji:'📚',
+  text:'Le dernier livre trouve sa place sur l\'étagère, et la bibliothèque tout entière semble respirer, comme si elle venait de s\'éveiller.',
+  check: function(){ return typeof _regionConquered==='function' && ['cp','ce1','ce2','cm1','cm2'].every(function(rid){ return _regionConquered(rid); }); },
+ },
+ primhist: {
+  flag:'histLibraryRevealShown', title:'L\'Histoire complète', emoji:'🏛️',
+  text:'Le dernier ouvrage rejoint les autres. L\'Histoire, dans son intégralité, t\'appartient désormais.',
+  check: function(){ return typeof _regionConquered==='function' && ['cp','ce1','ce2','cm1','cm2'].every(function(rid){ return _regionConquered(rid); }) && ((typeof P!=='undefined' && P && P.storySeen)||[]).includes('primhist_epilogue'); },
+ },
+};
 // v11.5.4 — Table de correspondance aventure→carnet (dette technique corrigée :
 // remplace l'ancien enchaînement d'if/else en dur). Pour ajouter une nouvelle
 // odyssée dédiée, ajouter une seule entrée ici (nom de fonction en chaîne pour

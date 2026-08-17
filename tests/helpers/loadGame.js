@@ -330,6 +330,9 @@ globalThis.__api = {
   _maybeShowStory: (typeof _maybeShowStory==='function') ? _maybeShowStory : undefined,
   _ADV_PRIM_CRYSTALS: (typeof _ADV_PRIM_CRYSTALS!=='undefined') ? _ADV_PRIM_CRYSTALS : undefined,
   _regionConquered: (typeof _regionConquered==='function') ? _regionConquered : undefined,
+  _COLLECTION_REVEAL: (typeof _COLLECTION_REVEAL!=='undefined') ? _COLLECTION_REVEAL : undefined,
+  _ADV_MAT_ORDER: (typeof _ADV_MAT_ORDER!=='undefined') ? _ADV_MAT_ORDER : undefined,
+  _ADV_COL_ORDER: (typeof _ADV_COL_ORDER!=='undefined') ? _ADV_COL_ORDER : undefined,
 };
 `;
 
