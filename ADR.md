@@ -898,4 +898,37 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-93 — Règle de canal de diffusion narrative : toast furtif vs modale bloquante
+
+**Contexte** : l'audit de Cohérence Globale (19e conversation, C1) a constaté que la mise en scène de zone (N1) utilise `toast()` tandis que le callback de chapitre (N3), le cliffhanger (N7), le choix de trait (N8) et l'éveil du Talisman (point 4) utilisent tous `_showStoryModal()`/`_showChoiceModal()` — chaque choix était défendable individuellement au moment de sa livraison, mais aucune règle écrite ne fixait quand utiliser l'un ou l'autre. Risque : la prochaine fonctionnalité narrative choisirait son canal au jugé.
+
+**Décision** (règle, pas de changement de code — les usages actuels respectent déjà cette règle a posteriori) :
+- **`toast()`** : contenu court (une phrase), à fréquence élevée (potentiellement à chaque zone/question), dont la compréhension complète n'est pas indispensable — le joueur peut le manquer sans perdre le fil de l'histoire. Exemple : mise en scène de zone (N1).
+- **`_showStoryModal()` / `_showChoiceModal()`** : tout contenu qui doit être lu en entier au moins une fois pour rester cohérent avec la suite (progression narrative, choix qui a des conséquences stockées, révélation ponctuelle). Exemple : prologue, chapitres, twists, moments charnières, callback (N3), choix de trait (N8), éveil du Talisman.
+
+**Avantages** : donne un critère explicite et rapide à appliquer pour toute future fonctionnalité narrative, sans avoir à redébattre du canal à chaque fois.
+
+**Impact** : règle à appliquer par défaut dans toute future conversation touchant à la narration — aucun fichier de code modifié par cette entrée.
+
+---
+
+## ADR-94 — Registre des voix narratives actives du module Aventure
+
+**Contexte** : l'audit de Cohérence Globale (C5, la seule incohérence classée « Importante ») a constaté que le joueur est désormais adressé par au moins 4 voix distinctes, ajoutées séparément au fil des Lots, sans qu'aucun document ne fixe qui parle, quand, ni pourquoi ce sont des voix différentes plutôt qu'une seule. Risque : une 5e voix future (ex. le point 6, fragments de lore, mis en attente) pourrait être ajoutée sans cohérence avec les 4 existantes.
+
+**Décision** — registre de référence, à consulter avant tout nouvel ajout narratif :
+
+| Voix | Fonction | Déclencheur | Canal | Code |
+|---|---|---|---|---|
+| **Le Chroniqueur** | Se souvient d'une performance réelle passée du joueur | Entrée dans un nouveau chapitre (région) | Modale (page finale du chapitre) | `_pickCallbackLine()`, 07-story.js |
+| **Le Compagnon** | Commente en direct, régulièrement, pendant le jeu | Toutes les ~3 questions, sur bonne/mauvaise réponse | Inline (bulle de dialogue) | `_companionComment()`, 07-map.js |
+| **Les PNJ** | Réagissent à la progression du joueur dans LEUR région | Clic sur un PNJ de la carte | Modale légère (bulle flottante) | `_resolveNpcLine()`, 07-map.js |
+| **Les objets magiques** | S'animent/prennent vie à un moment de complétion précis | Complétion d'une collection (Talisman) | Modale (une seule fois, one-shot) | injection dans `endGame()`, 07-game.js |
+
+**Règle pour toute voix future** : avant d'ajouter une 5e voix, vérifier qu'elle occupe un rôle réellement distinct des 4 ci-dessus (pas une redite), et l'ajouter à ce tableau dans la même conversation que son implémentation — pas après coup.
+
+**Impact** : règle à appliquer par défaut dans toute future conversation touchant à la narration — aucun fichier de code modifié par cette entrée. Concerne directement le point 6 (fragments de lore hors-combat) si ce chantier est un jour lancé.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
