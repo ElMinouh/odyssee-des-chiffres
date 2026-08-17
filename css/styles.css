@@ -3751,6 +3751,16 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 }
 .advlog-twist-label{ font-weight:800; font-size:.8em; color:#f1c40f; margin-bottom:4px; }
 .advlog-twist-text{ font-size:.85em; font-style:italic; color:#ecf0f1; line-height:1.4; }
+/* v12.4.49 (Lot 3, audit immersion narrative N4) : carnet de voyage — style
+   plus sobre que le cliffhanger (pas de bordure dorée, pour ne pas rivaliser
+   visuellement), entrées empilées façon lignes de journal. */
+.advlog-travel-log{ margin-bottom:var(--space-3); }
+.advlog-travel-log-title{ font-weight:800; font-size:.8em; color:#bdc3c7; margin-bottom:6px; }
+.advlog-travel-entry{
+ font-size:.82em; font-style:italic; color:#dce3f0; line-height:1.4;
+ padding:6px 0; border-bottom:1px solid rgba(255,255,255,.06);
+}
+.advlog-travel-entry:last-child{ border-bottom:none; }
 /* v12.4.45 (Audit qualité perçue #3, Q2) : médaille verrouillée pour un boss
    non vaincu — même filtre grayscale/brightness que .archipel-zone.locked
    sur la carte, pour rester cohérent avec le langage visuel "verrouillé"

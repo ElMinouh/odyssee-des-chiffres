@@ -320,6 +320,11 @@ globalThis.__api = {
   _advlogJournalHtml: (typeof _advlogJournalHtml==='function') ? _advlogJournalHtml : undefined,
   _maybeShowTwist: (typeof _maybeShowTwist==='function') ? _maybeShowTwist : undefined,
   _twistZoneIdx: (typeof _twistZoneIdx==='function') ? _twistZoneIdx : undefined,
+  _pickJournalEntry: (typeof _pickJournalEntry==='function') ? _pickJournalEntry : undefined,
+  _pickCallbackLine: (typeof _pickCallbackLine==='function') ? _pickCallbackLine : undefined,
+  _journalOutcomeTier: (typeof _journalOutcomeTier==='function') ? _journalOutcomeTier : undefined,
+  _JOURNAL_THEME_OPENERS: (typeof _JOURNAL_THEME_OPENERS!=='undefined') ? _JOURNAL_THEME_OPENERS : undefined,
+  endGame: (typeof endGame==='function') ? endGame : undefined,
 };
 `;
 

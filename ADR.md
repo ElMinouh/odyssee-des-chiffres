@@ -847,4 +847,20 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-90 — Lot 3 de l'audit Immersion narrative : le joueur comme auteur (callback de chapitre + carnet de voyage combinatoire)
+
+**Contexte** : l'audit Immersion Narrative & Motivation a trouvé qu'aucun texte de chapitre ne référence une performance réelle du joueur (N3), et que le Carnet n'offre aucun récit à la première personne, seulement des statistiques froides (N4). Cyril a demandé explicitement une variété suffisante pour qu'aucune répétition ne soit perceptible.
+
+**Décision** : système COMBINATOIRE plutôt qu'une liste de phrases entières écrites à la main — un ouvreur de lieu (3 par thème × 9 thèmes = 27) combiné à une issue de combat (4 par palier de performance × 3 paliers = 12), soit 324 combinaisons pour 172 zones. Le palier de performance (sans-faute / correct / difficile) est dérivé de `GS.errInGame` au moment de la victoire.
+1. **N4** : à chaque première conquête de zone (`07-game.js`, juste après `P.mapBossBeaten.push`), une entrée `{text, flawless, bossName, zoneLabel}` est générée (`_pickJournalEntry`, `07-story.js`) et stockée dans `P.journalEntriesByAdv[advKey]` (plafond 20). Affichée comme "📖 Mon carnet de voyage" dans le Journal du Carnet (6 dernières, plus récentes en premier).
+2. **N3** : à l'entrée du chapitre suivant (`_maybeShowStory`, partie 4), une page finale optionnelle (`_pickCallbackLine`) référence la DERNIÈRE entrée du journal — 5 variantes si sans-faute, 5 si victoire difficile. Absente naturellement pour le tout premier chapitre (aucune entrée encore).
+
+**Avantages** : source de données unique (le journal alimente à la fois son propre affichage ET le callback de chapitre) ; variété vérifiée (test : ≥6 textes distincts sur 40 tirages pour un même thème+palier) ; aucun système de tracking supplémentaire, tout repose sur `GS.errInGame` déjà existant.
+
+**Inconvénients** : le test bout-en-bout via `endGame()` s'est révélé trop couplé à des effets de bord DOM sans rapport (bouton retour module, XP, milestones) pour être fiable en isolation — la couverture repose donc sur `_pickJournalEntry`/`_pickCallbackLine` testés directement (identiques à ce qu'`endGame()` appelle, vérifié par relecture) plutôt que sur un test de bout en bout complet.
+
+**Impact** : `07-story.js` (`_JOURNAL_THEME_OPENERS`, `_JOURNAL_OUTCOME_*`, `_pickJournalEntry`, `_CALLBACK_LINES_*`, `_pickCallbackLine`, `_advlogJournalHtml`, `_maybeShowStory`), `07-game.js` (injection post-victoire), `05-profile.js` (whitelist `journalEntriesByAdv`), `styles.css` (`.advlog-travel-log`), v12.4.49. Garde-fou de non-régression : `journal-callback-variety_test.js`.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

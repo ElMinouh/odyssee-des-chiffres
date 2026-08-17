@@ -2264,6 +2264,92 @@ function _zoneReachable(p, beaten, starsTotal){
   return true;
  }catch(e){ return false; }
 }
+// v12.4.49 (Lot 3, audit immersion narrative N3+N4) : système COMBINATOIRE
+// (ouvreur de lieu × issue de combat) plutôt qu'une longue liste de phrases
+// entières écrites à la main — demande explicite de Cyril d'avoir "suffisamment
+// d'itérations pour ne jamais avoir l'impression que ce sont toujours les
+// mêmes qui réapparaissent". 9 thèmes × 3 ouvreurs = 27 fragments de lieu,
+// × 3 paliers de performance × 4 issues = 12 fragments d'issue → 324
+// combinaisons distinctes pour 172 zones, sans jamais répéter le même texte
+// intégral deux fois pour un même thème+palier.
+const _JOURNAL_THEME_OPENERS = {
+ standard: ["J'ai traversé les prairies paisibles", "J'ai avancé à travers les champs tranquilles", "J'ai parcouru la plaine verdoyante"],
+ foret:    ["Je me suis enfoncé dans la forêt mystérieuse", "J'ai traversé les bois épais", "J'ai suivi les sentiers ombragés de la forêt"],
+ volcan:   ["J'ai bravé la chaleur des terres de feu", "J'ai avancé parmi les coulées de lave", "J'ai traversé les terres brûlantes du volcan"],
+ ocean:    ["J'ai navigué au cœur de l'océan", "J'ai bravé les vagues de l'océan", "J'ai exploré les récifs de l'océan"],
+ banquise: ["J'ai affronté le froid de la banquise", "J'ai traversé les étendues glacées", "J'ai avancé sur la glace craquante"],
+ chateau:  ["J'ai franchi les murailles du château", "J'ai exploré les couloirs du vieux château", "J'ai traversé la cour du château"],
+ sakura:   ["J'ai marché sous les pétales de sakura", "J'ai traversé le jardin fleuri", "J'ai suivi le chemin rose des cerisiers"],
+ nuit:     ["J'ai avancé dans la nuit étoilée", "J'ai traversé les ombres nocturnes", "J'ai marché sous un ciel plein de mystères"],
+ espace:   ["J'ai voyagé à travers l'espace", "J'ai traversé les étoiles", "J'ai exploré les confins de la galaxie"],
+};
+const _JOURNAL_OUTCOME_FLAWLESS = [
+ " et j'y ai vaincu {boss} sans la moindre erreur.",
+ " où j'ai triomphé de {boss} avec une précision parfaite.",
+ " et j'ai battu {boss} sans un seul faux pas.",
+ " où {boss} n'a rien pu faire face à moi.",
+];
+const _JOURNAL_OUTCOME_GOOD = [
+ " et j'ai fini par vaincre {boss}, malgré quelques hésitations.",
+ " où j'ai battu {boss}, non sans mal.",
+ " et j'ai triomphé de {boss} après quelques erreurs.",
+ " où j'ai eu raison de {boss}, un peu chahuté mais victorieux.",
+];
+const _JOURNAL_OUTCOME_STRUGGLE = [
+ " et j'ai fini par avoir {boss}, de justesse.",
+ " où j'ai vaincu {boss} au terme d'un combat serré.",
+ " et j'ai triomphé de {boss}, non sans peine.",
+ " où j'ai réussi à battre {boss}, après un dur combat.",
+];
+// v12.1.8 : même principe de tirage sans remise par Odyssée que _pickTwistLine,
+// mais ici sur les FRAGMENTS (ouvreur + issue), pas sur des phrases entières —
+// la combinatoire rend la répétition perceptible bien plus rare de toute façon.
+function _journalOutcomeTier(errCount){
+ return errCount<=0 ? _JOURNAL_OUTCOME_FLAWLESS : (errCount<=2 ? _JOURNAL_OUTCOME_GOOD : _JOURNAL_OUTCOME_STRUGGLE);
+}
+function _pickJournalEntry(zone, errCount){
+ try{
+  const theme = (zone && zone.theme) || 'standard';
+  const openers = _JOURNAL_THEME_OPENERS[theme] || _JOURNAL_THEME_OPENERS.standard;
+  const opener = openers[ri(0, openers.length-1)];
+  const tier = _journalOutcomeTier(errCount);
+  const outcome = tier[ri(0, tier.length-1)];
+  const bossName = (zone && (zone.bossName || zone.boss)) || 'l\'adversaire';
+  const flawless = errCount<=0;
+  const text = (opener + outcome).replace(/\{boss\}/g, bossName);
+  return { text, flawless, bossName, zoneLabel: (zone && zone.label) || '' };
+ }catch(e){ return null; }
+}
+// N3 : callback du chapitre suivant, référençant la DERNIÈRE performance
+// réelle du joueur (donnée déjà produite par _pickJournalEntry ci-dessus —
+// source unique, pas de nouveau tracking). 5 variantes par registre
+// (sans-faute / victoire après difficultés) = 10 fragments, combinés au nom
+// du boss réel → jamais deux fois le même texte pour deux boss différents.
+const _CALLBACK_LINES_FLAWLESS = [
+ "Le Chroniqueur qui te suit murmure : « Je me souviens de ta victoire sans faute contre {boss}... Continue ainsi. »",
+ "Une voix familière commente : « Sans la moindre erreur face à {boss}, tu progresses vite. »",
+ "Ton compagnon de route sourit : « {boss} n'a rien pu faire contre toi. Voyons la suite. »",
+ "Un murmure te rappelle ta victoire parfaite contre {boss}, et te donne des ailes.",
+ "Tu repenses un instant à {boss}, vaincu sans la moindre erreur. Le cœur léger, tu avances.",
+];
+const _CALLBACK_LINES_NORMAL = [
+ "Le Chroniqueur qui te suit murmure : « Je me souviens de ton courage face à {boss}, malgré les difficultés. »",
+ "Une voix familière commente : « Tu as eu du mal face à {boss}, mais tu as tenu bon. »",
+ "Ton compagnon de route hoche la tête : « {boss} t'a donné du fil à retordre. Tu es plus fort qu'il n'y paraît. »",
+ "Un murmure te rappelle ce combat serré contre {boss}. Tu n'as pas lâché.",
+ "Tu repenses un instant à {boss}. Ce ne fut pas facile, mais tu as gagné. La suite t'attend.",
+];
+function _pickCallbackLine(){
+ try{
+  const advKey = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
+  const entries = (typeof P!=='undefined' && P && P.journalEntriesByAdv && P.journalEntriesByAdv[advKey]) || [];
+  if(!entries.length) return null;
+  const last = entries[entries.length-1];
+  const pool = last.flawless ? _CALLBACK_LINES_FLAWLESS : _CALLBACK_LINES_NORMAL;
+  const line = pool[ri(0, pool.length-1)];
+  return line.replace(/\{boss\}/g, last.bossName || 'ton adversaire');
+ }catch(e){ return null; }
+}
 // v12.1.6 (Lot D, pt.6) : rebondissement mi-îlot. Une seule fois par région,
 // sur une zone choisie entre 33% et 66% de sa progression (position variable
 // par région, déterministe mais non prévisible sans lire le code, pour éviter
@@ -2652,7 +2738,16 @@ function _maybeShowStory(afterCb){
   const chap = _STORY.chapters[reg.id];
   if(chap && !P.storySeen.includes(chap.id)){
    _markStorySeen(chap.id);
-   _showStoryModal(chap, ()=>{
+   // v12.4.49 (Lot 3, N3) : page finale optionnelle référençant la DERNIÈRE
+   // performance réelle du joueur (voir _pickCallbackLine, source commune
+   // avec N4) — absente naturellement pour le tout premier chapitre, puisque
+   // P.journalEntriesByAdv est alors encore vide (aucune zone conquise).
+   let chapToShow = chap;
+   const _callback = (typeof _pickCallbackLine==='function') ? _pickCallbackLine() : null;
+   if(_callback){
+    chapToShow = Object.assign({}, chap, { pages: [...chap.pages, { emoji:'💭', text:_callback }] });
+   }
+   _showStoryModal(chapToShow, ()=>{
     if(typeof _maybeShowMajorMoment==='function') _maybeShowMajorMoment(_done);
     else _done();
    });
@@ -3517,7 +3612,16 @@ function _advlogJournalHtml(){
  const _advKeyJournal = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
  const _twist = (typeof P!=='undefined' && P && P.lastTwistLineByAdv) ? P.lastTwistLineByAdv[_advKeyJournal] : null;
  const twistHtml = _twist ? `<div class="advlog-twist-teaser"><div class="advlog-twist-label">⚡ À suivre...</div><div class="advlog-twist-text">${esc(_twist)}</div></div>` : '';
- return { html: `${twistHtml}<div class="advlog-quest-list">${items}</div>`, unreadCount, nextUnreadId };
+ // v12.4.49 (Lot 3, N4) : carnet de voyage à la première personne — les
+ // entrées les plus récentes en premier, limité à 6 affichées (les 20
+ // dernières sont conservées en profil, mais en montrer 6 suffit à l'écran
+ // sans noyer la liste de chapitres juste en dessous).
+ const _journalEntries = ((typeof P!=='undefined' && P && P.journalEntriesByAdv && P.journalEntriesByAdv[_advKeyJournal]) || []).slice(-6).reverse();
+ const travelLogHtml = _journalEntries.length ? `<div class="advlog-travel-log">
+   <div class="advlog-travel-log-title">📖 Mon carnet de voyage</div>
+   ${_journalEntries.map(e => `<div class="advlog-travel-entry">${esc(e.text)}</div>`).join('')}
+  </div>` : '';
+ return { html: `${twistHtml}${travelLogHtml}<div class="advlog-quest-list">${items}</div>`, unreadCount, nextUnreadId };
 }
 
 // ═══════════════════════════════════════════════════════

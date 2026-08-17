@@ -1387,6 +1387,21 @@ if(typeof checkMilestones==='function') checkMilestones();
   }
   if(!(P.mapBossBeaten||[]).includes(GM.mapZone.id)){
    P.mapBossBeaten=[...(P.mapBossBeaten||[]),GM.mapZone.id];
+   // v12.4.49 (Lot 3, audit immersion narrative N4) : ligne de journal à la
+   // première personne, générée une seule fois (première conquête réelle de
+   // la zone, jamais en rejouant) — combinaison lieu × issue (voir
+   // _pickJournalEntry, 07-story.js), stockée par Odyssée, plafonnée aux 20
+   // dernières entrées pour ne pas alourdir indéfiniment le profil.
+   try{
+    if(typeof _pickJournalEntry==='function'){
+     const advKeyJ = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
+     const entry = _pickJournalEntry(GM.mapZone, GS.errInGame||0);
+     if(entry){
+      P.journalEntriesByAdv = P.journalEntriesByAdv || {};
+      P.journalEntriesByAdv[advKeyJ] = [...(P.journalEntriesByAdv[advKeyJ]||[]), entry].slice(-20);
+     }
+    }
+   }catch(e){}
    // Chantier 3.10 : cinématique de zone conquise (remplace l'ancien transition-screen)
    const _zone = GM.mapZone;
    // v8.7.30 (O3-B.2) : détection de la conquête d'un îlot complet.

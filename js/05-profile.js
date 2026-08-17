@@ -166,7 +166,24 @@ function validateProfile(raw, defaultName){
    Object.keys(src).forEach(k=>{ if(typeof src[k]==='string' && src[k]) out[k] = src[k]; });
    return out;
   })(),
-  // v12.4.48 (Lot 2, audit immersion narrative N7) : dernier rebondissement
+  // v12.4.49 (Lot 3, audit immersion narrative N4) : carnet de voyage à la
+  // première personne, par Odyssée. Chaque entrée est un petit objet validé
+  // champ par champ (jamais une simple copie), plafonné aux 20 dernières
+  // par Odyssée (même plafond qu'à l'écriture, 07-game.js).
+  journalEntriesByAdv: (function(){
+   const src = (raw.journalEntriesByAdv && typeof raw.journalEntriesByAdv === 'object') ? raw.journalEntriesByAdv : {};
+   const out = {};
+   Object.keys(src).forEach(k=>{
+    const arr = Array.isArray(src[k]) ? src[k] : [];
+    out[k] = arr.filter(e => e && typeof e === 'object' && typeof e.text === 'string').map(e => ({
+     text: _safeStr(e.text, 300, ''),
+     flawless: !!e.flawless,
+     bossName: _safeStr(e.bossName, 60, ''),
+     zoneLabel: _safeStr(e.zoneLabel, 60, ''),
+    })).slice(-20);
+   });
+   return out;
+  })(),
   // narratif tiré, par Odyssée — texte déjà substitué ({villain} etc.),
   // affiché comme "à suivre..." dans le Carnet. Objet { advKey: texte }.
   lastTwistLineByAdv: (function(){
