@@ -541,13 +541,223 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
-## ADR-60 — Centralisation de `localStorage` : différée, à reproposer plus tard
+⚠️ **Note de recopie (19e conversation)** : ADR-61 à ADR-70 restent non recopiées ici — leur texte source (16e/17e conversations) n'était pas disponible dans cet environnement de travail. ADR-71 à ADR-84 ci-dessous ont été recopiées depuis les documents de transition (v18 partiel fourni par Cyril + v19).
 
-**Contexte** : 119 accès directs à `localStorage` répartis dans 14 fichiers, sans guichet unique — risque documenté (même famille de bug que celui corrigé par ADR-51). Discuté en détail avec Cyril : ampleur (119 points), aucun bug réel constaté à ce jour, gain différé plutôt qu'immédiat.
+## ADR-71 — Mise en place réussie d'un harnais Vitest réel dans le sandbox de travail, remplaçant la vérification par relecture statique seule
 
-**Décision** : **différée**, pas abandonnée. Trois options présentées (tout centraliser maintenant / centraliser progressivement en lots dédiés / migration opportuniste au fil de l'eau) — Cyril choisit de ne rien faire pour l'instant, et demande à ce qu'on lui rappelle ce point plus tard.
+**Contexte** : la v17 documentait un échec de toute exécution runtime du code du jeu dans l'environnement de travail (`require()`/`eval` incompatibles avec les scripts globaux `const`/`let` non-modules du projet), la vérification s'étant appuyée uniquement sur la relecture statique + la suite Vitest existante lancée telle quelle.
 
-**Pour le prochain assistant / la prochaine conversation** : si ce point n'a pas été rouvert par Cyril, le lui **rementionner spontanément** de temps en temps (ex. en fin de conversation, ou quand un chantier touche déjà `localStorage` dans un fichier) — pas pour insister, juste pour ne pas laisser cette dette disparaître silencieusement faute de rappel. Ne pas coder quoi que ce soit sur ce point sans validation explicite renouvelée.
+**Décision** : reconstituer intégralement l'arborescence attendue par le harnais de test réel du dépôt (`js/` + `tests/` + `tests/helpers/loadGame.js`, qui charge les fichiers via lecture + exécution `vm`, pas via `require()`), renommer les fichiers `*_test.js`→`*.test.js`, installer `vitest` via npm, et exécuter la vraie suite.
+
+**Avantages** : vérification numérique exacte de chaque correctif (comptages, couleurs, distances, titres), pas seulement une relecture ; a permis de détecter/confirmer des chiffres précis (35/86, 50/86, 0/86 zones en chevauchement ; distance exacte 49,6px→88,0px) impossibles à obtenir par relecture seule.
+
+**Inconvénients** : mise en place plus longue en tout début de conversation (environ 10-15 appels d'outil pour l'installation initiale) ; à refaire si le sandbox est réinitialisé entre deux conversations (probable, aucune persistance connue).
+
+**Alternative rejetée** : continuer à se fier uniquement à la relecture statique, jugée insuffisante pour un chantier aussi quantitatif que celui de cette conversation (chevauchement de pastilles).
+
+**Impact** : méthode utilisée pour les 5 livraisons de cette conversation, documentée comme procédure standard pour toute future conversation.
+
+---
+
+## ADR-72 — Audit combiné Esthétique/Ergonomie/Narratif restreint au module Aventure, comité de 7 rôles, méthodologie ancrée dans le code réel
+
+**Contexte** : demande de Cyril de reproduire le niveau de rigueur du gabarit d'audit technique d'origine (3e conversation), mais restreint au module Aventure et combinant trois angles (esthétique, ergonomie, narration) plutôt qu'un seul comme les audits précédents.
+
+**Décision** : comité simulé de 7 rôles couvrant les 3 dimensions, méthodologie strictement ancrée dans le code réel (aucun constat sans citation de fonction/valeur exacte), limite de périmètre explicitement assumée (pas de relecture exhaustive des 172+ zones, constats transversaux + échantillonnage).
+
+**Avantages** : crédibilité, actionnabilité, cohérence avec les 2 audits Aventure précédents (16e UX, 17e DA) dont le score s'en trouve rapproché de façon cohérente (69/100, comme le 17e).
+
+**Inconvénients** : le reste du logiciel (tableau de bord parent, boutique, messagerie) reste non réévalué sous cet angle combiné.
+
+**Impact** : document Word 12 pages, 12 problèmes détaillés, 4 lots + 1 hors-lot.
+
+---
+
+## ADR-73 — Extension systématique du principe "le thème réel pilote tout" (ADR-67) à tout composant affichant une couleur/emoji/son lié à une région
+
+**Contexte** : découverte que le principe acté en 17e conversation (ADR-67) n'avait été appliqué qu'aux 3 composants d'origine (îlots, PNJ, météo), alors que 4 autres composants visuels (fond de fiche de zone, bannière de transition, mini-carte, Journal/Progression du Carnet) et 1 composant sonore (signature audio régionale) souffraient du même défaut, découvert un par un lors de la phase de recherche de l'audit.
+
+**Décision** : corriger tous les composants identifiés dans la même conversation (Lots 1, 2, et le hors-lot A7), et formaliser la règle comme systématique : tout nouveau composant du module Aventure affichant une information dépendant du "lieu" doit être vérifié contre ce principe avant livraison, pas seulement au moment où on le découvre en défaut.
+
+**Avantages** : cohérence totale enfin atteinte sur tous les composants audités ; centralisation dans une source unique (`_THEME_META`) plutôt que des tables dupliquées (élimine le risque de divergence déjà constaté avec `regionAccent`).
+
+**Inconvénients** : aucun identifié — le coût de correction s'est avéré faible une fois le pattern de la Phase 11 (17e conversation) réutilisé.
+
+**Alternative rejetée** : traiter chaque composant comme un cas isolé sans centraliser — rejetée car c'est précisément l'absence de source unique qui avait permis la divergence `regionAccent`/`_BIOME_BANNER_META`.
+
+**Impact** : `_THEME_META`, `_themeOfRegion()`, `_THEME_AUDIO_SIGNATURE` (Lots 1, 2, hors-lot A7).
+
+---
+
+## ADR-74 — Résolution de collision des pastilles d'étape calibrée sur une largeur conservatrice plutôt que sur le canevas virtuel de conception
+
+**Contexte** : l'algorithme de positionnement des pastilles d'étape (bruit pseudo-aléatoire, sans vérification de distance minimale) produisait un chevauchement visible sur 41% des zones à la largeur de conception (480px) et 58% à une largeur mobile réaliste (330px), le rendu final utilisant des pourcentages de largeur (`xPct`) calculés pour un canevas plus large que ce qui est réellement disponible sur mobile.
+
+**Décision** : ajouter une passe de résolution de collision itérative, mais calculer les distances dans un espace de référence délibérément plus étroit (340px) que le canevas de conception (480px), pour garantir la sécurité même au rendu réel le plus défavorable.
+
+**Avantages** : un seul mécanisme corrige à la fois le bug de fond (chevauchement) et son aggravation sur mobile, sans avoir à recalculer les positions au moment du rendu réel.
+
+**Inconvénients** : les constantes (largeur conservatrice 340px, distance minimale 88px) sont calibrées empiriquement sur l'échantillon des 86 zones actuelles — à revérifier si le jeu évolue vers des zones à un nombre d'étapes très différent des 5 habituelles.
+
+**Alternative rejetée** : recalculer les positions au moment du rendu DOM réel — jugée disproportionnée face au gain marginal.
+
+**Impact** : `openArchipelZoom()` (Lot 3, v12.4.24), vérifié sur les 86 zones réelles (0/86 chevauchement résiduel aux deux largeurs testées).
+
+---
+
+## ADR-75 — Titre narratif de l'Odyssée affiché sur la carte et le Carnet = contenu déjà écrit (`_STORY.intro.title`), jamais un nom inventé
+
+**Contexte** : demande de Cyril d'afficher un titre stylisé de l'Odyssée sur la carte principale. Une première proposition de l'assistant (utiliser `STORY_KINGDOM`, le nom du "royaume" narratif) a été explicitement rejetée par Cyril, qui a précisé vouloir "le titre de l'odyssée qui existe déjà".
+
+**Décision** : utiliser `_STORY.intro.title`, avec retrait du préfixe "Prologue —" quand il est présent (`prim`, `primhist`), plutôt que toute autre source de contenu narratif.
+
+**Avantages** : zéro contenu inventé, cohérence totale avec le texte que le joueur a déjà lu en ouvrant son Odyssée pour la première fois, un seul point de maintenance.
+
+**Inconvénients** : deux des sept titres (`primfr` "Le journal intime", `primhist` "L'héritage") sont plus sobres/courts que les cinq autres — assumé comme fidèle au ton déjà choisi, pas un défaut à corriger.
+
+**Alternative rejetée** : `STORY_KINGDOM` — écarté explicitement par Cyril.
+
+**Impact** : `_odysseyDisplayMeta()`, `_updateMapHeaderTitle()` (Lot 4, v12.4.25), appliqué au titre de carte et au sous-titre du Carnet (D1) depuis une source unique.
+
+---
+
+## ADR-76 — Distinction stricte entre `MUSICS` (jukebox persistant du joueur) et la signature sonore régionale (jingle contextuel court) — ne jamais les confondre
+
+**Contexte** : Cyril a suggéré de réutiliser 36 pistes musicales qu'il a lui-même composées/choisies (`MUSICS`, `02-data.js`) pour enrichir la signature sonore régionale (A7). Vérification du code : `MUSICS` alimente `P.music`, une préférence de musique de fond persistante pour toute la session, jouée en boucle (`startMusic()`, `07-game.js`), achetée en boutique comme récompense de personnalisation — architecturalement indépendante de la région/zone traversée.
+
+**Décision** : garder les deux systèmes strictement séparés ; les jingles courts de A7 restent synthétisés (`beep()`), indépendants du choix de musique de fond du joueur.
+
+**Avantages** : aucune régression sur la fonctionnalité de personnalisation existante ; scope de A7 resté maîtrisé.
+
+**Inconvénients** : les 36 pistes composées par Cyril restent inexploitées pour l'ambiance régionale — piste possible pour une future conversation si Cyril le souhaite explicitement, avec son oreille pour guider les 9 associations thème↔piste.
+
+**Alternative rejetée** : assigner une piste des 36 par thème pour l'ambiance de zone/combat — proposée à Cyril mais non retenue.
+
+**Impact** : `_THEME_AUDIO_SIGNATURE` reste un système de jingles synthétisés indépendant ; `MUSICS`/`P.music`/`startMusic()` non touchés cette conversation.
+
+---
+
+## ADR-77 — Validation par maquette réellement perceptible (visuelle ET désormais sonore) avant toute implémentation d'un changement perceptible
+
+**Contexte** : la règle historique du projet ("validation de maquette obligatoire avant toute implémentation visuelle") ne mentionnait explicitement que le visuel. Pour le chantier des jingles thématiques (A7), l'assistant a construit une maquette HTML réellement écoutable (reproduisant exactement le moteur de synthèse Web Audio du jeu), sans que Cyril ne l'ait explicitement demandée sous cette forme.
+
+**Décision**, confirmée a posteriori par l'usage que Cyril en a fait (il a identifié un problème réel — le jingle volcan "trop jeu vidéo" — uniquement rendu possible par l'écoute réelle) : étendre l'esprit de la règle de validation par maquette à tout changement perceptible, pas seulement visuel.
+
+**Avantages** : a permis de détecter et corriger un problème (timbre `sawtooth` jugé artificiel) qu'aucune description textuelle n'aurait probablement révélé aussi clairement.
+
+**Inconvénients** : demande plus d'effort de construction de maquette ; ne fonctionne que si l'environnement de travail permet de répliquer fidèlement le rendu réel.
+
+**Alternative rejetée** : décrire les jingles proposés en texte (notes, tempo, timbre) sans maquette écoutable.
+
+**Impact** : `maquette-jingles-a7.html`, `maquette-volcan-v2.html` (Phase 9), règle à reconduire pour tout futur changement sonore.
+
+---
+
+## ADR-78 — Discipline de regroupement de lots optimisée par Claude lui-même, sur consigne explicite de Cyril
+
+**Contexte** : Cyril a demandé explicitement, pour le lot du dernier audit (Performances), que Claude regroupe lui-même les problèmes détectés « par lots cohérents stratégiquement et techniquement et économes en tokens », plutôt que de systématiquement proposer un lot par problème comme dans les audits précédents de cette même conversation.
+
+**Décision** : pour les audits Fonctionnel, UX et Graphique/DA, Claude avait proposé des phases/lots séparés par défaut (un par problème pour l'UX, groupés par 3 pour le graphique) ; pour l'audit Performances, un lot unique regroupant les 3 problèmes (fichiers proches, difficulté faible pour chacun) a été proposé et validé directement.
+
+**Avantages** : moins d'allers-retours de validation, moins de bumps de version consécutifs, cohérent avec la préférence d'économie de tokens de Cyril.
+
+**Inconvénients** : un lot plus gros est plus difficile à valider point par point si un seul des problèmes posait question — mitigé par la présentation systématique de chaque problème séparément AVANT le code, même groupés en un seul lot de livraison.
+
+**Impact** : cette discipline de regroupement doit être appliquée par défaut dans toute future conversation, sauf si Cyril demande explicitement un découpage plus fin.
+
+---
+
+## ADR-79 — Ne jamais créer de fonction globale sans vérifier au préalable qu'elle n'existe pas déjà ailleurs dans le projet
+
+**Contexte** : la refonte de la fiche de zone (Phase 8-9) a créé une fonction `_buildZoomSceneHtml()` dans `07-map.js` sans vérifier si ce nom existait déjà ailleurs — une fonction homonyme, préexistante et plus aboutie, existait dans `07-boss.js` (chargé après `07-map.js`), qui l'écrasait silencieusement (JS non-modulaire, dernière déclaration globale du même nom gagne, aucune erreur ni avertissement). Le bug n'a été détecté qu'après livraison, via un retour utilisateur avec capture d'écran.
+
+**Décision** : avant de déclarer toute nouvelle fonction/variable globale, exécuter systématiquement `grep -rn "function <nom>"` (et `<nom>\s*=` pour les variables) sur l'ensemble de `js/*.js`, pas seulement le fichier en cours d'édition.
+
+**Avantages** : élimine un risque de classe de bug particulièrement insidieuse (aucune erreur, code apparemment correct, tests unitaires isolés qui passent puisqu'ils ne testent que la fonction extraite indépendamment du contexte réel du fichier).
+
+**Inconvénients** : légère charge de vérification supplémentaire avant chaque nouvelle fonction — largement compensée par le coût du bug qu'elle évite.
+
+**Alternative rejetée** : compter sur les tests Vitest pour détecter ce genre de collision — rejetée car le harnais Vitest de ce projet charge les fichiers demandés par CHAQUE test indépendamment (voir `loadGame.js`), et ne reproduit donc pas nécessairement l'ordre de chargement RÉEL de `index.html` avec TOUS les fichiers en même temps.
+
+**Impact** : `_buildZoomSceneHtml` dupliquée supprimée de `07-map.js`, le catalogue de mots-clés branché sur la fonction préexistante de `07-boss.js` (v12.4.37).
+
+---
+
+## ADR-80 — Toute nouvelle propriété du profil joueur (P) doit être ajoutée à la liste blanche de désérialisation de `05-profile.js`
+
+**Contexte** : le Système 4 d'onboarding (Phase 6) a introduit un nouveau marqueur `P.onbMapSeen`, sans l'ajouter à la liste blanche de désérialisation explicite de `loadProfile()`/`validateProfile()` (`05-profile.js`) — un mécanisme déjà documenté par un commentaire en 11.6.2 pour un champ analogue (`onbAccountSeen`), mais que Claude n'a pas reconnu comme applicable au nouveau champ au moment de l'écrire. Résultat : le marqueur était bien positionné à `true` et sauvegardé, mais effacé à chaque rechargement du profil, provoquant une répétition en boucle de la visite guidée.
+
+**Décision** : formaliser cette règle comme systématique et l'ajouter à la liste des points de vigilance impératifs de tout document de transition futur.
+
+**Avantages** : élimine une classe de bug déjà survenue deux fois dans l'historique du projet.
+
+**Inconvénients** : aucun — c'est une case à cocher systématique, sans coût.
+
+**Alternative rejetée** : remplacer la désérialisation champ par champ par une simple copie/fusion d'objet (`Object.assign` ou spread) — rejetée car cette liste blanche existe précisément pour valider/borner/typer chaque champ individuellement.
+
+**Impact** : `onbMapSeen` ajouté aux 2 emplacements requis (v12.4.38) ; règle à vérifier pour tout futur champ de profil.
+
+---
+
+## ADR-81 — Le hash déterministe de contenu doit toujours porter sur la donnée la plus distinctive disponible (label plutôt qu'id)
+
+**Contexte** : le tirage des combinaisons de décor (`_zoneDecorFor`) hashait initialement sur `zoneId` seul (ex. "mat_cp_1", "mat_cp_2"...) — des chaînes ne différant que par leur tout dernier caractère. L'algorithme `_archHash` (déjà existant dans le projet, type djb2) n'a pas un avalanche suffisant pour de telles quasi-répétitions.
+
+**Décision** : hasher sur `label + '|' + zoneId` plutôt que sur l'id seul, chaque fois qu'une fonction de tirage déterministe doit différencier des entités dont les identifiants techniques se ressemblent fortement.
+
+**Avantages** : distribution nettement meilleure, vérifiée (5/5 combos distincts sur le cas problématique, contre 2/5 avant), sans changer l'algorithme de hash lui-même.
+
+**Inconvénients** : aucun identifié — le libellé est de toute façon toujours disponible partout où l'id l'est.
+
+**Alternative rejetée** : remplacer `_archHash` par un algorithme de hash différent — rejetée car cela aurait changé le comportement de TOUS les usages existants de `_archHash` dans le projet.
+
+**Impact** : `_zoneDecorFor()` (v12.4.40) ; règle à appliquer à toute future fonction de tirage déterministe basée sur un id de zone/entité au format répétitif.
+
+---
+
+## ADR-82 — Le décor décoratif doit être visuellement lié au niveau de zoom pour maîtriser le coût de rendu, sans JavaScript supplémentaire
+
+**Contexte** : l'audit Performances (Phase 13) a révélé que le décor de la carte principale (`_buildZoneDecorHtml`) ajoutait 90 à 140 éléments DOM animés en continu par Odyssée, sans lien avec ce qui est réellement utile/visible à l'écran. Cyril a proposé une solution basée sur la portion réellement visible de la carte (viewport), avec un mécanisme d'intensité liée au zoom.
+
+**Décision**, après réexamen de la structure réelle du composant : plutôt qu'un `IntersectionObserver`, exploiter le fait que le niveau de zoom (`_mapZoom`) est déjà matérialisé par une classe CSS sur le conteneur (`#map-zones.zoom-overview`, etc.) — une règle CSS pure suffit.
+
+**Avantages** : solution nettement plus simple que prévu initialement, zéro risque de régression fonctionnelle.
+
+**Inconvénients** : moins granulaire qu'une solution par viewport réel (masque TOUT le décor en vue d'ensemble) — jugé suffisant car la vue d'ensemble est justement le cas où le décor est le moins utile visuellement.
+
+**Alternative envisagée mais non retenue faute de besoin** : ajouter un palier intermédiaire supplémentaire (réduire à 1-2 éléments plutôt que 0 en vue d'ensemble) — à raffiner seulement si le besoin se manifeste, pas avant.
+
+**Impact** : règle CSS ajoutée sur `.zoom-overview .archipel-zone-decor, .zoom-overview .weather-particle` (v12.4.42).
+
+---
+
+## ADR-83 — Refaire un audit déjà mené doit produire une réévaluation sincère de l'état réel, jamais un rapport gonflé artificiellement
+
+**Contexte** : la 19e conversation a demandé de refaire à zéro quatre audits déjà menés lors de conversations précédentes, chacun avec un gabarit demandant un nombre de points fixe (« Top 30 », « Top 20 »).
+
+**Décision**, déjà appliquée avec succès en 18e conversation et reconduite ici : ne jamais padder artificiellement la liste de problèmes pour atteindre le nombre demandé par le gabarit — livrer le nombre réel de problèmes trouvés après vérification sincère dans le code, en l'expliquant explicitement dans le document.
+
+**Avantages** : crédibilité totale des audits, confiance de Cyril dans le processus, scores de plus en plus élevés (69→87, 69→92) qui reflètent une amélioration réelle et mesurable plutôt qu'un artefact de rédaction.
+
+**Inconvénients** : documents plus courts que le gabarit ne le suggère — mitigé par une explication systématique et visible du choix.
+
+**Alternative rejetée** : inventer des points mineurs/cosmétiques pour combler le nombre demandé.
+
+**Impact** : les 4 audits repris à zéro (Esthétique/Ergonomie/Narratif 87/100, Fonctionnel 86/100, UX 89/100, Graphique/DA 92/100) livrent chacun 3 à 5 problèmes réels plutôt que 20-30 points fabriqués.
+
+---
+
+## ADR-84 — Toute vérification numérique à grande échelle doit d'abord filtrer les faux positifs d'extraction avant d'être considérée fiable
+
+**Contexte** : lors de la vérification de la variété des décors (Phase 11-12), une première extraction automatisée des « zones » du fichier `02-data.js` par expression régulière a capturé, en plus des vraies zones, des objets non-zone partageant accidentellement un champ `id:`/`label:'...'` (noms de succès/défis comme "Tables de 7", "Gagner 3 parties", "Bouclier") — produisant de faux doublons alarmants qui n'existaient pas dans le jeu réel.
+
+**Décision** : ne jamais faire confiance à une extraction par regex générique sans un filtre de confirmation supplémentaire spécifique aux vrais objets recherchés (ici : exiger la présence du champ `theme:'...'`, propre aux seules zones) — et re-vérifier manuellement dans le code source tout résultat de vérification automatique qui semble suspect.
+
+**Avantages** : évite de corriger des problèmes qui n'existent pas, et de passer à côté du seul vrai problème.
+
+**Inconvénients** : demande une itération supplémentaire de script de vérification à chaque fois qu'une vérification à grande échelle est nécessaire.
+
+**Impact** : passes de vérification de la Phase 11-12 (le premier script a rapporté 5 « doublons », dont 4 étaient des faux positifs et seul le 5e — après filtrage correct — était réel).
 
 ---
 
