@@ -7,6 +7,11 @@
 // (Carte : 07-map.js. Boss/collection/décor : 07-boss.js. Histoire/livres : 07-story.js.)
 
 var _bgAudio=null;
+// v12.4.50 (Lot 4, audit immersion narrative N1) : mémorise la dernière zone
+// pour laquelle la mise en scène a déjà été montrée cette session — variable
+// volontairement NON persistée (P), remise à zéro à chaque rechargement de
+// page, pour ne jamais interrompre la logique par une valeur périmée.
+var _lastStagingZoneId = null;
 function _musicDuck(on){ if(_bgAudio){ try{ _bgAudio.volume = on ? 0.03 : 0.25; }catch(e){} } } // baisse la musique pendant la voix (v11.6.7 : volume de base 0.4→0.25, trop fort par défaut)
 function startMusic(){
  stopMusic();
@@ -669,6 +674,17 @@ function renderQ(){
  const q=GS.q;
  // M-A : rendu 100% visuel pour la maternelle (images cliquables, pas de pavé ni chrono)
  if(q && q.maternelle && typeof _matRenderQ==='function'){ _matRenderQ(q); return; }
+ // v12.4.50 (Lot 4, N1) : mise en scène narrative, UNE SEULE FOIS par entrée
+ // en zone (jamais répétée à chaque question), jamais en maternelle (déjà
+ // exclue par le retour anticipé ci-dessus de toute façon, mais gardée
+ // explicite ici par sécurité si ce chemin évolue un jour).
+ if(GM.mapZone && GM.mapZone.id !== _lastStagingZoneId && !(typeof _isMaternelle==='function' && _isMaternelle(GM.level))){
+  _lastStagingZoneId = GM.mapZone.id;
+  if(typeof _pickStagingLine==='function' && typeof toast==='function'){
+   const _staging = _pickStagingLine(GM.mapZone.theme);
+   if(_staging) toast('🎭 ' + _staging, 2600);
+  }
+ }
  const txt=q.display||(q.a!==undefined&&q.b!==undefined?`${q.a} ${q.op||'='} ${q.b}`:String(q.res));
  $('question').innerText=txt;$('question').className=GS.isGolden?'gold-q':q.isRevision?'revision-q-inline':'';
  // Chantier 1.2 : petit toast discret quand une question de révision espacée apparaît

@@ -510,11 +510,35 @@ const _COMPANION_LINES = {
   wrong:   ["{c} murmure : « Chut… on se reprend, personne n'a rien vu. »","« Ce n'est rien, » glisse {c} à voix basse. « On retente. »"],
  },
 };
+// v12.4.50 (Lot 4, audit immersion narrative N8) : trait de héros choisi au
+// premier lancement (voir _maybeShowStory, 07-story.js) — 2 pools courts,
+// mélangés occasionnellement dans le commentaire du compagnon plutôt que
+// remplacer tout le système existant (coût minimal, cohérent avec le point
+// d'ancrage déjà en place).
+const _HERO_TRAIT_LINES = {
+ brave: [
+  "Rien ne t'arrête, {hero} !",
+  "Ton courage ferait reculer n'importe quel adversaire.",
+  "Toujours en première ligne, quel courage !",
+ ],
+ malin: [
+  "Ton esprit vif m'impressionne à chaque fois, {hero}.",
+  "Toujours la bonne réponse. Quelle ruse !",
+  "Ta ruse ne cesse de me surprendre, {hero}.",
+ ],
+};
 function _companionComment(wasCorrect){
  try{
   const adv = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
   const comp = _ADV_COMPANIONS[adv];
   if(!comp) return '';
+  if(wasCorrect && typeof P!=='undefined' && P && P.heroTrait && Math.random() < 0.25){
+   const traitPool = _HERO_TRAIT_LINES[P.heroTrait];
+   if(traitPool && traitPool.length){
+    const heroName = P.name || 'héros';
+    return traitPool[Math.floor(Math.random()*traitPool.length)].replace(/\{hero\}/g, heroName);
+   }
+  }
   const pool = _COMPANION_LINES[comp.voice] && _COMPANION_LINES[comp.voice][wasCorrect?'correct':'wrong'];
   if(!pool || !pool.length) return '';
   return pool[Math.floor(Math.random()*pool.length)].replace(/\{c\}/g, comp.name);
@@ -763,6 +787,82 @@ const _THEME_META = {
  nuit:     { emoji:'🌙', accent:'#1b2735', bgGrad:'linear-gradient(135deg,#3d4a63,#050508)', subtitle:'Ombres Nocturnes' },
  espace:   { emoji:'✨', accent:'#6b3f8a', bgGrad:'linear-gradient(135deg,#4a3a5c,#1a0530)', subtitle:'Confins Étoilés' },
 };
+// v12.4.50 (Lot 4, audit immersion narrative N1) : mise en scène narrative
+// affichée UNE SEULE FOIS par entrée en zone (jamais à chaque question,
+// jamais pour la maternelle — voir renderQ(), 07-game.js), pour que le
+// premier geste du joueur dans une zone reste dans la fiction sans pour
+// autant surcharger chaque question individuelle. 5 phrases par thème,
+// tirées au hasard — sur ~19 zones par thème en moyenne, la répétition
+// exacte reste rare sans avoir à écrire un pool démesuré.
+const _STAGING_LINES_BY_THEME = {
+ standard: [
+  "Le vieux berger te tend un problème avant de te laisser passer :",
+  "Pour franchir le pont de bois, résous ceci :",
+  "Un fermier bloque le chemin avec une question :",
+  "Le vent murmure une énigme à travers les blés :",
+  "Avant d'avancer dans la prairie, réponds à ceci :",
+ ],
+ foret: [
+  "Les esprits de la forêt bloquent le passage tant que tu n'as pas résolu :",
+  "Une racine ancienne cache un code. Trouve-le :",
+  "Le murmure des feuilles te pose une question :",
+  "Un vieux chêne garde le sentier — réponds pour continuer :",
+  "Les ombres de la forêt attendent ta réponse :",
+ ],
+ volcan: [
+  "La lave menace de couler si tu ne réponds pas vite :",
+  "Le Génie du volcan pose un défi avant d'exaucer ton vœu :",
+  "La roche brûlante grave une question devant toi :",
+  "Un grondement sourd t'invite à répondre, vite :",
+  "Le feu du volcan attend ta réponse pour s'apaiser :",
+ ],
+ ocean: [
+  "Les vagues ne se calment que si tu résous :",
+  "Le capitaine a besoin de ton calcul pour éviter les récifs :",
+  "Une bouteille échouée contient une énigme :",
+  "Le vent marin te met au défi :",
+  "Les flots s'agitent — réponds pour les apaiser :",
+ ],
+ banquise: [
+  "La glace craque sous tes pieds — vite, calcule :",
+  "L'Esprit du givre te met au défi :",
+  "Un cristal de glace scintille avec une question gravée :",
+  "Le froid mordant attend ta réponse :",
+  "La banquise gronde — réponds avant qu'elle ne cède :",
+ ],
+ chateau: [
+  "Sir Cassel n'ouvrira la porte qu'après ce calcul :",
+  "Une énigme est gravée sur la pierre de la muraille :",
+  "Le pont-levis reste baissé si tu réponds juste :",
+  "Un vieux parchemin pose une question avant d'entrer :",
+  "Les gardes du château te testent avant de te laisser passer :",
+ ],
+ sakura: [
+  "Un pétale porte un message chiffré :",
+  "Le Lapin Guimauve te propose un jeu avant de continuer :",
+  "Le vent du printemps souffle une énigme :",
+  "Les fleurs de cerisier cachent un secret à percer :",
+  "Une douce mélodie te pose une question avant d'avancer :",
+ ],
+ nuit: [
+  "Une ombre chuchote une énigme dans le noir :",
+  "Les étoiles s'alignent si tu réponds juste :",
+  "Le silence de la nuit attend ta réponse :",
+  "Un hibou te fixe avec une question dans le regard :",
+  "La lune éclaire un problème à résoudre :",
+ ],
+ espace: [
+  "Zorbax a besoin d'un calcul pour recalibrer son vaisseau :",
+  "Une météorite approche — calcule vite pour l'éviter :",
+  "Un signal venu des étoiles pose une énigme :",
+  "La galaxie retient son souffle en attendant ta réponse :",
+  "Un vaisseau inconnu te lance un défi :",
+ ],
+};
+function _pickStagingLine(theme){
+ const pool = _STAGING_LINES_BY_THEME[theme] || _STAGING_LINES_BY_THEME.standard;
+ return pool[Math.floor(Math.random()*pool.length)];
+}
 // Thème réel d'une région, pour l'Odyssée en cours (même principe que
 // _renderIslandSvg : on lit le thème de la première zone de la région,
 // puisque toutes les zones d'une même région partagent le même thème —

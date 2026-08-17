@@ -2654,6 +2654,24 @@ function _maybeShowStory(afterCb){
  const _done = (typeof afterCb === 'function') ? afterCb : function(){};
  if(typeof P==='undefined' || !P){ _done(); return; }
  P.storySeen = P.storySeen || [];
+ // 0) Trait du héros — UNE SEULE FOIS, avant même le tout premier prologue,
+ // uniquement pour un profil qui n'a encore rien accompli (jamais montré à
+ // un joueur qui a déjà progressé, pour ne pas interrompre une Odyssée en
+ // cours). v12.4.50 (Lot 4, audit immersion narrative N8).
+ if(!P.heroTrait && (P.mapBossBeaten||[]).length === 0 && typeof _showChoiceModal==='function'){
+  _showChoiceModal({
+   title: 'Qui es-tu, héros ?',
+   emoji: '✨',
+   text: 'Avant de commencer ton Odyssée, dis-nous qui tu es vraiment.',
+   btnA: '🦁 Courageux',
+   btnB: '🦉 Malin',
+  }, (val)=>{
+   P.heroTrait = val==='A' ? 'brave' : 'malin';
+   if(typeof saveProfile==='function') saveProfile();
+   _maybeShowStory(_done);
+  });
+  return;
+ }
  // 1) Prologue, une seule fois, au tout début
  const _introId = (_STORY.intro && _STORY.intro.id) || 'intro';
  if(!P.storySeen.includes(_introId)){

@@ -863,4 +863,22 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-91 — Lot 4 (chantier de fond) de l'audit Immersion narrative : habillage diégétique des questions, identité narrative du héros
+
+**Contexte** : l'audit Immersion Narrative & Motivation avait identifié le seul vrai point aveugle touchant l'ACTION réelle du joueur (pas seulement ce qu'il lit) : les questions de calcul restent 100% numériques quel que soit le thème (N1), et le héros n'a aucune identité narrative propre au-delà du ton piloté par l'âge (N8). Cyril a demandé explicitement une variété suffisante pour N1.
+
+**Décision** :
+1. **N1** : mise en scène narrative affichée en `toast()`, **UNE SEULE FOIS par entrée en zone** (jamais à chaque question — arbitrage validé avec Cyril, pour ne pas lasser avec un pool réduit ni surcharger chaque calcul), jamais en maternelle. 45 phrases (5 par thème × 9 thèmes, `_STAGING_LINES_BY_THEME`, `07-map.js`), déclenchée dans `renderQ()` (`07-game.js`) via une variable de session `_lastStagingZoneId` (non persistée).
+2. **N8** : trait de héros choisi UNE SEULE FOIS, au tout premier lancement (profil neuf, aucune zone battue) — **2 traits** (Courageux/Malin), pas 3 comme initialement esquissé : `_showChoiceModal()` (mécanisme déjà existant du moment charnière, ADR-50/59) ne supporte que 2 boutons, et l'étendre à 3 aurait touché un composant partagé pour un gain marginal. Le trait teinte occasionnellement (25% des cas, bonne réponse uniquement) le commentaire du compagnon déjà existant (`_companionComment`), plutôt qu'un nouveau système de dialogue.
+
+**Avantages** : N1 comble le seul point aveugle qui touchait l'action réelle (pas la lecture passive) ; N8 renforce l'identification sans réécrire aucun des 172 textes existants — les deux réutilisent des mécanismes déjà en place (`toast`, `_showChoiceModal`, `_companionComment`) plutôt que d'en inventer de nouveaux.
+
+**Inconvénients** : N8 réduit de 3 à 2 traits pour rester dans les limites du composant existant — ajustement pragmatique fait en cours d'implémentation, pas re-soumis à validation séparée (impact mineur sur la proposition déjà validée). Le test bout-en-bout complet de `_showChoiceModal` (simuler un vrai clic) n'est pas possible avec le harnais actuel (`querySelector` du stub renvoie un élément jetable, non récupérable) — la couverture s'arrête donc à vérifier que le bon embranchement se déclenche (callback non appelé synchronement), pas le clic réel.
+
+**Impact** : `07-map.js` (`_STAGING_LINES_BY_THEME`, `_pickStagingLine`, `_HERO_TRAIT_LINES`, `_companionComment`), `07-game.js` (`_lastStagingZoneId`, injection dans `renderQ()`), `07-story.js` (`_maybeShowStory`, choix de trait), `05-profile.js` (whitelist `heroTrait`), v12.4.50. Garde-fou de non-régression : `hero-trait-and-staging_test.js`.
+
+**Clôture** : les 4 lots de l'audit Immersion Narrative & Motivation (19e conversation) sont désormais tous livrés (N1 à N8).
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

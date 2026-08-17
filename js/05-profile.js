@@ -298,6 +298,9 @@ function validateProfile(raw, defaultName){
   // pour onbAccountSeen — la visite se relançait à chaque connexion malgré
   // ob4MarkCompleted(). Toujours ajouter tout nouveau marqueur ici.
   onbMapSeen: _safeBool(raw.onbMapSeen, false),
+  // v12.4.50 (Lot 4, audit immersion narrative N8) : trait de héros choisi
+  // au premier lancement — valeur fermée (jamais une chaîne libre).
+  heroTrait: (raw.heroTrait === 'brave' || raw.heroTrait === 'malin') ? raw.heroTrait : null,
   // v11.6.6 — photo de profil (facultative, recadrée/compressée côté appareil
   // avant stockage, 200 Ko max) et code du profil (2 chiffres, facultatif).
   photo: _safeDataUrl(raw.photo, 200000, null),

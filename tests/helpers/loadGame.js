@@ -325,6 +325,9 @@ globalThis.__api = {
   _journalOutcomeTier: (typeof _journalOutcomeTier==='function') ? _journalOutcomeTier : undefined,
   _JOURNAL_THEME_OPENERS: (typeof _JOURNAL_THEME_OPENERS!=='undefined') ? _JOURNAL_THEME_OPENERS : undefined,
   endGame: (typeof endGame==='function') ? endGame : undefined,
+  _pickStagingLine: (typeof _pickStagingLine==='function') ? _pickStagingLine : undefined,
+  _companionComment: (typeof _companionComment==='function') ? _companionComment : undefined,
+  _maybeShowStory: (typeof _maybeShowStory==='function') ? _maybeShowStory : undefined,
 };
 `;
 
