@@ -312,6 +312,8 @@ globalThis.__api = {
   resetAllProfiles: (typeof resetAllProfiles==='function') ? resetAllProfiles : undefined,
   _islandVariantIdx: (typeof _islandVariantIdx==='function') ? _islandVariantIdx : undefined,
   _ISLAND_PROFILE_VARIANTS: (typeof _ISLAND_PROFILE_VARIANTS!=='undefined') ? _ISLAND_PROFILE_VARIANTS : undefined,
+  COMBAT_HIT_MSGS: (typeof COMBAT_HIT_MSGS!=='undefined') ? COMBAT_HIT_MSGS : undefined,
+  COMBAT_MISS_MSGS: (typeof COMBAT_MISS_MSGS!=='undefined') ? COMBAT_MISS_MSGS : undefined,
 };
 `;
 

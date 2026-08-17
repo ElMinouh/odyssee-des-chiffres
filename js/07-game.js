@@ -923,7 +923,7 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);GS.consecFail=0;
   // Chantier A4 : taunt aléatoire en milieu de combat (HP bas)
   if(typeof maybeMidCombatTaunt==='function') maybeMidCombatTaunt();
   if(GS.activeEvent){GS.eventLeft--;if(GS.eventLeft<=0)GS.activeEvent=null;}
-  if(GS.monsterHP>0){$('feedback').innerText=_shieldHeld?`🛡️ Le bouclier résiste ! Frappe encore !`:`✅ TOUCHÉ ! ❤️${GS.monsterHP}/${GS.monsterMaxHP}`;GS.q=generateQ();const _wait=Math.min(9000,Math.max(950,((window._monsterSpeakEnd||0)-Date.now())+350));safeTimeout(()=>{renderQ();},_wait);}
+  if(GS.monsterHP>0){$('feedback').innerText=_shieldHeld?`🛡️ Le bouclier résiste ! Frappe encore !`:`✅ ${(typeof _pickCombatHit==='function')?_pickCombatHit():'TOUCHÉ !'} ❤️${GS.monsterHP}/${GS.monsterMaxHP}`;GS.q=generateQ();const _wait=Math.min(9000,Math.max(950,((window._monsterSpeakEnd||0)-Date.now())+350));safeTimeout(()=>{renderQ();},_wait);}
   else{$('feedback').innerText='✅ BRAVO !';ma.classList.add('monster-die');clearMonsterSpeech();if(GS.isBoss){vibrate(VIBE.boss);
    // Chantier 2.2 : débloquer la figurine exclusive du boss saisonnier
    if(GS.isSeasonalBoss && GS.seasonalFigId && typeof unlockSeasonalFigurine==='function'){
@@ -987,7 +987,7 @@ GS.errInGame++;GS.combo=0;GS.opCombo=0;GS.lastOpKey=null;GS.consecFail=(GS.conse
   // moment le plus vulnérable (l'échec). _taunt('wrong') (monsterSpeak,
   // au-dessus) donnait déjà une réplique en personnage ; ce correctif aligne
   // aussi le texte du feedback principal sur le même registre.
-  hitPlayer('💨 ESQUIVE !');
+  hitPlayer(`💨 ${(typeof _pickCombatMiss==='function')?_pickCombatMiss():'ESQUIVE !'}`);
   // Lot 1 (audit engagement, 13e conversation, pt.27) : après 4 échecs consécutifs
   // dans la partie, suggestion douce de pause (une seule fois par partie). N'apparaît
   // pas si la partie se termine entre-temps (safeTimeout ne s'exécute que si

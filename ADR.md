@@ -825,6 +825,8 @@ Décisions actées, non remises en cause à ce jour :
 
 **Impact** : `07-game.js` (L983, L310), `07-boss.js` (`globalPct`, libellé), v12.4.46. Garde-fous de non-régression : `combat-feedback-tone_test.js`, `odyssey-progress-bonus_test.js`.
 
+**Complément (v12.4.47)** : suite au Lot 1, Cyril a demandé davantage de variété que le seul verbe fixe retenu par ADR-88 — remplacé par 2 pools (`COMBAT_HIT_MSGS`, 10 entrées ; `COMBAT_MISS_MSGS`, 5 entrées, `01-core.js`), tirage aléatoire (`_pickCombatHit()`/`_pickCombatMiss()`), symétrique au pattern déjà existant `WRONG_TAUNTS`/`CORRECT_TAUNTS`. Le suffixe ❤️PV reste toujours accolé au message de coup réussi.
+
 ---
 
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

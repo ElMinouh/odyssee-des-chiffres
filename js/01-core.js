@@ -795,6 +795,20 @@ const WRONG_TAUNTS=[
 const CORRECT_TAUNTS=[
  'Hmm… bonne réponse. T\'as eu de la chance.','Chanceux. La prochaine sera différente !','Pas mal… pour cette fois.','Grr… correcte. Ça ne durera pas.','Bien joué. Mais je suis loin d\'être vaincu !',
 ];
+// v12.4.47 (suite du Lot 1, immersion narrative) : variété du feedback de
+// combat lui-même (`$('feedback')`, distinct des taunts du monstre
+// ci-dessus). Un seul verbe fixe ("TOUCHÉ"/"ESQUIVE") devenait répétitif à
+// l'usage — un tirage aléatoire dans un petit pool suffit à casser la
+// répétition sans complexifier la logique. Le suffixe ❤️PV reste toujours
+// accolé au message de coup réussi (mi-combat), inchangé.
+const COMBAT_HIT_MSGS=[
+ 'TOUCHÉ !','COUP DIRECT !','EN PLEIN DANS LE MILLE !','IMPACT !','BIEN VISÉ !','ÇA COGNE !','PLEIN FOUET !','PRÉCIS !','RIPOSTE RÉUSSIE !','BOUM !',
+];
+const COMBAT_MISS_MSGS=[
+ 'ESQUIVE !','RATÉ !','IL SE DÉCALE !','DANS LE VIDE !','IL PARE LE COUP !',
+];
+function _pickCombatHit(){ return COMBAT_HIT_MSGS[ri(0,COMBAT_HIT_MSGS.length-1)]; }
+function _pickCombatMiss(){ return COMBAT_MISS_MSGS[ri(0,COMBAT_MISS_MSGS.length-1)]; }
 const TIMER_TAUNTS=[
  'Le temps presse… !','Dépêche-toi !','Tu n\'auras pas le temps…','Tic tac… tic tac…','Allez, réfléchis !',
 ];
