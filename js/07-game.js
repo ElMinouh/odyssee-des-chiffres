@@ -1418,6 +1418,28 @@ if(typeof checkMilestones==='function') checkMilestones();
      }
     }
    }catch(e){}
+   // v12.4.51 (suite immersion narrative, point 4) : le Talisman "s'éveille"
+   // au moment exact où son 5e et dernier cristal se débloque — flag
+   // one-shot (P.talismanRevealShown) plutôt qu'une comparaison avant/après,
+   // plus simple et robuste à l'ordre d'exécution. Scope volontairement
+   // limité à l'Odyssée 'prim' (Talisman) — les 6 autres Odyssées ont
+   // chacune leur propre système de collection (armure, bibliothèque,
+   // arc-en-ciel...), non couvert par cet ajout léger.
+   try{
+    const advKeyT = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
+    if(advKeyT==='prim' && !P.talismanRevealShown && typeof _ADV_PRIM_CRYSTALS!=='undefined' && typeof _regionConquered==='function'){
+     const allCrystalsDone = _ADV_PRIM_CRYSTALS.every(c => _regionConquered(c.rid));
+     if(allCrystalsDone){
+      P.talismanRevealShown = true;
+      if(typeof saveProfile==='function') saveProfile();
+      if(typeof _showStoryModal==='function'){
+       _showStoryModal({ id:'talisman_complete_reveal', title:'Le Talisman s\'éveille', pages:[
+        { emoji:'✨', text:'Les cinq cristaux du Talisman s\'illuminent d\'un coup, et une chaleur familière parcourt tes mains. L\'objet semble... vivant.' }
+       ], closeLabel:'Continuer ›' }, ()=>{});
+      }
+     }
+    }
+   }catch(e){}
    // Chantier 3.10 : cinématique de zone conquise (remplace l'ancien transition-screen)
    const _zone = GM.mapZone;
    // v8.7.30 (O3-B.2) : détection de la conquête d'un îlot complet.

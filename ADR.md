@@ -881,4 +881,21 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-92 — Compléments légers post-audit : prénom du joueur dans les répliques PNJ, éveil du Talisman, écho du trait au générique de fin
+
+**Contexte** : suite aux 4 lots de l'audit Immersion Narrative, Cyril a demandé d'autres pistes. 6 ont été proposées (réutilisant systématiquement des mécanismes tout juste construits par les Lots 1 à 4) ; Cyril a validé l'implémentation de 3 d'entre elles (les plus légères) et demandé le détail de la 6e (fragments de lore hors-combat) sans l'implémenter.
+
+**Décision** :
+1. **Prénom réel dans les PNJ** : les 18 répliques `lineDone` de `_NPCS_BY_THEME` utilisent désormais `{hero}`, substitué par `P.name` dans `_resolveNpcLine()` — même mécanique que `_pickCallbackLine()` (Lot 3, N3).
+2. **Le Talisman s'éveille** : une modale unique (`talisman_complete_reveal`) se déclenche exactement au moment où le 5e et dernier cristal se débloque (`P.talismanRevealShown`, flag one-shot). Scope volontairement limité à l'Odyssée 'prim' — les 6 autres Odyssées ont chacune leur propre système de collection (armure, bibliothèque, arc-en-ciel...), non couvert ici.
+3. **Écho de l'épilogue** : une page finale supplémentaire, choisie selon `P.heroTrait`, clôt l'épilogue de chaque Odyssée — boucle la boucle ouverte par le tout premier choix du jeu (N8, Lot 4).
+
+**Avantages** : 3 ajouts qui réutilisent entièrement des mécanismes déjà construits et testés (aucune nouvelle infrastructure), coût d'implémentation très faible.
+
+**Inconvénients** : le point 4 (Talisman) ne couvre qu'une seule des 7 Odyssées — étendre aux 6 autres systèmes de collection reste un chantier distinct si Cyril le souhaite un jour, chacun ayant sa propre condition de complétion à vérifier individuellement.
+
+**Impact** : `07-map.js` (`_resolveNpcLine`, substitution `{hero}`), `07-game.js` (détection de complétion du Talisman), `07-story.js` (page finale d'épilogue), `05-profile.js` (whitelist `talismanRevealShown`), v12.4.51. Garde-fou de non-régression : `npc-hero-name-talisman-epilogue_test.js`.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

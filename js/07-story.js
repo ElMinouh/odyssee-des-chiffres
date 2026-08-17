@@ -2735,6 +2735,18 @@ function _maybeShowStory(afterCb){
      });
      if(bonusPages.length) _epiPages = [..._epiPages, ...bonusPages];
     }
+    // v12.4.51 (suite immersion narrative, point 5) : boucle la boucle
+    // ouverte par le tout premier choix du jeu (N8) — une ligne de clôture
+    // qui fait écho au trait choisi, en tout dernier (après les pages de
+    // conséquence des moments charnières, s'il y en a).
+    if(typeof P!=='undefined' && P && P.heroTrait){
+     const _epilogueTraitLines = {
+      brave: 'Ton courage n\'a jamais faibli, du premier pas jusqu\'ici. C\'est cela, être un héros.',
+      malin: 'Ton esprit vif t\'a guidé à chaque tournant, du premier pas jusqu\'ici. C\'est cela, être un héros.',
+     };
+     const _traitLine = _epilogueTraitLines[P.heroTrait];
+     if(_traitLine) _epiPages = [..._epiPages, { emoji:'💫', text:_traitLine }];
+    }
    }catch(e){}
    _showStoryModal({ id:_STORY.epilogue.id, title:_STORY.epilogue.title, pages:_epiPages }, _after);
    return;

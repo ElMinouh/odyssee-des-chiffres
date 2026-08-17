@@ -1137,40 +1137,40 @@ const _WEATHER_BY_THEME = {
 // de l'Odyssée jouée.
 const _NPCS_BY_THEME = {
  standard: [
-  { emoji:'🧙‍♂️', name:'Maître Élio',   line:'Bienvenue, jeune aventurier ! Le courage sera ton allié.', lineDone:'Tu as prouvé ta valeur ici. La suite de ton Odyssée t\'attend.' },
-  { emoji:'🐑',   name:'Berger Pâquerette', line:'Mes moutons sont presque aussi malins que toi !', lineDone:'Mes moutons parlent encore de tes exploits ! Reviens quand tu veux.' },
+  { emoji:'🧙‍♂️', name:'Maître Élio',   line:'Bienvenue, jeune aventurier ! Le courage sera ton allié.', lineDone:'Tu as prouvé ta valeur ici, {hero}. La suite de ton Odyssée t\'attend.' },
+  { emoji:'🐑',   name:'Berger Pâquerette', line:'Mes moutons sont presque aussi malins que toi !', lineDone:'Mes moutons parlent encore de tes exploits, {hero} ! Reviens quand tu veux.' },
  ],
  foret: [
-  { emoji:'🧚',   name:'Fée Lumelle',   line:'Les forêts murmurent leurs secrets, écoute-les !', lineDone:'La forêt se souviendra de ton passage, brave héros.' },
-  { emoji:'🦌',   name:'Cerf Sylvain',  line:'Avance avec sagesse, brave héros. Chaque pas compte.', lineDone:'Tu as traversé mes bois avec sagesse. Le chemin est libre.' },
+  { emoji:'🧚',   name:'Fée Lumelle',   line:'Les forêts murmurent leurs secrets, écoute-les !', lineDone:'La forêt se souviendra de ton passage, {hero}.' },
+  { emoji:'🦌',   name:'Cerf Sylvain',  line:'Avance avec sagesse, brave héros. Chaque pas compte.', lineDone:'Tu as traversé mes bois avec sagesse, {hero}. Le chemin est libre.' },
  ],
  volcan: [
-  { emoji:'🧞',   name:'Génie Sablo',   line:'Trois vœux pour qui résout trois énigmes ! Mais d\'abord, prouve-toi.', lineDone:'Trois vœux accordés ! Tu as prouvé ton esprit.' },
-  { emoji:'🦂',   name:'Scorpios le Sage', line:'Le feu forge les plus grands esprits, petit aventurier.', lineDone:'Le feu t\'a forgé plus fort. Continue, l\'esprit trempé.' },
+  { emoji:'🧞',   name:'Génie Sablo',   line:'Trois vœux pour qui résout trois énigmes ! Mais d\'abord, prouve-toi.', lineDone:'Trois vœux accordés, {hero} ! Tu as prouvé ton esprit.' },
+  { emoji:'🦂',   name:'Scorpios le Sage', line:'Le feu forge les plus grands esprits, petit aventurier.', lineDone:'Le feu t\'a forgé plus fort, {hero}. Continue, l\'esprit trempé.' },
  ],
  ocean: [
-  { emoji:'🧜',   name:'Sirène Coralia', line:'Les vagues chantent déjà tes exploits, moussaillon !', lineDone:'Les vagues chantent désormais tes exploits pour de bon !' },
-  { emoji:'⚓',   name:'Capitaine Flotsam', line:'Navigue avec prudence, les récifs cachent bien des secrets.', lineDone:'Tu as bravé les récifs sans trembler. Bon vent pour la suite !' },
+  { emoji:'🧜',   name:'Sirène Coralia', line:'Les vagues chantent déjà tes exploits, moussaillon !', lineDone:'Les vagues chantent désormais tes exploits pour de bon, {hero} !' },
+  { emoji:'⚓',   name:'Capitaine Flotsam', line:'Navigue avec prudence, les récifs cachent bien des secrets.', lineDone:'Tu as bravé les récifs sans trembler, {hero}. Bon vent pour la suite !' },
  ],
  banquise: [
-  { emoji:'🐧',   name:'Iceberg Glacius', line:'Brr ! Seuls les cœurs vaillants résistent au froid, petit héros.', lineDone:'Brr ! Ton courage a fait fondre mon respect.' },
-  { emoji:'❄️',  name:'Esprit Frimas', line:'La glace garde ses secrets... sauras-tu les percer ?', lineDone:'Tu as percé les secrets de la glace. Continue !' },
+  { emoji:'🐧',   name:'Iceberg Glacius', line:'Brr ! Seuls les cœurs vaillants résistent au froid, petit héros.', lineDone:'Brr ! Ton courage a fait fondre mon respect, {hero}.' },
+  { emoji:'❄️',  name:'Esprit Frimas', line:'La glace garde ses secrets... sauras-tu les percer ?', lineDone:'Tu as percé les secrets de la glace, {hero}. Continue !' },
  ],
  chateau: [
-  { emoji:'🛡️',  name:'Sir Cassel',    line:'Halte ! Seuls les plus braves passent par cette voie.', lineDone:'Tu as prouvé ta bravoure, chevalier. La voie est ouverte.' },
-  { emoji:'🧝',   name:'Elfe Veylis',   line:'Les anciens secrets sont gravés dans la pierre des murailles.', lineDone:'Les murailles se souviendront de ton passage.' },
+  { emoji:'🛡️',  name:'Sir Cassel',    line:'Halte ! Seuls les plus braves passent par cette voie.', lineDone:'Tu as prouvé ta bravoure, {hero}. La voie est ouverte.' },
+  { emoji:'🧝',   name:'Elfe Veylis',   line:'Les anciens secrets sont gravés dans la pierre des murailles.', lineDone:'Les murailles se souviendront de ton passage, {hero}.' },
  ],
  sakura: [
-  { emoji:'🧚',   name:'Fée Bonbonna', line:'Un peu de douceur avant l\'aventure, ça te dit ?', lineDone:'Tu as trouvé toute la douceur du chemin ! Reviens vite.' },
-  { emoji:'🐰',   name:'Lapin Guimauve', line:'Suis les pétales roses, ils mènent aux meilleurs trésors !', lineDone:'Tu as suivi tous les pétales jusqu\'au bout, bravo !' },
+  { emoji:'🧚',   name:'Fée Bonbonna', line:'Un peu de douceur avant l\'aventure, ça te dit ?', lineDone:'Tu as trouvé toute la douceur du chemin, {hero} ! Reviens vite.' },
+  { emoji:'🐰',   name:'Lapin Guimauve', line:'Suis les pétales roses, ils mènent aux meilleurs trésors !', lineDone:'Tu as suivi tous les pétales jusqu\'au bout, {hero}, bravo !' },
  ],
  nuit: [
-  { emoji:'🦉',   name:'Hibou Noctis', line:'La nuit cache autant de mystères que d\'étoiles, jeune brave.', lineDone:'La nuit t\'a livré ses mystères, jeune brave.' },
-  { emoji:'🕯️',  name:'Gardienne Ombralys', line:'N\'aie crainte de l\'obscurité, elle éclaire ceux qui osent.', lineDone:'Tu n\'as pas craint l\'obscurité. Elle t\'éclaire, désormais.' },
+  { emoji:'🦉',   name:'Hibou Noctis', line:'La nuit cache autant de mystères que d\'étoiles, jeune brave.', lineDone:'La nuit t\'a livré ses mystères, {hero}.' },
+  { emoji:'🕯️',  name:'Gardienne Ombralys', line:'N\'aie crainte de l\'obscurité, elle éclaire ceux qui osent.', lineDone:'Tu n\'as pas craint l\'obscurité, {hero}. Elle t\'éclaire, désormais.' },
  ],
  espace: [
-  { emoji:'👽',   name:'Zorbax du Nébula', line:'Bzzip ! Tes exploits résonnent dans toute la galaxie.', lineDone:'Bzzip ! Toute la galaxie connaît ton nom, maintenant.' },
-  { emoji:'🪐',   name:'Sage Cosmik',    line:'L\'univers entier est une énigme. Perce-la.', lineDone:'Tu as percé l\'énigme de mon univers. Bravo, voyageur.' },
+  { emoji:'👽',   name:'Zorbax du Nébula', line:'Bzzip ! Tes exploits résonnent dans toute la galaxie.', lineDone:'Bzzip ! Toute la galaxie connaît ton nom, {hero}, maintenant.' },
+  { emoji:'🪐',   name:'Sage Cosmik',    line:'L\'univers entier est une énigme. Perce-la.', lineDone:'Tu as percé l\'énigme de mon univers, {hero}. Bravo, voyageur.' },
  ],
 };
 const _NPCS_FINAL = [
@@ -1295,7 +1295,12 @@ function _resolveNpcLine(regionId, theme, idx){
   const zonesOfRegion = (typeof _zonesOfRegion==='function') ? _zonesOfRegion(regionId) : [];
   regionDone = zonesOfRegion.length > 0 && zonesOfRegion.every(z => beaten.includes(z.id));
  }catch(e){}
- return { npc, line: (regionDone && npc.lineDone) ? npc.lineDone : npc.line, regionDone };
+ const resolvedLine = (regionDone && npc.lineDone) ? npc.lineDone : npc.line;
+ // v12.4.51 (suite immersion narrative, point 1) : {hero} → vrai prénom du
+ // joueur (P.name), même mécanique de substitution que _pickCallbackLine.
+ const heroName = (typeof P!=='undefined' && P && P.name) || 'héros';
+ const line = resolvedLine.replace(/\{hero\}/g, heroName);
+ return { npc, line, regionDone };
 }
 function _npcClicked(regionId, idx, theme){
  const resolved = _resolveNpcLine(regionId, theme, idx);

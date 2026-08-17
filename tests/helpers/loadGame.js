@@ -328,6 +328,8 @@ globalThis.__api = {
   _pickStagingLine: (typeof _pickStagingLine==='function') ? _pickStagingLine : undefined,
   _companionComment: (typeof _companionComment==='function') ? _companionComment : undefined,
   _maybeShowStory: (typeof _maybeShowStory==='function') ? _maybeShowStory : undefined,
+  _ADV_PRIM_CRYSTALS: (typeof _ADV_PRIM_CRYSTALS!=='undefined') ? _ADV_PRIM_CRYSTALS : undefined,
+  _regionConquered: (typeof _regionConquered==='function') ? _regionConquered : undefined,
 };
 `;
 

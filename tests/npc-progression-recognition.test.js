@@ -33,14 +33,16 @@ describe('_resolveNpcLine() — sélection de la réplique selon la progression 
     expect(resolved.line).toBe(api._NPCS_BY_THEME.standard[0].line);
   });
 
-  it('renvoie lineDone quand TOUTES les zones de la région sont vaincues', () => {
+  it('renvoie lineDone (avec {hero} substitué) quand TOUTES les zones de la région sont vaincues', () => {
     const api = loadGame(FILES);
     const region = api.getArchRegions()[0];
     const zones = api._zonesOfRegion(region.id);
     api.setP({ name: 'Test', mapBossBeaten: zones.map(z => z.id) });
     const resolved = api._resolveNpcLine(region.id, 'standard', 0);
     expect(resolved.regionDone).toBe(true);
-    expect(resolved.line).toBe(api._NPCS_BY_THEME.standard[0].lineDone);
+    // v12.4.51 : {hero} est désormais substitué par le vrai prénom — on
+    // compare après la même substitution plutôt qu'au texte brut.
+    expect(resolved.line).toBe(api._NPCS_BY_THEME.standard[0].lineDone.replace(/\{hero\}/g, 'Test'));
   });
 
   it('reste sur la réplique normale si UNE seule zone de la région manque encore', () => {

@@ -301,6 +301,9 @@ function validateProfile(raw, defaultName){
   // v12.4.50 (Lot 4, audit immersion narrative N8) : trait de héros choisi
   // au premier lancement — valeur fermée (jamais une chaîne libre).
   heroTrait: (raw.heroTrait === 'brave' || raw.heroTrait === 'malin') ? raw.heroTrait : null,
+  // v12.4.51 (suite immersion narrative, point 4) : le Talisman ne s'anime
+  // qu'une seule fois — flag one-shot.
+  talismanRevealShown: _safeBool(raw.talismanRevealShown, false),
   // v11.6.6 — photo de profil (facultative, recadrée/compressée côté appareil
   // avant stockage, 200 Ko max) et code du profil (2 chiffres, facultatif).
   photo: _safeDataUrl(raw.photo, 200000, null),
