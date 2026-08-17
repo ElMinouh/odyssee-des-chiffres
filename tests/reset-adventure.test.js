@@ -8,19 +8,12 @@ const FILES = [
   '07-map.js', '07-game.js', '07-boss.js', '07-story.js', '08-ui.js', '09-parent.js', '10-figurines.js',
 ];
 
-// Garde-fou de non-régression pour ADR-51 (correctif du reset Odyssée, qui
-// avait laissé plusieurs champs persistants non réinitialisés). Vérifie
-// qu'un profil rempli sur TOUS les champs Odyssée actuellement connus est
-// intégralement nettoyé par resetAdventure(), et que rien d'étranger à
-// l'Odyssée n'est effacé au passage.
-//
-// Limite assumée (ADR-52) : ce test protège contre une régression sur les
-// champs déjà listés ci-dessous. Il ne peut pas détecter automatiquement
-// l'oubli d'un TOUT NOUVEAU champ persistant introduit par un futur système
-// narratif — celui-ci doit être ajouté manuellement à buildFullProfile() et
-// aux assertions, en même temps qu'il est ajouté à resetAdventure() (voir
-// ADR-51, conséquence pour l'avenir).
-describe('resetAdventure() — remise à zéro complète (ADR-51)', () => {
+// Garde-fou de non-régression pour ADR-51/ADR-52 (reset Odyssée) + correctif
+// v12.4.54 (reset multi-appareils) : push cloud immédiat après reset, et
+// extension du nettoyage aux champs narratifs ajoutés après ADR-52 (journal,
+// cliffhanger, révélations de collection) — exactement le risque que le
+// commentaire ADR-52 avait anticipé pour tout futur système narratif.
+describe('resetAdventure() — remise à zéro complète (ADR-51/52)', () => {
   function buildFullProfile(knownStoryIds) {
     return {
       name: 'TestKid',
@@ -38,10 +31,17 @@ describe('resetAdventure() — remise à zéro complète (ADR-51)', () => {
       twistLinesUsedByAdv: { prim: [1, 4, 7] },
       _epilogueBonusCredited: ['prim'],
       levelWins: { CE1: 12, '6e': 4 },
+      // v12.4.54 : champs narratifs ajoutés après ADR-52.
+      journalEntriesByAdv: { prim: [{ text: 'Une aventure.', flawless: true }] },
+      lastTwistLineByAdv: { prim: 'Un rebondissement en cours.' },
+      talismanRevealShown: true, rainbowRevealShown: true, bookRevealShown: true,
+      badgeRevealShown: true, armorRevealShown: true, libraryRevealShown: true,
+      histLibraryRevealShown: true,
+      heroTrait: 'brave', // NE DOIT PAS être effacé (trait de personnage, pas progression)
     };
   }
 
-  it('nettoie tous les champs Odyssée connus sans toucher aux données hors-Odyssée', () => {
+  it('nettoie tous les champs Odyssée connus, y compris les systèmes narratifs récents, sans toucher aux données hors-Odyssée', () => {
     // Sonde à part pour lire la vraie liste d'ids Odyssée du jeu (ADR-51),
     // plutôt que de la recopier à la main ici (source unique de vérité).
     const probe = loadGame(FILES);
@@ -68,6 +68,19 @@ describe('resetAdventure() — remise à zéro complète (ADR-51)', () => {
     expect(after._epilogueBonusCredited).toEqual([]);
     expect(after.levelWins).toEqual({ CE1: 0, '6e': 0 });
 
+    // v12.4.54 : nouveaux champs narratifs correctement nettoyés.
+    expect(after.journalEntriesByAdv).toEqual({});
+    expect(after.lastTwistLineByAdv).toEqual({});
+    expect(after.talismanRevealShown).toBe(false);
+    expect(after.rainbowRevealShown).toBe(false);
+    expect(after.bookRevealShown).toBe(false);
+    expect(after.badgeRevealShown).toBe(false);
+    expect(after.armorRevealShown).toBe(false);
+    expect(after.libraryRevealShown).toBe(false);
+    expect(after.histLibraryRevealShown).toBe(false);
+    // heroTrait est un trait de personnage, pas une progression — préservé.
+    expect(after.heroTrait).toBe('brave');
+
     // Aucun des ids Odyssée connus ne doit survivre au reset...
     for (const id of knownIds) {
       expect(after.storySeen).not.toContain(id);
@@ -82,5 +95,55 @@ describe('resetAdventure() — remise à zéro complète (ADR-51)', () => {
     expect(after.stars).toBe(120);
     expect(after.ownedFigurines).toEqual(['fig1']);
     expect(after.xp).toBe(500);
+  });
+});
+
+// Garde-fou de non-régression pour le correctif "reset multi-appareils"
+// (v12.4.54) : le reset doit pousser immédiatement vers le cloud plutôt que
+// d'attendre la prochaine synchronisation périodique, sinon la fusion cloud
+// (union des zones vaincues) réinjecte silencieusement l'ancienne
+// progression au sync suivant.
+describe('resetAdventure() — push cloud immédiat après reset (correctif multi-appareils)', () => {
+  it('appelle pushProfileToCloud(true) quand le profil actif a un code cloud', () => {
+    const api = loadGame(FILES, { user_TestKid: JSON.stringify({ name: 'TestKid', cloudCode: 'ABCD1234' }) });
+    api.setShowConfirm((msg, onConfirm) => onConfirm());
+    // loadProfile() lit le profil actif via $('playerSelect').value (un vrai
+    // <select> du DOM), jamais via P.name — il faut simuler ce sélecteur
+    // pour que le rechargement post-reset retrouve le bon profil.
+    api._domEl('playerSelect').value = 'TestKid';
+    let calledWith = null;
+    api.setPushProfileToCloud((force) => { calledWith = force; return Promise.resolve(true); });
+    api.setP({ name: 'TestKid', cloudCode: 'ABCD1234' }); // profil actif = celui qu'on reset
+
+    api.resetAdventure('TestKid');
+
+    expect(calledWith).toBe(true);
+  });
+
+  it("n'appelle PAS pushProfileToCloud si le profil n'a pas de code cloud (sync jamais activée)", () => {
+    const api = loadGame(FILES, { user_TestKid: JSON.stringify({ name: 'TestKid' }) });
+    api.setShowConfirm((msg, onConfirm) => onConfirm());
+    api._domEl('playerSelect').value = 'TestKid';
+    let called = false;
+    api.setPushProfileToCloud(() => { called = true; return Promise.resolve(true); });
+    api.setP({ name: 'TestKid' }); // pas de cloudCode
+
+    api.resetAdventure('TestKid');
+
+    expect(called).toBe(false);
+  });
+
+  it("n'appelle pas le push si le profil resetté n'est PAS le profil actif", () => {
+    const api = loadGame(FILES, { user_TestKid: JSON.stringify({ name: 'TestKid', cloudCode: 'ABCD1234' }) });
+    api.setShowConfirm((msg, onConfirm) => onConfirm());
+    // Sélecteur pointant vers un AUTRE joueur que celui qu'on reset.
+    api._domEl('playerSelect').value = 'AutreJoueurActif';
+    let called = false;
+    api.setPushProfileToCloud(() => { called = true; return Promise.resolve(true); });
+    api.setP({ name: 'AutreJoueurActif' }); // profil actif différent de celui resetté
+
+    api.resetAdventure('TestKid');
+
+    expect(called).toBe(false);
   });
 });
