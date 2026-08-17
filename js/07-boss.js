@@ -927,7 +927,15 @@ function openAdventureLog(){
  // Progression globale
  const totalZones = MAP_ZONES.length;
  const totalBeaten = MAP_ZONES.filter(z => beaten.includes(z.id)).length;
- const globalPct = totalZones > 0 ? Math.round((totalBeaten / totalZones) * 100) : 0;
+ // v12.4.46 (Lot 1, audit immersion narrative N6) : le prologue déjà vécu par
+ // le joueur (moment narratif fort, avant la 1re zone) compte comme une
+ // étape acquise dans la barre GLOBALE de l'Odyssée — effet de "progression
+ // dotée" (endowed progress effect) : une jauge qui démarre non-vide motive
+ // davantage à la compléter qu'une jauge à 0%, à effort identique. N'affecte
+ // QUE ce calcul global — les barres PAR RÉGION juste en dessous restent un
+ // indicateur brut de zones réellement réussies, non modifié. Le libellé
+ // affiché (`Prologue + X/Y zones`) reste honnête sur ce qui est compté.
+ const globalPct = totalZones > 0 ? Math.round(((totalBeaten + 1) / (totalZones + 1)) * 100) : 0;
  // Progression par région
  const regionRows = _ARCH_REGIONS.map(r => {
   const zonesOfRegion = (typeof _zonesOfRegion==='function') ? _zonesOfRegion(r.id) : MAP_ZONES.filter(z => r.levels.includes(z.level));
@@ -1016,7 +1024,7 @@ function openAdventureLog(){
      <div class="advlog-global-label">Progression de l'Odyssée</div>
      <div class="advlog-bar-track advlog-bar-big">
       <div class="advlog-bar-fill" style="width:${globalPct}%;background:linear-gradient(90deg,#f1c40f,#f39c12,#fff5d6);"></div>
-      <span class="advlog-global-pct">${totalBeaten}/${totalZones} zones · ${globalPct}%</span>
+      <span class="advlog-global-pct">Prologue + ${totalBeaten}/${totalZones} zones · ${globalPct}%</span>
      </div>
     </div>
     <div class="advlog-stats">

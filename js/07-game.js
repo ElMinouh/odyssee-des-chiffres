@@ -307,7 +307,7 @@ function startTimer(){
    $('BODY').classList.remove('urgency-bg');
    if(heart)heart.style.display='none';
   }
-  if(rem<=0){timerRaf=null;$('BODY').classList.remove('urgency-bg');if(heart)heart.style.display='none';hitPlayer('⌛ Temps écoulé !');}
+  if(rem<=0){timerRaf=null;$('BODY').classList.remove('urgency-bg');if(heart)heart.style.display='none';hitPlayer('⌛ Trop lent, il esquive !');}
   else timerRaf=requestAnimationFrame(tick);
  }
  timerRaf=requestAnimationFrame(tick);
@@ -980,7 +980,14 @@ GS.errInGame++;GS.combo=0;GS.opCombo=0;GS.lastOpKey=null;GS.consecFail=(GS.conse
    const _cLineW = _companionComment(false);
    if(_cLineW && typeof toast==='function') toast('💬 '+_cLineW, 2400);
   }
-  showCorr(q);if(GM.mode==='qcm'||(q&&q.choices&&q.choices.length))markQCM(ans,false,q.res);hitPlayer('💥 FAUX !');
+  showCorr(q);if(GM.mode==='qcm'||(q&&q.choices&&q.choices.length))markQCM(ans,false,q.res);
+  // v12.4.46 (Lot 1, audit immersion narrative N2) : message combat-cohérent
+  // ("le monstre esquive"), symétrique à "✅ TOUCHÉ !" côté victoire, au lieu
+  // du verdict générique "FAUX" qui sortait le joueur de la fiction pile au
+  // moment le plus vulnérable (l'échec). _taunt('wrong') (monsterSpeak,
+  // au-dessus) donnait déjà une réplique en personnage ; ce correctif aligne
+  // aussi le texte du feedback principal sur le même registre.
+  hitPlayer('💨 ESQUIVE !');
   // Lot 1 (audit engagement, 13e conversation, pt.27) : après 4 échecs consécutifs
   // dans la partie, suggestion douce de pause (une seule fois par partie). N'apparaît
   // pas si la partie se termine entre-temps (safeTimeout ne s'exécute que si

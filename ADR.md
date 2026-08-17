@@ -811,4 +811,20 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-88 — Lot 1 de l'audit Immersion narrative : cohérence du registre combat en cas d'échec, et progression dotée par le prologue
+
+**Contexte** : l'audit Immersion Narrative & Motivation (19e conversation) a trouvé une asymétrie entre le feedback de victoire, déjà pleinement dans le registre du combat (`✅ TOUCHÉ ! ❤️X/Y`), et celui d'échec, un verdict générique hors-fiction (`💥 FAUX !`, N2) — alors qu'un taunt de monstre en personnage (`_taunt('wrong')`) existait déjà en parallèle, sans que le texte du feedback principal ne le rejoigne. Un second point (N6) notait que la barre de progression globale de l'Odyssée démarre à 0% malgré un moment narratif déjà vécu par le joueur (le prologue), perdant l'effet de "progression dotée" (endowed progress effect).
+
+**Décision** :
+1. **N2** : `hitPlayer('💥 FAUX !')` → `hitPlayer('💨 ESQUIVE !')` (`07-game.js`), symétrique à `TOUCHÉ`. Le cas "temps écoulé" reçoit le même traitement (`⌛ Trop lent, il esquive !`). Le cas "réponse invalide" (erreur technique, pas un échec de jeu) reste inchangé — hors périmètre.
+2. **N6** : `globalPct` compte désormais `(totalBeaten+1)/(totalZones+1)`, le prologue agissant comme une étape acquise. Le libellé affiché devient explicitement `Prologue + X/Y zones · Z%` plutôt que de masquer le bonus — transparence délibérée plutôt qu'un pourcentage qui semblerait ne pas correspondre au compte de zones affiché.
+
+**Avantages** : aucune rupture de fiction au moment le plus vulnérable de la partie (échec) ; gain de motivation dès la toute première session sans aucune nouvelle donnée à collecter.
+
+**Inconvénients** : aucun identifié — changements de texte/calcul d'affichage isolés, aucun autre système touché. Les barres de progression PAR RÉGION restent volontairement un comptage brut, sans bonus (seule la barre globale de l'Odyssée est concernée).
+
+**Impact** : `07-game.js` (L983, L310), `07-boss.js` (`globalPct`, libellé), v12.4.46. Garde-fous de non-régression : `combat-feedback-tone_test.js`, `odyssey-progress-bonus_test.js`.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
