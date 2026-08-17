@@ -304,6 +304,14 @@ globalThis.__api = {
   // limite que le reste du module cloud, voir note ADR-52 ci-dessus) — ce
   // stub permet de vérifier QUAND elle est appelée sans réseau réel.
   setPushProfileToCloud: (fn) => { globalThis.pushProfileToCloud = fn; },
+  // v12.4.56 (ADR-99) : pushProfileToCloud RÉEL (pas un stub) exposé pour
+  // tester sa nouvelle orchestration pull→fusion→push — le pull est stubbé
+  // (setPullProfileFromCloud) pour éviter le réseau réel, mais le push final
+  // (_cloudFetch→fetch) échouera toujours dans ce bac à sable (fetch stubbé
+  // pour rejeter systématiquement) : on peut donc vérifier que P a été
+  // correctement fusionné AVANT le push, pas que le push a réussi.
+  pushProfileToCloud: (typeof pushProfileToCloud==='function') ? pushProfileToCloud : undefined,
+  setPullProfileFromCloud: (fn) => { globalThis.pullProfileFromCloud = fn; },
   resetAdventure: (typeof resetAdventure==='function') ? resetAdventure : undefined,
   _allOdysseyStorySeenIds: (typeof _allOdysseyStorySeenIds==='function') ? _allOdysseyStorySeenIds : undefined,
   // --- ADR-57 (Lot 6, garde-fou ton tender/standard, ADR-45) ---

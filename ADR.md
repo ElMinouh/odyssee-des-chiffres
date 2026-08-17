@@ -993,4 +993,18 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-99 — Cause racine véritable du reset non propagé : la synchronisation de routine ne consultait jamais le cloud (push-only), même après ADR-97/98
+
+**Contexte** : Cyril a signalé, après ADR-97 (push immédiat) et ADR-98 (fusion respectant un reset), que le reset ne se propageait TOUJOURS PAS. Investigation approfondie : `scheduleCloudSync()` (timer périodique, toutes les `CLOUD_SYNC_INTERVAL_MS`) et `syncCloudOnEndGame()` appellent uniquement `pushProfileToCloud()` — jamais de pull. Le seul chemin qui appelait `_mergeCloudProfiles()` (donc qui aurait pu bénéficier d'ADR-98) était la réponse `conflict_kept_server` du SERVEUR à un push — une logique côté serveur non présente dans ce dépôt, donc hors de contrôle. Un appareil resté sur une ancienne progression ne relisait donc jamais le cloud de lui-même : il se contentait de repousser sa propre copie, encore et encore, sans jamais se corriger ni corriger le cloud si le serveur n'avait pas sa propre protection anti-régression. Ce n'est pas spécifique aux resets — deux appareils du même profil peuvent diverger durablement en usage normal, la fusion n'ayant jamais l'occasion de s'exécuter.
+
+**Décision** : `pushProfileToCloud()` fait désormais un PULL + FUSION avant de préparer le payload à pousser (réutilise `_importProfileFromServer()`, déjà éprouvée par le chemin de conflit existant, qui appelle `_mergeCloudProfiles()` — donc bénéficie automatiquement de la logique de reset d'ADR-98). Best-effort : si le pull échoue (hors ligne, aucun profil serveur au tout premier push), le push direct de `P` reste le repli, comme avant ce correctif — aucun blocage possible de la sauvegarde locale.
+
+**Avantages** : corrige la cause racine réelle, entièrement côté client, sans dépendre d'une logique serveur invisible. Un seul point de correction (`pushProfileToCloud`) bénéficie automatiquement à TOUS les déclencheurs de synchronisation existants (timer, fin de partie, changement de visibilité) sans avoir à les toucher individuellement. Corrige aussi, en creux, la divergence générale entre appareils (pas seulement le cas du reset).
+
+**Limite assumée** : double le nombre d'appels réseau par cycle de synchronisation (GET puis POST, au lieu de POST seul) — négligeable vu l'intervalle de plusieurs minutes entre synchronisations. Le harnais de test n'a pas de réseau réel ; la couverture vérifie l'orchestration (pull→fusion→P mis à jour) avec un pull stubbé, pas l'appel réseau final lui-même (limite déjà assumée pour tout le module cloud, voir note historique dans `loadGame.js`).
+
+**Impact** : `12-cloud.js` (`pushProfileToCloud`), `loadGame.js` (exposition `pushProfileToCloud` réelle + stub `setPullProfileFromCloud`), v12.4.56. Garde-fou de non-régression : `cloud-sync-pull-before-push_test.js` (4 tests).
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

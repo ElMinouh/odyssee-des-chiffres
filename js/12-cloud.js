@@ -141,8 +141,30 @@ async function pushProfileToCloud(forceFirst=false){
  if(_cloudInflight){ _cloudLog('sync déjà en cours, skip'); return false; }
  _cloudInflight = true;
  try{
+  // v12.4.56 (ADR-99) : pull + fusion AVANT le push, plutôt qu'un push
+  // aveugle. Sans ça, la synchronisation de routine (scheduleCloudSync,
+  // toutes les CLOUD_SYNC_INTERVAL_MS) ne consultait JAMAIS le cloud —
+  // seulement y déposer sa propre copie locale à chaque fois. Deux
+  // appareils du même profil pouvaient donc diverger durablement (pas
+  // seulement pour un reset — le cas général de deux appareils qui
+  // progressent chacun de leur côté sans jamais se réconcilier tant
+  // qu'aucun conflit serveur n'est détecté). Réutilise
+  // _importProfileFromServer(), déjà éprouvée par le chemin de conflit
+  // ci-dessous, pour fusionner (via _mergeCloudProfiles, ADR-98) et
+  // appliquer le résultat à P avant de préparer le payload à pousser.
+  // Best-effort : si le pull échoue (hors ligne, aucun profil serveur
+  // encore au tout premier push...), on retombe silencieusement sur le
+  // push direct de P — ne doit jamais bloquer la sauvegarde locale->cloud.
+  try{
+   const pulled = await pullProfileFromCloud(P.cloudCode);
+   if(pulled.ok && pulled.profile){
+    await _importProfileFromServer(pulled.profile);
+   }
+  }catch(e){ _cloudLog('pull avant push échoué (best-effort), poursuite avec push direct :', e); }
+
   const code = encodeURIComponent(P.cloudCode);
-  // On clone P pour ne pas envoyer la propriété _syncedAt côté client
+  // On clone P (déjà fusionné ci-dessus le cas échéant) pour ne pas envoyer
+  // la propriété _syncedAt côté client
   const payload = { ...P };
   delete payload._syncedAt;
   if(typeof chatExportFor==='function'){ const _c = chatExportFor(P.name); if(_c) payload._chat = _c; }
