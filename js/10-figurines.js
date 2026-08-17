@@ -1896,6 +1896,10 @@ function resetAdventure(playerName){
       data.armorRevealShown = false;
       data.libraryRevealShown = false;
       data.histLibraryRevealShown = false;
+      // v12.4.55 (ADR-97, Option B) : marqueur lu par _mergeCloudProfiles()
+      // (12-cloud.js) pour que la fusion cloud respecte ce reset au lieu de
+      // le réparer silencieusement par union avec une ancienne progression.
+      data.adventureResetAt = Date.now();
       if(data.levelWins){
         Object.keys(data.levelWins).forEach(k => { data.levelWins[k] = 0; });
       }

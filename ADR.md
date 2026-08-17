@@ -979,4 +979,18 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-98 — Correction de la cause racine du reset Odyssée non propagé (Option B) : marqueur de reset respecté par la fusion cloud
+
+**Contexte** : après l'Option A (ADR-97, push immédiat), Cyril a demandé une évaluation honnête de sa suffisance. Analyse : A corrige uniquement l'appareil où le reset est fait — un AUTRE appareil, resté sur son ancienne progression locale, déclenche `_importProfileFromServer()` → `_mergeCloudProfiles(P, imported)` à son prochain sync, où `imported` est déjà correctement reseté (grâce à A), mais où l'union historique (`mapBossBeaten`) et le max historique (`zoneProgress`) réinjectent quand même l'ancienne progression LOCALE de cet autre appareil par-dessus le reset. A ne suffisait donc pas — confirmé par le raisonnement, implémenté ensuite (Option B).
+
+**Décision** : `resetAdventure()` marque `data.adventureResetAt = Date.now()`. `_mergeCloudProfiles(local, imported)` compare `local.adventureResetAt` et `imported.adventureResetAt` : le côté au reset le PLUS RÉCENT devient autoritaire pour l'ensemble des champs de progression d'Odyssée (`mapBossBeaten`, `zoneProgress`, et tous les champs narratifs listés dans `ODYSSEY_PROGRESS_FIELDS`) — plus d'union ni de max pour ces champs dans ce cas précis, une préférence explicite. Si aucun côté n'a de reset plus récent que l'autre (cas normal, immense majorité des synchronisations), le comportement historique (union/max) reste strictement inchangé — vérifié par les 12 tests de fusion déjà existants, tous passés sans modification.
+
+**Avantages** : corrige la cause racine dans tous les scénarios (pas seulement celui de l'appareil qui reset) ; rétrocompatible par construction (`adventureResetAt` absent des deux côtés → `resetWinner=null` → ancien comportement au caractère près) ; xp/stars/figurines restent garantis au max quel que soit le reset (contrat affiché à l'utilisateur, jamais remis en cause).
+
+**Limite assumée** : ne protège que contre la fusion CLIENT (`_mergeCloudProfiles`). Le mécanisme `conflict_kept_server` de `pushProfileToCloud()` dépend d'une logique côté serveur non présente dans ce dépôt — si le serveur lui-même rejette un push de reset comme "moins avancé" avant même d'atteindre la fusion client, ce correctif ne peut rien y faire. À vérifier si le problème persistait malgré ADR-97+98.
+
+**Impact** : `12-cloud.js` (`_mergeCloudProfiles`), `10-figurines.js` (`resetAdventure`, marqueur), `05-profile.js` (whitelist `adventureResetAt`), v12.4.55. Garde-fous de non-régression : `cloud-merge-reset-marker_test.js` (9 tests, dont le scénario exact du bug signalé), `cloud-merge_test.js` (12 tests existants, tous inchangés).
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

@@ -215,13 +215,50 @@ function _mergeCloudProfiles(local, imported){
  const uniq = (a,b)=>[...new Set([...(a||[]),...(b||[])])];
  const maxN = (a,b)=>Math.max(a||0, b||0);
 
+ // v12.4.55 (ADR-97, Option B — correctif du reset Odyssée non propagé) :
+ // resetAdventure() marque désormais data.adventureResetAt = Date.now().
+ // SANS ce marqueur, la fusion par défaut (union des zones vaincues, max des
+ // étapes, et — pour tous les autres champs d'Odyssée — la simple valeur du
+ // côté "imported") réinjecte silencieusement l'ancienne progression d'un
+ // appareil qui n'a pas encore vu le reset (c'était le bug signalé par
+ // Cyril). AVEC le marqueur : le côté au reset le PLUS RÉCENT devient
+ // autoritaire pour l'ensemble des champs de progression d'Odyssée — plus
+ // d'union, une préférence explicite. Rétrocompatible par construction : un
+ // profil jamais reseté (adventureResetAt absent des deux côtés, donc 0=0,
+ // resetWinner=null) suit exactement l'ancien comportement, inchangé au
+ // caractère près pour tout profil existant.
+ const localResetAt = local.adventureResetAt || 0;
+ const importedResetAt = imported.adventureResetAt || 0;
+ const resetWinner = localResetAt > importedResetAt ? 'local' : (importedResetAt > localResetAt ? 'imported' : null);
+ out.adventureResetAt = maxN(localResetAt, importedResetAt);
+ // Champs de progression d'Odyssée qui prennent déjà la valeur "imported"
+ // par défaut (via Object.assign ci-dessus) — seul le cas resetWinner==='local'
+ // nécessite une correction explicite (sinon la valeur locale, plus récente,
+ // serait perdue au profit de l'ancienne valeur importée).
+ const ODYSSEY_PROGRESS_FIELDS = [
+  'mapAvatarZone', 'mapAvatarZoneByAdv', 'storySeen', 'storyPageIdx',
+  'majorChoiceByAdv', 'twistLinesUsedByAdv', '_epilogueBonusCredited',
+  'journalEntriesByAdv', 'lastTwistLineByAdv',
+  'talismanRevealShown', 'rainbowRevealShown', 'bookRevealShown',
+  'badgeRevealShown', 'armorRevealShown', 'libraryRevealShown', 'histLibraryRevealShown',
+ ];
+ if(resetWinner === 'local'){
+  ODYSSEY_PROGRESS_FIELDS.forEach(f => { out[f] = local[f]; });
+ }
+
  out.ownedFigurines     = uniq(local.ownedFigurines, imported.ownedFigurines);
  out.ownedSkins         = uniq(local.ownedSkins, imported.ownedSkins);
  out.ownedMusics        = uniq(local.ownedMusics, imported.ownedMusics);
  out.ownedSounds        = uniq(local.ownedSounds, imported.ownedSounds);
  out.badgesEarned       = uniq(local.badgesEarned, imported.badgesEarned);
  out.milestonesClaimed  = uniq(local.milestonesClaimed, imported.milestonesClaimed);
- out.mapBossBeaten      = uniq(local.mapBossBeaten, imported.mapBossBeaten);
+ // mapBossBeaten : union par défaut (comportement historique, inchangé si
+ // aucun reset n'est en jeu) — SAUF si un reset marque un côté comme
+ // autoritaire, auquel cas on prend directement sa valeur (jamais unionnée
+ // avec l'autre, sinon l'ancienne progression reviendrait).
+ out.mapBossBeaten = resetWinner
+  ? (resetWinner === 'local' ? (local.mapBossBeaten||[]) : (imported.mapBossBeaten||[]))
+  : uniq(local.mapBossBeaten, imported.mapBossBeaten);
 
  out.xp                = maxN(local.xp, imported.xp);
  out.stars             = maxN(local.stars, imported.stars);
@@ -229,7 +266,11 @@ function _mergeCloudProfiles(local, imported){
  out._bestCombo        = maxN(local._bestCombo, imported._bestCombo);
  out.sessionMinutes    = maxN(local.sessionMinutes, imported.sessionMinutes);
 
- // levelWins / levelWinsBySubj : max par niveau (et par matière)
+ // levelWins / levelWinsBySubj : max par niveau (et par matière) — volontairement
+ // JAMAIS affecté par un reset d'Odyssée (resetAdventure() les remet à 0
+ // explicitement dans data, donc si le reset gagne, le "max" avec l'autre
+ // côté à 0 donne déjà mécaniquement la bonne valeur — aucun cas particulier
+ // nécessaire ici).
  out.levelWins = {};
  new Set([...Object.keys(local.levelWins||{}),...Object.keys(imported.levelWins||{})])
   .forEach(k=>{ out.levelWins[k]=maxN((local.levelWins||{})[k], (imported.levelWins||{})[k]); });
@@ -241,14 +282,20 @@ function _mergeCloudProfiles(local, imported){
    new Set([...Object.keys(ls),...Object.keys(is)]).forEach(k=>{ out.levelWinsBySubj[s][k]=maxN(ls[k], is[k]); });
   });
 
- // zoneProgress : max stepsCompleted par zone, completed = OU logique
- out.zoneProgress = {};
- new Set([...Object.keys(local.zoneProgress||{}),...Object.keys(imported.zoneProgress||{})])
-  .forEach(z=>{
-   const lz=(local.zoneProgress||{})[z]||{stepsCompleted:0,completed:false};
-   const iz=(imported.zoneProgress||{})[z]||{stepsCompleted:0,completed:false};
-   out.zoneProgress[z]={ stepsCompleted:maxN(lz.stepsCompleted, iz.stepsCompleted), completed: !!(lz.completed||iz.completed) };
-  });
+ // zoneProgress : max stepsCompleted par zone (comportement historique) —
+ // sauf si un reset désigne un côté autoritaire, auquel cas on prend sa
+ // valeur directement (jamais re-maximisée avec l'autre côté, plus ancien).
+ if(resetWinner){
+  out.zoneProgress = (resetWinner === 'local' ? local.zoneProgress : imported.zoneProgress) || {};
+ } else {
+  out.zoneProgress = {};
+  new Set([...Object.keys(local.zoneProgress||{}),...Object.keys(imported.zoneProgress||{})])
+   .forEach(z=>{
+    const lz=(local.zoneProgress||{})[z]||{stepsCompleted:0,completed:false};
+    const iz=(imported.zoneProgress||{})[z]||{stepsCompleted:0,completed:false};
+    out.zoneProgress[z]={ stepsCompleted:maxN(lz.stepsCompleted, iz.stepsCompleted), completed: !!(lz.completed||iz.completed) };
+   });
+ }
 
  // opStats / opStatsFr / opStatsHist : max ok/fail par catégorie
  const mergeStatBlock=(la,ia)=>{

@@ -312,6 +312,11 @@ function validateProfile(raw, defaultName){
   armorRevealShown: _safeBool(raw.armorRevealShown, false),
   libraryRevealShown: _safeBool(raw.libraryRevealShown, false),
   histLibraryRevealShown: _safeBool(raw.histLibraryRevealShown, false),
+  // v12.4.55 (ADR-97, Option B) : horodatage du dernier reset d'Odyssée,
+  // lu par _mergeCloudProfiles (12-cloud.js). Borné à "maintenant + 1 jour"
+  // pour tolérer un léger décalage d'horloge entre appareils sans accepter
+  // une valeur aberrante.
+  adventureResetAt: _clampNum(raw.adventureResetAt, 0, Date.now() + 86400000, 0),
   // v11.6.6 — photo de profil (facultative, recadrée/compressée côté appareil
   // avant stockage, 200 Ko max) et code du profil (2 chiffres, facultatif).
   photo: _safeDataUrl(raw.photo, 200000, null),
