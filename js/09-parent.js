@@ -207,7 +207,7 @@ function pmClearPlayerCode(name){
 }
 // ── Guides « pas à pas » (icône ⓘ) ──
 var PARENT_GUIDES = {
- objectifs:{t:'📚 Devoir du jour',s:['Choisis l\u2019enfant concerné.','Choisis la matière, le type de questions et le niveau.','Choisis le nombre de questions et la récompense en étoiles.','Touche « Donner » : l\u2019enfant verra le devoir sur son écran d\u2019accueil.']},
+ objectifs:{t:'📚 Devoir du jour',s:['Choisis l\u2019enfant concerné.','Choisis la matière, le type de questions et le niveau.','Choisis le nombre de questions et la récompense en étoiles.','Touche « Donner » : l\u2019enfant verra le devoir sur son écran d\u2019accueil et devra toucher « Commencer le devoir » pour le lancer.']},
  horaire:{t:'⏰ Horaires autorisés',s:['Choisis l\u2019enfant.','Règle l\u2019heure de début et de fin autorisées.','Coche « Activer le blocage horaire ».','Touche « Enregistrer » : en dehors de ces heures, le jeu sera bloqué.']},
  filtres:{t:'🔢 Types de questions',s:['Choisis l\u2019enfant, puis la matière.','Décoche les types de questions à retirer (ex. divisions).','Touche « Enregistrer » : ces questions ne seront plus posées.']},
  matieres:{t:'📖 Matières autorisées',s:['Choisis l\u2019enfant.','Coche les matières à interdire (ex. ne garder que les maths).','Touche « Enregistrer ».']},

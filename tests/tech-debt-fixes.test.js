@@ -5,7 +5,7 @@ const FILES = [
   '01-core.js', '02-data.js', '03-figurines-data.js', '04-questions.js',
   '16-francais.js', '18-histoire.js', '05-profile.js', '06a-adaptive.js',
   '06b-time-block.js', '06c-seasonal.js', '06d-cinematics.js',
-  '07-map.js', '07-game.js', '07-boss.js', '07-story.js', '08-ui.js', '09-parent.js',
+  '07-story-core.js', '07-map.js', '07-game.js', '07-boss.js', '07-story.js', '08-ui.js', '09-parent.js',
 ];
 
 // ─────────────────────────────────────────────────────────────

@@ -5332,6 +5332,16 @@ body.mat-mode #v-game{
   opacity:.4; cursor:not-allowed; border-color:rgba(255,255,255,.2); color:rgba(255,255,255,.4);
 }
 
+/* Bouton "Commencer le devoir" (carte Devoir du jour, accueil) — v12.4.60,
+   correctif startHomework() orpheline : la carte n'avait jusqu'ici aucun
+   moyen de déclencher réellement le mode devoir. */
+.btn-start-homework{
+  background:rgba(46,204,113,.15); border:1px solid #2ecc71; color:#7fe0a8;
+  font-size:.72em; padding:var(--space-2) var(--space-3); border-radius:20px; cursor:pointer;
+  font-weight:700; font-family:'Nunito',sans-serif;
+}
+.btn-start-homework:hover{ background:rgba(46,204,113,.28); }
+
 /* Conteneur plein écran de la visite guidée */
 /* v11.6.8 — CORRECTIF CRITIQUE : #ob-overlay (position:fixed;inset:0) capte
    tous les clics par défaut (pointer-events:auto implicite), MÊME là où

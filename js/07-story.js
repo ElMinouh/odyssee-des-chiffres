@@ -2185,58 +2185,11 @@ function _allOdysseyStorySeenIds(){
  }
  return ids;
 }
-// Une région est « conquise » quand toutes ses zones sont battues (cohérent avec
-// la détection de conquête d'îlot du moteur). Extensible via _ARCH_REGIONS/MAP_ZONES.
-// v10.2.0 — Helpers génériques zone↔région (compatibles 3 aventures).
-// Les zones des nouvelles aventures portent z.region ; le primaire se résout
-// par niveau (+ cas sanctuaire). Toute logique de région DOIT passer par ici.
-function _regionOfZone(zone){
- if(!zone) return null;
- if(zone.region) return _ARCH_REGIONS.find(r => r.id === zone.region) || null;
- if(zone.id === 'sanctuaire') return _ARCH_REGIONS.find(r => r.id === 'final') || null;
- return _ARCH_REGIONS.find(r => r.levels.includes(zone.level) && r.id !== 'final') || null;
-}
-function _zonesOfRegion(regionId){
- const reg = _ARCH_REGIONS.find(r => r.id === regionId);
- if(!reg) return [];
- return MAP_ZONES.filter(z => {
-  if(z.region) return z.region === reg.id;
-  if(reg.id === 'final') return z.id === 'sanctuaire';
-  return reg.levels.includes(z.level) && z.id !== 'sanctuaire';
- });
-}
-// Dernière région de l'aventure active (porte l'épilogue)
-function _lastRegionId(){
- try{ return _ARCH_REGIONS[_ARCH_REGIONS.length-1].id; }catch(e){ return 'final'; }
-}
-
-function _regionConquered(regionId){
- try{
-  const zones = _zonesOfRegion(regionId);
-  if(!zones.length) return false;
-  const beaten = (typeof P!=='undefined' && P && P.mapBossBeaten) ? P.mapBossBeaten : [];
-  return zones.every(z => beaten.includes(z.id));
- }catch(e){ return false; }
-}
-// v10.13.6 — Accessibilité d'une zone, avec garde anti-soft-lock : si la zone
-// précédente est battue ET qu'on franchit une frontière de région entièrement
-// conquise, la 1re zone de la région suivante est TOUJOURS jouable, sans exiger
-// le palier d'étoiles (sinon un joueur peu scoreur reste bloqué entre deux îles).
-function _zoneReachable(p, beaten, starsTotal){
- // Progression LINÉAIRE : plus de verrou par étoiles. Un lieu est accessible dès que
- // le lieu précédent est réussi ; le 1er lieu d'un nouvel îlot dès que l'îlot précédent
- // est entièrement conquis. Les étoiles ne servent plus qu'à la collection / la boutique.
- try{
-  const idx = p.zoneIdx;
-  if(idx === 0) return true;
-  const prevZone = MAP_ZONES[idx-1];
-  if(!prevZone || !beaten.includes(prevZone.id)) return false;
-  if(prevZone.region && p.zone.region && prevZone.region !== p.zone.region){
-   return _regionConquered(prevZone.region);
-  }
-  return true;
- }catch(e){ return false; }
-}
+// _regionOfZone, _zonesOfRegion, _lastRegionId, _regionConquered et
+// _zoneReachable ont été déplacées dans js/07-story-core.js (ADR-54, lot
+// d'extraction structurelle) — ce sont des helpers zone↔région utilisés bien
+// au-delà de ce fichier (07-map.js, 07-game.js, 07-boss.js), sans lien avec
+// le contenu narratif qui compose le reste de ce fichier.
 // v12.4.49 (Lot 3, audit immersion narrative N3+N4) : système COMBINATOIRE
 // (ouvreur de lieu × issue de combat) plutôt qu'une longue liste de phrases
 // entières écrites à la main — demande explicite de Cyril d'avoir "suffisamment

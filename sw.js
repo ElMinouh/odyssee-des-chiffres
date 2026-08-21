@@ -9,14 +9,15 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v12.4.58';
+const CACHE_VERSION = 'v12.4.60';
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources critiques précachées au premier chargement.
 // Poids total mesuré (méta-audit, Lot 3, ADR-54) : ~2,55 Mo — à remettre à
 // jour à chaque livraison qui ajoute/modifie un fichier de cette liste, pour
 // suivre l'évolution dans le temps sans outillage automatisé.
-// Dernière mesure : v12.2.3, tous les JS + CSS + HTML + manifest ci-dessous.
+// Dernière mesure : v12.4.59 (ajout de 07-story-core.js, extraction ADR-54)
+// — ~2,66 Mo, tous les JS + CSS + HTML + manifest ci-dessous.
 const CRITICAL_URLS = [
   './',
   './index.html',
@@ -35,6 +36,7 @@ const CRITICAL_URLS = [
   './js/06b-time-block.js',
   './js/06c-seasonal.js',
   './js/06d-cinematics.js',
+  './js/07-story-core.js',
   './js/07-map.js',
   './js/07-story.js',
   './js/07-boss.js',
