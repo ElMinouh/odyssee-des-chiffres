@@ -476,6 +476,8 @@ globalThis.__api = {
   _FRW: (typeof _FRW!=='undefined') ? _FRW : undefined,
   _FR_MISSPELL: (typeof _FR_MISSPELL!=='undefined') ? _FR_MISSPELL : undefined,
   _FR_RECENT_MAX: (typeof _FR_RECENT_MAX!=='undefined') ? _FR_RECENT_MAX : undefined,
+  _HERO_EPILOGUE_FRAGMENTS: (typeof _HERO_EPILOGUE_FRAGMENTS!=='undefined') ? _HERO_EPILOGUE_FRAGMENTS : undefined,
+  _HERO_QUIZ: (typeof _HERO_QUIZ!=='undefined') ? _HERO_QUIZ : undefined,
   _HERO_TITLE: (typeof _HERO_TITLE!=='undefined') ? _HERO_TITLE : undefined,
   _HERO_TRAIT_LINES: (typeof _HERO_TRAIT_LINES!=='undefined') ? _HERO_TRAIT_LINES : undefined,
   _HISTMAT_RECENT_MAX: (typeof _HISTMAT_RECENT_MAX!=='undefined') ? _HISTMAT_RECENT_MAX : undefined,

@@ -298,9 +298,17 @@ function validateProfile(raw, defaultName){
   // pour onbAccountSeen — la visite se relançait à chaque connexion malgré
   // ob4MarkCompleted(). Toujours ajouter tout nouveau marqueur ici.
   onbMapSeen: _safeBool(raw.onbMapSeen, false),
-  // v12.4.50 (Lot 4, audit immersion narrative N8) : trait de héros choisi
-  // au premier lancement — valeur fermée (jamais une chaîne libre).
-  heroTrait: (raw.heroTrait === 'brave' || raw.heroTrait === 'malin') ? raw.heroTrait : null,
+  // v12.4.61 (extension immersion narrative N8→N9) : remplace l'ancien
+  // heroTrait unique (2 valeurs) par 3 axes indépendants, posés en 3
+  // questions distinctes à l'ouverture (voir _HERO_QUIZ, 07-story.js).
+  // Migration : un profil déjà pourvu de l'ancien heroTrait (mais pas encore
+  // du nouveau heroTraitApproche) voit sa valeur reprise sur le 1er axe, pour
+  // ne pas perdre un choix déjà fait — les 2 questions restantes complètent
+  // alors le profil dès la prochaine ouverture d'Odyssée.
+  heroTraitApproche: (['brave','malin','loyal','curieux'].includes(raw.heroTraitApproche)) ? raw.heroTraitApproche
+   : (['brave','malin'].includes(raw.heroTrait) ? raw.heroTrait : null),
+  heroTraitMoteur: (['protecteur','enqueteur','ambitieux','reparateur'].includes(raw.heroTraitMoteur)) ? raw.heroTraitMoteur : null,
+  heroTraitStyle: (['rassurant','determine','joyeux','reflechi'].includes(raw.heroTraitStyle)) ? raw.heroTraitStyle : null,
   // v12.4.51 (suite immersion narrative, point 4) : le Talisman ne s'anime
   // qu'une seule fois — flag one-shot.
   talismanRevealShown: _safeBool(raw.talismanRevealShown, false),

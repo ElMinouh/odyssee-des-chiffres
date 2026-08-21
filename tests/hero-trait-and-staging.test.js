@@ -35,78 +35,121 @@ describe('_pickStagingLine() — mise en scène par thème (N1)', () => {
   });
 });
 
-describe('_companionComment() — saveur du trait de héros (N8)', () => {
-  it('n\'injecte jamais de réplique de trait si P.heroTrait est absent', () => {
+describe('_companionComment() — saveur des traits de héros (N8, étendu N9 v12.4.61)', () => {
+  it('n\'injecte jamais de réplique de trait si aucun des 3 traits n\'est défini', () => {
     const api = loadGame(FILES);
-    api.setP({ name: 'Test', heroTrait: null });
+    api.setP({ name: 'Test', heroTraitApproche: null, heroTraitMoteur: null, heroTraitStyle: null });
     api.setGM({ adventure: 'prim' });
     for (let i = 0; i < 20; i++) {
       const line = api._companionComment(true);
       expect(line).not.toContain('courage');
-      expect(line).not.toContain('ruse');
+      expect(line).not.toContain('Cristal');
     }
   });
 
-  it('injecte occasionnellement une réplique "brave" quand heroTrait=brave (jamais sur mauvaise réponse)', () => {
+  it('injecte occasionnellement une réplique liée à l\'axe "approche" (brave) quand il est défini (jamais sur mauvaise réponse)', () => {
     const api = loadGame(FILES);
-    api.setP({ name: 'Test', heroTrait: 'brave' });
+    api.setP({ name: 'Test', heroTraitApproche: 'brave', heroTraitMoteur: null, heroTraitStyle: null });
     api.setGM({ adventure: 'prim' });
     let traitSeen = false;
     for (let i = 0; i < 60; i++) {
       const line = api._companionComment(true);
-      if (line.includes('courage') || line.includes('arrête') || line.includes('ligne')) traitSeen = true;
+      if (line.includes('arrête') || line.includes('Cristal glacé')) traitSeen = true;
     }
     expect(traitSeen).toBe(true);
-    // Jamais sur mauvaise réponse (wasCorrect=false) :
     for (let i = 0; i < 20; i++) {
       const line = api._companionComment(false);
-      expect(line).not.toContain('courage');
+      expect(line).not.toContain('arrête');
     }
+  });
+
+  it('pioche parmi les 3 axes quand les 3 sont définis, avec du contenu adapté à l\'Odyssée en cours', () => {
+    const api = loadGame(FILES);
+    api.setP({ name: 'Test', heroTraitApproche: 'brave', heroTraitMoteur: 'protecteur', heroTraitStyle: 'determine' });
+    api.setGM({ adventure: 'col' }); // Sidéris — vocabulaire distinct de Calcultopia
+    let sawSideris = false;
+    for (let i = 0; i < 80; i++) {
+      const line = api._companionComment(true);
+      if (line.includes('Sidéris') || line.includes('Léthéas') || line.includes('étoile') || line.includes('preuve')) sawSideris = true;
+      expect(line).not.toContain('Calcultopia'); // pas de fuite du vocabulaire d'une autre Odyssée
+    }
+    expect(sawSideris).toBe(true);
   });
 });
 
-describe('_maybeShowStory() — choix du trait de héros (N8)', () => {
-  it('déclenche le choix (ne rappelle PAS le callback tout de suite) pour un profil neuf sans trait', () => {
+describe('_maybeShowStory() — quiz d\'ouverture à 3 questions (N9, v12.4.61)', () => {
+  it('déclenche la 1re question (ne rappelle PAS le callback tout de suite) pour un profil neuf sans trait', () => {
     const api = loadGame(FILES);
-    api.setP({ name: 'Test', heroTrait: null, mapBossBeaten: [], storySeen: [] });
+    api.setP({ name: 'Test', heroTraitApproche: null, heroTraitMoteur: null, heroTraitStyle: null, mapBossBeaten: [], storySeen: [] });
+    api.setGM({ adventure: 'prim' });
     const cb = vi.fn();
     api._maybeShowStory(cb);
     expect(cb).not.toHaveBeenCalled();
-    expect(api.getP().heroTrait).toBe(null); // pas encore choisi (pas de clic simulé)
+    expect(api.getP().heroTraitApproche).toBe(null); // pas encore choisi (pas de clic simulé)
   });
 
-  it('ne redéclenche jamais le choix si heroTrait est déjà défini', () => {
+  it('déclenche la 2e question si la 1re est déjà répondue mais pas les suivantes', () => {
     const api = loadGame(FILES);
-    api.setP({ name: 'Test', heroTrait: 'malin', mapBossBeaten: [], storySeen: [] });
+    api.setP({ name: 'Test', heroTraitApproche: 'malin', heroTraitMoteur: null, heroTraitStyle: null, mapBossBeaten: [], storySeen: [] });
+    api.setGM({ adventure: 'prim' });
     const cb = vi.fn();
-    // Le prologue va se déclencher à la place (storySeen vide) — mais jamais
-    // le choix de trait, donc heroTrait reste "malin" sans être redemandé.
     api._maybeShowStory(cb);
-    expect(api.getP().heroTrait).toBe('malin');
+    expect(cb).not.toHaveBeenCalled();
+    // Les réponses déjà données ne sont jamais reposées :
+    expect(api.getP().heroTraitApproche).toBe('malin');
+    expect(api.getP().heroTraitMoteur).toBe(null);
   });
 
-  it('ne redéclenche jamais le choix pour un profil déjà avancé (même sans trait choisi)', () => {
+  it('ne redéclenche jamais le quiz si les 3 traits sont déjà définis', () => {
     const api = loadGame(FILES);
-    api.setP({ name: 'Test', heroTrait: null, mapBossBeaten: ['plaine'], storySeen: ['intro'] });
+    api.setP({ name: 'Test', heroTraitApproche: 'malin', heroTraitMoteur: 'ambitieux', heroTraitStyle: 'joyeux', mapBossBeaten: [], storySeen: ['intro'] });
+    api.setGM({ adventure: 'prim' });
+    const cb = vi.fn();
+    api._maybeShowStory(cb);
+    expect(api.getP().heroTraitApproche).toBe('malin');
+    expect(api.getP().heroTraitMoteur).toBe('ambitieux');
+    expect(api.getP().heroTraitStyle).toBe('joyeux');
+  });
+
+  it('ne redéclenche jamais le quiz pour un profil déjà avancé (même sans trait choisi)', () => {
+    const api = loadGame(FILES);
+    api.setP({ name: 'Test', heroTraitApproche: null, heroTraitMoteur: null, heroTraitStyle: null, mapBossBeaten: ['plaine'], storySeen: ['intro'] });
+    api.setGM({ adventure: 'prim' });
     const cb = vi.fn();
     api._maybeShowStory(cb);
     // Pas d'assertion sur cb ici (dépend du reste du pipeline narratif) —
     // seul point testé : le profil n'a pas été interrompu par un choix
     // rétroactif de trait, resté null comme avant l'appel.
-    expect(api.getP().heroTrait).toBe(null);
+    expect(api.getP().heroTraitApproche).toBe(null);
   });
 });
 
-describe('validateProfile() — persistance de heroTrait (N8)', () => {
-  it('conserve une valeur valide', () => {
+describe('validateProfile() — persistance des 3 traits de héros (N9, v12.4.61)', () => {
+  it('conserve une valeur valide sur chacun des 3 axes', () => {
     const api = loadGame(FILES);
-    const out = api.validateProfile({ name: 'Test', heroTrait: 'brave' }, 'Test');
-    expect(out.heroTrait).toBe('brave');
+    const out = api.validateProfile({ name: 'Test', heroTraitApproche: 'curieux', heroTraitMoteur: 'reparateur', heroTraitStyle: 'rassurant' }, 'Test');
+    expect(out.heroTraitApproche).toBe('curieux');
+    expect(out.heroTraitMoteur).toBe('reparateur');
+    expect(out.heroTraitStyle).toBe('rassurant');
   });
 
-  it('rejette toute valeur hors de la liste fermée', () => {
+  it('rejette toute valeur hors de la liste fermée, pour chacun des 3 axes', () => {
     const api = loadGame(FILES);
-    const out = api.validateProfile({ name: 'Test', heroTrait: '<script>alert(1)</script>' }, 'Test');
-    expect(out.heroTrait).toBe(null);
+    const out = api.validateProfile({ name: 'Test', heroTraitApproche: '<script>alert(1)</script>', heroTraitMoteur: 'inconnu', heroTraitStyle: 'inconnu' }, 'Test');
+    expect(out.heroTraitApproche).toBe(null);
+    expect(out.heroTraitMoteur).toBe(null);
+    expect(out.heroTraitStyle).toBe(null);
+  });
+
+  it('migre l\'ancien champ heroTrait (v12.4.50) vers heroTraitApproche s\'il est absent', () => {
+    const api = loadGame(FILES);
+    const out = api.validateProfile({ name: 'Test', heroTrait: 'brave' }, 'Test');
+    expect(out.heroTraitApproche).toBe('brave');
+  });
+
+  it('ne migre pas l\'ancien champ si le nouveau est déjà présent (priorité au nouveau)', () => {
+    const api = loadGame(FILES);
+    const out = api.validateProfile({ name: 'Test', heroTrait: 'malin', heroTraitApproche: 'curieux' }, 'Test');
+    expect(out.heroTraitApproche).toBe('curieux');
   });
 });

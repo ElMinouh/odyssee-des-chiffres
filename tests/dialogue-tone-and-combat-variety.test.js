@@ -21,24 +21,24 @@ describe('C3 — pools de variété de combat doublés', () => {
   });
 });
 
-describe('C4 — texte du choix de trait adapté au ton (âge)', () => {
-  it('utilise le texte "tender" pour un niveau maternelle', () => {
+describe('C4 — texte du quiz de trait adapté à l\'Odyssée (v12.4.61, remplace l\'ancien ton par niveau)', () => {
+  it('utilise un texte simple pour l\'Odyssée maternelle (mat)', () => {
     const api = loadGame(FILES);
-    api.setP({ name: 'Test', heroTrait: null, mapBossBeaten: [], storySeen: [] });
-    api.setGM({ level: 'PS', adventure: 'prim' });
+    api.setP({ name: 'Test', heroTraitApproche: null, heroTraitMoteur: null, heroTraitStyle: null, mapBossBeaten: [], storySeen: [] });
+    api.setGM({ level: 'PS', adventure: 'mat' });
     const cb = vi.fn();
     api._maybeShowStory(cb);
     const el = api._lastCreatedElement ? api._lastCreatedElement() : null;
-    expect(el.innerHTML).toContain('tu es plutôt');
+    expect(el.innerHTML).toContain('Quand quelque chose semble difficile');
   });
 
-  it('utilise le texte "standard" pour un niveau primaire/collège', () => {
+  it('utilise un texte adapté au thème de Sidéris pour l\'Odyssée collège (col)', () => {
     const api = loadGame(FILES);
-    api.setP({ name: 'Test', heroTrait: null, mapBossBeaten: [], storySeen: [] });
-    api.setGM({ level: 'CM2', adventure: 'prim' });
+    api.setP({ name: 'Test', heroTraitApproche: null, heroTraitMoteur: null, heroTraitStyle: null, mapBossBeaten: [], storySeen: [] });
+    api.setGM({ level: 'CM2', adventure: 'col' });
     const cb = vi.fn();
     api._maybeShowStory(cb);
     const el = api._lastCreatedElement ? api._lastCreatedElement() : null;
-    expect(el.innerHTML).toContain('qui tu es vraiment');
+    expect(el.innerHTML).toContain('démonstration qui semble hors de portée');
   });
 });

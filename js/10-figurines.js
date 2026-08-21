@@ -1866,9 +1866,11 @@ function resetAdventure(playerName){
       // narratifs ajoutés après ADR-52, jamais ajoutés ici — exactement le
       // risque que le commentaire d'ADR-52 avait anticipé ("l'oubli d'un
       // TOUT NOUVEAU champ persistant introduit par un futur système
-      // narratif"). heroTrait n'est PAS effacé : c'est un trait de
-      // personnage choisi par le joueur, pas une progression d'Odyssée
-      // (même catégorie que l'avatar/les skills, explicitement conservés).
+      // narratif"). heroTraitApproche/heroTraitMoteur/heroTraitStyle (ex-
+      // heroTrait unique jusqu'à v12.4.61) ne sont PAS effacés : ce sont des
+      // traits de personnage choisis par le joueur, pas une progression
+      // d'Odyssée (même catégorie que l'avatar/les skills, explicitement
+      // conservés).
       data.journalEntriesByAdv = {};
       data.lastTwistLineByAdv = {};
       data.talismanRevealShown = false;

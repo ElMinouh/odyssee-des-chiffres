@@ -502,28 +502,128 @@ const _COMPANION_LINES = {
 // mélangés occasionnellement dans le commentaire du compagnon plutôt que
 // remplacer tout le système existant (coût minimal, cohérent avec le point
 // d'ancrage déjà en place).
+// v12.4.61 (extension du système N8 : 3 questions indépendantes au lieu
+// d'une seule, voir _HERO_QUIZ dans 07-story.js) — chaque Odyssée a son
+// propre jeu de répliques par valeur de trait (12 par Odyssée : 4 valeurs ×
+// 3 axes), pour que le rappel en combat reste toujours dans le ton et le
+// vocabulaire de l'Odyssée en cours, même si le choix a été fait dans une
+// autre Odyssée (le trait est un choix de personnage global, pas remis en
+// jeu à chaque Odyssée — voir _maybeShowStory).
 const _HERO_TRAIT_LINES = {
- brave: [
-  "Rien ne t'arrête, {hero} !",
-  "Ton courage ferait reculer n'importe quel adversaire.",
-  "Toujours en première ligne, quel courage !",
- ],
- malin: [
-  "Ton esprit vif m'impressionne à chaque fois, {hero}.",
-  "Toujours la bonne réponse. Quelle ruse !",
-  "Ta ruse ne cesse de me surprendre, {hero}.",
- ],
+ prim: {
+  brave: ["Rien ne t'arrête, {hero} — pas même le brouillard du Comte Zéro.", "Ton courage ferait fondre n'importe quel Cristal glacé."],
+  malin: ["Ton esprit vif retrouve toujours l'ordre dans le chaos, {hero}.", "Le Comte Zéro devrait se méfier d'un calculateur aussi rusé."],
+  loyal: ["Calcultopia a de la chance de compter sur un héros comme toi, {hero}.", "Tu ne calcules jamais seul pour toi — le royaume entier en profite."],
+  curieux: ["Chaque calcul est pour toi un mystère à percer, {hero}.", "Ta curiosité éclaire le brouillard mieux qu'un Cristal entier."],
+  protecteur: ["Chaque Cristal repris, c'est un peu de Calcultopia que tu protèges, {hero}.", "Les habitants dorment mieux en sachant que tu veilles."],
+  enqueteur: ["Le secret du Comte Zéro te fascine autant qu'il t'effraie, {hero}.", "Un mystère de plus percé — tu avances vers la vérité."],
+  ambitieux: ["Le plus grand Calculateur de Calcultopia, ça se dessine, {hero}.", "Maître Comptin s'inclinerait devant tes progrès."],
+  reparateur: ["Pièce par pièce, tu répares ce que le chaos a brisé, {hero}.", "Là où il y avait du brouillard, tu redonnes de l'ordre."],
+  rassurant: ["Ton sourire rassure Calcultopia autant que tes calculs.", "Même dans le brouillard, {hero}, ta présence rassure."],
+  determine: ["Ce poing serré en dit long sur ta détermination, {hero}.", "Rien ne te fait douter bien longtemps."],
+  joyeux: ["Ta joie se propage plus vite que le brouillard du Comte Zéro.", "Calcultopia résonne un peu plus fort à chaque victoire."],
+  reflechi: ["Toujours prêt pour le calcul suivant, {hero} — jamais pris au dépourvu.", "Ton calme après la victoire cache une force tranquille."],
+ },
+ primfr: {
+  brave: ["Rien ne te fait trembler, pas même une dictée de la Guilde de la Rature, {hero}.", "Ton courage résiste à toutes les ratures rouges."],
+  malin: ["Ton esprit vif débusque le bon mot même dans le plus grand désordre, {hero}.", "Le Docteur Babel devrait se méfier d'un écolier aussi rusé."],
+  loyal: ["Verbopolis a de la chance d'avoir un héros qui pense aux autres, {hero}.", "Tu n'écris jamais que pour toi — la ville entière retrouve ses mots grâce à toi."],
+  curieux: ["Chaque mot est pour toi une énigme à percer, {hero}.", "Ta curiosité redonne du sens à ce que la Guilde a brisé."],
+  protecteur: ["Chaque mot retrouvé, c'est un peu de Verbopolis que tu protèges, {hero}.", "Les habitants recommencent à se comprendre grâce à toi."],
+  enqueteur: ["Le secret du Docteur Babel te fascine autant qu'il t'inquiète, {hero}.", "Une énigme de plus résolue — la vérité se rapproche."],
+  ambitieux: ["Le plus grand écrivain de Verbopolis, ça commence à te ressembler, {hero}.", "Madame Rivière elle-même serait fière de toi."],
+  reparateur: ["Mot après mot, tu répares ce que la Guilde a déchiré, {hero}.", "Là où il y avait des ratures, tu redonnes du sens."],
+  rassurant: ["Ton sourire redonne confiance à ceux qui n'osaient plus écrire.", "Même dans la confusion, {hero}, tes mots rassurent."],
+  determine: ["Ce poing serré en dit long sur ta détermination, {hero}.", "Aucune rature ne te fait douter bien longtemps."],
+  joyeux: ["Ta joie se propage plus vite qu'une rumeur à Verbopolis.", "La ville s'anime un peu plus à chacune de tes trouvailles."],
+  reflechi: ["Toujours prêt pour le mot suivant, {hero} — jamais pris au dépourvu.", "Ton calme après chaque victoire cache une force tranquille."],
+ },
+ primhist: {
+  brave: ["Rien ne t'arrête, {hero} — pas même les engrenages détraqués de l'Horloger.", "Ton courage traverse les époques sans faiblir."],
+  malin: ["Ton esprit vif recolle les morceaux du passé mieux que quiconque, {hero}.", "L'Horloger devrait se méfier d'un esprit aussi rusé."],
+  loyal: ["Tes deux frères ont de la chance de t'avoir à leurs côtés, {hero}.", "Tu ne perces jamais un mystère que pour toi seul."],
+  curieux: ["Chaque objet ancien est pour toi une énigme à percer, {hero}.", "Ta curiosité redonne vie à l'atelier de Grand-père Isidore."],
+  protecteur: ["Chaque secret percé, c'est un peu de l'héritage familial que tu protèges, {hero}.", "Grand-père Isidore veillerait fièrement sur toi."],
+  enqueteur: ["Le secret de l'Horloger te fascine autant qu'il t'inquiète, {hero}.", "Une énigme de plus résolue — la vérité familiale se rapproche."],
+  ambitieux: ["Le plus grand historien de la famille, ça commence à te ressembler, {hero}.", "Le notaire lui-même serait impressionné."],
+  reparateur: ["Rouage après rouage, tu répares ce que le temps a détraqué, {hero}.", "Là où il y avait du désordre, tu redonnes de l'ordre."],
+  rassurant: ["Ton sourire rassure tes frères, même dans l'atelier le plus poussiéreux.", "Même face à l'inconnu, {hero}, ta présence rassure."],
+  determine: ["Ce poing serré en dit long sur ta détermination, {hero}.", "Aucun mystère ne te fait douter bien longtemps."],
+  joyeux: ["Ta joie résonne dans l'atelier comme un carillon retrouvé.", "L'atelier d'Isidore s'anime un peu plus à chaque découverte."],
+  reflechi: ["Toujours prêt pour l'énigme suivante, {hero} — jamais pris au dépourvu.", "Ton calme après chaque découverte cache une force tranquille."],
+ },
+ mat: {
+  brave: ["Rien ne t'arrête, {hero} !", "Tu es si courageux, même quand c'est gris."],
+  malin: ["Tu trouves toujours une astuce maligne, {hero} !", "Quelle bonne idée, encore une fois !"],
+  loyal: ["Tes amis du pays ont de la chance de t'avoir, {hero}.", "Tu penses toujours un peu à eux."],
+  curieux: ["Tu regardes tout avec de grands yeux curieux, {hero}.", "Chaque couleur retrouvée te fait sourire de curiosité."],
+  protecteur: ["Grâce à toi, {hero}, le pays est un peu plus protégé.", "Iris se sent en sécurité près de toi."],
+  enqueteur: ["Le secret du gros nuage gris, tu veux tellement le découvrir, {hero} !", "Encore un petit mystère résolu !"],
+  ambitieux: ["Tu deviens un peu plus fort à chaque victoire, {hero} !", "Quel héros tu es en train de devenir !"],
+  reparateur: ["Une couleur de plus revient grâce à toi, {hero}.", "Petit à petit, le pays redevient beau."],
+  rassurant: ["Ton sourire rassure tout le pays, {hero}.", "Même quand c'est gris, toi tu restes lumineux."],
+  determine: ["Tu es tout fier, et ça se voit, {hero} !", "Rien ne t'arrête bien longtemps."],
+  joyeux: ["Ta joie fait revenir un peu de couleur autour de toi !", "Le pays sourit un peu plus grâce à toi."],
+  reflechi: ["Tu es tranquille et content, déjà prêt pour la suite, {hero}.", "Ton calme fait du bien à tout le monde."],
+ },
+ matfr: {
+  brave: ["Rien ne t'arrête, {hero} !", "Tu cherches sans jamais avoir peur."],
+  malin: ["Tu trouves toujours une astuce maligne, {hero} !", "Quelle bonne idée pour retrouver ce mot !"],
+  loyal: ["Tes amis ont de la chance de chercher avec toi, {hero}.", "Tu penses toujours un peu à eux."],
+  curieux: ["Tu écoutes chaque mot avec de grandes oreilles curieuses, {hero}.", "Chaque mot retrouvé te fait sourire de curiosité."],
+  protecteur: ["Grâce à toi, {hero}, le vieux Conteur retrouve le sourire.", "Plume se sent en sécurité tout près de toi."],
+  enqueteur: ["Le secret du Silence, tu veux tellement le découvrir, {hero} !", "Encore un petit mystère résolu !"],
+  ambitieux: ["Tu deviens un peu plus grand raconteur à chaque mot, {hero} !", "Quel conteur tu es en train de devenir !"],
+  reparateur: ["Un mot de plus revient dans le Livre grâce à toi, {hero}.", "Page après page, l'histoire redevient belle."],
+  rassurant: ["Ton sourire rassure Plume et le vieux Conteur, {hero}.", "Même dans le silence, toi tu restes joyeux."],
+  determine: ["Tu es tout fier, et ça se voit, {hero} !", "Rien ne t'arrête bien longtemps."],
+  joyeux: ["Ta joie fait revenir un peu de mots autour de toi !", "Le Livre sourit un peu plus grâce à toi."],
+  reflechi: ["Tu es tranquille et content, déjà prêt pour la suite, {hero}.", "Ton calme fait du bien à tout le monde."],
+ },
+ col: {
+  brave: ["Rien ne te fait reculer, {hero} — pas même l'oubli de Léthéas.", "Ton courage tient debout là où d'autres démonstrations s'effondrent."],
+  malin: ["Ton esprit trouve l'angle que personne n'avait vu, {hero}.", "Léthéas devrait se méfier d'un esprit aussi affûté."],
+  loyal: ["Sidéris a de la chance de compter sur un héros qui n'oublie jamais les autres, {hero}.", "Tu ne forges jamais une étoile que pour toi seul."],
+  curieux: ["Chaque preuve est pour toi un mystère à comprendre en profondeur, {hero}.", "Ta curiosité rallume ce que l'oubli avait éteint."],
+  protecteur: ["Chaque étoile rallumée, c'est un peu de la mémoire de Sidéris que tu protèges, {hero}.", "Alaric veillerait fièrement sur ton travail."],
+  enqueteur: ["Le secret des noms grattés te fascine autant qu'il t'inquiète, {hero}.", "Une vérité de plus arrachée à l'oubli."],
+  ambitieux: ["Le forgeron que Sidéris attendait, ça commence à te ressembler, {hero}.", "Alaric lui-même reconnaîtrait ton talent."],
+  reparateur: ["Preuve après preuve, tu reforges ce que Léthéas avait effacé, {hero}.", "Là où il y avait l'oubli, tu redonnes une mémoire."],
+  rassurant: ["Ton sourire rassure ceux qui doutaient de tenir la preuve, {hero}.", "Même face à l'oubli, ta présence tient bon."],
+  determine: ["Ce poing serré en dit long sur ta détermination, {hero}.", "Aucun doute ne te retient bien longtemps."],
+  joyeux: ["Ta joie se propage plus vite qu'une étoile filante.", "Sidéris scintille un peu plus fort à chaque victoire."],
+  reflechi: ["Toujours tourné vers la preuve suivante, {hero} — jamais pris au dépourvu.", "Ton calme après chaque victoire cache une force tranquille."],
+ },
+ colfr: {
+  brave: ["Rien ne te fait reculer, {hero} — pas même le gris de Monotonia.", "Ton courage résiste à toutes les règles du Chancelier."],
+  malin: ["Ton esprit débusque la logique même dans les règles les plus absurdes, {hero}.", "Le Chancelier Morne devrait se méfier d'un esprit aussi vif."],
+  loyal: ["Monotonia a de la chance de compter sur un héros qui pense aux autres, {hero}.", "Tu ne reconquiers jamais un mot que pour toi seul."],
+  curieux: ["Chaque règle est pour toi un mystère à comprendre en profondeur, {hero}.", "Ta curiosité redonne du sens à ce que le Chancelier a appauvri."],
+  protecteur: ["Chaque mot reconquis, c'est un peu de Monotonia que tu protèges, {hero}.", "Ceux qui n'avaient plus de mots recommencent à espérer."],
+  enqueteur: ["Le secret de ce qu'était la langue, avant, te fascine autant qu'il t'indigne, {hero}.", "Une vérité de plus arrachée au silence imposé."],
+  ambitieux: ["Celui ou celle qui parle le mieux à Monotonia, ça commence à te ressembler, {hero}.", "Même le Chancelier remarquerait tes progrès."],
+  reparateur: ["Mot après mot, tu reconstruis ce que le Chancelier avait détruit, {hero}.", "Là où il y avait le gris, tu redonnes des nuances."],
+  rassurant: ["Ton sourire redonne un peu d'espoir à ceux qui n'osaient plus parler.", "Même à Monotonia, {hero}, ta présence rassure."],
+  determine: ["Ce poing serré en dit long sur ta détermination, {hero}.", "Aucune règle absurde ne te retient bien longtemps."],
+  joyeux: ["Ta joie se voit, même à Monotonia — et ça dérange le Chancelier.", "La ville s'anime un peu plus à chacune de tes victoires."],
+  reflechi: ["Toujours tourné vers la règle suivante, {hero} — jamais pris au dépourvu.", "Ton calme après chaque victoire cache une force tranquille."],
+ },
 };
 function _companionComment(wasCorrect){
  try{
   const adv = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
   const comp = _ADV_COMPANIONS[adv];
   if(!comp) return '';
-  if(wasCorrect && typeof P!=='undefined' && P && P.heroTrait && Math.random() < 0.25){
-   const traitPool = _HERO_TRAIT_LINES[P.heroTrait];
-   if(traitPool && traitPool.length){
-    const heroName = P.name || 'héros';
-    return traitPool[Math.floor(Math.random()*traitPool.length)].replace(/\{hero\}/g, heroName);
+  if(wasCorrect && typeof P!=='undefined' && P && Math.random() < 0.25){
+   const advPools = _HERO_TRAIT_LINES[adv];
+   const traitKeys = [P.heroTraitApproche, P.heroTraitMoteur, P.heroTraitStyle].filter(Boolean);
+   if(advPools && traitKeys.length){
+    const chosenTrait = traitKeys[Math.floor(Math.random()*traitKeys.length)];
+    const traitPool = advPools[chosenTrait];
+    if(traitPool && traitPool.length){
+     const heroName = P.name || 'héros';
+     return traitPool[Math.floor(Math.random()*traitPool.length)].replace(/\{hero\}/g, heroName);
+    }
    }
   }
   const pool = _COMPANION_LINES[comp.voice] && _COMPANION_LINES[comp.voice][wasCorrect?'correct':'wrong'];

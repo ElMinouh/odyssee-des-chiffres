@@ -358,6 +358,8 @@
     "_FRW": "writable",
     "_FR_MISSPELL": "writable",
     "_FR_RECENT_MAX": "writable",
+    "_HERO_EPILOGUE_FRAGMENTS": "writable",
+    "_HERO_QUIZ": "writable",
     "_HERO_TITLE": "writable",
     "_HERO_TRAIT_LINES": "writable",
     "_HISTMAT_RECENT_MAX": "writable",

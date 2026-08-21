@@ -2094,28 +2094,34 @@ function _showStoryModal(chapter, onDone){
  if(typeof trapFocus==='function') overlay._releaseTrap=trapFocus(overlay);
  document.addEventListener('keydown',_escHandler);
 }
-// v12.2.1 (pt.4) : modale de choix à 2 options, même habillage visuel que
+// v12.2.1 (pt.4) : modale de choix, même habillage visuel que
 // _showStoryModal (parchemin), sans navigation/narration — le joueur doit
 // choisir pour continuer (pas d'échap, pas de "passer").
+// v12.4.61 : généralisée à N réponses (jusqu'à 4, quiz d'ouverture) via
+// scene.answers=[{key,label},...] ; l'ancien format 2 boutons (scene.btnA/
+// btnB, moments charnières mi-Odyssée) reste supporté tel quel — normalisé
+// en interne vers le même tableau answers, callback inchangé (reçoit
+// toujours la clé choisie, 'A'/'B' comme avant pour l'ancien format).
 function _showChoiceModal(scene, onChoice){
  const overlay = document.createElement('div');
  overlay.className = 'story-overlay';
+ const answers = scene.answers || [
+  {key:'A', label:scene.btnA||''},
+  {key:'B', label:scene.btnB||''},
+ ];
+ const btnsHtml = answers.map((a,i)=>`<button class="story-btn story-choice-btn" data-idx="${i}">${a.label||''}</button>`).join('');
  overlay.innerHTML = `
   <div class="story-parchment">
    <div class="story-title">${scene.title||''}</div>
    <div class="story-emoji">${scene.emoji||'❓'}</div>
    <div class="story-text">${scene.text||''}</div>
-   <div class="story-choice-btns">
-    <button class="story-btn story-choice-a">${scene.btnA||''}</button>
-    <button class="story-btn story-choice-b">${scene.btnB||''}</button>
-   </div>
+   <div class="story-choice-btns">${btnsHtml}</div>
   </div>`;
  function pick(val){
   overlay.classList.add('story-out');
   setTimeout(()=>{ try{ overlay.remove(); }catch(e){} if(onChoice) onChoice(val); }, 300);
  }
- const ba = overlay.querySelector('.story-choice-a'); if(ba) ba.onclick = ()=>pick('A');
- const bb = overlay.querySelector('.story-choice-b'); if(bb) bb.onclick = ()=>pick('B');
+ overlay.querySelectorAll('.story-choice-btn').forEach((btn,i)=>{ btn.onclick = ()=>pick(answers[i].key); });
  document.body.appendChild(overlay);
  if(typeof trapFocus==='function') overlay._releaseTrap=trapFocus(overlay);
  if(typeof focusFirstIn==='function') focusFirstIn(overlay);
@@ -2570,6 +2576,198 @@ function _maybeShowMajorMoment(afterCb){
  }catch(e){ _done(); }
 }
 
+// v12.4.61 (extension immersion narrative N8→N9, sur demande de Cyril) :
+// remplace l'unique question "Qui es-tu, héros ?" par 3 questions
+// indépendantes, adaptées au thème de chaque Odyssée. Les clés de réponse
+// (brave/malin/loyal/curieux, protecteur/enqueteur/ambitieux/reparateur,
+// rassurant/determine/joyeux/reflechi) sont IDENTIQUES pour les 7 Odyssées
+// — seuls les intitulés changent — ce qui permet un rappel cohérent (voir
+// _HERO_TRAIT_LINES, 07-map.js, et _HERO_EPILOGUE_FRAGMENTS plus bas) quelle
+// que soit l'Odyssée jouée après le choix, puisque le trait de personnage
+// est global et n'est posé qu'une seule fois (voir _maybeShowStory).
+const _HERO_QUIZ = {
+ prim: {
+  q1:{title:'Qui es-tu, jeune Calculateur ?', emoji:'✨', text:"Face à un problème qui semble impossible à résoudre, tu es plutôt...", answers:[
+   {key:'brave', label:'🦁 Courageux — tu fonces sans trembler'},
+   {key:'malin', label:'🦉 Malin — tu cherches l\'astuce'},
+   {key:'loyal', label:'🤝 Loyal — tu aides d\'abord les autres'},
+   {key:'curieux', label:'🔍 Curieux — tu veux comprendre avant tout'},
+  ]},
+  q2:{title:'Qui es-tu, jeune Calculateur ?', emoji:'💎', text:"Face aux Cristaux brisés par le Comte Zéro, qu'est-ce qui te motive le plus ?", answers:[
+   {key:'protecteur', label:'🛡️ Protéger Calcultopia et ses habitants'},
+   {key:'enqueteur', label:'🗝️ Percer le secret du Comte Zéro'},
+   {key:'ambitieux', label:'⭐ Devenir le plus grand Calculateur'},
+   {key:'reparateur', label:'🧩 Réparer ce qui a été brisé, morceau par morceau'},
+  ]},
+  q3:{title:'Qui es-tu, jeune Calculateur ?', emoji:'🎉', text:"Une dernière chose : quand tu réussis un calcul difficile, comment le sait-on ?", answers:[
+   {key:'rassurant', label:'😄 Tu souris et rassures ceux qui doutaient'},
+   {key:'determine', label:'💪 Tu serres le poing, fier et déterminé'},
+   {key:'joyeux', label:'🎉 Tu sautes de joie, impossible à cacher'},
+   {key:'reflechi', label:'🤔 Tu hoches la tête, déjà prêt pour le prochain défi'},
+  ]},
+ },
+ primfr: {
+  q1:{title:'Qui es-tu, vraiment ?', emoji:'✨', text:"Face à une dictée qui semble impossible, tu es plutôt...", answers:[
+   {key:'brave', label:'🦁 Courageux — tu écris quand même, sans trembler'},
+   {key:'malin', label:'🦉 Malin — tu cherches le bon mot par la ruse'},
+   {key:'loyal', label:'🤝 Loyal — tu aides ton voisin de classe avant toi'},
+   {key:'curieux', label:'🔍 Curieux — tu veux comprendre pourquoi ce mot s\'écrit ainsi'},
+  ]},
+  q2:{title:'Qui es-tu, vraiment ?', emoji:'📓', text:"Face à la langue brisée par la Guilde de la Rature, qu'est-ce qui te motive ?", answers:[
+   {key:'protecteur', label:'🛡️ Protéger Verbopolis et ceux qui n\'ont plus de mots'},
+   {key:'enqueteur', label:'🗝️ Percer le secret du Docteur Babel'},
+   {key:'ambitieux', label:'⭐ Devenir le plus grand écrivain de Verbopolis'},
+   {key:'reparateur', label:'🧩 Réparer les mots, un par un'},
+  ]},
+  q3:{title:'Qui es-tu, vraiment ?', emoji:'🎉', text:"Une dernière chose : quand tu trouves enfin le bon mot, comment le sait-on ?", answers:[
+   {key:'rassurant', label:'😄 Tu souris et rassures ceux qui butaient dessus'},
+   {key:'determine', label:'💪 Tu serres le poing, fier de toi'},
+   {key:'joyeux', label:'🎉 Tu sautes de joie, tu ne peux pas le garder pour toi'},
+   {key:'reflechi', label:'🤔 Tu hoches la tête, déjà prêt pour le mot suivant'},
+  ]},
+ },
+ primhist: {
+  q1:{title:'Qui es-tu, héritier d\'Isidore ?', emoji:'✨', text:"Face à un mystère du passé qui semble impossible à percer, tu es plutôt...", answers:[
+   {key:'brave', label:'🦁 Courageux — tu avances dans le passé sans hésiter'},
+   {key:'malin', label:'🦉 Malin — tu assembles les indices avec ruse'},
+   {key:'loyal', label:'🤝 Loyal — tu penses d\'abord à tes deux frères'},
+   {key:'curieux', label:'🔍 Curieux — tu veux tout savoir sur ce qui s\'est vraiment passé'},
+  ]},
+  q2:{title:'Qui es-tu, héritier d\'Isidore ?', emoji:'⚙️', text:"Face au temps que l'Horloger a détraqué, qu'est-ce qui te motive le plus ?", answers:[
+   {key:'protecteur', label:'🛡️ Protéger l\'héritage de Grand-père Isidore'},
+   {key:'enqueteur', label:'🗝️ Percer le secret de l\'Horloger'},
+   {key:'ambitieux', label:'⭐ Devenir le plus grand historien de la famille'},
+   {key:'reparateur', label:'🧩 Réparer ce que le temps a brisé'},
+  ]},
+  q3:{title:'Qui es-tu, héritier d\'Isidore ?', emoji:'🎉', text:"Une dernière chose : quand tu résous une énigme du passé, comment le sait-on ?", answers:[
+   {key:'rassurant', label:'😄 Tu souris et rassures tes frères inquiets'},
+   {key:'determine', label:'💪 Tu serres le poing, fier de la découverte'},
+   {key:'joyeux', label:'🎉 Tu sautes de joie, impossible à cacher'},
+   {key:'reflechi', label:'🤔 Tu hoches la tête, déjà tourné vers l\'énigme suivante'},
+  ]},
+ },
+ mat: {
+  q1:{title:'Qui es-tu ?', emoji:'✨', text:"Quand quelque chose semble difficile, tu es plutôt...", answers:[
+   {key:'brave', label:'🦁 Courageux — tu essaies quand même'},
+   {key:'malin', label:'🦉 Malin — tu trouves une astuce'},
+   {key:'loyal', label:'🤝 Gentil — tu aides tes amis d\'abord'},
+   {key:'curieux', label:'🔍 Curieux — tu veux tout regarder de près'},
+  ]},
+  q2:{title:'Qui es-tu ?', emoji:'🌈', text:"Pour redonner ses couleurs au pays, qu'est-ce qui te fait le plus envie ?", answers:[
+   {key:'protecteur', label:'🛡️ Protéger tes amis du pays'},
+   {key:'enqueteur', label:'🗝️ Découvrir le secret du gros nuage gris'},
+   {key:'ambitieux', label:'⭐ Devenir le héros le plus fort du pays'},
+   {key:'reparateur', label:'🧩 Redonner une couleur, petit à petit'},
+  ]},
+  q3:{title:'Qui es-tu ?', emoji:'🎉', text:"Quand tu réussis quelque chose de difficile, comment on le voit ?", answers:[
+   {key:'rassurant', label:'😄 Tu souris très fort'},
+   {key:'determine', label:'💪 Tu es tout fier'},
+   {key:'joyeux', label:'🎉 Tu sautes partout de joie'},
+   {key:'reflechi', label:'🤔 Tu fais un petit sourire tranquille'},
+  ]},
+ },
+ matfr: {
+  q1:{title:'Qui es-tu ?', emoji:'✨', text:"Quand un mot semble difficile à trouver, tu es plutôt...", answers:[
+   {key:'brave', label:'🦁 Courageux — tu cherches quand même'},
+   {key:'malin', label:'🦉 Malin — tu trouves une astuce'},
+   {key:'loyal', label:'🤝 Gentil — tu aides tes amis à chercher aussi'},
+   {key:'curieux', label:'🔍 Curieux — tu veux tout écouter très fort'},
+  ]},
+  q2:{title:'Qui es-tu ?', emoji:'📖', text:"Pour redonner ses mots au Livre magique, qu'est-ce qui te fait le plus envie ?", answers:[
+   {key:'protecteur', label:'🛡️ Protéger le vieux Conteur et son Livre'},
+   {key:'enqueteur', label:'🗝️ Découvrir où le Silence a caché les mots'},
+   {key:'ambitieux', label:'⭐ Devenir le plus grand raconteur d\'histoires'},
+   {key:'reparateur', label:'🧩 Retrouver les mots, page après page'},
+  ]},
+  q3:{title:'Qui es-tu ?', emoji:'🎉', text:"Quand tu retrouves enfin un mot perdu, comment on le voit ?", answers:[
+   {key:'rassurant', label:'😄 Tu souris très fort'},
+   {key:'determine', label:'💪 Tu es tout fier'},
+   {key:'joyeux', label:'🎉 Tu sautes partout de joie'},
+   {key:'reflechi', label:'🤔 Tu fais un petit sourire tranquille'},
+  ]},
+ },
+ col: {
+  q1:{title:'Qui es-tu, forgeron d\'étoiles ?', emoji:'✨', text:"Face à une démonstration qui semble hors de portée, tu es plutôt...", answers:[
+   {key:'brave', label:'🦁 Courageux — tu t\'y attaques sans reculer'},
+   {key:'malin', label:'🦉 Malin — tu cherches l\'angle que personne n\'a vu'},
+   {key:'loyal', label:'🤝 Loyal — tu penses d\'abord à ceux qui cherchent avec toi'},
+   {key:'curieux', label:'🔍 Curieux — tu veux comprendre le pourquoi, pas seulement le comment'},
+  ]},
+  q2:{title:'Qui es-tu, forgeron d\'étoiles ?', emoji:'🌌', text:"Face à l'oubli que Léthéas répand sur Sidéris, qu'est-ce qui te pousse à te battre ?", answers:[
+   {key:'protecteur', label:'🛡️ Protéger la mémoire du royaume et de ses forgerons'},
+   {key:'enqueteur', label:'🗝️ Percer le secret des noms grattés dans les vieux registres'},
+   {key:'ambitieux', label:'⭐ Devenir un forgeron d\'étoiles digne d\'Alaric'},
+   {key:'reparateur', label:'🧩 Reforger, preuve après preuve, ce que l\'oubli a détruit'},
+  ]},
+  q3:{title:'Qui es-tu, forgeron d\'étoiles ?', emoji:'🎉', text:"Quand une preuve tient enfin debout, comment le sait-on ?", answers:[
+   {key:'rassurant', label:'😄 Tu souris, et ça rassure ceux qui doutaient avec toi'},
+   {key:'determine', label:'💪 Tu serres le poing, une étincelle de plus au firmament'},
+   {key:'joyeux', label:'🎉 Tu ne peux pas retenir ta joie'},
+   {key:'reflechi', label:'🤔 Tu hoches la tête, déjà tourné vers la preuve suivante'},
+  ]},
+ },
+ colfr: {
+  q1:{title:'Qui es-tu, vraiment ?', emoji:'✨', text:"Face à une règle de grammaire qui semble absurde à première vue, tu es plutôt...", answers:[
+   {key:'brave', label:'🦁 Courageux — tu t\'y attaques sans te décourager'},
+   {key:'malin', label:'🦉 Malin — tu cherches la logique cachée derrière la règle'},
+   {key:'loyal', label:'🤝 Loyal — tu penses d\'abord à ceux qui ont perdu leurs mots'},
+   {key:'curieux', label:'🔍 Curieux — tu veux savoir pourquoi la langue fonctionne ainsi'},
+  ]},
+  q2:{title:'Qui es-tu, vraiment ?', emoji:'🏙️', text:"Face à la langue appauvrie par le Chancelier Morne, qu'est-ce qui te pousse à te battre ?", answers:[
+   {key:'protecteur', label:'🛡️ Protéger ceux à qui il ne reste presque plus de mots'},
+   {key:'enqueteur', label:'🗝️ Percer le secret de ce qu\'était la langue, avant'},
+   {key:'ambitieux', label:'⭐ Devenir celui ou celle qui parle le mieux à Monotonia'},
+   {key:'reparateur', label:'🧩 Reconstruire la langue, mot après mot'},
+  ]},
+  q3:{title:'Qui es-tu, vraiment ?', emoji:'🎉', text:"Quand tu maîtrises enfin une règle difficile, comment le sait-on ?", answers:[
+   {key:'rassurant', label:'😄 Tu souris, et ça redonne un peu d\'espoir autour de toi'},
+   {key:'determine', label:'💪 Tu serres le poing, une victoire de plus contre le gris'},
+   {key:'joyeux', label:'🎉 Tu ne peux pas cacher ta joie, même à Monotonia'},
+   {key:'reflechi', label:'🤔 Tu hoches la tête, déjà tourné vers la règle suivante'},
+  ]},
+ },
+};
+// Fragments de rappel pour la phrase de clôture d'épilogue (voir plus bas,
+// section épilogue) — composés en une seule phrase élégante plutôt que 3
+// lignes séparées, pour ne pas casser le ton du reste de l'épilogue.
+const _HERO_EPILOGUE_FRAGMENTS = {
+ prim: {
+  approche:{brave:"sans jamais reculer devant le danger", malin:"en trouvant toujours l'astuce là où d'autres auraient abandonné", loyal:"en pensant d'abord aux autres à chaque pas", curieux:"en cherchant à comprendre chaque mystère plutôt qu'à le contourner"},
+  moteur:{protecteur:"protégeant le royaume à chaque Cristal repris", enqueteur:"perçant peu à peu les secrets du Comte Zéro", ambitieux:"devenant, calcul après calcul, le Calculateur que Calcultopia attendait", reparateur:"réparant patiemment ce que le chaos avait brisé"},
+  style:{rassurant:"avec un sourire qui n'a jamais vacillé", determine:"le poing toujours plus déterminé", joyeux:"une joie communicative à chaque victoire", reflechi:"un calme qui en disait plus que des mots"},
+ },
+ primfr: {
+  approche:{brave:"sans jamais trembler devant une page blanche", malin:"en débusquant le bon mot là où d'autres auraient abandonné", loyal:"en aidant chacun à retrouver ses mots avant les tiens", curieux:"en cherchant à comprendre chaque mot plutôt qu'à le contourner"},
+  moteur:{protecteur:"protégeant Verbopolis mot après mot", enqueteur:"perçant peu à peu le secret du Docteur Babel", ambitieux:"devenant, dictée après dictée, l'écrivain que Verbopolis attendait", reparateur:"réparant patiemment ce que la Guilde de la Rature avait déchiré"},
+  style:{rassurant:"avec un sourire qui n'a jamais vacillé", determine:"le poing toujours plus déterminé", joyeux:"une joie communicative à chaque mot retrouvé", reflechi:"un calme qui en disait plus que des mots"},
+ },
+ primhist: {
+  approche:{brave:"sans jamais reculer devant les mystères du passé", malin:"en assemblant les indices là où d'autres auraient abandonné", loyal:"en pensant à tes frères à chaque pas", curieux:"en cherchant à tout comprendre plutôt qu'à passer à côté"},
+  moteur:{protecteur:"protégeant l'héritage de Grand-père Isidore à chaque secret percé", enqueteur:"perçant peu à peu le secret de l'Horloger", ambitieux:"devenant, énigme après énigme, l'historien que la famille attendait", reparateur:"réparant patiemment ce que le temps avait détraqué"},
+  style:{rassurant:"avec un sourire qui n'a jamais vacillé", determine:"le poing toujours plus déterminé", joyeux:"une joie communicative à chaque découverte", reflechi:"un calme qui en disait plus que des mots"},
+ },
+ mat: {
+  approche:{brave:"sans jamais avoir peur", malin:"en trouvant toujours une petite astuce", loyal:"en pensant à tes amis à chaque pas", curieux:"en regardant chaque chose avec de grands yeux curieux"},
+  moteur:{protecteur:"en protégeant tes amis du pays", enqueteur:"en découvrant le secret du gros nuage gris", ambitieux:"en devenant, petit à petit, un vrai héros", reparateur:"en redonnant une couleur après l'autre"},
+  style:{rassurant:"avec un sourire qui a toujours réchauffé le pays", determine:"tout fier à chaque étape", joyeux:"avec une joie qui a fait revenir les couleurs", reflechi:"avec un calme tout doux"},
+ },
+ matfr: {
+  approche:{brave:"sans jamais avoir peur", malin:"en trouvant toujours une petite astuce", loyal:"en pensant à tes amis à chaque pas", curieux:"en écoutant chaque mot avec de grandes oreilles curieuses"},
+  moteur:{protecteur:"en protégeant le vieux Conteur et son Livre", enqueteur:"en découvrant où le Silence avait caché les mots", ambitieux:"en devenant, page après page, un vrai raconteur d'histoires", reparateur:"en retrouvant les mots, un par un"},
+  style:{rassurant:"avec un sourire qui a toujours réchauffé le Livre", determine:"tout fier à chaque étape", joyeux:"avec une joie qui a fait revenir les mots", reflechi:"avec un calme tout doux"},
+ },
+ col: {
+  approche:{brave:"sans jamais reculer devant une démonstration hors de portée", malin:"en trouvant l'angle que personne n'avait vu", loyal:"en pensant à ceux qui cherchaient avec toi, à chaque pas", curieux:"en cherchant toujours le pourquoi, jamais seulement le comment"},
+  moteur:{protecteur:"protégeant la mémoire de Sidéris à chaque étoile rallumée", enqueteur:"perçant peu à peu le secret des noms grattés dans les vieux registres", ambitieux:"devenant, preuve après preuve, le forgeron que Sidéris attendait", reparateur:"reforgeant patiemment ce que l'oubli avait détruit"},
+  style:{rassurant:"avec un sourire qui n'a jamais vacillé", determine:"le poing toujours plus déterminé", joyeux:"une joie communicative à chaque preuve tenue debout", reflechi:"un calme qui en disait plus que des mots"},
+ },
+ colfr: {
+  approche:{brave:"sans jamais te décourager devant l'absurde", malin:"en cherchant la logique cachée derrière chaque règle", loyal:"en pensant à ceux qui avaient perdu leurs mots, à chaque pas", curieux:"en cherchant toujours à comprendre pourquoi, jamais seulement comment"},
+  moteur:{protecteur:"protégeant ceux à qui il ne restait presque plus de mots", enqueteur:"perçant peu à peu le secret de ce qu'était la langue, avant", ambitieux:"devenant, règle après règle, celui ou celle que Monotonia attendait", reparateur:"reconstruisant patiemment ce que le Chancelier avait détruit"},
+  style:{rassurant:"avec un sourire qui n'a jamais vacillé", determine:"le poing toujours plus déterminé", joyeux:"une joie communicative à chaque victoire, même à Monotonia", reflechi:"un calme qui en disait plus que des mots"},
+ },
+};
+
 // Déclencheur principal : prologue, puis victoire de Cristal, puis épilogue, puis chapitre d'entrée.
 // v12.1.2 : accepte un callback optionnel `afterCb`, appelé une fois la (ou les)
 // page(s) d'histoire refermée(s) — ou immédiatement si rien de nouveau à montrer.
@@ -2580,31 +2778,45 @@ function _maybeShowStory(afterCb){
  const _done = (typeof afterCb === 'function') ? afterCb : function(){};
  if(typeof P==='undefined' || !P){ _done(); return; }
  P.storySeen = P.storySeen || [];
- // 0) Trait du héros — UNE SEULE FOIS, avant même le tout premier prologue,
- // uniquement pour un profil qui n'a encore rien accompli (jamais montré à
- // un joueur qui a déjà progressé, pour ne pas interrompre une Odyssée en
- // cours). v12.4.50 (Lot 4, audit immersion narrative N8).
- if(!P.heroTrait && (P.mapBossBeaten||[]).length === 0 && typeof _showChoiceModal==='function'){
-  // v12.4.52 (audit Cohérence Globale, C4) : seul texte narratif du module
-  // qui restait identique quel que soit l'âge — aligné sur la discipline
-  // générale (_dialogueTone(), déjà utilisée partout ailleurs) avec une
-  // variante "tender" plus simple pour les plus jeunes.
-  const _tone = (typeof _dialogueTone==='function') ? _dialogueTone() : 'standard';
-  const _choiceText = _tone==='tender'
-   ? 'Avant de partir à l\'aventure, dis-moi : tu es plutôt...'
-   : 'Avant de commencer ton Odyssée, dis-nous qui tu es vraiment.';
-  _showChoiceModal({
-   title: 'Qui es-tu, héros ?',
-   emoji: '✨',
-   text: _choiceText,
-   btnA: '🦁 Courageux',
-   btnB: '🦉 Malin',
-  }, (val)=>{
-   P.heroTrait = val==='A' ? 'brave' : 'malin';
-   if(typeof saveProfile==='function') saveProfile();
-   _maybeShowStory(_done);
-  });
-  return;
+ // 0) Trait du héros — 3 questions indépendantes, UNE SEULE FOIS chacune,
+ // avant même le tout premier prologue, uniquement pour un profil qui n'a
+ // encore rien accompli (jamais montré à un joueur qui a déjà progressé,
+ // pour ne pas interrompre une Odyssée en cours). v12.4.50 (Lot 4, audit
+ // immersion narrative N8), étendu v12.4.61 (3 questions adaptées à
+ // l'Odyssée en cours plutôt qu'une seule question générique — le choix,
+ // une fois fait, reste un trait de personnage global : il n'est pas reposé
+ // si le joueur change ensuite d'Odyssée, voir _HERO_TRAIT_LINES/07-map.js
+ // et _HERO_EPILOGUE_FRAGMENTS plus haut, qui adaptent le RAPPEL — pas la
+ // question elle-même — à l'Odyssée en cours à ce moment-là).
+ if((P.mapBossBeaten||[]).length === 0 && typeof _showChoiceModal==='function'){
+  const _adv = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
+  const _quiz = _HERO_QUIZ[_adv];
+  if(_quiz){
+   if(!P.heroTraitApproche){
+    _showChoiceModal(_quiz.q1, (val)=>{
+     P.heroTraitApproche = val;
+     if(typeof saveProfile==='function') saveProfile();
+     _maybeShowStory(_done);
+    });
+    return;
+   }
+   if(!P.heroTraitMoteur){
+    _showChoiceModal(_quiz.q2, (val)=>{
+     P.heroTraitMoteur = val;
+     if(typeof saveProfile==='function') saveProfile();
+     _maybeShowStory(_done);
+    });
+    return;
+   }
+   if(!P.heroTraitStyle){
+    _showChoiceModal(_quiz.q3, (val)=>{
+     P.heroTraitStyle = val;
+     if(typeof saveProfile==='function') saveProfile();
+     _maybeShowStory(_done);
+    });
+    return;
+   }
+  }
  }
  // 1) Prologue, une seule fois, au tout début
  const _introId = (_STORY.intro && _STORY.intro.id) || 'intro';
@@ -2669,17 +2881,25 @@ function _maybeShowStory(afterCb){
      });
      if(bonusPages.length) _epiPages = [..._epiPages, ...bonusPages];
     }
-    // v12.4.51 (suite immersion narrative, point 5) : boucle la boucle
-    // ouverte par le tout premier choix du jeu (N8) — une ligne de clôture
-    // qui fait écho au trait choisi, en tout dernier (après les pages de
+    // v12.4.51 (suite immersion narrative, point 5), étendu v12.4.61 (3
+    // questions au lieu d'une seule, voir _HERO_QUIZ) : boucle la boucle
+    // ouverte par le tout premier choix du jeu (N8) — une phrase de
+    // clôture composée à partir des 3 traits choisis, adaptée au
+    // vocabulaire de l'Odyssée qui se termine ici (pas forcément celle où
+    // la question a été posée — le trait est un choix de personnage
+    // global, voir _maybeShowStory), en tout dernier (après les pages de
     // conséquence des moments charnières, s'il y en a).
-    if(typeof P!=='undefined' && P && P.heroTrait){
-     const _epilogueTraitLines = {
-      brave: 'Ton courage n\'a jamais faibli, du premier pas jusqu\'ici. C\'est cela, être un héros.',
-      malin: 'Ton esprit vif t\'a guidé à chaque tournant, du premier pas jusqu\'ici. C\'est cela, être un héros.',
-     };
-     const _traitLine = _epilogueTraitLines[P.heroTrait];
-     if(_traitLine) _epiPages = [..._epiPages, { emoji:'💫', text:_traitLine }];
+    if(typeof P!=='undefined' && P && P.heroTraitApproche && P.heroTraitMoteur && P.heroTraitStyle){
+     const _frag = _HERO_EPILOGUE_FRAGMENTS[advKey];
+     const _a = _frag && _frag.approche[P.heroTraitApproche];
+     const _m = _frag && _frag.moteur[P.heroTraitMoteur];
+     const _s = _frag && _frag.style[P.heroTraitStyle];
+     if(_a && _m && _s){
+      const _traitLine = (typeof _storyText==='function')
+       ? _storyText(`Tu as traversé {kingdom} ${_a}, ${_m}, ${_s} — c'est cela, être un héros.`)
+       : `Tu as traversé ${_a}, ${_m}, ${_s} — c'est cela, être un héros.`;
+      _epiPages = [..._epiPages, { emoji:'💫', text:_traitLine }];
+     }
     }
    }catch(e){}
    _showStoryModal({ id:_STORY.epilogue.id, title:_STORY.epilogue.title, pages:_epiPages }, _after);

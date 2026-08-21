@@ -1095,4 +1095,26 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+---
+
+## ADR-107 — Quiz d'ouverture d'Odyssée : 3 questions adaptées au thème, au lieu d'une seule question générique
+
+**Contexte** : la question unique "Qui es-tu, héros ?" (Courageux/Malin, ADR N8 v12.4.50) était identique pour les 7 Odyssées, sans lien avec leur thème (Calcultopia, Verbopolis, Sidéris...). Cyril a demandé plus de questions, plus de variété, adaptées à chaque Odyssée — avec une contrainte forte : les réponses doivent être rappelées plus tard dans l'histoire, de façon cohérente, sans en changer le fond ni en diminuer la qualité.
+
+**Décision** : 3 questions indépendantes (« approche face au danger », « ce qui motive », « comment se voit la réussite »), 4 réponses chacune. Les **clés de réponse** (brave/malin/loyal/curieux, protecteur/enquêteur/ambitieux/réparateur, rassurant/déterminé/joyeux/réfléchi) sont **identiques pour les 7 Odyssées** ; seuls les intitulés changent, adaptés au vocabulaire et au ton de chaque royaume (ex. maternelle : phrasing simple et tendre ; collège : registre plus mature). Ce choix de clés partagées permet un système de rappel unique, réutilisable partout, plutôt que 7 mécanismes disjoints.
+
+**Point d'architecture important** : le trait de personnage reste **global et permanent** (comme l'ancien `heroTrait`, jamais effacé par `resetAdventure()`) — il n'est donc posé **qu'une seule fois**, avant la toute première zone battue, dans l'Odyssée que l'enfant choisit de jouer en premier. Les 6 autres jeux de questions ne seront jamais vus par un enfant qui commence par une 7ᵉ Odyssée précise — mais le **rappel**, lui (répliques de combat + phrase de clôture d'épilogue), est recalculé à chaque fois en fonction de l'Odyssée **en cours**, pas de celle où la question a été posée : un enfant qui a répondu en jouant à Calcultopia entend un rappel en vocabulaire de Sidéris s'il joue ensuite au collège. C'est ce qui rend le système « adapté à l'Odyssée » malgré une question posée une seule fois.
+
+**Rappel narratif** : 2 canaux, comme l'ancien système — répliques de combat occasionnelles (25 % de chance après une bonne réponse, un des 3 traits tiré au hasard) et une phrase de clôture d'épilogue **composée** à partir des 3 traits en une seule phrase (pas 3 lignes façon liste), pour ne pas dégrader la qualité de l'épilogue existant.
+
+**Impact** :
+- `07-story.js` : `_HERO_QUIZ` (questions par Odyssée), `_HERO_EPILOGUE_FRAGMENTS` (fragments de clôture par Odyssée), chaînage des 3 questions dans `_maybeShowStory()`, `_showChoiceModal()` généralisée à N réponses (jusqu'à 4), compatible avec l'ancien format à 2 boutons (moments charnières mi-Odyssée, inchangés).
+- `07-map.js` : `_HERO_TRAIT_LINES` restructurée par Odyssée (12 valeurs × 7), `_companionComment()` tire parmi les 3 traits définis.
+- `05-profile.js` : `heroTraitApproche`/`heroTraitMoteur`/`heroTraitStyle` remplacent `heroTrait` ; migration automatique de l'ancien champ vers le premier axe pour ne perdre aucun choix déjà fait.
+- `10-figurines.js` : commentaire de `resetAdventure()` mis à jour (3 champs, au lieu d'un seul, explicitement non effacés).
+- `tests/hero-trait-and-staging_test.js` et `tests/dialogue-tone-and-combat-variety_test.js` : réécrits pour le nouveau système (l'ancien testait une variation par âge/ton qui n'existe plus, remplacée par une variation par Odyssée).
+- v12.4.61. 279/279 tests (+6 par rapport à avant ce lot).
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
