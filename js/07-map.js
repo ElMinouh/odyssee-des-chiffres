@@ -311,19 +311,6 @@ let _currentZoneId = null;
 let _currentStepIdx = -1;
 
 // Ouvre la carte de zone (au lieu de lancer directement le boss)
-function openZone(zoneId){
- const zone = MAP_ZONES.find(z=>z.id===zoneId);
- if(!zone) return;
- _currentZoneId = zoneId;
- // S'assurer que zoneProgress existe pour cette zone
- P.zoneProgress = P.zoneProgress || {};
- if(!P.zoneProgress[zoneId]){
-  P.zoneProgress[zoneId] = { stepsCompleted: 0, completed: false };
- }
- renderZoneMap();
- if(typeof navTo==='function') navTo('v-zone'); else showView('v-zone');
-}
-
 // Affiche les étapes de la zone courante
 function renderZoneMap(){
  const zone = MAP_ZONES.find(z=>z.id===_currentZoneId);
@@ -2632,10 +2619,6 @@ function closeArchipelZoom(){
 }
 
 // Action point d'entrée (legacy compat) — anime aussi maintenant
-function onMapNodeClick(zoneId){
- requestZoneOpen(zoneId);
-}
-
 // Toggle d'une région (legacy compat, désactivé en O3)
 function toggleRegion(regionId){ /* no-op en mode Archipel */ }
 
@@ -2864,9 +2847,6 @@ function mapZoomOut(){
           : _mapZoom==='close'     ? 'default'
           : 'overview';
  _applyMapZoom();
-}
-function mapCenterOnAvatar(){
- _autoCenterOnAvatar(true);
 }
 // v8.7.62 (O3-C.6.4) : aller à la prochaine zone jouable (objectif suivant).
 // Centre la première zone « current » (débloquée mais pas encore terminée) et la
@@ -3187,38 +3167,6 @@ function _updateParallaxTransforms(){
  if(_MP.layers.mountainsFar)  _MP.layers.mountainsFar.style.transform  = `translate3d(${dxMid}px, ${tyMtnFar}px, 0)`;
  if(_MP.layers.mountainsNear) _MP.layers.mountainsNear.style.transform = `translate3d(${dxNear}px, ${tyMtnNear}px, 0)`;
  if(_MP.layers.foreground)    _MP.layers.foreground.style.transform    = `translate3d(${dxNear*0.6}px, ${tyForeground}px, 0)`;
-}
-
-function startMapBoss(zoneId){
- const zone=MAP_ZONES.find(z=>z.id===zoneId);if(!zone)return;
- GM.mapZone=zone;GM.level=zone.level;GM.mode2='normal';GM.mode=P.prefs.mode||'keyboard';
- if(typeof _isMaternelle==='function' && _isMaternelle(GM.level)){ GM.mode='qcm'; if(typeof _matApplyAmbiance==='function') _matApplyAmbiance(GM.level); }
- applyTheme(zone.theme);
- const bossMonster={emoji:zone.boss,name:zone.bossName,title:`Gardien de : ${zone.label}`,
-  // v8.7.28 : tirage diversifié (boss legacy entry point, 1 seul boss → withinKindIdx=0)
-  intro: _pickDialogue('boss', zoneId, 0).replace(/\$\{zone\}/g, zone.label).replace(/\$\{name\}/g, zone.bossName || 'l\'Inconnu')
-   + ' ' + _pickDialogue('stakes', zoneId, 0).replace(/\$\{zone\}/g, zone.label).replace(/\$\{name\}/g, zone.bossName || 'l\'Inconnu')
-   + (typeof _perfCallbackLine==='function' ? _perfCallbackLine() : ''),
-  anim:'glow',col:'#e74c3c'};
- // Chantier 3.10 : cinématique d'entrée de zone, puis intro boss, puis combat
- const _startCombat = ()=>{
-  loadProfile();gameActive=true;clearPendingTimers();resetGS();GS.isBoss=false;GS.isSeasonalBoss=false;GS.isBirthdayBoss=false;GS.seasonalMult=1;GS.seasonalFigId=null;
-  powers={};const pwI=Math.abs((P.name.charCodeAt(0)||0))%POWERS.length;const pw=POWERS[pwI];
-  powers[P.name]={id:pw.id,eff:pw.effect,charge:0,recharge:pw.recharge,shielded:false,dbl:false};
-  $('combat-bar').classList.add('hidden');
-  $('hud-name').innerText=(P.avatar||'👤')+' '+P.name;
-  $('hud-chrono').classList.add('hidden');$('hud-combo').classList.add('hidden');
-  $('qcm-options').classList.toggle('hidden',GM.mode!=='qcm');
-  $('input-zone').classList.toggle('hidden',GM.mode==='qcm');
-  toggleNumpadForMode(GM.mode);
-  $('BODY').classList.remove('body-alert','urgency-bg');
-  showView('v-game');nextTurn();
-  // Chantier B4 : skin d'ambiance pendant le combat
-  if(typeof startZoneSkin === 'function') startZoneSkin(zone);
- };
- const _afterZoneIntro = ()=>showMonsterIntro(bossMonster, _startCombat);
- if(typeof playZoneIntro==='function') playZoneIntro(zone, _afterZoneIntro);
- else _afterZoneIntro();
 }
 
 // ═══════════════════════════════════════════════════════

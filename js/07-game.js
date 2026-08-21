@@ -327,12 +327,6 @@ function startChrono(){
 // ═══════════════════════════════════════════════════════
 // TRANSITION
 // ═══════════════════════════════════════════════════════
-function showTrans(emoji,msg,dur,cb){
- $('trans-monster').innerText=emoji;$('trans-msg').innerHTML=msg;
- $('transition-screen').classList.remove('hidden');
- setTimeout(()=>{$('transition-screen').classList.add('hidden');cb();},dur);
-}
-
 // ═══════════════════════════════════════════════════════
 // ÉVÉNEMENTS ALÉATOIRES
 // ═══════════════════════════════════════════════════════

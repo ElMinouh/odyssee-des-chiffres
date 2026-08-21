@@ -1019,4 +1019,20 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-101 — Nettoyage du code mort du module Aventure (audit de branchement)
+
+**Contexte** : Cyril a demandé un audit vérifiant que chaque fonction prévue dans l'Aventure est bien branchée et active. Croisement systématique de toutes les fonctions définies dans `07-map.js`, `07-game.js`, `07-boss.js`, `07-story.js`, `19-onboarding.js` contre tous leurs appels possibles (JS direct, onclick, chaînes générées) sur l'ensemble du projet. 10 fonctions confirmées sans aucun appelant, chacune vérifiée manuellement pour écarter les faux positifs (ADR-84).
+
+**Décision** :
+1. **8 fonctions supprimées** (aucun appelant, aucun test, aucune valeur de réutilisation identifiée) : `startMapBoss()` (remplacée par `startMapStep()`), `openZone()` (remplacée par `requestZoneOpen()`), `onMapNodeClick()` (wrapper mort), `mapCenterOnAvatar()` (aucun bouton relié), `showTrans()` (remplacée par la cinématique d'entrée de zone), `_narrateStop()`/`_narratePause()`/`_narrateStory()` (entièrement dupliquées et remplacées par `_bStop`/`_bPause`/`_bPlay`, locales à `_showStoryModal`, version améliorée avec enchaînement multi-pages).
+2. **2 fonctions RÉUTILISÉES plutôt que supprimées** : `ob3IsCompleted()`/`ob4IsCompleted()` étaient déjà testées unitairement (`onboarding-system4_test.js`) mais jamais appelées en production — `_obShouldAutoStart3()`/`_obShouldAutoStart4()` dupliquaient leur logique en dur au lieu de les appeler. Corrigé par réutilisation (même esprit qu'ADR-79 : la duplication est le vrai défaut, pas l'existence de la fonction).
+3. **1 fonction identifiée mais volontairement non touchée** : `toggleRegion()` — no-op intentionnel, déjà auto-documenté comme tel dans le code, pas un défaut.
+4. **1 fonction hors périmètre** : `startHomework()` (07-game.js) — orpheline également, mais appartient au mode "devoirs", pas à l'Aventure ; non traitée ici sur demande explicite de Cyril de rester dans le périmètre des 7 Odyssées.
+
+**Avantages** : réduit la surface de code à maintenir/comprendre pour toute future conversation ; élimine une vraie duplication de logique (onboarding) plutôt que de la contourner.
+
+**Impact** : `07-map.js`, `07-game.js`, `07-story.js`, `19-onboarding.js`, v12.4.58. Aucun nouveau test requis (suppression pure de code déjà sans appelant, vérifiée par la suite existante : 278/278 inchangés, y compris `onboarding-system4_test.js` qui couvre désormais un chemin réellement emprunté par le code de production).
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

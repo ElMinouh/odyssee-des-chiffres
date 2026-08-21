@@ -2016,33 +2016,6 @@ function _pickNarratorVoice(){
   return fr[0];
  }catch(e){ return null; }
 }
-function _narrateStop(){ try{ window.speechSynthesis.cancel(); }catch(e){} if(typeof _musicDuck==='function') _musicDuck(false); _storyUtter = null; }
-function _narratePause(){ try{ if(window.speechSynthesis.speaking && !window.speechSynthesis.paused){ window.speechSynthesis.pause(); if(typeof _musicDuck==='function') _musicDuck(false); } }catch(e){} }
-function _narrateStory(rawHtml){
- if(!window.speechSynthesis) return;
- try{
-  // Si une lecture est en pause, on reprend simplement.
-  if(window.speechSynthesis.paused){ window.speechSynthesis.resume(); return; }
-  window.speechSynthesis.cancel();
-  // Extraire le texte brut (sans balises) de la page
-  const tmp = document.createElement('div'); tmp.innerHTML = _storyText(rawHtml);
-  let plain = (tmp.textContent || tmp.innerText || '').replace(/\s+/g, ' ').trim();
-  if(!plain) return;
-  const hum = (typeof _humanizeForSpeech === 'function') ? _humanizeForSpeech(plain) : plain;
-  const u = new SpeechSynthesisUtterance(hum);
-  u.lang = 'fr-FR';
-  u.rate = 0.84;   // posé, comme un conteur
-  u.pitch = 1.05;  // chaleureux
-  u.volume = 1;
-  const v = _pickNarratorVoice(); if(v) u.voice = v;
-  if(typeof _musicDuck==='function') _musicDuck(true);
-  const _un=function(){ if(typeof _musicDuck==='function') _musicDuck(false); };
-  u.onend=_un; u.onerror=_un;
-  _storyUtter = u;
-  window.speechSynthesis.speak(u);
- }catch(e){ if(typeof _musicDuck==='function') _musicDuck(false); }
-}
-
 function _showStoryModal(chapter, onDone){
  if(!chapter || !Array.isArray(chapter.pages) || !chapter.pages.length){ if(onDone) onDone(); return; }
  let page = 0;

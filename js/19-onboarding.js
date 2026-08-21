@@ -644,14 +644,14 @@ function obFinishClick(){ _obFinishClick(); }
 function _obShouldChainToSystem2(n){ return n===1 && !obIsSeen(2); }
 function _obShouldAutoStart1(){ return !obIsSeen(1); }
 function _obShouldFallbackStart2(){ return obIsCompleted(1) && !obIsSeen(2); }
-function _obShouldAutoStart3(){ return !!(typeof P!=='undefined' && P && P.name && !P.onbAccountSeen); }
+function _obShouldAutoStart3(){ return !!(typeof P!=='undefined' && P && P.name && !ob3IsCompleted()); }
 // v12.4.34 (audit UX, #U3) : la visite de la carte ne doit jamais se
 // déclencher PAR-DESSUS une autre modale déjà ouverte sur cet écran (fiche
 // de zone, Carnet, boutique, parchemin d'histoire...) — on réutilise le
 // marqueur `has-overlay` déjà maintenu par 07-story.js (voir commentaire
 // "anti-jank" à sa définition) plutôt que de réinventer une détection.
 function _obShouldAutoStart4(){
- return !!(typeof P!=='undefined' && P && P.name && !P.onbMapSeen
+ return !!(typeof P!=='undefined' && P && P.name && !ob4IsCompleted()
   && !(typeof document!=='undefined' && document.body && document.body.classList.contains('has-overlay')));
 }
 // v11.7.44 (correctif signalé par Cyril) : tant qu'AUCUN profil n'existe dans
