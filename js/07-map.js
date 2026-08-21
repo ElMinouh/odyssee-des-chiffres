@@ -742,6 +742,11 @@ function startMapStep(zoneId, stepIdx){
   loadProfile();
   gameActive=true; clearPendingTimers(); resetGS();
   GS.isBoss = isBoss;
+  // v12.4.64 : mémorise l'index de l'étape pour que _matRenderQ() (maternelle)
+  // ne rejoue le message d'accueil d'Étincelle qu'à la 1ère étape d'une zone —
+  // resetGS() remet GS.qCount à 0 à CHAQUE étape (dont le boss, la dernière),
+  // ce qui faisait rejouer l'accueil à chaque étape au lieu d'une seule fois.
+  GS.matZoneStepIdx = stepIdx;
   GS.isSeasonalBoss=false; GS.isBirthdayBoss=false; GS.seasonalMult=1; GS.seasonalFigId=null;
   // Nombre de questions de l'étape (override pour mini-parties)
   GS.questionsTarget = step.questions || 5;

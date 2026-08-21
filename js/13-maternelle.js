@@ -276,7 +276,8 @@ function _matRenderQ(q){
  // Lecture de la consigne
  const fb = $('feedback'); if(fb) fb.innerText = '';
  if(typeof speak === 'function'){
-  const intro = (typeof GS!=='undefined' && GS.qCount===1 && typeof _matWelcomeText==='function') ? _matWelcomeText(q.level)+' ' : '';
+  const _matWelcomeOk = GS.qCount===1 && (typeof GS.matZoneStepIdx==='undefined' || GS.matZoneStepIdx===0);
+  const intro = (typeof GS!=='undefined' && _matWelcomeOk && typeof _matWelcomeText==='function') ? _matWelcomeText(q.level)+' ' : '';
   const full = intro + q.consigne;
   speak(full);
   _matSpeakAnim(full);
