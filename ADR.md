@@ -1035,4 +1035,64 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+---
+
+## ADR-102 — Scission structurelle de 07-story.js (ADR-54, lot low-risk)
+
+**Contexte** : ADR-54 anticipait un chargement différé du contenu narratif de `07-story.js`, en misant sur l'extraction de 2 fonctions structurelles utilisées ailleurs. Un audit avant codage a révélé que le fichier est bien plus imbriqué qu'estimé : **24 fonctions** appelées depuis d'autres fichiers (`07-map.js`, `07-game.js`, `07-boss.js`, `05-profile.js`, `10-figurines.js`, `11-init.js`), pas 2 — le chargement différé complet reste un chantier plus lourd que prévu, non tenté ici.
+
+**Décision** : extraction d'un premier lot low-risk — les 5 fonctions purement structurelles zone↔région (`_regionOfZone`, `_zonesOfRegion`, `_lastRegionId`, `_regionConquered`, `_zoneReachable`), sans lien avec le contenu narratif, déplacées vers un nouveau fichier `07-story-core.js`, chargé avant `07-map.js`. Ne réduit pas encore le poids au chargement (le gros du texte narratif reste dans `07-story.js`), mais clarifie la frontière et prépare un futur lazy-load.
+
+**Impact** : `index.html` (nouveau `<script>`), `sw.js` (`CACHE_VERSION` v12.4.59, nouvel asset précaché), `package.json`, 20 fichiers de test (`FILES` complété). Vérifié par comparaison stricte de la liste d'échecs avant/après extraction (identique) — voir ADR-104 pour le contexte des échecs préexistants observés à ce moment-là.
+
+---
+
+## ADR-103 — Réparation de `startHomework()` : la carte "Devoir du jour" ne déclenchait jamais le mode devoir
+
+**Contexte** : `startHomework()` avait été identifiée orpheline dès ADR-101 (point 4), mais laissée hors périmètre (audit limité à l'Aventure). Investigation approfondie ici : ce n'est pas seulement du code mort — un devoir assigné par un parent ne progressait **jamais**, faute de déclencheur. `_trackHomework()` n'incrémente la progression que si `GM.homework===true`, un flag uniquement mis à `true` par `startHomework()` elle-même, qui n'était appelée nulle part (aucun bouton, aucun `onclick`). Comparaison avec le "défi de la semaine" (`wc-box`), qui fonctionne parce qu'il track en continu sans dépendre d'un mode explicite.
+
+**Décision** : ajout d'un bouton "▶ Commencer le devoir" sur la carte d'accueil (`onclick="startHomework()"`), maquette validée avant codage. Infobulle parent (`PARENT_GUIDES.objectifs`) mise à jour pour mentionner ce geste côté enfant, qui n'était pas nécessaire avant (le texte laissait croire à un déclenchement automatique).
+
+**Impact** : `index.html`, `styles.css` (`.btn-start-homework`), `09-parent.js` (infobulle), v12.4.60.
+
+---
+
+## ADR-104 — Dérive découverte de `tests/helpers/loadGame.js` et `.eslintrc.json` : deux listes manuelles désynchronisées, remplacées par génération automatique
+
+**Contexte** : en vérifiant ADR-102 dans un bac à sable Vitest reconstitué localement, la copie de `loadGame.js` alors disponible s'est révélée gravement obsolète (60/275 tests en échec, faute d'exposition de fonctions pourtant bien réelles dans le jeu) — alors que le dépôt réel de Cyril n'affichait qu'un seul échec, sans rapport (voir ADR-106). Cause racine identifiée : `.eslintrc.json` (clé `globals`) et `loadGame.js` (objet `__api`) étaient deux **listes manuelles** de toutes les fonctions/constantes globales du jeu — jamais synchronisées de façon fiable au fil des conversations. Confirmé par ESLint lui-même : 110 warnings "non défini" sur du code pourtant bien présent (`_pickStagingLine`, `_resolveNpcLine`, `_COLLECTION_REVEAL`, `trapFocus`, `showConfirm`…).
+
+**Décision** : nouveau script `scripts/gen-test-api.mjs` qui scanne `js/*.js` (déclarations top-level `function`/`const`/`let`/`var`, y compris `async function` et les déclarateurs multiples séparés par virgule) et régénère automatiquement la clé `globals` de `.eslintrc.json` ainsi que le bloc d'exposition de `loadGame.js` — délimité par des marqueurs (`BLOC AUTO-GÉNÉRÉ` / `FIN BLOC AUTO-GÉNÉRÉ`) pour ne jamais toucher aux accesseurs de test réellement sur mesure (19 au total : `setP`, `getGM`, `_domEl`, `setShowConfirm`, `setRenderMap`, `setPullProfileFromCloud`…), qui restent écrits à la main.
+
+**Résultat mesuré** : 110 → 0 warning ESLint "non défini" ; 275/275 tests (contre 269/275 avant correction, au passage, de deux accesseurs de test spécifiquement absents de la copie stale : `setRenderMap`, `setPullProfileFromCloud`).
+
+**Point de vigilance pour l'avenir** : relancer `npm run sync:test-api` après tout ajout d'une fonction/constante globale dans `js/*.js` — élimine cette classe de bug entière plutôt que de compter sur une discipline manuelle, qui a déjà failli deux fois.
+
+**Impact** : `.eslintrc.json`, `tests/helpers/loadGame.js`, `scripts/gen-test-api.mjs` (nouveau), `package.json` (script `sync:test-api`). Aucun bump de version (fichiers de tooling, jamais servis au joueur).
+
+---
+
+## ADR-105 — Nettoyage de 22 fonctions/variables mortes (audit `no-unused-vars`), et incohérence assumée avec ADR-101 sur `toggleRegion()`
+
+**Contexte** : sur 314 warnings ESLint "variable inutilisée", 292 sont des faux positifs (ESLint ne voit pas qu'une fonction est appelée depuis un autre fichier ou un `onclick=""` de `index.html` — limite structurelle de l'architecture multi-fichiers globaux). Les 22 restants ont été vérifiés un par un contre l'usage réel dans tout le projet (aucune occurrence nulle part ailleurs, pas même en commentaire).
+
+**Décision** : suppression des 22 (18 fonctions + 4 variables locales : `oldLvl`/`newLvl` dans `gainXP()`, `islandDone`, `searchId`). Vérification approfondie de `oldLvl`/`newLvl` pour écarter tout risque de bug caché du même type que `startHomework()` (ADR-103) : confirmé sans risque, ancien mécanisme de détection de niveau, remplacé depuis par `isUnlocked()` + flag localStorage, jamais nettoyé.
+
+**Point de transparence** : `toggleRegion()` (`07-map.js`) fait partie des 22 supprimées. Or ADR-101 (point 3) avait explicitement choisi de **ne pas** la supprimer ("no-op intentionnel, déjà auto-documenté comme tel dans le code, pas un défaut"). Revérifié ici : toujours aucun appelant, ni alors ni maintenant — sa suppression ne change strictement aucun comportement (275/275 tests inchangés). La divergence vient d'un critère différent entre les deux audits (ADR-101 choisissait de la garder par prudence documentaire ; celui-ci a traité "aucun appelant nulle part" comme suffisant). Signalé pour traçabilité, sans conséquence fonctionnelle.
+
+**Décision distincte (Prettier)** : les 31 fichiers non conformes à `format:check` ne seront **pas** reformatés — un test sur un fichier représentatif montre que Prettier réécrirait ~2400 lignes sur un fichier qui en fait ~900 (le style du projet, volontairement compact, est structurellement incompatible avec le multi-lignes que Prettier impose sans option pour l'éviter). `format:check` restera en échec ; assumé, sans action prévue.
+
+**Impact** : `01-core.js`, `02-data.js`, `05-profile.js`, `06b-time-block.js`, `07-boss.js`, `07-map.js`, `09-parent.js`, `10-figurines.js`, `12-cloud.js`, `16-francais.js`, `17-messaging.js`, `19-onboarding.js`. Aucun bump de version (aucune fonction supprimée n'était appelée, donc aucun changement de comportement joueur). 275/275 tests inchangés.
+
+---
+
+## ADR-106 — Correction d'une assertion de test obsolète (`npc-progression-recognition_test.js`)
+
+**Contexte** : Cyril a signalé un échec isolé (274/275) sans lien avec une livraison en cours. `_resolveNpcLine()` substitue bel et bien `{hero}` par le prénom du joueur (fonctionnalité v12.4.51, testée et confirmée ailleurs par `npc-hero-name-talisman-epilogue_test.js`) — mais ce test-ci, plus ancien, comparait encore au texte brut non substitué, jamais mis à jour lors de l'ajout de cette fonctionnalité.
+
+**Décision** : assertion corrigée pour tenir compte de la substitution attendue. Fichier de test uniquement, aucun impact sur le jeu.
+
+**Impact** : `tests/npc-progression-recognition_test.js`. Pas de bump de version.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
