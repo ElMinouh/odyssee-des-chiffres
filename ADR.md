@@ -1117,6 +1117,10 @@ Décisions actées, non remises en cause à ce jour :
 
 **Point de transparence (v12.4.62)** : le quiz était initialement placé AVANT le prologue. Cyril a jugé cela incohérent — le héros ne sait pas encore, à ce stade, quel rôle il va avoir ni ce qu'il devra faire. Repositionné après le prologue, avant le premier exercice : simple inversion d'ordre dans `_maybeShowStory()` (le quiz vérifie désormais aussi que le prologue a été vu), sans impact sur le contenu des questions ni sur le mécanisme de rappel. 280/280 tests.
 
+**Bug introduit par cette inversion, corrigé en v12.4.63** : le quiz n'apparaissait plus du tout après le repositionnement. Cause : `_showStoryModal(_STORY.intro, _done)` appelait directement le callback final `_done` à la fermeture du prologue, au lieu de rebalayer la chaîne via `_maybeShowStory(_done)` — ce qui ne posait aucun problème dans l'ancien ordre (le quiz, placé avant, avait déjà fini son travail avant que le prologue ne soit jamais atteint), mais empêchait totalement d'atteindre le bloc du quiz une fois celui-ci déplacé après. Corrigé en passant `()=>_maybeShowStory(_done)` comme callback de fermeture du prologue.
+
+**Angle mort de la suite de tests** : ce bug n'a pas été détecté par les 280 tests automatisés, car `tests/helpers/loadGame.js` neutralise `setTimeout` (`() => 0`, ne déclenche jamais le callback) — utilisé par `_showStoryModal` pour animer la fermeture avant d'appeler `onDone`. La chaîne "fermeture d'une fenêtre d'histoire → étape suivante" n'est donc jamais réellement exercée par la suite automatisée ; seul un test manuel en conditions réelles l'a révélé. Non traité ici (changer ce stub est un chantier à part, avec son propre risque de régression sur d'autres tests qui pourraient reposer implicitement sur ce comportement neutralisé) — signalé pour référence future.
+
 ---
 
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

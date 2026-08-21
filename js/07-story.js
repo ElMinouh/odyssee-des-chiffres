@@ -2782,7 +2782,7 @@ function _maybeShowStory(afterCb){
  const _introId = (_STORY.intro && _STORY.intro.id) || 'intro';
  if(!P.storySeen.includes(_introId)){
   _markStorySeen(_introId);
-  _showStoryModal(_STORY.intro, _done);
+  _showStoryModal(_STORY.intro, ()=>_maybeShowStory(_done));
   return;
  }
  // 1) Trait du héros — 3 questions indépendantes, UNE SEULE FOIS chacune,
