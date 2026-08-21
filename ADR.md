@@ -1115,6 +1115,8 @@ Décisions actées, non remises en cause à ce jour :
 - `tests/hero-trait-and-staging_test.js` et `tests/dialogue-tone-and-combat-variety_test.js` : réécrits pour le nouveau système (l'ancien testait une variation par âge/ton qui n'existe plus, remplacée par une variation par Odyssée).
 - v12.4.61. 279/279 tests (+6 par rapport à avant ce lot).
 
+**Point de transparence (v12.4.62)** : le quiz était initialement placé AVANT le prologue. Cyril a jugé cela incohérent — le héros ne sait pas encore, à ce stade, quel rôle il va avoir ni ce qu'il devra faire. Repositionné après le prologue, avant le premier exercice : simple inversion d'ordre dans `_maybeShowStory()` (le quiz vérifie désormais aussi que le prologue a été vu), sans impact sur le contenu des questions ni sur le mécanisme de rappel. 280/280 tests.
+
 ---
 
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

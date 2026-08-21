@@ -24,7 +24,7 @@ describe('C3 — pools de variété de combat doublés', () => {
 describe('C4 — texte du quiz de trait adapté à l\'Odyssée (v12.4.61, remplace l\'ancien ton par niveau)', () => {
   it('utilise un texte simple pour l\'Odyssée maternelle (mat)', () => {
     const api = loadGame(FILES);
-    api.setP({ name: 'Test', heroTraitApproche: null, heroTraitMoteur: null, heroTraitStyle: null, mapBossBeaten: [], storySeen: [] });
+    api.setP({ name: 'Test', heroTraitApproche: null, heroTraitMoteur: null, heroTraitStyle: null, mapBossBeaten: [], storySeen: ['intro'] });
     api.setGM({ level: 'PS', adventure: 'mat' });
     const cb = vi.fn();
     api._maybeShowStory(cb);
@@ -34,7 +34,7 @@ describe('C4 — texte du quiz de trait adapté à l\'Odyssée (v12.4.61, rempla
 
   it('utilise un texte adapté au thème de Sidéris pour l\'Odyssée collège (col)', () => {
     const api = loadGame(FILES);
-    api.setP({ name: 'Test', heroTraitApproche: null, heroTraitMoteur: null, heroTraitStyle: null, mapBossBeaten: [], storySeen: [] });
+    api.setP({ name: 'Test', heroTraitApproche: null, heroTraitMoteur: null, heroTraitStyle: null, mapBossBeaten: [], storySeen: ['intro'] });
     api.setGM({ level: 'CM2', adventure: 'col' });
     const cb = vi.fn();
     api._maybeShowStory(cb);

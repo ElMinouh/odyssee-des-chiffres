@@ -2778,16 +2778,25 @@ function _maybeShowStory(afterCb){
  const _done = (typeof afterCb === 'function') ? afterCb : function(){};
  if(typeof P==='undefined' || !P){ _done(); return; }
  P.storySeen = P.storySeen || [];
- // 0) Trait du héros — 3 questions indépendantes, UNE SEULE FOIS chacune,
- // avant même le tout premier prologue, uniquement pour un profil qui n'a
- // encore rien accompli (jamais montré à un joueur qui a déjà progressé,
- // pour ne pas interrompre une Odyssée en cours). v12.4.50 (Lot 4, audit
- // immersion narrative N8), étendu v12.4.61 (3 questions adaptées à
- // l'Odyssée en cours plutôt qu'une seule question générique — le choix,
- // une fois fait, reste un trait de personnage global : il n'est pas reposé
- // si le joueur change ensuite d'Odyssée, voir _HERO_TRAIT_LINES/07-map.js
- // et _HERO_EPILOGUE_FRAGMENTS plus haut, qui adaptent le RAPPEL — pas la
- // question elle-même — à l'Odyssée en cours à ce moment-là).
+ // 0) Prologue, une seule fois, au tout début
+ const _introId = (_STORY.intro && _STORY.intro.id) || 'intro';
+ if(!P.storySeen.includes(_introId)){
+  _markStorySeen(_introId);
+  _showStoryModal(_STORY.intro, _done);
+  return;
+ }
+ // 1) Trait du héros — 3 questions indépendantes, UNE SEULE FOIS chacune,
+ // juste après le prologue et avant le premier exercice (jamais montré à un
+ // joueur qui a déjà progressé, pour ne pas interrompre une Odyssée en
+ // cours). v12.4.50 (Lot 4, audit immersion narrative N8), étendu v12.4.61
+ // (3 questions adaptées à l'Odyssée en cours plutôt qu'une seule question
+ // générique), puis déplacé v12.4.62 : à la demande de Cyril, il n'était
+ // pas cohérent de poser ces questions AVANT le prologue — le héros ne sait
+ // pas encore, à ce stade, quel rôle il va avoir ni ce qu'il devra faire. Le
+ // choix, une fois fait, reste un trait de personnage global : il n'est pas
+ // reposé si le joueur change ensuite d'Odyssée, voir _HERO_TRAIT_LINES/
+ // 07-map.js et _HERO_EPILOGUE_FRAGMENTS plus haut, qui adaptent le RAPPEL —
+ // pas la question elle-même — à l'Odyssée en cours à ce moment-là.
  if((P.mapBossBeaten||[]).length === 0 && typeof _showChoiceModal==='function'){
   const _adv = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
   const _quiz = _HERO_QUIZ[_adv];
@@ -2817,13 +2826,6 @@ function _maybeShowStory(afterCb){
     return;
    }
   }
- }
- // 1) Prologue, une seule fois, au tout début
- const _introId = (_STORY.intro && _STORY.intro.id) || 'intro';
- if(!P.storySeen.includes(_introId)){
-  _markStorySeen(_introId);
-  _showStoryModal(_STORY.intro, _done);
-  return;
  }
  // 2) Scène de victoire : une région vient d'être conquise et son Cristal n'a pas été célébré
  try{

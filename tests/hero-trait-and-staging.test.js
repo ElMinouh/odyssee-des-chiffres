@@ -78,9 +78,9 @@ describe('_companionComment() — saveur des traits de héros (N8, étendu N9 v1
 });
 
 describe('_maybeShowStory() — quiz d\'ouverture à 3 questions (N9, v12.4.61)', () => {
-  it('déclenche la 1re question (ne rappelle PAS le callback tout de suite) pour un profil neuf sans trait', () => {
+  it('déclenche la 1re question (ne rappelle PAS le callback tout de suite) pour un profil neuf sans trait, une fois le prologue déjà vu', () => {
     const api = loadGame(FILES);
-    api.setP({ name: 'Test', heroTraitApproche: null, heroTraitMoteur: null, heroTraitStyle: null, mapBossBeaten: [], storySeen: [] });
+    api.setP({ name: 'Test', heroTraitApproche: null, heroTraitMoteur: null, heroTraitStyle: null, mapBossBeaten: [], storySeen: ['intro'] });
     api.setGM({ adventure: 'prim' });
     const cb = vi.fn();
     api._maybeShowStory(cb);
@@ -88,9 +88,20 @@ describe('_maybeShowStory() — quiz d\'ouverture à 3 questions (N9, v12.4.61)'
     expect(api.getP().heroTraitApproche).toBe(null); // pas encore choisi (pas de clic simulé)
   });
 
+  it('déclenche le prologue AVANT le quiz si aucun des deux n\'a encore été vu (v12.4.62 : ordre inversé)', () => {
+    const api = loadGame(FILES);
+    api.setP({ name: 'Test', heroTraitApproche: null, heroTraitMoteur: null, heroTraitStyle: null, mapBossBeaten: [], storySeen: [] });
+    api.setGM({ adventure: 'prim' });
+    const cb = vi.fn();
+    api._maybeShowStory(cb);
+    expect(cb).not.toHaveBeenCalled();
+    expect(api.getP().storySeen).toContain('intro');
+    expect(api.getP().heroTraitApproche).toBe(null); // le quiz n'a pas encore eu sa chance
+  });
+
   it('déclenche la 2e question si la 1re est déjà répondue mais pas les suivantes', () => {
     const api = loadGame(FILES);
-    api.setP({ name: 'Test', heroTraitApproche: 'malin', heroTraitMoteur: null, heroTraitStyle: null, mapBossBeaten: [], storySeen: [] });
+    api.setP({ name: 'Test', heroTraitApproche: 'malin', heroTraitMoteur: null, heroTraitStyle: null, mapBossBeaten: [], storySeen: ['intro'] });
     api.setGM({ adventure: 'prim' });
     const cb = vi.fn();
     api._maybeShowStory(cb);
