@@ -30,7 +30,6 @@ function showBlockScreen(){
   $('block-clock').innerText=n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0')+':'+n.getSeconds().toString().padStart(2,'0');
  },1000);
 }
-function closeBlockScreen(){$('time-block-screen').classList.add('hidden');clearInterval(blockClockInterval);}
 // Contrôles parent : blocage horaire
 function loadBlockSettings(){
  const name=$('block-player').value;const cfg=getBlockCfg(name)||{enabled:false,start:'17:00',end:'18:00'};

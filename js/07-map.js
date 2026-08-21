@@ -2620,7 +2620,6 @@ function closeArchipelZoom(){
 
 // Action point d'entrée (legacy compat) — anime aussi maintenant
 // Toggle d'une région (legacy compat, désactivé en O3)
-function toggleRegion(regionId){ /* no-op en mode Archipel */ }
 
 // ─── v8.7.27 : Boutiques par îlot ───
 // Ouvre une modale boutique stylisée selon le thème de la région.

@@ -635,7 +635,6 @@ function _obFinishClick(){
  }
 }
 // Alias exposé (utilisé par le bouton "Terminer" généré dynamiquement)
-function obFinishClick(){ _obFinishClick(); }
 
 // ── Fonctions de décision PURES (sans effet, sans minuteur) : elles
 // déterminent SI une visite doit démarrer automatiquement. Séparées des

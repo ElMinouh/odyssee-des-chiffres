@@ -571,7 +571,6 @@ function applyPrefs(){
  if(typeof initTimerScale === 'function') initTimerScale();
 }
 // Table de correspondance niveau→index (évite indexOf à chaque appel)
-const LEVEL_IDX={PS:0,MS:1,GS:2,CP:3,CE1:4,CE2:5,CM1:6,CM2:7,'6E':8,'5E':9,'4E':10,'3E':11};
 const VALID_LEVELS=['PS','MS','GS','CP','CE1','CE2','CM1','CM2','6E','5E','4E','3E'];
 // v9.0.8 / M-A : libellés affichés (la valeur interne reste la clé GEN)
 const LEVEL_LABEL={PS:'Petite section',MS:'Moyenne section',GS:'Grande section',CP:'CP',CE1:'CE1',CE2:'CE2',CM1:'CM1',CM2:'CM2','6E':'6ᵉ','5E':'5ᵉ','4E':'4ᵉ','3E':'3ᵉ'};
@@ -718,9 +717,7 @@ function saveThemeNow(themeVal){
 // ═══════════════════════════════════════════════════════
 function gainXP(amt,won){
  const xpGain=Math.round(amt*(won?3:1)*0.8);
- const oldLvl=levelFromXP(P.xp||0);
  P.xp=(P.xp||0)+xpGain;
- const newLvl=levelFromXP(P.xp);
  saveProfile();updateXPBar();
  // vérifie si un niveau scolaire a été débloqué
  const scolaires=['CP','CE1','CE2','CM1','CM2'];

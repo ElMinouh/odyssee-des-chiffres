@@ -616,7 +616,6 @@ function _advBadgeHtml(){
  const order = (typeof _ADV_MAT_ORDER!=='undefined') ? _ADV_MAT_ORDER : ['cp','ce1','ce2','cm1','cm2','final'];
  const got = order.map(rid => _regionConquered(rid));
  const nD = got.slice(0,5).filter(Boolean).length;   // districts libérés (0..5)
- const islandDone = !!got[5];
  const done = got.every(Boolean);
  const n = got.filter(Boolean).length;
  const seen = (P && P.storySeen) || [];

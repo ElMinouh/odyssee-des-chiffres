@@ -546,30 +546,6 @@ function getCloudStatus(){
  };
 }
 
-// ══════════════ COPIE DU CODE DANS LE PRESSE-PAPIERS ══════════════
-async function copyCloudCode(){
- if(!P || !P.cloudCode) return false;
- try{
-  if(navigator.clipboard && navigator.clipboard.writeText){
-   await navigator.clipboard.writeText(P.cloudCode);
-   if(typeof toast==='function') toast('📋 Code copié !',2000);
-   return true;
-  }
- }catch(e){
-  _cloudWarn('copie échec :', e);
- }
- // Fallback : sélection dans un input invisible
- const ta = document.createElement('textarea');
- ta.value = P.cloudCode;
- ta.style.position = 'fixed'; ta.style.opacity = '0';
- document.body.appendChild(ta);
- ta.select();
- try{ document.execCommand('copy'); if(typeof toast==='function') toast('📋 Code copié !',2000); }
- catch(e){ if(typeof toast==='function') toast('⚠️ Impossible de copier',2500); }
- document.body.removeChild(ta);
- return true;
-}
-
 // ══════════════ INIT AU CHARGEMENT ══════════════
 // Appelée par 11-init.js après que le profil soit chargé.
 function initCloudSync(){

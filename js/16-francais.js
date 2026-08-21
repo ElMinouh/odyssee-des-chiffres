@@ -321,7 +321,6 @@ const FR_COMP=[
 ];
 
 // Prononciation correcte du phonème pour la synthèse vocale (sinon « [in] » est lu « ine »).
-const FR_SOUND_SAY = { o:'o', in:'un', s:'ssse', f:'fffe' };
 // Mot à trou : on masque le graphème cible (la réponse n'est donc plus écrite à l'écran),
 // la voix prononce le mot entier, l'enfant choisit l'écriture du son manquant.
 function _frCE1_graph(set){

@@ -85,7 +85,6 @@ async function chatMsgMarkRead(prof, withId, upto){ return _chatApi('/msg/markre
 // ═══════════════════════════════════════════════════════
 // ACTIVATION (parental) — désactivée par défaut
 // ═══════════════════════════════════════════════════════
-function chatIsEnabled(prof){ return !!(prof && prof.chatEnabled); }
 function chatIsEnabledByName(name){ return name ? _chatLoad(name).chatEnabled : false; }
 
 async function chatEnableForProfile(name){
@@ -470,7 +469,6 @@ async function _convFetch(reset){
   if(thread) thread.innerHTML = '<p style="color:#e74c3c;font-size:.8em;text-align:center;">Connexion impossible.</p>';
  }
 }
-function chatInsertEmoji(em){ const i=document.getElementById('msg-input'); if(i){ i.value += em; i.focus(); } }
 async function chatSendCurrent(){
  const inp = document.getElementById('msg-input'); if(!inp) return;
  const txt = inp.value.trim(); if(!txt) return;

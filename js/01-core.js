@@ -585,7 +585,6 @@ function toggleSettings(){
  if(open){navBack();}
  else{navTo('v-settings');if($('dash-player-name'))$('dash-player-name').textContent=P.name||'';stab('hero');if($('th-stars'))$('th-stars').textContent=P.stars||0;if($('th-figs'))$('th-figs').textContent=(P.ownedFigurines||[]).length;if($('th-badges'))$('th-badges').textContent=(P.badgesEarned||[]).length;}
 }
-function closeSettings(){navBack();}
 function stab(name){
  const ts=['hero','figurines','milestones','stats'];
  ts.forEach(t=>$('tab-'+t)&&$('tab-'+t).classList.toggle('hidden',t!==name));

@@ -56,7 +56,6 @@ function _renderFigurinesShop(filter){
   {k:'cy',label:'🚴 Tour de France'},
  ];
 
- const searchId='shop-search-'+Math.random().toString(36).slice(2,6);
  let html=`<div class="shop-filter-bar">
   <div class="shop-quick-btns">
    <button class="shop-quick-btn${_figFilter==='all'?' active':''}" onclick="renderFigurinesShop('all')">🌐 Tout</button>
@@ -154,15 +153,6 @@ function buyFigurine(id){
 // ── Collection (onglet dédié) ──────────────────────────
 // ── State: collection view mode
 let _colView='all'; // 'all','shelf','license'
-function setColView(v){
- _colView=v;
- ['all','shelf','license'].forEach(k=>{
-  const b=$('col-btn-'+k);if(b)b.classList.toggle('active',k===v);
-  if(b&&k!==v)b.style.background='rgba(255,255,255,.1)';
-  if(b&&k===v)b.style.background='';
- });
- renderFigCollection();
-}
 
 function _sortedFigs(list){
  const sort=$('col-sort')?.value||'default';
@@ -445,14 +435,6 @@ function figToggleSpin(){
  _fvAuto=!_fvAuto;
  $('fig-spin-btn').textContent=_fvAuto?'⏸ Pause':'▶ Auto';
 }
-function figClickToggle(){
- // Clic simple sur le personnage → toggle pause
- clearTimeout(_fvResumeT);
- _fvAuto=!_fvAuto;
- $('fig-spin-btn').textContent=_fvAuto?'⏸ Pause':'▶ Auto';
- beep(_fvAuto?440:330,'sine',.15);
-}
-
 function figReverseDir(){
  _fvSpeed=-_fvSpeed;
  beep(600,'sine',.2);

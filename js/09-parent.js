@@ -786,11 +786,6 @@ function copyWeeklySummary(){
  });
 }
 
-function saveObj(){
- const player=$('obj-player')?.value||'Soren',count=+($('obj-count')?.value||0);
- try{const d=JSON.parse(localStorage.getItem('user_'+player)||'{}');d.objective=count;localStorage.setItem('user_'+player,JSON.stringify(d));}catch(e){}
- $('obj-status').innerText=`✅ Objectif : ${count} partie(s)/jour pour ${player}.`;beep(600,'sine',.3);
-}
 async function savePin(){
  const pin=$('new-pin')?.value.trim();if(!/^\d{4}$/.test(pin)){$('pin-msg').innerText='❌ 4 chiffres requis.';$('pin-msg').style.color='#e74c3c';return;}
  localStorage.setItem('parentPin', await hashPinSecure(pin));
@@ -803,19 +798,6 @@ async function savePin(){
 // ═══════════════════════════════════════════════════════
 // CLOUD SAVE
 // ═══════════════════════════════════════════════════════
-function exportCloud(){
- const sel=$('cloud-player')?.value||'ALL';
- const players=sel==='ALL'?[...getRoster()]:([sel]);
- const cu=localStorage.getItem('customPlayerName');if(cu&&sel==='ALL')players.push(cu);
- const data={};players.forEach(p=>{try{const d=localStorage.getItem('user_'+p);if(d)data[p]=JSON.parse(d);}catch(e){}});
- const code=btoa(unescape(encodeURIComponent(JSON.stringify(data))));
- $('cloud-code').innerText=code;$('cloud-export-zone').classList.remove('hidden');$('cloud-import-zone').classList.add('hidden');
-}
-function showImportZone(){$('cloud-import-zone').classList.remove('hidden');$('cloud-export-zone').classList.add('hidden');}
-function copyCloud(){
- const code=$('cloud-code')?.innerText||'';
- navigator.clipboard.writeText(code).then(()=>toast('📋 Copié !')).catch(()=>{const t=document.createElement('textarea');t.value=code;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);toast('📋 Copié !');});
-}
 function isValidPlayerData(d){return d&&typeof d==='object'&&!Array.isArray(d)&&typeof d.name==='string'&&d.name.length<=30;}
 function sanitizePlayerKey(k){return/^[a-zA-ZÀ-ÿ0-9_\- ]{1,30}$/.test(k);}
 // ═══════════════════════════════════════════════════════
@@ -931,21 +913,6 @@ function importProfileFile(event){
  };
  reader.readAsText(file);
 }
-function doImport(){
- const enc=$('cloud-import')?.value.trim();if(!enc){$('import-msg').innerText='❌ Code vide.';return;}
- try{
-  const data=JSON.parse(decodeURIComponent(escape(atob(enc))));
-  if(typeof data!=='object'||Array.isArray(data))throw new Error('format invalide');
-  let cnt=0,skip=0;
-  Object.entries(data).forEach(([p,d])=>{
-   if(!sanitizePlayerKey(p)||!isValidPlayerData(d)){skip++;return;}
-   localStorage.setItem('user_'+p,JSON.stringify(d));cnt++;
-  });
-  $('import-msg').innerText=`✅ ${cnt} joueur(s) importé(s)${skip?` (${skip} ignoré(s))`:''}.`;$('import-msg').style.color='#2ecc71';
-  $('cloud-import').value='';loadProfile();beep(700,'sine',.4);
- }catch(e){$('import-msg').innerText='❌ Code invalide ou corrompu.';$('import-msg').style.color='#e74c3c';}
-}
-
 // OPT-15 : jsPDF chargé dynamiquement à la demande (évite 300 Ko au démarrage)
 // v10.2.3 — Export PDF robuste & HORS-LIGNE.
 // L'ancienne version dépendait de jsPDF via CDN (échec hors-ligne / interception
@@ -1567,50 +1534,6 @@ async function _doForceCloudRestoreProceed(code, input, msg){
  }, 2000);
 }
 
-// Restauration d'un profil par code (ANCIENNE méthode, sans rechargement)
-async function doCloudRestore(){
- const input = document.getElementById('cloud-restore-code');
- const msg = document.getElementById('cloud-restore-msg');
- if(!input || !msg) return;
- const code = (input.value || '').trim().toUpperCase();
- if(!code){ msg.style.color='#e74c3c'; msg.textContent='Entre un code valide.'; return; }
- if(typeof restoreProfileByCode !== 'function'){
-  msg.style.color='#e74c3c'; msg.textContent='Cloud sync non disponible.'; return;
- }
- msg.style.color='#bdc3c7'; msg.textContent='⏳ Récupération en cours…';
- const result = await restoreProfileByCode(code);
- if(!result.ok){
-  msg.style.color='#e74c3c';
-  if(result.error === 'not_found') msg.textContent='❌ Code introuvable. Vérifie l\'orthographe.';
-  else if(result.error === 'invalid_code') msg.textContent='❌ Format de code invalide.';
-  else if(result.error === 'storage_full') msg.textContent='❌ Espace de stockage local plein.';
-  else if(result.error === 'network_error' || result.error === 'Failed to fetch') msg.textContent='❌ Pas de connexion internet. Connecte-toi et réessaie.';
-  else msg.textContent='❌ Une erreur inattendue est survenue. Réessaie dans quelques instants.';
-  return;
- }
- msg.style.color='#2ecc71';
- msg.textContent=`✅ Profil "${result.name}" restauré ! Sélectionne-le sur l'écran d'accueil.`;
- input.value='';
- // Mettre à jour les listes déroulantes
- if(typeof renderResetZone === 'function') renderResetZone();
- _populateCloudPlayerSelect();
- renderCloudPanel();
- // Mettre à jour le selecteur de joueur sur l'accueil
- try{
-  const playerSel = document.getElementById('playerSelect');
-  if(playerSel){
-   const exists = Array.from(playerSel.options).some(o => o.value === result.name);
-   if(!exists){
-    const opt = document.createElement('option');
-    opt.value = result.name; opt.textContent = result.name;
-    // Insérer avant "Autre"
-    const autreOpt = Array.from(playerSel.options).find(o => o.value === 'Autre');
-    if(autreOpt) playerSel.insertBefore(opt, autreOpt);
-    else playerSel.appendChild(opt);
-   }
-  }
- }catch(e){}
-}
 
 // ── Gestion des profils (écran parent → Options) ────────────────────
 // Ajout/retrait de profils. Retirer un profil n'efface PAS sa sauvegarde

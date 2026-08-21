@@ -62,7 +62,6 @@ const XP_TABLE=Array.from({length:50},(_,i)=>Math.round(20+i*25));
 const XP_CUMUL=XP_TABLE.reduce((acc,v,i)=>{acc.push((acc[i-1]||0)+v);return acc;},[]);
 function xpForLevel(lvl){return lvl<=1?0:(XP_CUMUL[lvl-2]??0);}
 function levelFromXP(xp){let l=1;for(let i=0;i<XP_TABLE.length;i++){if(xp>=XP_TABLE[i]){xp-=XP_TABLE[i];l++;}else break;}return Math.min(l,50);}
-function xpInLevel(xp){for(let i=0;i<XP_TABLE.length;i++){if(xp>=XP_TABLE[i])xp-=XP_TABLE[i];else return{cur:xp,need:XP_TABLE[i]};}return{cur:0,need:XP_TABLE[49]};}
 
 // ── ZONES DE LA CARTE ──
 // Le champ `parallax` (chantier B3) définit l'ambiance visuelle de la couche de fond
