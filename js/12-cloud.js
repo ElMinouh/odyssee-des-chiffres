@@ -364,7 +364,19 @@ async function _importProfileFromServer(serverProfile){
  Object.assign(P, merged);
  if(P._chat) delete P._chat;
  if(typeof saveProfileNow==='function') saveProfileNow();
- if(typeof updateMenuUI==='function') updateMenuUI();
+ try{ if(typeof updateMenuUI==='function') updateMenuUI(); }catch(e){}
+ // v12.4.57 (confort, suite ADR-99) : si la carte Aventure est déjà affichée
+ // au moment où une synchro en arrière-plan corrige les données (ex. reset
+ // fait sur un autre appareil), la redessiner tout de suite plutôt que
+ // d'attendre une prochaine navigation — sinon l'écran déjà à l'écran reste
+ // périmé visuellement malgré une donnée déjà correcte en mémoire. Try/catch
+ // séparé de updateMenuUI() ci-dessus : préoccupations indépendantes, un
+ // échec de l'une ne doit jamais empêcher l'autre.
+ try{
+  if(typeof renderMap==='function' && document.getElementById('v-map') && !document.getElementById('v-map').classList.contains('hidden')){
+   renderMap();
+  }
+ }catch(e){}
  return true;
 }
 

@@ -1007,4 +1007,16 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-100 — Rafraîchissement automatique de la carte après une synchronisation cloud en arrière-plan
+
+**Contexte** : Cyril a vérifié un reset propagé après ADR-99 (reset à 20h55, vérifié sur un autre appareil à 21h10 — pas encore visible, puis correct après réouverture). Investigation : `_importProfileFromServer()` corrige bien `P` en quelques secondes après l'ouverture (`initCloudSync()`, push initial à +3s), mais `updateMenuUI()` (seul rafraîchissement appelé après une fusion) ne touche que l'écran d'accueil (étoiles, avatar, XP) — jamais la carte Aventure. Si celle-ci était déjà affichée au moment de la synchro, l'écran restait visuellement périmé malgré une donnée déjà correcte, jusqu'à une prochaine navigation.
+
+**Décision** : `_importProfileFromServer()` redessine désormais la carte (`renderMap()`) si l'écran `#v-map` est actuellement affiché (pas masqué), immédiatement après la fusion — même pattern déjà utilisé par `resetAdventure()` elle-même. Appel isolé dans son propre `try/catch`, indépendant de celui d'`updateMenuUI()` : un échec de l'un ne doit jamais empêcher l'autre (même principe qu'ADR-97 — préoccupations indépendantes).
+
+**Avantages** : ferme la dernière lacune visible du correctif ADR-99 — la donnée ET l'affichage se corrigent maintenant ensemble, sans attendre une navigation.
+
+**Impact** : `12-cloud.js` (`_importProfileFromServer`), `loadGame.js` (exposition + stub `setRenderMap`), v12.4.57. Garde-fou de non-régression : `cloud-sync-pull-before-push_test.js` (2 tests ajoutés, 6 au total).
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

@@ -312,6 +312,14 @@ globalThis.__api = {
   // correctement fusionné AVANT le push, pas que le push a réussi.
   pushProfileToCloud: (typeof pushProfileToCloud==='function') ? pushProfileToCloud : undefined,
   setPullProfileFromCloud: (fn) => { globalThis.pullProfileFromCloud = fn; },
+  // v12.4.57 (confort, suite ADR-99) : _importProfileFromServer exposée
+  // directement (plus rapide à tester que de repasser par tout
+  // pushProfileToCloud), et renderMap stubbable — la vraie fonction (07-map.js)
+  // n'est pas chargée dans les tests cloud, ce stub permet de vérifier
+  // qu'elle est bien APPELÉE quand l'écran carte est affiché, sans avoir à
+  // exécuter le rendu réel.
+  _importProfileFromServer: (typeof _importProfileFromServer==='function') ? _importProfileFromServer : undefined,
+  setRenderMap: (fn) => { globalThis.renderMap = fn; },
   resetAdventure: (typeof resetAdventure==='function') ? resetAdventure : undefined,
   _allOdysseyStorySeenIds: (typeof _allOdysseyStorySeenIds==='function') ? _allOdysseyStorySeenIds : undefined,
   // --- ADR-57 (Lot 6, garde-fou ton tender/standard, ADR-45) ---

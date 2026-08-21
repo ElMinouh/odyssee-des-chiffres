@@ -9,6 +9,33 @@ const FILES = ['01-core.js', '05-profile.js', '12-cloud.js'];
 // locale à l'aveugle — sans ça, un appareil resté sur une ancienne
 // progression ne corrige jamais son propre état, même quand le cloud a déjà
 // la bonne version (ex. un reset fait sur un autre appareil).
+describe('_importProfileFromServer() — rafraîchit la carte si elle est déjà affichée (confort, v12.4.57)', () => {
+  it('appelle renderMap() quand #v-map est visible (pas de classe "hidden")', async () => {
+    const api = loadGame(FILES);
+    api.setP({ name: 'TestKid', cloudCode: 'ABCD1234' });
+    let renderCalled = false;
+    api.setRenderMap(() => { renderCalled = true; });
+    // Par défaut, un élément factice fraîchement créé n'a pas la classe
+    // "hidden" — simule un écran carte actuellement affiché.
+
+    await api._importProfileFromServer({ name: 'TestKid', mapBossBeaten: [] });
+
+    expect(renderCalled).toBe(true);
+  });
+
+  it('n\'appelle PAS renderMap() quand #v-map est masqué (classe "hidden")', async () => {
+    const api = loadGame(FILES);
+    api.setP({ name: 'TestKid', cloudCode: 'ABCD1234' });
+    let renderCalled = false;
+    api.setRenderMap(() => { renderCalled = true; });
+    api._domEl('v-map').classList.add('hidden');
+
+    await api._importProfileFromServer({ name: 'TestKid', mapBossBeaten: [] });
+
+    expect(renderCalled).toBe(false);
+  });
+});
+
 describe('pushProfileToCloud() — pull + fusion avant le push (ADR-99)', () => {
   it('adopte localement la progression serveur plus avancée avant de pousser', async () => {
     const api = loadGame(FILES);
