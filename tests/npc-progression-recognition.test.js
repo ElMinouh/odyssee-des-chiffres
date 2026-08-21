@@ -40,7 +40,7 @@ describe('_resolveNpcLine() — sélection de la réplique selon la progression 
     api.setP({ name: 'Test', mapBossBeaten: zones.map(z => z.id) });
     const resolved = api._resolveNpcLine(region.id, 'standard', 0);
     expect(resolved.regionDone).toBe(true);
-    expect(resolved.line).toBe(api._NPCS_BY_THEME.standard[0].lineDone);
+    expect(resolved.line).toBe(api._NPCS_BY_THEME.standard[0].lineDone.replace('{hero}', 'Test'));
   });
 
   it('reste sur la réplique normale si UNE seule zone de la région manque encore', () => {
