@@ -632,7 +632,11 @@ function returnMenu(){
   if(prog && prog.completed){
    GM.mapZone = null;
    _navStack = [];
-   if(typeof loadProfile==='function') loadProfile();
+   // v12.4.65 : loadProfile() retiré ici — P est déjà à jour en mémoire
+   // (endGame() vient de le sauvegarder via saveProfileNow()), un rechargement
+   // depuis le stockage à cet endroit précis n'apportait rien de justifié et
+   // était le suspect principal du signalement de Cyril (avatar systématiquement
+   // reprojeté sur la 1ère zone du 1er îlot en repassant par ce chemin).
    if(typeof renderMap==='function') renderMap();
    showView('v-map');
   } else {

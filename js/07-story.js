@@ -2131,7 +2131,14 @@ function _markStorySeen(id){
  P.storySeen = P.storySeen || [];
  if(!P.storySeen.includes(id)){
   P.storySeen.push(id);
-  if(typeof saveProfile==='function') saveProfile();
+  // v12.4.65 : saveProfileNow() (immédiat) au lieu de saveProfile() (différé
+  // de 800ms) — un contenu narratif marqué "vu" doit l'être IMMÉDIATEMENT en
+  // stockage, sinon tout rechargement du profil dans cette fenêtre de 800ms
+  // fait perdre le marquage et le contenu redevient éligible à réapparaître
+  // (piste retenue pour le signalement de Cyril : le prologue qui rejouait
+  // à chaque nouveau lieu).
+  if(typeof saveProfileNow==='function') saveProfileNow();
+  else if(typeof saveProfile==='function') saveProfile();
  }
 }
 // v12.2.2 : liste exhaustive de tous les IDs "storySeen" possibles, toutes
