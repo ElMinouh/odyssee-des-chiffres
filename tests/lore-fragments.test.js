@@ -141,3 +141,33 @@ describe('validateProfile() — persistance de loreFoundIdsByAdv', () => {
     expect(out.loreFoundIdsByAdv).toEqual({});
   });
 });
+
+describe('openArchipelZoom() — le fragment "de site" apparaît bien dans l\'écran RÉELLEMENT ouvert au clic sur un lieu', () => {
+  // v12.5.1 : correctif d'un bug de câblage — la 1ère version de ce système
+  // avait été branchée sur renderZoneMap()/v-zone, un écran secondaire peu
+  // emprunté (retour d'une partie en cours seulement), et non sur
+  // openArchipelZoom(), l'écran réellement ouvert par requestZoneOpen() au
+  // clic sur un lieu depuis la carte. Ce test verrouille le bon écran.
+  it('un lieu avec un fragment "zone" affiche un .lore-point dans la modale zoom', () => {
+    const api = loadGame(FILES);
+    api.setP({ name: 'Test', zoneProgress: {}, mapBossBeaten: [], loreFoundIdsByAdv: {} });
+    api.setGM({ level: 'PS', subject: 'math', adventure: 'mat' });
+    api.startAdventure('mat', true);
+    api.openArchipelZoom('mat_cp_1'); // a un fragment de type 'zone' (mat_lore_1)
+    const el = api._lastCreatedElement();
+    expect(el.className).toBe('archipel-zoom-overlay');
+    expect(el.innerHTML).toContain('lore-point');
+    expect(el.innerHTML).toContain('data-lore-id="mat_lore_1"');
+  });
+
+  it('un lieu sans fragment n\'ajoute aucun .lore-point', () => {
+    const api = loadGame(FILES);
+    api.setP({ name: 'Test', zoneProgress: {}, mapBossBeaten: [], loreFoundIdsByAdv: {} });
+    api.setGM({ level: 'PS', subject: 'math', adventure: 'mat' });
+    api.startAdventure('mat', true);
+    api.openArchipelZoom('mat_cp_2'); // volontairement sans fragment
+    const el = api._lastCreatedElement();
+    expect(el.innerHTML).not.toContain('lore-point');
+  });
+});
+

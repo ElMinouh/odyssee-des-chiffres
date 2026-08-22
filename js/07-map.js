@@ -365,7 +365,7 @@ function _loreZoneStepHtml(zoneId){
  if(!frag) return '';
  const found = (typeof _isLoreFound==='function') && _isLoreFound(frag.id);
  return `
-  <div class="zone-step lore-step${found?' found':''}" onclick="_openLoreFragment('${frag.id}')">
+  <div class="zone-step lore-step${found?' found':''}" data-lore-id="${frag.id}" onclick="_openLoreFragment('${frag.id}')">
    <div class="zone-step-emoji">${frag.emoji}</div>
    <div class="zone-step-info">
     <div class="zone-step-name">${found ? esc(frag.title) : 'Un secret se cache ici...'}</div>
@@ -2460,7 +2460,7 @@ function renderMap(){
    const xPct = ((p.x + offX) / W) * 100;
    const y = p.y + offY;
    const label = found ? esc(f.title) : 'Un secret à découvrir';
-   return `<div class="lore-point${found?' found':''}" style="left:${xPct.toFixed(1)}%;top:${y.toFixed(0)}px;" title="${label}" onclick="_openLoreFragment('${f.id}')">${f.emoji}</div>`;
+   return `<div class="lore-point${found?' found':''}" data-lore-id="${f.id}" style="left:${xPct.toFixed(1)}%;top:${y.toFixed(0)}px;" title="${label}" onclick="_openLoreFragment('${f.id}')">${f.emoji}</div>`;
   }).join('');
  }).join('');
  // Assemblage final
@@ -2685,6 +2685,34 @@ function openArchipelZoom(zoneId){
    stepPathD += `Q ${cpX.toFixed(1)},${cpY.toFixed(1)} ${cur.x.toFixed(1)},${cur.y.toFixed(1)} `;
   }
  }
+ // v12.5.1 (correctif signalé par Cyril — le fragment "de site" avait été
+ // câblé dans renderZoneMap()/v-zone, un écran secondaire peu emprunté, et
+ // non dans openArchipelZoom(), l'écran RÉELLEMENT ouvert au clic sur un
+ // lieu depuis la carte). Calculé APRÈS stepPathD pour ne jamais influencer
+ // le tracé du sentier. Position pseudo-aléatoire (déterministe par zoneId),
+ // écartée des nœuds d'étape par une passe de répulsion simple.
+ let loreZoneHtml = '';
+ {
+  const loreFrag = (typeof _loreZoneFragment==='function') ? _loreZoneFragment(zoneId) : null;
+  if(loreFrag){
+   let lxPct = xMarginPct + _archHash(zoneId, 4242) * (100 - 2*xMarginPct);
+   let ly = yMargin + _archHash(zoneId, 4343) * (containerH - 2*yMargin);
+   for(const p of stepPositions){
+    const dx = (lxPct/100)*containerW - p.x, dy = ly - p.y;
+    const d = Math.hypot(dx, dy);
+    if(d < 70){
+     const nx = dx/(d||1), ny = dy/(d||1);
+     lxPct += (nx*(70-d)/containerW)*100;
+     ly += ny*(70-d);
+    }
+   }
+   lxPct = Math.max(xMarginPct, Math.min(100-xMarginPct, lxPct));
+   ly = Math.max(yMargin, Math.min(containerH - yMargin, ly));
+   const found = (typeof _isLoreFound==='function') && _isLoreFound(loreFrag.id);
+   const label = found ? esc(loreFrag.title) : 'Un secret à découvrir';
+   loreZoneHtml = `<div class="lore-point zoom-lore-point${found?' found':''}" data-lore-id="${loreFrag.id}" style="left:${lxPct.toFixed(1)}%;top:${ly.toFixed(0)}px;" title="${label}" onclick="_openLoreFragment('${loreFrag.id}')">${loreFrag.emoji}</div>`;
+  }
+ }
  // HTML des étapes
  // v8.7.26 (O3-B.1bis) : le clic sur une étape déclenche l'animation de l'avatar
  // dans la modale (multi-segments le long du sentier rouge interne), puis lance
@@ -2746,6 +2774,7 @@ function openArchipelZoom(zoneId){
      <path d="${stepPathD}" stroke="#c0392b" stroke-width="2.5" fill="none" stroke-dasharray="5,3" opacity="0.85" stroke-linecap="round"/>
     </svg>
     ${stepsHtml}
+    ${loreZoneHtml}
     ${zoomAvatarHtml}
    </div>
   </div>`;

@@ -4012,6 +4012,15 @@ function _openLoreFragment(id){
  _showLoreModal(frag);
  // Rafraîchit l'écran du lieu (teaser → titre révélé) sans perturber la carte.
  if(document.getElementById('zone-steps-path') && typeof renderZoneMap==='function') renderZoneMap();
+ // v12.5.1 : mise à jour en direct des points déjà affichés (carte, écran de
+ // lieu "zoom") sans reconstruire tout l'écran — évite de dupliquer une
+ // modale/overlay en le regénérant depuis ici.
+ try{
+  document.querySelectorAll('[data-lore-id="'+id+'"]').forEach(el=>{
+   el.classList.add('found');
+   el.title = frag.title;
+  });
+ }catch(e){}
 }
 // Modale dédiée (volontairement séparée de _showStoryModal, plus simple :
 // une seule page, pas de narration audio) — même famille visuelle
