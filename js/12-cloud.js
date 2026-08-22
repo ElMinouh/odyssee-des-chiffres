@@ -266,7 +266,33 @@ function _mergeCloudProfiles(local, imported){
  ];
  if(resetWinner === 'local'){
   ODYSSEY_PROGRESS_FIELDS.forEach(f => { out[f] = local[f]; });
+ } else if(!resetWinner){
+  // v12.4.67 (correctif race cloud, signalé par Cyril) : fusion fine plutôt
+  // que "imported gagne" par défaut (comportement précédent de out, hérité
+  // du Object.assign initial). Sans ça, TOUTE synchronisation de routine —
+  // déclenchée après CHAQUE partie via syncCloudOnEndGame(), donc toutes les
+  // 15-40s en jeu actif — pouvait silencieusement effacer un contenu
+  // narratif tout juste vu localement (storySeen), simplement parce que le
+  // serveur n'avait pas encore reçu la dernière progression au moment du
+  // pull. Pire : si la carte est affichée, _importProfileFromServer()
+  // redessine immédiatement avec la position ainsi "périmée" — d'où
+  // l'avatar systématiquement reprojeté en arrière et le prologue/les
+  // chapitres qui semblaient réapparaître "à chaque nouveau lieu".
+  out.storySeen = uniq(local.storySeen, imported.storySeen);
+  out._epilogueBonusCredited = uniq(local._epilogueBonusCredited, imported._epilogueBonusCredited);
+  ['talismanRevealShown','rainbowRevealShown','bookRevealShown','badgeRevealShown','armorRevealShown','libraryRevealShown','histLibraryRevealShown']
+   .forEach(f => { out[f] = !!(local[f] || imported[f]); });
+  ['majorChoiceByAdv','twistLinesUsedByAdv','lastTwistLineByAdv','journalEntriesByAdv']
+   .forEach(f => { out[f] = Object.assign({}, imported[f]||{}, local[f]||{}); });
+  // Position de l'avatar / page d'histoire en cours : l'appareil actif
+  // (local, celui qui joue MAINTENANT) est le plus légitime pour dire où on
+  // en est, plutôt qu'un serveur qui n'a pas forcément encore reçu le tout
+  // dernier déplacement.
+  out.mapAvatarZone = local.mapAvatarZone || imported.mapAvatarZone;
+  out.mapAvatarZoneByAdv = Object.assign({}, imported.mapAvatarZoneByAdv||{}, local.mapAvatarZoneByAdv||{});
+  out.storyPageIdx = local.storyPageIdx;
  }
+ // resetWinner === 'imported' : rien à faire, out (copie d'imported) est déjà correct par défaut.
 
  out.ownedFigurines     = uniq(local.ownedFigurines, imported.ownedFigurines);
  out.ownedSkins         = uniq(local.ownedSkins, imported.ownedSkins);

@@ -1123,4 +1123,20 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+---
+
+## ADR-108 — Cause racine réelle des points 1 et 4 (ADR-102 à 107) : la fusion cloud effaçait la progression narrative locale à chaque synchronisation
+
+**Contexte** : malgré les correctifs des ADR précédents (sauvegarde immédiate, retrait d'un `loadProfile()` non justifié), Cyril a continué à observer le prologue/les chapitres réapparaître "à chaque nouveau lieu" et l'avatar systématiquement reprojeté au 1er lieu du 1er îlot. Les logs de la console navigateur, fournis par Cyril, ont révélé la vraie cause : `pushProfileToCloud()` fait un pull + fusion **avant chaque synchronisation** (ADR-99), déclenchée après **chaque partie** via `syncCloudOnEndGame()` — soit toutes les 15 à 40 secondes en jeu actif, un rythme bien plus élevé qu'anticipé lors des correctifs précédents.
+
+**Le vrai bug** : dans `_mergeCloudProfiles()`, tous les champs de `ODYSSEY_PROGRESS_FIELDS` (dont `storySeen` et `mapAvatarZoneByAdv`) prenaient **systématiquement la valeur du côté "imported" (serveur)** en fusion normale (aucun reset en jeu) — jamais fusionnés, contrairement à `mapBossBeaten`/`ownedFigurines`/etc. qui font correctement l'union. Comme le serveur n'a pas toujours reçu la toute dernière progression locale au moment du pull (latence réseau, cycles de synchro qui se chevauchent), la fusion **écrasait silencieusement** un contenu narratif tout juste vu (`storySeen`) ou une position d'avatar tout juste atteinte (`mapAvatarZoneByAdv`) par une version serveur légèrement en retard. Aggravant : si la carte est affichée au moment de la synchro, `_importProfileFromServer()` la redessine **immédiatement** avec cette position "périmée" — d'où le caractère systématique et immédiat du bug de l'avatar.
+
+**Décision** : en fusion normale (aucun reset en jeu), chaque champ de `ODYSSEY_PROGRESS_FIELDS` est désormais fusionné selon sa nature — union pour les listes de "vu/accompli" (`storySeen`, `_epilogueBonusCredited`), OR logique pour les flags de révélation (`talismanRevealShown` et les 6 autres), fusion superficielle préférant le local pour les maps de choix/lignes utilisées (`majorChoiceByAdv`, `twistLinesUsedByAdv`, `lastTwistLineByAdv`, `journalEntriesByAdv`), préférence locale pour la position courante (`mapAvatarZone`, `mapAvatarZoneByAdv`, `storyPageIdx`) puisque l'appareil actif est le plus légitime pour dire où le joueur en est maintenant. Le cas d'un reset plus récent (`resetWinner`) garde son comportement exact d'avant (priorité totale, sans fusion) — inchangé.
+
+**Point de méthode à retenir** : les ADR-104/107 (correctifs de sauvegarde immédiate, retrait d'un `loadProfile()`) n'étaient pas la cause, mais des améliorations défensives raisonnables faites en cours de route — gardées, sans effet néfaste, mais insuffisantes seules. La cause réelle n'a été trouvée qu'en demandant à Cyril les logs de la console navigateur, qui ont révélé un rythme de synchronisation cloud (15-40s) bien plus élevé que ce que l'analyse statique du code seule avait permis d'anticiper.
+
+**Impact** : `12-cloud.js` (`_mergeCloudProfiles`), nouveaux tests dans `tests/cloud-merge_test.js` (6 ajoutés, verrouillent ce comportement). v12.4.67. 286/286 tests (280 + 6 nouveaux).
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

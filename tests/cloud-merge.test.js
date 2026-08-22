@@ -115,3 +115,62 @@ describe('generateCloudCode', () => {
     expect(suffix).not.toMatch(/[0OI1]/);
   });
 });
+
+// v12.4.67 : correctif d'une régression signalée par Cyril — avant ce lot,
+// storySeen/mapAvatarZoneByAdv (et les autres champs de ODYSSEY_PROGRESS_FIELDS)
+// prenaient TOUJOURS la valeur "imported" (serveur) en fusion normale (aucun
+// reset en jeu), au lieu d'être fusionnés comme le reste (union / max /
+// préférence locale). Comme pushProfileToCloud() fait un pull+fusion avant
+// CHAQUE synchronisation (déclenchée après chaque partie), un contenu narratif
+// tout juste vu localement — ou un déplacement d'avatar tout juste fait —
+// pouvait être silencieusement effacé par un serveur pas encore à jour.
+describe('_mergeCloudProfiles (v12.4.67 : plus de perte de progression narrative en fusion normale)', () => {
+  it('fait l\'union de storySeen au lieu de ne garder que le côté importé', () => {
+    const api = loadGame(FILES);
+    const local = { storySeen: ['intro', 'chap_cp'] };       // vient de voir chap_cp localement
+    const imported = { storySeen: ['intro'] };                // le serveur ne l'a pas encore
+    const out = api._mergeCloudProfiles(local, imported);
+    expect(out.storySeen.sort()).toEqual(['chap_cp', 'intro']);
+  });
+
+  it('garde la position d\'avatar LOCALE (l\'appareil qui joue maintenant) plutôt que celle, plus ancienne, du serveur', () => {
+    const api = loadGame(FILES);
+    const local = { mapAvatarZoneByAdv: { prim: 'foret' } };      // vient de bouger localement
+    const imported = { mapAvatarZoneByAdv: { prim: 'plaine' } };  // le serveur n'a pas encore ce déplacement
+    const out = api._mergeCloudProfiles(local, imported);
+    expect(out.mapAvatarZoneByAdv.prim).toBe('foret');
+  });
+
+  it('fait l\'union de mapAvatarZoneByAdv entre Odyssées différentes (une par appareil, par ex.)', () => {
+    const api = loadGame(FILES);
+    const local = { mapAvatarZoneByAdv: { prim: 'foret' } };
+    const imported = { mapAvatarZoneByAdv: { col: 'sideris_1' } };
+    const out = api._mergeCloudProfiles(local, imported);
+    expect(out.mapAvatarZoneByAdv).toEqual({ prim: 'foret', col: 'sideris_1' });
+  });
+
+  it('fait l\'union de _epilogueBonusCredited (jamais de perte, jamais de double-crédit)', () => {
+    const api = loadGame(FILES);
+    const local = { _epilogueBonusCredited: ['epilogue_prim'] };
+    const imported = { _epilogueBonusCredited: [] };
+    const out = api._mergeCloudProfiles(local, imported);
+    expect(out._epilogueBonusCredited).toEqual(['epilogue_prim']);
+  });
+
+  it('fait un OR logique sur les flags de révélation (talismanRevealShown, etc.)', () => {
+    const api = loadGame(FILES);
+    const local = { talismanRevealShown: true };
+    const imported = { talismanRevealShown: false };
+    const out = api._mergeCloudProfiles(local, imported);
+    expect(out.talismanRevealShown).toBe(true);
+  });
+
+  it('un reset local plus récent reprend le comportement précédent (priorité totale au local, pas de fusion)', () => {
+    const api = loadGame(FILES);
+    const local = { adventureResetAt: 2000, storySeen: [], mapAvatarZoneByAdv: {} };
+    const imported = { adventureResetAt: 1000, storySeen: ['intro', 'chap_cp'], mapAvatarZoneByAdv: { prim: 'foret' } };
+    const out = api._mergeCloudProfiles(local, imported);
+    expect(out.storySeen).toEqual([]);
+    expect(out.mapAvatarZoneByAdv).toEqual({});
+  });
+});
