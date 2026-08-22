@@ -104,7 +104,7 @@ describe('_openLoreFragment() — ouverture au clic (carte ou écran de lieu)', 
     api._openLoreFragment('mat_lore_1');
     expect(api._isLoreFound('mat_lore_1')).toBe(true);
     const el = api._lastCreatedElement();
-    expect(el.className).toBe('story-overlay');
+    expect(el.className).toBe('story-overlay lore-overlay');
     expect(el.innerHTML).toContain('lore-parchment');
     expect(el.innerHTML).toContain('Secret du monde');
     expect(el.innerHTML).toContain('champignon'); // texte du fragment mat_lore_1

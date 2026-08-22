@@ -4027,7 +4027,15 @@ function _openLoreFragment(id){
 // (.story-overlay/.story-parchment) avec un accent violet propre au Monde.
 function _showLoreModal(frag){
  const overlay = document.createElement('div');
- overlay.className = 'story-overlay';
+ // v12.5.2 (correctif signalé par Cyril — la modale de lore restait
+ // invisible tant que l'écran du lieu (.archipel-zoom-overlay, z-index
+ // 1000) n'était pas fermé, puisque .story-overlay de base ne monte qu'à
+ // 300 : le clic ouvrait bien la modale, mais DERRIÈRE le lieu encore
+ // affiché). Classe dédiée .lore-overlay, seule à devoir passer AU-DESSUS
+ // du lieu — le reste du système .story-overlay (prologue, chapitres...)
+ // n'a jamais besoin de s'ouvrir par-dessus un lieu déjà ouvert, donc son
+ // z-index de base reste inchangé pour ne rien risquer ailleurs.
+ overlay.className = 'story-overlay lore-overlay';
  function _escHandler(e){ if(e.key==='Escape') close(); }
  function close(){
   overlay.classList.add('story-out');

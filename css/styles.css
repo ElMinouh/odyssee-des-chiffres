@@ -4655,6 +4655,10 @@ html[data-cycle="college"] .nav-icon-college{ display:inline-block; }
    visuelle (.story-overlay/.story-parchment) avec un accent violet propre
    au Monde, distinct du parchemin doré de l'histoire du héros. */
 .story-parchment.lore-parchment{ border-color:#b39ddb; }
+/* v12.5.2 (correctif) : cette modale peut s'ouvrir PAR-DESSUS l'écran d'un
+   lieu (.archipel-zoom-overlay, z-index 1000), contrairement au reste des
+   modales .story-overlay qui ne s'ouvrent jamais dans ce contexte. */
+.story-overlay.lore-overlay{ z-index:1100; }
 .lore-badge{
  display:inline-block;
  background:#b39ddb;
