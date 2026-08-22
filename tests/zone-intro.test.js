@@ -39,19 +39,27 @@ describe('_maybeShowZoneIntro() — texte d\'ouverture d\'un lieu (v12.4.70)', (
     expect(api.getP().storySeen).not.toContain('zintro_zone_inconnue_xyz');
   });
 
-  it('les 30 lieux de mat ont chacun un texte défini (couverture complète du 1er lot)', () => {
+  it('les 195 lieux des 7 Odyssées ont chacun un texte défini (couverture complète)', () => {
     const api = loadGame(FILES);
-    api.setP({ name: 'Test' });
-    api.setGM({ level: 'PS', subject: 'math' });
-    api.startAdventure('mat', true);
-    const zones = api.getMapZones();
-    expect(zones.length).toBe(30);
-    zones.forEach(z => {
-      api.setP({ name: 'Test', storySeen: [] });
-      const cb = vi.fn();
-      api._maybeShowZoneIntro(z, cb);
-      expect(cb, `lieu sans texte d'ouverture : ${z.id} (${z.label})`).not.toHaveBeenCalled();
-    });
+    const odysseys = [
+      ['mat', 'PS'], ['matfr', 'PS'], ['prim', 'CP'], ['primfr', 'CP'],
+      ['primhist', 'CP'], ['col', '6E'], ['colfr', '6E'],
+    ];
+    let total = 0;
+    for (const [adv, level] of odysseys) {
+      api.setP({ name: 'Test' });
+      api.setGM({ level, subject: 'math' });
+      api.startAdventure(adv, true);
+      const zones = api.getMapZones();
+      zones.forEach(z => {
+        api.setP({ name: 'Test', storySeen: [] });
+        const cb = vi.fn();
+        api._maybeShowZoneIntro(z, cb);
+        expect(cb, `lieu sans texte d'ouverture : ${adv}/${z.id} (${z.label})`).not.toHaveBeenCalled();
+      });
+      total += zones.length;
+    }
+    expect(total).toBe(195);
   });
 
   it('substitue {hero} et {villain} dans le texte affiché', () => {

@@ -1165,9 +1165,33 @@ Décisions actées, non remises en cause à ce jour :
 
 **Intégration dans la chaîne narrative** : ajouté comme toute dernière étape de `_maybeShowStory()`, après le chapitre d'entrée et le moment charnière (qui, eux, ne se déclenchent qu'à l'entrée d'une RÉGION) — le texte d'ouverture de lieu, lui, se vérifie à CHAQUE lieu, quelle que soit la région.
 
-**Ce lot couvre `mat` (30/30 lieux, dont les 5 de la région finale qui n'avaient pas d'outro existant à imiter — écrits dans le ton du chapitre final "Le Château du Soir")**. Les 6 autres Odyssées (matfr, prim, primfr, primhist, col, colfr — 165 lieux restants) suivront dans des lots séparés, par souci de rigueur (rédaction one-by-one, vérification systématique de la cohérence avec le personnage/problème de l'outro correspondant).
+**Ce lot couvre les 7 Odyssées au complet (195/195 lieux)** : mat (30), matfr (30), prim (23), primfr (23), primhist (23), col (33), colfr (33). Rédigé et livré en 3 groupes dans la même conversation (maternelles, puis primaires, puis collèges, à la demande de Cyril), chaque lieu vérifié individuellement contre son `_ZONE_OUTRO` correspondant pour garantir la cohérence du personnage/problème local, et contre son `bossName` pour le nom exact du boss annoncé.
 
-**Impact** : `07-story.js` (`_ZONE_INTRO`, `_maybeShowZoneIntro`, chaînage dans `_maybeShowStory`), nouveau fichier `tests/zone-intro_test.js` (5 tests, dont une couverture exhaustive des 30 lieux de `mat`). v12.4.70. 291/291 tests (286 + 5 nouveaux).
+**Impact** : `07-story.js` (`_ZONE_INTRO`, 195 entrées, `_maybeShowZoneIntro`, chaînage dans `_maybeShowStory`), `tests/zone-intro_test.js` (couverture exhaustive automatisée des 195 lieux + substitution `{hero}`/`{villain}`). v12.4.71. 291/291 tests.
+
+---
+
+---
+
+## ADR-111 — Checklist consolidée : ajouter une nouvelle Odyssée ou du contenu narratif majeur
+
+**Contexte** : cette conversation (ADR-102 à 110) a révélé, un par un, une série de règles de cohérence narrative et de pièges techniques — chacun découvert à la dure, sur les 7 Odyssées existantes. Cyril a demandé qu'elles soient **actées** pour s'appliquer **automatiquement** à toute future Odyssée (8e, 9e...) ou tout futur contenu narratif majeur, sans avoir à redécouvrir chaque piège un par un. Cette entrée sert de **check-list de référence unique** — à consulter systématiquement AVANT d'écrire ou de modifier du contenu narratif, plutôt que de relire les 10 ADR individuels.
+
+### Check-list technique (mécanique, pas contenu)
+
+1. **Après tout ajout d'une fonction/constante globale dans `js/*.js`** → lancer `npm run sync:test-api` (régénère `.eslintrc.json` + `tests/helpers/loadGame.js` automatiquement). Ne jamais éditer ces deux fichiers à la main pour cette partie (ADR-104).
+2. **Tout marquage "contenu narratif vu"** (`_markStorySeen` et équivalents) doit utiliser une sauvegarde **immédiate** (`saveProfileNow`), jamais différée — une fenêtre de sauvegarde différée est une fenêtre où un rechargement de profil peut faire perdre le marquage et provoquer une réapparition du contenu (ADR-108).
+3. **Tout nouveau champ de progression narrative persistant** (sur le modèle de `storySeen`, `mapAvatarZoneByAdv`, `majorChoiceByAdv`, les flags `xxxRevealShown`...) doit être ajouté à `ODYSSEY_PROGRESS_FIELDS` dans `_mergeCloudProfiles()` (12-cloud.js) **avec une vraie stratégie de fusion** (union pour les listes de "vu", OR logique pour les flags booléens, préférence locale pour une position courante) — jamais laissé fusionner par défaut ("imported gagne"), qui a causé une perte silencieuse de progression à chaque synchro cloud de routine (ADR-108). Même vigilance que celle déjà documentée en ADR-52 pour `resetAdventure()`/`validateProfile()` : un nouveau champ oublié à un seul de ces 3 endroits (validateProfile, resetAdventure, _mergeCloudProfiles) est un bug latent.
+4. **Tout bouton dont le libellé promet une destination précise** ("Retour à la carte", etc.) doit RÉELLEMENT y mener, sans condition cachée qui redirige ailleurs selon le contexte — sinon écrire un libellé différent selon le cas, ou une fonction dédiée sans branche conditionnelle surprenante (ADR-109).
+
+### Check-list de contenu narratif (cohérence de l'histoire)
+
+5. **Trait de héros (quiz d'ouverture)** : 3 questions indépendantes par Odyssée, mêmes clés de réponse partout (brave/malin/loyal/curieux, protecteur/enquêteur/ambitieux/réparateur, rassurant/déterminé/joyeux/réfléchi) — seuls les intitulés changent. Posé UNE FOIS, juste après le prologue (jamais avant — le héros ne sait pas encore quel rôle il va avoir), jamais reposé si le joueur change d'Odyssée ensuite (ADR-107, ADR-108).
+6. **Moment charnière régional** (`_MAJOR_MOMENT`, texte `council`) : se déclenche dès l'arrivée dans une région, AVANT d'y avoir joué la moindre zone. Le texte doit donc célébrer la région **précédente** (déjà entièrement conquise), jamais la région qu'on vient d'atteindre — piège rencontré sur 4 Odyssées à la fois (ADR-109).
+7. **Texte d'ouverture et de fin de lieu** (`_ZONE_INTRO` / `_ZONE_OUTRO`) : toujours écrits **en paire, en miroir exact** — l'intro pose un problème local et nomme le boss de fin de lieu (sans donner d'indice sur la solution) ; l'outro le résout. Jamais l'un sans l'autre. Le ton doit correspondre à l'âge de l'Odyssée (tendre en maternelle, standard en primaire, plus mature en collège) — voir le modèle des 195 lieux déjà rédigés (ADR-110).
+8. **Avant d'écrire un nouveau texte narratif touchant un lieu ou une région**, toujours relire le texte correspondant déjà existant (outro si on écrit l'intro, chapitre de région si on écrit un moment charnière) pour vérifier qu'aucune référence temporelle ne se contredit (ne jamais prétendre qu'un lieu a déjà progressé avant d'y avoir joué).
+
+**Impact** : aucun changement de code dans cette entrée — c'est une checklist de référence, pas un correctif. Sert de point d'entrée unique pour toute future conversation touchant à une nouvelle Odyssée ou à du contenu narratif transverse.
 
 ---
 
