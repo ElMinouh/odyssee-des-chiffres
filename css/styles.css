@@ -4919,8 +4919,8 @@ body.mat-mode #v-game{
    Même couleur (accent du monde) : l'enfant reconnaît par la FORME, pas la couleur. */
 .mat-shape-rond{ border-radius:50%; background:#fff; box-shadow:0 0 0 4px var(--mat-accent,#3aa0ff), 0 4px 10px rgba(0,0,0,.22); }
 .mat-shape-carre{ border-radius:var(--radius-md); background:#fff; box-shadow:0 0 0 4px var(--mat-accent,#3aa0ff), 0 4px 10px rgba(0,0,0,.22); }
-.mat-shape-triangle{ position:relative; background:#fff; -webkit-clip-path:polygon(50% 4%,96% 96%,4% 96%); clip-path:polygon(50% 4%,96% 96%,4% 96%); filter:drop-shadow(0 4px 8px rgba(0,0,0,.22)); }
-.mat-shape-triangle::before{ content:''; position:absolute; inset:-4px; background:var(--mat-accent,#3aa0ff); -webkit-clip-path:polygon(50% 4%,96% 96%,4% 96%); clip-path:polygon(50% 4%,96% 96%,4% 96%); z-index:-1; }
+.mat-shape-triangle{ position:relative; background:var(--mat-accent,#3aa0ff); -webkit-clip-path:polygon(50% 4%,96% 96%,4% 96%); clip-path:polygon(50% 4%,96% 96%,4% 96%); filter:drop-shadow(0 4px 8px rgba(0,0,0,.22)); }
+.mat-shape-triangle::after{ content:''; position:absolute; inset:4px; background:#fff; -webkit-clip-path:polygon(50% 4%,96% 96%,4% 96%); clip-path:polygon(50% 4%,96% 96%,4% 96%); }
 /* Suites à motifs */
 .mat-suite-row{ display:flex; align-items:center; justify-content:center; gap:var(--space-3); flex-wrap:wrap; }
 .mat-suite-item{ font-size:2.2em; }
