@@ -2938,6 +2938,15 @@ function _maybeShowStory(afterCb){
   const reg = (typeof _regionOfZone==='function') ? _regionOfZone(avZone) : _ARCH_REGIONS.find(r => r.levels.includes(avZone.level));
   if(!reg){ _done(); return; }
   const chap = _STORY.chapters[reg.id];
+  const _afterChapterFlow = () => {
+   // v12.4.70 : dernière étape de la chaîne narrative d'arrivée — le texte
+   // d'ouverture propre à CE lieu précis (voir _ZONE_INTRO plus bas), montré
+   // une seule fois, au tout premier clic sur ce lieu, quelle que soit la
+   // région (contrairement au chapitre et au moment charnière, qui ne se
+   // déclenchent qu'à l'entrée d'une région).
+   if(typeof _maybeShowZoneIntro==='function') _maybeShowZoneIntro(avZone, _done);
+   else _done();
+  };
   if(chap && !P.storySeen.includes(chap.id)){
    _markStorySeen(chap.id);
    // v12.4.49 (Lot 3, N3) : page finale optionnelle référençant la DERNIÈRE
@@ -2950,15 +2959,15 @@ function _maybeShowStory(afterCb){
     chapToShow = Object.assign({}, chap, { pages: [...chap.pages, { emoji:'💭', text:_callback }] });
    }
    _showStoryModal(chapToShow, ()=>{
-    if(typeof _maybeShowMajorMoment==='function') _maybeShowMajorMoment(_done);
-    else _done();
+    if(typeof _maybeShowMajorMoment==='function') _maybeShowMajorMoment(_afterChapterFlow);
+    else _afterChapterFlow();
    });
    return;
   }
   // Chapitre déjà vu : le moment charnière (pt.4/pt.6) peut quand même rester
   // à déclencher si le joueur est déjà dans la bonne région.
-  if(typeof _maybeShowMajorMoment==='function'){ _maybeShowMajorMoment(_done); return; }
-  _done();
+  if(typeof _maybeShowMajorMoment==='function'){ _maybeShowMajorMoment(_afterChapterFlow); return; }
+  _afterChapterFlow();
  }catch(e){ _done(); }
 }
 
@@ -3673,6 +3682,72 @@ function _maybeShowZoneOutro(zone, afterCb){
   _markStorySeen(outroId);
   const page = { emoji: entry.emoji, text: (typeof _storyText==='function' ? _storyText(entry.text) : entry.text) };
   _showStoryModal({ id:outroId, title:zone.label||'', pages:[page], closeLabel:'Continuer ›' }, _done);
+ }catch(e){ _done(); }
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// v12.4.70 (sur demande de Cyril, pour l'immersion) : le pendant, à l'ARRIVÉE,
+// du texte de _ZONE_OUTRO — un texte UNIQUE et écrit à la main, montré au
+// tout premier clic sur un lieu, avant sa toute première étape. Toujours
+// écrit en MIROIR du texte de _ZONE_OUTRO correspondant (même lieu, même
+// personnage/problème local, mais posé plutôt que résolu), et referençant
+// le nom du boss de fin de lieu pour annoncer, en douceur, le défi à venir
+// — jamais un indice sur la façon de le résoudre (même règle que le
+// chapitre d'entrée, cf. ADR-49).
+// Rédigé Odyssée par Odyssée (validation par lot, cf. échange avec Cyril) :
+// mat (30/30) complet. matfr/prim/primfr/primhist/col/colfr à venir.
+// ════════════════════════════════════════════════════════════════════════
+
+const _ZONE_INTRO = {
+ // ── mat (Le Pays des Couleurs) — région cp ──
+ "mat_cp_1": { "emoji":"🌱", "text":"Le Pré Vert semble un peu triste, ses couleurs comme endormies. Un gros nounours boude tout seul, un peu plus loin. Iris compte sur toi pour lui redonner le sourire." },
+ "mat_cp_2": { "emoji":"🌼", "text":"Les pâquerettes du champ ont toutes la tête baissée. Maman Poule s'inquiète pour ses poussins, pas très loin. Un peu d'aide leur ferait le plus grand bien." },
+ "mat_cp_3": { "emoji":"💧", "text":"La Petite Mare est toute agitée, ses vaguelettes n'arrêtent pas de trembler. Un cygne blanc glisse dessus, un peu perdu. Iris pense que tu sauras l'apaiser." },
+ "mat_cp_4": { "emoji":"🐾", "text":"Sur le Sentier des Câlins, les petits animaux n'osent plus s'approcher. Un petit poney timide attend, tout au bout du chemin. Il a bien besoin d'un ami comme toi." },
+ "mat_cp_5": { "emoji":"🌈", "text":"La Colline Arc-en-ciel a perdu toutes ses couleurs. Une douce licorne veille tout en haut, un peu seule. Iris est sûre qu'un peu de magie va vite arranger ça." },
+ // ── mat — région ce1 ──
+ "mat_ce1_1": { "emoji":"🍎", "text":"Le Verger Sucré ne sent plus les fruits mûrs comme avant. Un ourson gourmand renifle tristement, le ventre vide. Iris est sûre qu'un peu d'aide va tout arranger." },
+ "mat_ce1_2": { "emoji":"🍓", "text":"Les fraises du buisson ont perdu leur belle couleur rouge. Un petit renardeau tourne autour, inquiet. Iris pense que tu sauras l'aider." },
+ "mat_ce1_3": { "emoji":"🍯", "text":"Le Rucher Doré est bien silencieux, plus une seule abeille ne bourdonne. La Reine Abeille attend, patiente, que quelqu'un vienne l'aider." },
+ "mat_ce1_4": { "emoji":"🌰", "text":"Dans l'Allée des Noisettes, les petits écureuils n'osent plus sortir. Le Roi Écureuil veille sur eux, un peu dépassé. Iris pense qu'un peu d'aide serait bienvenue." },
+ "mat_ce1_5": { "emoji":"🌷", "text":"Le Jardin Fleuri est resté fermé, ses fleurs encore endormies. Un papillon géant volette doucement, comme s'il attendait un signal. Iris a hâte de voir ce jardin s'ouvrir." },
+ // ── mat — région ce2 ──
+ "mat_ce2_1": { "emoji":"🌫️", "text":"La Clairière Mousse est toute froide sous les pas. Un faon timide se cache derrière un arbre, un peu apeuré. Iris pense qu'un peu de douceur suffira." },
+ "mat_ce2_2": { "emoji":"🍄", "text":"Les petits champignons du bois sont tout affaissés. Un sanglier doux renifle par ici, un peu grognon. Il a peut-être juste besoin d'un coup de main." },
+ "mat_ce2_3": { "emoji":"🌳", "text":"Le Vieux Chêne semble triste, ses feuilles ne bruissent plus du tout. Un grand-duc perché tout en haut observe, silencieux. Iris se demande ce qui le tracasse." },
+ "mat_ce2_4": { "emoji":"💦", "text":"Le Ruisseau Frais ne chantonne plus du tout. Une petite loutre joueuse barbote, un peu triste de jouer toute seule. Iris pense que tu pourrais bien l'égayer." },
+ "mat_ce2_5": { "emoji":"✨", "text":"Le Sous-Bois est tout sombre, pas la moindre étoile n'y scintille. Un renard argenté rôde discrètement, un peu inquiet. Iris a hâte de le voir briller à nouveau." },
+ // ── mat — région cm1 ──
+ "mat_cm1_1": { "emoji":"🏖️", "text":"Le sable de la Plage des Palmiers est tout froid, personne n'ose y poser les pieds. Un crabe câlin patiente, un peu esseulé, au bord de l'eau. Iris pense qu'il a juste besoin d'un peu de compagnie." },
+ "mat_cm1_2": { "emoji":"💎", "text":"Le Lagon Émeraude a perdu tous ses reflets. Une tortue sage nage lentement, songeuse. Iris pense qu'elle attend justement quelqu'un comme toi." },
+ "mat_cm1_3": { "emoji":"🐙", "text":"Le Récif a perdu toutes ses couleurs, il est tout pâle. Un poulpe joyeux se cache timidement entre les rochers. Iris est sûre qu'un peu d'aide suffira à tout égayer." },
+ "mat_cm1_4": { "emoji":"🫧", "text":"La Grotte aux Bulles est bien silencieuse, plus une seule bulle ne s'en échappe. Un dauphin rieur attend, patient, tout au fond de l'eau. Iris a hâte de l'entendre rire à nouveau." },
+ "mat_cm1_5": { "emoji":"🐢", "text":"Sur l'Île aux Tortues, personne n'ose plus sortir de sa carapace. Une grande tortue marine veille sur les autres, un peu inquiète. Iris pense qu'un peu d'aide leur ferait le plus grand bien." },
+ // ── mat — région cm2 ──
+ "mat_cm2_1": { "emoji":"🌼", "text":"Le Champ de Bleuets est tout affaissé, les fleurs penchent la tête. Un bourdon doux vole lentement, un peu fatigué. Iris pense qu'un peu d'énergie lui ferait du bien." },
+ "mat_cm2_2": { "emoji":"🪁", "text":"Le Grand Cerf-Volant reste coincé au sol, incapable de s'envoler. Une hirondelle facétieuse tourne autour, un peu moqueuse. Iris pense qu'un peu d'aide le ferait enfin voler." },
+ "mat_cm2_3": { "emoji":"☁️", "text":"La Prairie du Ciel est immobile, pas le moindre souffle de vent. Un bélier gentil broute tranquillement, un peu songeur. Iris pense qu'il a besoin d'un peu de compagnie." },
+ "mat_cm2_4": { "emoji":"🌬️", "text":"Le Moulin des Vents s'est arrêté de tourner. Une oie blanche l'observe, un peu perplexe. Iris pense qu'un peu d'aide suffira à le relancer." },
+ "mat_cm2_5": { "emoji":"🐉", "text":"Depuis la Colline de l'Horizon, on aperçoit {villain} au loin, encore bien grognon. Un gentil dragonnet veille sur la colline, un peu inquiet. Iris sent que la fin de l'aventure approche." },
+ // ── mat — région final (Le Château du Soir) ──
+ "mat_final_1": { "emoji":"🌉", "text":"Le Pont des Étoiles scintille à peine, comme s'il manquait de lumière. Une chouette de lune cligne des yeux, un peu endormie. Iris pense qu'un peu d'énergie la réveillerait." },
+ "mat_final_2": { "emoji":"☁️", "text":"Le Nuage Câlin est tout mou, presque triste. Un mouton tout doux s'y blottit, cherchant un peu de réconfort. Iris pense qu'un câlin ne suffira peut-être pas, mais ça aidera." },
+ "mat_final_3": { "emoji":"🌙", "text":"Le Jardin de Lune est bien silencieux ce soir. Un renard étoilé rôde discrètement entre les fleurs de nuit. Iris se demande ce qu'il cherche vraiment." },
+ "mat_final_4": { "emoji":"✨", "text":"La Tour Scintillante ne scintille plus vraiment. Une petite fée s'y cache, un peu timide. Iris pense qu'elle attend juste un peu de courage pour se montrer." },
+ "mat_final_5": { "emoji":"🏰", "text":"Le Château des Nuages flotte tout près du Château du Soir où sommeille {villain}. Le Roi des Étoiles veille, grave, sur ce dernier passage. Iris sent que la fin de l'aventure est toute proche." },
+};
+function _maybeShowZoneIntro(zone, afterCb){
+ const _done = (typeof afterCb === 'function') ? afterCb : function(){};
+ try{
+  if(typeof P==='undefined' || !P || !zone){ _done(); return; }
+  P.storySeen = P.storySeen || [];
+  const entry = _ZONE_INTRO[zone.id];
+  if(!entry){ _done(); return; }
+  const introId = 'zintro_' + zone.id;
+  if(P.storySeen.includes(introId)){ _done(); return; }
+  _markStorySeen(introId);
+  const page = { emoji: entry.emoji, text: (typeof _storyText==='function' ? _storyText(entry.text) : entry.text) };
+  _showStoryModal({ id:introId, title:zone.label||'', pages:[page], closeLabel:'Continuer ›' }, _done);
  }catch(e){ _done(); }
 }
 

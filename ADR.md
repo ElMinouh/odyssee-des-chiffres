@@ -1155,4 +1155,20 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+---
+
+## ADR-110 — Texte d'ouverture de lieu (pendant, à l'arrivée, de _ZONE_OUTRO) — Lot 1/7 : mat
+
+**Contexte** : chaque lieu conquis affiche déjà un texte de fin unique (`_ZONE_OUTRO`, 172 lieux). Cyril a demandé le pendant symétrique : un texte unique à l'ARRIVÉE, au tout premier clic sur un lieu, avant sa 1ère étape — décrivant le lieu, mettant en scène le rôle du héros, cohérent avec le thème et le boss local. Périmètre confirmé : 195 lieux sur les 7 Odyssées (23 en primaire ×3, 30 en maternelle ×2, 33 en collège ×2). Ordre de traitement choisi par Cyril : maternelles, puis primaires, puis collèges.
+
+**Décision** : nouvelle structure `_ZONE_INTRO` (même forme que `_ZONE_OUTRO` : clé = id de zone, `{emoji, text}`), nouvelle fonction `_maybeShowZoneIntro()` (miroir exact de `_maybeShowZoneOutro()`, même présentation, gating par `storySeen` avec le préfixe `zintro_`). Chaque texte est écrit en MIROIR de son `_ZONE_OUTRO` correspondant (même personnage/problème local, posé plutôt que résolu) et référence le nom du boss de fin de lieu pour annoncer, en douceur, le défi à venir — jamais un indice sur la façon de le résoudre (même règle que le chapitre d'entrée, ADR-49). Une règle de discipline est documentée en commentaire au-dessus de `_ZONE_INTRO` pour les prochains lots.
+
+**Intégration dans la chaîne narrative** : ajouté comme toute dernière étape de `_maybeShowStory()`, après le chapitre d'entrée et le moment charnière (qui, eux, ne se déclenchent qu'à l'entrée d'une RÉGION) — le texte d'ouverture de lieu, lui, se vérifie à CHAQUE lieu, quelle que soit la région.
+
+**Ce lot couvre `mat` (30/30 lieux, dont les 5 de la région finale qui n'avaient pas d'outro existant à imiter — écrits dans le ton du chapitre final "Le Château du Soir")**. Les 6 autres Odyssées (matfr, prim, primfr, primhist, col, colfr — 165 lieux restants) suivront dans des lots séparés, par souci de rigueur (rédaction one-by-one, vérification systématique de la cohérence avec le personnage/problème de l'outro correspondant).
+
+**Impact** : `07-story.js` (`_ZONE_INTRO`, `_maybeShowZoneIntro`, chaînage dans `_maybeShowStory`), nouveau fichier `tests/zone-intro_test.js` (5 tests, dont une couverture exhaustive des 30 lieux de `mat`). v12.4.70. 291/291 tests (286 + 5 nouveaux).
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
