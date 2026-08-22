@@ -166,6 +166,20 @@ function validateProfile(raw, defaultName){
    Object.keys(src).forEach(k=>{ if(typeof src[k]==='string' && src[k]) out[k] = src[k]; });
    return out;
   })(),
+  // v12.5.0 (session 21, ADR-112) : fragments de lore hors-combat déjà
+  // trouvés, par Odyssée — { advKey: [id, id, ...] }. Pattern storySeen,
+  // mais scindé par advKey (comme mapAvatarZoneByAdv) puisqu'un même id de
+  // fragment n'a de sens que pour SON Odyssée. Fusionné en UNION par
+  // advKey en synchro cloud (voir ODYSSEY_PROGRESS_FIELDS, 12-cloud.js).
+  loreFoundIdsByAdv: (function(){
+   const src = (raw.loreFoundIdsByAdv && typeof raw.loreFoundIdsByAdv === 'object') ? raw.loreFoundIdsByAdv : {};
+   const out = {};
+   Object.keys(src).forEach(k=>{
+    const arr = Array.isArray(src[k]) ? src[k] : [];
+    out[k] = arr.filter(s => typeof s === 'string');
+   });
+   return out;
+  })(),
   // v12.4.49 (Lot 3, audit immersion narrative N4) : carnet de voyage à la
   // première personne, par Odyssée. Chaque entrée est un petit objet validé
   // champ par champ (jamais une simple copie), plafonné aux 20 dernières

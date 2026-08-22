@@ -353,7 +353,24 @@ function renderZoneMap(){
     </div>
     ${extra}
    </div>`;
- }).join('');
+ }).join('') + _loreZoneStepHtml(zone.id);
+}
+
+// v12.5.0 (session 21, ADR-112) : fragment de lore "de site" — objet
+// cliquable optionnel, sans rapport avec les étapes/questions, ajouté en
+// dernière position de la liste. Teaser tant que non trouvé, titre révélé
+// une fois trouvé (voir _openLoreFragment, 07-story.js).
+function _loreZoneStepHtml(zoneId){
+ const frag = (typeof _loreZoneFragment==='function') ? _loreZoneFragment(zoneId) : null;
+ if(!frag) return '';
+ const found = (typeof _isLoreFound==='function') && _isLoreFound(frag.id);
+ return `
+  <div class="zone-step lore-step${found?' found':''}" onclick="_openLoreFragment('${frag.id}')">
+   <div class="zone-step-emoji">${frag.emoji}</div>
+   <div class="zone-step-info">
+    <div class="zone-step-name">${found ? esc(frag.title) : 'Un secret se cache ici...'}</div>
+   </div>
+  </div>`;
 }
 
 // Lance une étape précise d'une zone
@@ -2429,6 +2446,23 @@ function renderMap(){
   if(!b) return '';
   return _buildNpcsOverlay(r.id, b, byRegion[r.id] || [], _islandShopPos[r.id], W);
  }).join('');
+ // v12.5.0 (session 21, ADR-112) : points de lore "de carte" — en léger
+ // décalage du nœud de la zone la plus proche, visibles dès que la région
+ // n'est plus dans le brouillard. Volontairement INDÉPENDANT du
+ // verrouillage de la zone (curiosité pure, pas de gating scolaire).
+ const loreOverlaysHtml = positions.map(p => {
+  if(_islandFogged[p.regionId]) return '';
+  const frags = (typeof _loreMapFragmentsNear==='function') ? _loreMapFragmentsNear(p.zone.id) : [];
+  if(!frags.length) return '';
+  return frags.map((f, fi) => {
+   const found = (typeof _isLoreFound==='function') && _isLoreFound(f.id);
+   const offX = 32 + fi*10, offY = -36 - fi*8;
+   const xPct = ((p.x + offX) / W) * 100;
+   const y = p.y + offY;
+   const label = found ? esc(f.title) : 'Un secret à découvrir';
+   return `<div class="lore-point${found?' found':''}" style="left:${xPct.toFixed(1)}%;top:${y.toFixed(0)}px;" title="${label}" onclick="_openLoreFragment('${f.id}')">${f.emoji}</div>`;
+  }).join('');
+ }).join('');
  // Assemblage final
  const cont = $('map-zones');
  if(!cont) return;
@@ -2457,6 +2491,7 @@ function renderMap(){
   ${shopsHtml}
   ${weatherOverlaysHtml}
   ${npcsOverlaysHtml}
+  ${loreOverlaysHtml}
   ${fogOverlaysHtml}
   ${avatarHtml}
  `;

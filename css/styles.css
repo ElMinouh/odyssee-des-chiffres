@@ -2250,6 +2250,18 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 }
 .zone-step.locked .zone-step-emoji,
 .zone-step.locked .zone-step-info{ filter:grayscale(.8); }
+/* v12.5.0 (session 21, ADR-112) : fragment de lore "de site" — même
+   gabarit que .zone-step mais accent violet (Le Monde), pas de trait de
+   sentier ni de coche : ce n'est pas une étape à franchir. */
+.zone-step.lore-step{
+ background:rgba(179,157,219,.16);
+ border-color:rgba(179,157,219,.55);
+}
+.zone-step.lore-step::after{ display:none; }
+.zone-step.lore-step.found{
+ background:rgba(179,157,219,.08);
+ border-color:rgba(179,157,219,.3);
+}
 .zone-step-emoji{
  font-size:2em;
  line-height:1;
@@ -2846,6 +2858,41 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
 @keyframes archZonePulse{
  0%,100%{ box-shadow:0 0 16px rgba(241,196,15,.65), 0 0 4px rgba(241,196,15,.4); }
  50%{    box-shadow:0 0 28px rgba(241,196,15,.95), 0 0 12px rgba(241,196,15,.6); }
+}
+
+/* v12.5.0 (session 21, ADR-112) : point de lore "de carte" — 5e voix
+   narrative (Le Monde), volontairement distincte des zones/PNJ/boutiques :
+   violet, plus petit, sans badge de verrouillage/progression. Indépendant
+   du verrouillage de la zone la plus proche (curiosité pure). */
+.lore-point{
+ position:absolute;
+ transform:translate(-50%,-50%);
+ z-index:4;
+ width:32px;
+ height:32px;
+ border-radius:50%;
+ background:rgba(255,255,255,.95);
+ border:2px solid #b39ddb;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ font-size:1.1em;
+ cursor:pointer;
+ animation:lorePointPulse 2.2s ease-in-out infinite, lorePointFloat 3s ease-in-out infinite;
+ transition:transform var(--dur-fast);
+}
+.lore-point:hover{ transform:translate(-50%,-50%) scale(1.12); }
+.lore-point.found{ opacity:.8; animation:none; box-shadow:0 0 6px rgba(179,157,219,.45); }
+@keyframes lorePointPulse{
+ 0%,100%{ box-shadow:0 0 8px rgba(179,157,219,.6); }
+ 50%{     box-shadow:0 0 16px rgba(179,157,219,.95); }
+}
+@keyframes lorePointFloat{
+ 0%,100%{ margin-top:0; }
+ 50%{     margin-top:-4px; }
+}
+@media (prefers-reduced-motion:reduce){
+ .lore-point{ animation:none; }
 }
 
 /* Avatar du joueur sur la carte */
@@ -3741,6 +3788,20 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  font-size:.85em; color:#bdc3c7; font-style:italic;
  text-align:center; padding:var(--space-4);
 }
+/* v12.5.0 (session 21, ADR-112) : onglet "Trésors" — liste des fragments de
+   lore trouvés (texte complet) / non trouvés (silhouette "❔"), accent
+   violet cohérent avec .lore-point/.lore-parchment sur la carte. */
+.tresor-row{
+ display:flex; align-items:flex-start; gap:var(--space-3);
+ background:rgba(179,157,219,.1); border:1.5px solid rgba(179,157,219,.35);
+ border-radius:var(--radius-sm); padding:var(--space-3); margin:var(--space-1) 0;
+ text-align:left;
+}
+.tresor-row:not(.found){ opacity:.6; }
+.tresor-emoji{ font-size:1.6em; line-height:1; flex-shrink:0; }
+.tresor-info{ flex:1; }
+.tresor-title{ font-weight:800; font-size:.9em; color:#e4dcf7; }
+.tresor-text{ font-size:.8em; color:#d9d2ee; line-height:1.4; margin-top:4px; }
 /* v12.4.48 (Lot 2, audit immersion narrative N7) : cliffhanger persistant en
    tête du Journal — même famille visuelle que les autres bandeaux dorés du
    Carnet (bordure --accent-gold), texte en italique pour signaler qu'il
@@ -4590,6 +4651,20 @@ html[data-cycle="college"] .nav-icon-college{ display:inline-block; }
 .story-dots{ display:flex; gap:var(--space-2); }
 .story-dot{ width:8px; height:8px; border-radius:50%; background:rgba(122,79,22,.3); transition:background var(--dur-fast), transform var(--dur-fast); }
 .story-dot.on{ background:#8a4b12; transform:scale(1.3); }
+/* v12.5.0 (session 21, ADR-112) : modale de fragment de lore — même famille
+   visuelle (.story-overlay/.story-parchment) avec un accent violet propre
+   au Monde, distinct du parchemin doré de l'histoire du héros. */
+.story-parchment.lore-parchment{ border-color:#b39ddb; }
+.lore-badge{
+ display:inline-block;
+ background:#b39ddb;
+ color:#2c1f47;
+ font-size:.7em;
+ font-weight:800;
+ padding:3px 12px;
+ border-radius:999px;
+ margin-bottom:var(--space-2);
+}
 /* v12.2.1 (pt.4) : choix à 2 options (moment charnière mi-Odyssée) — mêmes
    codes visuels que .story-btn, empilés verticalement, texte aligné à gauche. */
 .story-choice-btns{ display:flex; flex-direction:column; gap:var(--space-3); margin-top:var(--space-1); }

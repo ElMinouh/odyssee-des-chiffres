@@ -1,0 +1,143 @@
+import { describe, it, expect } from 'vitest';
+import { loadGame } from './helpers/loadGame.js';
+
+const FILES = [
+  '01-core.js', '02-data.js', '03-figurines-data.js', '04-questions.js',
+  '16-francais.js', '18-histoire.js', '05-profile.js', '06a-adaptive.js',
+  '06b-time-block.js', '06c-seasonal.js', '06d-cinematics.js',
+  '07-story-core.js', '07-map.js', '07-game.js', '07-boss.js', '07-story.js', '08-ui.js', '09-parent.js',
+];
+
+// v12.5.0 (session 21, ADR-112) : fragments de lore hors-combat — 5e voix
+// narrative (registre ADR-94, "Le Monde"), déclenchée par un clic
+// volontaire, sans rapport avec les questions/calculs. Pilote sur
+// l'Odyssée 'mat' (maths maternelle) uniquement pour l'instant.
+
+describe('_LORE_FRAGMENTS — intégrité des données du pilote (mat)', () => {
+  it('contient exactement 12 fragments, tous avec un id unique', () => {
+    const api = loadGame(FILES);
+    const list = api._loreFragmentsFor('mat');
+    expect(list).toHaveLength(12);
+    const ids = list.map(f => f.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('chaque fragment référence une zone qui existe réellement dans MAT_ZONES, et a un type valide', () => {
+    const api = loadGame(FILES);
+    api.setGM({ level: 'PS', subject: 'math' });
+    api.startAdventure('mat', true);
+    const zoneIds = api.getMapZones().map(z => z.id);
+    const list = api._loreFragmentsFor('mat');
+    list.forEach(f => {
+      expect(zoneIds, `zoneId inconnu : ${f.zoneId} (fragment ${f.id})`).toContain(f.zoneId);
+      expect(['zone', 'map']).toContain(f.type);
+      expect(typeof f.emoji).toBe('string');
+      expect(typeof f.title).toBe('string');
+      expect(f.title.length).toBeGreaterThan(0);
+      expect(typeof f.text).toBe('string');
+      // Rédaction "riche" : on vérifie juste un plancher de longueur, pas de
+      // règle stricte de style (le ton exact est une décision éditoriale).
+      expect(f.text.length).toBeGreaterThan(80);
+    });
+  });
+
+  it('une Odyssée sans fragments encore rédigés renvoie une liste vide (pas d\'erreur)', () => {
+    const api = loadGame(FILES);
+    expect(api._loreFragmentsFor('prim')).toEqual([]);
+    expect(api._loreFragmentsFor('inconnue_xyz')).toEqual([]);
+  });
+});
+
+describe('_loreZoneFragment() / _loreMapFragmentsNear() — sélection par ancrage', () => {
+  it('_loreZoneFragment() renvoie le fragment de type "zone" pour un lieu qui en a un, null sinon', () => {
+    const api = loadGame(FILES);
+    api.setGM({ adventure: 'mat' });
+    expect(api._loreZoneFragment('mat_cp_1').id).toBe('mat_lore_1');
+    // mat_cp_2 n'a volontairement aucun fragment (fréquence ~1 zone sur 2-3)
+    expect(api._loreZoneFragment('mat_cp_2')).toBeNull();
+  });
+
+  it('_loreMapFragmentsNear() renvoie le(s) fragment(s) de type "map" ancrés sur ce lieu', () => {
+    const api = loadGame(FILES);
+    api.setGM({ adventure: 'mat' });
+    const near = api._loreMapFragmentsNear('mat_cp_3');
+    expect(near).toHaveLength(1);
+    expect(near[0].id).toBe('mat_lore_2');
+    expect(api._loreMapFragmentsNear('mat_cp_1')).toEqual([]); // celui-ci est de type 'zone', pas 'map'
+  });
+});
+
+describe('_isLoreFound() / _markLoreFound() — marquage "trouvé", scindé par Odyssée', () => {
+  it('un fragment non trouvé renvoie false, puis true après _markLoreFound()', () => {
+    const api = loadGame(FILES);
+    api.setGM({ adventure: 'mat' });
+    api.setP({ name: 'Test', loreFoundIdsByAdv: {} });
+    expect(api._isLoreFound('mat_lore_1')).toBe(false);
+    api._markLoreFound('mat_lore_1');
+    expect(api._isLoreFound('mat_lore_1')).toBe(true);
+    expect(api.getP().loreFoundIdsByAdv.mat).toEqual(['mat_lore_1']);
+  });
+
+  it('ne duplique pas un id déjà marqué trouvé', () => {
+    const api = loadGame(FILES);
+    api.setGM({ adventure: 'mat' });
+    api.setP({ name: 'Test', loreFoundIdsByAdv: { mat: ['mat_lore_1'] } });
+    api._markLoreFound('mat_lore_1');
+    expect(api.getP().loreFoundIdsByAdv.mat).toEqual(['mat_lore_1']);
+  });
+
+  it('le marquage est scindé par Odyssée (advKey) — pas de fuite entre Odyssées', () => {
+    const api = loadGame(FILES);
+    api.setP({ name: 'Test', loreFoundIdsByAdv: {} });
+    api.setGM({ adventure: 'mat' });
+    api._markLoreFound('mat_lore_1');
+    api.setGM({ adventure: 'matfr' });
+    expect(api._isLoreFound('mat_lore_1')).toBe(false); // pas trouvé côté matfr
+  });
+});
+
+describe('_openLoreFragment() — ouverture au clic (carte ou écran de lieu)', () => {
+  it('marque le fragment trouvé et affiche une modale au style violet dédié', () => {
+    const api = loadGame(FILES);
+    api.setGM({ adventure: 'mat' });
+    api.setP({ name: 'Test', loreFoundIdsByAdv: {} });
+    api._openLoreFragment('mat_lore_1');
+    expect(api._isLoreFound('mat_lore_1')).toBe(true);
+    const el = api._lastCreatedElement();
+    expect(el.className).toBe('story-overlay');
+    expect(el.innerHTML).toContain('lore-parchment');
+    expect(el.innerHTML).toContain('Secret du monde');
+    expect(el.innerHTML).toContain('champignon'); // texte du fragment mat_lore_1
+  });
+
+  it('un id inconnu ne fait rien (pas d\'erreur, pas de modale)', () => {
+    const api = loadGame(FILES);
+    api.setGM({ adventure: 'mat' });
+    api.setP({ name: 'Test', loreFoundIdsByAdv: {} });
+    expect(() => api._openLoreFragment('id_inexistant')).not.toThrow();
+    expect(api._isLoreFound('id_inexistant')).toBe(false);
+  });
+});
+
+describe('validateProfile() — persistance de loreFoundIdsByAdv', () => {
+  it('conserve les ids déjà trouvés à la relecture du profil', () => {
+    const api = loadGame(FILES);
+    const raw = { name: 'Test', loreFoundIdsByAdv: { mat: ['mat_lore_1', 'mat_lore_3'] } };
+    const out = api.validateProfile(raw, 'Test');
+    expect(out.loreFoundIdsByAdv.mat).toEqual(['mat_lore_1', 'mat_lore_3']);
+  });
+
+  it('ignore silencieusement des entrées corrompues sans planter', () => {
+    const api = loadGame(FILES);
+    const raw = { name: 'Test', loreFoundIdsByAdv: { mat: [42, null, 'mat_lore_1'], matfr: 'pas_un_tableau' } };
+    expect(() => api.validateProfile(raw, 'Test')).not.toThrow();
+    const out = api.validateProfile(raw, 'Test');
+    expect(out.loreFoundIdsByAdv.mat).toEqual(['mat_lore_1']);
+  });
+
+  it('absent du profil brut → objet vide (jamais undefined)', () => {
+    const api = loadGame(FILES);
+    const out = api.validateProfile({ name: 'Test' }, 'Test');
+    expect(out.loreFoundIdsByAdv).toEqual({});
+  });
+});

@@ -263,6 +263,10 @@ function _mergeCloudProfiles(local, imported){
   'journalEntriesByAdv', 'lastTwistLineByAdv',
   'talismanRevealShown', 'rainbowRevealShown', 'bookRevealShown',
   'badgeRevealShown', 'armorRevealShown', 'libraryRevealShown', 'histLibraryRevealShown',
+  // v12.5.0 (session 21, ADR-112) : fragments de lore hors-combat trouvés,
+  // par Odyssée — ajouté ici dès sa création (règle ADR-111 pt.3), jamais
+  // laissé fusionner par défaut.
+  'loreFoundIdsByAdv',
  ];
  if(resetWinner === 'local'){
   ODYSSEY_PROGRESS_FIELDS.forEach(f => { out[f] = local[f]; });
@@ -284,6 +288,18 @@ function _mergeCloudProfiles(local, imported){
    .forEach(f => { out[f] = !!(local[f] || imported[f]); });
   ['majorChoiceByAdv','twistLinesUsedByAdv','lastTwistLineByAdv','journalEntriesByAdv']
    .forEach(f => { out[f] = Object.assign({}, imported[f]||{}, local[f]||{}); });
+  // v12.5.0 (ADR-112) : loreFoundIdsByAdv est une liste cumulative "trouvé"
+  // (comme storySeen), mais scindée par advKey — chaque clé doit donc être
+  // UNIONNÉE, pas juste préférée d'un côté (Object.assign superficiel
+  // écraserait entièrement la liste d'un côté au lieu de fusionner les ids).
+  out.loreFoundIdsByAdv = (function(){
+   const res = {};
+   const keys = new Set([...Object.keys(local.loreFoundIdsByAdv||{}), ...Object.keys(imported.loreFoundIdsByAdv||{})]);
+   keys.forEach(k=>{
+    res[k] = uniq((local.loreFoundIdsByAdv||{})[k], (imported.loreFoundIdsByAdv||{})[k]);
+   });
+   return res;
+  })();
   // Position de l'avatar / page d'histoire en cours : l'appareil actif
   // (local, celui qui joue MAINTENANT) est le plus légitime pour dire où on
   // en est, plutôt qu'un serveur qui n'a pas forcément encore reçu le tout

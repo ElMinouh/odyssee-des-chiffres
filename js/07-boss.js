@@ -958,6 +958,30 @@ function _advTalismanHtml(){
 // v12.3.2 (lot 6) : dernier onglet du Carnet consulté, mémorisé le temps de la
 // session pour ne pas retomber sur "Progression" à chaque réouverture.
 let _advlogLastTab = 'prog';
+// v12.5.0 (session 21, ADR-112) : contenu de l'onglet "Trésors" — liste des
+// fragments de lore hors-combat de l'Odyssée active. Texte complet révélé
+// une fois trouvé, silhouette "❔" sinon (même esprit que bossMedals/locked
+// ci-dessus, mais avec le texte affiché plutôt qu'un simple nom de lieu).
+function _advTresorsHtml(){
+ const adv = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
+ const list = (typeof _loreFragmentsFor==='function') ? _loreFragmentsFor(adv) : [];
+ if(!list.length) return { html: '<div class="advlog-empty">Aucun trésor à découvrir sur cette Odyssée pour l\'instant.</div>', foundCount:0, totalCount:0 };
+ let foundCount = 0;
+ const rows = list.map(f=>{
+  const found = (typeof _isLoreFound==='function') && _isLoreFound(f.id);
+  if(found) foundCount++;
+  return `
+   <div class="tresor-row${found?' found':''}">
+    <div class="tresor-emoji">${found ? f.emoji : '❔'}</div>
+    <div class="tresor-info">
+     <div class="tresor-title">${found ? esc(f.title) : 'Secret non découvert'}</div>
+     ${found ? `<div class="tresor-text">${esc(f.text)}</div>` : ''}
+    </div>
+   </div>`;
+ }).join('');
+ return { html: rows, foundCount, totalCount: list.length };
+}
+
 function openAdventureLog(){
  if(typeof P === 'undefined' || !P) return;
  const beaten = P.mapBossBeaten || [];
@@ -1031,10 +1055,14 @@ function openAdventureLog(){
  const lvl = Math.floor(xp / 100) + 1;
  // v12.3.2 (lot 6, audit UX #3/#8) : onglet Journal — fusionne l'ex-Livre.
  const journal = (typeof _advlogJournalHtml==='function') ? _advlogJournalHtml() : { html:'', unreadCount:0, nextUnreadId:null };
+ // v12.5.0 (session 21, ADR-112) : onglet "Trésors" — fragments de lore
+ // hors-combat trouvés (et non trouvés, en silhouette) sur l'Odyssée active.
+ const tresors = (typeof _advTresorsHtml==='function') ? _advTresorsHtml() : { html:'', foundCount:0, totalCount:0 };
  const tabs = [
   { id:'prog',    label:'Progression', badge:0 },
   { id:'journal', label:'Journal',     badge:journal.unreadCount },
   { id:'trophees',label:'Trophées',    badge:0 },
+  { id:'tresors', label:'Trésors',     badge:0 },
  ];
  // Si l'onglet mémorisé n'a plus de sens (ex. premier lancement), repli sur "prog".
  const startTab = tabs.some(t=>t.id===_advlogLastTab) ? _advlogLastTab : 'prog';
@@ -1085,6 +1113,10 @@ function openAdventureLog(){
    <div class="advlog-panel${startTab==='trophees'?' active':''}" id="advlog-panel-trophees" role="tabpanel" aria-labelledby="advlog-tab-trophees">
     <div class="advlog-section-title">🏆 Boss vaincus (${totalBeaten}/${totalZones})</div>
     ${bossGallery}
+   </div>
+   <div class="advlog-panel${startTab==='tresors'?' active':''}" id="advlog-panel-tresors" role="tabpanel" aria-labelledby="advlog-tab-tresors">
+    <div class="advlog-section-title">💎 Trésors du monde (${tresors.foundCount}/${tresors.totalCount})</div>
+    ${tresors.html}
    </div>
   </div>
  `;

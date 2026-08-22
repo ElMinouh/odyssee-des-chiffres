@@ -1195,4 +1195,28 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-112 — Fragments de lore hors-combat (5e voix narrative, "Le Monde") — pilote sur mat
+
+**Contexte** : point 6 identifié dès la session 19 (fragments de lore hors-combat), explicitement différé à l'époque. Cyril a demandé son lancement cette session : des éléments cliquables **optionnels**, sans aucun rapport avec les questions/calculs, qui racontent un peu du MONDE plutôt que l'histoire personnelle du héros (contrairement à `_ZONE_INTRO`/`_ZONE_OUTRO`/`_MAJOR_MOMENT`, qui parlent tous du parcours du joueur). Objectif explicite : une 2e boucle de motivation, indépendante de la réussite scolaire — la curiosité pure.
+
+**Clarifications obtenues avant codage** (maquette validée avant toute implémentation, règle du projet) : les objets peuvent se trouver À LA FOIS sur la carte générale et dans les différents lieux (deux ancrages distincts, pas un seul) ; fréquence choisie : environ 1 zone sur 2-3 ; nom de l'onglet du Carnet : **"Trésors"** (pas "Codex", jugé trop abstrait pour des enfants) ; lancement en pilote sur une seule Odyssée (mat, maths maternelle) avant extension aux 6 autres une fois validé en usage réel.
+
+**Décision — architecture technique** :
+- Deux ancrages, tous deux rattachés à un `zoneId` existant (aucun nouveau système de coordonnées) :
+  - type `'zone'` : visible dans la liste des étapes DU lieu concerné (`renderZoneMap`, 07-map.js) — trouvé EN JOUANT ce lieu.
+  - type `'map'` : visible sur la carte archipel, en léger décalage du nœud de ce lieu (`renderMap`, 07-map.js), dès que la région n'est plus dans le brouillard — **indépendant du verrouillage de la zone elle-même** (curiosité pure, pas de gating scolaire).
+- Nouvelle structure `_LORE_FRAGMENTS` (07-story.js), clé = advKey, valeur = tableau de `{id, type, zoneId, emoji, title, text}`.
+- Marquage : `P.loreFoundIdsByAdv[advKey]` (liste, pattern `storySeen`, scindé par Odyssée comme `mapAvatarZoneByAdv`).
+- **Ajouté à `ODYSSEY_PROGRESS_FIELDS` (12-cloud.js) avec une vraie stratégie de fusion DÈS SA CRÉATION** (union des ids trouvés, par advKey) — application directe de la règle ADR-111 pt.3, pour ne jamais reproduire le bug ADR-108 sur ce nouveau champ.
+- Modale dédiée `_showLoreModal()`, volontairement séparée de `_showStoryModal()` (plus simple : une page, pas de narration audio) — même famille visuelle (`.story-overlay`/`.story-parchment`), avec un accent violet (`#b39ddb`) et un bandeau "🌍 Secret du monde" propres au Monde, distincts du parchemin doré de l'histoire du héros. Enregistré au registre des voix narratives (ADR-94) comme 5e voix : "Le Monde" — déclenchée par un clic volontaire du joueur, canal modale.
+- Nouvel onglet **"Trésors"** du Carnet (`_advTresorsHtml()`, 07-boss.js) : texte complet pour les fragments trouvés, silhouette "❔ Secret non découvert" sinon, compteur X/Y.
+
+**Pilote livré** : Odyssée 'mat' (maths maternelle) uniquement, 12 fragments (7 de type 'zone', 5 de type 'map'), répartis sur les 5 régions (cp:3, ce1:2, ce2:3, cm1:2, final:2) — chaque texte rédigé dans le ton tendre propre à la maternelle, cohérent avec le thème visuel de sa région, et RICHE (plusieurs phrases par fragment, jamais une simple étiquette). Les 6 autres Odyssées suivront une fois ce pilote validé en usage réel par Cyril.
+
+**Alternatives rejetées** : un système de coordonnées libre indépendant des zones (rejeté — complexité de layout inutile, l'ancrage par zoneId réutilise tout ce qui existe déjà) ; réutiliser `_showStoryModal()` telle quelle pour la modale de lore (rejeté — risque de régression sur une fonction déjà fragile et abondamment utilisée ailleurs ; une fonction dédiée, plus simple, isole le risque).
+
+**Impact** : `07-story.js` (`_LORE_FRAGMENTS`, `_isLoreFound`, `_markLoreFound`, `_openLoreFragment`, `_showLoreModal`), `07-map.js` (`_loreZoneStepHtml` dans `renderZoneMap`, points de lore dans `renderMap`), `07-boss.js` (onglet "Trésors", `_advTresorsHtml`), `05-profile.js` (whitelist `loreFoundIdsByAdv`), `12-cloud.js` (`ODYSSEY_PROGRESS_FIELDS` + fusion en union par advKey), `styles.css` (`.lore-point`, `.zone-step.lore-step`, `.lore-parchment`/`.lore-badge`, `.tresor-row`). v12.5.0. Garde-fous de non-régression : `tests/lore-fragments.test.js` (13 tests), `tests/lore-fragments-cloud-merge.test.js` (5 tests). 309/309 tests.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

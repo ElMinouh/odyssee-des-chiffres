@@ -3927,6 +3927,120 @@ function _maybeShowZoneIntro(zone, afterCb){
  }catch(e){ _done(); }
 }
 
+// ═══════════════════════════════════════════════════════
+// v12.5.0 (session 21, ADR-112) : FRAGMENTS DE LORE HORS-COMBAT — 5e voix
+// narrative (registre ADR-94 : "Le Monde"), déclenchée par un clic
+// VOLONTAIRE du joueur, sans lien avec aucune question/calcul. Ne raconte
+// pas l'histoire du héros (ça, c'est _ZONE_INTRO/_ZONE_OUTRO) mais un petit
+// bout du monde lui-même — une curiosité locale, indépendante de la
+// réussite scolaire.
+// Deux ancrages, tous deux rattachés à un zoneId (même donnée de position
+// que le reste de la carte, pas de nouveau système de coordonnées) :
+//  - type 'zone' : visible dans la liste des étapes DU lieu concerné
+//    (renderZoneMap, 07-map.js) — un objet qu'on trouve EN JOUANT ce lieu.
+//  - type 'map'  : visible sur la carte archipel, en léger décalage du
+//    nœud de CE lieu (renderMap, 07-map.js) — visible dès que la région
+//    n'est plus dans le brouillard, INDÉPENDAMMENT du verrouillage de la
+//    zone elle-même (curiosité pure, pas liée à la progression scolaire).
+// Marquage : P.loreFoundIdsByAdv[advKey] (liste, pattern storySeen). Ajouté
+// à ODYSSEY_PROGRESS_FIELDS avec une fusion en UNION (12-cloud.js) — jamais
+// laissé fusionner par défaut (règle ADR-111 pt.3).
+// Pilote : Odyssée 1/7 (maths maternelle), 12 fragments. Les 6 autres
+// Odyssées suivront une fois le pilote validé en usage réel.
+const _LORE_FRAGMENTS = {
+ mat: [
+  {id:'mat_lore_1', type:'zone', zoneId:'mat_cp_1', emoji:'🍄', title:'Le champignon du Pré Vert',
+   text:"Ce petit champignon pousse depuis toujours au milieu du Pré Vert. On raconte qu'il a vu passer tous les animaux du pré, un par un, sans jamais bouger d'un centimètre. Les jours de pluie, les escargots viennent s'abriter dessous et lui racontent leurs histoires. Il connaît sûrement tous les secrets de la prairie, mais il ne les dit jamais à personne... sauf peut-être à toi."},
+  {id:'mat_lore_2', type:'map', zoneId:'mat_cp_3', emoji:'🪷', title:'Le nénuphar chanteur',
+   text:"Au bord de la Petite Mare flotte un nénuphar un peu spécial. Quand le vent souffle doucement dessus, il se met à chantonner une petite mélodie toute simple. Personne ne sait qui la lui a apprise, mais les grenouilles du coin l'accompagnent en chœur tous les soirs."},
+  {id:'mat_lore_3', type:'zone', zoneId:'mat_cp_5', emoji:'🌈', title:"Le bout de l'arc-en-ciel",
+   text:"Tout en haut de la Colline Arc-en-ciel, il y a un endroit où les couleurs semblent commencer. On raconte que c'est là que naissent tous les arcs-en-ciel de la région, avant de s'étirer dans le ciel. Personne n'a encore touché le tout premier reflet, mais beaucoup d'animaux viennent y faire une petite sieste au soleil."},
+  {id:'mat_lore_4', type:'zone', zoneId:'mat_ce1_1', emoji:'🍯', title:'Le vieux pommier',
+   text:"Au centre du Verger Sucré pousse le plus vieux pommier de la région. Il donne des pommes toute l'année, même en hiver, ce qui n'arrive jamais ailleurs. On dit que c'est parce qu'il a été planté par la toute première abeille du verger, il y a très très longtemps."},
+  {id:'mat_lore_5', type:'map', zoneId:'mat_ce1_4', emoji:'🌰', title:'La cachette secrète',
+   text:"Sous une racine, à l'Allée des Noisettes, se cache un petit tas de noisettes oublié depuis longtemps. Un écureuil très distrait l'a caché là, il y a des années, et n'a jamais réussi à le retrouver. Depuis, tous les écureuils du coin viennent parfois vérifier si, par chance, ce n'est pas leur propre cachette."},
+  {id:'mat_lore_6', type:'zone', zoneId:'mat_ce2_1', emoji:'🍄', title:'Le tapis de mousse',
+   text:"La mousse de cette clairière est si douce que tous les animaux de la forêt viennent y faire la sieste. Elle pousse plus vite ici que partout ailleurs, comme si elle savait qu'elle devait rester bien moelleuse pour accueillir ses visiteurs."},
+  {id:'mat_lore_7', type:'map', zoneId:'mat_ce2_3', emoji:'🦉', title:'Le nid le plus haut',
+   text:"Tout en haut du Vieux Chêne, un petit nid est resté vide depuis des années. Personne ne sait quel oiseau l'a construit là, si haut que même les hiboux ont du mal à l'atteindre. Certains disent qu'il attend juste le bon moment pour être habité de nouveau."},
+  {id:'mat_lore_8', type:'zone', zoneId:'mat_ce2_5', emoji:'✨', title:'La pierre qui scintille',
+   text:"Une petite pierre, au milieu du Sous-Bois Étoilé, brille doucement dès que la nuit tombe. Les renards du coin racontent qu'elle a gardé un peu de lumière des étoiles, tombée ici un soir d'été. Personne ne sait pourquoi, mais elle rend toujours ce coin de forêt un peu plus rassurant."},
+  {id:'mat_lore_9', type:'zone', zoneId:'mat_cm1_1', emoji:'🐚', title:'Le grand coquillage',
+   text:"Sur la Plage des Palmiers repose un coquillage immense, bien plus gros que tous les autres. Quand on colle son oreille dessus, on entend le bruit des vagues, même les jours sans vent. Les petits crabes du coin racontent qu'il garde le souvenir de toutes les marées depuis toujours."},
+  {id:'mat_lore_10', type:'map', zoneId:'mat_cm1_3', emoji:'🪸', title:'Le corail qui change de couleur',
+   text:"Au cœur du Récif Coloré pousse un corail un peu particulier : il change doucement de couleur selon les moments de la journée. Rose le matin, bleu à midi, orange le soir. Les poissons du coin adorent venir s'y reposer, quelle que soit sa couleur du jour."},
+  {id:'mat_lore_11', type:'zone', zoneId:'mat_final_2', emoji:'☁️', title:'Le nuage tout doux',
+   text:"Ce nuage-là est resté immobile au-dessus du Nuage Câlin depuis toujours, plus doux et plus rond que tous les autres. On raconte qu'il aime bercer les petites étoiles filantes fatiguées, le temps d'un instant, avant qu'elles ne repartent traverser le ciel."},
+  {id:'mat_lore_12', type:'map', zoneId:'mat_final_4', emoji:'🔭', title:'La lunette oubliée',
+   text:"Tout en haut de la Tour Scintillante, une vieille lunette regarde le ciel depuis si longtemps que personne ne se souvient qui l'a posée là. Ceux qui osent regarder dedans racontent qu'on y voit, parfois, une étoile qu'on ne voit jamais ailleurs."},
+ ],
+};
+
+function _loreFragmentsFor(advKey){
+ return (_LORE_FRAGMENTS && _LORE_FRAGMENTS[advKey]) || [];
+}
+function _loreZoneFragment(zoneId){
+ const adv = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
+ return _loreFragmentsFor(adv).find(f => f.type==='zone' && f.zoneId===zoneId) || null;
+}
+function _loreMapFragmentsNear(zoneId){
+ const adv = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
+ return _loreFragmentsFor(adv).filter(f => f.type==='map' && f.zoneId===zoneId);
+}
+function _isLoreFound(id){
+ const adv = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
+ const arr = (typeof P!=='undefined' && P && P.loreFoundIdsByAdv && P.loreFoundIdsByAdv[adv]) || [];
+ return arr.indexOf(id) >= 0;
+}
+function _markLoreFound(id){
+ if(typeof P==='undefined' || !P) return;
+ const adv = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
+ P.loreFoundIdsByAdv = P.loreFoundIdsByAdv || {};
+ const arr = P.loreFoundIdsByAdv[adv] || [];
+ if(arr.indexOf(id) < 0){
+  arr.push(id);
+  P.loreFoundIdsByAdv[adv] = arr;
+  if(typeof saveProfileNow==='function') saveProfileNow();
+ }
+}
+// Appelée par le clic (carte ou écran de lieu) — marque trouvé puis ouvre la modale.
+function _openLoreFragment(id){
+ const adv = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
+ const frag = _loreFragmentsFor(adv).find(f => f.id === id);
+ if(!frag) return;
+ _markLoreFound(id);
+ _showLoreModal(frag);
+ // Rafraîchit l'écran du lieu (teaser → titre révélé) sans perturber la carte.
+ if(document.getElementById('zone-steps-path') && typeof renderZoneMap==='function') renderZoneMap();
+}
+// Modale dédiée (volontairement séparée de _showStoryModal, plus simple :
+// une seule page, pas de narration audio) — même famille visuelle
+// (.story-overlay/.story-parchment) avec un accent violet propre au Monde.
+function _showLoreModal(frag){
+ const overlay = document.createElement('div');
+ overlay.className = 'story-overlay';
+ function _escHandler(e){ if(e.key==='Escape') close(); }
+ function close(){
+  overlay.classList.add('story-out');
+  document.removeEventListener('keydown', _escHandler);
+  setTimeout(()=>{ try{ overlay.remove(); }catch(e){} }, 300);
+ }
+ overlay.innerHTML = `
+  <div class="story-parchment lore-parchment">
+   <div class="lore-badge">🌍 Secret du monde</div>
+   <div class="story-emoji">${frag.emoji||'✨'}</div>
+   <div class="story-text">${esc(frag.text)}</div>
+   <div class="story-nav" style="justify-content:center;">
+    <button class="story-btn lore-close">Fermer</button>
+   </div>
+  </div>`;
+ document.body.appendChild(overlay);
+ const btn = overlay.querySelector('.lore-close');
+ if(btn) btn.addEventListener('click', close);
+ overlay.addEventListener('click', (ev)=>{ if(ev.target===overlay) close(); });
+ document.addEventListener('keydown', _escHandler);
+}
+
 
 // ═══════════════════════════════════════════════════════
 // v8.7.69 (O5) : JOURNAL DE QUÊTE — relire les chapitres de l'histoire.
