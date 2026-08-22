@@ -1139,4 +1139,20 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+---
+
+## ADR-109 — "Retour à la carte" doit toujours mener à la carte du monde ; incohérence narrative des moments charnières sur 4 Odyssées
+
+**Contexte (bouton)** : le correctif ADR-108/v12.4.68 avait relabellisé le bouton en "Retour à la zone" quand la zone n'est pas terminée, pour que le libellé corresponde à la vraie destination de `returnMenu()`. Cyril a clarifié qu'il voulait l'inverse : un bouton "Retour à la carte" qui mène RÉELLEMENT à la carte du monde, systématiquement — le retour à la zone étant déjà couvert par le bouton "Retour au lieu" juste à côté.
+
+**Décision (bouton)** : nouvelle fonction `returnToWorldMap()`, sans condition, appelée par `endReplayAction()` à la place de `returnMenu()`. `returnMenu()` garde son comportement d'origine (retour "intelligent" à la zone si elle n'est pas terminée) pour ses autres usages (bouton "Retour au menu", notamment) — non touché.
+
+**Contexte (incohérence narrative)** : en signalant à nouveau le "Verger des Oranges qui reprend des couleurs" après une réinitialisation complète de l'Odyssée, Cyril a prouvé que ce n'était pas un résidu du bug cloud (ADR-108) mais un **vrai bug de contenu, actif**. Cause : `_maybeShowMajorMoment()` se déclenche dès l'arrivée dans une région (avant d'y avoir joué la moindre zone), et le texte `council` de 4 Odyssées (mat/ce1, primfr/ce1, matfr/ce1, colfr/ce1) célébrait à tort la région **qu'on vient d'atteindre** plutôt que la région **précédente, déjà entièrement conquise** — contrairement au modèle correct suivi par prim/col/primhist ("Un royaume déjà libéré", qui parle du passé).
+
+**Décision (incohérence narrative)** : les 4 textes corrigés pour célébrer la région précédente (ex. mat/ce1 : "la Plaine des Coquelicots est redevenue toute rouge" au lieu de "le Verger des Oranges reprend des couleurs"). Règle de discipline ajoutée en commentaire au-dessus de `_MAJOR_MOMENT` pour éviter la récidive sur une future Odyssée : le texte `council` ne doit jamais prétendre que la région tout juste atteinte a déjà progressé.
+
+**Impact** : `01-core.js` (`returnToWorldMap`), `07-game.js` (libellé simplifié), `07-story.js` (4 textes corrigés + règle de discipline). v12.4.69. 286/286 tests inchangés.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

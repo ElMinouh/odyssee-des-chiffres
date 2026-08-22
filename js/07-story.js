@@ -2396,6 +2396,15 @@ function _maybeShowTwist(zone, afterCb){
 // entrée garde exactement la même forme qu'avant (region/council/choice/
 // epilogueA/epilogueB). L'ordre du tableau n'a pas besoin de suivre l'ordre
 // des régions — _maybeShowMajorMoment() retrouve le bon moment par sa région.
+// ⚠️ RÈGLE DE COHÉRENCE (v12.4.69, incohérence signalée par Cyril sur 4
+// Odyssées à la fois — mat/primfr/matfr/colfr) : ce moment se déclenche DÈS
+// L'ARRIVÉE dans la région désignée (`region`), donc AVANT que le joueur
+// n'y ait joué la moindre zone. Le texte `council` NE DOIT JAMAIS prétendre
+// que CETTE région (celle tout juste atteinte) a déjà progressé — il doit
+// célébrer la région PRÉCÉDENTE (déjà entièrement conquise, sinon on ne
+// pourrait pas être ici). Modèle à suivre (prim/ce1) : "Un royaume déjà
+// libéré" (parle du PASSÉ) — jamais "Ce nouveau royaume reprend des
+// couleurs" (parlerait, à tort, du lieu où l'on vient d'arriver).
 const _MAJOR_MOMENT = {
  prim: [
   {
@@ -2420,7 +2429,7 @@ const _MAJOR_MOMENT = {
  primfr: [
   {
    region:'ce1',
-   council:"Zoé feuillette son carnet, enthousiaste : « Le Quartier de la Lecture respire enfin, {hero} ! Cacophon n'a qu'à bien se tenir. » Malo hoche la tête, pour une fois d'accord avec elle.",
+   council:"Zoé feuillette son carnet, enthousiaste : « Le district des Sons respire enfin, {hero} ! Cacophon n'a qu'à bien se tenir. » Malo hoche la tête, pour une fois d'accord avec elle.",
    choice:{ title:'Le livre de la vieille dame', emoji:'📖',
     text:"La vieille bibliothécaire te tend un livre ouvert, patiente : « Lis-moi ce mot, jeune Verbe. »",
     btnA:'⚡ Je le lis d\'un trait, avec assurance', btnB:'🐢 Je le lis syllabe après syllabe, sans me presser' },
@@ -2440,7 +2449,7 @@ const _MAJOR_MOMENT = {
  mat: [
   {
    region:'ce1',
-   council:"Iris frétille, une lueur orangée scintillant autour d'elle : « {hero}, regarde comme le Verger des Oranges reprend déjà des couleurs ! »",
+   council:"Iris frétille, une lueur rougeoyante scintillant autour d'elle : « {hero}, regarde comme la Plaine des Coquelicots est redevenue toute rouge grâce à toi ! »",
    choice:{ title:'Le petit ourson triste', emoji:'🐻',
     text:"Un ourson soupire : il n'a plus d'oranges à croquer. Il te propose de jouer encore un peu avec toi, pour se consoler.",
     btnA:'🎈 On joue longtemps ensemble, pour le consoler', btnB:'🍊 On l\'aide vite, pour que les oranges reviennent' },
@@ -2458,7 +2467,7 @@ const _MAJOR_MOMENT = {
  matfr: [
   {
    region:'ce1',
-   council:"Plume voltige joyeusement : « {hero}, regarde, le Pré des Premiers Mots a retrouvé ses couleurs ! »",
+   council:"Plume voltige joyeusement : « {hero}, regarde, la Forêt des Animaux Muets a retrouvé la parole ! »",
    choice:{ title:'Le panier renversé', emoji:'🧺',
     text:"Un panier plein d'objets mélangés gît au milieu du pré. Tu peux les ranger calmement, en les nommant, ou vite fait pour retourner jouer.",
     btnA:'🐌 Je range chaque chose calmement, en la nommant', btnB:'🏃 Je range vite, pour retourner jouer' },
@@ -2496,7 +2505,7 @@ const _MAJOR_MOMENT = {
  colfr: [
   {
    region:'ce1',
-   council:"Solène, un sourire discret aux lèvres : « {hero}, la Caverne aux Mille Reflets scintille à nouveau. Un tome de repris, déjà. »",
+   council:"Solène, un sourire discret aux lèvres : « {hero}, le Français des Origines n'a plus aucun secret pour toi. Un tome de repris, déjà. »",
    choice:{ title:'Le mot qui manque', emoji:'💬',
     text:"Au Marché des Synonymes, un mot parfait te coûterait cher. Un mot moins précis, mais économique, ferait presque aussi bien l'affaire.",
     btnA:'💰 Je paie le mot parfait, quel qu\'en soit le prix', btnB:'🪙 Je choisis un mot moins précis, mais économique' },

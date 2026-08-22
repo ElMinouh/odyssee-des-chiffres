@@ -1755,6 +1755,7 @@
     "restoreProfileByCode": "writable",
     "returnMenu": "writable",
     "returnToModule": "writable",
+    "returnToWorldMap": "writable",
     "revQueue": "writable",
     "ri": "writable",
     "rmCC": "writable",

@@ -728,11 +728,25 @@ function _quitGameConfirmed(dest){
 // Sinon : relance la partie normale (comme avant).
 function endReplayAction(){
  if(typeof GM!=='undefined' && GM.mapZone && GM.mapStep){
-  // Retour à la carte de zone : on réutilise returnMenu qui gère bien ce cas
-  if(typeof returnMenu==='function') returnMenu();
+  // v12.4.69 : ce bouton doit RÉELLEMENT amener à la carte du monde, toujours
+  // — pas à la carte de la zone si elle n'est pas terminée (ce cas est déjà
+  // couvert par le bouton "Retour au lieu" juste à côté). returnMenu() a un
+  // comportement différent et volontaire pour ses AUTRES usages (retour
+  // "intelligent" à la zone en cours) — on ne le réutilise donc plus ici.
+  if(typeof returnToWorldMap==='function') returnToWorldMap();
   return;
  }
  if(typeof startGame==='function') startGame();
+}
+// v12.4.69 : retour à la carte du monde, sans condition — utilisé par le
+// bouton "🗺️ Retour à la carte" (v-end), qui doit toujours amener là où son
+// libellé le promet, quel que soit l'état d'avancement de la zone en cours.
+function returnToWorldMap(){
+ if(typeof GM!=='undefined'){ GM.mapZone = null; GM.mapStep = null; }
+ if(typeof stopZoneSkin==='function') stopZoneSkin();
+ _navStack = [];
+ if(typeof renderMap==='function') renderMap();
+ showView('v-map');
 }
 
 // ═══════════════════════════════════════════════════════

@@ -1873,6 +1873,7 @@ globalThis.__api = {
   restoreProfileByCode: (typeof restoreProfileByCode==='function') ? restoreProfileByCode : undefined,
   returnMenu: (typeof returnMenu==='function') ? returnMenu : undefined,
   returnToModule: (typeof returnToModule==='function') ? returnToModule : undefined,
+  returnToWorldMap: (typeof returnToWorldMap==='function') ? returnToWorldMap : undefined,
   revQueue: (typeof revQueue!=='undefined') ? revQueue : undefined,
   ri: (typeof ri!=='undefined') ? ri : undefined,
   rmCC: (typeof rmCC==='function') ? rmCC : undefined,

@@ -1509,14 +1509,10 @@ if(typeof checkMilestones==='function') checkMilestones();
  const _btnReplay = $('btn-replay');
  if(_btnReplay){
   if(GM.mapZone && GM.mapStep){
-   // v12.4.68 : le libellé doit refléter la VRAIE destination — returnMenu()
-   // (appelé par ce bouton) ne va à la carte du MONDE que si la zone est
-   // entièrement conquise ; sinon il ramène à la carte de LA ZONE (même
-   // destination que le bouton "Retour au lieu" juste en dessous). Avant ce
-   // correctif, le libellé disait toujours "à la carte" même quand la
-   // destination réelle était la zone — signalé par Cyril comme trompeur.
-   const _zoneDone = !!(P.zoneProgress && P.zoneProgress[GM.mapZone.id] && P.zoneProgress[GM.mapZone.id].completed);
-   _btnReplay.innerHTML = _zoneDone ? '🗺️ Retour à la carte' : '🗺️ Retour à la zone';
+   // v12.4.69 : ce bouton appelle désormais returnToWorldMap() (toujours la
+   // carte du monde), plus returnMenu() — le libellé peut donc redevenir
+   // fixe, il correspond maintenant systématiquement à sa vraie destination.
+   _btnReplay.innerHTML = '🗺️ Retour à la carte';
    _btnReplay.style.background = '#16a085';
   } else {
    _btnReplay.innerHTML = '🔄 REJOUER';
