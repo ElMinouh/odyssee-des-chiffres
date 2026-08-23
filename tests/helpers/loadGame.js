@@ -42,7 +42,12 @@ function makeLocalStorage(initial = {}) {
 function fakeEl() {
   const cls = new Set();
   return {
-    value: '', innerHTML: '', className: '', style: {},
+    value: '', innerHTML: '', className: '', dataset: {},
+    style: {
+      setProperty(k, v) { this[k] = v; },
+      getPropertyValue(k) { return this[k]; },
+      removeProperty(k) { delete this[k]; },
+    },
     classList: {
       add(...c) { c.forEach((x) => cls.add(x)); },
       remove(...c) { c.forEach((x) => cls.delete(x)); },
@@ -96,7 +101,7 @@ export function loadGame(files, initialStorage = {}) {
     querySelector: () => null,
     querySelectorAll: () => [],
     addEventListener: () => {},
-    body: fakeEl(),
+    body: registryEl('BODY'),
     documentElement: fakeEl(),
   };
 
