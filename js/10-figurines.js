@@ -1866,11 +1866,16 @@ function resetAdventure(playerName){
       // narratifs ajoutés après ADR-52, jamais ajoutés ici — exactement le
       // risque que le commentaire d'ADR-52 avait anticipé ("l'oubli d'un
       // TOUT NOUVEAU champ persistant introduit par un futur système
-      // narratif"). heroTraitApproche/heroTraitMoteur/heroTraitStyle (ex-
-      // heroTrait unique jusqu'à v12.4.61) ne sont PAS effacés : ce sont des
-      // traits de personnage choisis par le joueur, pas une progression
-      // d'Odyssée (même catégorie que l'avatar/les skills, explicitement
-      // conservés).
+      // narratif").
+      // v12.7.0 (ADR-113) : le trait de héros est désormais propre à CHAQUE
+      // Odyssée (plus un choix de personnage global unique) — ce reset
+      // concernant les 7 aventures à la fois ("toutes les histoires seront
+      // à redécouvrir"), les 3 axes sont maintenant remis à zéro ici aussi,
+      // pour que le questionnaire se represente dès la prochaine ouverture
+      // de chaque Odyssée, cohérent avec le reste du reset narratif.
+      data.heroTraitApprocheByAdv = {};
+      data.heroTraitMoteurByAdv = {};
+      data.heroTraitStyleByAdv = {};
       data.journalEntriesByAdv = {};
       data.lastTwistLineByAdv = {};
       data.talismanRevealShown = false;

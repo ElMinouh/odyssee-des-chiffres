@@ -633,7 +633,13 @@ function _companionComment(wasCorrect){
   if(!comp) return '';
   if(wasCorrect && typeof P!=='undefined' && P && Math.random() < 0.25){
    const advPools = _HERO_TRAIT_LINES[adv];
-   const traitKeys = [P.heroTraitApproche, P.heroTraitMoteur, P.heroTraitStyle].filter(Boolean);
+   // v12.7.0 (ADR-113) : trait propre à CHAQUE Odyssée désormais (plus un
+   // choix de personnage global) — on lit le trait de l'Odyssée EN COURS.
+   const traitKeys = [
+    P.heroTraitApprocheByAdv && P.heroTraitApprocheByAdv[adv],
+    P.heroTraitMoteurByAdv && P.heroTraitMoteurByAdv[adv],
+    P.heroTraitStyleByAdv && P.heroTraitStyleByAdv[adv],
+   ].filter(Boolean);
    if(advPools && traitKeys.length){
     const chosenTrait = traitKeys[Math.floor(Math.random()*traitKeys.length)];
     const traitPool = advPools[chosenTrait];

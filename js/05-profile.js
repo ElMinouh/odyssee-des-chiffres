@@ -97,6 +97,13 @@ function _safeBool(v, defaultV){
  return typeof v === 'boolean' ? v : defaultV;
 }
 
+// v12.7.0 (ADR-113) : détermine sur quelle Odyssée reprendre un ancien trait
+// de héros global lors de la migration — la dernière Odyssée connue du
+// profil si elle est valide, sinon 'prim' par défaut.
+const _HERO_TRAIT_ADV_KEYS = ['prim','primfr','primhist','mat','matfr','col','colfr'];
+function _HERO_TRAIT_MIGRATION_ADV(raw){
+ return (typeof raw.lastAdventure === 'string' && _HERO_TRAIT_ADV_KEYS.includes(raw.lastAdventure)) ? raw.lastAdventure : 'prim';
+}
 function validateProfile(raw, defaultName){
  if(!raw || typeof raw !== 'object') return null;
  const def = defProfile(defaultName);
@@ -312,17 +319,46 @@ function validateProfile(raw, defaultName){
   // pour onbAccountSeen — la visite se relançait à chaque connexion malgré
   // ob4MarkCompleted(). Toujours ajouter tout nouveau marqueur ici.
   onbMapSeen: _safeBool(raw.onbMapSeen, false),
-  // v12.4.61 (extension immersion narrative N8→N9) : remplace l'ancien
-  // heroTrait unique (2 valeurs) par 3 axes indépendants, posés en 3
-  // questions distinctes à l'ouverture (voir _HERO_QUIZ, 07-story.js).
-  // Migration : un profil déjà pourvu de l'ancien heroTrait (mais pas encore
-  // du nouveau heroTraitApproche) voit sa valeur reprise sur le 1er axe, pour
-  // ne pas perdre un choix déjà fait — les 2 questions restantes complètent
-  // alors le profil dès la prochaine ouverture d'Odyssée.
-  heroTraitApproche: (['brave','malin','loyal','curieux'].includes(raw.heroTraitApproche)) ? raw.heroTraitApproche
-   : (['brave','malin'].includes(raw.heroTrait) ? raw.heroTrait : null),
-  heroTraitMoteur: (['protecteur','enqueteur','ambitieux','reparateur'].includes(raw.heroTraitMoteur)) ? raw.heroTraitMoteur : null,
-  heroTraitStyle: (['rassurant','determine','joyeux','reflechi'].includes(raw.heroTraitStyle)) ? raw.heroTraitStyle : null,
+  // v12.7.0 (ADR-113) : le trait de héros devient propre à CHAQUE Odyssée
+  // (demande explicite de Cyril — une même personne peut faire des choix
+  // différents selon l'histoire vécue), remplaçant l'ancienne version
+  // globale unique (heroTraitApproche/Moteur/Style, v12.4.61-v12.6.0).
+  // Migration : un profil déjà pourvu de l'ancien trait global voit sa
+  // réponse reprise pour SA dernière Odyssée connue (P.lastAdventure), à
+  // défaut 'prim' — pour ne pas perdre purement et simplement un choix déjà
+  // fait. Cette reprise n'est qu'une approximation ponctuelle : elle ne
+  // s'applique qu'une seule fois (tant qu'aucun axe n'a de valeur ByAdv), et
+  // n'empêche pas les autres Odyssées de poser leur propre questionnaire
+  // dès qu'elles sont ouvertes pour la première fois après cette mise à jour.
+  heroTraitApprocheByAdv: (function(){
+   const src = (raw.heroTraitApprocheByAdv && typeof raw.heroTraitApprocheByAdv === 'object') ? raw.heroTraitApprocheByAdv : {};
+   const out = {};
+   Object.keys(src).forEach(k=>{ if(['brave','malin','loyal','curieux'].includes(src[k])) out[k] = src[k]; });
+   if(!Object.keys(out).length){
+    const legacy = (['brave','malin','loyal','curieux'].includes(raw.heroTraitApproche)) ? raw.heroTraitApproche
+     : (['brave','malin'].includes(raw.heroTrait) ? raw.heroTrait : null);
+    if(legacy) out[_HERO_TRAIT_MIGRATION_ADV(raw)] = legacy;
+   }
+   return out;
+  })(),
+  heroTraitMoteurByAdv: (function(){
+   const src = (raw.heroTraitMoteurByAdv && typeof raw.heroTraitMoteurByAdv === 'object') ? raw.heroTraitMoteurByAdv : {};
+   const out = {};
+   Object.keys(src).forEach(k=>{ if(['protecteur','enqueteur','ambitieux','reparateur'].includes(src[k])) out[k] = src[k]; });
+   if(!Object.keys(out).length && ['protecteur','enqueteur','ambitieux','reparateur'].includes(raw.heroTraitMoteur)){
+    out[_HERO_TRAIT_MIGRATION_ADV(raw)] = raw.heroTraitMoteur;
+   }
+   return out;
+  })(),
+  heroTraitStyleByAdv: (function(){
+   const src = (raw.heroTraitStyleByAdv && typeof raw.heroTraitStyleByAdv === 'object') ? raw.heroTraitStyleByAdv : {};
+   const out = {};
+   Object.keys(src).forEach(k=>{ if(['rassurant','determine','joyeux','reflechi'].includes(src[k])) out[k] = src[k]; });
+   if(!Object.keys(out).length && ['rassurant','determine','joyeux','reflechi'].includes(raw.heroTraitStyle)){
+    out[_HERO_TRAIT_MIGRATION_ADV(raw)] = raw.heroTraitStyle;
+   }
+   return out;
+  })(),
   // v12.4.51 (suite immersion narrative, point 4) : le Talisman ne s'anime
   // qu'une seule fois — flag one-shot.
   talismanRevealShown: _safeBool(raw.talismanRevealShown, false),

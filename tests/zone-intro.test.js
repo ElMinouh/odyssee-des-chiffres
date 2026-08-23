@@ -81,7 +81,7 @@ describe('_maybeShowStory() — le texte d\'ouverture du lieu arrive en dernier 
     api.setGM({ level: 'PS', subject: 'math' });
     api.startAdventure('mat', true);
     api.setP({
-      name: 'Test', heroTraitApproche: 'brave', heroTraitMoteur: 'protecteur', heroTraitStyle: 'determine',
+      name: 'Test', heroTraitApprocheByAdv: { mat: 'brave' }, heroTraitMoteurByAdv: { mat: 'protecteur' }, heroTraitStyleByAdv: { mat: 'determine' },
       mapBossBeaten: [], storySeen: ['mat_intro', 'mat_c_cp'],
       mapAvatarZoneByAdv: { mat: 'mat_cp_3' }, zoneProgress: {},
     });

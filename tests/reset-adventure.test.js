@@ -38,6 +38,10 @@ describe('resetAdventure() — remise à zéro complète (ADR-51)', () => {
       twistLinesUsedByAdv: { prim: [1, 4, 7] },
       _epilogueBonusCredited: ['prim'],
       levelWins: { CE1: 12, '6e': 4 },
+      // v12.7.0 (ADR-113) : trait de héros, désormais par Odyssée.
+      heroTraitApprocheByAdv: { mat: 'brave', col: 'malin' },
+      heroTraitMoteurByAdv: { mat: 'protecteur' },
+      heroTraitStyleByAdv: { mat: 'determine' },
     };
   }
 
@@ -67,6 +71,12 @@ describe('resetAdventure() — remise à zéro complète (ADR-51)', () => {
     expect(after.twistLinesUsedByAdv).toEqual({});
     expect(after._epilogueBonusCredited).toEqual([]);
     expect(after.levelWins).toEqual({ CE1: 0, '6e': 0 });
+    // v12.7.0 (ADR-113) : le trait de héros est maintenant par Odyssée — ce
+    // reset concernant les 7 aventures à la fois, les 3 maps repartent à
+    // zéro (le questionnaire se represente à chaque Odyssée après reset).
+    expect(after.heroTraitApprocheByAdv).toEqual({});
+    expect(after.heroTraitMoteurByAdv).toEqual({});
+    expect(after.heroTraitStyleByAdv).toEqual({});
 
     // Aucun des ids Odyssée connus ne doit survivre au reset...
     for (const id of knownIds) {

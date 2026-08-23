@@ -267,6 +267,9 @@ function _mergeCloudProfiles(local, imported){
   // par Odyssée — ajouté ici dès sa création (règle ADR-111 pt.3), jamais
   // laissé fusionner par défaut.
   'loreFoundIdsByAdv',
+  // v12.7.0 (ADR-113) : trait de héros, désormais propre à chaque Odyssée —
+  // même vigilance, ajouté dès sa création.
+  'heroTraitApprocheByAdv', 'heroTraitMoteurByAdv', 'heroTraitStyleByAdv',
  ];
  if(resetWinner === 'local'){
   ODYSSEY_PROGRESS_FIELDS.forEach(f => { out[f] = local[f]; });
@@ -286,7 +289,8 @@ function _mergeCloudProfiles(local, imported){
   out._epilogueBonusCredited = uniq(local._epilogueBonusCredited, imported._epilogueBonusCredited);
   ['talismanRevealShown','rainbowRevealShown','bookRevealShown','badgeRevealShown','armorRevealShown','libraryRevealShown','histLibraryRevealShown']
    .forEach(f => { out[f] = !!(local[f] || imported[f]); });
-  ['majorChoiceByAdv','twistLinesUsedByAdv','lastTwistLineByAdv','journalEntriesByAdv']
+  ['majorChoiceByAdv','twistLinesUsedByAdv','lastTwistLineByAdv','journalEntriesByAdv',
+   'heroTraitApprocheByAdv','heroTraitMoteurByAdv','heroTraitStyleByAdv']
    .forEach(f => { out[f] = Object.assign({}, imported[f]||{}, local[f]||{}); });
   // v12.5.0 (ADR-112) : loreFoundIdsByAdv est une liste cumulative "trouvé"
   // (comme storySeen), mais scindée par advKey — chaque clé doit donc être

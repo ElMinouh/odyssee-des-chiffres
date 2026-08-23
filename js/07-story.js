@@ -2802,40 +2802,45 @@ function _maybeShowStory(afterCb){
   return;
  }
  // 1) Trait du héros — 3 questions indépendantes, UNE SEULE FOIS chacune,
- // juste après le prologue et avant le premier exercice (jamais montré à un
- // joueur qui a déjà progressé, pour ne pas interrompre une Odyssée en
- // cours). v12.4.50 (Lot 4, audit immersion narrative N8), étendu v12.4.61
- // (3 questions adaptées à l'Odyssée en cours plutôt qu'une seule question
- // générique), puis déplacé v12.4.62 : à la demande de Cyril, il n'était
- // pas cohérent de poser ces questions AVANT le prologue — le héros ne sait
- // pas encore, à ce stade, quel rôle il va avoir ni ce qu'il devra faire. Le
- // choix, une fois fait, reste un trait de personnage global : il n'est pas
- // reposé si le joueur change ensuite d'Odyssée, voir _HERO_TRAIT_LINES/
- // 07-map.js et _HERO_EPILOGUE_FRAGMENTS plus haut, qui adaptent le RAPPEL —
- // pas la question elle-même — à l'Odyssée en cours à ce moment-là.
- if((P.mapBossBeaten||[]).length === 0 && typeof _showChoiceModal==='function'){
+ // juste après le prologue et avant le premier exercice. v12.4.50 (Lot 4,
+ // audit immersion narrative N8), étendu v12.4.61 (3 questions adaptées à
+ // l'Odyssée), déplacé v12.4.62 (après le prologue, pas avant). **v12.7.0
+ // (ADR-113, demande explicite de Cyril)** : le trait n'est plus un choix de
+ // personnage global unique — il est désormais posé UNE FOIS PAR ODYSSÉE
+ // (une même personne peut faire des choix différents selon l'histoire
+ // vécue). Stocké dans P.heroTrait{Approche,Moteur,Style}ByAdv[advKey],
+ // fusionné en cloud comme les autres champs "ByAdv" (12-cloud.js). Le
+ // garde-fou "aucun boss battu" reste scopé à l'Odyssée courante : ne
+ // jamais interrompre une Odyssée où le joueur a déjà progressé avant
+ // l'introduction de cette version par-Odyssée.
+ if(typeof _showChoiceModal==='function'){
   const _adv = (typeof GM!=='undefined' && GM && GM.adventure) || 'prim';
   const _quiz = _HERO_QUIZ[_adv];
-  if(_quiz){
-   if(!P.heroTraitApproche){
+  const _advZones = (typeof MAP_ZONES!=='undefined' ? MAP_ZONES : []);
+  const _advBossBeaten = _advZones.some(z => (P.mapBossBeaten||[]).includes(z.id));
+  if(_quiz && !_advBossBeaten){
+   P.heroTraitApprocheByAdv = P.heroTraitApprocheByAdv || {};
+   P.heroTraitMoteurByAdv = P.heroTraitMoteurByAdv || {};
+   P.heroTraitStyleByAdv = P.heroTraitStyleByAdv || {};
+   if(!P.heroTraitApprocheByAdv[_adv]){
     _showChoiceModal(_quiz.q1, (val)=>{
-     P.heroTraitApproche = val;
+     P.heroTraitApprocheByAdv[_adv] = val;
      if(typeof saveProfile==='function') saveProfile();
      _maybeShowStory(_done);
     });
     return;
    }
-   if(!P.heroTraitMoteur){
+   if(!P.heroTraitMoteurByAdv[_adv]){
     _showChoiceModal(_quiz.q2, (val)=>{
-     P.heroTraitMoteur = val;
+     P.heroTraitMoteurByAdv[_adv] = val;
      if(typeof saveProfile==='function') saveProfile();
      _maybeShowStory(_done);
     });
     return;
    }
-   if(!P.heroTraitStyle){
+   if(!P.heroTraitStyleByAdv[_adv]){
     _showChoiceModal(_quiz.q3, (val)=>{
-     P.heroTraitStyle = val;
+     P.heroTraitStyleByAdv[_adv] = val;
      if(typeof saveProfile==='function') saveProfile();
      _maybeShowStory(_done);
     });
@@ -2902,16 +2907,18 @@ function _maybeShowStory(afterCb){
     // v12.4.51 (suite immersion narrative, point 5), étendu v12.4.61 (3
     // questions au lieu d'une seule, voir _HERO_QUIZ) : boucle la boucle
     // ouverte par le tout premier choix du jeu (N8) — une phrase de
-    // clôture composée à partir des 3 traits choisis, adaptée au
-    // vocabulaire de l'Odyssée qui se termine ici (pas forcément celle où
-    // la question a été posée — le trait est un choix de personnage
-    // global, voir _maybeShowStory), en tout dernier (après les pages de
-    // conséquence des moments charnières, s'il y en a).
-    if(typeof P!=='undefined' && P && P.heroTraitApproche && P.heroTraitMoteur && P.heroTraitStyle){
+    // clôture composée à partir des 3 traits choisis pour CETTE Odyssée
+    // (v12.7.0, ADR-113 — le trait est désormais propre à chaque Odyssée,
+    // plus un choix de personnage global), en tout dernier (après les
+    // pages de conséquence des moments charnières, s'il y en a).
+    const _epiTA = P.heroTraitApprocheByAdv && P.heroTraitApprocheByAdv[advKey];
+    const _epiTM = P.heroTraitMoteurByAdv && P.heroTraitMoteurByAdv[advKey];
+    const _epiTS = P.heroTraitStyleByAdv && P.heroTraitStyleByAdv[advKey];
+    if(typeof P!=='undefined' && P && _epiTA && _epiTM && _epiTS){
      const _frag = _HERO_EPILOGUE_FRAGMENTS[advKey];
-     const _a = _frag && _frag.approche[P.heroTraitApproche];
-     const _m = _frag && _frag.moteur[P.heroTraitMoteur];
-     const _s = _frag && _frag.style[P.heroTraitStyle];
+     const _a = _frag && _frag.approche[_epiTA];
+     const _m = _frag && _frag.moteur[_epiTM];
+     const _s = _frag && _frag.style[_epiTS];
      if(_a && _m && _s){
       const _traitLine = (typeof _storyText==='function')
        ? _storyText(`Tu as traversé {kingdom} ${_a}, ${_m}, ${_s} — c'est cela, être un héros.`)
