@@ -319,6 +319,14 @@ function validateProfile(raw, defaultName){
   // pour onbAccountSeen — la visite se relançait à chaque connexion malgré
   // ob4MarkCompleted(). Toujours ajouter tout nouveau marqueur ici.
   onbMapSeen: _safeBool(raw.onbMapSeen, false),
+  // Correctif dette technique (relevé fin 21e conversation) : lastAdventure
+  // était déjà écrit en mémoire par startAdventure() (07-map.js) à chaque
+  // changement d'Odyssée, mais jamais ajouté à cette liste blanche — donc
+  // silencieusement effacé à CHAQUE rechargement de profil, exactement le
+  // même bug que onbAccountSeen/onbMapSeen documenté juste au-dessus. Utilisé
+  // par continueAdventure() ("Reprendre l'aventure" à l'accueil) et par la
+  // migration du trait de héros (_HERO_TRAIT_MIGRATION_ADV, v12.7.0/ADR-113).
+  lastAdventure: (_HERO_TRAIT_ADV_KEYS.includes(raw.lastAdventure)) ? raw.lastAdventure : null,
   // v12.7.0 (ADR-113) : le trait de héros devient propre à CHAQUE Odyssée
   // (demande explicite de Cyril — une même personne peut faire des choix
   // différents selon l'histoire vécue), remplaçant l'ancienne version
@@ -444,7 +452,7 @@ function defProfile(name){
   histCatFilters:{frise:true,personnages:true,evenements:true,civilisation:true,temps:true,repere:true},
   frCatFilters:{conj:true,orth:true,gram:true,vocab:true},
   heroStageId:'oeuf',
-  cloudCode:null,cloudEnabled:false,onbAccountSeen:false,onbMapSeen:false,_epilogueBonusCredited:[],photo:null,playerCode:null,
+  cloudCode:null,cloudEnabled:false,onbAccountSeen:false,onbMapSeen:false,_epilogueBonusCredited:[],photo:null,playerCode:null,lastAdventure:null,
   // v11.7.3 (audit n°9) : genre explicite optionnel, réglable par le parent —
   // prioritaire sur l'heuristique orthographique de heroGender() dans 02-data.js.
   gender:null};

@@ -198,3 +198,47 @@ describe('Correctif boutiques par îlot — une table dédiée par aventure', ()
     expect(names.size).toBe(7);
   });
 });
+
+// ─────────────────────────────────────────────────────────────
+// Correctif 5 — P.lastAdventure absent de la liste blanche de validateProfile()
+// (dette technique relevée fin 21e conversation, en creusant la migration du
+// trait de héros ADR-113) : le champ était écrit en mémoire par
+// startAdventure() mais jamais whitelisté, donc perdu à chaque rechargement.
+// ─────────────────────────────────────────────────────────────
+describe('Correctif whitelist — P.lastAdventure survit à validateProfile()', () => {
+  it('conserve une valeur d\'Odyssée valide après une passe de désérialisation', () => {
+    const api = loadGame(FILES);
+    for (const adv of ['prim', 'primfr', 'primhist', 'mat', 'matfr', 'col', 'colfr']) {
+      const out = api.validateProfile({ name: 'Test', lastAdventure: adv }, 'Test');
+      expect(out.lastAdventure).toBe(adv);
+    }
+  });
+
+  it('rejette (→ null) une valeur qui ne correspond à aucune Odyssée connue', () => {
+    const api = loadGame(FILES);
+    const out = api.validateProfile({ name: 'Test', lastAdventure: 'xyz_inconnu' }, 'Test');
+    expect(out.lastAdventure).toBeNull();
+  });
+
+  it('vaut null par défaut si absent du profil brut (jamais undefined)', () => {
+    const api = loadGame(FILES);
+    const out = api.validateProfile({ name: 'Test' }, 'Test');
+    expect(out.lastAdventure).toBeNull();
+  });
+
+  it('defProfile() initialise lastAdventure à null', () => {
+    const api = loadGame(FILES);
+    expect(api.defProfile('Zoé').lastAdventure).toBeNull();
+  });
+
+  it('bout en bout : startAdventure() écrit P.lastAdventure, qui survit à un cycle save→validateProfile (simulation du rechargement)', () => {
+    const api = loadGame(FILES);
+    api.setP({ name: 'Test' });
+    api.startAdventure('colfr');
+    expect(api.getP().lastAdventure).toBe('colfr');
+    // Simule ce que loadProfile() fait réellement : reprendre le JSON tel
+    // que sauvegardé, puis le repasser par validateProfile().
+    const reloaded = api.validateProfile(JSON.parse(JSON.stringify(api.getP())), 'Test');
+    expect(reloaded.lastAdventure).toBe('colfr');
+  });
+});
