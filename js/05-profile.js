@@ -225,6 +225,26 @@ function validateProfile(raw, defaultName){
    Object.keys(src).forEach(k=>{ out[k] = _safeArr(src[k]).filter(i => Number.isInteger(i) && i>=0 && i<100); });
    return out;
   })(),
+  // Correctif (audit technique 7 Odyssées) : majorChoiceByAdv (ADR-59, le
+  // choix du joueur à un "moment charnière" de l'histoire, par Odyssée)
+  // était déjà écrit en mémoire (07-story.js) et déjà fusionné correctement
+  // au cloud (ODYSSEY_PROGRESS_FIELDS, 12-cloud.js), mais jamais ajouté à
+  // cette liste blanche — même défaut qu'ADR-80/lastAdventure : le choix
+  // narratif était silencieusement effacé à chaque rechargement de profil.
+  // Forme : { advKey: { idx: 'A'|'B' } } (idx = n° du moment charnière).
+  majorChoiceByAdv: (function(){
+   const src = (raw.majorChoiceByAdv && typeof raw.majorChoiceByAdv === 'object') ? raw.majorChoiceByAdv : {};
+   const out = {};
+   Object.keys(src).forEach(adv=>{
+    const inner = (src[adv] && typeof src[adv] === 'object' && !Array.isArray(src[adv])) ? src[adv] : {};
+    const o2 = {};
+    Object.keys(inner).forEach(idx=>{
+     if(typeof inner[idx] === 'string' && inner[idx].length <= 30) o2[idx] = inner[idx];
+    });
+    if(Object.keys(o2).length) out[adv] = o2;
+   });
+   return out;
+  })(),
   // v8.7.8 (O1) : progression dans chaque zone (sous-niveaux)
   zoneProgress: (function(){
    const src = (raw.zoneProgress && typeof raw.zoneProgress === 'object') ? raw.zoneProgress : {};
