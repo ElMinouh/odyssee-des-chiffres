@@ -640,10 +640,19 @@ function returnMenu(){
    if(typeof renderMap==='function') renderMap();
    showView('v-map');
   } else {
-   // Sinon retour à la carte de zone avec l'étape suivante prête
+   // v12.7.2 : retour dans la MÊME modale que partout ailleurs sur la carte
+   // (openArchipelZoom, via requestZoneOpen) — plus l'ancien écran v-zone/
+   // renderZoneMap(), resté visuellement figé et incohérent avec le reste du
+   // jeu (signalé par Cyril, captures à l'appui). Reprend exactement le
+   // pattern déjà éprouvé de returnToModule() (bouton "Retour au lieu" de
+   // l'écran de fin, plus bas dans ce fichier) : l'avatar est déjà sur cette
+   // zone (posé par startMapStep() au lancement de l'étape), donc
+   // requestZoneOpen() l'ouvre directement, sans animation de marche.
    _currentZoneId = zid;
-   if(typeof renderZoneMap==='function') renderZoneMap();
-   showView('v-zone');
+   if(typeof renderMap==='function') renderMap();
+   showView('v-map');
+   if(typeof requestZoneOpen==='function') requestZoneOpen(zid);
+   else if(typeof openArchipelZoom==='function') openArchipelZoom(zid);
   }
   if(typeof renderHomework==='function') renderHomework();
   return;
@@ -708,9 +717,12 @@ function _quitGameConfirmed(dest){
  if(fromZoneStep && dest!=='home'){
   const zid = GM.mapZone.id;
   GM.mapStep = null;
+  // v12.7.2 : même correctif que returnMenu() ci-dessus — voir son commentaire.
   _currentZoneId = zid;
-  if(typeof renderZoneMap==='function') renderZoneMap();
-  showView('v-zone');
+  if(typeof renderMap==='function') renderMap();
+  showView('v-map');
+  if(typeof requestZoneOpen==='function') requestZoneOpen(zid);
+  else if(typeof openArchipelZoom==='function') openArchipelZoom(zid);
   return;
  }
  if(typeof GM!=='undefined'){GM.homework=false;GM.homeworkConfig=null;}

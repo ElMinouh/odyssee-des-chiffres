@@ -264,9 +264,15 @@ function _matRenderQ(q){
  // Cacher le pavé / la zone de saisie
  const iz = $('input-zone'); if(iz) iz.classList.add('hidden');
 
- // Titre doux, sans « monstre »
+ // Titre doux, sans « monstre ». v12.7.3 : en Odyssée (zone-step), affiche
+ // le VRAI nom du lieu joué (GM.mapZone.label) — jusqu'ici affichait
+ // toujours le nom générique du monde par niveau ("L'océan tout doux" pour
+ // toute la Petite Section), quel que soit le lieu réellement joué, ce qui
+ // contredisait le nom affiché sur la carte et la fiche de zone (signalé
+ // par Cyril). Hors Odyssée (mode solo classique) : comportement inchangé.
  const qt = $('quest-title');
- if(qt) qt.innerHTML = `⭐ ${GS.qCount}/6 <span class="mode-badge m-mat">${w.world}</span>`;
+ const _zoneLabel = (typeof GM!=='undefined' && GM.mapZone) ? GM.mapZone.label : w.world;
+ if(qt) qt.innerHTML = `⭐ ${GS.qCount}/6 <span class="mode-badge m-mat">${_zoneLabel}</span>`;
 
  // Cacher tout ce qui relève du « combat » (pas de pression en maternelle)
  ['timer-bar-container','monster-hp-wrap','power-bar','combat-bar'].forEach(id=>{
@@ -285,17 +291,47 @@ function _matRenderQ(q){
 }
 
 // Applique l'ambiance maternelle à l'écran de jeu (fond doux) / la retire
+// v12.7.3 : en Odyssée (zone-step), le fond et les motifs suivent désormais
+// le VRAI thème du lieu joué (_THEME_META[zone.theme], déjà utilisé partout
+// ailleurs sur la carte) plutôt que le monde générique fixe du niveau
+// scolaire (PS=océan/MS=ferme/GS=jardin, inchangé) — demande de Cyril
+// ("décorer légèrement/marquée en fonction du lieu fréquenté"), validée sur
+// maquette. Hors Odyssée (mode solo classique) : comportement inchangé,
+// 3 mondes fixes comme avant.
 function _matApplyAmbiance(level){
  const gc = document.getElementById('v-game') || document.body;
  const card = document.getElementById('game-card') || gc;
  if(_isMaternelle(level)){
   const w = _MAT_WORLDS[level];
   document.body.classList.add('mat-mode');
-  document.body.style.setProperty('--mat-accent', w.accent);
+  const zoneTheme = (typeof GM!=='undefined' && GM.mapZone) ? GM.mapZone.theme : null;
+  const themeMeta = (zoneTheme && typeof _THEME_META!=='undefined') ? _THEME_META[zoneTheme] : null;
+  document.body.style.setProperty('--mat-accent', themeMeta ? themeMeta.accent : w.accent);
   document.body.style.setProperty('--mat-soft', w.soft);
+  _matRenderMotifs(themeMeta);
  } else {
   document.body.classList.remove('mat-mode');
+  _matRenderMotifs(null);
  }
+}
+
+// v12.7.3 (variante "marquée") : 3 petits motifs discrets et fixes du lieu
+// réel, en fond de l'écran de jeu. Réutilise l'unique emoji déjà curé par
+// thème dans _THEME_META — aucun nouveau contenu à inventer ni valider.
+// themeMeta absent (hors Odyssée, ou thème introuvable) → aucun motif,
+// comportement identique à avant ce chantier.
+const _MAT_MOTIF_POS = [
+ {top:'8%',  left:'8%',  size:'1.6em'},
+ {top:'72%', left:'85%', size:'1.9em'},
+ {top:'54%', left:'6%',  size:'1.3em'},
+];
+function _matRenderMotifs(themeMeta){
+ const box = document.getElementById('mat-motifs');
+ if(!box) return;
+ if(!themeMeta || !themeMeta.emoji){ box.innerHTML = ''; return; }
+ box.innerHTML = _MAT_MOTIF_POS.map(p =>
+  `<span class="mat-motif" style="top:${p.top};left:${p.left};font-size:${p.size};">${themeMeta.emoji}</span>`
+ ).join('');
 }
 
 // ── Félicitations d'Étincelle (bonne réponse) ───────────────────────
