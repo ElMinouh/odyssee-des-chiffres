@@ -4949,17 +4949,26 @@ select optgroup option{
 /* ═══════ M-C : ambiance & félicitations maternelle ═══════ */
 /* Fond coloré selon le monde (accent en haut, profond en bas → texte blanc lisible) */
 body.mat-mode #v-game{
- position:relative;
  background: radial-gradient(125% 80% at 50% -8%, var(--mat-accent,#1d9e75) 0%, rgba(14,20,32,.93) 72%) !important;
  transition: background var(--dur-slow) ease;
 }
-/* v12.7.3 : petits motifs discrets du lieu réel (variante "marquée"),
-   posés en fond de l'écran de jeu — vides et sans effet hors Odyssée
-   maternelle (voir _matRenderMotifs, 13-maternelle.js). */
-#mat-motifs{
+/* v12.7.5 : petits motifs discrets du VRAI lieu joué — pour TOUS les
+   niveaux (plus seulement la maternelle), voir _applyZoneMotifs()
+   (07-map.js). Vides et sans effet hors contexte de zone.
+   Correctif d'empilement (v12.7.4 → v12.7.5) : #v-game doit établir SON
+   PROPRE contexte d'empilement (position + z-index, pas juste position)
+   pour que le z-index négatif des motifs reste CONTENU à cet écran —
+   sinon il est hissé au contexte de la page entière et se retrouve
+   invisible derrière le propre fond de #v-game. Classe posée uniquement
+   quand des motifs sont réellement affichés (voir _applyZoneMotifs). */
+#v-game.has-zone-motifs{
+ position:relative;
+ z-index:0;
+}
+#zone-motifs{
  position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:-1;
 }
-.mat-motif{
+.zone-motif{
  position:absolute; opacity:.30; line-height:1;
  filter:drop-shadow(0 2px 4px rgba(0,0,0,.35));
 }

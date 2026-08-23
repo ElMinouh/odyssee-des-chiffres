@@ -388,6 +388,8 @@ function startGame(){
   GM.mode='qcm'; GM.mode2='normal';
  }
  if(typeof _matApplyAmbiance==='function') _matApplyAmbiance(GM.level);
+ // v12.7.5 : mode solo classique (hors Odyssée) → aucun motif de lieu.
+ if(typeof _applyZoneMotifs==='function') _applyZoneMotifs(null);
  resetGS();powers={};isRevision=false;
  // Lot 4 (audit engagement, 13e conversation) : les messages de début de partie
  // (accueil, série, objectif, Mode serein, sens) partagent tous le même élément
@@ -1504,6 +1506,8 @@ if(typeof checkMilestones==='function') checkMilestones();
   catch(e){ _th=(P.prefs&&P.prefs.theme)||'standard'; }
   applyTheme(_th);
   const _ts=$('themeSelect'); if(_ts)_ts.value=_th;
+  // v12.7.5 : on quitte l'écran de jeu (vers v-end) → plus de motif de lieu.
+  if(typeof _applyZoneMotifs==='function') _applyZoneMotifs(null);
  }
  // v8.7.9 (O1) : adapter le bouton "Rejouer / Retour à la carte" selon contexte
  const _btnReplay = $('btn-replay');

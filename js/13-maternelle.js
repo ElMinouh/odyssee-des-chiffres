@@ -290,17 +290,11 @@ function _matRenderQ(q){
  }
 }
 
-// Applique l'ambiance maternelle à l'écran de jeu (fond doux) / la retire
-// v12.7.3 : en Odyssée (zone-step), le fond et les motifs suivent désormais
-// le VRAI thème du lieu joué (_THEME_META[zone.theme], déjà utilisé partout
-// ailleurs sur la carte) plutôt que le monde générique fixe du niveau
-// scolaire (PS=océan/MS=ferme/GS=jardin, inchangé) — demande de Cyril
-// ("décorer légèrement/marquée en fonction du lieu fréquenté"), validée sur
-// maquette. Hors Odyssée (mode solo classique) : comportement inchangé,
-// 3 mondes fixes comme avant.
+// Applique l'ambiance maternelle à l'écran de jeu (fond doux) / la retire.
+// v12.7.5 : les petits motifs de lieu sont désormais gérés de façon
+// universelle par _applyZoneMotifs() (07-map.js), pour tous les niveaux —
+// cette fonction ne s'occupe plus que du fond doux propre à la maternelle.
 function _matApplyAmbiance(level){
- const gc = document.getElementById('v-game') || document.body;
- const card = document.getElementById('game-card') || gc;
  if(_isMaternelle(level)){
   const w = _MAT_WORLDS[level];
   document.body.classList.add('mat-mode');
@@ -308,35 +302,9 @@ function _matApplyAmbiance(level){
   const themeMeta = (zoneTheme && typeof _THEME_META!=='undefined') ? _THEME_META[zoneTheme] : null;
   document.body.style.setProperty('--mat-accent', themeMeta ? themeMeta.accent : w.accent);
   document.body.style.setProperty('--mat-soft', w.soft);
-  _matRenderMotifs(themeMeta);
  } else {
   document.body.classList.remove('mat-mode');
-  _matRenderMotifs(null);
  }
-}
-
-// v12.7.3 (variante "marquée") : 3 petits motifs discrets et fixes du lieu
-// réel, en fond de l'écran de jeu. Réutilise l'unique emoji déjà curé par
-// thème dans _THEME_META — aucun nouveau contenu à inventer ni valider.
-// themeMeta absent (hors Odyssée, ou thème introuvable) → aucun motif,
-// comportement identique à avant ce chantier.
-// v12.7.4 (correctif position) : les 3 premières positions tombaient
-// derrière le bouton "Retour à la zone" et derrière les boutons de réponse
-// (fonds opaques) — invisibles en usage réel malgré un DOM correct (signalé
-// par Cyril, capture à l'appui). Repositionnés dans la bande dégagée entre
-// la barre du haut et la ligne joueur (là où se trouvent les pastilles
-// pièces/potions, centrées, avec de la marge de chaque côté).
-const _MAT_MOTIF_POS = [
- {top:'11%', left:'4%',  size:'1.5em'},
- {top:'11%', left:'92%', size:'1.7em'},
-];
-function _matRenderMotifs(themeMeta){
- const box = document.getElementById('mat-motifs');
- if(!box) return;
- if(!themeMeta || !themeMeta.emoji){ box.innerHTML = ''; return; }
- box.innerHTML = _MAT_MOTIF_POS.map(p =>
-  `<span class="mat-motif" style="top:${p.top};left:${p.left};font-size:${p.size};">${themeMeta.emoji}</span>`
- ).join('');
 }
 
 // ── Félicitations d'Étincelle (bonne réponse) ───────────────────────

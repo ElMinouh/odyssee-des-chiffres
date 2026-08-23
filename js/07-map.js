@@ -698,6 +698,43 @@ function _perfCallbackLine(){
  }catch(e){ return ''; }
 }
 
+// v12.7.5 : petits motifs discrets du VRAI lieu joué, en fond de l'écran de
+// jeu — pour TOUS les niveaux et TOUTES les Odyssées (demande de Cyril).
+// Réutilise l'unique emoji déjà curé par thème dans _THEME_META, aucun
+// nouveau contenu à inventer/valider. zone=null (mode solo classique, ou
+// sortie de zone) → aucun motif.
+// Positions choisies dans la bande dégagée entre la barre du haut et la
+// ligne joueur (là où se trouvent les pastilles pièces/potions) — correctif
+// v12.7.4 : les 1ères positions tombaient derrière des boutons opaques,
+// invisibles malgré un DOM correct (signalé par Cyril, capture à l'appui).
+const _ZONE_MOTIF_POS = [
+ {top:'11%', left:'4%',  size:'1.5em'},
+ {top:'11%', left:'92%', size:'1.7em'},
+];
+function _applyZoneMotifs(zone){
+ const box = document.getElementById('zone-motifs');
+ const host = document.getElementById('v-game');
+ if(!box) return;
+ const themeMeta = (zone && zone.theme && typeof _THEME_META!=='undefined') ? _THEME_META[zone.theme] : null;
+ if(!themeMeta || !themeMeta.emoji){
+  box.innerHTML = '';
+  if(host) host.classList.remove('has-zone-motifs');
+  return;
+ }
+ box.innerHTML = _ZONE_MOTIF_POS.map(p =>
+  `<span class="zone-motif" style="top:${p.top};left:${p.left};font-size:${p.size};">${themeMeta.emoji}</span>`
+ ).join('');
+ // v12.7.5 (correctif empilement) : #v-game doit établir SON PROPRE contexte
+ // d'empilement pour que le z-index négatif des motifs reste contenu à
+ // l'intérieur de cet écran (derrière son propre contenu, mais devant son
+ // propre fond) — sans cette classe, position:relative seul ne suffit pas
+ // (z-index:auto), et les motifs se retrouvaient hissés au contexte racine
+ // de la page entière, invisibles derrière le fond de #v-game lui-même.
+ // Classe posée UNIQUEMENT quand des motifs sont réellement affichés, pour
+ // ne rien changer au comportement des écrans qui n'en ont pas.
+ if(host) host.classList.add('has-zone-motifs');
+}
+
 function startMapStep(zoneId, stepIdx){
  const zone = MAP_ZONES.find(z=>z.id===zoneId);
  if(!zone || !Array.isArray(zone.steps)) return;
@@ -723,6 +760,12 @@ function startMapStep(zoneId, stepIdx){
   if(typeof _matApplyAmbiance==='function') _matApplyAmbiance(GM.level);
  }
  applyTheme(zone.theme);
+ // v12.7.5 : petits motifs discrets du vrai lieu joué, pour TOUS les niveaux
+ // (maternelle inclus) — demande de Cyril ("toutes les Odyssées, toutes les
+ // matières, tous les niveaux actuels et futurs"). Entièrement piloté par
+ // la donnée (_THEME_META), donc s'applique automatiquement à toute future
+ // Odyssée/zone sans code supplémentaire.
+ if(typeof _applyZoneMotifs==='function') _applyZoneMotifs(zone);
  // Construire le monstre/boss à partir de la définition de l'étape
  const isBoss = (step.type === 'boss');
  const isMiniBoss = (step.type === 'minibss');
