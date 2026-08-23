@@ -4960,7 +4960,8 @@ body.mat-mode #v-game{
  position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:-1;
 }
 .mat-motif{
- position:absolute; opacity:.16; line-height:1; filter:blur(.2px);
+ position:absolute; opacity:.30; line-height:1;
+ filter:drop-shadow(0 2px 4px rgba(0,0,0,.35));
 }
 .mat-consigne{ text-shadow:0 2px 6px rgba(0,0,0,.45); }
 /* Étincelle saute de joie sur bonne réponse */

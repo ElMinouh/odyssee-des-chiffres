@@ -40,14 +40,14 @@ describe('_matApplyAmbiance() — décor selon le vrai lieu en Odyssée (v12.7.3
     expect(api._domEl('BODY').style.getPropertyValue('--mat-accent')).toBe('#ba7517');
   });
 
-  it('pose 3 motifs (emoji du thème réel) dans #mat-motifs en Odyssée', () => {
+  it('pose 2 motifs (emoji du thème réel) dans #mat-motifs en Odyssée', () => {
     const api = loadGame(FILES);
     api.startAdventure('mat', true);
     const zone = api.getMapZones().find(z => z.id === 'mat_ce1_3');
     api.setGM({ mapZone: zone });
     api._matApplyAmbiance('PS');
     const box = api._domEl('mat-motifs');
-    expect((box.innerHTML.match(/mat-motif/g) || []).length).toBe(3);
+    expect((box.innerHTML.match(/mat-motif/g) || []).length).toBe(2);
     expect(box.innerHTML).toContain('🌸'); // emoji du thème sakura (_THEME_META)
   });
 

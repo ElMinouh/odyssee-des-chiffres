@@ -320,10 +320,15 @@ function _matApplyAmbiance(level){
 // thème dans _THEME_META — aucun nouveau contenu à inventer ni valider.
 // themeMeta absent (hors Odyssée, ou thème introuvable) → aucun motif,
 // comportement identique à avant ce chantier.
+// v12.7.4 (correctif position) : les 3 premières positions tombaient
+// derrière le bouton "Retour à la zone" et derrière les boutons de réponse
+// (fonds opaques) — invisibles en usage réel malgré un DOM correct (signalé
+// par Cyril, capture à l'appui). Repositionnés dans la bande dégagée entre
+// la barre du haut et la ligne joueur (là où se trouvent les pastilles
+// pièces/potions, centrées, avec de la marge de chaque côté).
 const _MAT_MOTIF_POS = [
- {top:'8%',  left:'8%',  size:'1.6em'},
- {top:'72%', left:'85%', size:'1.9em'},
- {top:'54%', left:'6%',  size:'1.3em'},
+ {top:'11%', left:'4%',  size:'1.5em'},
+ {top:'11%', left:'92%', size:'1.7em'},
 ];
 function _matRenderMotifs(themeMeta){
  const box = document.getElementById('mat-motifs');
