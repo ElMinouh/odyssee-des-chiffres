@@ -41,10 +41,45 @@ describe('_LORE_FRAGMENTS — intégrité des données du pilote (mat)', () => {
     });
   });
 
-  it('une Odyssée sans fragments encore rédigés renvoie une liste vide (pas d\'erreur)', () => {
+  it('une Odyssée jamais couverte renvoie une liste vide (pas d\'erreur)', () => {
     const api = loadGame(FILES);
-    expect(api._loreFragmentsFor('prim')).toEqual([]);
     expect(api._loreFragmentsFor('inconnue_xyz')).toEqual([]);
+  });
+});
+
+describe('_LORE_FRAGMENTS — intégrité des données, les 7 Odyssées (ADR-112, extension v12.6.0)', () => {
+  it('chaque Odyssée a des fragments dont les zoneId existent réellement dans SA propre carte', () => {
+    const api = loadGame(FILES);
+    const cases = [
+      { adv: 'mat', level: 'PS', subject: 'math' },
+      { adv: 'matfr', level: 'PS', subject: 'fr' },
+      { adv: 'prim', level: 'CP', subject: 'math' },
+      { adv: 'primfr', level: 'CP', subject: 'fr' },
+      { adv: 'primhist', level: 'CP', subject: 'hist' },
+      { adv: 'col', level: '6E', subject: 'math' },
+      { adv: 'colfr', level: '6E', subject: 'fr' },
+    ];
+    let total = 0;
+    cases.forEach(({ adv, level, subject }) => {
+      api.setGM({ level, subject });
+      api.startAdventure(adv, true);
+      const zoneIds = api.getMapZones().map(z => z.id);
+      const list = api._loreFragmentsFor(adv);
+      expect(list.length, `${adv} ne devrait pas être vide`).toBeGreaterThan(0);
+      list.forEach(f => {
+        expect(zoneIds, `zoneId inconnu : ${f.zoneId} (fragment ${f.id}, Odyssée ${adv})`).toContain(f.zoneId);
+      });
+      total += list.length;
+    });
+    expect(total).toBe(77); // 12+12+9+9+9+13+13
+  });
+
+  it('aucun id de fragment n\'est dupliqué, toutes Odyssées confondues', () => {
+    const api = loadGame(FILES);
+    const advs = ['mat', 'matfr', 'prim', 'primfr', 'primhist', 'col', 'colfr'];
+    const allIds = [];
+    advs.forEach(adv => api._loreFragmentsFor(adv).forEach(f => allIds.push(f.id)));
+    expect(new Set(allIds).size).toBe(allIds.length);
   });
 });
 
@@ -168,6 +203,27 @@ describe('openArchipelZoom() — le fragment "de site" apparaît bien dans l\'é
     api.openArchipelZoom('mat_cp_2'); // volontairement sans fragment
     const el = api._lastCreatedElement();
     expect(el.innerHTML).not.toContain('lore-point');
+  });
+
+  it('même vérification sur les 6 autres Odyssées (extension v12.6.0) — un fragment "zone" par Odyssée est bien visible', () => {
+    const api = loadGame(FILES);
+    const cases = [
+      { adv: 'matfr', level: 'PS', subject: 'fr', zoneId: 'matfr_cp_1', loreId: 'matfr_lore_1' },
+      { adv: 'prim', level: 'CP', subject: 'math', zoneId: 'plaine', loreId: 'prim_lore_1' },
+      { adv: 'primfr', level: 'CP', subject: 'fr', zoneId: 'primfr_plaine', loreId: 'primfr_lore_1' },
+      { adv: 'primhist', level: 'CP', subject: 'hist', zoneId: 'primhist_plaine', loreId: 'primhist_lore_1' },
+      { adv: 'col', level: '6E', subject: 'math', zoneId: 'col_cp_1', loreId: 'col_lore_1' },
+      { adv: 'colfr', level: '6E', subject: 'fr', zoneId: 'colfr_col_cp_1', loreId: 'colfr_lore_1' },
+    ];
+    cases.forEach(({ adv, level, subject, zoneId, loreId }) => {
+      api.setP({ name: 'Test', zoneProgress: {}, mapBossBeaten: [], loreFoundIdsByAdv: {} });
+      api.setGM({ level, subject, adventure: adv });
+      api.startAdventure(adv, true);
+      api.openArchipelZoom(zoneId);
+      const el = api._lastCreatedElement();
+      expect(el.innerHTML, `${adv} / ${zoneId}`).toContain('lore-point');
+      expect(el.innerHTML, `${adv} / ${zoneId}`).toContain(`data-lore-id="${loreId}"`);
+    });
   });
 });
 
