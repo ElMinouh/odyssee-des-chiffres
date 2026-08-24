@@ -137,23 +137,38 @@ function _renderFigurinesShop(filter){
  }
 }
 
-// v12.7.11 : le Cœur de Balaïna (tl18) se débloque en réunissant les 17
-// autres figurines Tobie Lolness (tl01-tl17) — indication affichée en
-// boutique (fig.unlockHint, voir _renderFigurinesShop). Appelée après
-// chaque ajout de figurine, d'où qu'il vienne (achat, drop boss, saisonnier)
-// pour ne jamais dépendre d'un seul point d'entrée.
-const _TL_COMPLETION_REQUIRED = ['tl01','tl02','tl03','tl04','tl05','tl06','tl07','tl08',
- 'tl09','tl10','tl11','tl12','tl13','tl14','tl15','tl16','tl17'];
-function _checkTobieLolnessCompletion(){
+// v12.7.12 : mécanisme GÉNÉRIQUE de déblocage par complétion de licence.
+// Toute figurine portant completionLock:true se débloque automatiquement
+// dès que TOUTES LES AUTRES figurines de sa licence (hors figurines
+// elles-mêmes verrouillées de la même façon, pour éviter tout blocage
+// circulaire si une licence en a plusieurs) sont possédées. Remplace
+// _checkTobieLolnessCompletion (v12.7.11), qui ne couvrait qu'une licence —
+// toute future figurine "à débloquer par complétion" n'a besoin que du
+// flag completionLock:true + unlockHint sur sa fiche (03-figurines-data.js),
+// aucun code supplémentaire.
+function _checkLicenseCompletions(){
  try{
   if(typeof P==='undefined' || !P) return;
+  if(typeof FIGURINES==='undefined' || !Array.isArray(FIGURINES)) return;
   const owned = P.ownedFigurines || [];
-  if(owned.includes('tl18')) return; // déjà débloqué
-  if(!_TL_COMPLETION_REQUIRED.every(id => owned.includes(id))) return;
-  P.ownedFigurines = [...owned, 'tl18'];
+  const newlyUnlocked = [];
+  FIGURINES.forEach(fig=>{
+   if(!fig.completionLock) return;
+   if(owned.includes(fig.id) || newlyUnlocked.includes(fig.id)) return;
+   const others = FIGURINES.filter(f => f.uk===fig.uk && f.id!==fig.id && !f.completionLock);
+   if(others.length && others.every(f => owned.includes(f.id))){
+    newlyUnlocked.push(fig.id);
+   }
+  });
+  if(!newlyUnlocked.length) return;
+  P.ownedFigurines = [...owned, ...newlyUnlocked];
   if(typeof saveProfileNow==='function') saveProfileNow();
   else if(typeof saveProfile==='function') saveProfile();
-  if(typeof toast==='function') toast('🏆 Collection Tobie Lolness complète ! Le Cœur de Balaïna rejoint ta collection !', 4500);
+  newlyUnlocked.forEach(id=>{
+   const fig = FIGURINES.find(f=>f.id===id);
+   if(!fig) return;
+   if(typeof toast==='function') toast(`🏆 Collection ${fig.uni} complète ! ${fig.name} rejoint ta collection !`, 4500);
+  });
   if(typeof beep==='function'){ beep(880,'sine',.4); setTimeout(()=>beep(1100,'sine',.3),180); setTimeout(()=>beep(1320,'sine',.35),360); }
  }catch(e){}
 }
@@ -169,7 +184,7 @@ function buyFigurine(id){
   toast(`🎉 ${fig.name} ajouté à ta collection !`,3000);
   beep(880,'sine',.4);
   setTimeout(()=>beep(1100,'sine',.3),180);
-  if(typeof _checkTobieLolnessCompletion==='function') _checkTobieLolnessCompletion();
+  if(typeof _checkLicenseCompletions==='function') _checkLicenseCompletions();
   renderFigurinesShop(_figFilter);
  });
 }

@@ -94,33 +94,33 @@ describe('Correctif — images HD des 30 nouvelles figurines préchargées (bug 
 });
 
 
-describe('_checkTobieLolnessCompletion() — déblocage du Cœur de Balaïna (tl18)', () => {
-  const ALL_17 = ['tl01','tl02','tl03','tl04','tl05','tl06','tl07','tl08','tl09','tl10','tl11','tl12','tl13','tl14','tl15','tl16','tl17'];
+describe('_checkLicenseCompletions() — mécanisme générique de déblocage par complétion', () => {
+  const ALL_TL_17 = ['tl01','tl02','tl03','tl04','tl05','tl06','tl07','tl08','tl09','tl10','tl11','tl12','tl13','tl14','tl15','tl16','tl17'];
 
-  it('débloque tl18 quand les 17 autres figurines Tobie Lolness sont possédées', () => {
+  it('débloque tl18 (Cœur de Balaïna) quand les 17 autres Tobie Lolness sont possédées', () => {
     const api = loadGame(FILES);
     const p = api.defProfile('Test');
-    p.ownedFigurines = [...ALL_17];
+    p.ownedFigurines = [...ALL_TL_17];
     api.setP(p);
-    api._checkTobieLolnessCompletion();
+    api._checkLicenseCompletions();
     expect(api.getP().ownedFigurines).toContain('tl18');
   });
 
   it('ne débloque rien s\'il manque UNE seule figurine sur les 17', () => {
     const api = loadGame(FILES);
     const p = api.defProfile('Test');
-    p.ownedFigurines = ALL_17.slice(0, -1); // il en manque une
+    p.ownedFigurines = ALL_TL_17.slice(0, -1); // il en manque une
     api.setP(p);
-    api._checkTobieLolnessCompletion();
+    api._checkLicenseCompletions();
     expect(api.getP().ownedFigurines).not.toContain('tl18');
   });
 
   it('ne fait rien si déjà débloqué (pas de doublon)', () => {
     const api = loadGame(FILES);
     const p = api.defProfile('Test');
-    p.ownedFigurines = [...ALL_17, 'tl18'];
+    p.ownedFigurines = [...ALL_TL_17, 'tl18'];
     api.setP(p);
-    api._checkTobieLolnessCompletion();
+    api._checkLicenseCompletions();
     const count = api.getP().ownedFigurines.filter(id => id === 'tl18').length;
     expect(count).toBe(1);
   });
@@ -128,12 +128,48 @@ describe('_checkTobieLolnessCompletion() — déblocage du Cœur de Balaïna (tl
   it('buyFigurine() déclenche bien le check de complétion (achat de la 17e pièce)', () => {
     const api = loadGame(FILES);
     const p = api.defProfile('Test');
-    p.ownedFigurines = ALL_17.slice(0, -1); // il manque tl17 (Balaïna)
+    p.ownedFigurines = ALL_TL_17.slice(0, -1); // il manque tl17 (Balaïna)
     p.stars = 9999;
     api.setP(p);
     api.buyFigurine('tl17');
     expect(api.getP().ownedFigurines).toContain('tl17');
     expect(api.getP().ownedFigurines).toContain('tl18');
+  });
+
+  it('licence à 2 figurines verrouillées (Goldorak, gd10+gd11) : débloque les 2 en même temps', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    const others = api.FIGURINES.filter(f => f.uk === 'gd' && !f.completionLock).map(f => f.id);
+    p.ownedFigurines = others;
+    api.setP(p);
+    api._checkLicenseCompletions();
+    expect(api.getP().ownedFigurines).toContain('gd10');
+    expect(api.getP().ownedFigurines).toContain('gd11');
+  });
+
+  it('licence à 2 figurines verrouillées (Dragon Ball, db12+db36) : ne débloque rien s\'il manque un item normal', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    const others = api.FIGURINES.filter(f => f.uk === 'db' && !f.completionLock).map(f => f.id);
+    p.ownedFigurines = others.slice(0, -1); // il en manque un
+    api.setP(p);
+    api._checkLicenseCompletions();
+    expect(api.getP().ownedFigurines).not.toContain('db12');
+    expect(api.getP().ownedFigurines).not.toContain('db36');
+  });
+
+  it('les 11 figurines demandées sont bien verrouillées avec un indice clair', () => {
+    const api = loadGame(FILES);
+    const ids = ['kp11','kp12','nj09','db12','db36','pk09','pk10','gd10','gd11','co08','al06'];
+    const byId = Object.fromEntries(api.FIGURINES.map(f => [f.id, f]));
+    ids.forEach(id => {
+      const f = byId[id];
+      expect(f, `${id} introuvable`).toBeTruthy();
+      expect(f.completionLock, `${id}.completionLock`).toBe(true);
+      expect(f.r, `${id}.r`).toBe('exclusif');
+      expect(f.p, `${id}.p`).toBe(0);
+      expect(f.unlockHint, `${id}.unlockHint`).toBeTruthy();
+    });
   });
 });
 

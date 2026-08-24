@@ -135,5 +135,6 @@ function unlockSeasonalFigurine(figId){
  if(P.ownedFigurines.includes(figId)) return false;
  P.ownedFigurines.push(figId);
  if(typeof saveProfileNow==='function') saveProfileNow();
+ if(typeof _checkLicenseCompletions==='function') _checkLicenseCompletions();
  return true;
 }
