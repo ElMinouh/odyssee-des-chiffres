@@ -726,7 +726,18 @@ function checkHeroStageProgress(){
  if(current.id !== lastStageId){
   // Stade franchi !
   P.heroStageId = current.id;
-  if(typeof saveProfile==='function') saveProfile();
+  // v12.7.14 (signalé par Cyril, captures à l'appui) : saveProfile() (débounce
+  // 800ms) ne suffisait pas ici. checkHeroStageProgress() est déjà appelée
+  // 1500ms après la fin de partie (07-game.js) — l'écriture réelle
+  // n'intervenait donc que ~2,3s plus tard. Si le joueur enchaînait vite sur
+  // le lieu suivant, _startCombat() (07-map.js) rappelle loadProfile() avant
+  // cette écriture et effaçait le changement encore en mémoire seulement :
+  // au prochain lieu, P.heroStageId redevenait l'ancien stade, et
+  // l'animation d'évolution semblait réapparaître à chaque lieu.
+  // saveProfileNow() écrit immédiatement, avant qu'un tel rechargement
+  // puisse survenir.
+  if(typeof saveProfileNow==='function') saveProfileNow();
+  else if(typeof saveProfile==='function') saveProfile();
   // Cinématique d'évolution
   if(typeof showHeroEvolution==='function') showHeroEvolution(current);
  }

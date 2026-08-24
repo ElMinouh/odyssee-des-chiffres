@@ -320,6 +320,24 @@ function _mergeCloudProfiles(local, imported){
  }
  // resetWinner === 'imported' : rien à faire, out (copie d'imported) est déjà correct par défaut.
 
+ // v12.7.14 (signalé par Cyril, captures à l'appui) : marqueurs "vu au moins
+ // une fois" (visites guidées 19-onboarding.js) et stade du héros — jamais
+ // réinitialisés par resetAdventure(), donc traités ICI, hors du bloc
+ // resetWinner ci-dessus (qui ne s'applique qu'aux champs de progression
+ // d'Odyssée). Sans ce traitement, ils prenaient silencieusement la valeur
+ // "imported" à CHAQUE synchronisation de routine (même classe de bug que
+ // storySeen/contentUpdatesSeen documentée plus haut) : si le serveur
+ // n'avait pas encore reçu le marqueur tout juste posé localement, il
+ // revenait en arrière au pull suivant — la visite guidée de la carte et
+ // l'animation d'évolution de héros ("ÉVOLUTION ! APPRENTI"...) semblaient
+ // alors réapparaître indéfiniment, à chaque retour dans l'Odyssée.
+ out.onbAccountSeen = !!(local.onbAccountSeen || imported.onbAccountSeen);
+ out.onbMapSeen = !!(local.onbMapSeen || imported.onbMapSeen);
+ const _HERO_STAGE_RANK = {oeuf:0, apprenti:1, aventurier:2, maitre:3, legende:4};
+ const _localStageRank = _HERO_STAGE_RANK[local.heroStageId] ?? 0;
+ const _importedStageRank = _HERO_STAGE_RANK[imported.heroStageId] ?? 0;
+ out.heroStageId = _localStageRank >= _importedStageRank ? (local.heroStageId || 'oeuf') : imported.heroStageId;
+
  out.ownedFigurines     = uniq(local.ownedFigurines, imported.ownedFigurines);
  out.ownedSkins         = uniq(local.ownedSkins, imported.ownedSkins);
  out.ownedMusics        = uniq(local.ownedMusics, imported.ownedMusics);
