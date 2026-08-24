@@ -173,6 +173,13 @@ const FIG_IMG_PRELOAD = [
   'cy15', 'cy16', 'cy17', 'cy18', 'cy19', 'cy20', 'cy21',
   'cy22', 'cy23', 'cy24', 'cy25', 'cy26', 'cy27', 'cy28',
   'cy29', 'cy30', 'cy31', 'cy32',
+  // v12.7.9 : Avatar, le dernier maître de l'air (12)
+  'av01', 'av02', 'av03', 'av04', 'av05', 'av06', 'av07',
+  'av08', 'av09', 'av10', 'av11', 'av12',
+  // v12.7.9 : Tobie Lolness (18)
+  'tl01', 'tl02', 'tl03', 'tl04', 'tl05', 'tl06', 'tl07',
+  'tl08', 'tl09', 'tl10', 'tl11', 'tl12', 'tl13', 'tl14',
+  'tl15', 'tl16', 'tl17', 'tl18',
 ];
 // Marque immédiatement comme disponibles + précharge
 if(typeof window !== 'undefined'){

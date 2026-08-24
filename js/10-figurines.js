@@ -54,6 +54,8 @@ function _renderFigurinesShop(filter){
   {k:'sx',label:'🎂 Saisonnier'},
   {k:'kp',label:'🎤 K-pop Demon Hunters'},
   {k:'cy',label:'🚴 Tour de France'},
+  {k:'av',label:'🌬️ Avatar, le dernier maître de l\'air'},
+  {k:'tl',label:'🌳 Tobie Lolness'},
  ];
 
  let html=`<div class="shop-filter-bar">

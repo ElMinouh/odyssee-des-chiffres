@@ -53,6 +53,45 @@ describe('Nouvelles licences — Avatar (12) et Tobie Lolness (18)', () => {
   });
 });
 
+describe('Correctif — licences av/tl visibles dans la boutique (bug signalé par Cyril)', () => {
+  it('SHOP_LICENSES (menu déroulant de la boutique) contient av et tl', () => {
+    const api = loadGame(FILES);
+    api.setP(api.defProfile('Test'));
+    api._renderFigurinesShop('none');
+    const html = api._domEl('p-figurines').innerHTML;
+    expect(html).toContain('Avatar');
+    expect(html).toContain('Tobie Lolness');
+  });
+
+  it('filtrer sur la licence "av" affiche bien les 12 figurines Avatar', () => {
+    const api = loadGame(FILES);
+    api.setP(api.defProfile('Test'));
+    api._renderFigurinesShop('av');
+    const html = api._domEl('p-figurines').innerHTML;
+    expect(html).toContain('Aang');
+    expect(html).toContain('Korra');
+  });
+
+  it('filtrer sur la licence "tl" affiche bien les 18 figurines Tobie Lolness', () => {
+    const api = loadGame(FILES);
+    api.setP(api.defProfile('Test'));
+    api._renderFigurinesShop('tl');
+    const html = api._domEl('p-figurines').innerHTML;
+    expect(html).toContain('Tobie Lolness');
+    expect(html).toContain('Léo Blue');
+  });
+});
+
+describe('Correctif — images HD des 30 nouvelles figurines préchargées (bug signalé par Cyril)', () => {
+  it('les 30 nouveaux ids sont dans FIG_IMG_PRELOAD (comme toutes les autres licences)', () => {
+    const api = loadGame(FILES);
+    [...AV_IDS, ...TL_IDS].forEach(id => {
+      expect(api.FIG_IMG_PRELOAD, `${id} absent de FIG_IMG_PRELOAD`).toContain(id);
+    });
+  });
+});
+
+
 describe('_maybeShowContentUpdate() — notification de nouveau contenu', () => {
   it('affiche la modale au 1er appel pour un profil qui n\'a rien vu, avec les 2 licences', () => {
     const api = loadGame(FILES);
