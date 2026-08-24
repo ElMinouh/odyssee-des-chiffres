@@ -305,73 +305,13 @@ function openOdysseeSelect(){
 // O1 — CARTE DE ZONE (sous-niveaux v8.7.8)
 // Affiche les 5 étapes d'une zone, gère la progression
 // ═══════════════════════════════════════════════════════
-
-// État courant : quelle zone et quelle étape on joue
-let _currentZoneId = null;
-let _currentStepIdx = -1;
-
-// Ouvre la carte de zone (au lieu de lancer directement le boss)
-// Affiche les étapes de la zone courante
-function renderZoneMap(){
- const zone = MAP_ZONES.find(z=>z.id===_currentZoneId);
- if(!zone) return;
- const steps = Array.isArray(zone.steps) ? zone.steps : [];
- const prog = (P.zoneProgress && P.zoneProgress[zone.id]) || { stepsCompleted: 0, completed: false };
- const done = prog.stepsCompleted;
- // Header
- const _t=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
- _t('zone-emoji', zone.emoji);
- _t('zone-title', zone.label);
- _t('zone-sub', 'Niveau ' + zone.level + ' · ' + steps.length + ' étapes');
- // Barre de progression
- const total = steps.length || 1;
- const pct = Math.round((done/total)*100);
- const fill = document.getElementById('zone-progress-fill');
- if(fill) fill.style.width = pct+'%';
- _t('zone-progress-text', `${done}/${total} étape${done>1?'s':''} franchie${done>1?'s':''}`);
- // Liste des étapes
- const TAGS = { monster:'Monstre', puzzle:'Énigme', minibss:'Mini-boss', boss:'BOSS' };
- const box = document.getElementById('zone-steps-path');
- if(!box) return;
- box.innerHTML = steps.map((s, i)=>{
-  // v12.4.35 (audit graphique/DA, Lot 1, #G1) : icône SVG dédiée du jeu
-  // d'icônes du projet (déjà utilisée sur la carte principale), au lieu de
-  // l'emoji 🔒 générique dont le rendu varie selon l'appareil/l'OS.
-  let cls='locked', click='', extra='<span class="zone-step-lock"><svg viewBox="0 0 40 40" aria-hidden="true"><use href="#icon-zone-lock"/></svg></span>';
-  if(i < done){ cls='done'; click=`onclick="startMapStep('${zone.id}',${i})"`; extra=''; }
-  else if(i === done){ cls='current'; click=`onclick="startMapStep('${zone.id}',${i})"`; extra=''; }
-  const tagCls = 'tag-' + (s.type || 'monster');
-  const tagLabel = TAGS[s.type] || 'Étape';
-  const q = s.questions || 5;
-  return `
-   <div class="zone-step ${cls}" ${click}>
-    <div class="zone-step-emoji">${s.emoji||'❓'}</div>
-    <div class="zone-step-info">
-     <div class="zone-step-num">Étape ${i+1} / ${steps.length}</div>
-     <div class="zone-step-name">${s.name||'Étape'}<span class="zone-step-tag ${tagCls}">${tagLabel}</span></div>
-     <div class="zone-step-meta">${q} questions${s.dropCommon?' · 🎁 figurine':''}${s.dropRare?' · ⭐ figurine rare':''}</div>
-    </div>
-    ${extra}
-   </div>`;
- }).join('') + _loreZoneStepHtml(zone.id);
-}
-
-// v12.5.0 (session 21, ADR-112) : fragment de lore "de site" — objet
-// cliquable optionnel, sans rapport avec les étapes/questions, ajouté en
-// dernière position de la liste. Teaser tant que non trouvé, titre révélé
-// une fois trouvé (voir _openLoreFragment, 07-story.js).
-function _loreZoneStepHtml(zoneId){
- const frag = (typeof _loreZoneFragment==='function') ? _loreZoneFragment(zoneId) : null;
- if(!frag) return '';
- const found = (typeof _isLoreFound==='function') && _isLoreFound(frag.id);
- return `
-  <div class="zone-step lore-step${found?' found':''}" data-lore-id="${frag.id}" onclick="_openLoreFragment('${frag.id}')">
-   <div class="zone-step-emoji">${frag.emoji}</div>
-   <div class="zone-step-info">
-    <div class="zone-step-name">${found ? esc(frag.title) : 'Un secret se cache ici...'}</div>
-   </div>
-  </div>`;
-}
+// v12.7.7 (nettoyage code mort, audit technique) : renderZoneMap() (l'écran
+// v-zone) et _loreZoneStepHtml() sont retirés — depuis le correctif v12.7.2
+// ("Retour à la zone" → openArchipelZoom(), pas cet ancien écran), plus rien
+// ne les atteignait jamais. Vérifié avant suppression : aucune autre
+// fonction n'appelait renderZoneMap()/closeZone()/_loreZoneStepHtml() ; le
+// bloc HTML #v-zone et les règles CSS .zone-step* qui n'existaient QUE pour
+// cet écran ont été retirés en même temps (index.html, styles.css).
 
 // Lance une étape précise d'une zone
 // ─── v8.7.27 / v8.7.28 : Pool de dialogues diversifiés pour les monstres ───
@@ -744,8 +684,6 @@ function startMapStep(zoneId, stepIdx){
  const prog = (P.zoneProgress && P.zoneProgress[zoneId]) || { stepsCompleted:0 };
  // Étape verrouillée ? On refuse silencieusement
  if(stepIdx > prog.stepsCompleted) return;
- _currentZoneId = zoneId;
- _currentStepIdx = stepIdx;
  // Préparer GM avec la zone (réutilise tout le moteur existant)
  GM.mapZone = zone;
  GM.mapStep = { idx: stepIdx, def: step };
@@ -845,12 +783,8 @@ function startMapStep(zoneId, stepIdx){
  }
 }
 
-// Quitte la carte de zone
-function closeZone(){
- _currentZoneId = null;
- _currentStepIdx = -1;
- if(typeof navBack==='function') navBack(); else showView('v-map');
-}
+// v12.7.7 (nettoyage code mort) : closeZone() retirée — seul appelant était
+// le bouton "Retour" de l'ancien écran #v-zone, lui-même supprimé.
 
 // v8.7.27 : retour direct à la modale zoom de la zone qu'on vient de jouer
 // (depuis l'écran v-end après une étape).

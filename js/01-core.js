@@ -533,7 +533,7 @@ function setPinLockUntil(ts){ try{ localStorage.setItem('pinLockUntil', String(t
 
 let _monsterCenter={x:0,y:0}; // position précalculée du monstre (OPT-5)
 // ═══════════════════════════════════════════════════════
-const VIEWS=['v-menu','v-subjects','v-menu2','v-params','v-mode-config','v-settings','v-game','v-end','v-mult','v-parent','v-odyssey-select','v-map','v-zone'];
+const VIEWS=['v-menu','v-subjects','v-menu2','v-params','v-mode-config','v-settings','v-game','v-end','v-mult','v-parent','v-odyssey-select','v-map'];
 function showView(id){VIEWS.forEach(v=>$(v).classList.toggle('hidden',v!==id));const si=document.querySelector('.settings-icon');if(si)si.classList.toggle('si-hidden',id!=='v-menu');
  // v12.3.2 (audit UX #18) : à chaque entrée sur l'écran de jeu, on resynchronise
  // le libellé du bouton "Retour" avec sa vraie destination (carte de zone ou
@@ -624,7 +624,6 @@ function returnMenu(){
  const fromZoneStep = (typeof GM!=='undefined' && GM.mapZone && GM.mapStep);
  if(fromZoneStep){
   const zid = GM.mapZone.id;
-  // Reset état de partie mais on garde _currentZoneId pour renderZoneMap
   GM.mapStep = null;
   if(typeof stopZoneSkin==='function') stopZoneSkin();
   // Si la zone est entièrement complétée, on retourne à la carte du monde (v-map)
@@ -648,7 +647,6 @@ function returnMenu(){
    // l'écran de fin, plus bas dans ce fichier) : l'avatar est déjà sur cette
    // zone (posé par startMapStep() au lancement de l'étape), donc
    // requestZoneOpen() l'ouvre directement, sans animation de marche.
-   _currentZoneId = zid;
    if(typeof renderMap==='function') renderMap();
    showView('v-map');
    if(typeof requestZoneOpen==='function') requestZoneOpen(zid);
@@ -718,7 +716,6 @@ function _quitGameConfirmed(dest){
   const zid = GM.mapZone.id;
   GM.mapStep = null;
   // v12.7.2 : même correctif que returnMenu() ci-dessus — voir son commentaire.
-  _currentZoneId = zid;
   if(typeof renderMap==='function') renderMap();
   showView('v-map');
   if(typeof requestZoneOpen==='function') requestZoneOpen(zid);

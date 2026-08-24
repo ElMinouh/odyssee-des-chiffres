@@ -3674,6 +3674,117 @@ const _ZONE_OUTRO = {
  "primhist_ile": {
   "emoji": "🏝️",
   "text": "Le Salon des Inventeurs bruisse d'idées nouvelles. Ton carnet est presque plein — la dernière page approche."
+ },
+
+ // ═══════════════════════════════════════════════════════
+ // Lot 2 (audit technique 7 Odyssées) : les 23 textes de fin manquants
+ // (_ZONE_INTRO en avait déjà 195/195, _ZONE_OUTRO seulement 172/195 —
+ // toujours la toute dernière zone de la toute dernière région de chaque
+ // Odyssée). Écrits en miroir de leur _ZONE_INTRO existant (même lieu, même
+ // personnage/enjeu local, mais résolu plutôt que posé), ton adapté par
+ // niveau comme le reste du projet.
+ // ═══════════════════════════════════════════════════════
+
+ // ── prim / primfr / primhist (sanctuaire, seule zone de la région finale) ──
+ "sanctuaire": {
+  "emoji": "⛩️",
+  "text": "L'Empereur Cosmique s'effondre, et avec lui tout le silence qu'il imposait. Lumo lève enfin la tête vers toi : « Le Cristal de l'Unité... il est à nous. »"
+ },
+ "primfr_sanctuaire": {
+  "emoji": "⛩️",
+  "text": "Le Docteur Babel n'a plus un mot à dire — pour une fois, c'est lui qui se tait. Zoé et Malo échangent un sourire : la langue perdue de Verbopolis peut enfin se reconstruire."
+ },
+ "primhist_sanctuaire": {
+  "emoji": "⛩️",
+  "text": "L'Écho de l'Instant se dissipe enfin dans l'atelier silencieux. Ton carnet se referme sur sa toute dernière page — celle que Grand-père Isidore attendait depuis si longtemps."
+ },
+
+ // ── mat (5 zones de la région finale, mat_final_5 = dernière avant {villain}) ──
+ "mat_final_1": {
+  "emoji": "🌉",
+  "text": "Le Pont des Étoiles scintille à nouveau de mille feux. La chouette de lune ouvre grand les yeux, réveillée pour de bon. Iris applaudit doucement."
+ },
+ "mat_final_2": {
+  "emoji": "☁️",
+  "text": "Le Nuage Câlin retrouve tout son moelleux. Le mouton tout doux bâille de contentement et se love contre toi. « Un vrai câlin, ça répare tout, » sourit Iris."
+ },
+ "mat_final_3": {
+  "emoji": "🌙",
+  "text": "Le Jardin de Lune s'illumine de mille étoiles. Le renard étoilé te fait un clin d'œil avant de filer joyeusement entre les fleurs de nuit."
+ },
+ "mat_final_4": {
+  "emoji": "🗼",
+  "text": "La Tour Scintillante resplendit enfin. La petite fée sort de sa cachette, plus timide du tout, et virevolte autour de toi."
+ },
+ "mat_final_5": {
+  "emoji": "🏰",
+  "text": "Le Roi des Étoiles s'incline devant toi, son regard grave adouci. Le chemin vers le Château du Soir est désormais grand ouvert. Iris te prend la main : « On y est presque. »"
+ },
+
+ // ── matfr (5 zones de la région finale, matfr_final_5 = dernière avant {villain}) ──
+ "matfr_final_1": {
+  "emoji": "🌉",
+  "text": "Le Pont des Lettres chante à nouveau, chaque lettre retrouvant sa voix. La fée des lettres brille de mille éclats, enfin rassurée."
+ },
+ "matfr_final_2": {
+  "emoji": "☁️",
+  "text": "La Tour de l'Alphabet résonne de nouveau. Le lion des lettres se redresse fièrement, tout à fait réveillé. « Il n'attendait que toi, » sourit Plume."
+ },
+ "matfr_final_3": {
+  "emoji": "🌙",
+  "text": "Le Grand A s'illumine de tout son éclat. La tisseuse de lettres dévoile enfin son ouvrage : une toile de mots, prête à relier toute la ville."
+ },
+ "matfr_final_4": {
+  "emoji": "🗼",
+  "text": "L'Escalier des Mots retentit de pas plus assurés. La tortue des mots atteint enfin le sommet, une lettre à la fois, mais fière d'y être arrivée."
+ },
+ "matfr_final_5": {
+  "emoji": "🏰",
+  "text": "Le Gardien du Grand Livre s'écarte enfin, son regard grave adouci. La toute dernière page du Livre n'attend plus que toi. Plume serre ta main : « On y est presque. »"
+ },
+
+ // ── col (5 zones de la région finale, col_final_5 = dernière avant Léthéas) ──
+ "col_final_1": {
+  "emoji": "🔭",
+  "text": "Les courbes de l'Observatoire retrouvent leur tracé exact. Le Gardien des Courbes s'incline. « Réparées, » constate Elara, presque soulagée."
+ },
+ "col_final_2": {
+  "emoji": "📈",
+  "text": "La Nébuleuse Affine retrouve sa pente exacte, chaque droite enfin alignée. Le Spectre Linéaire s'apaise, ayant retrouvé son repère."
+ },
+ "col_final_3": {
+  "emoji": "🪞",
+  "text": "Le Champ des Images se repeuple, chaque valeur retrouvant son antécédent. Le Titan des Antécédents hoche la tête, gravement satisfait."
+ },
+ "col_final_4": {
+  "emoji": "🌀",
+  "text": "La Spirale du Calcul se stabilise enfin, chaque équation résolue. La Comète des Équations ralentit, son sillage d'inconnues enfin éclairci."
+ },
+ "col_final_5": {
+  "emoji": "⛩️",
+  "text": "Le Souverain des Fonctions s'incline, sa certitude enfin brisée. Elara pose sa main sur ton épaule : « Il ne reste plus que Léthéas. »"
+ },
+
+ // ── colfr (5 zones de la région finale, colfr_col_final_5 = dernière avant Monotonia) ──
+ "colfr_col_final_1": {
+  "emoji": "🔭",
+  "text": "Les Faubourgs Gris se colorent enfin d'un peu de vie. La Sentinelle Grise baisse sa garde, comme soulagée de ne plus avoir à surveiller personne."
+ },
+ "colfr_col_final_2": {
+  "emoji": "📈",
+  "text": "La Place du Silence résonne enfin d'un murmure, puis d'une phrase entière. Le Gardien du Silence laisse échapper ses tout premiers mots depuis des lustres."
+ },
+ "colfr_col_final_3": {
+  "emoji": "🪞",
+  "text": "Les Toits de Monotonia se distinguent enfin les uns des autres. Le Surveillant range son regard scrutateur — plus rien à surveiller, ici."
+ },
+ "colfr_col_final_4": {
+  "emoji": "🌀",
+  "text": "La Grande Tribune retrouve enfin un vrai discours, avec un vrai sens. Le Ministre, à court d'arguments, se tait pour la première fois."
+ },
+ "colfr_col_final_5": {
+  "emoji": "⛩️",
+  "text": "Le Dernier Censeur cède, et l'Aube du Verbe se lève pour de bon. Solène pose sa main sur ton épaule : « Il ne reste plus que Monotonia. »"
  }
 };
 
@@ -4174,8 +4285,8 @@ function _openLoreFragment(id){
  if(!frag) return;
  _markLoreFound(id);
  _showLoreModal(frag);
- // Rafraîchit l'écran du lieu (teaser → titre révélé) sans perturber la carte.
- if(document.getElementById('zone-steps-path') && typeof renderZoneMap==='function') renderZoneMap();
+ // v12.7.7 : le rafraîchissement de l'ancien écran v-zone (renderZoneMap)
+ // est retiré ici — cet écran n'existe plus (voir nettoyage code mort).
  // v12.5.1 : mise à jour en direct des points déjà affichés (carte, écran de
  // lieu "zoom") sans reconstruire tout l'écran — évite de dupliquer une
  // modale/overlay en le regénérant depuis ici.

@@ -28,7 +28,7 @@ function setupZoneStep(api, zoneId, stepIdx = 0, stepsCompleted = 0){
 }
 
 describe('returnMenu() — rouvre la VRAIE modale de zone (openArchipelZoom), pas l\'ancien écran v-zone', () => {
-  it('étape non terminée : ouvre openArchipelZoom() sur la bonne zone, v-zone reste caché', () => {
+  it('étape non terminée : ouvre openArchipelZoom() sur la bonne zone', () => {
     const api = loadGame(FILES);
     setupZoneStep(api, 'mat_ce1_3', 0, 0); // "Le Rucher Doré"
     api.returnMenu();
@@ -36,7 +36,6 @@ describe('returnMenu() — rouvre la VRAIE modale de zone (openArchipelZoom), pa
     expect(overlay).toBeTruthy();
     expect(overlay.className).toBe('archipel-zoom-overlay');
     expect(overlay.innerHTML).toContain('Le Rucher Doré');
-    expect(api._domEl('v-zone').classList.contains('hidden')).toBe(true);
     expect(api._domEl('v-map').classList.contains('hidden')).toBe(false);
   });
 
@@ -77,6 +76,5 @@ describe('quitGame("back") confirmé — même correctif que returnMenu()', () =
     expect(overlay).toBeTruthy();
     expect(overlay.className).toBe('archipel-zoom-overlay');
     expect(overlay.innerHTML).toContain('Le Rucher Doré');
-    expect(api._domEl('v-zone').classList.contains('hidden')).toBe(true);
   });
 });
