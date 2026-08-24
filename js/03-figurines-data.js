@@ -856,13 +856,14 @@ const FIGURINES=[
   'Balaïna est à l\'origine un simple jouet : un modèle réduit de cloporte fabriqué par Tobie lui-même pour son anniversaire. Son père Sim, en réussissant à le faire marcher grâce à une invention révolutionnaire, ouvre sans le vouloir la porte à toute l\'aventure.',
   'Le mécanisme qui anime Balaïna utilise la sève de l\'Arbre comme source d\'énergie — une découverte fascinante mais dangereuse, que Sim refusera toujours de livrer, sachant qu\'une exploitation incontrôlée pourrait tuer l\'Arbre tout entier.'
  ],
- r:'exclusif',p:0},
+ r:'épique',p:230},
 {id:'tl18',name:'Le cœur de Balaïna',uni:'Tobie Lolness',uk:'tl',em:'💠',em2:'✨',color:'#00acc1',gc:'#4dd0e1',
  pages:[
   'Le cœur de Balaïna est la pièce la plus précieuse de toute l\'invention de Sim Lolness : le noyau d\'énergie sans lequel le mécanisme ne fonctionne pas. Sim le cache soigneusement juste avant l\'exil de sa famille, hors de portée de Jo Mitch.',
   'Convoité par-dessus tout par Jo Mitch, ce petit objet devient l\'enjeu central de la traque qui bouleverse l\'Arbre entier. Le retrouver — ou le protéger — décidera peut-être du destin de tout un monde.'
  ],
- r:'exclusif',p:0}
+ r:'exclusif',p:0,
+ unlockHint:'🏆 Débloqué en réunissant les 17 autres figurines Tobie Lolness'}
 ];
 
 

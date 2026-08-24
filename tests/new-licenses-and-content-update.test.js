@@ -45,11 +45,13 @@ describe('Nouvelles licences — Avatar (12) et Tobie Lolness (18)', () => {
     expect(keys).toContain('tl');
   });
 
-  it('tl17/tl18 (objets, pas personnages) sont bien en rareté exclusif', () => {
+  it('Balaïna (tl17) est achetable normalement ; le Cœur de Balaïna (tl18) reste exclusif avec un indice clair', () => {
     const api = loadGame(FILES);
     const byId = Object.fromEntries(api.FIGURINES.map(f => [f.id, f]));
-    expect(byId.tl17.r).toBe('exclusif');
+    expect(byId.tl17.r).not.toBe('exclusif');
+    expect(byId.tl17.p).toBeGreaterThan(0);
     expect(byId.tl18.r).toBe('exclusif');
+    expect(byId.tl18.unlockHint).toBeTruthy();
   });
 });
 
@@ -88,6 +90,50 @@ describe('Correctif — images HD des 30 nouvelles figurines préchargées (bug 
     [...AV_IDS, ...TL_IDS].forEach(id => {
       expect(api.FIG_IMG_PRELOAD, `${id} absent de FIG_IMG_PRELOAD`).toContain(id);
     });
+  });
+});
+
+
+describe('_checkTobieLolnessCompletion() — déblocage du Cœur de Balaïna (tl18)', () => {
+  const ALL_17 = ['tl01','tl02','tl03','tl04','tl05','tl06','tl07','tl08','tl09','tl10','tl11','tl12','tl13','tl14','tl15','tl16','tl17'];
+
+  it('débloque tl18 quand les 17 autres figurines Tobie Lolness sont possédées', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    p.ownedFigurines = [...ALL_17];
+    api.setP(p);
+    api._checkTobieLolnessCompletion();
+    expect(api.getP().ownedFigurines).toContain('tl18');
+  });
+
+  it('ne débloque rien s\'il manque UNE seule figurine sur les 17', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    p.ownedFigurines = ALL_17.slice(0, -1); // il en manque une
+    api.setP(p);
+    api._checkTobieLolnessCompletion();
+    expect(api.getP().ownedFigurines).not.toContain('tl18');
+  });
+
+  it('ne fait rien si déjà débloqué (pas de doublon)', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    p.ownedFigurines = [...ALL_17, 'tl18'];
+    api.setP(p);
+    api._checkTobieLolnessCompletion();
+    const count = api.getP().ownedFigurines.filter(id => id === 'tl18').length;
+    expect(count).toBe(1);
+  });
+
+  it('buyFigurine() déclenche bien le check de complétion (achat de la 17e pièce)', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    p.ownedFigurines = ALL_17.slice(0, -1); // il manque tl17 (Balaïna)
+    p.stars = 9999;
+    api.setP(p);
+    api.buyFigurine('tl17');
+    expect(api.getP().ownedFigurines).toContain('tl17');
+    expect(api.getP().ownedFigurines).toContain('tl18');
   });
 });
 

@@ -114,7 +114,7 @@ function _renderFigurinesShop(filter){
    html+=`<span style="font-size:.65em;color:#2ecc71;font-weight:700;">🔍 Voir →</span>`;
   } else {
    if(fig.r==='exclusif'){
-    html+=`<span style="font-size:.65em;color:#bdc3c7;font-style:italic;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> À gagner en boss</span>`;
+    html+=`<span style="font-size:.65em;color:#bdc3c7;font-style:italic;">${fig.unlockHint ? '' : '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> '}${fig.unlockHint || 'À gagner en boss'}</span>`;
    } else {
     html+=`<button class="fig-buy-btn" data-figid="${fig.id}" style="margin:3px 0 0;padding:4px 10px;font-size:.65em;background:${fig.color};border-bottom:2px solid rgba(0,0,0,.3);border-radius:8px;">${fig.p} ⭐</button>`;
    }
@@ -137,6 +137,27 @@ function _renderFigurinesShop(filter){
  }
 }
 
+// v12.7.11 : le Cœur de Balaïna (tl18) se débloque en réunissant les 17
+// autres figurines Tobie Lolness (tl01-tl17) — indication affichée en
+// boutique (fig.unlockHint, voir _renderFigurinesShop). Appelée après
+// chaque ajout de figurine, d'où qu'il vienne (achat, drop boss, saisonnier)
+// pour ne jamais dépendre d'un seul point d'entrée.
+const _TL_COMPLETION_REQUIRED = ['tl01','tl02','tl03','tl04','tl05','tl06','tl07','tl08',
+ 'tl09','tl10','tl11','tl12','tl13','tl14','tl15','tl16','tl17'];
+function _checkTobieLolnessCompletion(){
+ try{
+  if(typeof P==='undefined' || !P) return;
+  const owned = P.ownedFigurines || [];
+  if(owned.includes('tl18')) return; // déjà débloqué
+  if(!_TL_COMPLETION_REQUIRED.every(id => owned.includes(id))) return;
+  P.ownedFigurines = [...owned, 'tl18'];
+  if(typeof saveProfileNow==='function') saveProfileNow();
+  else if(typeof saveProfile==='function') saveProfile();
+  if(typeof toast==='function') toast('🏆 Collection Tobie Lolness complète ! Le Cœur de Balaïna rejoint ta collection !', 4500);
+  if(typeof beep==='function'){ beep(880,'sine',.4); setTimeout(()=>beep(1100,'sine',.3),180); setTimeout(()=>beep(1320,'sine',.35),360); }
+ }catch(e){}
+}
+
 function buyFigurine(id){
  if(!id)return;
  const fig=FIGURINES.find(f=>f&&f.id===id);
@@ -148,6 +169,7 @@ function buyFigurine(id){
   toast(`🎉 ${fig.name} ajouté à ta collection !`,3000);
   beep(880,'sine',.4);
   setTimeout(()=>beep(1100,'sine',.3),180);
+  if(typeof _checkTobieLolnessCompletion==='function') _checkTobieLolnessCompletion();
   renderFigurinesShop(_figFilter);
  });
 }

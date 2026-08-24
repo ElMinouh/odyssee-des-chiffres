@@ -1394,6 +1394,7 @@ if(typeof checkMilestones==='function') checkMilestones();
      P.ownedFigurines = [...owned, pick.id];
      if(typeof toast==='function') toast(`🎉 ${pick.name} ajouté à ta collection !`, 3500);
      if(typeof beep==='function'){beep(880,'sine',.4);setTimeout(()=>beep(1100,'sine',.3),180);}
+     if(typeof _checkTobieLolnessCompletion==='function') _checkTobieLolnessCompletion();
     }
    }catch(e){console.warn('drop figurine boss zone failed', e);}
   }
