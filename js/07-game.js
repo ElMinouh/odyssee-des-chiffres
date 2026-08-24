@@ -1381,23 +1381,11 @@ if(typeof checkMilestones==='function') checkMilestones();
  const _isMapBossStep = !!(GM.mapStep && GM.mapStep.def && GM.mapStep.def.type === 'boss');
  if(won && GM.mapZone && _isMapBossStep){
   GS.mapBossWon=true;
-  // v8.7.9 (O1) : drop figurine rare au boss de zone uniquement (pas mini-boss)
-  if(GM.mapStep && GM.mapStep.def && GM.mapStep.def.dropRare){
-   try{
-    const owned = P.ownedFigurines || [];
-    // Cherche une figurine non possédée parmi les rares/épiques pour récompenser
-    const RARE_LIKE = ['rare','épique','epique','légendaire','legendaire','mythique'];
-    const FIG = (typeof FIGURINES!=='undefined' && Array.isArray(FIGURINES)) ? FIGURINES : [];
-    const candidates = FIG.filter(f=>f && f.id && !owned.includes(f.id) && RARE_LIKE.includes((f.rarity||'').toLowerCase()));
-    if(candidates.length){
-     const pick = candidates[Math.floor(Math.random()*candidates.length)];
-     P.ownedFigurines = [...owned, pick.id];
-     if(typeof toast==='function') toast(`🎉 ${pick.name} ajouté à ta collection !`, 3500);
-     if(typeof beep==='function'){beep(880,'sine',.4);setTimeout(()=>beep(1100,'sine',.3),180);}
-     if(typeof _checkLicenseCompletions==='function') _checkLicenseCompletions();
-    }
-   }catch(e){console.warn('drop figurine boss zone failed', e);}
-  }
+  // v12.7.13 : mécanisme de drop de figurine rare au boss RETIRÉ — comparait
+  // sur chaque figurine un champ « rarity » qui n'a jamais existé (le vrai
+  // champ est « r »), donc n'a probablement jamais fonctionné. Les drapeaux
+  // dropRare:true laissés sur les définitions de boss (02-data.js) sont
+  // désormais inertes, volontairement non retirés (aucun effet, aucun risque).
   if(!(P.mapBossBeaten||[]).includes(GM.mapZone.id)){
    P.mapBossBeaten=[...(P.mapBossBeaten||[]),GM.mapZone.id];
    // v12.4.49 (Lot 3, audit immersion narrative N4) : ligne de journal à la

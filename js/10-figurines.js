@@ -21,42 +21,7 @@ function _renderFigurinesShop(filter){
  const total=FIGURINES.length;
 
  // Build filter bar
- const SHOP_LICENSES=[
-  {k:'none',label:'— Sélectionne une licence —'},
-  {k:'all',label:'🌐 Toutes les licences'},
-  {k:'mine',label:'⭐ Ma collection'},
-  {k:'db',label:'🐉 Dragon Ball'},
-  {k:'hp',label:'⚡ Harry Potter'},
-  {k:'sw',label:'🚀 Star Wars'},
-  {k:'nj',label:'🥷 Ninjago'},
-  {k:'tu',label:'🐢 Tortues Ninja'},
-  {k:'sm',label:'🌙 Sailor Moon'},
-  {k:'mi',label:'🐞 Miraculous'},
-  {k:'pj',label:'🦸 Pyjamasques'},
-  {k:'bl',label:'🐕 Bluey'},
-  {k:'dr',label:'🐉 Dragons'},
-  {k:'mv',label:'🦸 Marvel'},
-  {k:'pk',label:'⚡ Pokémon'},
-  {k:'fr',label:'❄️ Reine des Neiges'},
-  {k:'mk',label:'🐭 Mickey & Amis'},
-  {k:'mr',label:'🍄 Mario Bros'},
-  {k:'sp',label:'🕵️ Totally Spies'},
-  {k:'ot',label:'⚽ Olive & Tom'},
-  {k:'mc',label:'🌟 Cités d\'Or'},
-  {k:'gd',label:'🤖 Goldorak'},
-  {k:'cz',label:'🏆 Chevaliers du Zodiaque'},
-  {k:'tm',label:'⚔️ 3 Mousquetaires'},
-  {k:'dc',label:'🦸 DC Comics'},
-  {k:'tn',label:'🔍 Tintin'},
-  {k:'ax',label:'🏺 Astérix'},
-  {k:'co',label:'🔫 Cobra'},
-  {k:'al',label:'☠️ Albator'},
-  {k:'sx',label:'🎂 Saisonnier'},
-  {k:'kp',label:'🎤 K-pop Demon Hunters'},
-  {k:'cy',label:'🚴 Tour de France'},
-  {k:'av',label:'🌬️ Avatar, le dernier maître de l\'air'},
-  {k:'tl',label:'🌳 Tobie Lolness'},
- ];
+ const SHOP_LICENSES=_buildShopLicenses();
 
  let html=`<div class="shop-filter-bar">
   <div class="shop-quick-btns">
@@ -213,6 +178,30 @@ function _figShelfCard(fig, anim=false){
   <div class="shelf-fig-name">${fig.name}</div>
   <div class="shelf-fig-rar" style="color:${col}">${RARITY_STARS[fig.r]}</div>
  </div>`;
+}
+
+// v12.7.13 : SHOP_LICENSES (menu déroulant de la boutique) n'est plus une
+// liste codée en dur en doublon de UNIVERS_LIST (source unique, utilisée
+// aussi par la Vue Parent et l'onglet Collection) — toute licence ajoutée à
+// UNIVERS_LIST apparaît désormais automatiquement dans la boutique, sans
+// oubli possible. SHOP_LICENSE_OVERRIDES ne sert que pour les 3 licences où
+// l'icône/libellé boutique diffère volontairement du rendu par défaut
+// (UNI_ICON[k] + label) — comportement visuel inchangé pour ces 3 cas.
+const SHOP_LICENSE_OVERRIDES={
+ nj:'🥷 Ninjago',
+ mv:'🦸 Marvel',
+ sx:'🎂 Saisonnier',
+};
+function _buildShopLicenses(){
+ const licenses=UNIVERS_LIST.map(({k,label})=>
+  ({k, label: SHOP_LICENSE_OVERRIDES[k] || `${UNI_ICON[k]||'🎴'} ${label}`})
+ );
+ return [
+  {k:'none',label:'— Sélectionne une licence —'},
+  {k:'all',label:'🌐 Toutes les licences'},
+  {k:'mine',label:'⭐ Ma collection'},
+  ...licenses,
+ ];
 }
 
 const UNIVERS_LIST=[

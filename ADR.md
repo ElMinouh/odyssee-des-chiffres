@@ -1245,4 +1245,45 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-114 — Décor universel par lieu (thème + petits motifs), sur tous les niveaux
+
+**Contexte** : signalement d'un bug d'affichage en maternelle (bandeau de titre incohérent avec le lieu réellement joué), qui a révélé un bug de navigation bien plus important (voir ADR-115bis ci-dessous, section "écran de lieu"). En creusant le décor visuel demandé pour habiller l'écran de jeu maternelle, Cyril a précisé une exigence transverse : *"ces personnalisations de l'écran de jeu doivent concerner toutes les odyssées de toutes les matières de tous les niveaux actuels et futurs"*.
+
+**Découverte en investiguant** : le fond coloré par lieu existait déjà, de longue date, pour tous les niveaux non-maternelle, via `applyTheme(zone.theme)` (mécanisme universel préexistant, jamais documenté comme tel). Seule la maternelle avait un système séparé et plus doux (délibérément, pour rester calme pour les tout-petits). Seuls les "petits motifs" (nouveauté) manquaient partout.
+
+**Décision** : deux mécanismes complémentaires, tous deux appelés depuis `startMapStep()` (07-map.js) pour tous les niveaux :
+- `applyTheme(zone.theme)` (préexistant, inchangé) — habillage global (couleurs, variables CSS).
+- `_applyZoneMotifs(zone)` (nouveau) — 2 petits emoji discrets (`#zone-motifs`), réutilisant l'unique emoji déjà curé par thème dans `_THEME_META` (aucun contenu nouveau créé). Pose `#v-game.has-zone-motifs` (contexte d'empilement CSS, `position:relative;z-index:0`) UNIQUEMENT quand des motifs sont réellement affichés — indispensable, `position:relative` seul ne crée pas de nouveau contexte d'empilement CSS et un enfant en `z-index:-1` peut alors se retrouver peint avant le fond de son propre parent (piège rencontré et corrigé en cours de route, deux vagues de correctifs avant la vraie cause trouvée).
+- Maternelle : `_matApplyAmbiance()` simplifiée, garde un fond doux séparé mais suit désormais le vrai thème du lieu (au lieu du monde générique du niveau), délègue les motifs au système central.
+
+**Alternatives rejetées** : un système de motifs propre à la maternelle uniquement (rejeté dès la première demande de généralisation de Cyril, en cours de chantier — aurait dupliqué `_matRenderMotifs()` par niveau au lieu d'une fonction universelle).
+
+**Impact** : `07-map.js` (`_applyZoneMotifs`, `_ZONE_MOTIF_POS`), `07-game.js` (vidage des motifs dans `startGame()`/`endGame()`), `13-maternelle.js` (`_matApplyAmbiance()` simplifiée), `index.html`/`styles.css` (`#zone-motifs`, `.zone-motif`, `#v-game.has-zone-motifs`). v12.7.3-v12.7.5. Tests : `tests/decor-par-lieu.test.js` (13 tests au total sur ce chantier, dont un confirmant explicitement le fonctionnement sur un niveau non-maternelle).
+
+---
+
+## ADR-115 — Notification de nouveau contenu (licences/figurines)
+
+**Contexte** : à l'occasion de l'ajout des licences Avatar et Tobie Lolness, Cyril a demandé un système à portée générale et future : informer le joueur, à sa prochaine connexion, de tout nouveau contenu ajouté au jeu — en réutilisant les fenêtres/inserts déjà existants plutôt qu'un nouveau composant. Maquette validée avant codage (règle du projet).
+
+**Décision** : registre chronologique `_CONTENT_UPDATES` (03-figurines-data.js), chaque entrée montrée une seule fois par profil. Orchestrateur `_maybeShowContentUpdate(afterCb)` : vérifie `P.contentUpdatesSeen`, affiche la plus ancienne annonce non vue via `_showStoryModal()` (réutilise le parchemin narratif déjà utilisé pour les chapitres ET les fragments de lore — troisième usage cohérent, aucune nouvelle mécanique de modale créée), marque comme vue, sauvegarde. Point d'accroche : `gotoSubjects()` (01-core.js, bouton CONTINUER de l'écran d'accueil), imbriqué juste après la garde d'identité/PIN déjà existante (`_pcMaybeShow()`), même pattern "garde puis continue". Si plusieurs annonces ont été manquées (absence prolongée du joueur), elles s'enchaînent naturellement une par session, jamais toutes d'un coup.
+
+**Alternatives rejetées** : une bannière permanente sur l'écran d'accueil plutôt qu'une modale ponctuelle (rejeté — moins cohérent avec les autres mécanismes d'annonce du jeu, et risque d'être ignorée/oubliée par un enfant).
+
+**Impact** : `03-figurines-data.js` (`_CONTENT_UPDATES`, `_maybeShowContentUpdate`), `01-core.js` (`gotoSubjects()`), `05-profile.js` (whitelist `contentUpdatesSeen`), `12-cloud.js` (`ODYSSEY_PROGRESS_FIELDS`, fusion en union — appliqué dès la création du champ, règle ADR-111 pt.3), `styles.css` (`.new-item-row`/`.new-item-emoji`). v12.7.9. Tests : `tests/new-licenses-and-content-update.test.js`.
+
+---
+
+## ADR-116 — Déblocage par complétion de licence (générique, piloté par la donnée)
+
+**Contexte** : réponse à une question de Cyril ("comment gagner Balaïna et Cœur de Balaïna concrètement ?") qui a révélé un vrai manque : ces deux figurines avaient été posées en rareté `exclusif`/prix 0 sans qu'aucun mécanisme d'attribution n'ait jamais été construit. Ajustement demandé : Balaïna doit être achetable normalement, Cœur de Balaïna reste à débloquer par complétion mais avec un mode d'acquisition clairement indiqué au joueur (pas un déblocage silencieux). Extension demandée dans la foulée à 11 figurines supplémentaires d'autres licences (Huntrix, Saja Boys, Garmadon Quatre Bras, Goku Ultra Instinct, Frieza Doré, Mew, Mewtwo, Goldorak, Goldorak & Soucoupe, Cobra Rugball, L'Atlantis).
+
+**Décision** : plutôt qu'une fonction dédiée par licence, un mécanisme générique unique `_checkLicenseCompletions()` (10-figurines.js), piloté par un flag booléen `completionLock:true` posé sur chaque figurine concernée (+ un champ `unlockHint` pour le message affiché en boutique à la place du libellé générique trompeur "à gagner en boss"). Toute future figurine "à débloquer par complétion" n'a besoin que de ces deux champs, sans code supplémentaire. Point de conception non trivial : le calcul des "figurines requises" exclut, pour une figurine verrouillée donnée, les AUTRES figurines elles-mêmes `completionLock:true` de la même licence — nécessaire car Goldorak et Dragon Ball ont chacune 2 figurines verrouillées ; sans cette exclusion, un calcul naïf créerait un blocage circulaire. Les figurines verrouillées d'une même licence se débloquent alors simultanément, dès que le reste de la collection "normale" est complet. Appelé après tout ajout à `P.ownedFigurines` (achat, drop de boss — désormais retiré, voir ADR-117 —, figurine saisonnière).
+
+**Alternatives rejetées** : une fonction spécifique par licence (`_checkTobieLolnessCompletion()`, approche initiale v12.7.11) — remplacée dès la 2e demande d'extension dans la même conversation pour éviter la prolifération de code dupliqué.
+
+**Impact** : `10-figurines.js` (`_checkLicenseCompletions`, `buyFigurine()`), `03-figurines-data.js` (12 figurines converties : Cœur de Balaïna + 11 autres, champs `completionLock`/`unlockHint`), `06c-seasonal.js` (`unlockSeasonalFigurine()`, appel ajouté par cohérence). v12.7.11-v12.7.12. Tests : `tests/major-choice-whitelist.test.js` n'est pas concerné ; couverts par une extension de `tests/new-licenses-and-content-update.test.js` (24 tests au total sur ce fichier, dont un cas dédié aux 2 figurines verrouillées d'une même licence, testé sur Goldorak, et un test négatif équivalent sur Dragon Ball).
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
