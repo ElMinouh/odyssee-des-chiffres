@@ -270,6 +270,9 @@ function _mergeCloudProfiles(local, imported){
   // v12.7.0 (ADR-113) : trait de héros, désormais propre à chaque Odyssée —
   // même vigilance, ajouté dès sa création.
   'heroTraitApprocheByAdv', 'heroTraitMoteurByAdv', 'heroTraitStyleByAdv',
+  // v12.7.9 : suivi des notifications "nouveau contenu" déjà vues — même
+  // vigilance, ajouté dès sa création (règle ADR-111 pt.3).
+  'contentUpdatesSeen',
  ];
  if(resetWinner === 'local'){
   ODYSSEY_PROGRESS_FIELDS.forEach(f => { out[f] = local[f]; });
@@ -286,6 +289,9 @@ function _mergeCloudProfiles(local, imported){
   // l'avatar systématiquement reprojeté en arrière et le prologue/les
   // chapitres qui semblaient réapparaître "à chaque nouveau lieu".
   out.storySeen = uniq(local.storySeen, imported.storySeen);
+  // v12.7.9 : même logique que storySeen — une notification vue sur un
+  // appareil doit rester vue partout, jamais réapparaître après une fusion.
+  out.contentUpdatesSeen = uniq(local.contentUpdatesSeen, imported.contentUpdatesSeen);
   out._epilogueBonusCredited = uniq(local._epilogueBonusCredited, imported._epilogueBonusCredited);
   ['talismanRevealShown','rainbowRevealShown','bookRevealShown','badgeRevealShown','armorRevealShown','libraryRevealShown','histLibraryRevealShown']
    .forEach(f => { out[f] = !!(local[f] || imported[f]); });

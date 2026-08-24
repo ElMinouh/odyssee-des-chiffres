@@ -1392,10 +1392,17 @@ function gotoSubjects(){
   // chargement de l'app (voir 05-profile.js, loadProfile()).
   if(typeof obMaybeAutoStart3==='function') obMaybeAutoStart3();
  };
+ // v12.7.9 : notification "nouveau contenu" (nouvelles figurines/licences),
+ // affichée APRÈS l'identité confirmée (on sait alors quel profil regarde),
+ // AVANT de continuer normalement vers les matières.
+ const _proceedWithContentCheck = ()=>{
+  if(typeof _maybeShowContentUpdate==='function') _maybeShowContentUpdate(_proceed);
+  else _proceed();
+ };
  // v11.6.7 : la vérification d'identité (confirmation ou code) se déclenche
  // ICI — au clic sur CONTINUER, pour valider le profil juste avant d'y jouer —
  // pas au chargement de la page, avant même d'avoir choisi qui va jouer.
- if(typeof _pcMaybeShow==='function') _pcMaybeShow(_proceed); else _proceed();
+ if(typeof _pcMaybeShow==='function') _pcMaybeShow(_proceedWithContentCheck); else _proceedWithContentCheck();
 }
 // Choix d'une matière. Maths → flux actuel (modes). Autres → bientôt disponibles.
 const SUBJECT_LABELS={ math:'Mathématiques', fr:'Français', hist:'Histoire', geo:'Géographie', en:'Anglais', svt:'SVT', pc:'Physique-Chimie' };

@@ -185,7 +185,8 @@ const UNIVERS_LIST=[
  {k:'mi',label:'Miraculous'},{k:'pj',label:'Pyjamasques'},{k:'ot',label:'Olive & Tom'},
  {k:'co',label:'Cobra'},{k:'al',label:'Albator'},{k:'tu',label:'Tortues Ninja'},
  {k:'sm',label:'Sailor Moon'},{k:'sp',label:'Totally Spies'},{k:'bl',label:'Bluey'},{k:'dr',label:'Dragons'},
- {k:'sx',label:'✨ Saisonnier (exclusif)'},{k:'kp',label:'K-pop Demon Hunters'},{k:'cy',label:'Tour de France'}
+ {k:'sx',label:'✨ Saisonnier (exclusif)'},{k:'kp',label:'K-pop Demon Hunters'},{k:'cy',label:'Tour de France'},
+ {k:'av',label:'Avatar, le dernier maître de l\'air'},{k:'tl',label:'Tobie Lolness'}
 ];
 
 function renderFigCollection(){

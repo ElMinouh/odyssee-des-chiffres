@@ -164,6 +164,10 @@ function validateProfile(raw, defaultName){
   mapBossBeaten: _safeArr(raw.mapBossBeaten).filter(b => typeof b === 'string'),
   // v8.7.67 (O5) : chapitres narratifs déjà vus (extensible — un id par chapitre)
   storySeen: _safeArr(raw.storySeen).filter(s => typeof s === 'string'),
+  // v12.7.9 : suivi des notifications "nouveau contenu" déjà vues (nouvelles
+  // figurines/licences) — même modèle que storySeen, fusion cloud en union
+  // (voir _mergeCloudProfiles, 12-cloud.js).
+  contentUpdatesSeen: _safeArr(raw.contentUpdatesSeen).filter(s => typeof s === 'string'),
   // O3 — Position du mini-personnage sur la carte régionalisée
   mapAvatarZone: (typeof raw.mapAvatarZone==='string' && raw.mapAvatarZone) ? raw.mapAvatarZone : 'plaine',
   // Position de l'avatar mémorisée séparément par aventure/matière.

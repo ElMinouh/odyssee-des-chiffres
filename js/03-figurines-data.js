@@ -226,7 +226,7 @@ function getCharPortrait(id, opts = {}){
 
 const RARITY_COL={commun:'#95a5a6',rare:'#3498db',épique:'#9b59b6',légendaire:'#f39c12',mythique:'#e91e8c',exclusif:'#f1c40f'};
 const RARITY_STARS={commun:'◆',rare:'◆◆',épique:'◆◆◆',légendaire:'◆◆◆◆',mythique:'◆◆◆◆◆',exclusif:'✨◆✨'};
-const UNI_ICON={db:'🐉',hp:'⚡',sw:'🚀',nj:'🐲',fr:'❄️',mk:'🐭',mv:'⚡',pk:'⚡',mr:'🍄',gd:'🤖',mc:'🌟',cz:'🏆',tm:'⚔️',tn:'🔍',ax:'🏺',mi:'🐞',pj:'🦸',ot:'⚽',co:'🔫',al:'☠️',tu:'🐢',sm:'🌙',sp:'🕵️',bl:'🐕',dr:'🐉',sx:'🎂',dc:'🦸',kp:'🎤',cy:'🚴',sc:'🍄',zl:'🗡️'};
+const UNI_ICON={db:'🐉',hp:'⚡',sw:'🚀',nj:'🐲',fr:'❄️',mk:'🐭',mv:'⚡',pk:'⚡',mr:'🍄',gd:'🤖',mc:'🌟',cz:'🏆',tm:'⚔️',tn:'🔍',ax:'🏺',mi:'🐞',pj:'🦸',ot:'⚽',co:'🔫',al:'☠️',tu:'🐢',sm:'🌙',sp:'🕵️',bl:'🐕',dr:'🐉',sx:'🎂',dc:'🦸',kp:'🎤',cy:'🚴',sc:'🍄',zl:'🗡️',av:'🌬️',tl:'🌳'};
 const FIGURINES=[
 {id:'db01',name:'Goku Super Saiyen',uni:'Dragon Ball',uk:'db',em:'🌀',em2:'⚡',color:'#f39c12',gc:'#ffb300',desc:'Fils de Bardock, élevé sur Terre par les humains, Son Goku est le plus grand guerrier de l\'univers. Il maîtrise le Kaméhaméha, une attaque d\'énergie bleue chargée entre les paumes. En Super Saiyen, ses cheveux dorés et ses yeux verts révèlent une puissance colossale. Toujours prêt à dépasser ses limites, il cherche non la victoire, mais le dépassement de soi.',r:'légendaire',p:350},
 {id:'db02',name:'Végéta',uni:'Dragon Ball',uk:'db',em:'👑',em2:'⚡',color:'#3498db',gc:'#5dade2',desc:'Prince des Saiyens, Végéta est le rival éternel de Goku. Arrogant et fier de son sang royal, il a progressivement choisi la voie du bien. Son Gallic Gun libère une explosion violette dévastatrice. Rival devenu allié, père aimant et guerrier d\'élite, Végéta reste l\'un des personnages les plus complexes et aimés de Dragon Ball Z.',r:'épique',p:230},
@@ -657,7 +657,207 @@ const FIGURINES=[
 {id:'cy30',name:"Raymond Poulidor",uni:"Tour de France",uk:'cy',em:'🚴',em2:'🇫🇷',color:'#2980b9',gc:'#74b9ff',desc:"'Poupou', l'éternel second le plus aimé de France. Sa combativité et sa gentillesse en ont fait une icône populaire.",r:'rare',p:150},
 {id:'cy31',name:"Jacques Anquetil",uni:"Tour de France",uk:'cy',em:'🏆',em2:'🇫🇷',color:'#34495e',gc:'#7f8c8d',desc:"Premier quintuple vainqueur du Tour de France, virtuose du contre-la-montre. Élégant et racé, un pionnier des géants de la route.",r:'légendaire',p:350},
 {id:'cy32',name:"Eddy Merckx",uni:"Tour de France",uk:'cy',em:'🏆',em2:'🇧🇪',color:'#c0392b',gc:'#e74c3c',desc:"'Le Cannibale', considéré comme le plus grand cycliste de tous les temps. Quintuple vainqueur du Tour, il gagnait absolument tout.",r:'légendaire',p:350}
+,
+// ═══════════════════════════════════════════════════════
+// Licence : Avatar, le dernier maître de l'air (av01-av12)
+// Licence : Tobie Lolness, série animée (tl01-tl18)
+// ═══════════════════════════════════════════════════════
+{id:'av01',name:'Aang',uni:'Avatar, le dernier maître de l\'air',uk:'av',em:'🌬️',em2:'🧘',color:'#7ed6c4',gc:'#a0e8d8',
+ pages:[
+  'Dernier survivant des Nomades de l\'Air, Aang a douze ans quand on le retrouve pris dans un iceberg, cent ans après y être entré. Il est l\'Avatar : l\'unique être capable de maîtriser les quatre éléments, chargé de maintenir l\'équilibre entre les quatre nations du monde.',
+  'Aang maîtrise l\'air avec une grâce acrobatique unique, glissant sur son bâton-planeur et son fidèle bison volant Appa. Joueur et espiègle malgré le poids de sa mission, il refuse longtemps la violence, cherchant toujours une voie pacifique avant le combat.',
+  'Formé tour à tour à l\'eau, la terre puis le feu par des maîtres de chaque nation, Aang doit vaincre le Seigneur du Feu Ozaï avant la comète qui décuplerait sa puissance. Sa quête d\'équilibre le mènera même à un état de conscience appelé l\'État Avatar.'
+ ],
+ r:'légendaire',p:350},
+{id:'av02',name:'Katara',uni:'Avatar, le dernier maître de l\'air',uk:'av',em:'💧',em2:'🌊',color:'#3498db',gc:'#5dade2',
+ pages:[
+  'Dernière maîtresse de l\'eau de la Tribu de l\'Eau du Sud, Katara découvre Aang dans son iceberg et devient sa première professeure d\'eaubending, alors qu\'elle apprend elle-même en même temps que lui.',
+  'Douce mais déterminée, Katara est aussi la guérisseuse du groupe : l\'eau entre ses mains peut soigner les blessures les plus graves. Son courage et sa loyauté envers ses amis ne faiblissent jamais, même face au Seigneur du Feu.',
+  'Au fil de son apprentissage, elle devient l\'une des maîtresses de l\'eau les plus puissantes du monde, capable de contrôler le sang lui-même en dernier recours. Son lien avec Aang est l\'un des plus forts de toute l\'histoire.'
+ ],
+ r:'épique',p:230},
+{id:'av03',name:'Sokka',uni:'Avatar, le dernier maître de l\'air',uk:'av',em:'🪃',em2:'😄',color:'#5d6d7e',gc:'#85929e',
+ pages:[
+  'Frère aîné de Katara, Sokka est le seul membre du groupe à ne maîtriser aucun élément — il compense avec son boomerang, son épée en acier de météorite et une bonne dose d\'ingéniosité.',
+  'Blagueur et souvent maladroit au début de l\'aventure, Sokka devient peu à peu un stratège hors pair et un guerrier redoutable, formé notamment par les Guerrières de Kyoshi et le maître épéiste Piandao.',
+  'C\'est souvent lui qui élabore les plans les plus audacieux du groupe. Son humour cache une grande loyauté envers ses amis et une véritable soif d\'apprendre, malgré l\'absence de pouvoirs élémentaires.'
+ ],
+ r:'rare',p:150},
+{id:'av04',name:'Zuko',uni:'Avatar, le dernier maître de l\'air',uk:'av',em:'🔥',em2:'⚔️',color:'#c0392b',gc:'#e74c3c',
+ pages:[
+  'Prince banni de la Nation du Feu, Zuko porte une cicatrice laissée par son propre père, le Seigneur Ozaï, pour avoir osé le contredire. Il traque Aang pendant toute la première partie de son voyage, espérant ainsi retrouver son honneur perdu.',
+  'Maître du feu redoutable et bretteur agile, Zuko est rongé par le doute et la colère, tiraillé entre son besoin d\'approbation paternelle et sa conscience. Son oncle Iroh l\'accompagne, tentant patiemment de le guider vers la sagesse.',
+  'Après un long chemin intérieur, Zuko choisit finalement de rejoindre Aang pour lui enseigner la maîtrise du feu et affronter sa propre famille. Son parcours de rédemption est l\'un des plus marquants de toute la série.'
+ ],
+ r:'légendaire',p:350},
+{id:'av05',name:'Toph Beifong',uni:'Avatar, le dernier maître de l\'air',uk:'av',em:'🪨',em2:'👣',color:'#8d6e42',gc:'#b5895e',
+ pages:[
+  'Aveugle de naissance, Toph "voit" grâce à la terre : elle perçoit les vibrations du sol à travers la plante de ses pieds, ce qui fait d\'elle l\'une des plus grandes maîtresses de la terre jamais connues.',
+  'Élevée dans le luxe et la surprotection par ses parents, Toph fugue pour rejoindre Aang et vivre enfin des aventures à sa mesure. Elle invente la métalbending, une technique jusque-là jugée impossible.',
+  'Franche jusqu\'à la brusquerie, fière et redoutablement forte, Toph refuse toute pitié et déteste qu\'on la sous-estime à cause de son handicap — une erreur que ses adversaires ne commettent jamais deux fois.'
+ ],
+ r:'épique',p:230},
+{id:'av06',name:'Iroh',uni:'Avatar, le dernier maître de l\'air',uk:'av',em:'🍵',em2:'🧧',color:'#e67e22',gc:'#f39c12',
+ pages:[
+  'Oncle de Zuko et ancien général de la Nation du Feu, Iroh a renoncé à la guerre après un deuil terrible. Il accompagne son neveu dans son exil, préférant désormais le thé aux champs de bataille.',
+  'Surnommé le "Dragon de l\'Ouest", Iroh reste un maître du feu exceptionnel, seul capable de créer du feu bleu et de rediriger la foudre. Sa sagesse et sa patience en font le meilleur guide possible pour Zuko.',
+  'Chaleureux, drôle et profondément bon, Iroh est l\'un des personnages les plus aimés de la série. Membre secret de l\'Ordre du Lotus Blanc, il œuvre en coulisses pour la paix entre les nations.'
+ ],
+ r:'épique',p:230},
+{id:'av07',name:'Azula',uni:'Avatar, le dernier maître de l\'air',uk:'av',em:'💙',em2:'🔥',color:'#8e44ad',gc:'#af7ac5',
+ pages:[
+  'Sœur cadette de Zuko et prodige du feubending, Azula maîtrise le feu bleu, plus chaud et plus puissant que le feu classique. Favorite déclarée de leur père Ozaï, elle grandit dans l\'ombre écrasante de cette préférence.',
+  'Brillante stratège et manipulatrice hors pair, Azula sait toujours trouver la faille psychologique de ses adversaires. Accompagnée de ses amies Mai et Ty Lee, elle traque Zuko et Iroh avec une redoutable efficacité.',
+  'Perfectionniste et terrifiée à l\'idée d\'échouer, Azula finit par se fissurer sous la pression qu\'elle s\'impose. Son duel final contre Zuko et Katara reste l\'un des affrontements les plus intenses de la série.'
+ ],
+ r:'légendaire',p:350},
+{id:'av08',name:'Appa',uni:'Avatar, le dernier maître de l\'air',uk:'av',em:'☁️',em2:'🦬',color:'#eaf2f8',gc:'#d6eaf8',
+ pages:[
+  'Bison volant à six pattes, Appa est le compagnon d\'Aang depuis sa naissance chez les Nomades de l\'Air. Sa fourrure blanche et ses grandes flèches tatouées le rendent immédiatement reconnaissable dans le ciel.',
+  'D\'un simple "Youyip !" et d\'un coup de sa large queue, Appa s\'élance dans les airs et transporte toute la bande à travers le monde. Doux et fidèle, il est bien plus qu\'une monture : un véritable membre de la famille.'
+ ],
+ r:'rare',p:150},
+{id:'av09',name:'Momo',uni:'Avatar, le dernier maître de l\'air',uk:'av',em:'🐒',em2:'🦋',color:'#a0522d',gc:'#cd853f',
+ pages:[
+  'Petit lémurien ailé recueilli par Aang dans un temple de l\'Air abandonné, Momo devient vite un compagnon facétieux, toujours prêt à chaparder de la nourriture ou à se percher sur l\'épaule de quelqu\'un.',
+  'Silencieux mais très expressif, Momo apporte une touche de légèreté bienvenue dans les moments les plus tendus du voyage. Il partage avec Appa une grande complicité malgré leur différence de taille.'
+ ],
+ r:'commun',p:90},
+{id:'av10',name:'Suki',uni:'Avatar, le dernier maître de l\'air',uk:'av',em:'🥋',em2:'🎭',color:'#27ae60',gc:'#2ecc71',
+ pages:[
+  'Cheffe des Guerrières de Kyoshi, Suki forme un temps Sokka au combat rapproché avant de rejoindre elle-même le groupe d\'Aang. Vêtue de son costume traditionnel et de son maquillage de guerre, elle impressionne dès leur première rencontre.',
+  'Courageuse et loyale, Suki refuse qu\'on la sous-estime à cause de son apparence délicate. Capturée puis emprisonnée dans la prison flottante du Rocher Bouillant, elle s\'évade avec panache aux côtés de Sokka et Zuko.'
+ ],
+ r:'rare',p:150},
+{id:'av11',name:'Ozaï',uni:'Avatar, le dernier maître de l\'air',uk:'av',em:'👑',em2:'🔥',color:'#7b241c',gc:'#a93226',
+ pages:[
+  'Seigneur du Feu et père de Zuko et Azula, Ozaï dirige la Nation du Feu d\'une main de fer, poursuivant le plan de conquête entamé par son grand-père un siècle plus tôt. Il a banni Zuko pour avoir osé le défier.',
+  'Ozaï prévoit d\'utiliser la comète de Sozin, qui décuple la puissance des maîtres du feu, pour anéantir définitivement la Nation de la Terre. Son ambition démesurée ne laisse aucune place à la compassion, pas même envers ses propres enfants.',
+  'Redoutable maître du feu, il s\'autoproclame "Empereur Phénix" au sommet de sa puissance. Son affrontement final contre l\'Avatar Aang décidera du sort du monde entier.'
+ ],
+ r:'mythique',p:500},
+{id:'av12',name:'Korra',uni:'Avatar, le dernier maître de l\'air',uk:'av',em:'🌊',em2:'🥊',color:'#1a5276',gc:'#2874a6',
+ pages:[
+  'Née des décennies après Aang, Korra est la nouvelle Avatar : elle maîtrise déjà l\'eau, la terre et le feu quand son histoire commence, et n\'a plus qu\'à apprendre l\'air pour compléter son cycle.',
+  'Fonceuse, impulsive et redoutable au combat, Korra préfère souvent l\'action à la réflexion — l\'inverse presque parfait d\'Aang. Elle grandit dans un monde bouleversé par les progrès technologiques et les tensions entre esprits et humains.',
+  'Installée à Republic City, Korra doit affronter des menaces inédites qu\'aucun Avatar n\'avait connues avant elle. Son parcours prouve qu\'être l\'Avatar ne signifie jamais suivre exactement le même chemin que ses prédécesseurs.'
+ ],
+ r:'légendaire',p:350},
+{id:'tl01',name:'Tobie Lolness',uni:'Tobie Lolness',uk:'tl',em:'🌳',em2:'🏃',color:'#6b8e23',gc:'#8fbc5a',
+ pages:[
+  'Tobie Lolness ne mesure qu\'un millimètre et demi, comme tout son peuple qui vit dans les branches d\'un chêne géant. Fils du savant Sim Lolness et de la douce Maïa, il est traqué par tout l\'Arbre alors qu\'il n\'a que treize ans.',
+  'Doué pour l\'imitation et vif d\'esprit, Tobie doit fuir seul quand ses parents sont emprisonnés par Jo Mitch, qui veut leur arracher le secret d\'une invention de son père. Il trouve refuge dans les Basses-Branches, où il se lie d\'amitié avec Elisha.',
+  'Courageux et déterminé, Tobie ne renoncera jamais à libérer ses parents ni à protéger l\'Arbre tout entier — quitte à affronter son ancien meilleur ami, Léo Blue, devenu son pire ennemi.'
+ ],
+ r:'légendaire',p:350},
+{id:'tl02',name:'Elisha Lee',uni:'Tobie Lolness',uk:'tl',em:'🍃',em2:'👁️',color:'#2e8b57',gc:'#3cb371',
+ pages:[
+  'Elisha Lee vit dans les Basses-Branches avec sa mère Isha. C\'est elle que Tobie rencontre en premier lors de son exil, près d\'un lac caché — le début d\'une amitié qui deviendra bien plus.',
+  'Fonceuse et pleine de ressources, Elisha aide Tobie à se cacher et à survivre alors que tout l\'Arbre le recherche. Convoitée par Léo Blue devenu tyran, elle résiste avec un courage inébranlable.',
+  'Loyale jusqu\'au bout, Elisha traverse toute l\'aventure aux côtés de Tobie, bravant mille dangers pour l\'aider à sauver ses parents et l\'Arbre tout entier.'
+ ],
+ r:'légendaire',p:350},
+{id:'tl03',name:'Sim Lolness',uni:'Tobie Lolness',uk:'tl',em:'🎩',em2:'🔬',color:'#5d4037',gc:'#8d6e63',
+ pages:[
+  'Grand savant reconnu de l\'Arbre, toujours coiffé de son béret, Sim Lolness passe des années à percer les mystères du monde qui l\'entoure — jusqu\'à découvrir que l\'Arbre lui-même pourrait être vivant.',
+  'Sim invente Balaïna, un mécanisme capable d\'utiliser la sève de l\'Arbre comme source d\'énergie. Conscient du danger que représenterait une exploitation incontrôlée, il refuse d\'en livrer le secret, quel qu\'en soit le prix.',
+  'Son refus lui vaut d\'être emprisonné avec Maïa par Jo Mitch. Même derrière les barreaux, Sim continue d\'organiser la résistance et de protéger, envers et contre tout, le secret qui pourrait sauver ou détruire l\'Arbre.'
+ ],
+ r:'épique',p:230},
+{id:'tl04',name:'Maïa Lolness',uni:'Tobie Lolness',uk:'tl',em:'📖',em2:'💚',color:'#c2185b',gc:'#e91e8c',
+ pages:[
+  'Mère de Tobie, Maïa lui transmet très tôt le goût des mots et des histoires. Fille de la sévère Radegonde Alnorell, elle a grandi loin de l\'affection, ce qui la rend d\'autant plus aimante envers son propre fils.',
+  'Emprisonnée aux côtés de Sim par Jo Mitch, Maïa ne perd jamais espoir. Douce en apparence, elle se révèle d\'une force tranquille remarquable, aidant activement à organiser l\'évasion des prisonniers.'
+ ],
+ r:'rare',p:150},
+{id:'tl05',name:'Léo Blue',uni:'Tobie Lolness',uk:'tl',em:'🌀',em2:'👑',color:'#37474f',gc:'#607d8b',
+ pages:[
+  'Meilleur ami d\'enfance de Tobie dans les Cimes, Léo Blue partage avec lui des années d\'insouciance — jusqu\'à ce que la vie les sépare et que tout bascule.',
+  'Rongé par la perte de son père et l\'ambition, Léo finit par se ranger du côté de Jo Mitch avant de prendre lui-même le contrôle de l\'Arbre. Il règne alors sans partage sur les Basses-Branches, devenu méconnaissable pour ceux qui l\'ont connu enfant.',
+  'Le duel entre Tobie et Léo, deux anciens meilleurs amis devenus adversaires, est l\'un des moments les plus poignants de toute l\'histoire — la question de savoir si Léo peut encore être sauvé de lui-même reste entière jusqu\'au bout.'
+ ],
+ r:'légendaire',p:350},
+{id:'tl06',name:'Isha Lee',uni:'Tobie Lolness',uk:'tl',em:'🍯',em2:'🤫',color:'#d4a017',gc:'#f1c40f',
+ pages:[
+  'Mère d\'Elisha, Isha Lee est réputée pour ses délicieuses crêpes au miel. Discrète et bienveillante, elle a en réalité des origines bien plus mystérieuses que ne le pensent ses voisins des Basses-Branches.',
+  'Isha sait, dès le début, qu\'Elisha aide Tobie en cachette — mais elle ne dit jamais rien, encourageant même en silence cette amitié qu\'elle sait précieuse et dangereuse à la fois.'
+ ],
+ r:'rare',p:150},
+{id:'tl07',name:'El Blue',uni:'Tobie Lolness',uk:'tl',em:'🍂',em2:'👨',color:'#795548',gc:'#a1887f',
+ pages:[
+  'Père de Léo Blue, El Blue a grandi dans les Cimes aux côtés de Sim Lolness et de leur ami Zef Clarac, formant autrefois un trio inséparable, bien avant les événements qui déchireront leurs familles.',
+  'Sa disparition prématurée laisse Léo orphelin et profondément marqué, un vide qui pèsera lourd sur le destin de son fils et sur le chemin sombre qu\'il empruntera par la suite.'
+ ],
+ r:'commun',p:90},
+{id:'tl08',name:'Jo Mitch',uni:'Tobie Lolness',uk:'tl',em:'⛏️',em2:'💰',color:'#4a4a4a',gc:'#7f8c8d',
+ pages:[
+  'Industriel sans scrupules surnommé le "Grand-Voisin", Jo Mitch dirige la J.M.A. et rêve de creuser un cratère gigantesque au cœur de l\'Arbre pour en exploiter les ressources, quitte à le tuer.',
+  'Avide de pouvoir et de richesse, Mitch traque sans relâche la famille Lolness pour s\'emparer du secret de Balaïna. Il emprisonne Sim et Maïa et met la tête de Tobie à prix, semant la terreur dans tout l\'Arbre.',
+  'Devenu dictateur absolu, cruel et calculateur, Jo Mitch incarne à lui seul la menace qui pèse sur l\'Arbre tout entier — jusqu\'à ce que son propre lieutenant, Léo Blue, ne se retourne finalement contre lui.'
+ ],
+ r:'mythique',p:500},
+{id:'tl09',name:'Limeur',uni:'Tobie Lolness',uk:'tl',em:'🕵️',em2:'🔍',color:'#455a64',gc:'#78909c',
+ pages:[
+  'Homme de main de Jo Mitch, Limeur forme avec son complice Torn un duo de traqueurs redoutablement efficaces, lancés aux trousses de Tobie et de sa cachette secrète dans les Basses-Branches.',
+  'Rusé et déterminé, c\'est Limeur qui met la main sur le précieux cœur de Balaïna, caché par Tobie — une découverte qui rapproche dangereusement Jo Mitch du but qu\'il poursuit depuis le début.'
+ ],
+ r:'rare',p:150},
+{id:'tl10',name:'Torn',uni:'Tobie Lolness',uk:'tl',em:'🥾',em2:'🎯',color:'#37474f',gc:'#607d8b',
+ pages:[
+  'Second traqueur au service de Jo Mitch, Torn travaille toujours en binôme avec Limeur. Ensemble, ils forment les gradés les plus redoutés du Cratère, chargés de retrouver Tobie coûte que coûte.',
+  'Méthodique et sans relâche, Torn participe activement à la traque qui mène jusqu\'à la cachette de Tobie, forçant les fugitifs à toujours plus de prudence dans les Basses-Branches.'
+ ],
+ r:'rare',p:150},
+{id:'tl11',name:'Tigre',uni:'Tobie Lolness',uk:'tl',em:'🐾',em2:'⚔️',color:'#e67e22',gc:'#f39c12',
+ pages:[
+  'Guerrier redoutable croisé par Tobie dans la Prairie, Tigre se retrouve du côté de Jo Mitch lors de sa fuite, escortant le Grand-Voisin et ses prisonniers à travers l\'Arbre.',
+  'Robuste et combatif, Tigre est de ceux que Tobie doit affronter directement sur sa route — un adversaire de plus sur le long chemin qui doit le mener jusqu\'à ses parents.'
+ ],
+ r:'épique',p:230},
+{id:'tl12',name:'Radegonde Alnorell',uni:'Tobie Lolness',uk:'tl',em:'👵',em2:'💎',color:'#6a1b9a',gc:'#8e24aa',
+ pages:[
+  'Grand-mère de Tobie et mère de Maïa, Radegonde Alnorell est issue d\'une famille autrefois très riche des Cimes. Son caractère sévère et hautain a longtemps pesé sur l\'enfance de sa fille.',
+  'Peu encline à la chaleur familiale, Radegonde incarne les rigidités et les préjugés du monde des Cimes — un monde que Tobie apprendra à voir d\'un œil bien différent au fil de son exil dans les Basses-Branches.'
+ ],
+ r:'commun',p:90},
+{id:'tl13',name:'Nils Amen',uni:'Tobie Lolness',uk:'tl',em:'🪓',em2:'🤝',color:'#8d6e42',gc:'#a1887f',
+ pages:[
+  'Ami fidèle de Tobie, Nils Amen lui vient en aide à de nombreuses reprises au cours de son exil, au péril de sa propre sécurité, dans un Arbre où chaque geste de solidarité envers un fugitif peut coûter cher.',
+  'Plus tard, Nils devient le chef d\'une bande de bûcherons qui tente de sauver l\'Arbre malade, envahi par la mousse et le lichen. Son courage et sa loyauté indéfectible en font l\'un des plus précieux alliés de Tobie.'
+ ],
+ r:'épique',p:230},
+{id:'tl14',name:'Tête-de-Lune',uni:'Tobie Lolness',uk:'tl',em:'🌙',em2:'🎒',color:'#5c6bc0',gc:'#7986cb',
+ pages:[
+  'Jeune garçon courageux gravitant dans l\'entourage de Léo Blue, Tête-de-Lune se distingue par sa loyauté sans faille envers ceux qu\'il aime, refusant d\'abandonner un ami même dans les pires dangers.',
+  'Malgré son jeune âge, Tête-de-Lune traverse lui aussi les périls de l\'Arbre aux côtés des autres enfants, prouvant que le courage ne dépend jamais de la taille — même dans un monde où l\'on ne mesure qu\'un millimètre et demi.'
+ ],
+ r:'commun',p:90},
+{id:'tl15',name:'Ilaïa',uni:'Tobie Lolness',uk:'tl',em:'💌',em2:'🌸',color:'#ec407a',gc:'#f06292',
+ pages:[
+  'Jeune fille secrètement amoureuse de Tobie, Ilaïa fait tout ce qui est en son pouvoir pour rester proche de lui, quitte à compliquer parfois malgré elle les plans de Tobie et de ses amis.',
+  'Attachante et pleine de sentiments qu\'elle peine à cacher, Ilaïa apporte une touche de tendresse et de complexité supplémentaire à un monde déjà riche en amitiés et en loyautés bousculées.'
+ ],
+ r:'rare',p:150},
+{id:'tl16',name:'Patate',uni:'Tobie Lolness',uk:'tl',em:'🥔',em2:'🎩',color:'#a1887f',gc:'#bcaaa4',
+ pages:[
+  'Spécialiste autoproclamé de la politesse et du savoir-vivre, Patate a un jour eu l\'honneur d\'escorter Elisha — un souvenir dont il ne manque jamais une occasion de se vanter.',
+  'Un peu maladroit mais toujours bien intentionné, Patate apporte sa touche de fantaisie et de bonne humeur à l\'entourage de Tobie, entre deux situations pourtant bien périlleuses.'
+ ],
+ r:'commun',p:90},
+{id:'tl17',name:'Balaïna',uni:'Tobie Lolness',uk:'tl',em:'🐌',em2:'🔧',color:'#8d6e42',gc:'#bcaaa4',
+ pages:[
+  'Balaïna est à l\'origine un simple jouet : un modèle réduit de cloporte fabriqué par Tobie lui-même pour son anniversaire. Son père Sim, en réussissant à le faire marcher grâce à une invention révolutionnaire, ouvre sans le vouloir la porte à toute l\'aventure.',
+  'Le mécanisme qui anime Balaïna utilise la sève de l\'Arbre comme source d\'énergie — une découverte fascinante mais dangereuse, que Sim refusera toujours de livrer, sachant qu\'une exploitation incontrôlée pourrait tuer l\'Arbre tout entier.'
+ ],
+ r:'exclusif',p:0},
+{id:'tl18',name:'Le cœur de Balaïna',uni:'Tobie Lolness',uk:'tl',em:'💠',em2:'✨',color:'#00acc1',gc:'#4dd0e1',
+ pages:[
+  'Le cœur de Balaïna est la pièce la plus précieuse de toute l\'invention de Sim Lolness : le noyau d\'énergie sans lequel le mécanisme ne fonctionne pas. Sim le cache soigneusement juste avant l\'exil de sa famille, hors de portée de Jo Mitch.',
+  'Convoité par-dessus tout par Jo Mitch, ce petit objet devient l\'enjeu central de la traque qui bouleverse l\'Arbre entier. Le retrouver — ou le protéger — décidera peut-être du destin de tout un monde.'
+ ],
+ r:'exclusif',p:0}
 ];
+
 
 // ═══════════════════════════════════════════════════════
 // v10.3.0 — FICHES DÉTAILLÉES (dos de carte), multi-pages.
@@ -2455,6 +2655,57 @@ try{
   FIGURINES.forEach(f => { if(FIG_PAGES[f.id]) f.pages = FIG_PAGES[f.id]; });
  }
 }catch(e){ console.warn('FIG_PAGES merge', e); }
+
+// ═══════════════════════════════════════════════════════
+// v12.7.9 — Notification "nouveau contenu" (nouvelles figurines/licences)
+// ═══════════════════════════════════════════════════════
+// Registre chronologique : un item par ajout de contenu à annoncer. Chaque
+// entrée n'est montrée qu'UNE SEULE FOIS par profil (voir P.contentUpdatesSeen,
+// 05-profile.js), au clic sur CONTINUER (voir _maybeShowContentUpdate,
+// appelée depuis gotoSubjects(), 01-core.js). Réutilise la modale narrative
+// déjà existante (_showStoryModal, 07-story.js) plutôt qu'un nouveau système,
+// à la demande de Cyril. Pour toute future annonce, ajouter un nouvel objet
+// ici (jamais modifier/retirer un ancien objet une fois publié, sous peine
+// de re-déclencher une notification déjà vue par certains joueurs).
+const _CONTENT_UPDATES = [
+ {
+  id: 'update_2026_08_av_tl',
+  title: '🎉 Nouveau dans ta collection !',
+  items: [
+   {emoji:'🌬️', text:'Nouvelle licence : <b>Avatar, le dernier maître de l\'air</b> (12 figurines) !'},
+   {emoji:'🌳', text:'Nouvelle licence : <b>Tobie Lolness</b> (18 figurines) !'},
+  ],
+ },
+];
+
+// Affiche, au plus une notification par appel (la plus ancienne non vue),
+// puis appelle afterCb — que la modale s'affiche ou non. S'il reste
+// plusieurs annonces non vues (joueur absent longtemps), elles s'enchaînent
+// naturellement au clic sur CONTINUER, une par session, jamais toutes d'un
+// coup.
+function _maybeShowContentUpdate(afterCb){
+ const _done = (typeof afterCb === 'function') ? afterCb : function(){};
+ try{
+  if(typeof P === 'undefined' || !P || typeof _CONTENT_UPDATES === 'undefined'){ _done(); return; }
+  P.contentUpdatesSeen = P.contentUpdatesSeen || [];
+  const next = _CONTENT_UPDATES.find(u => !P.contentUpdatesSeen.includes(u.id));
+  if(!next){ _done(); return; }
+  P.contentUpdatesSeen.push(next.id);
+  if(typeof saveProfileNow === 'function') saveProfileNow();
+  else if(typeof saveProfile === 'function') saveProfile();
+  const listHtml = next.items.map(it =>
+   `<div class="new-item-row"><span class="new-item-emoji">${it.emoji}</span><span>${it.text}</span></div>`
+  ).join('');
+  const chapter = {
+   id: next.id,
+   title: next.title,
+   pages: [{ emoji: '🧩', text: listHtml }],
+   closeLabel: 'Continuer ›',
+  };
+  if(typeof _showStoryModal === 'function') _showStoryModal(chapter, _done);
+  else _done();
+ }catch(e){ _done(); }
+}
 
 
 // ── Boutique figurines ──────────────────────────────────
