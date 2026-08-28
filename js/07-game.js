@@ -658,7 +658,8 @@ function generateQ(){
  if(_interleaveOk && _subjKey==='math' && typeof narrativeWrapMath==='function'){
   q = narrativeWrapMath(q);
  }
- if(GS.activeEvent?.effect==='next_golden'){GS.isGolden=true;GS.activeEvent=null;}
+ // v12.7.16 (demande de Cyril) : évènement "Tour Doré" retiré — la
+ // vérification de son effet ici est devenue morte, retirée.
  return q;
 }
 function getSkin(){const s=SKINS.find(x=>x.id===(P.equippedSkin||'default'))||SKINS[0];return s.m;}
@@ -847,14 +848,17 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);GS.consecFail=0;
   }
   // Multiplicateur niveau : plus c'est difficile, plus c'est rentable
   // CP~1-2⭐ CE1~1-3⭐ CE2~2-3⭐ CM1~2-4⭐ CM2~3-5⭐
-  const _lvlBase={PS:[1,1],MS:[1,2],GS:[2,3],CP:[1,2],CE1:[1,3],CE2:[2,3],CM1:[2,4],CM2:[3,5],'6E':[3,5],'5E':[3,6],'4E':[4,7],'3E':[4,8]}[GM.level]||[1,2];
+  // v12.7.16 (demande de Cyril) : barème collège resserré et progressif —
+  // 6E=2-4, 5E=3-5, 4E=4-6, 3E=5-7 (auparavant 3-5/3-6/4-7/4-8).
+  const _lvlBase={PS:[1,1],MS:[1,2],GS:[2,3],CP:[1,2],CE1:[1,3],CE2:[2,3],CM1:[2,4],CM2:[3,5],'6E':[2,4],'5E':[3,5],'4E':[4,6],'3E':[5,7]}[GM.level]||[1,2];
   const _swordBonus=Math.floor(((P.skills.sword||0)*2)*0.5);
   let pts=_lvlBase[0]+Math.floor(Math.random()*(_lvlBase[1]-_lvlBase[0]+1))+_swordBonus;
   if(GS.isBoss)pts=Math.max(pts,_lvlBase[1]);
   // Chantier 2.2 : multiplicateur de récompense pour boss saisonniers/anniversaires
   if(GS.isBoss && GS.isSeasonalBoss && GS.seasonalMult) pts*=GS.seasonalMult;
   if(GS.isGolden)pts*=3;
-  if(GS.activeEvent?.effect==='double_score')pts*=2;
+  // v12.7.16 (demande de Cyril) : évènement "Tempête de Maths" retiré — la
+  // vérification de son effet ici est devenue morte, retirée.
   if(GS.combo>=10){pts*=2;$('gc').classList.add('combo-breaker');}
   const pw=powers[P.name];if(pw?.dbl){pts*=2;pw.dbl=false;toast('⚡ Double !');}
   GS.score+=pts;

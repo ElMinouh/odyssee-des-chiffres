@@ -1182,8 +1182,10 @@ const POWERS=[
  {id:'heal',  emoji:'💚', label:'Guérison',      recharge:4,effect:'heal'},
 ];
 const EVENTS=[
- {label:'⛈️ Tempête de Maths !',desc:'×2 points !',      color:'#2980b9',effect:'double_score',dur:3},
- {label:'✨ Tour Doré !',         desc:'Prochaine ×3 !',  color:'#f1c40f',effect:'next_golden',dur:1},
+ // v12.7.16 (demande de Cyril) : "Tempête de Maths" et "Tour Doré" retirés —
+ // plus aucun évènement aléatoire ne multiplie les points en cours de
+ // partie. Les vérifications de leurs effets, devenues mortes, ont été
+ // retirées de 07-game.js en même temps.
  {label:'👹 Monstre Enragé !',   desc:'Timer réduit !',  color:'#e74c3c',effect:'reduce_timer',dur:2},
  {label:'💊 Soin Magique !',      desc:'Tous +1 PV !',   color:'#2ecc71',effect:'heal_all',dur:1},
 ];
