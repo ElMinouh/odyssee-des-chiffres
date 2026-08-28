@@ -130,6 +130,25 @@ function playIslandVictory(regionId, done){
  const zonesInRegion = (typeof MAP_ZONES !== 'undefined')
   ? MAP_ZONES.filter(z => region.levels.includes(z.level)) : [];
  if(zonesInRegion.length === 0){ done?.(); return; }
+ // v12.7.15 (signalé par Cyril) : cette cinématique n'avait aucune protection
+ // contre la répétition — contrairement au bonus de fin d'Odyssée
+ // (_epilogueBonusCredited), elle se relançait, AVEC son bonus de +50⭐, à
+ // CHAQUE partie terminée dans un îlot déjà entièrement conquis, y compris en
+ // rejouant une zone déjà terminée (fonctionnalité explicitement proposée au
+ // joueur — "tu peux la rejouer !"). P.islandVictoryCreditedByAdv suit, par
+ // Odyssée, les îlots déjà célébrés : un seul passage possible par îlot et
+ // par Odyssée, pour de bon. Une zone rejouée dans un îlot déjà conquis reste
+ // normalement jouable ; elle ne relance simplement plus cette cinématique
+ // ni son bonus.
+ const advKey = (typeof _avAdvKey === 'function') ? _avAdvKey() : ((typeof GM !== 'undefined' && GM && GM.adventure) || 'prim');
+ try{
+  if(typeof P !== 'undefined' && P){
+   P.islandVictoryCreditedByAdv = P.islandVictoryCreditedByAdv || {};
+   const _already = (P.islandVictoryCreditedByAdv[advKey] || []).includes(regionId);
+   if(_already){ done?.(); return; }
+   P.islandVictoryCreditedByAdv[advKey] = [...(P.islandVictoryCreditedByAdv[advKey]||[]), regionId];
+  }
+ }catch(e){ console.warn('Island victory credit check failed', e); }
  // Couleur thématique selon la région
  const regionColors = {
   cp:    { bg:'linear-gradient(180deg,#27ae60 0%,#74b9ff 50%,#1b6b3a 100%)', accent:'#a8e6a2' },

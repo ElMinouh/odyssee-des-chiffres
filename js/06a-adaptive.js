@@ -770,9 +770,22 @@ function showHeroEvolution(stage){
               : stage.id === 'aventurier' ? 80
               : stage.id === 'maitre' ? 200
               : stage.id === 'legende' ? 500 : 0;
- if(reward){
+ // v12.7.15 (signalé par Cyril) : ce bonus n'avait lui non plus aucune
+ // protection contre la répétition — tout appel de showHeroEvolution() pour
+ // un même palier recréditait le bonus. Le correctif v12.7.14 (persistance
+ // de heroStageId) a déjà fermé le principal canal de répétition observé,
+ // mais ce garde-fou reste nécessaire en profondeur : P.heroStageRewardsCredited
+ // suit les paliers déjà récompensés, pour de bon, quelle que soit la cause
+ // d'un futur appel en double.
+ if(typeof P !== 'undefined' && P){
+  P.heroStageRewardsCredited = Array.isArray(P.heroStageRewardsCredited) ? P.heroStageRewardsCredited : [];
+ }
+ const _alreadyRewarded = !!(typeof P !== 'undefined' && P && P.heroStageRewardsCredited.includes(stage.id));
+ if(reward && !_alreadyRewarded){
+  P.heroStageRewardsCredited.push(stage.id);
   P.stars = (P.stars||0) + reward;
-  if(typeof saveProfile==='function') saveProfile();
+  if(typeof saveProfileNow==='function') saveProfileNow();
+  else if(typeof saveProfile==='function') saveProfile();
  }
  // Sons festifs
  if(typeof beep==='function'){
@@ -785,7 +798,7 @@ function showHeroEvolution(stage){
   if(overlay._releaseTrap){overlay._releaseTrap();delete overlay._releaseTrap;}
   overlay.classList.add('he-fadeout');
   setTimeout(()=>overlay.remove(), 400);
-  if(reward && typeof toast==='function'){
+  if(reward && !_alreadyRewarded && typeof toast==='function'){
    setTimeout(()=>toast(`✨ +${reward} ⭐ bonus d'évolution !`, 3000), 500);
   }
  };

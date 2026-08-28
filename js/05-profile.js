@@ -191,6 +191,26 @@ function validateProfile(raw, defaultName){
    });
    return out;
   })(),
+  // v12.7.15 (correctif dette technique, signalé par Cyril) : suivi des
+  // îlots déjà récompensés par le bonus "Conquérant" (+50⭐), par Odyssée —
+  // { advKey: [regionId, regionId, ...] }. Même pattern que loreFoundIdsByAdv
+  // ci-dessus, ajouté ici DÈS SA CRÉATION (règle ADR-111 pt.3). Sans ce champ,
+  // playIslandVictory() (06d-cinematics.js) n'avait aucun moyen de savoir
+  // qu'un îlot avait déjà été célébré, et recréditait le bonus à chaque
+  // partie rejouée dans un îlot déjà entièrement conquis.
+  islandVictoryCreditedByAdv: (function(){
+   const src = (raw.islandVictoryCreditedByAdv && typeof raw.islandVictoryCreditedByAdv === 'object') ? raw.islandVictoryCreditedByAdv : {};
+   const out = {};
+   Object.keys(src).forEach(k=>{
+    const arr = Array.isArray(src[k]) ? src[k] : [];
+    out[k] = arr.filter(s => typeof s === 'string');
+   });
+   return out;
+  })(),
+  // v12.7.15 (correctif dette technique, signalé par Cyril) : suivi des
+  // paliers de héros déjà récompensés — pas un champ *ByAdv (le stade du
+  // héros, comme heroStageId, est global au profil, pas par Odyssée).
+  heroStageRewardsCredited: _safeArr(raw.heroStageRewardsCredited).filter(s => typeof s === 'string'),
   // v12.4.49 (Lot 3, audit immersion narrative N4) : carnet de voyage à la
   // première personne, par Odyssée. Chaque entrée est un petit objet validé
   // champ par champ (jamais une simple copie), plafonné aux 20 dernières
@@ -476,7 +496,7 @@ function defProfile(name){
   histCatFilters:{frise:true,personnages:true,evenements:true,civilisation:true,temps:true,repere:true},
   frCatFilters:{conj:true,orth:true,gram:true,vocab:true},
   heroStageId:'oeuf',
-  cloudCode:null,cloudEnabled:false,onbAccountSeen:false,onbMapSeen:false,_epilogueBonusCredited:[],photo:null,playerCode:null,lastAdventure:null,
+  cloudCode:null,cloudEnabled:false,onbAccountSeen:false,onbMapSeen:false,_epilogueBonusCredited:[],islandVictoryCreditedByAdv:{},heroStageRewardsCredited:[],photo:null,playerCode:null,lastAdventure:null,
   // v11.7.3 (audit n°9) : genre explicite optionnel, réglable par le parent —
   // prioritaire sur l'heuristique orthographique de heroGender() dans 02-data.js.
   gender:null};

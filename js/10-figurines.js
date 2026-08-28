@@ -1891,6 +1891,12 @@ function resetAdventure(playerName){
       data.majorChoiceByAdv = {};
       data.twistLinesUsedByAdv = {};
       data._epilogueBonusCredited = [];
+      // v12.7.15 (correctif dette technique, signalé par Cyril) : ce champ
+      // suit les îlots déjà récompensés par le bonus "Conquérant" — au même
+      // titre que _epilogueBonusCredited juste au-dessus, il doit repartir
+      // à zéro avec les 7 aventures, sinon un îlot déjà crédité avant le
+      // reset resterait injustement bloqué après une reconquête légitime.
+      data.islandVictoryCreditedByAdv = {};
       // v12.4.54 (correctif reset multi-appareils, en passant) : champs
       // narratifs ajoutés après ADR-52, jamais ajoutés ici — exactement le
       // risque que le commentaire d'ADR-52 avait anticipé ("l'oubli d'un

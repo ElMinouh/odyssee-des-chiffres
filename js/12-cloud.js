@@ -273,6 +273,11 @@ function _mergeCloudProfiles(local, imported){
   // v12.7.9 : suivi des notifications "nouveau contenu" déjà vues — même
   // vigilance, ajouté dès sa création (règle ADR-111 pt.3).
   'contentUpdatesSeen',
+  // v12.7.15 (correctif dette technique, signalé par Cyril) : suivi des
+  // îlots déjà récompensés par le bonus "Conquérant" — même vigilance,
+  // ajouté dès sa création. Concerné par un reset d'Odyssée (resetAdventure(),
+  // 10-figurines.js) au même titre que _epilogueBonusCredited ci-dessus.
+  'islandVictoryCreditedByAdv',
  ];
  if(resetWinner === 'local'){
   ODYSSEY_PROGRESS_FIELDS.forEach(f => { out[f] = local[f]; });
@@ -310,6 +315,17 @@ function _mergeCloudProfiles(local, imported){
    });
    return res;
   })();
+  // v12.7.15 : même traitement que loreFoundIdsByAdv juste au-dessus — un
+  // îlot déjà célébré sur UN appareil doit le rester partout, jamais permettre
+  // un second crédit du bonus après fusion.
+  out.islandVictoryCreditedByAdv = (function(){
+   const res = {};
+   const keys = new Set([...Object.keys(local.islandVictoryCreditedByAdv||{}), ...Object.keys(imported.islandVictoryCreditedByAdv||{})]);
+   keys.forEach(k=>{
+    res[k] = uniq((local.islandVictoryCreditedByAdv||{})[k], (imported.islandVictoryCreditedByAdv||{})[k]);
+   });
+   return res;
+  })();
   // Position de l'avatar / page d'histoire en cours : l'appareil actif
   // (local, celui qui joue MAINTENANT) est le plus légitime pour dire où on
   // en est, plutôt qu'un serveur qui n'a pas forcément encore reçu le tout
@@ -337,6 +353,10 @@ function _mergeCloudProfiles(local, imported){
  const _localStageRank = _HERO_STAGE_RANK[local.heroStageId] ?? 0;
  const _importedStageRank = _HERO_STAGE_RANK[imported.heroStageId] ?? 0;
  out.heroStageId = _localStageRank >= _importedStageRank ? (local.heroStageId || 'oeuf') : imported.heroStageId;
+ // v12.7.15 (signalé par Cyril) : union — un palier déjà récompensé sur UN
+ // appareil doit le rester partout, jamais permettre un second crédit du
+ // bonus d'évolution après fusion.
+ out.heroStageRewardsCredited = uniq(local.heroStageRewardsCredited, imported.heroStageRewardsCredited);
 
  out.ownedFigurines     = uniq(local.ownedFigurines, imported.ownedFigurines);
  out.ownedSkins         = uniq(local.ownedSkins, imported.ownedSkins);
