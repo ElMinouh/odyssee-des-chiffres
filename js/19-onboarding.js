@@ -146,7 +146,7 @@ const OB_STEPS_2 = [
    nav:{ptab:'comptes'}, target:'acc-export-all', accordion:true },
  // Onglet Figurines
  { icon:'🎴', title:"Les figurines de l'enfant",
-   body:"Cet onglet permet de consulter la collection de figurines d'un enfant, de filtrer entre celles déjà possédées et celles qui manquent encore, et de lui en offrir directement sans qu'il ait besoin de les gagner en jouant.<br><br>Le bouton <b>🗑️ Gérer / Supprimer</b> permet aussi de retirer une ou plusieurs figurines de sa collection (individuellement ou licence entière) — utile pour corriger une erreur ou un gain obtenu par un bug. Ce retrait s'applique aussi sur les autres appareils synchronisés ; l'enfant pourra ensuite racheter ou regagner ces figurines normalement.",
+   body:"Cet onglet permet de consulter la collection de figurines d'un enfant, et de filtrer entre celles déjà possédées et celles qui manquent encore.<br><br>Le bouton <b>🗑️ Gérer / Supprimer</b> permet de retirer une ou plusieurs figurines de sa collection (individuellement ou licence entière) — utile pour corriger une erreur ou un gain obtenu par un bug. Ce retrait s'applique aussi sur les autres appareils synchronisés ; l'enfant pourra ensuite racheter ou regagner ces figurines normalement.",
    nav:{ptab:'figurines'}, target:'ptab-figurines' },
  // Onglet Avancé
  { icon:'🔄', title:'Réparer la synchronisation entre appareils',
