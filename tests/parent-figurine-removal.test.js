@@ -7,77 +7,107 @@ import { loadGame } from './helpers/loadGame.js';
 // qui l'emporte toujours sur la fusion cloud de ownedFigurines.
 
 const FIG_FILES = [
-  '01-core.js', '02-data.js', '03-figurines-data.js', '05-profile.js',
-  '06c-seasonal.js', '10-figurines.js', '12-cloud.js',
+  '01-core.js', '02-data.js', '03-figurines-data.js', '04-questions.js',
+  '16-francais.js', '18-histoire.js', '05-profile.js', '06a-adaptive.js',
+  '06b-time-block.js', '06c-seasonal.js', '06d-cinematics.js',
+  '07-story-core.js', '07-map.js', '07-game.js', '07-boss.js', '07-story.js', '08-ui.js', '09-parent.js', '10-figurines.js', '12-cloud.js',
 ];
 
-describe('validateProfile() — blockedFigurines (05-profile.js, ADR-111 pt.3)', () => {
-  it('conserve blockedFigurines après une passe de désérialisation', () => {
+describe('validateProfile() — blockedFigurinesAt / figAcquiredAt (05-profile.js, ADR-111 pt.3)', () => {
+  it('conserve blockedFigurinesAt et figAcquiredAt après une passe de désérialisation', () => {
     const api = loadGame(['05-profile.js']);
-    const raw = { name: 'Léo', blockedFigurines: ['db01', 'hp02'] };
+    const raw = { name: 'Léo', blockedFigurinesAt: { db01: 1000 }, figAcquiredAt: { db01: 500 } };
     const out = api.validateProfile(raw, 'Léo');
-    expect(out.blockedFigurines).toEqual(['db01', 'hp02']);
+    expect(out.blockedFigurinesAt).toEqual({ db01: 1000 });
+    expect(out.figAcquiredAt).toEqual({ db01: 500 });
   });
 
-  it('valeur par défaut correcte si absente du profil brut', () => {
+  it('valeurs par défaut correctes si absentes du profil brut', () => {
     const api = loadGame(['05-profile.js']);
     const out = api.validateProfile({ name: 'Léo' }, 'Léo');
-    expect(out.blockedFigurines).toEqual([]);
+    expect(out.blockedFigurinesAt).toEqual({});
+    expect(out.figAcquiredAt).toEqual({});
   });
 
-  it('defProfile() initialise blockedFigurines à un tableau vide', () => {
+  it('defProfile() initialise les deux cartes à vide', () => {
     const api = loadGame(['05-profile.js']);
-    expect(api.defProfile('Léo').blockedFigurines).toEqual([]);
+    const p = api.defProfile('Léo');
+    expect(p.blockedFigurinesAt).toEqual({});
+    expect(p.figAcquiredAt).toEqual({});
   });
 });
 
-describe('_mergeCloudProfiles() — blockedFigurines l\'emporte toujours sur ownedFigurines (12-cloud.js)', () => {
-  it('une figurine retirée localement mais encore possédée côté serveur disparaît quand même après fusion', () => {
+describe('_mergeCloudProfiles() — un rachat légitime l\'emporte sur un retrait plus ancien (12-cloud.js)', () => {
+  it('une figurine retirée localement mais encore possédée côté serveur disparaît après fusion (aucun rachat depuis)', () => {
     const api = loadGame(['12-cloud.js']);
-    const local = { ownedFigurines: ['db01'], blockedFigurines: ['db02'], adventureResetAt: 0 };
-    const imported = { ownedFigurines: ['db01', 'db02'], blockedFigurines: [], adventureResetAt: 0 };
+    const local = { ownedFigurines: ['db01'], blockedFigurinesAt: { db02: 5000 }, figAcquiredAt: {}, adventureResetAt: 0 };
+    const imported = { ownedFigurines: ['db01', 'db02'], blockedFigurinesAt: {}, figAcquiredAt: {}, adventureResetAt: 0 };
     const out = api._mergeCloudProfiles(local, imported);
     expect(out.ownedFigurines).not.toContain('db02');
-    expect(out.blockedFigurines).toContain('db02');
+    expect(out.blockedFigurinesAt.db02).toBe(5000);
   });
 
   it('symétrique : retirée sur l\'AUTRE appareil (imported) suffit aussi à la faire disparaître localement après fusion', () => {
     const api = loadGame(['12-cloud.js']);
-    const local = { ownedFigurines: ['db01', 'db02'], blockedFigurines: [], adventureResetAt: 0 };
-    const imported = { ownedFigurines: ['db01'], blockedFigurines: ['db02'], adventureResetAt: 0 };
+    const local = { ownedFigurines: ['db01', 'db02'], blockedFigurinesAt: {}, figAcquiredAt: {}, adventureResetAt: 0 };
+    const imported = { ownedFigurines: ['db01'], blockedFigurinesAt: { db02: 5000 }, figAcquiredAt: {}, adventureResetAt: 0 };
     const out = api._mergeCloudProfiles(local, imported);
     expect(out.ownedFigurines).not.toContain('db02');
   });
 
-  it('les figurines NON bloquées restent normalement fusionnées en union', () => {
+  it('un RACHAT postérieur au retrait l\'emporte : la figurine reste possédée après fusion', () => {
     const api = loadGame(['12-cloud.js']);
-    const local = { ownedFigurines: ['db01'], blockedFigurines: [], adventureResetAt: 0 };
-    const imported = { ownedFigurines: ['hp01'], blockedFigurines: [], adventureResetAt: 0 };
+    // Retiré à t=1000, racheté à t=2000 (sur l'appareil local) : le rachat gagne.
+    const local = { ownedFigurines: ['db02'], blockedFigurinesAt: { db02: 1000 }, figAcquiredAt: { db02: 2000 }, adventureResetAt: 0 };
+    const imported = { ownedFigurines: [], blockedFigurinesAt: { db02: 1000 }, figAcquiredAt: {}, adventureResetAt: 0 };
+    const out = api._mergeCloudProfiles(local, imported);
+    expect(out.ownedFigurines).toContain('db02');
+  });
+
+  it('un appareil resté sur l\'ancien état (avant le retrait) ne fait pas revivre une figurine déjà retirée ET rachetée ailleurs', () => {
+    const api = loadGame(['12-cloud.js']);
+    // Appareil A (imported) : a retiré (t=1000) PUIS rejoué/racheté (t=2000).
+    // Appareil B (local) : jamais synchronisé depuis avant le retrait — ne
+    // sait rien de tout ça, a toujours eu db02 dans ownedFigurines.
+    const local = { ownedFigurines: ['db02'], blockedFigurinesAt: {}, figAcquiredAt: {}, adventureResetAt: 0 };
+    const imported = { ownedFigurines: ['db02'], blockedFigurinesAt: { db02: 1000 }, figAcquiredAt: { db02: 2000 }, adventureResetAt: 0 };
+    const out = api._mergeCloudProfiles(local, imported);
+    // Résultat correct dans ce cas précis (rachat après retrait) : reste possédée.
+    expect(out.ownedFigurines).toContain('db02');
+  });
+
+  it('les figurines jamais retirées restent normalement fusionnées en union', () => {
+    const api = loadGame(['12-cloud.js']);
+    const local = { ownedFigurines: ['db01'], blockedFigurinesAt: {}, figAcquiredAt: {}, adventureResetAt: 0 };
+    const imported = { ownedFigurines: ['hp01'], blockedFigurinesAt: {}, figAcquiredAt: {}, adventureResetAt: 0 };
     const out = api._mergeCloudProfiles(local, imported);
     expect(out.ownedFigurines.sort()).toEqual(['db01', 'hp01'].sort());
   });
 
-  it('blockedFigurines absent des deux côtés : ne plante pas', () => {
+  it('blockedFigurinesAt/figAcquiredAt absents des deux côtés : ne plante pas', () => {
     const api = loadGame(['12-cloud.js']);
     const out = api._mergeCloudProfiles({ adventureResetAt: 0 }, { adventureResetAt: 0 });
-    expect(out.blockedFigurines).toEqual([]);
+    expect(out.blockedFigurinesAt).toEqual({});
+    expect(out.figAcquiredAt).toEqual({});
   });
 });
 
 describe('parentRemoveFigurines() — suppression réelle depuis la Vue Parent (10-figurines.js)', () => {
-  it('retire les figurines sélectionnées de ownedFigurines et les ajoute à blockedFigurines', () => {
+  it('retire les figurines sélectionnées de ownedFigurines et horodate le retrait dans blockedFigurinesAt', () => {
     const api = loadGame(FIG_FILES);
     const profile = api.defProfile('Léo');
     profile.ownedFigurines = ['db01', 'db02', 'hp01'];
     api._ls.setItem('user_Léo', JSON.stringify(profile));
 
+    const before = Date.now();
     const res = api.parentRemoveFigurines('Léo', ['db01', 'hp01']);
     expect(res.ok).toBe(true);
     expect(res.removed).toBe(2);
 
     const stored = JSON.parse(api._ls.getItem('user_Léo'));
     expect(stored.ownedFigurines).toEqual(['db02']);
-    expect(stored.blockedFigurines.sort()).toEqual(['db01', 'hp01'].sort());
+    expect(stored.blockedFigurinesAt.db01).toBeGreaterThanOrEqual(before);
+    expect(stored.blockedFigurinesAt.hp01).toBeGreaterThanOrEqual(before);
   });
 
   it('ignore les ids non possédés (rien à supprimer) sans planter', () => {
@@ -104,7 +134,7 @@ describe('parentRemoveFigurines() — suppression réelle depuis la Vue Parent (
     expect(res.removed).toBe(dbOwned.length);
     const stored = JSON.parse(api._ls.getItem('user_Léo'));
     expect(stored.ownedFigurines).toEqual(['hp01']);
-    dbOwned.forEach(id => expect(stored.blockedFigurines).toContain(id));
+    dbOwned.forEach(id => expect(stored.blockedFigurinesAt[id]).toBeTypeOf('number'));
   });
 
   it('met aussi à jour P en mémoire et sauvegarde si le profil ciblé est le profil actif', () => {
@@ -116,10 +146,10 @@ describe('parentRemoveFigurines() — suppression réelle depuis la Vue Parent (
 
     api.parentRemoveFigurines('Léo', ['db01']);
     expect(api.getP().ownedFigurines).toEqual(['db02']);
-    expect(api.getP().blockedFigurines).toContain('db01');
+    expect(api.getP().blockedFigurinesAt.db01).toBeTypeOf('number');
     // Persisté immédiatement (saveProfileNow), pas seulement en mémoire
     const stored = JSON.parse(api._ls.getItem('user_Léo'));
-    expect(stored.blockedFigurines).toContain('db01');
+    expect(stored.blockedFigurinesAt.db01).toBeTypeOf('number');
   });
 
   it('ne touche pas P en mémoire si le profil ciblé n\'est PAS le profil actif', () => {
@@ -135,7 +165,7 @@ describe('parentRemoveFigurines() — suppression réelle depuis la Vue Parent (
     api.parentRemoveFigurines('Léo', ['db01']);
     // Le profil actif (Zoé) reste totalement inchangé
     expect(api.getP().ownedFigurines).toEqual(['sw01']);
-    expect(api.getP().blockedFigurines).toEqual([]);
+    expect(api.getP().blockedFigurinesAt).toEqual({});
     // Mais le profil ciblé (Léo), sur disque, est bien modifié
     const stored = JSON.parse(api._ls.getItem('user_Léo'));
     expect(stored.ownedFigurines).toEqual([]);
@@ -149,37 +179,38 @@ describe('parentRemoveFigurines() — suppression réelle depuis la Vue Parent (
   });
 });
 
-describe('Retrait définitif : une figurine bloquée ne peut plus être réattribuée (10-figurines.js, 06c-seasonal.js)', () => {
-  it('buyFigurine() refuse le rachat d\'une figurine bloquée', () => {
+describe('Une figurine retirée peut être rachetée/regagnée normalement ensuite (10-figurines.js, 06c-seasonal.js)', () => {
+  it('buyFigurine() autorise le rachat d\'une figurine précédemment retirée, et horodate ce rachat', () => {
     const api = loadGame(FIG_FILES);
     const profile = api.defProfile('Léo');
     profile.stars = 9999;
-    profile.blockedFigurines = ['db01'];
+    profile.blockedFigurinesAt = { db01: 1000 };
     api.setP(profile);
     api.buyFigurine('db01');
-    expect(api.getP().ownedFigurines).not.toContain('db01');
-    // Les étoiles ne doivent pas non plus avoir été dépensées
-    expect(api.getP().stars).toBe(9999);
+    expect(api.getP().ownedFigurines).toContain('db01');
+    expect(api.getP().figAcquiredAt.db01).toBeTypeOf('number');
+    expect(api.getP().figAcquiredAt.db01).toBeGreaterThan(1000);
   });
 
-  it('unlockSeasonalFigurine() refuse de réattribuer une figurine bloquée', () => {
+  it('unlockSeasonalFigurine() autorise le regain d\'une figurine précédemment retirée, et horodate ce regain', () => {
     const api = loadGame(FIG_FILES);
     const profile = api.defProfile('Léo');
-    profile.blockedFigurines = ['sx01'];
+    profile.blockedFigurinesAt = { sx01: 1000 };
     api.setP(profile);
     const result = api.unlockSeasonalFigurine('sx01');
-    expect(result).toBe(false);
-    expect(api.getP().ownedFigurines).not.toContain('sx01');
+    expect(result).toBe(true);
+    expect(api.getP().ownedFigurines).toContain('sx01');
+    expect(api.getP().figAcquiredAt.sx01).toBeGreaterThan(1000);
   });
 
-  it('_checkLicenseCompletions() ne réattribue jamais une figurine bloquée, même si les conditions sont remplies', () => {
+  it('_checkLicenseCompletions() NE réattribue PAS automatiquement une figurine de complétion retirée (pas d\'action d\'achat délibérée)', () => {
     const api = loadGame(FIG_FILES);
     const profile = api.defProfile('Léo');
     const tlLocked = api.FIGURINES.find(f => f.uk === 'tl' && f.completionLock);
     expect(tlLocked).toBeTruthy();
     const others = api.FIGURINES.filter(f => f.uk === 'tl' && f.id !== tlLocked.id && !f.completionLock).map(f => f.id);
     profile.ownedFigurines = [...others]; // toutes les autres figurines Tobie Lolness possédées
-    profile.blockedFigurines = [tlLocked.id]; // mais celle-ci a été retirée par un parent
+    profile.blockedFigurinesAt = { [tlLocked.id]: 1000 }; // mais celle-ci a été retirée par un parent
     api.setP(profile);
     api._checkLicenseCompletions();
     expect(api.getP().ownedFigurines).not.toContain(tlLocked.id);

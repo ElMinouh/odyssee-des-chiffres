@@ -421,9 +421,9 @@ function pfigOpenDeleteConfirm(){
  });
  const detail=Object.entries(byLic).map(([uni,names])=>`${uni} : ${names.join(', ')}`).join('\n');
  const msg=`Retirer ${ids.length} figurine(s) de la collection de ${player} ?\n\n${detail}\n\n`
-  +`🔄 Cette suppression s'appliquera aussi sur les autres appareils synchronisés.\n\n`
-  +`⚠️ Action irréversible. Les étoiles déjà dépensées ne sont pas remboursées.`;
- showConfirm(msg, ()=>pfigConfirmDelete(player, ids), {title:'⚠️ Supprimer des figurines', danger:true, confirmLabel:'Supprimer', cancelLabel:'Annuler'});
+  +`🔄 Ce retrait s'appliquera aussi sur les autres appareils synchronisés.\n\n`
+  +`ℹ️ ${player} pourra racheter ou regagner cette/ces figurine(s) normalement par la suite. Les étoiles déjà dépensées ne sont pas remboursées.`;
+ showConfirm(msg, ()=>pfigConfirmDelete(player, ids), {title:'🗑️ Retirer des figurines', danger:true, confirmLabel:'Retirer', cancelLabel:'Annuler'});
 }
 
 function pfigConfirmDelete(player, ids){

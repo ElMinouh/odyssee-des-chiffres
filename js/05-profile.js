@@ -182,12 +182,33 @@ function validateProfile(raw, defaultName){
   // mais scindé par advKey (comme mapAvatarZoneByAdv) puisqu'un même id de
   // fragment n'a de sens que pour SON Odyssée. Fusionné en UNION par
   // advKey en synchro cloud (voir ODYSSEY_PROGRESS_FIELDS, 12-cloud.js).
-  // v12.7.18 (demande de Cyril) : figurines explicitement retirées par un
-  // parent depuis la Vue Parent. Liste "tombstone" — voir _mergeCloudProfiles()
-  // (12-cloud.js) : elle l'emporte toujours sur la fusion de ownedFigurines,
-  // pour qu'un retrait tienne sur tous les appareils synchronisés, même si
-  // un autre appareil a encore l'ancienne copie de la figurine en mémoire.
-  blockedFigurines: _safeArr(raw.blockedFigurines).filter(s => typeof s === 'string'),
+  // v12.7.19 (ajustement demandé par Cyril, suite à sa relecture) : une
+  // figurine retirée par un parent DOIT pouvoir être rachetée/regagnée plus
+  // tard ("il FAUT que cette figurine puisse être à nouveau achetée
+  // ultérieurement, pour retrouver le plaisir de jouer et d'acheter des
+  // figurines"). Une simple liste plate "blockedFigurines" (v12.7.18, remplacée
+  // ici) ne permettait pas ça correctement : lors d'une fusion cloud, rien ne
+  // distinguait un rachat légitime posté APRÈS le retrait d'un appareil
+  // resté sur l'ancien état d'avant le retrait. D'où ce mécanisme à
+  // horodatage — voir _mergeCloudProfiles() (12-cloud.js) pour la règle de
+  // fusion : seul un retrait plus RÉCENT que la dernière (ré)acquisition
+  // exclut la figurine du résultat.
+  // blockedFigurinesAt : { figId: timestamp du retrait par un parent }
+  // figAcquiredAt       : { figId: timestamp de la dernière (ré)acquisition,
+  //                         renseigné uniquement pour les figurines qui ont
+  //                         déjà un retrait enregistré ci-dessous }
+  blockedFigurinesAt: (function(){
+   const src = (raw.blockedFigurinesAt && typeof raw.blockedFigurinesAt === 'object') ? raw.blockedFigurinesAt : {};
+   const out = {};
+   Object.keys(src).forEach(k=>{ if(typeof src[k]==='number') out[k]=src[k]; });
+   return out;
+  })(),
+  figAcquiredAt: (function(){
+   const src = (raw.figAcquiredAt && typeof raw.figAcquiredAt === 'object') ? raw.figAcquiredAt : {};
+   const out = {};
+   Object.keys(src).forEach(k=>{ if(typeof src[k]==='number') out[k]=src[k]; });
+   return out;
+  })(),
   loreFoundIdsByAdv: (function(){
    const src = (raw.loreFoundIdsByAdv && typeof raw.loreFoundIdsByAdv === 'object') ? raw.loreFoundIdsByAdv : {};
    const out = {};
@@ -502,7 +523,7 @@ function defProfile(name){
   histCatFilters:{frise:true,personnages:true,evenements:true,civilisation:true,temps:true,repere:true},
   frCatFilters:{conj:true,orth:true,gram:true,vocab:true},
   heroStageId:'oeuf',
-  cloudCode:null,cloudEnabled:false,onbAccountSeen:false,onbMapSeen:false,_epilogueBonusCredited:[],islandVictoryCreditedByAdv:{},heroStageRewardsCredited:[],blockedFigurines:[],photo:null,playerCode:null,lastAdventure:null,
+  cloudCode:null,cloudEnabled:false,onbAccountSeen:false,onbMapSeen:false,_epilogueBonusCredited:[],islandVictoryCreditedByAdv:{},heroStageRewardsCredited:[],blockedFigurinesAt:{},figAcquiredAt:{},photo:null,playerCode:null,lastAdventure:null,
   // v11.7.3 (audit n°9) : genre explicite optionnel, réglable par le parent —
   // prioritaire sur l'heuristique orthographique de heroGender() dans 02-data.js.
   gender:null};

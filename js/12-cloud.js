@@ -358,15 +358,26 @@ function _mergeCloudProfiles(local, imported){
  // bonus d'évolution après fusion.
  out.heroStageRewardsCredited = uniq(local.heroStageRewardsCredited, imported.heroStageRewardsCredited);
 
- // v12.7.18 (demande de Cyril) : liste "tombstone" des figurines retirées
- // par un parent — union simple (comme _epilogueBonusCredited), calculée
- // AVANT ownedFigurines ci-dessous, puis systématiquement soustraite du
- // résultat. Sans ce filtre, un appareil ayant encore l'ancienne copie de
- // la figurine la réinjecterait dans l'union à la prochaine synchronisation,
- // annulant silencieusement le retrait décidé par le parent.
- out.blockedFigurines   = uniq(local.blockedFigurines, imported.blockedFigurines);
- out.ownedFigurines     = uniq(local.ownedFigurines, imported.ownedFigurines)
-  .filter(id => !out.blockedFigurines.includes(id));
+ // v12.7.19 (ajustement demandé par Cyril) : mécanisme à horodatage plutôt
+ // qu'une liste plate figée — un rachat légitime posté APRÈS un retrait
+ // doit l'emporter, pour que la figurine puisse être rachetée/regagnée
+ // normalement ensuite. Seul un retrait plus RÉCENT que la dernière
+ // (ré)acquisition exclut la figurine du résultat de la fusion.
+ const _mergeMaxTs = (a,b)=>{
+  const out = {};
+  const keys = new Set([...Object.keys(a||{}), ...Object.keys(b||{})]);
+  keys.forEach(k=>{ out[k] = Math.max((a||{})[k]||0, (b||{})[k]||0); });
+  return out;
+ };
+ out.blockedFigurinesAt = _mergeMaxTs(local.blockedFigurinesAt, imported.blockedFigurinesAt);
+ out.figAcquiredAt = _mergeMaxTs(local.figAcquiredAt, imported.figAcquiredAt);
+ out.ownedFigurines = uniq(local.ownedFigurines, imported.ownedFigurines)
+  .filter(id => {
+   const blockedAt = out.blockedFigurinesAt[id];
+   if(!blockedAt) return true;
+   const acquiredAt = out.figAcquiredAt[id] || 0;
+   return acquiredAt > blockedAt;
+  });
  out.ownedSkins         = uniq(local.ownedSkins, imported.ownedSkins);
  out.ownedMusics        = uniq(local.ownedMusics, imported.ownedMusics);
  out.ownedSounds        = uniq(local.ownedSounds, imported.ownedSounds);

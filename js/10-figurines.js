@@ -120,9 +120,12 @@ function _checkLicenseCompletions(){
   FIGURINES.forEach(fig=>{
    if(!fig.completionLock) return;
    if(owned.includes(fig.id) || newlyUnlocked.includes(fig.id)) return;
-   // v12.7.18 (demande de Cyril) : une figurine retirée par un parent ne
-   // doit jamais être réattribuée automatiquement.
-   if((P.blockedFigurines||[]).includes(fig.id)) return;
+   // v12.7.19 (demande de Cyril) : contrairement à un achat en boutique ou
+   // un boss saisonnier, ce déblocage est automatique et non délibéré — une
+   // figurine de complétion retirée par un parent n'est donc PAS réattribuée
+   // ici (elle réapparaîtrait sinon dès le prochain achat sans rapport,
+   // puisque les autres figurines requises restent, elles, possédées).
+   if(P.blockedFigurinesAt && P.blockedFigurinesAt[fig.id]) return;
    const others = FIGURINES.filter(f => f.uk===fig.uk && f.id!==fig.id && !f.completionLock);
    if(others.length && others.every(f => owned.includes(f.id))){
     newlyUnlocked.push(fig.id);
@@ -163,15 +166,17 @@ function parentRemoveFigurines(playerName, figIds){
   const ownedSet = new Set(data.ownedFigurines||[]);
   const toRemove = figIds.filter(id => ownedSet.has(id));
   if(!toRemove.length) return {ok:false, removed:0};
+  const now = Date.now();
   data.ownedFigurines = (data.ownedFigurines||[]).filter(id => !toRemove.includes(id));
-  data.blockedFigurines = Array.from(new Set([...(data.blockedFigurines||[]), ...toRemove]));
+  data.blockedFigurinesAt = data.blockedFigurinesAt || {};
+  toRemove.forEach(id => { data.blockedFigurinesAt[id] = now; });
   localStorage.setItem('user_'+playerName, JSON.stringify(data));
   // Si le profil ciblé est aussi le profil actif en mémoire (P), on le met
   // à jour ET on sauvegarde pour éviter toute désynchronisation jusqu'au
   // prochain chargement — même précaution que renameProfile() (09-parent.js).
   if(typeof P!=='undefined' && P && P.name===playerName){
    P.ownedFigurines = data.ownedFigurines;
-   P.blockedFigurines = data.blockedFigurines;
+   P.blockedFigurinesAt = data.blockedFigurinesAt;
    if(typeof saveProfileNow==='function') saveProfileNow();
    // Propagation immédiate si ce profil a le cloud activé — sinon la
    // synchronisation se fera normalement au prochain lancement du jeu par
@@ -189,11 +194,16 @@ function buyFigurine(id){
  if(!fig){console.warn('Figurine introuvable:',id);return;}
  const owned=P.ownedFigurines||[];
  if(owned.includes(id)){toast('Déjà dans ta collection !');return;}
- // v12.7.18 (demande de Cyril) : une figurine retirée par un parent ne
- // peut plus être rachetée — le retrait est définitif.
- if((P.blockedFigurines||[]).includes(id)){toast('Cette figurine n\'est plus disponible.');return;}
  spend(fig.p,()=>{
   P.ownedFigurines=[...owned,id];
+  // v12.7.19 (ajustement demandé par Cyril) : si cette figurine avait été
+  // retirée par un parent, ce rachat doit l'emporter définitivement sur ce
+  // retrait — y compris après une synchronisation cloud avec un autre
+  // appareil resté sur l'ancien état (voir _mergeCloudProfiles, 12-cloud.js).
+  if(P.blockedFigurinesAt && P.blockedFigurinesAt[id]){
+   P.figAcquiredAt = P.figAcquiredAt || {};
+   P.figAcquiredAt[id] = Date.now();
+  }
   toast(`🎉 ${fig.name} ajouté à ta collection !`,3000);
   beep(880,'sine',.4);
   setTimeout(()=>beep(1100,'sine',.3),180);

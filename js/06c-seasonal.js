@@ -133,10 +133,14 @@ function unlockSeasonalFigurine(figId){
  if(!P||!figId)return false;
  P.ownedFigurines = Array.isArray(P.ownedFigurines) ? P.ownedFigurines : [];
  if(P.ownedFigurines.includes(figId)) return false;
- // v12.7.18 (demande de Cyril) : une figurine retirée par un parent ne
- // doit jamais être réattribuée automatiquement.
- if((P.blockedFigurines||[]).includes(figId)) return false;
  P.ownedFigurines.push(figId);
+ // v12.7.19 (ajustement demandé par Cyril) : si cette figurine avait été
+ // retirée par un parent, ce regain doit l'emporter définitivement sur ce
+ // retrait — même logique que buyFigurine() (10-figurines.js).
+ if(P.blockedFigurinesAt && P.blockedFigurinesAt[figId]){
+  P.figAcquiredAt = P.figAcquiredAt || {};
+  P.figAcquiredAt[figId] = Date.now();
+ }
  if(typeof saveProfileNow==='function') saveProfileNow();
  if(typeof _checkLicenseCompletions==='function') _checkLicenseCompletions();
  return true;
