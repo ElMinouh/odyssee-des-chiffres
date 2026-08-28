@@ -5,6 +5,9 @@
 // Variables globales du module
 var _pfigFilter = 'none';
 var _pfigSearch = '';
+// v12.7.18 (demande de Cyril) : mode "Gérer / Supprimer" de l'onglet Figurines
+var _pfigManageMode = false;
+var _pfigSelected = new Set();
 
 // VUE PARENT
 // ═══════════════════════════════════════════════════════
@@ -56,6 +59,7 @@ function ptab(name){
   sel.innerHTML=allP.map(n=>`<option>${n}</option>`).join('');
   sel.value=P.name||getRoster()[0]||'';
   _pfigFilter='none'; _pfigSearch='';
+  _pfigManageMode=false; _pfigSelected.clear();
   renderParentFigurines();
  }
 }
@@ -231,6 +235,13 @@ function pGuide(key){
  if(typeof trapFocus==='function') ov._releaseTrap=trapFocus(ov);
 }
 function pGuideClose(){ const ov=document.getElementById('p-guide-ov'); if(ov){ if(ov._releaseTrap){ov._releaseTrap();delete ov._releaseTrap;} ov.classList.add('hidden'); } }
+// v12.7.18 (demande de Cyril) : appelée par le sélecteur de joueur — une
+// sélection en cours n'a plus de sens si on change d'enfant.
+function pfigOnPlayerChange(){
+ _pfigManageMode=false; _pfigSelected.clear();
+ renderParentFigurines();
+}
+
 function renderParentFigurines(){
  // Précharge les portraits si pas déjà fait. Re-rend une fois prêt.
  if(typeof loadPortraits==='function'&&!_portraitsLoaded){
@@ -246,6 +257,9 @@ function renderParentFigurines(){
  const pct=Math.round(owned.length/total*100);
  const stats=$('pfig-stats');
  if(stats) stats.textContent=`${owned.length}/${total} (${pct}%) · ${(pd&&pd.stars)||0} ⭐`;
+ // v12.7.18 (demande de Cyril) : reflète l'état du bouton "Gérer / Supprimer"
+ const manageBtn=$('pfig-manage-btn');
+ if(manageBtn) manageBtn.classList.toggle('active', _pfigManageMode);
  // Populate license select
  const licSel=$('pfig-license');
  if(licSel&&licSel.options.length<=1){
@@ -292,12 +306,21 @@ function renderParentFigurines(){
 
   const uOwned=uFigs.filter(f=>owned.includes(f.id)).length;
   const isOpen=uOwned>0||_pfigFilter!=='owned'||searchQ;
+  // v12.7.18 (demande de Cyril) : "Tout sélectionner" couvre le cas
+  // "licence entière" — sélectionne/désélectionne en un clic toutes les
+  // figurines POSSÉDÉES de cette licence (rien à faire sur les manquantes).
+  const uOwnedIds=uFigs.filter(f=>owned.includes(f.id)).map(f=>f.id);
+  const allSelInLic=uOwnedIds.length>0 && uOwnedIds.every(id=>_pfigSelected.has(id));
+  const selAllLink=uOwnedIds.length
+   ? `<button class="pfig-selall" onclick="event.stopPropagation();pfigSelectAllLicense('${k}')">${allSelInLic?'Tout désélectionner':'Tout sélectionner'}</button>`
+   : '';
 
   html+=`<div class="pfig-section">
    <div class="pfig-header" onclick="togglePfigSection('pf-${k}')">
     <span style="font-size:1em;">${UNI_ICON[k]||'🎴'}</span>
     <span class="pfig-label">${label}</span>
     <span class="pfig-stats">${uOwned}/${uFigs.length}</span>
+    ${selAllLink}
     <span style="font-size:.65em;color:rgba(255,255,255,.3);transition:.2s;" id="parr-pf-${k}">${isOpen?'▲':'▼'}</span>
    </div>
    <div class="pfig-panel${isOpen?' open':''}" id="pf-${k}">
@@ -307,7 +330,18 @@ function renderParentFigurines(){
    const isOwned=owned.includes(fig.id);
    const col=RARITY_COL[fig.r]||'#888';
    const portrait=getCharPortrait(fig.id, {size:56, emoji:fig.em, name:fig.name});
-html+=`<div class="pfig-card${isOwned?' owned':' pfig-locked'}${fig.r==='exclusif'?' rarity-exclusif':''}" onclick="pfigCardClick('${fig.id}',${isOwned})" title="${fig.name} — ${isOwned?'Voir animation & son':'Aperçu disponible'}">`;
+   // v12.7.18 (demande de Cyril) : en mode gestion, une carte POSSÉDÉE
+   // bascule en sélection (case à cocher) au lieu d'ouvrir la visionneuse ;
+   // une carte non possédée reste non cliquable dans ce mode (rien à
+   // supprimer). Le viewer normal (pfigCardClick) reste inchangé hors mode
+   // gestion.
+   const isSel=_pfigSelected.has(fig.id);
+   const clickAttr=_pfigManageMode
+    ? (isOwned?`onclick="pfigToggleSelect('${fig.id}')"`:'')
+    : `onclick="pfigCardClick('${fig.id}',${isOwned})"`;
+   const cardCls=`pfig-card${isOwned?' owned':' pfig-locked'}${fig.r==='exclusif'?' rarity-exclusif':''}${isSel?' pfig-selected':''}`;
+html+=`<div class="${cardCls}" ${clickAttr} title="${fig.name} — ${isOwned?'Voir animation & son':'Aperçu disponible'}">`;
+   if(_pfigManageMode && isOwned) html+=`<div class="pfig-check">${isSel?'✓':''}</div>`;
    if(!isOwned) html+=`<div style="position:absolute;top:2px;left:2px;font-size:.65em;background:rgba(0,0,0,.5);border-radius:4px;padding:1px 4px;color:#aaa;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>`;
    html+=`<div class="pfig-mini" style="border-bottom:2px solid ${col}${isOwned?'88':'22'};${!isOwned?'filter:grayscale(.5) brightness(.8)':''}">${portrait}</div>
     <div class="pfig-name">${fig.name}</div>
@@ -334,9 +368,73 @@ html+=`<div class="pfig-card${isOwned?' owned':' pfig-locked'}${fig.r==='exclusi
 
  if(!html){
   el.innerHTML='<div style="text-align:center;padding:16px;color:rgba(255,255,255,.4);font-size:.8em;">Aucune figurine dans ce filtre.</div>';
+  _pfigUpdateBottomBar();
   return;
  }
  el.innerHTML=html;
+ _pfigUpdateBottomBar();
+}
+
+// v12.7.18 (demande de Cyril) : bascule le panneau en mode gestion, où les
+// figurines possédées deviennent sélectionnables pour suppression.
+function togglePfigManage(){
+ _pfigManageMode=!_pfigManageMode;
+ _pfigSelected.clear();
+ renderParentFigurines();
+}
+
+function pfigToggleSelect(id){
+ if(_pfigSelected.has(id)) _pfigSelected.delete(id); else _pfigSelected.add(id);
+ renderParentFigurines();
+}
+
+// "Licence entière" : sélectionne (ou désélectionne, si déjà tout sélectionné)
+// toutes les figurines POSSÉDÉES de cette licence en un clic.
+function pfigSelectAllLicense(k){
+ const playerSel=$('pfig-player'); if(!playerSel) return;
+ let pd=null; try{pd=JSON.parse(localStorage.getItem('user_'+(playerSel.value||P.name))||'null');}catch(e){}
+ const owned=(pd&&pd.ownedFigurines)||[];
+ const ids=FIGURINES.filter(f=>f.uk===k && owned.includes(f.id)).map(f=>f.id);
+ const allSel=ids.length>0 && ids.every(id=>_pfigSelected.has(id));
+ ids.forEach(id=> allSel ? _pfigSelected.delete(id) : _pfigSelected.add(id));
+ renderParentFigurines();
+}
+
+function _pfigUpdateBottomBar(){
+ const bar=$('pfig-bottombar'); if(!bar) return;
+ bar.classList.toggle('show', _pfigManageMode);
+ const countEl=$('pfig-sel-count'); if(countEl) countEl.textContent=_pfigSelected.size;
+ const delBtn=$('pfig-btn-delete'); if(delBtn) delBtn.disabled=_pfigSelected.size===0;
+}
+
+// Confirmation avant suppression — réutilise showConfirm() (grammaire visuelle
+// déjà éprouvée dans tout le jeu) plutôt qu'une modale sur mesure.
+function pfigOpenDeleteConfirm(){
+ if(!_pfigSelected.size) return;
+ const playerSel=$('pfig-player'); if(!playerSel) return;
+ const player=playerSel.value||P.name;
+ const ids=Array.from(_pfigSelected);
+ const byLic={};
+ ids.forEach(id=>{
+  const fig=FIGURINES.find(f=>f.id===id); if(!fig) return;
+  (byLic[fig.uni]=byLic[fig.uni]||[]).push(fig.name);
+ });
+ const detail=Object.entries(byLic).map(([uni,names])=>`${uni} : ${names.join(', ')}`).join('\n');
+ const msg=`Retirer ${ids.length} figurine(s) de la collection de ${player} ?\n\n${detail}\n\n`
+  +`🔄 Cette suppression s'appliquera aussi sur les autres appareils synchronisés.\n\n`
+  +`⚠️ Action irréversible. Les étoiles déjà dépensées ne sont pas remboursées.`;
+ showConfirm(msg, ()=>pfigConfirmDelete(player, ids), {title:'⚠️ Supprimer des figurines', danger:true, confirmLabel:'Supprimer', cancelLabel:'Annuler'});
+}
+
+function pfigConfirmDelete(player, ids){
+ const res=(typeof parentRemoveFigurines==='function') ? parentRemoveFigurines(player, ids) : {ok:false,removed:0};
+ if(res.ok){
+  toast(`🗑️ ${res.removed} figurine(s) retirée(s) de la collection de ${player}`, 3500);
+ }else{
+  toast('Aucune figurine retirée.', 2500);
+ }
+ _pfigManageMode=false; _pfigSelected.clear();
+ renderParentFigurines();
 }
 
 

@@ -120,6 +120,9 @@ function _checkLicenseCompletions(){
   FIGURINES.forEach(fig=>{
    if(!fig.completionLock) return;
    if(owned.includes(fig.id) || newlyUnlocked.includes(fig.id)) return;
+   // v12.7.18 (demande de Cyril) : une figurine retirée par un parent ne
+   // doit jamais être réattribuée automatiquement.
+   if((P.blockedFigurines||[]).includes(fig.id)) return;
    const others = FIGURINES.filter(f => f.uk===fig.uk && f.id!==fig.id && !f.completionLock);
    if(others.length && others.every(f => owned.includes(f.id))){
     newlyUnlocked.push(fig.id);
@@ -138,12 +141,57 @@ function _checkLicenseCompletions(){
  }catch(e){}
 }
 
+// ── v12.7.18 (demande de Cyril) : suppression de figurines depuis la Vue
+// Parent ─────────────────────────────────────────────────────────────
+// Peut cibler n'importe quel profil local (le profil actif OU un autre —
+// même pattern que renameProfile()/resetAllProfiles() en 09-parent.js, qui
+// lisent/écrivent directement localStorage['user_'+nom]). Les figurines
+// retirées sont à la fois sorties de ownedFigurines ET ajoutées à
+// blockedFigurines (liste "tombstone", voir _mergeCloudProfiles() en
+// 12-cloud.js) pour que le retrait tienne sur tous les appareils, même un
+// appareil qui aurait encore l'ancienne copie de la figurine en local.
+// Retrait définitif : buyFigurine()/unlockSeasonalFigurine()/
+// _checkLicenseCompletions() refusent toutes de réattribuer une figurine
+// bloquée (voir leurs gardes respectives ci-dessus et en 06c-seasonal.js).
+function parentRemoveFigurines(playerName, figIds){
+ if(!playerName || !Array.isArray(figIds) || !figIds.length) return {ok:false, removed:0};
+ try{
+  const raw = localStorage.getItem('user_'+playerName);
+  if(!raw) return {ok:false, removed:0};
+  let data = JSON.parse(raw);
+  if(typeof validateProfile==='function') data = validateProfile(data, playerName);
+  const ownedSet = new Set(data.ownedFigurines||[]);
+  const toRemove = figIds.filter(id => ownedSet.has(id));
+  if(!toRemove.length) return {ok:false, removed:0};
+  data.ownedFigurines = (data.ownedFigurines||[]).filter(id => !toRemove.includes(id));
+  data.blockedFigurines = Array.from(new Set([...(data.blockedFigurines||[]), ...toRemove]));
+  localStorage.setItem('user_'+playerName, JSON.stringify(data));
+  // Si le profil ciblé est aussi le profil actif en mémoire (P), on le met
+  // à jour ET on sauvegarde pour éviter toute désynchronisation jusqu'au
+  // prochain chargement — même précaution que renameProfile() (09-parent.js).
+  if(typeof P!=='undefined' && P && P.name===playerName){
+   P.ownedFigurines = data.ownedFigurines;
+   P.blockedFigurines = data.blockedFigurines;
+   if(typeof saveProfileNow==='function') saveProfileNow();
+   // Propagation immédiate si ce profil a le cloud activé — sinon la
+   // synchronisation se fera normalement au prochain lancement du jeu par
+   // l'enfant concerné (comportement déjà standard pour toute autre
+   // modification de profil).
+   if(typeof pushProfileToCloud==='function') pushProfileToCloud();
+  }
+  return {ok:true, removed:toRemove.length};
+ }catch(e){ console.warn('parentRemoveFigurines failed', e); return {ok:false, removed:0}; }
+}
+
 function buyFigurine(id){
  if(!id)return;
  const fig=FIGURINES.find(f=>f&&f.id===id);
  if(!fig){console.warn('Figurine introuvable:',id);return;}
  const owned=P.ownedFigurines||[];
  if(owned.includes(id)){toast('Déjà dans ta collection !');return;}
+ // v12.7.18 (demande de Cyril) : une figurine retirée par un parent ne
+ // peut plus être rachetée — le retrait est définitif.
+ if((P.blockedFigurines||[]).includes(id)){toast('Cette figurine n\'est plus disponible.');return;}
  spend(fig.p,()=>{
   P.ownedFigurines=[...owned,id];
   toast(`🎉 ${fig.name} ajouté à ta collection !`,3000);

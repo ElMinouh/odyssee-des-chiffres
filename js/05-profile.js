@@ -182,6 +182,12 @@ function validateProfile(raw, defaultName){
   // mais scindé par advKey (comme mapAvatarZoneByAdv) puisqu'un même id de
   // fragment n'a de sens que pour SON Odyssée. Fusionné en UNION par
   // advKey en synchro cloud (voir ODYSSEY_PROGRESS_FIELDS, 12-cloud.js).
+  // v12.7.18 (demande de Cyril) : figurines explicitement retirées par un
+  // parent depuis la Vue Parent. Liste "tombstone" — voir _mergeCloudProfiles()
+  // (12-cloud.js) : elle l'emporte toujours sur la fusion de ownedFigurines,
+  // pour qu'un retrait tienne sur tous les appareils synchronisés, même si
+  // un autre appareil a encore l'ancienne copie de la figurine en mémoire.
+  blockedFigurines: _safeArr(raw.blockedFigurines).filter(s => typeof s === 'string'),
   loreFoundIdsByAdv: (function(){
    const src = (raw.loreFoundIdsByAdv && typeof raw.loreFoundIdsByAdv === 'object') ? raw.loreFoundIdsByAdv : {};
    const out = {};
@@ -496,7 +502,7 @@ function defProfile(name){
   histCatFilters:{frise:true,personnages:true,evenements:true,civilisation:true,temps:true,repere:true},
   frCatFilters:{conj:true,orth:true,gram:true,vocab:true},
   heroStageId:'oeuf',
-  cloudCode:null,cloudEnabled:false,onbAccountSeen:false,onbMapSeen:false,_epilogueBonusCredited:[],islandVictoryCreditedByAdv:{},heroStageRewardsCredited:[],photo:null,playerCode:null,lastAdventure:null,
+  cloudCode:null,cloudEnabled:false,onbAccountSeen:false,onbMapSeen:false,_epilogueBonusCredited:[],islandVictoryCreditedByAdv:{},heroStageRewardsCredited:[],blockedFigurines:[],photo:null,playerCode:null,lastAdventure:null,
   // v11.7.3 (audit n°9) : genre explicite optionnel, réglable par le parent —
   // prioritaire sur l'heuristique orthographique de heroGender() dans 02-data.js.
   gender:null};

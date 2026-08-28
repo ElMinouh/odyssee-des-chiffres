@@ -358,7 +358,15 @@ function _mergeCloudProfiles(local, imported){
  // bonus d'évolution après fusion.
  out.heroStageRewardsCredited = uniq(local.heroStageRewardsCredited, imported.heroStageRewardsCredited);
 
- out.ownedFigurines     = uniq(local.ownedFigurines, imported.ownedFigurines);
+ // v12.7.18 (demande de Cyril) : liste "tombstone" des figurines retirées
+ // par un parent — union simple (comme _epilogueBonusCredited), calculée
+ // AVANT ownedFigurines ci-dessous, puis systématiquement soustraite du
+ // résultat. Sans ce filtre, un appareil ayant encore l'ancienne copie de
+ // la figurine la réinjecterait dans l'union à la prochaine synchronisation,
+ // annulant silencieusement le retrait décidé par le parent.
+ out.blockedFigurines   = uniq(local.blockedFigurines, imported.blockedFigurines);
+ out.ownedFigurines     = uniq(local.ownedFigurines, imported.ownedFigurines)
+  .filter(id => !out.blockedFigurines.includes(id));
  out.ownedSkins         = uniq(local.ownedSkins, imported.ownedSkins);
  out.ownedMusics        = uniq(local.ownedMusics, imported.ownedMusics);
  out.ownedSounds        = uniq(local.ownedSounds, imported.ownedSounds);

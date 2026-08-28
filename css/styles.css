@@ -497,6 +497,19 @@ button.pulse{font-size:1.15em!important;padding:var(--space-3) var(--space-5) !i
 .pfig-name{font-size:.78em;font-weight:700;color:#fff;margin-top:2px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 var(--space-1);}
 .pfig-price{font-size:.72em;color:#f1c40f;font-weight:700;margin-top:2px;display:inline-block;padding:1px var(--space-2);border-radius:var(--radius-pill);background:rgba(0,0,0,.25);}
 .pfig-locked{opacity:.5;filter:grayscale(.6);}
+
+/* v12.7.18 (demande de Cyril) : mode gestion/suppression de figurines */
+.pfig-manage-btn{background:rgba(231,76,60,.18);color:#ff9b93;border:1px solid rgba(231,76,60,.4);}
+.pfig-manage-btn.active{background:var(--danger);color:#fff;}
+.pfig-selall{font-size:.68em;color:#f1c40f;background:none;border:none;cursor:pointer;font-weight:700;padding:2px 4px;text-decoration:underline;margin-left:auto;}
+.pfig-check{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:5px;border:2px solid rgba(255,255,255,.5);background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;font-size:.7em;color:#fff;z-index:2;}
+.pfig-card.pfig-selected{border-color:var(--danger)!important;background:rgba(192,57,43,.18)!important;}
+.pfig-card.pfig-selected .pfig-check{background:var(--danger);border-color:var(--danger);}
+#pfig-bottombar{position:sticky;bottom:0;left:0;right:0;background:rgba(15,17,23,.97);border-top:1px solid rgba(255,255,255,.12);padding:10px 14px;display:none;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;border-radius:var(--radius-md);}
+#pfig-bottombar.show{display:flex;}
+#pfig-bottombar .pfig-bb-count{font-size:.8em;font-weight:700;color:#fff;}
+#pfig-bottombar .pfig-bb-count b{color:#ff9b93;}
+#pfig-bottombar button[disabled]{opacity:.35;cursor:not-allowed;}
 /* ═══ Chantier 3.1 — Animations de réponse juste enrichies ═══ */
 
 /* Score popup floatant (+N ⭐) */

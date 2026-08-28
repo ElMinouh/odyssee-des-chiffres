@@ -1080,21 +1080,31 @@
     <div style="margin-bottom:8px;">
      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">
       <span style="font-size:.8em;font-weight:700;color:#f1c40f;">👤 Joueur :</span>
-      <select id="pfig-player" onchange="renderParentFigurines()" style="width:auto;padding:4px 8px;font-size:.8em;"></select>
+      <select id="pfig-player" onchange="pfigOnPlayerChange()" style="width:auto;padding:4px 8px;font-size:.8em;"></select>
       <select id="pfig-license" onchange="renderParentFigurines()" style="width:auto;padding:4px 8px;font-size:.8em;margin-left:4px;"><option value="none">— Sélectionne une licence —</option></select>
       <span id="pfig-stats" style="font-size:.72em;color:rgba(255,255,255,.5);margin-left:4px;"></span>
      </div>
      <div style="margin-bottom:6px;">
       <input id="pfig-search" type="text" placeholder="🔍 Rechercher un personnage…" oninput="_pfigSearch=this.value;renderParentFigurines()" maxlength="30" style="width:100%;padding:5px 8px;font-size:.8em;border-radius:6px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1);color:#fff;">
      </div>
-     <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px;">
+     <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px;align-items:center;">
       <button onclick="pfigFilter('all')" id="pfig-btn-all" class="active" style="font-size:.65em;padding:4px 9px;border-radius:8px;margin:0;border-bottom:2px solid rgba(0,0,0,.3);">🌐 Tout</button>
       <button onclick="pfigFilter('owned')" id="pfig-btn-owned" style="font-size:.65em;padding:4px 9px;border-radius:8px;margin:0;background:rgba(255,255,255,.1);border-bottom:2px solid rgba(0,0,0,.3);"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg> Possédées</button>
       <button onclick="pfigFilter('missing')" id="pfig-btn-missing" style="font-size:.65em;padding:4px 9px;border-radius:8px;margin:0;background:rgba(255,255,255,.1);border-bottom:2px solid rgba(0,0,0,.3);"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Manquantes</button>
+      <button id="pfig-manage-btn" onclick="togglePfigManage()" class="pfig-manage-btn" style="font-size:.65em;padding:4px 9px;border-radius:8px;margin:0 0 0 auto;">🗑️ Gérer / Supprimer</button>
      </div>
     </div>
     <div id="pfig-content"></div>
+
+    <div id="pfig-bottombar">
+     <div class="pfig-bb-count"><b id="pfig-sel-count">0</b> figurine(s) sélectionnée(s)</div>
+     <div style="display:flex;gap:8px;">
+      <button onclick="togglePfigManage()" style="background:rgba(255,255,255,.15);font-size:.8em;padding:8px 14px;">Annuler</button>
+      <button id="pfig-btn-delete" onclick="pfigOpenDeleteConfirm()" disabled style="background:var(--danger);font-size:.8em;padding:8px 14px;">🗑️ Supprimer</button>
+     </div>
+    </div>
    </div>
+
 
    </div>
  </div>
