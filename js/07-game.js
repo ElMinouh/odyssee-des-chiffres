@@ -1329,7 +1329,10 @@ function endGame(won){
     const raw = JSON.parse(localStorage.getItem('user_'+cp.name)||'null');
     if(!raw) return; // pas de profil local sous ce nom : rien à créditer
     const cpWon = !!cp.alive;
-    const starsGain = Math.round((cp.score||0) * 1.5);
+    // v12.7.17 (même bug que pour le joueur actif, corrigé au même endroit
+    // dans ce fichier) : les étoiles de CE joueur ne sont créditées que s'il
+    // a lui-même gagné son combat.
+    const starsGain = cpWon ? Math.round((cp.score||0) * 1.5) : 0;
     const xpGain = Math.round((cp.score||0) * (cpWon?3:1) * 0.8);
     raw.stars = (raw.stars||0) + starsGain;
     raw.xp = (raw.xp||0) + xpGain;
@@ -1347,7 +1350,12 @@ function endGame(won){
  P.historyDetailed=([...(P.historyDetailed||[]),{date:fmtDate(),timestamp:Date.now(),score:GS.score,mode:GM.mode2,level:fl,won,maxCombo:GS.maxCombo,errorsCount:GS.errInGame,subject:(typeof GM!=='undefined'&&GM.subject)||'math'}]).slice(-60);
  // v8.7.0 : gains d'étoiles ×1.5 (beaucoup de figurines à collectionner,
  // éviter la frustration). Math.round pour garder des entiers.
- const _starsGain = Math.round(GS.score * 1.5);
+ // v12.7.17 (bug trouvé lors de l'audit demandé par Cyril) : ce crédit
+ // s'appliquait jusqu'ici même en cas de défaite — incohérent avec l'écran
+ // de fin (qui affiche "+0⭐" sur une défaite) et avec la quête "Gagner X
+ // étoiles" (qui ne comptait déjà que les victoires). Corrigé : plus aucune
+ // étoile n'est créditée sur une défaite, quel que soit le score atteint.
+ const _starsGain = won ? Math.round(GS.score * 1.5) : 0;
  P.stars=(P.stars||0)+_starsGain;
  // Lot 2 (audit engagement, 13e conversation, pt.21) : suivi de session pour le
  // bilan de fermeture — hors mode Combat (compétitif, hors périmètre du lot).
