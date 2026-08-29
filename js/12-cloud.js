@@ -392,8 +392,23 @@ function _mergeCloudProfiles(local, imported){
   : uniq(local.mapBossBeaten, imported.mapBossBeaten);
 
  out.xp                = maxN(local.xp, imported.xp);
- out.stars             = maxN(local.stars, imported.stars);
+ // v12.7.21 (BUG CRITIQUE signalé par Cyril, captures à l'appui) : P.stars
+ // était fusionné directement par un maximum ("out.stars = maxN(local.stars,
+ // imported.stars)"). C'est correct pour un compteur qui ne fait qu'AUGMENTER
+ // (xp, _bestCombo…), mais stars est une monnaie qui peut légitimement
+ // DIMINUER (achat de figurine). Résultat : après un achat, fermer puis
+ // rouvrir le jeu déclenchait une synchronisation qui ramenait le solde à
+ // son maximum historique — remboursant l'achat, tout en gardant la
+ // figurine. Recommençable à l'infini.
+ // Corrigé en dérivant stars de deux compteurs qui ne font QUE augmenter,
+ // eux fusionnables sans risque par un maximum : tout ce qui a jamais été
+ // gagné (_totalStarsEarned, déjà alimenté à chaque source de gain — voir
+ // les commentaires "v12.7.21" à chaque site de crédit) moins tout ce qui a
+ // jamais été dépensé (_totalStarsSpent, alimenté par le point de dépense
+ // unique spend(), 07-game.js).
  out._totalStarsEarned = maxN(local._totalStarsEarned, imported._totalStarsEarned);
+ out._totalStarsSpent  = maxN(local._totalStarsSpent, imported._totalStarsSpent);
+ out.stars             = Math.max(0, out._totalStarsEarned - out._totalStarsSpent);
  out._bestCombo        = maxN(local._bestCombo, imported._bestCombo);
  out.sessionMinutes    = maxN(local.sessionMinutes, imported.sessionMinutes);
 

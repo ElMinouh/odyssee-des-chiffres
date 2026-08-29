@@ -19,12 +19,28 @@ describe('_mergeCloudProfiles (#2 : fusion non destructive)', () => {
 
   it('prend le MAX des compteurs, jamais la somme', () => {
     const api = loadGame(FILES);
-    const local = { xp: 400, stars: 120, sessionMinutes: 90 };
-    const imported = { xp: 250, stars: 300, sessionMinutes: 40 };
+    const local = { xp: 400, sessionMinutes: 90 };
+    const imported = { xp: 250, sessionMinutes: 40 };
     const out = api._mergeCloudProfiles(local, imported);
     expect(out.xp).toBe(400);       // local gagne
-    expect(out.stars).toBe(300);    // imported gagne
     expect(out.sessionMinutes).toBe(90);
+  });
+
+  // v12.7.21 (bug critique corrigé, signalé par Cyril) : stars N'EST PLUS
+  // fusionné par un simple max — un simple max ramenait le solde à son
+  // maximum historique après chaque achat suivi d'une resynchronisation
+  // (achat + fermeture + réouverture du jeu = étoiles remboursées à
+  // l'infini, figurine gardée). stars est désormais DÉRIVÉ de deux
+  // compteurs qui ne font qu'augmenter (_totalStarsEarned − _totalStarsSpent),
+  // chacun fusionné par un max en toute sécurité.
+  it('stars est dérivé de _totalStarsEarned − _totalStarsSpent, pas fusionné directement', () => {
+    const api = loadGame(FILES);
+    const local = { _totalStarsEarned: 400, _totalStarsSpent: 300 }; // solde local : 100
+    const imported = { _totalStarsEarned: 250, _totalStarsSpent: 0 }; // solde serveur (avant achat) : 250
+    const out = api._mergeCloudProfiles(local, imported);
+    expect(out._totalStarsEarned).toBe(400); // max des deux
+    expect(out._totalStarsSpent).toBe(300);  // max des deux
+    expect(out.stars).toBe(100);             // 400 − 300, PAS max(100, 250)
   });
 
   it('ne perd pas une figurine rare acquise localement même si XP local < XP serveur', () => {

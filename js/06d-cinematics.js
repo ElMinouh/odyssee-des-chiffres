@@ -164,6 +164,7 @@ function playIslandVictory(regionId, done){
  try{
   if(typeof P !== 'undefined' && P){
    P.stars = (P.stars || 0) + BONUS_STARS;
+   P._totalStarsEarned = (P._totalStarsEarned || 0) + BONUS_STARS; // v12.7.21 (correctif bug critique du solde d'étoiles)
    if(typeof saveProfileNow === 'function') saveProfileNow();
    if(typeof updateMenuUI === 'function') updateMenuUI();
   }

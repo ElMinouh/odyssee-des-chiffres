@@ -2873,6 +2873,7 @@ function _maybeShowStory(afterCb){
    if(!P._epilogueBonusCredited.includes(_STORY.epilogue.id)){
     P._epilogueBonusCredited.push(_STORY.epilogue.id);
     P.stars = (P.stars || 0) + 200;
+    P._totalStarsEarned = (P._totalStarsEarned || 0) + 200; // v12.7.21 (correctif bug critique du solde d'étoiles)
     if(typeof saveProfileNow==='function') saveProfileNow();
     if(typeof updateMenuUI==='function') updateMenuUI();
     if(typeof toast==='function') toast('🏆 Odyssée terminée ! +200⭐', 3000);

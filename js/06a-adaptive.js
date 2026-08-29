@@ -368,7 +368,7 @@ function checkMilestones(){
     // Palier franchi pour la première fois !
     P.milestonesClaimed.push(key);
     if(tier.xp)   P.xp=(P.xp||0)+tier.xp;
-    if(tier.stars)P.stars=(P.stars||0)+tier.stars;
+    if(tier.stars){P.stars=(P.stars||0)+tier.stars;P._totalStarsEarned=(P._totalStarsEarned||0)+tier.stars;} // v12.7.21
     if(tier.badge&&!(P.badgesEarned||[]).includes(tier.badge)){
      P.badgesEarned=(P.badgesEarned||[]).concat(tier.badge);
     }
@@ -784,6 +784,7 @@ function showHeroEvolution(stage){
  if(reward && !_alreadyRewarded){
   P.heroStageRewardsCredited.push(stage.id);
   P.stars = (P.stars||0) + reward;
+  P._totalStarsEarned = (P._totalStarsEarned||0) + reward; // v12.7.21 (correctif bug critique du solde d'étoiles)
   if(typeof saveProfileNow==='function') saveProfileNow();
   else if(typeof saveProfile==='function') saveProfile();
  }

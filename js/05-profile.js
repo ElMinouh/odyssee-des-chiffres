@@ -128,6 +128,20 @@ function validateProfile(raw, defaultName){
   milestonesClaimed: _safeArr(raw.milestonesClaimed).filter(s => typeof s === 'string'),
   _bestCombo: _clampNum(raw._bestCombo, 0, 99999, 0),
   _totalStarsEarned: _clampNum(raw._totalStarsEarned, 0, 9999999, 0),
+  // v12.7.21 (correctif bug critique du solde d'étoiles, signalé par Cyril) :
+  // compteur qui ne fait qu'augmenter, comme _totalStarsEarned ci-dessus —
+  // voir spend() (07-game.js) pour l'incrément, et _mergeCloudProfiles()
+  // (12-cloud.js) pour la raison d'être : P.stars n'est PLUS fusionné
+  // directement (un simple maximum ramenait le solde à son maximum
+  // historique à chaque synchronisation, remboursant tout achat de
+  // figurine à l'infini) — il est désormais recalculé comme
+  // _totalStarsEarned − _totalStarsSpent, deux compteurs sûrs à fusionner.
+  _totalStarsSpent: _clampNum(raw._totalStarsSpent, 0, 9999999, 0),
+  // v12.7.21 : drapeau de migration unique pour le mécanisme ci-dessus —
+  // voir le bloc de migration juste après la construction de "out", qui
+  // initialise _totalStarsEarned/_totalStarsSpent pour qu'ils correspondent
+  // exactement au solde actuel d'un profil existant, une seule fois.
+  _starsLedgerMigrated: _safeBool(raw._starsLedgerMigrated, false),
   badgesEarned: _safeArr(raw.badgesEarned).filter(b => typeof b === 'string'),
   quests: raw.quests ?? null,
   questsDate: _safeStr(raw.questsDate, 12, null),
@@ -497,9 +511,27 @@ function validateProfile(raw, defaultName){
   });
   if(_toCredit > 0){
    out.stars = (out.stars || 0) + _toCredit;
+   out._totalStarsEarned = (out._totalStarsEarned || 0) + _toCredit; // v12.7.21 (correctif bug critique du solde d'étoiles)
    out._epilogueBonusCredited = Array.from(credited);
   }
  }catch(e){ console.warn('epilogue bonus migration failed', e); }
+ // v12.7.21 : MIGRATION RÉTROACTIVE unique pour le nouveau mécanisme
+ // _totalStarsEarned/_totalStarsSpent (voir bug critique corrigé dans
+ // _mergeCloudProfiles, 12-cloud.js). Un profil existant, créé avant ce
+ // correctif, n'a pas d'historique fiable de ce qu'il a gagné/dépensé au
+ // fil du temps — on initialise donc les deux compteurs pour qu'ils
+ // correspondent exactement au solde ACTUEL (out.stars), sans supposer
+ // aucune dépense passée. Protégé par _starsLedgerMigrated pour ne
+ // s'exécuter qu'une seule fois : sans ce garde-fou, cette réinitialisation
+ // tournerait à CHAQUE chargement et écraserait le suivi normal mis en
+ // place depuis.
+ try{
+  if(!out._starsLedgerMigrated){
+   out._totalStarsEarned = Math.max(out._totalStarsEarned, out.stars);
+   out._totalStarsSpent = 0;
+   out._starsLedgerMigrated = true;
+  }
+ }catch(e){ console.warn('stars ledger migration failed', e); }
  return out;
 }
 
@@ -508,7 +540,7 @@ function validateProfile(raw, defaultName){
 // ═══════════════════════════════════════════════════════
 function defProfile(name){
  return{_v:SAVE_VERSION,name,stars:0,xp:0,skills:{shield:0,sword:0,clock:0},inventory:{potion:0,bomb:0},
-  history:[],historyDetailed:[],errors:[],errorLog:[],badgesEarned:[],milestonesClaimed:[],_bestCombo:0,_totalStarsEarned:0,
+  history:[],historyDetailed:[],errors:[],errorLog:[],badgesEarned:[],milestonesClaimed:[],_bestCombo:0,_totalStarsEarned:0,_totalStarsSpent:0,_starsLedgerMigrated:true,
   quests:null,questsDate:null,opStats:{'+':{ ok:0,fail:0},'-':{ok:0,fail:0},'x':{ok:0,fail:0},'/':{ ok:0,fail:0},'geo':{ok:0,fail:0}},
   opStatsFr:{'conj':{ok:0,fail:0},'orth':{ok:0,fail:0},'gram':{ok:0,fail:0},'vocab':{ok:0,fail:0}},
   opStatsHist:{'frise':{ok:0,fail:0},'personnages':{ok:0,fail:0},'evenements':{ok:0,fail:0},'civilisation':{ok:0,fail:0},'temps':{ok:0,fail:0},'repere':{ok:0,fail:0}},

@@ -64,7 +64,17 @@ function renderSkills(){
   return `<div class="skill-item"><span>${label} Niv.${lvl}</span><button onclick="buySkill('${s}')"${lvl>=3?' disabled':''}>${lvl>=3?'MAX':price+' ⭐'}</button></div>`;
  }).join('');
 }
-function spend(amt,cb){if((P.stars||0)<amt){beep(200,'sawtooth');return false;}P.stars-=amt;cb();saveProfileNow();updateMenuUI();if($('th-stars'))$('th-stars').textContent=P.stars||0;if(typeof renderRecords==='function'&&$('p-records'))renderRecords();beep(800,'sine',.3);return true;}
+function spend(amt,cb){if((P.stars||0)<amt){beep(200,'sawtooth');return false;}P.stars-=amt;
+ // v12.7.21 (bug critique signalé par Cyril, captures à l'appui) : point de
+ // dépense UNIQUE du jeu — figurines, compétences, sons, musiques, skins
+ // passent tous par ici. _totalStarsSpent (compteur qui ne fait qu'augmenter,
+ // comme _totalStarsEarned) permet à _mergeCloudProfiles() (12-cloud.js) de
+ // recalculer P.stars de façon sûre lors d'une synchronisation, au lieu de
+ // fusionner P.stars directement par un maximum (bug : ça ramenait le solde
+ // à son maximum historique à chaque réouverture du jeu, remboursant tout
+ // achat à l'infini).
+ P._totalStarsSpent=(P._totalStarsSpent||0)+amt;
+ cb();saveProfileNow();updateMenuUI();if($('th-stars'))$('th-stars').textContent=P.stars||0;if(typeof renderRecords==='function'&&$('p-records'))renderRecords();beep(800,'sine',.3);return true;}
 function buySkill(s){if((P.skills[s]||0)>=3)return;spend(((P.skills[s]||0)+1)*20,()=>{P.skills[s]=(P.skills[s]||0)+1;renderSkills();});}
 function buyItem(it,price){spend(price,()=>{P.inventory[it]=(P.inventory[it]||0)+1;updateMenuUI();toast('Acheté !');});}
 function useItem(it){
@@ -123,6 +133,10 @@ function _checkOpComboQuest(opKey, currentCombo){
   q.progress=q.goal;
   q.done=true;
   P.stars+=q.reward;
+  // v12.7.21 (correctif bug critique du solde d'étoiles) : chaque source de
+  // gain doit alimenter _totalStarsEarned pour que la fusion cloud calcule
+  // le bon solde (voir spend(), plus haut, et _mergeCloudProfiles en 12-cloud.js).
+  P._totalStarsEarned=(P._totalStarsEarned||0)+q.reward;
   if(typeof toast==='function')toast(`🎉 Quête ! +${q.reward}⭐`);
  }
 }
@@ -131,7 +145,12 @@ function updateQuests(key,amt=1){
  P.quests.forEach(q=>{
   if(q.done||q.key!==key)return;
   q.progress=Math.min(q.goal,q.progress+amt);
-  if(q.progress>=q.goal){q.done=true;P.stars+=q.reward;toast(`🎉 Quête ! +${q.reward}⭐`);}
+  if(q.progress>=q.goal){
+   q.done=true;P.stars+=q.reward;
+   // v12.7.21 (correctif bug critique du solde d'étoiles)
+   P._totalStarsEarned=(P._totalStarsEarned||0)+q.reward;
+   toast(`🎉 Quête ! +${q.reward}⭐`);
+  }
  });saveProfile();
 }
 // Lot 3 (audit engagement, 13e conversation, pt.17) : mise en avant du badge
@@ -190,7 +209,12 @@ function updateWC(q){
  const filterFn=getWCFilter(wc.id);
  if(filterFn&&filterFn(q)){
   wc.progress++;
-  if(wc.progress>=wc.target){wc.done=true;P.stars+=wc.reward;toast(`🏆 Défi hebdo ! +${wc.reward}⭐`,3000);beep(880,'sine',.8);}
+  if(wc.progress>=wc.target){
+   wc.done=true;P.stars+=wc.reward;
+   // v12.7.21 (correctif bug critique du solde d'étoiles)
+   P._totalStarsEarned=(P._totalStarsEarned||0)+wc.reward;
+   toast(`🏆 Défi hebdo ! +${wc.reward}⭐`,3000);beep(880,'sine',.8);
+  }
   renderWC();saveProfile();
  }
 }
@@ -957,6 +981,8 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);GS.consecFail=0;
    if(GS.isBirthdayBoss){
     safeTimeout(()=>{toast(`🎉 JOYEUX ANNIVERSAIRE ${P.name.toUpperCase()} ! 🎂`,5500);if(typeof startConfetti==='function')startConfetti();},300);
     P.stars=(P.stars||0)+20; // bonus cadeau
+    // v12.7.21 (correctif bug critique du solde d'étoiles)
+    P._totalStarsEarned=(P._totalStarsEarned||0)+20;
    }
    safeTimeout(playCongrats,600);
   }else safeTimeout(nextTurn,750);}
@@ -1800,6 +1826,8 @@ function _trackHomework(q){
   // Devoir complété !
   P.homework.done = true;
   P.stars = (P.stars || 0) + (P.homework.reward || 50);
+  // v12.7.21 (correctif bug critique du solde d'étoiles)
+  P._totalStarsEarned = (P._totalStarsEarned || 0) + (P.homework.reward || 50);
   if(typeof saveProfileNow === 'function') saveProfileNow();
   if(typeof toast === 'function') toast(`🎉 Devoir terminé ! +${P.homework.reward}⭐`, 4000);
   if(typeof beep === 'function'){

@@ -79,8 +79,13 @@ describe('_mergeCloudProfiles() — respecte un reset d\'Odyssée explicite (ADR
 
   it('xp/stars restent toujours au max, jamais affectés par le reset (contrat "étoiles/XP conservés")', () => {
     const api = loadGame(FILES);
-    const local = { xp: 500, stars: 120, adventureResetAt: 9000 };
-    const imported = { xp: 300, stars: 80, adventureResetAt: 1000 };
+    // v12.7.21 : stars n'est plus un champ fusionné directement, mais dérivé
+    // de _totalStarsEarned − _totalStarsSpent (voir cloud-merge.test.js pour
+    // le détail de ce mécanisme). Aucune dépense ici (_totalStarsSpent:0 des
+    // deux côtés) : le solde net le plus élevé doit toujours l'emporter,
+    // reset d'Odyssée ou non — même contrat qu'avant.
+    const local = { xp: 500, _totalStarsEarned: 120, _totalStarsSpent: 0, adventureResetAt: 9000 };
+    const imported = { xp: 300, _totalStarsEarned: 80, _totalStarsSpent: 0, adventureResetAt: 1000 };
     const out = api._mergeCloudProfiles(local, imported);
     expect(out.xp).toBe(500);
     expect(out.stars).toBe(120);
