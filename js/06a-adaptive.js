@@ -723,7 +723,20 @@ function checkHeroStageProgress(){
  if(typeof getHeroStage !== 'function' || !P) return;
  const current = getHeroStage();
  const lastStageId = P.heroStageId || 'oeuf';
- if(current.id !== lastStageId){
+ // v12.7.25 (bug signalé par Cyril, captures à l'appui) : l'animation
+ // d'évolution réapparaissait après chaque partie de l'Odyssée. La
+ // condition du stade "Maître" dépend de _totalStarsEarned (>=100), un
+ // compteur introduit récemment (v12.7.21) — une lecture transitoirement
+ // plus basse de ce compteur (ex. juste avant la fin d'une synchronisation
+ // cloud) peut faire recalculer un stade inférieur à celui déjà enregistré.
+ // Sans garde-fou, ce recalcul plus bas était traité comme un nouveau
+ // stade "franchi", écrasant heroStageId — puis, dès que le bon stade se
+ // recalculait normalement au tour suivant, l'évolution se redéclenchait.
+ // Corrigé en rendant le stade du héros strictement à sens unique : seul un
+ // rang STRICTEMENT SUPÉRIEUR à celui déjà enregistré peut déclencher quoi
+ // que ce soit — jamais une régression, quelle qu'en soit la cause.
+ const _rankOf = id => (typeof HERO_STAGES!=='undefined' && Array.isArray(HERO_STAGES)) ? HERO_STAGES.findIndex(s=>s.id===id) : -1;
+ if(current.id !== lastStageId && _rankOf(current.id) > _rankOf(lastStageId)){
   // Stade franchi !
   P.heroStageId = current.id;
   // v12.7.14 (signalé par Cyril, captures à l'appui) : saveProfile() (débounce

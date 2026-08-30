@@ -1765,7 +1765,6 @@
     "renderRecords": "writable",
     "renderReport": "writable",
     "renderReportView": "writable",
-    "renderResetZone": "writable",
     "renderSkills": "writable",
     "renderSkins": "writable",
     "renderStageProgress": "writable",

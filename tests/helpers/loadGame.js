@@ -1889,7 +1889,6 @@ globalThis.__api = {
   renderRecords: (typeof renderRecords==='function') ? renderRecords : undefined,
   renderReport: (typeof renderReport==='function') ? renderReport : undefined,
   renderReportView: (typeof renderReportView==='function') ? renderReportView : undefined,
-  renderResetZone: (typeof renderResetZone==='function') ? renderResetZone : undefined,
   renderSkills: (typeof renderSkills==='function') ? renderSkills : undefined,
   renderSkins: (typeof renderSkins==='function') ? renderSkins : undefined,
   renderStageProgress: (typeof renderStageProgress==='function') ? renderStageProgress : undefined,

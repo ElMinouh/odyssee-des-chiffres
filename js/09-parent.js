@@ -1804,9 +1804,9 @@ function renderOptResetOne(name){
  try{const p=JSON.parse(localStorage.getItem('user_'+name)||'null'); if(p){stars=p.stars||0;figs=(p.ownedFigurines||[]).length;lvl=p.xp?Math.floor(p.xp/100)+1:1;zb=(p.mapBossBeaten||[]).length;}}catch(e){}
  // v12.7.24 (demande de Cyril) : le nombre d'étoiles devient directement
  // modifiable ici — c'est CETTE fonction qui est réellement affichée à
- // l'écran (liée au sélecteur de profil opt-profile), contrairement à
- // renderResetZone() plus bas dans 10-figurines.js, jamais reliée à un
- // élément réel du DOM (code mort, jamais vu par personne).
+ // l'écran (liée au sélecteur de profil opt-profile). Une fonction jumelle,
+ // renderResetZone() (10-figurines.js), jamais reliée à un élément réel du
+ // DOM (code mort, jamais vu par personne), a été supprimée en v12.7.25.
  box.innerHTML=`<div style="font-size:.72em;color:#bdc3c7;margin-bottom:6px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">Niv.${lvl} · `
   +`<input type="number" min="0" max="999999" value="${stars}" data-pname="${en}" data-old="${stars}" onchange="parentStarsEdit(this)" style="width:64px;padding:2px 5px;text-align:center;font-size:.95em;font-weight:700;border-radius:6px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.35);color:#f1c40f;">`
   +` étoiles · ${figs} figurines · ${zb}/23 zones</div>

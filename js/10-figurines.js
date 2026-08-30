@@ -1955,7 +1955,10 @@ function resetProfile(playerName){
     if(P&&P.name===playerName){
       loadProfile();updateHUD();renderSkills();renderBadges();renderQuests();
     }
-    renderResetZone();
+    // v12.7.25 : renderResetZone() (jamais réellement affichée à l'écran,
+    // code mort) supprimée — remplacée par la VRAIE fonction d'affichage,
+    // qui ne se rafraîchissait donc jamais après un reset jusqu'ici.
+    if(typeof renderOptResetOne==='function') renderOptResetOne(playerName);
   }, {danger:true, confirmLabel:'Réinitialiser'});
 }
 // v8.7.31 : reset spécifique à L'Odyssée. Ne touche PAS aux étoiles, figurines,
@@ -2061,7 +2064,9 @@ function resetAdventure(playerName){
           renderMap();
         }
       }
-      renderResetZone();
+      // v12.7.25 : renderResetZone() (code mort) supprimée — voir resetProfile()
+      // juste au-dessus pour l'explication complète.
+      if(typeof renderOptResetOne==='function') renderOptResetOne(playerName);
     }catch(e){
       console.warn('resetAdventure failed', e);
       toast(`Erreur lors du reset de l'aventure de ${playerName}.`);
@@ -2069,8 +2074,8 @@ function resetAdventure(playerName){
   }, {confirmLabel:'Réinitialiser'});
 }
 // v12.7.23 (demande de Cyril) : gestionnaire du champ étoiles éditable de
-// renderResetZone() ci-dessous — confirmation avant application, restaure
-// l'ancienne valeur si le parent annule.
+// renderOptResetOne() (09-parent.js) — confirmation avant application,
+// restaure l'ancienne valeur si le parent annule.
 function parentStarsEdit(input){
  const name = decodeURIComponent(input.dataset.pname);
  const oldStars = parseInt(input.dataset.old, 10) || 0;
@@ -2089,35 +2094,4 @@ function parentStarsEdit(input){
    input.value = oldStars;
   }
  }, {confirmLabel:'Confirmer', onCancel:()=>{ input.value = oldStars; }});
-}
-
-function renderResetZone(){
-  const z=$('reset-zone');if(!z)return;
-  // Utiliser KNOWN (liste fixe) + le joueur custom si existant
-  const knownPlayers=(typeof getRoster==='function')?getRoster():[];
-  const custom=localStorage.getItem('customPlayerName');
-  const players=[...knownPlayers,...(custom&&!knownPlayers.includes(custom)?[custom]:[])];
-  z.innerHTML=players.map(name=>{
-    let stars=0,figs=0,lvl=1,zonesBeaten=0;
-    try{const p=JSON.parse(localStorage.getItem('user_'+name)||'null');
-      if(p){stars=p.stars||0;figs=(p.ownedFigurines||[]).length;lvl=p.xp?Math.floor(p.xp/100)+1:1;zonesBeaten=(p.mapBossBeaten||[]).length;}
-    }catch(e){}
-    const enc=encodeURIComponent(name);
-    // v8.7.31 : deux boutons distincts (reset aventure + reset total)
-    // v12.7.23 (demande de Cyril) : le nombre d'étoiles devient directement
-    // modifiable — confirmation avant application (pfigStarsEdit ci-dessous).
-    return '<div style="display:flex;flex-direction:column;padding:10px 12px;margin:4px 0;background:rgba(255,255,255,.08);border-radius:10px;gap:8px;">'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">'
-      +'<div style="text-align:left;flex:1;">'
-      +'<div style="font-weight:700;font-size:.9em;">'+esc(name)+'</div>'
-      +'<div style="font-size:.72em;color:#bdc3c7;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">Niv.'+lvl+' · '
-      +'<input type="number" min="0" max="999999" value="'+stars+'" data-pname="'+enc+'" data-old="'+stars+'" onchange="parentStarsEdit(this)" style="width:64px;padding:2px 5px;text-align:center;font-size:.95em;font-weight:700;border-radius:6px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.35);color:#f1c40f;">'
-      +' étoiles · '+figs+' figurines · '+zonesBeaten+'/23 zones</div>'
-      +'</div></div>'
-      +'<div style="display:flex;gap:6px;">'
-      +'<button data-pname="'+enc+'" onclick="resetAdventure(decodeURIComponent(this.dataset.pname))" style="flex:1;background:#16a085;color:#fff;padding:8px 10px;font-size:.8em;font-weight:700;border-radius:8px;border:2px solid #1abc9c;cursor:pointer;">&#128506; Reset Aventure</button>'
-      +'<button data-pname="'+enc+'" onclick="resetProfile(decodeURIComponent(this.dataset.pname))" style="flex:1;background:#c0392b;color:#fff;padding:8px 10px;font-size:.8em;font-weight:700;border-radius:8px;border:2px solid #ff6b6b;cursor:pointer;">&#128465; Reset Total</button>'
-      +'</div>'
-      +'</div>';
-  }).join('');
 }
