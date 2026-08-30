@@ -156,13 +156,62 @@ function _checkLicenseCompletions(){
 // Retrait définitif : buyFigurine()/unlockSeasonalFigurine()/
 // _checkLicenseCompletions() refusent toutes de réattribuer une figurine
 // bloquée (voir leurs gardes respectives ci-dessus et en 06c-seasonal.js).
+// ── v12.7.23 (demande de Cyril) : modification manuelle du solde d'étoiles
+// depuis la Vue Parent ────────────────────────────────────────────────
+// Même pattern que parentRemoveFigurines() ci-dessus (lecture/écriture
+// directe du profil ciblé, actif ou non, sur ce même modèle). Une
+// correction manuelle est traitée exactement comme un gain ou une dépense
+// réelle : la différence alimente _totalStarsEarned (si le nouveau solde
+// est plus élevé) ou _totalStarsSpent (s'il est plus bas), jamais stars
+// directement — c'est ce qui garantit que la correction tient sur tous les
+// appareils synchronisés (voir le bug critique corrigé dans validateProfile()
+// et _mergeCloudProfiles(), qui ne fusionnent jamais stars en direct).
+function parentSetStars(playerName, newStarsRaw){
+ if(!playerName) return {ok:false};
+ const newStars = Math.max(0, Math.min(999999, Math.round(Number(newStarsRaw))));
+ if(!Number.isFinite(newStars)) return {ok:false};
+ try{
+  const raw = localStorage.getItem('user_'+playerName);
+  if(!raw) return {ok:false};
+  let data = JSON.parse(raw);
+  // {allowStarsMigration:false} : même précaution que parentRemoveFigurines()
+  // — cette copie, lue depuis un appareil de gestion potentiellement
+  // périmé, n'a aucune raison d'être plus fiable que l'autre côté d'une
+  // future fusion cloud.
+  if(typeof validateProfile==='function') data = validateProfile(data, playerName, {allowStarsMigration:false});
+  const oldStars = data.stars || 0;
+  const delta = newStars - oldStars;
+  if(delta === 0) return {ok:true, changed:false, oldStars, newStars};
+  data._totalStarsEarned = data._totalStarsEarned || 0;
+  data._totalStarsSpent = data._totalStarsSpent || 0;
+  if(delta > 0) data._totalStarsEarned += delta;
+  else data._totalStarsSpent += (-delta);
+  data.stars = newStars;
+  localStorage.setItem('user_'+playerName, JSON.stringify(data));
+  if(typeof P!=='undefined' && P && P.name===playerName){
+   P.stars = data.stars;
+   P._totalStarsEarned = data._totalStarsEarned;
+   P._totalStarsSpent = data._totalStarsSpent;
+   if(typeof saveProfileNow==='function') saveProfileNow();
+   try{ if(typeof updateMenuUI==='function') updateMenuUI(); }catch(e){}
+   try{ if(typeof pushProfileToCloud==='function') pushProfileToCloud(); }catch(e){}
+  } else if(data.cloudEnabled && data.cloudCode){
+   // v12.7.23 : même mécanisme que parentRemoveFigurines() — propage la
+   // correction immédiatement même si l'enfant n'est pas le profil actif
+   // sur cet appareil (bug corrigé en v12.7.22 pour les figurines).
+   try{ if(typeof _pushOtherProfileToCloud==='function') _pushOtherProfileToCloud(data); }catch(e){}
+  }
+  return {ok:true, changed:true, oldStars, newStars};
+ }catch(e){ console.warn('parentSetStars failed', e); return {ok:false}; }
+}
+
 function parentRemoveFigurines(playerName, figIds){
  if(!playerName || !Array.isArray(figIds) || !figIds.length) return {ok:false, removed:0};
  try{
   const raw = localStorage.getItem('user_'+playerName);
   if(!raw) return {ok:false, removed:0};
   let data = JSON.parse(raw);
-  if(typeof validateProfile==='function') data = validateProfile(data, playerName);
+  if(typeof validateProfile==='function') data = validateProfile(data, playerName, {allowStarsMigration:false});
   const ownedSet = new Set(data.ownedFigurines||[]);
   const toRemove = figIds.filter(id => ownedSet.has(id));
   if(!toRemove.length) return {ok:false, removed:0};
@@ -2019,6 +2068,29 @@ function resetAdventure(playerName){
     }
   }, {confirmLabel:'Réinitialiser'});
 }
+// v12.7.23 (demande de Cyril) : gestionnaire du champ étoiles éditable de
+// renderResetZone() ci-dessous — confirmation avant application, restaure
+// l'ancienne valeur si le parent annule.
+function parentStarsEdit(input){
+ const name = decodeURIComponent(input.dataset.pname);
+ const oldStars = parseInt(input.dataset.old, 10) || 0;
+ const newStars = Math.max(0, Math.min(999999, Math.round(Number(input.value)) || 0));
+ input.value = newStars;
+ if(newStars === oldStars) return;
+ const msg = `Modifier le solde de ${name} ?\n\n${oldStars} ⭐  →  ${newStars} ⭐\n\n`
+  +`🔄 Ce changement s'appliquera aussi sur les autres appareils synchronisés.`;
+ showConfirm(msg, ()=>{
+  const res = (typeof parentSetStars==='function') ? parentSetStars(name, newStars) : {ok:false};
+  if(res.ok){
+   input.dataset.old = newStars;
+   toast(`✏️ Solde de ${name} mis à jour : ${newStars} ⭐`, 3000);
+  } else {
+   toast('Erreur, solde inchangé.', 2500);
+   input.value = oldStars;
+  }
+ }, {confirmLabel:'Confirmer', onCancel:()=>{ input.value = oldStars; }});
+}
+
 function renderResetZone(){
   const z=$('reset-zone');if(!z)return;
   // Utiliser KNOWN (liste fixe) + le joueur custom si existant
@@ -2032,11 +2104,15 @@ function renderResetZone(){
     }catch(e){}
     const enc=encodeURIComponent(name);
     // v8.7.31 : deux boutons distincts (reset aventure + reset total)
+    // v12.7.23 (demande de Cyril) : le nombre d'étoiles devient directement
+    // modifiable — confirmation avant application (pfigStarsEdit ci-dessous).
     return '<div style="display:flex;flex-direction:column;padding:10px 12px;margin:4px 0;background:rgba(255,255,255,.08);border-radius:10px;gap:8px;">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">'
       +'<div style="text-align:left;flex:1;">'
       +'<div style="font-weight:700;font-size:.9em;">'+esc(name)+'</div>'
-      +'<div style="font-size:.72em;color:#bdc3c7;">Niv.'+lvl+' · '+stars+' étoiles · '+figs+' figurines · '+zonesBeaten+'/23 zones</div>'
+      +'<div style="font-size:.72em;color:#bdc3c7;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">Niv.'+lvl+' · '
+      +'<input type="number" min="0" max="999999" value="'+stars+'" data-pname="'+enc+'" data-old="'+stars+'" onchange="parentStarsEdit(this)" style="width:64px;padding:2px 5px;text-align:center;font-size:.95em;font-weight:700;border-radius:6px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.35);color:#f1c40f;">'
+      +' étoiles · '+figs+' figurines · '+zonesBeaten+'/23 zones</div>'
       +'</div></div>'
       +'<div style="display:flex;gap:6px;">'
       +'<button data-pname="'+enc+'" onclick="resetAdventure(decodeURIComponent(this.dataset.pname))" style="flex:1;background:#16a085;color:#fff;padding:8px 10px;font-size:.8em;font-weight:700;border-radius:8px;border:2px solid #1abc9c;cursor:pointer;">&#128506; Reset Aventure</button>'

@@ -142,4 +142,40 @@ describe('validateProfile() — migration rétroactive unique du solde (05-profi
     expect(p._totalStarsSpent).toBe(0);
     expect(p.stars).toBe(0);
   });
+
+  // v12.7.23 — BUG CRITIQUE trouvé en enquêtant sur le signalement de Cyril
+  // (solde passé de ~1500 à plus de 7000⭐ sans rapport avec le jeu réel) :
+  // la migration ci-dessus tournait aussi lors d'appels "secondaires" à
+  // validateProfile() (parentRemoveFigurines, fusion cloud...), sur une
+  // copie potentiellement PÉRIMÉE du profil (ex. l'appareil de gestion
+  // parental n'a pas rejoué depuis longtemps). Une copie périmée avec un
+  // ancien solde plus élevé se voyait alors "légitimer" à tort comme
+  // nouveau plancher _totalStarsEarned — qui, une fois propagé, gagnait
+  // pour de bon contre le vrai solde (maxN ne redescend jamais).
+  it('{allowStarsMigration:false} empêche la migration de tourner sur une copie périmée', () => {
+    const api = loadGame(['05-profile.js']);
+    // Copie périmée (appareil de gestion), jamais migrée, avec un ancien
+    // solde bien plus élevé que la réalité actuelle.
+    const raw = { name: 'Léo', stars: 7000 };
+    const out = api.validateProfile(raw, 'Léo', { allowStarsMigration: false });
+    expect(out._totalStarsEarned).toBe(0); // PAS 7000 : aucun plancher inventé
+    expect(out._totalStarsSpent).toBe(0);
+    expect(out._starsLedgerMigrated).toBe(false); // pas marqué migré non plus
+    expect(out.stars).toBe(7000); // le solde brut lui-même reste inchangé ici
+  });
+
+  it('SCÉNARIO EXACT DU BUG, de bout en bout : une copie périmée légitime NE PEUT PLUS l\'emporter après fusion', () => {
+    const api = loadGame(['05-profile.js', '12-cloud.js']);
+    // Le vrai solde actuel (appareil de l'enfant, déjà migré correctement) :
+    const real = api.validateProfile({ name: 'Léo', stars: 1500, _totalStarsEarned: 1500, _totalStarsSpent: 0, _starsLedgerMigrated: true }, 'Léo');
+    // L'appareil de gestion (parent), copie périmée jamais migrée, avec un
+    // très ancien solde de 7000 (hérité par exemple de l'ancien bug de
+    // fusion par maximum, avant qu'il ne soit corrigé) :
+    const stale = api.validateProfile({ name: 'Léo', stars: 7000 }, 'Léo', { allowStarsMigration: false });
+    const merged = api._mergeCloudProfiles(real, stale);
+    // Avant le correctif v12.7.23 : stale aurait migré à earned=7000, et la
+    // fusion aurait donné max(1500,7000)=7000 — le bug exact signalé.
+    expect(merged._totalStarsEarned).toBe(1500);
+    expect(merged.stars).toBe(1500);
+  });
 });

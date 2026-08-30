@@ -104,7 +104,8 @@ const _HERO_TRAIT_ADV_KEYS = ['prim','primfr','primhist','mat','matfr','col','co
 function _HERO_TRAIT_MIGRATION_ADV(raw){
  return (typeof raw.lastAdventure === 'string' && _HERO_TRAIT_ADV_KEYS.includes(raw.lastAdventure)) ? raw.lastAdventure : 'prim';
 }
-function validateProfile(raw, defaultName){
+function validateProfile(raw, defaultName, opts){
+ opts = opts || {};
  if(!raw || typeof raw !== 'object') return null;
  const def = defProfile(defaultName);
  const out = {
@@ -525,8 +526,27 @@ function validateProfile(raw, defaultName){
  // s'exécuter qu'une seule fois : sans ce garde-fou, cette réinitialisation
  // tournerait à CHAQUE chargement et écraserait le suivi normal mis en
  // place depuis.
+ // v12.7.23 (BUG CRITIQUE, signalé par Cyril — hypothèse confirmée) : cette
+ // migration tournait aussi lors d'appels à validateProfile() sur un
+ // appareil de GESTION (Vue Parent) dont la copie locale du profil ciblé
+ // peut être PÉRIMÉE (ex. le parent gère depuis un appareil que l'enfant
+ // n'utilise pas pour jouer). Si cette copie périmée contenait un ancien
+ // solde plus élevé (potentiellement lui-même hérité de l'ancien bug de
+ // fusion par maximum), la migration le "légitimait" à tort comme nouveau
+ // plancher de _totalStarsEarned — qui, une fois poussé vers le cloud
+ // (parentRemoveFigurines → _pushOtherProfileToCloud, ou tout simple pull),
+ // se propageait ensuite à TOUS les appareils via la fusion (maxN, qui ne
+ // redescend jamais). Cause probable du solde passé de ~1500 à plus de
+ // 7000⭐ signalé par Cyril. Corrigé en restreignant cette migration au SEUL
+ // chargement du profil ACTIF sur son propre appareil (loadProfile(),
+ // 05-profile.js) — le contexte le plus fiable, où le solde reflète
+ // réellement l'usage réel de CET appareil. Tous les autres appels
+ // (parentRemoveFigurines, _pushOtherProfileToCloud, _importProfileFromServer)
+ // passent désormais {allowStarsMigration:false} : leur copie du profil
+ // n'a aucune raison d'être plus fiable que l'autre côté de la fusion, donc
+ // aucune ne doit pouvoir inventer un nouveau plancher.
  try{
-  if(!out._starsLedgerMigrated){
+  if(opts.allowStarsMigration !== false && !out._starsLedgerMigrated){
    out._totalStarsEarned = Math.max(out._totalStarsEarned, out.stars);
    out._totalStarsSpent = 0;
    out._starsLedgerMigrated = true;

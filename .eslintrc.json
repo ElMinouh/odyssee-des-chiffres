@@ -1687,6 +1687,8 @@
     "pGuideClose": "writable",
     "pNote": "writable",
     "parentRemoveFigurines": "writable",
+    "parentSetStars": "writable",
+    "parentStarsEdit": "writable",
     "particleRaf": "writable",
     "particles": "writable",
     "pendingTimers": "writable",

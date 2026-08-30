@@ -156,7 +156,7 @@ async function _pushOtherProfileToCloud(profileData){
    if(pulled.ok && pulled.profile){
     let imported = pulled.profile;
     if(typeof migrateProfile==='function') imported = migrateProfile(imported);
-    if(typeof validateProfile==='function') imported = validateProfile(imported, profileData.name);
+    if(typeof validateProfile==='function') imported = validateProfile(imported, profileData.name, {allowStarsMigration:false});
     merged = _mergeCloudProfiles(profileData, imported);
     merged.cloudCode = profileData.cloudCode;
     merged.cloudEnabled = profileData.cloudEnabled;
@@ -179,7 +179,7 @@ async function _pushOtherProfileToCloud(profileData){
    // et pousser : on la garde en local plutôt que d'insister.
    let imported = result.profile;
    if(typeof migrateProfile==='function') imported = migrateProfile(imported);
-   if(typeof validateProfile==='function') imported = validateProfile(imported, profileData.name);
+   if(typeof validateProfile==='function') imported = validateProfile(imported, profileData.name, {allowStarsMigration:false});
    localStorage.setItem('user_'+profileData.name, JSON.stringify(imported));
   }
   return true;
@@ -524,10 +524,15 @@ async function _importProfileFromServer(serverProfile){
  if(!serverProfile || !serverProfile.name) return false;
  if(serverProfile._chat && typeof chatMergeFromCloud==='function') chatMergeFromCloud(serverProfile.name, serverProfile._chat);
  // Migration + validation (réutilise les fonctions de 05-profile.js)
+ // v12.7.23 (bug critique corrigé) : {allowStarsMigration:false} — ce profil
+ // "imported" vient du serveur, pas de l'appareil qui joue réellement ; s'il
+ // n'a jamais été migré, on ne doit PAS inventer ici un nouveau plancher
+ // _totalStarsEarned à partir de son solde brut (potentiellement périmé).
+ // Voir validateProfile() (05-profile.js) pour le détail du bug.
  let imported = serverProfile;
  if(typeof migrateProfile==='function') imported = migrateProfile(imported);
  if(typeof validateProfile==='function'){
-  imported = validateProfile(imported, serverProfile.name);
+  imported = validateProfile(imported, serverProfile.name, {allowStarsMigration:false});
  }
  if(!imported) return false;
  // #2 : fusion non destructive au lieu d'un écrasement complet

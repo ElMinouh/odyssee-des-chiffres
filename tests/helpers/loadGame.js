@@ -1811,6 +1811,8 @@ globalThis.__api = {
   pGuideClose: (typeof pGuideClose==='function') ? pGuideClose : undefined,
   pNote: (typeof pNote==='function') ? pNote : undefined,
   parentRemoveFigurines: (typeof parentRemoveFigurines==='function') ? parentRemoveFigurines : undefined,
+  parentSetStars: (typeof parentSetStars==='function') ? parentSetStars : undefined,
+  parentStarsEdit: (typeof parentStarsEdit==='function') ? parentStarsEdit : undefined,
   particleRaf: (typeof particleRaf!=='undefined') ? particleRaf : undefined,
   particles: (typeof particles!=='undefined') ? particles : undefined,
   pendingTimers: (typeof pendingTimers!=='undefined') ? pendingTimers : undefined,
