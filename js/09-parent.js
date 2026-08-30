@@ -1802,7 +1802,14 @@ function renderOptResetOne(name){
  const en=encodeURIComponent(name);
  let stars=0,figs=0,lvl=1,zb=0;
  try{const p=JSON.parse(localStorage.getItem('user_'+name)||'null'); if(p){stars=p.stars||0;figs=(p.ownedFigurines||[]).length;lvl=p.xp?Math.floor(p.xp/100)+1:1;zb=(p.mapBossBeaten||[]).length;}}catch(e){}
- box.innerHTML=`<div style="font-size:.72em;color:#bdc3c7;margin-bottom:6px;">Niv.${lvl} · ${stars} étoiles · ${figs} figurines · ${zb}/23 zones</div>
+ // v12.7.24 (demande de Cyril) : le nombre d'étoiles devient directement
+ // modifiable ici — c'est CETTE fonction qui est réellement affichée à
+ // l'écran (liée au sélecteur de profil opt-profile), contrairement à
+ // renderResetZone() plus bas dans 10-figurines.js, jamais reliée à un
+ // élément réel du DOM (code mort, jamais vu par personne).
+ box.innerHTML=`<div style="font-size:.72em;color:#bdc3c7;margin-bottom:6px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">Niv.${lvl} · `
+  +`<input type="number" min="0" max="999999" value="${stars}" data-pname="${en}" data-old="${stars}" onchange="parentStarsEdit(this)" style="width:64px;padding:2px 5px;text-align:center;font-size:.95em;font-weight:700;border-radius:6px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.35);color:#f1c40f;">`
+  +` étoiles · ${figs} figurines · ${zb}/23 zones</div>
   <div style="display:flex;gap:6px;">
    <button data-pname="${en}" onclick="resetAdventure(decodeURIComponent(this.dataset.pname))" style="flex:1;background:#16a085;color:#fff;padding:8px 10px;font-size:.8em;font-weight:700;border-radius:8px;border:2px solid #1abc9c;cursor:pointer;">🗺 Reset Aventure</button>
    <button data-pname="${en}" onclick="resetProfile(decodeURIComponent(this.dataset.pname))" style="flex:1;background:var(--danger);color:#fff;padding:8px 10px;font-size:.8em;font-weight:700;border-radius:8px;border:2px solid #ff6b6b;cursor:pointer;">🗑 Reset Total</button>
