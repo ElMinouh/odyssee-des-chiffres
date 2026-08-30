@@ -135,6 +135,57 @@ function disableCloudSync(){
 }
 
 // ══════════════ UPLOAD DU PROFIL VERS LE CLOUD ══════════════
+// v12.7.22 (bug signalé par Cyril : suppression de figurine non propagée à
+// un autre appareil) : pushProfileToCloud() est câblée exclusivement sur P
+// (le profil ACTIF). Une action de la Vue Parent (ex. parentRemoveFigurines,
+// 10-figurines.js) peut cibler un enfant qui n'est PAS le profil actif sur
+// l'appareil utilisé par le parent — dans ce cas, pushProfileToCloud() ne
+// peut rien faire, et le changement restait bloqué en local jusqu'à ce que
+// ce profil redevienne actif sur CET appareil (ce qui peut ne jamais
+// arriver si le parent gère depuis un appareil que l'enfant n'utilise pas).
+// Cette fonction reproduit le même principe pull+fusion+push que
+// pushProfileToCloud(), mais pour un profil quelconque passé en paramètre,
+// sans jamais toucher à P ni aux fonctions d'UI (renderMap, updateMenuUI…)
+// qui n'ont pas de sens pour un profil qui n'est pas affiché à l'écran.
+async function _pushOtherProfileToCloud(profileData){
+ if(!profileData || !profileData.name || !profileData.cloudCode || !profileData.cloudEnabled) return false;
+ try{
+  let merged = profileData;
+  try{
+   const pulled = await pullProfileFromCloud(profileData.cloudCode);
+   if(pulled.ok && pulled.profile){
+    let imported = pulled.profile;
+    if(typeof migrateProfile==='function') imported = migrateProfile(imported);
+    if(typeof validateProfile==='function') imported = validateProfile(imported, profileData.name);
+    merged = _mergeCloudProfiles(profileData, imported);
+    merged.cloudCode = profileData.cloudCode;
+    merged.cloudEnabled = profileData.cloudEnabled;
+    localStorage.setItem('user_'+profileData.name, JSON.stringify(merged));
+   }
+  }catch(e){ _cloudLog('_pushOtherProfileToCloud: pull échoué (best-effort), poursuite avec push direct :', e); }
+
+  const code = encodeURIComponent(merged.cloudCode);
+  const payload = { ...merged };
+  delete payload._syncedAt;
+  const resp = await _cloudFetch(`${CLOUD_API}/profile/${code}`, {
+   method: 'POST',
+   headers: { 'Content-Type': 'application/json' },
+   body: JSON.stringify(payload),
+  });
+  if(!resp.ok) return false;
+  const result = await resp.json();
+  if(result.status === 'conflict_kept_server' && result.profile){
+   // Le serveur a une version plus avancée que celle qu'on vient de fusionner
+   // et pousser : on la garde en local plutôt que d'insister.
+   let imported = result.profile;
+   if(typeof migrateProfile==='function') imported = migrateProfile(imported);
+   if(typeof validateProfile==='function') imported = validateProfile(imported, profileData.name);
+   localStorage.setItem('user_'+profileData.name, JSON.stringify(imported));
+  }
+  return true;
+ }catch(e){ _cloudLog('_pushOtherProfileToCloud: échec :', e); return false; }
+}
+
 async function pushProfileToCloud(forceFirst=false){
  if(!P || !P.cloudCode) return false;
  if(!forceFirst && !P.cloudEnabled) return false;

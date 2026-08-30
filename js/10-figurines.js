@@ -178,11 +178,15 @@ function parentRemoveFigurines(playerName, figIds){
    P.ownedFigurines = data.ownedFigurines;
    P.blockedFigurinesAt = data.blockedFigurinesAt;
    if(typeof saveProfileNow==='function') saveProfileNow();
-   // Propagation immédiate si ce profil a le cloud activé — sinon la
-   // synchronisation se fera normalement au prochain lancement du jeu par
-   // l'enfant concerné (comportement déjà standard pour toute autre
-   // modification de profil).
    if(typeof pushProfileToCloud==='function') pushProfileToCloud();
+  } else if(data.cloudEnabled && data.cloudCode){
+   // v12.7.22 (bug signalé par Cyril) : le profil ciblé N'EST PAS le profil
+   // actif sur cet appareil — pushProfileToCloud() ne peut agir que sur P.
+   // _pushOtherProfileToCloud() (12-cloud.js) propage quand même le retrait
+   // immédiatement, sans attendre que ce profil redevienne actif ici (ce qui
+   // pouvait ne jamais arriver si le parent gère depuis un appareil que
+   // l'enfant n'utilise pas — cause du bug signalé).
+   if(typeof _pushOtherProfileToCloud==='function') _pushOtherProfileToCloud(data);
   }
   return {ok:true, removed:toRemove.length};
  }catch(e){ console.warn('parentRemoveFigurines failed', e); return {ok:false, removed:0}; }

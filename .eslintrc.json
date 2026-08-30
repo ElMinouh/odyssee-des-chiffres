@@ -1239,6 +1239,7 @@
     "_progSet": "writable",
     "_progUpdate": "writable",
     "_progWeakType": "writable",
+    "_pushOtherProfileToCloud": "writable",
     "_questEntries": "writable",
     "_questUnlockedCache": "writable",
     "_questVocab": "writable",

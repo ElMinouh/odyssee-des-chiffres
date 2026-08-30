@@ -176,6 +176,7 @@ globalThis.__api = {
   setShowConfirm: (fn) => { globalThis.showConfirm = fn; },
   setRenderMap: (fn) => { globalThis.renderMap = fn; },
   setPullProfileFromCloud: (fn) => { globalThis.pullProfileFromCloud = fn; },
+  setPushOtherProfileToCloud: (fn) => { globalThis._pushOtherProfileToCloud = fn; },
   // ─── BLOC AUTO-GÉNÉRÉ (ne pas éditer à la main — voir scripts/gen-test-api.mjs) ───
   $: (typeof $!=='undefined') ? $ : undefined,
   ADAPT_MASTERY: (typeof ADAPT_MASTERY!=='undefined') ? ADAPT_MASTERY : undefined,
@@ -1362,6 +1363,7 @@ globalThis.__api = {
   _progSet: (typeof _progSet==='function') ? _progSet : undefined,
   _progUpdate: (typeof _progUpdate==='function') ? _progUpdate : undefined,
   _progWeakType: (typeof _progWeakType==='function') ? _progWeakType : undefined,
+  _pushOtherProfileToCloud: (typeof _pushOtherProfileToCloud==='function') ? _pushOtherProfileToCloud : undefined,
   _questEntries: (typeof _questEntries==='function') ? _questEntries : undefined,
   _questUnlockedCache: (typeof _questUnlockedCache!=='undefined') ? _questUnlockedCache : undefined,
   _questVocab: (typeof _questVocab==='function') ? _questVocab : undefined,

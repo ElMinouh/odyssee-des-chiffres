@@ -177,6 +177,82 @@ describe('parentRemoveFigurines() — suppression réelle depuis la Vue Parent (
     expect(api.parentRemoveFigurines('Léo', [])).toEqual({ ok: false, removed: 0 });
     expect(api.parentRemoveFigurines('ProfilInexistant', ['db01'])).toEqual({ ok: false, removed: 0 });
   });
+
+  // v12.7.22 — Bug signalé par Cyril : une figurine retirée depuis un
+  // appareil où l'enfant n'était PAS le profil actif ne se propageait
+  // jamais aux autres appareils, car pushProfileToCloud() n'agit que sur P.
+  describe('propagation cloud immédiate même quand le profil ciblé n\'est PAS le profil actif (12-cloud.js)', () => {
+    it('appelle _pushOtherProfileToCloud() avec les données mises à jour si le profil a le cloud activé', () => {
+      const api = loadGame(FIG_FILES);
+      const activeProfile = api.defProfile('Zoé'); // un AUTRE profil est actif sur cet appareil
+      api.setP(activeProfile);
+
+      const target = api.defProfile('Léo');
+      target.ownedFigurines = ['db01'];
+      target.cloudEnabled = true;
+      target.cloudCode = 'ABCD1234';
+      api._ls.setItem('user_Léo', JSON.stringify(target));
+
+      let calledWith = null;
+      api.setPushOtherProfileToCloud(async (data) => { calledWith = data; return true; });
+
+      api.parentRemoveFigurines('Léo', ['db01']);
+
+      expect(calledWith).not.toBeNull();
+      expect(calledWith.name).toBe('Léo');
+      expect(calledWith.ownedFigurines).toEqual([]);
+      expect(calledWith.blockedFigurinesAt.db01).toBeTypeOf('number');
+      // Le profil actif (Zoé) n'a pas bougé
+      expect(api.getP().name).toBe('Zoé');
+    });
+
+    it('n\'appelle PAS _pushOtherProfileToCloud() si le profil ciblé n\'a pas le cloud activé', () => {
+      const api = loadGame(FIG_FILES);
+      const activeProfile = api.defProfile('Zoé');
+      api.setP(activeProfile);
+
+      const target = api.defProfile('Léo');
+      target.ownedFigurines = ['db01'];
+      target.cloudEnabled = false;
+      api._ls.setItem('user_Léo', JSON.stringify(target));
+
+      let called = false;
+      api.setPushOtherProfileToCloud(async () => { called = true; });
+
+      api.parentRemoveFigurines('Léo', ['db01']);
+
+      expect(called).toBe(false);
+      // Le retrait local, lui, a bien eu lieu
+      const stored = JSON.parse(api._ls.getItem('user_Léo'));
+      expect(stored.ownedFigurines).toEqual([]);
+    });
+
+    it('_pushOtherProfileToCloud() récupère et fusionne le profil serveur AVANT de pousser, sans toucher à P (profil actif)', async () => {
+      const api = loadGame(['01-core.js', '05-profile.js', '12-cloud.js']);
+      api.setP({ name: 'Zoé', xp: 10 }); // profil actif totalement différent
+      api.setPullProfileFromCloud(async () => ({
+        ok: true,
+        profile: { name: 'Léo', cloudCode: 'ABCD1234', cloudEnabled: true, ownedFigurines: ['sw01'] },
+      }));
+
+      const target = { name: 'Léo', cloudCode: 'ABCD1234', cloudEnabled: true, ownedFigurines: [] };
+      await api._pushOtherProfileToCloud(target);
+
+      // Le push réseau final échoue forcément (pas de vrai réseau dans ce
+      // bac à sable) — ce qui compte : la fusion a eu lieu et a été
+      // enregistrée localement pour Léo, SANS toucher au profil actif (Zoé).
+      const stored = JSON.parse(api._ls.getItem('user_Léo'));
+      expect(stored.ownedFigurines).toContain('sw01');
+      expect(api.getP().name).toBe('Zoé'); // profil actif intact
+      expect(api.getP().xp).toBe(10);
+    });
+
+    it('_pushOtherProfileToCloud() ne plante pas si le profil n\'a pas de code cloud', async () => {
+      const api = loadGame(['01-core.js', '05-profile.js', '12-cloud.js']);
+      const result = await api._pushOtherProfileToCloud({ name: 'Léo' });
+      expect(result).toBe(false);
+    });
+  });
 });
 
 describe('Une figurine retirée peut être rachetée/regagnée normalement ensuite (10-figurines.js, 06c-seasonal.js)', () => {
