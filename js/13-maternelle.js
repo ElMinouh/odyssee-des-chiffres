@@ -270,9 +270,14 @@ function _matRenderQ(q){
  // toute la Petite Section), quel que soit le lieu réellement joué, ce qui
  // contredisait le nom affiché sur la carte et la fiche de zone (signalé
  // par Cyril). Hors Odyssée (mode solo classique) : comportement inchangé.
+ // v12.7.27 (bug trouvé via les captures de Cyril) : le dénominateur "/6"
+ // était écrit EN DUR, alors que le nombre réel de questions d'une étape
+ // varie de 4 à 6 selon son type (monstre/énigme/mini-boss/boss) — même
+ // formule de repli que _qTarget (07-game.js) pour rester cohérent.
  const qt = $('quest-title');
  const _zoneLabel = (typeof GM!=='undefined' && GM.mapZone) ? GM.mapZone.label : w.world;
- if(qt) qt.innerHTML = `⭐ ${GS.qCount}/6 <span class="mode-badge m-mat">${_zoneLabel}</span>`;
+ const _matQTarget = (GS.questionsTarget && GS.questionsTarget>0) ? GS.questionsTarget : 6;
+ if(qt) qt.innerHTML = `⭐ ${GS.qCount}/${_matQTarget} <span class="mode-badge m-mat">${_zoneLabel}</span>`;
 
  // Cacher tout ce qui relève du « combat » (pas de pression en maternelle)
  ['timer-bar-container','monster-hp-wrap','power-bar','combat-bar'].forEach(id=>{
