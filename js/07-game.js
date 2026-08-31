@@ -729,11 +729,16 @@ function renderQ(){
  requestAnimationFrame(()=>{const r=ma.getBoundingClientRect();_monsterCenter={x:r.left+r.width/2,y:r.top+r.height/2};});
  updateMonsterHP();
  let ttl='';
+ // v12.7.27 (bug trouvé via les captures de Cyril, même défaut que
+ // _matRenderQ en 13-maternelle.js) : le dénominateur était écrit EN DUR à
+ // 6, alors que le nombre réel de questions d'une étape varie de 4 à 6
+ // selon son type — même formule de repli que _qTarget dans nextTurn().
+ const _renderQTarget = (GS.questionsTarget && GS.questionsTarget>0) ? GS.questionsTarget : 6;
  if(GM.mode2==='survie')ttl=`💀 #${GS.qCount}`;
  else if(GS.isBoss)ttl=GM.mapZone?`⚔️ Boss : ${GM.mapZone.bossName}`:'👹 BOSS';
  else if(GS.isGolden)ttl='✨ DORÉ';
  else if(isRevision)ttl='📖 Révision';
- else ttl=`👾 ${GS.qCount}/6`;
+ else ttl=`👾 ${GS.qCount}/${_renderQTarget}`;
  $('quest-title').innerHTML=`${ttl} <span class="mode-badge m-${GM.mapZone?'map':GM.mode2}">${GM.mapZone?'carte':GM.mode2}</span>`;
  $('feedback').innerText='';
  // Lecture audio de la question. Loto sonore : on lit la CONSIGNE puis on joue le
@@ -1288,7 +1293,23 @@ function _attributeCombatHit(victim){
 // ═══════════════════════════════════════════════════════
 // FIN DE PARTIE
 // ═══════════════════════════════════════════════════════
-function computeStars(score,won){if(!won)return 0;if(score>=15)return 3;if(score>=8)return 2;return 1;}
+// v12.7.26 (demande de Cyril) : ancien calcul basé sur un score brut à seuils
+// fixes ("score>=15"/"score>=8") — ne tenait pas compte du niveau scolaire.
+// Un enfant de maternelle (1 pt/bonne réponse) ne pouvait mathématiquement
+// jamais atteindre 15 points, donc jamais 3 étoiles, même à 100% de
+// réussite ; un collégien (jusqu'à 7-8 pts/réponse) les dépassait sans
+// difficulté. La note reflétait le niveau, pas la performance réelle.
+// Désormais basée sur le taux de réussite (nombre d'erreurs), identique à
+// tous les niveaux : 0 faute = 3 étoiles, jusqu'à ~30% d'erreurs = 2,
+// au-delà = 1 (victoire quand même) ; 0 dans tous les cas si défaite.
+function computeStars(score,won){
+ if(!won)return 0;
+ const errors = (typeof GS!=='undefined' && GS) ? (GS.errInGame||0) : 0;
+ const answered = (typeof GS!=='undefined' && GS) ? (GS.qCount||0) : 0;
+ if(errors===0) return 3;
+ if(answered>0 && errors<=Math.ceil(answered*0.3)) return 2;
+ return 1;
+}
 function renderEndStars(n){
  $('end-stars-visual').innerHTML=['0','1','2'].map(i=>`<span id="es${i}" style="${+i<n?'':'opacity:.3'}">${+i<n?'⭐':'☆'}</span>`).join('');
  for(let i=0;i<n;i++)setTimeout(()=>{const s=$('es'+i);if(s){s.classList.add('star-earned');beep(523+i*150,'sine',.2,.12);}},i*350+200);
