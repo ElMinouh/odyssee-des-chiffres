@@ -583,7 +583,18 @@ function nextTurn(){
  GS.bossTypeQ={};
  GS.isGolden=Math.random()<.15;GS.frozen=false;
  _timerTauntFired=false;
- GS.monsterMaxHP=GS.isBoss?HP_LVL[GM.level]+2:HP_LVL[GM.level];GS.monsterHP=GS.monsterMaxHP;
+ // v12.7.28 (BUG TROUVÉ via les captures de Cyril) : les PV du boss
+ // suivaient la formule générique HP_LVL[niveau]+2, sans aucun rapport avec
+ // le nombre de questions réellement configuré sur l'étape (GS.questionsTarget,
+ // 4 à 6 selon les lieux). Or atteindre 0 PV sur un boss appelle directement
+ // playCongrats() (fin du combat, ligne ~992 plus bas) — SANS jamais
+ // vérifier GS.qCount/_qTarget. Pour les niveaux PS/MS/GS/CP (HP_LVL=1),
+ // ça donnait un boss à seulement 3 PV, donc vaincu après 3 bonnes réponses
+ // — même quand la zone prévoyait 6 questions pour ce boss. En Odyssée
+ // (étape de zone), GS.questionsTarget fait désormais foi pour les PV du
+ // boss, pour que le combat dure exactement le nombre de questions prévu
+ // par le lieu. Hors zone (mode classique/legacy), formule inchangée.
+ GS.monsterMaxHP=GS.isBoss?(GS.questionsTarget||(HP_LVL[GM.level]+2)):HP_LVL[GM.level];GS.monsterHP=GS.monsterMaxHP;
  GS.bossEnraged=false;  // v8.7.50 (O4) : reset de la phase d'enrage à chaque combat
  GS.bossShieldActive=false; GS.bossShieldHits=0; GS.bossRegenCount=0;  // v8.7.54 (O4.2c)
  GS.bossFury=false;  // v8.7.56 (O4.4) : 3e phase des gros boss
