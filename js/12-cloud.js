@@ -329,6 +329,9 @@ function _mergeCloudProfiles(local, imported){
   // ajouté dès sa création. Concerné par un reset d'Odyssée (resetAdventure(),
   // 10-figurines.js) au même titre que _epilogueBonusCredited ci-dessus.
   'islandVictoryCreditedByAdv',
+  // v12.7.29 : dernier jour de visite par Odyssée (fenêtre de récap) — même
+  // vigilance, ajouté dès sa création (règle ADR-111 pt.3).
+  'lastAdvVisitDayByAdv',
  ];
  if(resetWinner === 'local'){
   ODYSSEY_PROGRESS_FIELDS.forEach(f => { out[f] = local[f]; });
@@ -352,7 +355,7 @@ function _mergeCloudProfiles(local, imported){
   ['talismanRevealShown','rainbowRevealShown','bookRevealShown','badgeRevealShown','armorRevealShown','libraryRevealShown','histLibraryRevealShown']
    .forEach(f => { out[f] = !!(local[f] || imported[f]); });
   ['majorChoiceByAdv','twistLinesUsedByAdv','lastTwistLineByAdv','journalEntriesByAdv',
-   'heroTraitApprocheByAdv','heroTraitMoteurByAdv','heroTraitStyleByAdv']
+   'heroTraitApprocheByAdv','heroTraitMoteurByAdv','heroTraitStyleByAdv','lastAdvVisitDayByAdv']
    .forEach(f => { out[f] = Object.assign({}, imported[f]||{}, local[f]||{}); });
   // v12.5.0 (ADR-112) : loreFoundIdsByAdv est une liste cumulative "trouvé"
   // (comme storySeen), mais scindée par advKey — chaque clé doit donc être

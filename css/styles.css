@@ -3699,6 +3699,69 @@ body.no-parallax::after{animation:none !important;opacity:.3;}
  .advlog-overlay, .advlog-modal, .advlog-bar-fill{ transition:none; }
 }
 
+/* v12.7.29 — Récap "Précédemment dans..." (fenêtre de bienvenue à l'entrée
+   dans une Odyssée après 1 jour ou plus sans y avoir joué). Même famille
+   visuelle que .advlog-* (modale dorée du Carnet), avec ses propres classes
+   pour rester indépendante de tout futur changement du Carnet. */
+.recap-overlay{
+ position:fixed; inset:0; z-index:135;
+ display:flex; align-items:center; justify-content:center;
+ background:rgba(0,0,0,.72); padding:var(--space-4);
+ opacity:0; transition:opacity var(--dur-base) ease;
+ backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);
+}
+.recap-overlay.recap-show{ opacity:1; }
+.recap-modal{
+ position:relative; width:100%; max-width:440px; max-height:88vh; overflow-y:auto;
+ background:linear-gradient(165deg,#1e2a44 0%,#16203a 60%,#101830 100%);
+ border:2.5px solid #f1c40f; border-radius:var(--radius-lg);
+ box-shadow:var(--shadow-modal), 0 0 30px rgba(241,196,15,.25);
+ padding:var(--space-5); text-align:left;
+ transform:translateY(20px) scale(.96);
+ transition:transform var(--dur-base) cubic-bezier(.34,1.56,.64,1);
+ -webkit-overflow-scrolling:touch;
+}
+.recap-overlay.recap-show .recap-modal{ transform:translateY(0) scale(1); }
+.recap-eyebrow{
+ font-size:.72em; letter-spacing:.12em; text-transform:uppercase; font-weight:800;
+ color:#f1c40f; text-align:center; margin-bottom:2px;
+}
+.recap-title-row{ display:flex; align-items:center; justify-content:center; gap:var(--space-3); margin:0 0 var(--space-4); }
+.recap-title{
+ font-family:'Cinzel Decorative','Cinzel',Georgia,serif; font-size:1.3em;
+ color:#fff; text-shadow:0 2px 4px rgba(0,0,0,.5); text-align:center;
+}
+.recap-section-title{
+ font-family:'Cinzel Decorative','Cinzel',Georgia,serif; font-size:.95em; font-weight:700;
+ color:#f1c40f; margin:var(--space-4) 0 var(--space-2);
+ padding-bottom:4px; border-bottom:1px solid rgba(241,196,15,.3);
+}
+.recap-section-title::before,.recap-section-title::after{ content:'❖'; font-size:.75em; opacity:.7; color:#f1c40f; }
+.recap-section-title::before{ margin-right:8px; }
+.recap-section-title::after{ margin-left:8px; }
+.recap-pitch{ font-size:.9em; line-height:1.6; color:#ecf0f1; background:rgba(255,255,255,.05); border-radius:var(--radius-md); padding:var(--space-3); }
+.recap-pitch p{ margin:0 0 var(--space-2); }
+.recap-pitch p:last-child{ margin-bottom:0; }
+.recap-pitch b{ color:#f1c40f; }
+.recap-pitch .recap-suite{ font-style:italic; color:#f4e3ad; }
+.recap-bar-track{ position:relative; height:14px; background:rgba(0,0,0,.4); border-radius:10px; overflow:hidden; box-shadow:inset 0 1px 3px rgba(0,0,0,.5); margin-top:var(--space-2); }
+.recap-bar-fill{ height:100%; border-radius:10px; background:linear-gradient(90deg,#f1c40f,#fff); transition:width .8s cubic-bezier(.22,1,.36,1); }
+.recap-bar-label{ display:flex; justify-content:space-between; font-size:.78em; color:#bdc3c7; margin-top:4px; }
+.recap-actions{ margin-top:var(--space-5); display:flex; flex-direction:column; gap:var(--space-2); }
+button.recap-btn-primary{
+ background:var(--accent); border:none; padding:var(--space-3) var(--space-4); color:#fff;
+ border-radius:var(--radius-sm); font-size:1em; font-family:'Nunito',sans-serif; font-weight:700;
+ box-shadow:0 4px 0 rgba(0,0,0,.3); cursor:pointer; width:100%;
+}
+button.recap-btn-secondary{
+ background:rgba(255,255,255,.1); border:1.5px solid rgba(255,255,255,.25); padding:var(--space-3) var(--space-4);
+ color:#ecf0f1; border-radius:var(--radius-sm); font-size:.92em; font-family:'Nunito',sans-serif; font-weight:700;
+ cursor:pointer; width:100%;
+}
+@media (prefers-reduced-motion:reduce){
+ .recap-overlay, .recap-modal, .recap-bar-fill{ transition:none; }
+}
+
 /* ═══ v8.7.50 (O4) : Phase d'enrage des boss ═══ */
 /* Monstre enragé : teinte rouge + grossissement pulsant menaçant */
 .monster-enraged{
@@ -4632,7 +4695,7 @@ html[data-cycle="college"] .nav-icon-college{ display:inline-block; }
    AUCUN effet au-dessus de 1024px (PC) — le rendu validé reste identique. */
 @media (max-width:1024px){
  #gc, #map-header, #hero-evolution-overlay, .advlog-overlay, .appearance-toggle,
- .archipel-shop-overlay, .archipel-zoom-overlay, .story-overlay, .map-drawer,
+ .archipel-shop-overlay, .archipel-zoom-overlay, .story-overlay, .map-drawer, .recap-overlay,
  .theme-banquise, .theme-chateau, .theme-nuit, .theme-ocean, .theme-sakura, .theme-volcan{
   backdrop-filter:none !important;
   -webkit-backdrop-filter:none !important;
@@ -4642,6 +4705,7 @@ html[data-cycle="college"] .nav-icon-college{ display:inline-block; }
  .story-overlay{ background:rgba(8,10,20,.92) !important; }
  .archipel-zoom-overlay{ background:rgba(10,5,30,.90) !important; }
  .advlog-overlay{ background:rgba(8,10,20,.92) !important; }
+ .recap-overlay{ background:rgba(8,10,20,.92) !important; }
  .archipel-shop-overlay{ background:rgba(10,5,30,.90) !important; }
  /* Isole les recalculs de mise en page des overlays pour limiter les reflows */
  .archipel-zoom-content, .advlog-content, .story-parchment{ contain:layout style; }

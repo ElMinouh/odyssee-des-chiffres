@@ -2027,6 +2027,9 @@ function resetAdventure(playerName){
       data.heroTraitStyleByAdv = {};
       data.journalEntriesByAdv = {};
       data.lastTwistLineByAdv = {};
+      // v12.7.29 : le récap "Précédemment dans..." doit pouvoir se réafficher
+      // dès le prochain retour, comme si l'Odyssée n'avait jamais été visitée.
+      data.lastAdvVisitDayByAdv = {};
       data.talismanRevealShown = false;
       data.rainbowRevealShown = false;
       data.bookRevealShown = false;

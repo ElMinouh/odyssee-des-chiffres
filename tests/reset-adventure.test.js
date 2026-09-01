@@ -42,6 +42,8 @@ describe('resetAdventure() — remise à zéro complète (ADR-51)', () => {
       heroTraitApprocheByAdv: { mat: 'brave', col: 'malin' },
       heroTraitMoteurByAdv: { mat: 'protecteur' },
       heroTraitStyleByAdv: { mat: 'determine' },
+      // v12.7.29 : récap "Précédemment dans..." — même vigilance ADR-52.
+      lastAdvVisitDayByAdv: { mat: '2026-8-31', col: '2026-8-30' },
     };
   }
 
@@ -77,6 +79,7 @@ describe('resetAdventure() — remise à zéro complète (ADR-51)', () => {
     expect(after.heroTraitApprocheByAdv).toEqual({});
     expect(after.heroTraitMoteurByAdv).toEqual({});
     expect(after.heroTraitStyleByAdv).toEqual({});
+    expect(after.lastAdvVisitDayByAdv).toEqual({});
 
     // Aucun des ids Odyssée connus ne doit survivre au reset...
     for (const id of knownIds) {

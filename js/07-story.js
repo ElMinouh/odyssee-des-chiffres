@@ -4485,13 +4485,200 @@ function _advlogJournalHtml(){
 }
 
 // ═══════════════════════════════════════════════════════
+// v12.7.29 — RÉCAP "PRÉCÉDEMMENT DANS..." (validé avec Cyril : maquette dédiée,
+// contenu "complet" avec contexte général de l'Odyssée, déclenché seulement si
+// le joueur n'y a pas rejoué depuis 1 jour ou plus). Fusionne dans un texte
+// littéraire ce que le Carnet affiche déjà de façon plus factuelle (gardiens
+// vaincus, lieu actuel, dernier rebondissement) plutôt que de dupliquer ces
+// informations dans des encarts séparés — cf. itérations de maquette.
+// Un texte de contexte par Odyssée (pitch royaume/méchant/enjeu) + un petit
+// lexique (nom de l'adversaire générique, singulier/pluriel, phrase "zéro")
+// suffisent à générer la partie dynamique sans réécrire une phrase par valeur
+// possible de compteur.
+const _ADV_RECAP = {
+ mat: { emoji:'🌈',
+  pitch:"<b>{hero}</b>, le Pays des Couleurs a perdu ses teintes le jour où <b>{villain}</b> a chassé l'arc-en-ciel du ciel. Depuis, tu parcours le royaume pour lui rendre, une à une, ses sept couleurs perdues.",
+  noun:'gardien du ciel', nounPlural:'gardiens du ciel', zero:"Aucun gardien du ciel n'a encore cédé devant toi" },
+ matfr: { emoji:'📖',
+  pitch:"<b>{hero}</b>, le Pays des Mots s'est peu à peu tu, depuis que <b>{villain}</b> en a effacé les histoires. Page après page, tu redonnes voix à ce royaume muet.",
+  noun:'gardien du silence', nounPlural:'gardiens du silence', zero:"Aucun gardien du silence n'a encore renoncé face à toi" },
+ prim: { emoji:'🔢',
+  pitch:"<b>{hero}</b>, <b>{villain}</b> a jeté le désordre sur {kingdom}, corrompant au passage ses plus fidèles gardiens. Ton odyssée, c'est de traverser le royaume pour y ramener l'ordre, calcul après calcul.",
+  noun:'gardien corrompu', nounPlural:'gardiens corrompus', zero:"Aucun gardien corrompu n'a encore retrouvé la raison grâce à toi" },
+ primfr: { emoji:'✒️',
+  pitch:"<b>{hero}</b>, alias Verbe, <b>{villain}</b> a volé les noms et les mots de {kingdom}, plongeant la ville dans la confusion. Ton odyssée, c'est de parcourir la ville pour lui rendre chaque mot volé.",
+  noun:'adversaire', nounPlural:'adversaires', zero:"Aucun adversaire n'a encore réussi à t'arrêter" },
+ primhist: { emoji:'⏳',
+  pitch:"<b>{hero}</b>, <b>{villain}</b> traque à travers le temps un secret que ton grand-père Isidore a caché dans chaque époque. Ton odyssée te mène d'ère en ère pour recueillir, avant lui, chacun de ces fragments d'Histoire.",
+  noun:'défi du temps', nounPlural:'défis du temps', zero:"Aucun défi du temps n'a encore eu raison de toi" },
+ col: { emoji:'⭐',
+  pitch:"<b>{hero}</b>, <b>{villain}</b> répand l'oubli sur {kingdom}, effaçant peu à peu ses étoiles et ses souvenirs. En Forgeron des Étoiles, tu parcours le royaume pour en raviver chaque lumière.",
+  noun:"gardien de l'oubli", nounPlural:"gardiens de l'oubli", zero:"Aucun gardien de l'oubli n'a encore cédé devant toi" },
+ colfr: { emoji:'📚',
+  pitch:"<b>{hero}</b>, <b>{villain}</b> impose à {kingdom} un silence morne et sans nuances, où plus personne n'ose écrire ni raconter. Depuis la Bibliothèque infinie, tu pars y rallumer, chapitre après chapitre, le goût des mots.",
+  noun:'censeur de Monotonia', nounPlural:'censeurs de Monotonia', zero:"Aucun censeur de Monotonia n'a encore réussi à te faire taire" },
+};
+// Un profil peut avoir une Odyssée active non listée ci-dessus (défaut de
+// données, ancien profil...) : repli sur 'prim', jamais de plantage/texte vide.
+function _advRecapConfig(advKey){ return _ADV_RECAP[advKey] || _ADV_RECAP.prim; }
+
+// Construit le texte littéraire (pitch + situation actuelle) et la valeur de
+// progression globale à afficher. Ne recalcule rien que _advRecapText()
+// n'ait déjà sous la main ailleurs (mêmes sources que le Carnet) : aucune
+// nouvelle donnée de progression n'est introduite par cette fonctionnalité.
+function _advRecapText(advKey){
+ const cfg = _advRecapConfig(advKey);
+ const zones = (typeof MAP_ZONES!=='undefined' && Array.isArray(MAP_ZONES)) ? MAP_ZONES : [];
+ const beaten = (typeof P!=='undefined' && P && P.mapBossBeaten) || [];
+ const count = zones.filter(z => beaten.includes(z.id)).length;
+ const zoneId = (typeof _getAvatarZone==='function') ? _getAvatarZone() : null;
+ const zone = zones.find(z => z.id === zoneId);
+ const zoneLabel = zone ? zone.label : '';
+ let bossClause;
+ if(count <= 0) bossClause = cfg.zero;
+ else if(count === 1) bossClause = `Tu as déjà vaincu un ${cfg.noun}`;
+ else bossClause = `Tu as déjà vaincu ${count} ${cfg.nounPlural}`;
+ const situation = zoneLabel ? `${bossClause}, et tes pas t'ont mené jusqu'à <b>${zoneLabel}</b>.` : `${bossClause}.`;
+ const twist = (typeof P!=='undefined' && P && P.lastTwistLineByAdv) ? (P.lastTwistLineByAdv[advKey] || '') : '';
+ const totalZones = zones.length;
+ const globalPct = totalZones > 0 ? Math.round(((count + 1) / (totalZones + 1)) * 100) : 0;
+ const sub = (typeof _storyText==='function') ? _storyText : (s=>s);
+ return {
+  emoji: cfg.emoji,
+  pitch: sub(cfg.pitch),
+  situation: sub(situation),
+  twist: twist,
+  globalPct,
+ };
+}
+
+// Lecture à voix haute du récap (bouton ▶, réutilise le style .story-audio-btn
+// déjà utilisé pour le Livre). Implémentation autonome (pas _speakUtterance,
+// 01-core.js) pour disposer de l'événement onend et remettre le bouton dans
+// son état visuel normal une fois la lecture terminée — _speakUtterance ne
+// l'expose pas à l'appelant. Se déclenche même si le réglage général de voix
+// est désactivé : un clic explicite sur ▶ vaut demande explicite (même
+// logique que repeatQuestion(), 01-core.js).
+let _recapReading = false;
+function _recapToggleSpeak(text, btn){
+ try{
+  if(!window.speechSynthesis) return;
+  if(_recapReading){
+   window.speechSynthesis.cancel();
+   _recapReading = false;
+   if(btn) btn.classList.remove('reading');
+   if(typeof _musicDuck==='function') _musicDuck(false);
+   return;
+  }
+  window.speechSynthesis.cancel();
+  const clean = (typeof _humanizeForSpeech==='function') ? _humanizeForSpeech(text) : text;
+  const u = new SpeechSynthesisUtterance(clean);
+  u.lang = 'fr-FR'; u.rate = 0.95;
+  if(typeof _frVoice!=='undefined' && _frVoice) u.voice = _frVoice;
+  if(typeof _musicDuck==='function') _musicDuck(true);
+  _recapReading = true;
+  if(btn) btn.classList.add('reading');
+  u.onend = u.onerror = function(){
+   _recapReading = false;
+   if(btn) btn.classList.remove('reading');
+   if(typeof _musicDuck==='function') _musicDuck(false);
+  };
+  window.speechSynthesis.speak(u);
+ }catch(e){ _recapReading = false; if(btn) btn.classList.remove('reading'); }
+}
+
+let _recapDoneCb = null;
+function _openOdysseyRecap(advKey, cb){
+ _recapDoneCb = (typeof cb === 'function') ? cb : null;
+ const meta = (typeof _odysseyDisplayMeta==='function') ? _odysseyDisplayMeta() : { title:'' };
+ const r = _advRecapText(advKey);
+ const twistHtml = r.twist ? ` <span class="recap-suite">${r.twist}</span>` : '';
+ const overlay = document.createElement('div');
+ overlay.className = 'recap-overlay';
+ overlay.innerHTML = `
+  <div class="recap-modal">
+   <button class="advlog-close" onclick="closeOdysseyRecap()" aria-label="Fermer"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+   <div class="recap-eyebrow">Précédemment dans ton aventure...</div>
+   <div class="recap-title-row">
+    <div class="recap-title">${r.emoji} ${meta.title || ''}</div>
+    <button class="story-audio-btn snarr-play" id="recap-audio-btn" title="Écouter le résumé" aria-label="Écouter le résumé">▶</button>
+   </div>
+   <div class="recap-pitch">
+    <p>${r.pitch}</p>
+    <p>${r.situation}${twistHtml}</p>
+   </div>
+   <div class="recap-section-title">Où tu en es</div>
+   <div class="recap-bar-track"><div class="recap-bar-fill" style="width:${r.globalPct}%"></div></div>
+   <div class="recap-bar-label"><span>Progression globale</span><span>${r.globalPct}%</span></div>
+   <div class="recap-actions">
+    <button class="recap-btn-primary" onclick="closeOdysseyRecap()">Continuer l'aventure</button>
+    <button class="recap-btn-secondary" onclick="_closeOdysseyRecapThenOpenLog()">📖 Voir mon carnet complet</button>
+   </div>
+  </div>
+ `;
+ document.body.appendChild(overlay);
+ overlay.addEventListener('click', (ev) => { if(ev.target === overlay) closeOdysseyRecap(); });
+ const audioBtn = overlay.querySelector('#recap-audio-btn');
+ if(audioBtn) audioBtn.onclick = () => {
+  const full = [r.pitch, r.situation, r.twist].filter(Boolean).join(' ').replace(/<[^>]+>/g, '');
+  _recapToggleSpeak(full, audioBtn);
+ };
+ requestAnimationFrame(() => overlay.classList.add('recap-show'));
+ if(typeof trapFocus==='function') overlay._releaseTrap = trapFocus(overlay);
+}
+function closeOdysseyRecap(){
+ const overlay = document.querySelector('.recap-overlay');
+ if(!overlay){ const cb=_recapDoneCb; _recapDoneCb=null; if(cb) cb(); return; }
+ try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
+ _recapReading = false;
+ if(overlay._releaseTrap){ overlay._releaseTrap(); delete overlay._releaseTrap; }
+ overlay.classList.remove('recap-show');
+ setTimeout(() => overlay.remove(), 300);
+ const cb = _recapDoneCb; _recapDoneCb = null;
+ if(cb) cb();
+}
+// Bouton "Voir mon carnet complet" : ferme le récap puis enchaîne sur le
+// Carnet existant (même délai que les autres transitions modale→modale du
+// module, ex. closeAdventureLog()+_openBossCard() un peu plus haut) plutôt
+// que de dupliquer son contenu dans cette fenêtre.
+function _closeOdysseyRecapThenOpenLog(){
+ closeOdysseyRecap();
+ setTimeout(() => { if(typeof openAdventureLog==='function') openAdventureLog(); }, 320);
+}
+
+// Point d'entrée, appelé depuis openMap() (07-map.js) à chaque ouverture de
+// la carte — AVANT _maybeShowStory(), pour ne jamais superposer deux
+// modales. Ne s'affiche que si (a) le joueur a déjà une réelle progression
+// sur cette Odyssée (sinon rien à "précédemment" raconter) et (b) le dernier
+// passage remonte à un autre jour que today (todayKey(), 01-core.js) — pas
+// de règle de péremption plus fine que le jour civil, comme le reste du jeu
+// (quêtes du jour, objectif quotidien).
+function _maybeShowOdysseyRecap(cb){
+ const _done = (typeof cb === 'function') ? cb : function(){};
+ try{
+  if(typeof P!=='object' || !P || typeof GM==='undefined' || !GM || !GM.adventure){ _done(); return; }
+  const advKey = GM.adventure;
+  const zones = (typeof MAP_ZONES!=='undefined' && Array.isArray(MAP_ZONES)) ? MAP_ZONES : [];
+  const beaten = P.mapBossBeaten || [];
+  const zp = P.zoneProgress || {};
+  const hasProgress = zones.some(z => beaten.includes(z.id) || (zp[z.id] && (zp[z.id].stepsCompleted > 0 || zp[z.id].completed)));
+  P.lastAdvVisitDayByAdv = P.lastAdvVisitDayByAdv || {};
+  const today = (typeof todayKey==='function') ? todayKey() : '';
+  const last = P.lastAdvVisitDayByAdv[advKey];
+  P.lastAdvVisitDayByAdv[advKey] = today;
+  if(!hasProgress || last === today){ _done(); return; }
+  _openOdysseyRecap(advKey, _done);
+ }catch(e){ _done(); }
+}
+
+// ═══════════════════════════════════════════════════════
 // v9.0.5 (anti-jank) : GELER l'arrière-plan animé quand une modale est ouverte.
 // La carte porte ~89 animations en boucle (PNJ, météo, décors, parallaxe...).
 // Tant qu'une modale (zone, livre, carnet, boutique...) est affichée par-dessus,
 // on masque + fige toute la vue carte : le GPU n'a plus rien à recomposer
 // derrière l'overlay → fin de la recomposition par tuiles (clignotement).
 (function(){
- const OVERLAYS = '.archipel-zoom-overlay,.story-overlay,.advlog-overlay,.archipel-shop-overlay,#hero-evolution-overlay,.figurine-overlay,.bosscard-overlay';
+ const OVERLAYS = '.archipel-zoom-overlay,.story-overlay,.advlog-overlay,.archipel-shop-overlay,#hero-evolution-overlay,.figurine-overlay,.bosscard-overlay,.recap-overlay';
  function sync(){
   try{
    const hasOverlay = !!document.querySelector(OVERLAYS);

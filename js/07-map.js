@@ -77,12 +77,19 @@ function openMap(){
   if(typeof initMapParallax==='function') initMapParallax();
  }, 50);
  // v8.7.67 (O5) : déclencher la narration (prologue, ou chapitre de la région active)
+ // v12.7.29 : le récap "Précédemment dans..." passe D'ABORD (s'il doit
+ // s'afficher), pour ne jamais se superposer à un parchemin d'histoire —
+ // même principe que le délai de la visite guidée juste en dessous.
  setTimeout(()=>{
-  if(typeof _maybeShowStory==='function') _maybeShowStory(()=>{
-   // v12.1.6 (Lot D, pt.10) : carte vivante — seulement si aucune page d'histoire
-   // ne vient de s'afficher (sinon on surcharge l'écran de texte d'un coup).
-   if(typeof _maybeShowLivingMapCaption==='function') _maybeShowLivingMapCaption();
-  });
+  const _afterRecap = () => {
+   if(typeof _maybeShowStory==='function') _maybeShowStory(()=>{
+    // v12.1.6 (Lot D, pt.10) : carte vivante — seulement si aucune page d'histoire
+    // ne vient de s'afficher (sinon on surcharge l'écran de texte d'un coup).
+    if(typeof _maybeShowLivingMapCaption==='function') _maybeShowLivingMapCaption();
+   });
+  };
+  if(typeof _maybeShowOdysseyRecap==='function') _maybeShowOdysseyRecap(_afterRecap);
+  else _afterRecap();
  }, 500);
  // v12.4.34 (audit UX, Lot 2, #U3) : visite guidée courte des contrôles de
  // la carte (Boussole, Carnet/Mini-carte, états de zone), à la toute première

@@ -291,6 +291,18 @@ function validateProfile(raw, defaultName, opts){
    Object.keys(src).forEach(k=>{ out[k] = _safeArr(src[k]).filter(i => Number.isInteger(i) && i>=0 && i<100); });
    return out;
   })(),
+  // v12.7.29 — jour (todayKey()) de la dernière visite de chaque Odyssée,
+  // par advKey. Sert uniquement à décider si la fenêtre de récap "Précédemment
+  // dans..." doit s'afficher (1 jour ou plus sans y être revenu) — ajouté à
+  // la liste blanche dès sa création (règle ADR-111 pt.3). Champ cosmétique,
+  // non économique : une valeur mal fusionnée entre appareils ne coûte au
+  // pire qu'un récap affiché une fois de trop ou de pas assez.
+  lastAdvVisitDayByAdv: (function(){
+   const src = (raw.lastAdvVisitDayByAdv && typeof raw.lastAdvVisitDayByAdv === 'object') ? raw.lastAdvVisitDayByAdv : {};
+   const out = {};
+   Object.keys(src).forEach(k=>{ if(typeof src[k]==='string' && src[k]) out[k] = _safeStr(src[k], 20, ''); });
+   return out;
+  })(),
   // Correctif (audit technique 7 Odyssées) : majorChoiceByAdv (ADR-59, le
   // choix du joueur à un "moment charnière" de l'histoire, par Odyssée)
   // était déjà écrit en mémoire (07-story.js) et déjà fusionné correctement
