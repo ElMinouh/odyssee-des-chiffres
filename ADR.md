@@ -1286,4 +1286,78 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-117 — Retrait du drop de figurine rare au boss (mécanisme jamais fonctionnel) + source unique pour la liste des licences en boutique
+
+**Contexte** : en auditant le code de fin de combat de boss (`07-game.js`), un mécanisme de "drop de figurine rare" comparait sur chaque figurine un champ `f.rarity` qui n'a jamais existé (le vrai champ est `r`) — ce mécanisme n'a donc probablement jamais fonctionné, sans que personne ne s'en aperçoive. Dans la même conversation, la liste des licences affichées en boutique (`SHOP_LICENSES`) s'est révélée être une liste séparée, maintenue à la main, en retard sur la vraie liste des univers (`UNIVERS_LIST`) — cause du bug "Avatar et Tobie Lolness invisibles en boutique" alors que leurs figurines existaient bien en données.
+
+**Décision** : le bloc de code mort comparant `f.rarity`/`RARE_LIKE` est retiré de `07-game.js` (les drapeaux `dropRare:true` laissés sur certaines définitions de boss, `02-data.js`, sont volontairement laissés inertes — aucun effet, aucun risque à les retirer plus tard). La liste de la boutique est reconstruite par `_buildShopLicenses()`, dérivée automatiquement de `UNIVERS_LIST` (avec 3 exceptions historiques conservées pour leur libellé/icône propre : `none`/`all`/`mine`, `nj`/`mv`/`sx`) — plus aucune liste manuelle à maintenir en double ; toute licence ajoutée à `UNIVERS_LIST` apparaît désormais automatiquement en boutique.
+
+**Alternatives rejetées** : réparer le champ `f.rarity` plutôt que retirer le mécanisme (rejeté — aucune figurine n'a jamais porté ce champ, il n'y a donc rien de réel à "réparer") ; corriger une seule fois la liste de boutique à la main sans la dériver (rejeté — ne prévient pas la même récidive sur une future licence).
+
+**Impact** : `07-game.js` (retrait du bloc mort), `10-figurines.js` (`_buildShopLicenses()`). v12.7.13. Tests : `tests/boss-drop-removal-license-unification.test.js`.
+
+---
+
+## ADR-118 — Solde d'étoiles dérivé de deux compteurs monotones, jamais fusionné directement
+
+**Contexte** : le bug le plus critique du projet à ce jour. Le solde d'étoiles (`P.stars`) était fusionné en cloud par un simple maximum — correct pour un compteur qui ne fait qu'augmenter, mais fondamentalement faux pour une monnaie qui peut diminuer (un achat). Un achat local suivi d'une fermeture/réouverture du jeu remontait le solde à son maximum historique, la figurine achetée restant acquise — exploit trivial et répétable à l'infini, signalé par Cyril en des termes vifs ("mon fils a acheté plus de 300 figurines en faisant seulement une demi-Odyssée").
+
+**Décision** : `stars` n'est plus jamais fusionné ni assigné directement lors d'une synchronisation. Deux compteurs qui ne font QUE croître sont introduits : `_totalStarsEarned` (incrémenté à chaque gain réel — victoire de partie, bonus, correction parentale à la hausse) et `_totalStarsSpent` (incrémenté au point de dépense unique `spend()`, `07-game.js`, et par toute correction parentale à la baisse). `_mergeCloudProfiles()` (`12-cloud.js`) fusionne ces deux compteurs par un simple maximum (sûr, puisqu'ils ne redescendent jamais), puis calcule `out.stars = Math.max(0, out._totalStarsEarned - out._totalStarsSpent)`. Aucun code applicatif ne doit plus écrire `P.stars` directement lors d'une fusion ou d'une désérialisation.
+
+**Alternatives rejetées** : horodater et rejouer chaque transaction individuelle (rejeté — complexité disproportionnée ; seul le solde final compte, pas la chronologie complète).
+
+**Impact** : `05-profile.js` (`validateProfile()` : `_totalStarsEarned`/`_totalStarsSpent` whitelistés et clampés), `07-game.js` (`spend()`, points de crédit de gain), `12-cloud.js` (`_mergeCloudProfiles()`). v12.7.21. Tests : `tests/stars-only-on-win.test.js`, `tests/stars-ledger-cloud-merge.test.js`.
+
+---
+
+## ADR-119 — Migration rétroactive du ledger d'étoiles restreinte au seul chargement primaire du profil actif
+
+**Contexte** : la migration ponctuelle qui initialise `_totalStarsEarned`/`_totalStarsSpent` pour un profil créé avant ADR-118 (`out._totalStarsEarned = Math.max(out._totalStarsEarned, out.stars)`) s'exécutait dans `validateProfile()` sans distinction de contexte d'appel. Or `validateProfile()` est aussi appelée sur des copies de profil "non primaires", potentiellement périmées : `parentRemoveFigurines()`, `_pushOtherProfileToCloud()`, `_importProfileFromServer()`. Une telle copie migrée à tort pouvait "légitimer" un solde déjà gonflé (lui-même hérité de l'ancien bug de fusion par maximum, ADR-118) comme nouveau plancher de `_totalStarsEarned`, qui se propageait ensuite à tous les appareils via la fusion (`maxN`, qui ne redescend jamais) — cause probable de l'inflation du solde observée (~1500 → plus de 7000⭐).
+
+**Décision** : `validateProfile()` accepte un second paramètre d'options, `{allowStarsMigration:false}` passé systématiquement par tout appel qui n'est PAS le chargement primaire du profil actif sur son propre appareil (`loadProfile()`, `05-profile.js` — seul appel qui garde `allowStarsMigration` à sa valeur par défaut/`true`). La migration ne peut donc plus jamais s'exécuter sur une copie secondaire du profil.
+
+**Alternatives rejetées** : supprimer entièrement la migration rétroactive après un délai de grâce (rejeté — un profil ancien jamais rechargé sur son appareil principal perdrait alors tout accès légitime à son solde existant).
+
+**Impact** : `05-profile.js` (`validateProfile(opts)`), `10-figurines.js` (`parentRemoveFigurines`, `parentSetStars`), `12-cloud.js` (`_pushOtherProfileToCloud`, `_importProfileFromServer`, pull cloud). v12.7.21-v12.7.23.
+
+---
+
+## ADR-120 — Suppression de figurine par un parent : blocage réversible par horodatage, jamais permanent
+
+**Contexte** : la fonctionnalité de modération parentale (retrait de figurine depuis la Vue Parent, rendue nécessaire par l'enquête sur les 300+ figurines achetées par erreur) devait empêcher qu'une figurine retirée ne réapparaisse silencieusement (rachat accidentel, fusion cloud avec un appareil resté sur l'ancien état, déblocage automatique de complétion de licence) — tout en restant réversible si l'enfant regagne légitimement la figurine plus tard (nouvel achat volontaire, par exemple).
+
+**Décision** : `parentRemoveFigurines()` retire l'id de `ownedFigurines` et l'ajoute à un registre d'horodatages, `data.blockedFigurinesAt[id] = Date.now()` — pas un simple flag booléen ni une liste plate figée. `buyFigurine()` enregistre symétriquement `P.figAcquiredAt[id]` à chaque acquisition. `_mergeCloudProfiles()` (`12-cloud.js`) fusionne les deux registres par un maximum (`_mergeMaxTs`, sûrs à fusionner puisqu'eux aussi ne font qu'avancer), puis exclut de `ownedFigurines` toute figurine dont le blocage est plus récent que sa dernière acquisition (gardée seulement si `acquiredAt > blockedAt`). Un rachat légitime posté APRÈS le retrait l'emporte donc naturellement. `_checkLicenseCompletions()` refuse spécifiquement de réattribuer automatiquement une figurine de complétion retirée par un parent, ce déblocage étant automatique et non délibéré (contrairement à un achat ou un boss saisonnier).
+
+**Alternatives rejetées** : une liste plate `blockedFigurines` sans horodatage (rejeté — rendrait tout retrait permanent et empêcherait un rachat légitime ultérieur).
+
+**Impact** : `10-figurines.js` (`parentRemoveFigurines`, `buyFigurine`, `_checkLicenseCompletions`), `12-cloud.js` (`_mergeCloudProfiles`, `_mergeMaxTs`). v12.7.18-v12.7.19. Tests : `tests/parent-figurine-removal.test.js`.
+
+---
+
+## ADR-121 — Stade de héros : cliquet à sens unique par RANG, pas par simple inégalité
+
+**Contexte** : signalé par Cyril, l'animation d'évolution de héros ("ÉVOLUTION ! APPRENTI...") réapparaissait en boucle après une synchronisation cloud. Cause : la fusion cloud sur `heroStageId` pouvait, selon l'ordre des synchronisations, retenir une lecture transitoirement basse d'un compteur tout juste introduit, faisant "reculer" le stade affiché après une fusion malheureuse.
+
+**Décision** : une table de correspondance `_HERO_STAGE_RANK` (`{oeuf:0, apprenti:1, aventurier:2, maitre:3, legende:4}`) permet de comparer deux stades par RANG plutôt que par égalité de chaîne. `_mergeCloudProfiles()` ne retient le stade importé que si son rang est strictement supérieur à celui du stade local — cliquet à sens unique, le stade affiché ne peut plus jamais reculer après une fusion. En complément, `heroStageRewardsCredited` (liste des paliers déjà récompensés) est fusionné par union plutôt que par écrasement, pour qu'un palier déjà crédité sur un appareil ne puisse plus jamais être récompensé une seconde fois après fusion.
+
+**Alternatives rejetées** : comparer directement les chaînes `heroStageId` (rejeté — aucune relation d'ordre fiable entre des identifiants textuels sans table de correspondance dédiée).
+
+**Point de dette assumé (déjà documenté)** : `_HERO_STAGE_RANK` est dupliqué dans `12-cloud.js` plutôt que dérivé de la structure `HERO_STAGES` existante — risque de désynchronisation si un stade est un jour ajouté/retiré/réordonné (dette technique en attente, priorité basse à moyenne).
+
+**Impact** : `12-cloud.js` (`_HERO_STAGE_RANK`, `_mergeCloudProfiles`). v12.7.15. Tests : `tests/hero-stage-one-way-ratchet.test.js`.
+
+---
+
+## ADR-122 — Récap "Précédemment dans..." : réutilisation du Carnet existant plutôt que duplication ; fusion cloud proportionnée à un champ cosmétique
+
+**Contexte** : Cyril a demandé une fenêtre de récap narratif au retour dans une Odyssée après 1 jour ou plus d'absence, pour que le joueur se remémore l'histoire générale et sache où il en est. Investigation préalable (avant toute proposition) : découverte que le jeu possédait déjà un Carnet d'aventure complet (`openAdventureLog()`, cliffhanger `P.lastTwistLineByAdv`, journal de voyage `P.journalEntriesByAdv`) — décision immédiate de construire la nouvelle fenêtre par-dessus/à côté de cette infrastructure plutôt que de la dupliquer (option validée par Cyril parmi 3 proposées : mini-fenêtre + bouton-pont vers le Carnet complet).
+
+**Décision** : nouveau champ persistant `P.lastAdvVisitDayByAdv` (`{advKey: jour}`), comparé à `todayKey()` par égalité stricte uniquement. Contenu fusionné littérairement en un texte continu (pas d'encarts séparés, à la demande explicite de Cyril après une 1ère itération de maquette) par `_advRecapText()` (`07-story.js`). Déclenchement par `_maybeShowOdysseyRecap()`, inséré dans la chaîne de `setTimeout` déjà existante de `openMap()`, systématiquement AVANT `_maybeShowStory()` — jamais en parallèle, pour ne jamais superposer deux modales. Détection de progression volontairement indépendante de toute convention d'id de chapitre (`mapBossBeaten`/`zoneProgress`) après découverte que l'Odyssée `prim` utilise un id d'intro nu `'intro'`, contrairement aux 6 autres (`'{advKey}_intro'`) — un test basé sur cette convention aurait donc silencieusement échoué pour `prim` uniquement. **Nuance de fusion cloud introduite par cette décision** : ce nouveau champ étant purement cosmétique/UX (dans le pire des cas, un récap affiché une fois de trop ou de pas assez — coût trivial, aucun impact sur l'économie ni la progression), il reçoit une fusion simple par `Object.assign` (priorité au local par clé), sans la discipline stricte de dérivation par compteurs monotones réservée aux champs économiques (ADR-118) — à condition, désormais, de toujours justifier explicitement ce choix plutôt que de l'appliquer par oubli.
+
+**Alternatives rejetées** : dupliquer le contenu du Carnet dans un nouvel écran indépendant (rejeté d'emblée — l'infrastructure existante couvrait déjà l'essentiel du besoin) ; ouvrir directement le Carnet complet sans mini-fenêtre de transition (rejeté par Cyril — moins de contrôle sur le contenu affiché en priorité).
+
+**Impact** : `07-story.js` (`_ADV_RECAP`, `_advRecapConfig`, `_advRecapText`, `_recapToggleSpeak`, `_openOdysseyRecap`/`closeOdysseyRecap`, `_closeOdysseyRecapThenOpenLog`, `_maybeShowOdysseyRecap`), `07-map.js` (`openMap()`), `05-profile.js` (whitelist), `10-figurines.js` (`resetAdventure()`), `12-cloud.js` (`ODYSSEY_PROGRESS_FIELDS` + fusion), `styles.css` (`.recap-*`), `index.html` (cache-buster CSS `?v=1083`). v12.7.29. Tests : `tests/odyssey-recap.test.js` (+ extension de `tests/reset-adventure.test.js`).
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
