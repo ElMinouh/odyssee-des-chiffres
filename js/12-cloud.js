@@ -52,6 +52,10 @@ const CLOUD_VERBOSE = false; // mettre true pour debug
 // réelle d'écriture KV (quota gratuit : 1000 écritures/jour, partagées sur
 // tout le compte Cloudflare).
 const CLOUD_ENDGAME_DEBOUNCE_MS = 5000;
+// v12.7.33 (dette technique, demande de Cyril) : file d'attente de retry pour
+// _pushOtherProfileToCloud() — voir cette fonction plus bas pour le contexte
+// complet (modération parentale sur un profil non actif sur cet appareil).
+const PENDING_OTHER_PUSH_KEY = '_pendingOtherProfilePushes';
 
 // ══════════════ ÉTAT EN MÉMOIRE ══════════════
 let _cloudSyncTimer = null;
@@ -147,6 +151,50 @@ function disableCloudSync(){
 // pushProfileToCloud(), mais pour un profil quelconque passé en paramètre,
 // sans jamais toucher à P ni aux fonctions d'UI (renderMap, updateMenuUI…)
 // qui n'ont pas de sens pour un profil qui n'est pas affiché à l'écran.
+// v12.7.33 (dette technique, demande de Cyril) : petite file d'attente
+// persistée en localStorage — quand _pushOtherProfileToCloud() échoue (réseau
+// coupé, appareil hors-ligne...), le NOM du profil ciblé y est ajouté plutôt
+// que de laisser la correction bloquée en local sans aucune relance. Simple
+// liste de noms (pas de payload dupliqué) : au moment de la relance, on relit
+// toujours la copie la plus fraîche du profil dans localStorage.
+function _getPendingOtherPushes(){
+ try{
+  const raw = localStorage.getItem(PENDING_OTHER_PUSH_KEY);
+  const arr = raw ? JSON.parse(raw) : [];
+  return Array.isArray(arr) ? arr.filter(n => typeof n === 'string') : [];
+ }catch(e){ return []; }
+}
+function _setPendingOtherPushes(names){
+ try{ localStorage.setItem(PENDING_OTHER_PUSH_KEY, JSON.stringify([...new Set(names)])); }catch(e){}
+}
+function _addPendingOtherPush(name){
+ if(!name) return;
+ const names = _getPendingOtherPushes();
+ if(!names.includes(name)) _setPendingOtherPushes([...names, name]);
+}
+function _removePendingOtherPush(name){
+ const names = _getPendingOtherPushes();
+ if(names.includes(name)) _setPendingOtherPushes(names.filter(n => n !== name));
+}
+// Relance toute correction parentale (retrait de figurine, modification du
+// solde d'étoiles...) restée bloquée en local faute de réseau au moment de
+// l'action. Appelée à intervalle régulier (scheduleCloudSync, même timer que
+// la sync du profil actif), au retour en ligne (_onOnline) et au chargement
+// (initCloudSync) — jamais en boucle serrée, jamais bloquant pour le reste du
+// jeu (chaque tentative est indépendante et best-effort).
+async function _flushPendingOtherProfilePushes(){
+ const names = _getPendingOtherPushes();
+ for(const name of names){
+  try{
+   const raw = localStorage.getItem('user_'+name);
+   if(!raw){ _removePendingOtherPush(name); continue; } // profil supprimé entre-temps
+   let data = JSON.parse(raw);
+   if(typeof validateProfile==='function') data = validateProfile(data, name, {allowStarsMigration:false});
+   if(!data.cloudEnabled || !data.cloudCode){ _removePendingOtherPush(name); continue; } // cloud désactivé entre-temps
+   await _pushOtherProfileToCloud(data); // gère elle-même l'ajout/retrait de la file
+  }catch(e){ _cloudLog('_flushPendingOtherProfilePushes: échec pour', name, e); }
+ }
+}
 async function _pushOtherProfileToCloud(profileData){
  if(!profileData || !profileData.name || !profileData.cloudCode || !profileData.cloudEnabled) return false;
  try{
@@ -172,7 +220,7 @@ async function _pushOtherProfileToCloud(profileData){
    headers: { 'Content-Type': 'application/json' },
    body: JSON.stringify(payload),
   });
-  if(!resp.ok) return false;
+  if(!resp.ok){ _addPendingOtherPush(profileData.name); return false; }
   const result = await resp.json();
   if(result.status === 'conflict_kept_server' && result.profile){
    // Le serveur a une version plus avancée que celle qu'on vient de fusionner
@@ -182,8 +230,9 @@ async function _pushOtherProfileToCloud(profileData){
    if(typeof validateProfile==='function') imported = validateProfile(imported, profileData.name, {allowStarsMigration:false});
    localStorage.setItem('user_'+profileData.name, JSON.stringify(imported));
   }
+  _removePendingOtherPush(profileData.name); // v12.7.33 : succès, plus besoin de relance
   return true;
- }catch(e){ _cloudLog('_pushOtherProfileToCloud: échec :', e); return false; }
+ }catch(e){ _cloudLog('_pushOtherProfileToCloud: échec :', e); _addPendingOtherPush(profileData.name); return false; }
 }
 
 async function pushProfileToCloud(forceFirst=false){
@@ -719,6 +768,10 @@ function scheduleCloudSync(){
   if(P && P.cloudEnabled){
    pushProfileToCloud();
   }
+  // v12.7.33 : profite du même timer pour relancer toute correction
+  // parentale restée bloquée localement faute de réseau (voir
+  // _flushPendingOtherProfilePushes ci-dessus).
+  _flushPendingOtherProfilePushes();
  }, CLOUD_SYNC_INTERVAL_MS);
  _cloudLog('sync timer planifié toutes les', CLOUD_SYNC_INTERVAL_MS/1000, 'sec');
 }
@@ -760,6 +813,10 @@ function initCloudSync(){
  // Indicateur de statut (déclenché légèrement plus tard pour ne pas
  // surcharger le boot)
  setTimeout(() => refreshCloudIndicator(), 1500);
+ // v12.7.33 : relance toute correction parentale restée en attente (voir
+ // _flushPendingOtherProfilePushes) — indépendant du profil actif, donc pas
+ // conditionné à P.cloudEnabled ci-dessus.
+ setTimeout(() => _flushPendingOtherProfilePushes(), 4000);
 }
 
 // ══════════════ HOOK DE FIN DE PARTIE ══════════════
@@ -859,6 +916,9 @@ function _onOnline(){
   scheduleCloudSync();
   pushProfileToCloud(); // tentative immédiate, sans attendre le prochain tick de 5 min
  }
+ // v12.7.33 : indépendant de P/P.cloudEnabled — une correction parentale en
+ // attente peut concerner un profil autre que celui actif sur cet appareil.
+ _flushPendingOtherProfilePushes();
 }
 
 // Enregistrer les hooks dès que le module est chargé

@@ -1372,4 +1372,16 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-124 — File d'attente de retry pour `_pushOtherProfileToCloud()`
+
+**Contexte** : dette technique héritée (v23) — une correction parentale sur un profil non actif sur cet appareil (retrait de figurine, modification du solde d'étoiles) passe par `_pushOtherProfileToCloud()` (ADR-97/v12.7.22) pour propager immédiatement le changement au cloud. En cas d'échec réseau au moment précis de l'action, rien ne relançait l'envoi — la correction restait bloquée en local, potentiellement indéfiniment si le profil ciblé ne redevient jamais actif sur cet appareil.
+
+**Décision** : petite file d'attente persistée en `localStorage` (`PENDING_OTHER_PUSH_KEY`, une simple liste de noms de profils — pas de payload dupliqué, la copie la plus fraîche est toujours relue depuis `localStorage` au moment de la relance). `_pushOtherProfileToCloud()` ajoute le nom à la file sur tout chemin d'échec (réponse HTTP non-ok, exception) et le retire sur succès. `_flushPendingOtherProfilePushes()` parcourt la file et retente chaque nom : ignore et nettoie silencieusement un profil supprimé ou dont le cloud a été désactivé entre-temps, retente sinon via `_pushOtherProfileToCloud()` (qui se recharge elle-même de la file en cas de nouvel échec). Branchée à 3 endroits, tous best-effort et non bloquants : le timer de sync existant (`scheduleCloudSync`, toutes les 5 min), le retour en ligne (`_onOnline`), et le chargement (`initCloudSync`, 4s après boot) — ces deux derniers indépendamment de `P.cloudEnabled`, puisque la file peut concerner un profil différent de celui actif sur l'appareil.
+
+**Alternatives rejetées** : file d'attente avec payload complet dupliqué à chaque échec (rejeté — complexité et risque de rejouer une version périmée du profil ; relire `localStorage` au moment de la relance est plus sûr et plus simple) ; retry avec backoff exponentiel dédié (rejeté — le timer de sync existant (5 min) suffit largement pour une action de modération parentale, pas de contrainte de latence forte).
+
+**Impact** : `12-cloud.js` (`PENDING_OTHER_PUSH_KEY`, `_getPendingOtherPushes`, `_setPendingOtherPushes`, `_addPendingOtherPush`, `_removePendingOtherPush`, `_flushPendingOtherProfilePushes`, `_pushOtherProfileToCloud`, `scheduleCloudSync`, `_onOnline`, `initCloudSync`). v12.7.33. Tests : `tests/pending-other-profile-push-retry.test.js`.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
