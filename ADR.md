@@ -1342,9 +1342,9 @@ Décisions actées, non remises en cause à ce jour :
 
 **Alternatives rejetées** : comparer directement les chaînes `heroStageId` (rejeté — aucune relation d'ordre fiable entre des identifiants textuels sans table de correspondance dédiée).
 
-**Point de dette assumé (déjà documenté)** : `_HERO_STAGE_RANK` est dupliqué dans `12-cloud.js` plutôt que dérivé de la structure `HERO_STAGES` existante — risque de désynchronisation si un stade est un jour ajouté/retiré/réordonné (dette technique en attente, priorité basse à moyenne).
+**Point de dette assumé, RÉGULARISÉ en v12.7.30** : `_HERO_STAGE_RANK` était dupliqué dans `12-cloud.js` plutôt que dérivé de la structure `HERO_STAGES` existante (`02-data.js`) — risque de désynchronisation si un stade était un jour ajouté/retiré/réordonné. Corrigé : le rang est désormais calculé par `_stageRankOf(id)`, l'index de l'id dans `HERO_STAGES` (fiable car `02-data.js` est chargé avant `12-cloud.js`), sans plus aucune table à maintenir en double.
 
-**Impact** : `12-cloud.js` (`_HERO_STAGE_RANK`, `_mergeCloudProfiles`). v12.7.15. Tests : `tests/hero-stage-one-way-ratchet.test.js`.
+**Impact** : `12-cloud.js` (`_mergeCloudProfiles`, `_stageRankOf` remplace `_HERO_STAGE_RANK`). v12.7.15, dette régularisée v12.7.30. Tests : `tests/hero-stage-one-way-ratchet.test.js` (inchangé, comportement identique).
 
 ---
 

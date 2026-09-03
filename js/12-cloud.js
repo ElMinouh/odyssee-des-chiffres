@@ -403,9 +403,17 @@ function _mergeCloudProfiles(local, imported){
  // alors réapparaître indéfiniment, à chaque retour dans l'Odyssée.
  out.onbAccountSeen = !!(local.onbAccountSeen || imported.onbAccountSeen);
  out.onbMapSeen = !!(local.onbMapSeen || imported.onbMapSeen);
- const _HERO_STAGE_RANK = {oeuf:0, apprenti:1, aventurier:2, maitre:3, legende:4};
- const _localStageRank = _HERO_STAGE_RANK[local.heroStageId] ?? 0;
- const _importedStageRank = _HERO_STAGE_RANK[imported.heroStageId] ?? 0;
+ // v12.7.30 (dette technique corrigée) : le rang n'est plus une table
+ // dupliquée ici mais dérivé de HERO_STAGES (02-data.js, chargé avant ce
+ // fichier) — un stade ajouté/retiré/réordonné dans HERO_STAGES ne peut
+ // plus jamais désynchroniser la logique de cliquet ci-dessous, contrairement
+ // à l'ancienne table _HERO_STAGE_RANK maintenue séparément à la main.
+ const _stageRankOf = id => {
+  const i = (typeof HERO_STAGES!=='undefined' && Array.isArray(HERO_STAGES)) ? HERO_STAGES.findIndex(s=>s.id===id) : -1;
+  return i>=0 ? i : 0;
+ };
+ const _localStageRank = _stageRankOf(local.heroStageId);
+ const _importedStageRank = _stageRankOf(imported.heroStageId);
  out.heroStageId = _localStageRank >= _importedStageRank ? (local.heroStageId || 'oeuf') : imported.heroStageId;
  // v12.7.15 (signalé par Cyril) : union — un palier déjà récompensé sur UN
  // appareil doit le rester partout, jamais permettre un second crédit du
