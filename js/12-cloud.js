@@ -403,14 +403,21 @@ function _mergeCloudProfiles(local, imported){
  // alors réapparaître indéfiniment, à chaque retour dans l'Odyssée.
  out.onbAccountSeen = !!(local.onbAccountSeen || imported.onbAccountSeen);
  out.onbMapSeen = !!(local.onbMapSeen || imported.onbMapSeen);
- // v12.7.30 (dette technique corrigée) : le rang n'est plus une table
- // dupliquée ici mais dérivé de HERO_STAGES (02-data.js, chargé avant ce
- // fichier) — un stade ajouté/retiré/réordonné dans HERO_STAGES ne peut
- // plus jamais désynchroniser la logique de cliquet ci-dessous, contrairement
- // à l'ancienne table _HERO_STAGE_RANK maintenue séparément à la main.
+ // v12.7.30 (dette technique corrigée) : le rang est dérivé de HERO_STAGES
+ // (02-data.js, chargé avant ce fichier en production, cf. index.html) plutôt
+ // que d'une table dupliquée à la main — un stade ajouté/retiré/réordonné
+ // dans HERO_STAGES ne peut plus désynchroniser la logique de cliquet
+ // ci-dessous. _HERO_STAGE_RANK_FALLBACK n'est qu'un repli pour les tests
+ // unitaires qui chargent 12-cloud.js isolément (loadGame(['12-cloud.js']),
+ // sans HERO_STAGES) — jamais utilisé en production, où HERO_STAGES est
+ // toujours chargé avant ce fichier.
+ const _HERO_STAGE_RANK_FALLBACK = {oeuf:0, apprenti:1, aventurier:2, maitre:3, legende:4};
  const _stageRankOf = id => {
-  const i = (typeof HERO_STAGES!=='undefined' && Array.isArray(HERO_STAGES)) ? HERO_STAGES.findIndex(s=>s.id===id) : -1;
-  return i>=0 ? i : 0;
+  if(typeof HERO_STAGES!=='undefined' && Array.isArray(HERO_STAGES)){
+   const i = HERO_STAGES.findIndex(s=>s.id===id);
+   if(i>=0) return i;
+  }
+  return _HERO_STAGE_RANK_FALLBACK[id] ?? 0;
  };
  const _localStageRank = _stageRankOf(local.heroStageId);
  const _importedStageRank = _stageRankOf(imported.heroStageId);

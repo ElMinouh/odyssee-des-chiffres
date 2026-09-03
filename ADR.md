@@ -1342,9 +1342,9 @@ Décisions actées, non remises en cause à ce jour :
 
 **Alternatives rejetées** : comparer directement les chaînes `heroStageId` (rejeté — aucune relation d'ordre fiable entre des identifiants textuels sans table de correspondance dédiée).
 
-**Point de dette assumé, RÉGULARISÉ en v12.7.30** : `_HERO_STAGE_RANK` était dupliqué dans `12-cloud.js` plutôt que dérivé de la structure `HERO_STAGES` existante (`02-data.js`) — risque de désynchronisation si un stade était un jour ajouté/retiré/réordonné. Corrigé : le rang est désormais calculé par `_stageRankOf(id)`, l'index de l'id dans `HERO_STAGES` (fiable car `02-data.js` est chargé avant `12-cloud.js`), sans plus aucune table à maintenir en double.
+**Point de dette assumé, PARTIELLEMENT RÉGULARISÉ en v12.7.30** : `_HERO_STAGE_RANK` était dupliqué dans `12-cloud.js` plutôt que dérivé de la structure `HERO_STAGES` existante (`02-data.js`) — risque de désynchronisation si un stade était un jour ajouté/retiré/réordonné. Corrigé : `_stageRankOf(id)` dérive désormais le rang de l'index réel dans `HERO_STAGES` en priorité. Un correctif immédiat (même conversation) a révélé qu'une table de repli reste nécessaire : `tests/onboarding-and-hero-stage-persistence.test.js` charge `12-cloud.js` isolément (`loadGame(['12-cloud.js'])`, convention de test unitaire de ce projet), sans `HERO_STAGES` — `_HERO_STAGE_RANK_FALLBACK` (même 5 valeurs) n'est utilisé QUE dans ce cas, jamais en production où `02-data.js` précède toujours `12-cloud.js`. La duplication n'est donc pas totalement éliminée, mais son seul point de divergence possible (l'oubli de mettre à jour le repli en même temps que `HERO_STAGES`) n'affecte que les tests unitaires isolés, jamais le comportement réel en jeu.
 
-**Impact** : `12-cloud.js` (`_mergeCloudProfiles`, `_stageRankOf` remplace `_HERO_STAGE_RANK`). v12.7.15, dette régularisée v12.7.30. Tests : `tests/hero-stage-one-way-ratchet.test.js` (inchangé, comportement identique).
+**Impact** : `12-cloud.js` (`_mergeCloudProfiles`, `_stageRankOf` + `_HERO_STAGE_RANK_FALLBACK` remplacent `_HERO_STAGE_RANK`). v12.7.15, dette partiellement régularisée v12.7.30. Tests : `tests/hero-stage-one-way-ratchet.test.js`, `tests/onboarding-and-hero-stage-persistence.test.js` (491/491 confirmés verts après correctif).
 
 ---
 
