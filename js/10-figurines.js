@@ -1983,6 +1983,10 @@ function resetProfile(playerName){
 function resetAdventure(playerName){
   if(!playerName) return;
   const msg=`Réinitialiser TOUT le mode Odyssée pour ${playerName} ?\n\nCeci concerne les 7 aventures (maths, français, histoire × maternelle, primaire, collège) : toutes les zones seront à reconquérir, tous les avatars repartent du début, tous les chapitres/histoires de l'Odyssée seront à redécouvrir.\n\nLes étoiles, figurines, XP, badges, skills et inventaire sont CONSERVÉS.`;
+  // v12.7.32 (demande de Cyril, dette technique) : confirmation renforcée —
+  // action irréversible et large (7 Odyssées à la fois), le parent doit
+  // retaper le prénom exact du profil pour valider (voir showConfirm(),
+  // 01-core.js, opts.retypeValue).
   showConfirm(msg, ()=>{
     try{
       const raw = localStorage.getItem('user_'+playerName);
@@ -2074,7 +2078,7 @@ function resetAdventure(playerName){
       console.warn('resetAdventure failed', e);
       toast(`Erreur lors du reset de l'aventure de ${playerName}.`);
     }
-  }, {confirmLabel:'Réinitialiser'});
+  }, {confirmLabel:'Réinitialiser', danger:true, retypeValue:playerName});
 }
 // v12.7.23 (demande de Cyril) : gestionnaire du champ étoiles éditable de
 // renderOptResetOne() (09-parent.js) — confirmation avant application,

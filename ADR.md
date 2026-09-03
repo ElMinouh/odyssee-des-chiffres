@@ -1360,4 +1360,16 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-123 — Confirmation renforcée par retype de texte, générique (`showConfirm()`)
+
+**Contexte** : dette technique héritée (v23) — "Reset Aventure" (7 Odyssées à la fois, irréversible) n'avait qu'une confirmation simple (`showConfirm()`), risque de clic accidentel ou mal compris. Maquette validée par Cyril avant code : retype du prénom exact du profil, bouton grisé tant que le texte ne correspond pas.
+
+**Décision** : plutôt qu'un dialogue dédié à "Reset Aventure", `showConfirm()` (`01-core.js`) gagne un paramètre générique `opts.retypeValue` — quand fourni, un champ texte est inséré, le bouton de confirmation reste `disabled` (opacité réduite) jusqu'à correspondance exacte (`trim()`, sensible à la casse) entre la saisie et `retypeValue`, et le clic sur le bouton ok re-vérifie la correspondance par sécurité avant d'appeler `onConfirm()`. `resetAdventure()` (`10-figurines.js`) l'utilise avec `retypeValue:playerName` et `danger:true`. Réutilisable tel quel pour tout futur reset/action sensible (ex. "Reset Total") sans nouveau code.
+
+**Alternatives rejetées** : un dialogue spécifique à "Reset Aventure" (rejeté — duplique le style/comportement de `showConfirm()` déjà partagé par toutes les confirmations du jeu, alors qu'un simple paramètre suffit).
+
+**Impact** : `01-core.js` (`showConfirm()`), `10-figurines.js` (`resetAdventure()`). v12.7.32. Tests : `tests/reset-adventure-retype-confirm.test.js` (vérification au niveau source — le harnais de test n'a pas de DOM réel pour simuler la saisie, même limite déjà documentée pour `checkHeroStageProgress()`, ADR-121).
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

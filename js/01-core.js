@@ -422,23 +422,52 @@ function showConfirm(message, onConfirm, opts={}){
  const accentColor=opts.danger?'#e74c3c':'var(--accent)';
  const borderColor=opts.danger?'rgba(231,76,60,.4)':'rgba(241,196,15,.35)';
  const bg=opts.danger?'#2c1414':'#182449';
+ // v12.7.32 (demande de Cyril, confirmation renforcée) : si opts.retypeValue
+ // est fourni, le bouton de confirmation reste désactivé tant que le champ
+ // texte n'est pas rempli avec EXACTEMENT cette valeur (comparaison stricte
+ // après trim, sensible à la casse). Générique — réutilisable pour tout
+ // futur reset/action sensible, pas seulement "Reset Aventure".
+ const retypeValue = (typeof opts.retypeValue==='string' && opts.retypeValue) ? opts.retypeValue : null;
  const ov=document.createElement('div');
  ov.id='sd-confirm-overlay';
  ov.style.cssText='position:fixed;inset:0;z-index:620;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:20px;';
  ov.innerHTML='<div style="background:'+bg+';border:1px solid '+borderColor+';border-radius:18px;padding:24px 20px;text-align:center;max-width:360px;width:100%;box-shadow:var(--shadow-modal);">'
   +(opts.danger?'<div style="font-size:2.2em;margin-bottom:6px;">⚠️</div>':'')
   +'<div style="font-size:1em;font-weight:800;color:'+accentColor+';margin-bottom:10px;">'+_e(title)+'</div>'
-  +'<div style="font-size:.9em;color:#dce3f0;line-height:1.5;margin-bottom:18px;white-space:pre-line;">'+_e(message)+'</div>'
+  +'<div style="font-size:.9em;color:#dce3f0;line-height:1.5;margin-bottom:'+(retypeValue?'16px':'18px')+';white-space:pre-line;">'+_e(message)+'</div>'
+  +(retypeValue ? (
+    '<div style="font-size:.8em;color:#f1c8c8;margin-bottom:8px;text-align:left;">Pour confirmer, tape <b style="color:#fff;">'+_e(retypeValue)+'</b> ci-dessous :</div>'
+    +'<input id="sd-confirm-retype" type="text" autocomplete="off" placeholder="'+_e(retypeValue)+'" style="width:100%;box-sizing:border-box;background:#1a0f0f;border:2px solid rgba(231,76,60,.5);border-radius:10px;padding:11px 12px;color:#fff;font-size:.95em;margin-bottom:16px;text-align:center;font-weight:700;">'
+   ) : '')
   +'<div style="display:flex;gap:10px;justify-content:center;">'
   +'<button id="sd-confirm-cancel" style="background:#555;color:#fff;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:.9em;cursor:pointer;">'+_e(cancelLabel)+'</button>'
-  +'<button id="sd-confirm-ok" style="background:'+accentColor+';color:#fff;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:.9em;cursor:pointer;">'+_e(confirmLabel)+'</button>'
+  +'<button id="sd-confirm-ok" style="background:'+accentColor+';color:#fff;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:.9em;cursor:pointer;'+(retypeValue?'opacity:.4;cursor:not-allowed;':'')+'"'+(retypeValue?' disabled':'')+'>'+_e(confirmLabel)+'</button>'
   +'</div></div>';
  document.body.appendChild(ov);
  const closeIt=()=>_closeStyledDialog('sd-confirm-overlay');
+ const okBtn=ov.querySelector('#sd-confirm-ok');
  ov.querySelector('#sd-confirm-cancel').onclick=()=>{ closeIt(); if(typeof opts.onCancel==='function') opts.onCancel(); };
- ov.querySelector('#sd-confirm-ok').onclick=()=>{ closeIt(); if(typeof onConfirm==='function') onConfirm(); };
+ okBtn.onclick=()=>{
+  if(retypeValue){
+   const input=ov.querySelector('#sd-confirm-retype');
+   if(!input || input.value.trim()!==retypeValue) return; // garde-fou : ne rien faire si le texte ne correspond pas
+  }
+  closeIt(); if(typeof onConfirm==='function') onConfirm();
+ };
+ if(retypeValue){
+  const input=ov.querySelector('#sd-confirm-retype');
+  const _syncOkState=()=>{
+   const match=input.value.trim()===retypeValue;
+   okBtn.disabled=!match;
+   okBtn.style.opacity=match?'1':'.4';
+   okBtn.style.cursor=match?'pointer':'not-allowed';
+  };
+  input.addEventListener('input', _syncOkState);
+  setTimeout(()=>input.focus(), 50);
+ } else {
+  setTimeout(()=>{ const b=document.getElementById('sd-confirm-cancel'); if(b) b.focus(); }, 50);
+ }
  ov.addEventListener('keydown', e=>{ if(e.key==='Escape') closeIt(); });
- setTimeout(()=>{ const b=document.getElementById('sd-confirm-cancel'); if(b) b.focus(); }, 50);
  ov._releaseTrap=trapFocus(ov);
 }
 
