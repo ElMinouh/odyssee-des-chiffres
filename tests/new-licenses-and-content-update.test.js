@@ -192,7 +192,10 @@ describe('_maybeShowContentUpdate() — notification de nouveau contenu', () => 
   it('ne réaffiche jamais une notification déjà marquée vue', () => {
     const api = loadGame(FILES);
     const p = api.defProfile('Test');
-    p.contentUpdatesSeen = ['update_2026_08_av_tl'];
+    // v12.7.34 : les deux notifications existantes doivent être marquées vues
+    // pour que ces tests ("plus rien à afficher") restent valides après
+    // l'ajout de la notification des figurines exclusives.
+    p.contentUpdatesSeen = ['update_2026_08_av_tl', 'update_2026_09_exclusifs'];
     api.setP(p);
     let doneCalled = false;
     api._maybeShowContentUpdate(() => { doneCalled = true; });
@@ -257,10 +260,147 @@ describe('gotoSubjects() — la notification s\'intercale avant l\'écran des ma
     const api = loadGame(FILES);
     const p = api.defProfile('Test');
     p.name = 'Zoé';
-    p.contentUpdatesSeen = ['update_2026_08_av_tl'];
+    // v12.7.34 : les deux notifications existantes doivent être marquées vues
+    // pour que ces tests ("plus rien à afficher") restent valides après
+    // l'ajout de la notification des figurines exclusives.
+    p.contentUpdatesSeen = ['update_2026_08_av_tl', 'update_2026_09_exclusifs'];
     api.setP(p);
     api.gotoSubjects();
     expect(api._createdElements().length).toBe(0);
     expect(api._domEl('subj-player').textContent).toBe('Zoé');
+  });
+});
+
+// v12.7.34 — 22 nouvelles figurines exclusives (déblocables par complétion de
+// licence uniquement) : Star Wars, Cités d'Or, Astérix, Tintin, Dragon Ball.
+const SW_NEW_IDS = ['sw18','sw19','sw20','sw21','sw22','sw23'];
+const MC_NEW_IDS = ['mc12','mc13','mc14','mc15'];
+const AX_NEW_IDS = ['ax10'];
+const TN_NEW_IDS = ['tn09','tn10'];
+const DB_NEW_IDS = ['db37','db38','db39','db40','db41','db42','db43','db44','db45'];
+const ALL_NEW_EXCLUSIFS = [...SW_NEW_IDS, ...MC_NEW_IDS, ...AX_NEW_IDS, ...TN_NEW_IDS, ...DB_NEW_IDS];
+
+describe('Nouvelles figurines exclusives v12.7.34 (SW/MC/AX/TN/DB)', () => {
+  it('22 nouvelles figurines présentes, avec tous les champs requis', () => {
+    const api = loadGame(FILES);
+    const byId = Object.fromEntries(api.FIGURINES.map(f => [f.id, f]));
+    ALL_NEW_EXCLUSIFS.forEach(id => {
+      const f = byId[id];
+      expect(f, `figurine ${id} manquante`).toBeTruthy();
+      ['name','uni','uk','em','color','gc','r','desc'].forEach(field => {
+        expect(f[field], `${id}.${field}`).toBeTruthy();
+      });
+      expect(typeof f.desc).toBe('string');
+      expect(f.desc.length).toBeGreaterThan(30);
+    });
+  });
+
+  it('aucun id dupliqué avec les figurines existantes', () => {
+    const api = loadGame(FILES);
+    const ids = api.FIGURINES.map(f => f.id);
+    const dups = ids.filter((id, i) => ids.indexOf(id) !== i);
+    expect(dups).toEqual([]);
+  });
+
+  it('toutes sont exclusives, verrouillées par complétion, prix 0, avec un indice clair', () => {
+    const api = loadGame(FILES);
+    const byId = Object.fromEntries(api.FIGURINES.map(f => [f.id, f]));
+    ALL_NEW_EXCLUSIFS.forEach(id => {
+      const f = byId[id];
+      expect(f.r, `${id}.r`).toBe('exclusif');
+      expect(f.p, `${id}.p`).toBe(0);
+      expect(f.completionLock, `${id}.completionLock`).toBe(true);
+      expect(f.unlockHint, `${id}.unlockHint`).toBeTruthy();
+    });
+  });
+
+  it('les 22 nouveaux ids sont dans FIG_IMG_PRELOAD', () => {
+    const api = loadGame(FILES);
+    ALL_NEW_EXCLUSIFS.forEach(id => {
+      expect(api.FIG_IMG_PRELOAD, `${id} absent de FIG_IMG_PRELOAD`).toContain(id);
+    });
+  });
+
+  it('Star Wars (17 de base) : posséder les 17 débloque les 6 nouveaux exclusifs en même temps', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    const base = api.FIGURINES.filter(f => f.uk === 'sw' && !f.completionLock).map(f => f.id);
+    p.ownedFigurines = base;
+    api.setP(p);
+    api._checkLicenseCompletions();
+    SW_NEW_IDS.forEach(id => expect(api.getP().ownedFigurines).toContain(id));
+  });
+
+  it('Star Wars : ne débloque rien s\'il manque un item de base', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    const base = api.FIGURINES.filter(f => f.uk === 'sw' && !f.completionLock).map(f => f.id);
+    p.ownedFigurines = base.slice(0, -1);
+    api.setP(p);
+    api._checkLicenseCompletions();
+    SW_NEW_IDS.forEach(id => expect(api.getP().ownedFigurines).not.toContain(id));
+  });
+
+  it('Cités d\'Or : posséder toute la collection de base débloque les 4 nouveaux exclusifs', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    const base = api.FIGURINES.filter(f => f.uk === 'mc' && !f.completionLock).map(f => f.id);
+    p.ownedFigurines = base;
+    api.setP(p);
+    api._checkLicenseCompletions();
+    MC_NEW_IDS.forEach(id => expect(api.getP().ownedFigurines).toContain(id));
+  });
+
+  it('Tintin : posséder toute la collection de base débloque les 2 nouveaux exclusifs', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    const base = api.FIGURINES.filter(f => f.uk === 'tn' && !f.completionLock).map(f => f.id);
+    p.ownedFigurines = base;
+    api.setP(p);
+    api._checkLicenseCompletions();
+    TN_NEW_IDS.forEach(id => expect(api.getP().ownedFigurines).toContain(id));
+  });
+
+  it('Astérix : posséder toute la collection de base débloque le nouvel exclusif', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    const base = api.FIGURINES.filter(f => f.uk === 'ax' && !f.completionLock).map(f => f.id);
+    p.ownedFigurines = base;
+    api.setP(p);
+    api._checkLicenseCompletions();
+    AX_NEW_IDS.forEach(id => expect(api.getP().ownedFigurines).toContain(id));
+  });
+
+  it('Dragon Ball : posséder toute la collection de base débloque les 9 nouveaux + db12 + db36 (11 exclusifs)', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    const base = api.FIGURINES.filter(f => f.uk === 'db' && !f.completionLock).map(f => f.id);
+    p.ownedFigurines = base;
+    api.setP(p);
+    api._checkLicenseCompletions();
+    [...DB_NEW_IDS, 'db12', 'db36'].forEach(id => expect(api.getP().ownedFigurines).toContain(id));
+  });
+});
+
+describe('_maybeShowContentUpdate() — notification v12.7.34 (nouvelles figurines exclusives)', () => {
+  it('affiche la modale des nouvelles figurines exclusives pour un profil ayant déjà vu update_2026_08_av_tl', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    p.contentUpdatesSeen = ['update_2026_08_av_tl'];
+    api.setP(p);
+    api._maybeShowContentUpdate(() => {});
+    const overlay = api._lastCreatedElement();
+    expect(overlay.className).toBe('story-overlay');
+    expect(overlay.innerHTML).toContain('Star Wars');
+    expect(overlay.innerHTML).toContain('Dragon Ball');
+  });
+
+  it('marque update_2026_09_exclusifs comme vue après affichage', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    p.contentUpdatesSeen = ['update_2026_08_av_tl'];
+    api.setP(p);
+    api._maybeShowContentUpdate(() => {});
+    expect(api.getP().contentUpdatesSeen).toContain('update_2026_09_exclusifs');
   });
 });
