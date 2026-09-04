@@ -71,6 +71,15 @@ function _probeFigImage(id){
   if(typeof renderFigCollection==='function' && document.getElementById('v-figs') && !document.getElementById('v-figs').classList.contains('hidden')){
    renderFigCollection();
   }
+  // v12.7.35 : idem pour la boutique — sans ça, une image tout juste ajoutée
+  // (nouvelle figurine, cache pas encore à jour) reste bloquée sur le fallback
+  // emoji tant qu'on ne quitte/rouvre pas l'écran (bug signalé par Cyril).
+  // p-figurines n'a pas de classe "hidden" propre (c'est le conteneur parent
+  // qui est masqué) : on se sert plutôt de _figFilter !== 'none' comme indice
+  // qu'une grille est déjà affichée (sinon on régénèrerait pour rien).
+  if(typeof _renderFigurinesShop==='function' && typeof _figFilter!=='undefined' && _figFilter!=='none'){
+   _renderFigurinesShop();
+  }
  };
  img.onerror = ()=>{ FIG_IMG_FAILED.add(id); };
  img.src = 'assets/figurines/' + id + '.webp';
