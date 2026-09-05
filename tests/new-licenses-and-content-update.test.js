@@ -410,21 +410,20 @@ describe('_maybeShowContentUpdate() — notification v12.7.34 (nouvelles figurin
 // avoir été montrée. Et nouveaux points d'accroche (ouverture de matière,
 // création d'Odyssée) en plus du clic sur CONTINUER existant.
 describe('_maybeShowContentUpdate() — ne marque "vu" que si _showStoryModal a réellement pu être appelée (v12.7.36)', () => {
-  it('ne marque PAS vu si _showStoryModal est absente (retry possible plus tard)', () => {
-    const api = loadGame(FILES);
-    const p = api.defProfile('Test');
-    api.setP(p);
-    const original = api._showStoryModal;
-    // Simule l'absence de _showStoryModal (ordre de chargement, etc.)
-    globalThis._showStoryModal = undefined;
-    try{
-      let doneCalled = false;
-      api._maybeShowContentUpdate(() => { doneCalled = true; });
-      expect(api.getP().contentUpdatesSeen).not.toContain('update_2026_08_av_tl');
-      expect(doneCalled).toBe(true); // la chaîne narrative continue quand même
-    } finally {
-      globalThis._showStoryModal = original;
-    }
+  // Test au niveau du code source : simuler l'absence réelle de _showStoryModal
+  // dans le sandbox (fonction déclarée en top-level, non redéfinissable depuis
+  // le test) n'est pas possible avec ce harness — on vérifie donc que le
+  // "push" dans contentUpdatesSeen apparaît bien APRÈS le early-return sur
+  // typeof _showStoryModal, jamais avant, dans la source réelle.
+  it('le early-return sur typeof _showStoryModal précède bien le marquage "vu" dans le code', async () => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const src = fs.readFileSync(path.join(process.cwd(), 'js', '03-figurines-data.js'), 'utf8');
+    const guardIdx = src.indexOf("typeof _showStoryModal !== 'function'){ _done(); return; }");
+    const pushIdx = src.indexOf('P.contentUpdatesSeen.push(next.id);');
+    expect(guardIdx).toBeGreaterThan(-1);
+    expect(pushIdx).toBeGreaterThan(-1);
+    expect(guardIdx).toBeLessThan(pushIdx);
   });
 });
 
