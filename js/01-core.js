@@ -1468,19 +1468,21 @@ const SUBJECT_LABELS={ math:'Mathématiques', fr:'Français', hist:'Histoire', g
 // 10. Odyssée dédiée (optionnel) : cf. startAdventure (07-map.js) et
 //     openOdysseeSelect, si une aventure spécifique est prévue.
 const IMPLEMENTED_SUBJECTS = [['math','🔢 Mathématiques'],['fr','📖 Français'],['hist','🏛️ Histoire']];
+// v12.7.36 (demande de Cyril) : la notif "nouveau contenu" (03-figurines-data.js)
+// ne se déclenchait qu'au clic sur CONTINUER (gotoSubjects()) ; elle doit aussi
+// pouvoir s'afficher à l'ouverture d'une matière, pour les profils qui l'auraient
+// manquée à ce premier point de passage (retour rapide sans repasser par l'accueil).
+function _chooseSubjectProceed(key){
+ if(key==='math'||key==='fr'||key==='hist'){
+  GM.subject=key;
+  try{ if(typeof beep==='function') beep(660,'sine',.12); }catch(e){}
+  gotoMenu2();
+ }
+}
 function chooseSubject(key){
- if(key==='math'){
-  GM.subject='math';
-  try{ if(typeof beep==='function') beep(660,'sine',.12); }catch(e){}
-  gotoMenu2();
- }else if(key==='fr'){
-  GM.subject='fr';
-  try{ if(typeof beep==='function') beep(660,'sine',.12); }catch(e){}
-  gotoMenu2();
- }else if(key==='hist'){
-  GM.subject='hist';
-  try{ if(typeof beep==='function') beep(660,'sine',.12); }catch(e){}
-  gotoMenu2();
+ if(key==='math'||key==='fr'||key==='hist'){
+  if(typeof _maybeShowContentUpdate==='function') _maybeShowContentUpdate(()=>_chooseSubjectProceed(key));
+  else _chooseSubjectProceed(key);
  }else{
   if(typeof toast==='function') toast('🔒 '+(SUBJECT_LABELS[key]||'Cette matière')+' — bientôt disponible !');
   try{ if(typeof beep==='function') beep(220,'sine',.12); }catch(e){}

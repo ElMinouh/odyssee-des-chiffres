@@ -692,6 +692,7 @@ globalThis.__api = {
   _checkMasteryAnnouncements: (typeof _checkMasteryAnnouncements==='function') ? _checkMasteryAnnouncements : undefined,
   _checkOpComboQuest: (typeof _checkOpComboQuest==='function') ? _checkOpComboQuest : undefined,
   _chineseNY: (typeof _chineseNY==='function') ? _chineseNY : undefined,
+  _chooseSubjectProceed: (typeof _chooseSubjectProceed==='function') ? _chooseSubjectProceed : undefined,
   _clampNum: (typeof _clampNum==='function') ? _clampNum : undefined,
   _classStatUpdate: (typeof _classStatUpdate==='function') ? _classStatUpdate : undefined,
   _closeBossCard: (typeof _closeBossCard==='function') ? _closeBossCard : undefined,

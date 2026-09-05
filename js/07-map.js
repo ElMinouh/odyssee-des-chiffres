@@ -186,7 +186,12 @@ function startAdventure(advId, skipMapOpen){
   }
  }
  if(typeof P==='object' && P) P.lastAdventure = GM.adventure;
- if(!skipMapOpen) openMap();
+ if(skipMapOpen) return; // reprise (continueAdventure) : pas un vrai point d'entrée "nouvelle Odyssée"
+ // v12.7.36 (demande de Cyril) : la notif "nouveau contenu" doit aussi
+ // pouvoir apparaître à la création d'une nouvelle Odyssée, pas seulement
+ // au clic sur CONTINUER de l'accueil (gotoSubjects(), 01-core.js).
+ if(typeof _maybeShowContentUpdate==='function') _maybeShowContentUpdate(openMap);
+ else openMap();
 }
 
 // v12.3.2 (audit UX #4) : reprendre directement l'étape en cours de la dernière

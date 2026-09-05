@@ -1384,4 +1384,16 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-125 — Notification de nouveau contenu : marquage "vu" post-affichage + points d'accroche supplémentaires
+
+**Contexte** : suite à l'ajout des 22 figurines exclusives (v12.7.34), Cyril a constaté que la notif "nouveau contenu" (ADR-115) ne s'était jamais réellement affichée à l'écran malgré une entrée `_CONTENT_UPDATES` valide. Cause : `_maybeShowContentUpdate()` marquait `P.contentUpdatesSeen` AVANT même de tenter l'affichage — toute défaillance silencieuse de `_showStoryModal()` (absente, erreur) consommait la notif sans jamais la montrer, sans retry possible. Cyril a aussi demandé d'élargir les points de déclenchement, jusqu'ici limités au clic sur CONTINUER de l'écran d'accueil (`gotoSubjects()`), à deux moments naturels supplémentaires : l'ouverture d'une matière et la création d'une nouvelle Odyssée.
+
+**Décision** : (1) `_maybeShowContentUpdate()` (03-figurines-data.js) ne pousse plus l'id dans `P.contentUpdatesSeen` qu'immédiatement avant l'appel réel à `_showStoryModal()` — si celle-ci est absente, la fonction ressort sans rien marquer, permettant un nouvel essai au prochain point d'accroche plutôt que de perdre l'annonce. (2) Nouveaux points d'accroche, même pattern "garde puis continue" que l'existant : `chooseSubject()` (01-core.js, ouverture d'une matière math/fr/hist) et `startAdventure()` (07-map.js, création d'une nouvelle Odyssée) — mais PAS quand `startAdventure` est appelée avec `skipMapOpen:true` (cas `continueAdventure()`, simple reprise d'une Odyssée déjà en cours, pas un vrai nouveau point d'entrée).
+
+**Alternatives rejetées** : détecter une "réussite d'affichage" via un callback de rendu DOM de `_showStoryModal()` (rejeté — sur-ingénierie ; la seule vraie faille observée était l'absence pure et simple de la fonction, couverte par le `typeof` déjà en place).
+
+**Impact** : `03-figurines-data.js` (`_maybeShowContentUpdate`), `01-core.js` (`chooseSubject`, nouvelle `_chooseSubjectProceed`), `07-map.js` (`startAdventure`). v12.7.36.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

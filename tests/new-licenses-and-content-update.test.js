@@ -404,3 +404,69 @@ describe('_maybeShowContentUpdate() — notification v12.7.34 (nouvelles figurin
     expect(api.getP().contentUpdatesSeen).toContain('update_2026_09_exclusifs');
   });
 });
+
+// v12.7.36 — bug signalé par Cyril : la notif se marquait "vue" AVANT même
+// de tenter l'affichage, ce qui pouvait la faire disparaître sans jamais
+// avoir été montrée. Et nouveaux points d'accroche (ouverture de matière,
+// création d'Odyssée) en plus du clic sur CONTINUER existant.
+describe('_maybeShowContentUpdate() — ne marque "vu" que si _showStoryModal a réellement pu être appelée (v12.7.36)', () => {
+  it('ne marque PAS vu si _showStoryModal est absente (retry possible plus tard)', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    api.setP(p);
+    const original = api._showStoryModal;
+    // Simule l'absence de _showStoryModal (ordre de chargement, etc.)
+    globalThis._showStoryModal = undefined;
+    try{
+      let doneCalled = false;
+      api._maybeShowContentUpdate(() => { doneCalled = true; });
+      expect(api.getP().contentUpdatesSeen).not.toContain('update_2026_08_av_tl');
+      expect(doneCalled).toBe(true); // la chaîne narrative continue quand même
+    } finally {
+      globalThis._showStoryModal = original;
+    }
+  });
+});
+
+describe('Nouveaux points d\'accroche pour la notif "nouveau contenu" (v12.7.36)', () => {
+  it('chooseSubject("math") affiche la notif non vue avant de rejoindre le menu 2', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    p.contentUpdatesSeen = ['update_2026_08_av_tl', 'update_2026_09_exclusifs'];
+    // Ajoute artificiellement une annonce non vue pour isoler le test du
+    // contenu réel de _CONTENT_UPDATES (qui grossira avec le temps).
+    p.contentUpdatesSeen = ['update_2026_08_av_tl'];
+    api.setP(p);
+    api.chooseSubject('math');
+    const overlay = api._lastCreatedElement();
+    expect(overlay.className).toBe('story-overlay');
+  });
+
+  it('chooseSubject("math") ne bloque pas si tout est déjà vu (comportement inchangé)', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    p.contentUpdatesSeen = ['update_2026_08_av_tl', 'update_2026_09_exclusifs'];
+    api.setP(p);
+    api.chooseSubject('math');
+    expect(api.getGM().subject).toBe('math');
+  });
+
+  it('startAdventure("mat") (nouvelle Odyssée) affiche la notif non vue', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    p.contentUpdatesSeen = ['update_2026_08_av_tl'];
+    api.setP(p);
+    api.startAdventure('mat');
+    const overlay = api._lastCreatedElement();
+    expect(overlay.className).toBe('story-overlay');
+  });
+
+  it('startAdventure("mat", true) (reprise via continueAdventure) NE déclenche PAS la notif', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    p.contentUpdatesSeen = ['update_2026_08_av_tl'];
+    api.setP(p);
+    api.startAdventure('mat', true);
+    expect(api._createdElements().length).toBe(0);
+  });
+});

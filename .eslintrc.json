@@ -568,6 +568,7 @@
     "_checkMasteryAnnouncements": "writable",
     "_checkOpComboQuest": "writable",
     "_chineseNY": "writable",
+    "_chooseSubjectProceed": "writable",
     "_clampNum": "writable",
     "_classStatUpdate": "writable",
     "_closeBossCard": "writable",

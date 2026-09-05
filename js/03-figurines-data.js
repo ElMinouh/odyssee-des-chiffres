@@ -2745,6 +2745,13 @@ function _maybeShowContentUpdate(afterCb){
   P.contentUpdatesSeen = P.contentUpdatesSeen || [];
   const next = _CONTENT_UPDATES.find(u => !P.contentUpdatesSeen.includes(u.id));
   if(!next){ _done(); return; }
+  // v12.7.36 (bug signalé par Cyril) : le flag "vu" était marqué AVANT même
+  // de tenter l'affichage — si _showStoryModal n'existait pas encore à cet
+  // instant (ordre de chargement des scripts, etc.), la notif se marquait
+  // vue sans jamais avoir été montrée au joueur. On ne marque désormais vu
+  // que juste avant d'appeler réellement _showStoryModal ; si la fonction
+  // est absente, on retente au prochain appel au lieu de la perdre.
+  if(typeof _showStoryModal !== 'function'){ _done(); return; }
   P.contentUpdatesSeen.push(next.id);
   if(typeof saveProfileNow === 'function') saveProfileNow();
   else if(typeof saveProfile === 'function') saveProfile();
@@ -2757,8 +2764,7 @@ function _maybeShowContentUpdate(afterCb){
    pages: [{ emoji: '🧩', text: listHtml }],
    closeLabel: 'Continuer ›',
   };
-  if(typeof _showStoryModal === 'function') _showStoryModal(chapter, _done);
-  else _done();
+  _showStoryModal(chapter, _done);
  }catch(e){ _done(); }
 }
 
