@@ -279,7 +279,12 @@ describe('Une figurine retirée peut être rachetée/regagnée normalement ensui
     expect(api.getP().figAcquiredAt.sx01).toBeGreaterThan(1000);
   });
 
-  it('_checkLicenseCompletions() NE réattribue PAS automatiquement une figurine de complétion retirée (pas d\'action d\'achat délibérée)', () => {
+  // v12.7.37 : _checkLicenseCompletions() (auto-don) a disparu — il n'existe
+  // plus AUCUN chemin de réattribution automatique, delibérée ou non. Une
+  // figurine completionLock retirée par un parent ne peut redevenir possédée
+  // que via un achat volontaire (buyFigurine()), exactement comme une
+  // figurine normale — et seulement une fois la licence de base complète.
+  it('buyFigurine() autorise le rachat d\'une figurine de complétion retirée, une fois la licence complète, et horodate ce rachat', () => {
     const api = loadGame(FIG_FILES);
     const profile = api.defProfile('Léo');
     const tlLocked = api.FIGURINES.find(f => f.uk === 'tl' && f.completionLock);
@@ -287,8 +292,10 @@ describe('Une figurine retirée peut être rachetée/regagnée normalement ensui
     const others = api.FIGURINES.filter(f => f.uk === 'tl' && f.id !== tlLocked.id && !f.completionLock).map(f => f.id);
     profile.ownedFigurines = [...others]; // toutes les autres figurines Tobie Lolness possédées
     profile.blockedFigurinesAt = { [tlLocked.id]: 1000 }; // mais celle-ci a été retirée par un parent
+    profile.stars = 9999;
     api.setP(profile);
-    api._checkLicenseCompletions();
-    expect(api.getP().ownedFigurines).not.toContain(tlLocked.id);
+    api.buyFigurine(tlLocked.id);
+    expect(api.getP().ownedFigurines).toContain(tlLocked.id);
+    expect(api.getP().figAcquiredAt[tlLocked.id]).toBeGreaterThan(1000);
   });
 });
