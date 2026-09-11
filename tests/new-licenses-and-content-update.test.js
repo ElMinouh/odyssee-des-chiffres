@@ -221,7 +221,7 @@ describe('_maybeShowContentUpdate() — notification de nouveau contenu', () => 
     // v12.7.34 : les deux notifications existantes doivent être marquées vues
     // pour que ces tests ("plus rien à afficher") restent valides après
     // l'ajout de la notification des figurines exclusives.
-    p.contentUpdatesSeen = ['update_2026_08_av_tl', 'update_2026_09_exclusifs'];
+    p.contentUpdatesSeen = ['update_2026_08_av_tl', 'update_2026_09_exclusifs', 'update_2026_09_mario_hp'];
     api.setP(p);
     let doneCalled = false;
     api._maybeShowContentUpdate(() => { doneCalled = true; });
@@ -289,7 +289,7 @@ describe('gotoSubjects() — la notification s\'intercale avant l\'écran des ma
     // v12.7.34 : les deux notifications existantes doivent être marquées vues
     // pour que ces tests ("plus rien à afficher") restent valides après
     // l'ajout de la notification des figurines exclusives.
-    p.contentUpdatesSeen = ['update_2026_08_av_tl', 'update_2026_09_exclusifs'];
+    p.contentUpdatesSeen = ['update_2026_08_av_tl', 'update_2026_09_exclusifs', 'update_2026_09_mario_hp'];
     api.setP(p);
     api.gotoSubjects();
     expect(api._createdElements().length).toBe(0);
@@ -498,7 +498,7 @@ describe('Nouveaux points d\'accroche pour la notif "nouveau contenu" (v12.7.36)
   it('chooseSubject("math") affiche la notif non vue avant de rejoindre le menu 2', () => {
     const api = loadGame(FILES);
     const p = api.defProfile('Test');
-    p.contentUpdatesSeen = ['update_2026_08_av_tl', 'update_2026_09_exclusifs'];
+    p.contentUpdatesSeen = ['update_2026_08_av_tl', 'update_2026_09_exclusifs', 'update_2026_09_mario_hp'];
     // Ajoute artificiellement une annonce non vue pour isoler le test du
     // contenu réel de _CONTENT_UPDATES (qui grossira avec le temps).
     p.contentUpdatesSeen = ['update_2026_08_av_tl'];
@@ -511,7 +511,7 @@ describe('Nouveaux points d\'accroche pour la notif "nouveau contenu" (v12.7.36)
   it('chooseSubject("math") ne bloque pas si tout est déjà vu (comportement inchangé)', () => {
     const api = loadGame(FILES);
     const p = api.defProfile('Test');
-    p.contentUpdatesSeen = ['update_2026_08_av_tl', 'update_2026_09_exclusifs'];
+    p.contentUpdatesSeen = ['update_2026_08_av_tl', 'update_2026_09_exclusifs', 'update_2026_09_mario_hp'];
     api.setP(p);
     api.chooseSubject('math');
     expect(api.getGM().subject).toBe('math');
@@ -534,5 +534,126 @@ describe('Nouveaux points d\'accroche pour la notif "nouveau contenu" (v12.7.36)
     api.setP(p);
     api.startAdventure('mat', true);
     expect(api._createdElements().length).toBe(0);
+  });
+});
+
+// v12.7.38 (demande de Cyril) — 8 nouvelles figurines exclusives : Mario Bros
+// (mr09-mr11) et Harry Potter (hp13-hp17). Mêmes règles que v12.7.37 : jamais
+// offertes, seulement achetables (500⭐) une fois la collection de base complète.
+const MR_NEW_IDS = ['mr09','mr10','mr11'];
+const HP_NEW_IDS = ['hp13','hp14','hp15','hp16','hp17'];
+const ALL_NEW_EXCLUSIFS_V38 = [...MR_NEW_IDS, ...HP_NEW_IDS];
+
+describe('Nouvelles figurines exclusives v12.7.38 (Mario Bros/Harry Potter)', () => {
+  it('8 nouvelles figurines présentes, avec tous les champs requis', () => {
+    const api = loadGame(FILES);
+    const byId = Object.fromEntries(api.FIGURINES.map(f => [f.id, f]));
+    ALL_NEW_EXCLUSIFS_V38.forEach(id => {
+      const f = byId[id];
+      expect(f, `figurine ${id} manquante`).toBeTruthy();
+      ['name','uni','uk','em','color','gc','r','desc'].forEach(field => {
+        expect(f[field], `${id}.${field}`).toBeTruthy();
+      });
+      expect(typeof f.desc).toBe('string');
+      expect(f.desc.length).toBeGreaterThan(30);
+    });
+  });
+
+  it('aucun id dupliqué avec les figurines existantes', () => {
+    const api = loadGame(FILES);
+    const ids = api.FIGURINES.map(f => f.id);
+    const dups = ids.filter((id, i) => ids.indexOf(id) !== i);
+    expect(dups).toEqual([]);
+  });
+
+  it('toutes sont exclusives, verrouillées par complétion, payantes (500⭐), avec un indice clair', () => {
+    const api = loadGame(FILES);
+    const byId = Object.fromEntries(api.FIGURINES.map(f => [f.id, f]));
+    ALL_NEW_EXCLUSIFS_V38.forEach(id => {
+      const f = byId[id];
+      expect(f.r, `${id}.r`).toBe('exclusif');
+      expect(f.p, `${id}.p`).toBe(500);
+      expect(f.completionLock, `${id}.completionLock`).toBe(true);
+      expect(f.unlockHint, `${id}.unlockHint`).toBeTruthy();
+    });
+  });
+
+  it('les 8 nouveaux ids sont dans FIG_IMG_PRELOAD', () => {
+    const api = loadGame(FILES);
+    ALL_NEW_EXCLUSIFS_V38.forEach(id => {
+      expect(api.FIG_IMG_PRELOAD, `${id} absent de FIG_IMG_PRELOAD`).toContain(id);
+    });
+  });
+
+  it('Mario Bros (8 de base) : posséder les 8 rend les 3 nouveaux exclusifs achetables', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    const base = api.FIGURINES.filter(f => f.uk === 'mr' && !f.completionLock).map(f => f.id);
+    p.ownedFigurines = base;
+    api.setP(p);
+    MR_NEW_IDS.forEach(id => {
+      const f = api.FIGURINES.find(x => x.id === id);
+      expect(api._isLicenseCompletionUnlocked(f), id).toBe(true);
+      expect(api.getP().ownedFigurines).not.toContain(id);
+    });
+  });
+
+  it('Mario Bros : pas achetables s\'il manque un item de base', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    const base = api.FIGURINES.filter(f => f.uk === 'mr' && !f.completionLock).map(f => f.id);
+    p.ownedFigurines = base.slice(0, -1);
+    api.setP(p);
+    MR_NEW_IDS.forEach(id => {
+      const f = api.FIGURINES.find(x => x.id === id);
+      expect(api._isLicenseCompletionUnlocked(f), id).toBe(false);
+    });
+  });
+
+  it('Harry Potter (12 de base) : posséder les 12 rend les 5 nouveaux exclusifs achetables', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    const base = api.FIGURINES.filter(f => f.uk === 'hp' && !f.completionLock).map(f => f.id);
+    p.ownedFigurines = base;
+    api.setP(p);
+    HP_NEW_IDS.forEach(id => {
+      const f = api.FIGURINES.find(x => x.id === id);
+      expect(api._isLicenseCompletionUnlocked(f), id).toBe(true);
+    });
+  });
+
+  it('Harry Potter : achat effectif d\'une figurine exclusive une fois la collection complète', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    const base = api.FIGURINES.filter(f => f.uk === 'hp' && !f.completionLock).map(f => f.id);
+    p.ownedFigurines = base;
+    p.stars = 9999;
+    api.setP(p);
+    api.buyFigurine('hp13');
+    expect(api.getP().ownedFigurines).toContain('hp13');
+    expect(api.getP().stars).toBe(9999 - 500);
+  });
+});
+
+describe('_maybeShowContentUpdate() — notification v12.7.38 (Mario Bros/Harry Potter)', () => {
+  it('affiche la modale pour un profil ayant déjà vu les annonces précédentes', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    p.contentUpdatesSeen = ['update_2026_08_av_tl', 'update_2026_09_exclusifs'];
+    api.setP(p);
+    api._maybeShowContentUpdate(() => {});
+    const overlay = api._lastCreatedElement();
+    expect(overlay.className).toBe('story-overlay');
+    expect(overlay.innerHTML).toContain('Mario Bros');
+    expect(overlay.innerHTML).toContain('Harry Potter');
+  });
+
+  it('marque update_2026_09_mario_hp comme vue après affichage', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    p.contentUpdatesSeen = ['update_2026_08_av_tl', 'update_2026_09_exclusifs'];
+    api.setP(p);
+    api._maybeShowContentUpdate(() => {});
+    expect(api.getP().contentUpdatesSeen).toContain('update_2026_09_mario_hp');
   });
 });

@@ -113,9 +113,10 @@ const FIG_IMG_PRELOAD = [
   'mi01', 'mi02', 'mi03', 'mi04', 'mi05', 'mi06',
   // Pyjamasques (7)
   'pj01', 'pj02', 'pj03', 'pj04', 'pj05', 'pj06', 'pj07',
-  // Harry Potter (12)
+  // Harry Potter (17)
   'hp01', 'hp02', 'hp03', 'hp04', 'hp05', 'hp06', 'hp07',
-  'hp08', 'hp09', 'hp10', 'hp11', 'hp12',
+  'hp08', 'hp09', 'hp10', 'hp11', 'hp12', 'hp13', 'hp14',
+  'hp15', 'hp16', 'hp17',
   // Star Wars (23)
   'sw01', 'sw02', 'sw03', 'sw04', 'sw05', 'sw06', 'sw07',
   'sw08', 'sw09', 'sw10', 'sw11', 'sw12', 'sw13', 'sw14',
@@ -137,9 +138,9 @@ const FIG_IMG_PRELOAD = [
   'pk08', 'pk09', 'pk10', 'pk11', 'pk12', 'pk13', 'pk14',
   'pk15', 'pk16', 'pk17', 'pk18', 'pk19', 'pk20', 'pk21',
   'pk22', 'pk23', 'pk24', 'pk25', 'pk26', 'pk27',
-  // Mario Bros (8)
+  // Mario Bros (11)
   'mr01', 'mr02', 'mr03', 'mr04', 'mr05', 'mr06', 'mr07',
-  'mr08',
+  'mr08', 'mr09', 'mr10', 'mr11',
   // Totally Spies (5)
   'sp01', 'sp02', 'sp03', 'sp04', 'sp05',
   // Cités d'Or (15)
@@ -306,6 +307,11 @@ const FIGURINES=[
 {id:'hp10',name:'Dobby',uni:'Harry Potter',uk:'hp',em:'🧦',em2:'👂',color:'#e67e22',gc:'#f39c12',desc:'Elfe de maison libre, Dobby est l\'une des créatures les plus aimées de tout l\'univers Harry Potter. Affranchi par Harry grâce à une chaussette, ses grands yeux verts et ses oreilles de chauve-souris le rendent irrésistible. Il mourra en sauvant Harry et ses amis. Dobby est libre !',r:'commun',p:90},
 {id:'hp11',name:'Luna Lovegood',uni:'Harry Potter',uk:'hp',em:'🌙',em2:'🦋',color:'#f8e71c',gc:'#f9e34b',desc:'Surnommée la Cinglée, Luna est l\'élève la plus originale de Serdaigle. Ses grands yeux rêveurs et son collier de bouchons voient le monde d\'une façon unique. Membre fondatrice de l\'Armée de Dumbledore, sa loyauté envers Harry et sa sérénité face au danger en font une alliée précieuse.',r:'rare',p:150},
 {id:'hp12',name:'Bellatrix Lestrange',uni:'Harry Potter',uk:'hp',em:'🌀',em2:'🖤',color:'#6c0000',gc:'#c0392b',desc:'La plus fanatique des Mangemorts, Bellatrix voue une dévotion absolue à Voldemort. Emprisonnée à Azkaban pendant quatorze ans, elle s\'en échappe pour reprendre sa place. Ses cheveux noirs sauvages et son regard fou expriment une folie meurtrière. Elle tuera Sirius Black lors de la Bataille du Département des Mystères.',r:'épique',p:230},
+{id:'hp13',name:'La Baguette de Sureau',uni:'Harry Potter',uk:'hp',em:'🪄',em2:'💀',color:'#5d4037',gc:'#a1887f',desc:'La plus puissante des trois Reliques de la Mort, taillée dans le bois d\'un sureau par la Mort elle-même selon la légende. Invincible entre les mains de son véritable maître, elle change d\'allégeance par la défaite de son possesseur plutôt que par sa mort. Voldemort la cherchera toute sa vie, sans jamais comprendre le vrai secret de sa loyauté.',r:'exclusif',p:500,completionLock:true,unlockHint:'🏆 Achetable en réunissant les 12 autres figurines Harry Potter'},
+{id:'hp14',name:'La Carte du Maraudeur',uni:'Harry Potter',uk:'hp',em:'🗺️',em2:'👣',color:'#c9a86a',gc:'#e8d5a3',desc:'Créée par les Maraudeurs — James Potter, Sirius Black, Remus Lupin et Peter Pettigrow — cette carte magique révèle chaque recoin de Poudlard ainsi que la position de toute personne s\'y trouvant. Elle ne se dévoile qu\'à la formule « Je jure solennellement que mes intentions sont mauvaises » et s\'efface par « Méfait accompli ». Un trésor de discrétion transmis à Harry par Fred et George.',r:'exclusif',p:500,completionLock:true,unlockHint:'🏆 Achetable en réunissant les 12 autres figurines Harry Potter'},
+{id:'hp15',name:'Hedwige',uni:'Harry Potter',uk:'hp',em:'🦉',em2:'❄️',color:'#eceff1',gc:'#ffffff',desc:'La chouette harfang des neiges offerte à Harry par Hagrid pour son onzième anniversaire, son tout premier vrai cadeau. Fidèle messagère et véritable compagne, elle porte son courrier à travers le pays entier sans jamais faillir. Son intelligence et son affection pour Harry en font bien plus qu\'un animal familier : une amie précieuse jusqu\'au bout.',r:'exclusif',p:500,completionLock:true,unlockHint:'🏆 Achetable en réunissant les 12 autres figurines Harry Potter'},
+{id:'hp16',name:'La Cape d\'invisibilité',uni:'Harry Potter',uk:'hp',em:'🧥',em2:'✨',color:'#1a1a2e',gc:'#3f3f6b',desc:'Deuxième des Reliques de la Mort, cette cape tissée à partir de fils d\'Invisibilité rend totalement invisible celui qui la porte, sans jamais s\'user ni perdre son pouvoir avec le temps — contrairement aux sortilèges classiques. Héritée par Harry de son père James, elle l\'accompagne dans chacune de ses aventures les plus dangereuses à Poudlard.',r:'exclusif',p:500,completionLock:true,unlockHint:'🏆 Achetable en réunissant les 12 autres figurines Harry Potter'},
+{id:'hp17',name:'Le Choixpeau magique',uni:'Harry Potter',uk:'hp',em:'🎩',em2:'🏰',color:'#6d4c2f',gc:'#a9784f',desc:'Ce vieux chapeau usé et rapiécé, ancien couvre-chef du fondateur Godric Gryffondor, répartit chaque nouvel élève dans l\'une des quatre maisons de Poudlard en lisant dans son esprit. Capable de parler et même de chanter, il hésita longuement avant de placer Harry à Gryffondor plutôt qu\'à Serpentard — un choix qui changea le cours de son destin.',r:'exclusif',p:500,completionLock:true,unlockHint:'🏆 Achetable en réunissant les 12 autres figurines Harry Potter'},
 {id:'sw01',name:'Luke Skywalker',uni:'Star Wars',uk:'sw',em:'💙',em2:'⚔️',color:'#3498db',gc:'#5dade2',desc:'Fils d\'Anakin Skywalker, élevé sur Tatooine, Luke est le Jedi qui vaincra l\'Empire Galactique. Formé par Maître Yoda sur Dagobah, il manie son sabre laser vert avec maîtrise. Son amour filial et sa foi en la rédemption de son père permettront la chute de l\'Empereur Palpatine.',r:'épique',p:230},
 {id:'sw02',name:'Dark Vador',uni:'Star Wars',uk:'sw',em:'😤',em2:'🔴',color:'#c0392b',gc:'#e74c3c',desc:'Autrefois Anakin Skywalker, chevalier Jedi prometteur, il bascule dans le Côté Obscur. Son armure noire, son masque respiratoire et son sabre laser rouge sont les symboles absolus du mal intergalactique. Sa respiration est l\'un des sons les plus reconnaissables du cinéma. Il choisira finalement la lumière pour sauver Luke.',r:'légendaire',p:350},
 {id:'sw03',name:'Maître Yoda',uni:'Star Wars',uk:'sw',em:'🧘',em2:'💚',color:'#27ae60',gc:'#2ecc71',desc:'Grand Maître Jedi depuis 800 ans, Yoda est l\'être le plus sage dans la Force de toute la galaxie. Petit être vert de 900 ans, il parle en inversant sa syntaxe. Même à l\'article de la mort, il peut soulever un X-Wing par la Force. Sa connexion à la Force dépasse tout ce qu\'un humain peut concevoir.',r:'légendaire',p:350},
@@ -425,6 +431,9 @@ const FIGURINES=[
 {id:'mr06',name:'Toad',uni:'Mario Bros',uk:'mr',em:'🍄',em2:'💙',color:'#c0392b',gc:'#3498db',desc:'Serviteur dévoué de la Princesse Peach reconnaissable à son chapeau blanc à gros pois rouges. Petit mais rapide, il possède la meilleure vitesse dans Super Mario Bros 2. Ses grands yeux bleus expressifs et sa voix aiguë le rendent immédiatement attachant. Captain Toad explore le monde avec sa lampe frontale.',r:'commun',p:90},
 {id:'mr07',name:'Wario',uni:'Mario Bros',uk:'mr',em:'💛',em2:'💜',color:'#f1c40f',gc:'#f4d03f',desc:'Rival corrompu et glouton de Mario, sa version opposée en tout. Sa casquette jaune avec le W inversé et sa salopette violette le définissent visuellement. PDG de WarioWare Inc., il fabrique des mini-jeux absurdes pour s\'enrichir. Son rire tonitruant et sa recherche obsessionnelle de trésors le rendent irrésistiblement drôle.',r:'épique',p:230},
 {id:'mr08',name:'Waluigi',uni:'Mario Bros',uk:'mr',em:'🍆',em2:'😈',color:'#7d3c98',gc:'#9b59b6',desc:'Némesis comique de Luigi, Waluigi est apparu dans Mario Tennis en 2000. Grand, mince et tout en violet, son L renversé en W témoigne de sa nature de jumeau maléfique. Sa moustache pointue et son rire machiavélique le rendent inoubliable. Toujours en colère et jaloux, il est devenu un mème internet adoré.',r:'épique',p:230},
+{id:'mr09',name:"L'Étoile de Mario",uni:'Mario Bros',uk:'mr',em:'⭐',em2:'✨',color:'#f9d71c',gc:'#fff176',desc:'L\'Étoile d\'invincibilité, apparue dès le tout premier Super Mario Bros en 1985. Le temps de quelques précieuses secondes, elle rend Mario totalement invulnérable, transforme sa musique en thème disco endiablé et fait scintiller ses couleurs à toute vitesse. Aucun ennemi, aucun obstacle ne peut plus l\'arrêter tant qu\'elle brille.',r:'exclusif',p:500,completionLock:true,unlockHint:'🏆 Achetable en réunissant les 8 autres figurines Mario Bros'},
+{id:'mr10',name:'Le Bloc ? de Mario',uni:'Mario Bros',uk:'mr',em:'❓',em2:'🟫',color:'#e8a33d',gc:'#f5c469',desc:'Ce cube doré marqué d\'un point d\'interrogation est l\'un des symboles les plus reconnaissables de tout le jeu vidéo. D\'un coup de poing par en dessous, il libère pièces, champignons ou fleurs de feu — parfois même une Étoile. Personne ne sait jamais à l\'avance ce qu\'il contient avant de l\'avoir cogné.',r:'exclusif',p:500,completionLock:true,unlockHint:'🏆 Achetable en réunissant les 8 autres figurines Mario Bros'},
+{id:'mr11',name:'La Pièce de Mario Kart',uni:'Mario Bros',uk:'mr',em:'🪙',em2:'🏁',color:'#f0c419',gc:'#ffe082',desc:'Monnaie dorée emblématique ramassée sur les circuits de Mario Kart, chaque pièce collectée offre un léger surplus de vitesse et permet de garder un kart bien entretenu. En perdre après une collision fait ralentir le pilote — les grands champions savent toujours en garder une pleine réserve jusqu\'à la ligne d\'arrivée.',r:'exclusif',p:500,completionLock:true,unlockHint:'🏆 Achetable en réunissant les 8 autres figurines Mario Bros'},
 {id:'gd01',name:'Actarus',uni:'Goldorak',uk:'gd',em:'🤖',em2:'⭐',color:'#1a3a7a',gc:'#4a7af0',desc:"Duc Freed de la planète Vega, Actarus est le pilote de Goldorak. Après la destruction de Vega par le Roi Véga, il se réfugie sur Terre. Ses yeux bleus déterminés et ses cheveux noirs en bataille le rendent reconnaissable.",r:'légendaire',p:350},
 {id:'gd02',name:'Alcor',uni:'Goldorak',uk:'gd',em:'🤖',em2:'💚',color:'#2a4a2a',gc:'#4af04a',desc:"Meilleur ami d'Actarus, Alcor pilote le Cybord X7. Ses cheveux blonds et son enthousiasme en font le complément parfait du sérieux d'Actarus.",r:'rare',p:150},
 {id:'gd03',name:'Vénusia',uni:'Goldorak',uk:'gd',em:'🤖',em2:'💗',color:'#c0006c',gc:'#f48fb1',desc:"Pilote aux longs cheveux rouges et aux grands yeux expressifs. Son courage égale celui de ses compagnons masculins. Son style de combat agile en fait une guerrière redoutable.",r:'rare',p:150},
@@ -2729,6 +2738,14 @@ const _CONTENT_UPDATES = [
    {emoji:'🐉', text:'9 nouvelles figurines exclusives <b>Dragon Ball</b> !'},
    {emoji:'🚀', text:'2 nouvelles figurines exclusives <b>Tintin</b> !'},
    {emoji:'🧪', text:'1 nouvelle figurine exclusive <b>Astérix</b> !'},
+  ],
+ },
+ {
+  id: 'update_2026_09_mario_hp',
+  title: '🎉 Nouveau dans ta collection !',
+  items: [
+   {emoji:'⭐', text:'3 nouvelles figurines exclusives <b>Mario Bros</b>, achetables une fois la collection complète !'},
+   {emoji:'⚡', text:'5 nouvelles figurines exclusives <b>Harry Potter</b>, achetables une fois la collection complète !'},
   ],
  },
 ];
