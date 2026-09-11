@@ -78,7 +78,11 @@ function _renderFigurinesShop(filter){
   if(isOwned){
    html+=`<span style="font-size:.65em;color:#2ecc71;font-weight:700;">🔍 Voir →</span>`;
   } else {
-   if(fig.r==='exclusif'){
+   // v12.7.37 (demande de Cyril) : les figurines completionLock ne sont plus
+   // offertes automatiquement une fois la licence complète — elles ne
+   // deviennent qu'ACHETABLES (voir _isLicenseCompletionUnlocked, 10-figurines.js).
+   // Tant que la licence n'est pas complète : même message verrouillé qu'avant.
+   if(fig.completionLock && !(typeof _isLicenseCompletionUnlocked==='function' && _isLicenseCompletionUnlocked(fig))){
     html+=`<span style="font-size:.65em;color:#bdc3c7;font-style:italic;">${fig.unlockHint ? '' : '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> '}${fig.unlockHint || 'À gagner en boss'}</span>`;
    } else {
     html+=`<button class="fig-buy-btn" data-figid="${fig.id}" style="margin:3px 0 0;padding:4px 10px;font-size:.65em;background:${fig.color};border-bottom:2px solid rgba(0,0,0,.3);border-radius:8px;">${fig.p} ⭐</button>`;
@@ -103,45 +107,26 @@ function _renderFigurinesShop(filter){
 }
 
 // v12.7.12 : mécanisme GÉNÉRIQUE de déblocage par complétion de licence.
-// Toute figurine portant completionLock:true se débloque automatiquement
-// dès que TOUTES LES AUTRES figurines de sa licence (hors figurines
-// elles-mêmes verrouillées de la même façon, pour éviter tout blocage
-// circulaire si une licence en a plusieurs) sont possédées. Remplace
-// _checkTobieLolnessCompletion (v12.7.11), qui ne couvrait qu'une licence —
-// toute future figurine "à débloquer par complétion" n'a besoin que du
-// flag completionLock:true + unlockHint sur sa fiche (03-figurines-data.js),
+// v12.7.37 (demande de Cyril) : CHANGEMENT DE COMPORTEMENT — une figurine
+// completionLock n'est plus offerte automatiquement une fois la licence
+// complète. Elle devient simplement ACHETABLE (au prix normal, voir
+// buyFigurine() plus bas) ; avant complétion, son achat reste refusé. Toute
+// future figurine "à débloquer par complétion" n'a besoin que du flag
+// completionLock:true + unlockHint sur sa fiche (03-figurines-data.js),
 // aucun code supplémentaire.
-function _checkLicenseCompletions(){
+function _isLicenseCompletionUnlocked(fig){
  try{
-  if(typeof P==='undefined' || !P) return;
-  if(typeof FIGURINES==='undefined' || !Array.isArray(FIGURINES)) return;
+  if(!fig || !fig.completionLock) return true; // pas concernée par la règle
+  if(typeof P==='undefined' || !P) return false;
+  if(typeof FIGURINES==='undefined' || !Array.isArray(FIGURINES)) return false;
   const owned = P.ownedFigurines || [];
-  const newlyUnlocked = [];
-  FIGURINES.forEach(fig=>{
-   if(!fig.completionLock) return;
-   if(owned.includes(fig.id) || newlyUnlocked.includes(fig.id)) return;
-   // v12.7.19 (demande de Cyril) : contrairement à un achat en boutique ou
-   // un boss saisonnier, ce déblocage est automatique et non délibéré — une
-   // figurine de complétion retirée par un parent n'est donc PAS réattribuée
-   // ici (elle réapparaîtrait sinon dès le prochain achat sans rapport,
-   // puisque les autres figurines requises restent, elles, possédées).
-   if(P.blockedFigurinesAt && P.blockedFigurinesAt[fig.id]) return;
-   const others = FIGURINES.filter(f => f.uk===fig.uk && f.id!==fig.id && !f.completionLock);
-   if(others.length && others.every(f => owned.includes(f.id))){
-    newlyUnlocked.push(fig.id);
-   }
-  });
-  if(!newlyUnlocked.length) return;
-  P.ownedFigurines = [...owned, ...newlyUnlocked];
-  if(typeof saveProfileNow==='function') saveProfileNow();
-  else if(typeof saveProfile==='function') saveProfile();
-  newlyUnlocked.forEach(id=>{
-   const fig = FIGURINES.find(f=>f.id===id);
-   if(!fig) return;
-   if(typeof toast==='function') toast(`🏆 Collection ${fig.uni} complète ! ${fig.name} rejoint ta collection !`, 4500);
-  });
-  if(typeof beep==='function'){ beep(880,'sine',.4); setTimeout(()=>beep(1100,'sine',.3),180); setTimeout(()=>beep(1320,'sine',.35),360); }
- }catch(e){}
+  // Exclut les AUTRES figurines elles-mêmes completionLock de la même
+  // licence (une licence peut en avoir plusieurs, ex. Goldorak, Dragon Ball) :
+  // sans cette exclusion, deux figurines verrouillées se bloqueraient
+  // mutuellement (aucune des deux n'étant jamais dans la collection "de base").
+  const others = FIGURINES.filter(f => f.uk===fig.uk && f.id!==fig.id && !f.completionLock);
+  return others.length>0 && others.every(f => owned.includes(f.id));
+ }catch(e){ return false; }
 }
 
 // ── v12.7.18 (demande de Cyril) : suppression de figurines depuis la Vue
@@ -153,9 +138,9 @@ function _checkLicenseCompletions(){
 // blockedFigurines (liste "tombstone", voir _mergeCloudProfiles() en
 // 12-cloud.js) pour que le retrait tienne sur tous les appareils, même un
 // appareil qui aurait encore l'ancienne copie de la figurine en local.
-// Retrait définitif : buyFigurine()/unlockSeasonalFigurine()/
-// _checkLicenseCompletions() refusent toutes de réattribuer une figurine
-// bloquée (voir leurs gardes respectives ci-dessus et en 06c-seasonal.js).
+// Retrait définitif : buyFigurine()/unlockSeasonalFigurine() refusent toutes
+// de réattribuer une figurine bloquée (voir leurs gardes respectives
+// ci-dessus et en 06c-seasonal.js).
 // ── v12.7.23 (demande de Cyril) : modification manuelle du solde d'étoiles
 // depuis la Vue Parent ────────────────────────────────────────────────
 // Même pattern que parentRemoveFigurines() ci-dessus (lecture/écriture
@@ -247,6 +232,15 @@ function buyFigurine(id){
  if(!fig){console.warn('Figurine introuvable:',id);return;}
  const owned=P.ownedFigurines||[];
  if(owned.includes(id)){toast('Déjà dans ta collection !');return;}
+ // v12.7.37 (demande de Cyril) : une figurine completionLock reste
+ // interdite à l'achat tant que le reste de la licence n'est pas complet —
+ // elle n'est plus offerte automatiquement, mais son achat direct doit
+ // rester bloqué de la même façon (protège aussi contre un bouton resté
+ // affiché par erreur sur un rendu boutique périmé).
+ if(fig.completionLock && typeof _isLicenseCompletionUnlocked==='function' && !_isLicenseCompletionUnlocked(fig)){
+  toast('🔒 '+(fig.unlockHint || 'Complète d\'abord la collection de cette licence !'));
+  return;
+ }
  spend(fig.p,()=>{
   P.ownedFigurines=[...owned,id];
   // v12.7.19 (ajustement demandé par Cyril) : si cette figurine avait été
@@ -260,7 +254,6 @@ function buyFigurine(id){
   toast(`🎉 ${fig.name} ajouté à ta collection !`,3000);
   beep(880,'sine',.4);
   setTimeout(()=>beep(1100,'sine',.3),180);
-  if(typeof _checkLicenseCompletions==='function') _checkLicenseCompletions();
   renderFigurinesShop(_figFilter);
  });
 }

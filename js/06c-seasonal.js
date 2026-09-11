@@ -142,6 +142,8 @@ function unlockSeasonalFigurine(figId){
   P.figAcquiredAt[figId] = Date.now();
  }
  if(typeof saveProfileNow==='function') saveProfileNow();
- if(typeof _checkLicenseCompletions==='function') _checkLicenseCompletions();
+ // v12.7.37 : _checkLicenseCompletions() (auto-don par complétion) supprimé
+ // — une figurine completionLock est désormais achetable, jamais offerte,
+ // donc plus rien à vérifier ici après ce gain saisonnier.
  return true;
 }

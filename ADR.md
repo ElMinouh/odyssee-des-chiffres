@@ -1396,4 +1396,22 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-126 — Figurines completionLock : de l'auto-don gratuit à l'achat gated par complétion
+
+**Contexte** : depuis ADR-116 (v12.7.11-12), une figurine `completionLock:true` était offerte AUTOMATIQUEMENT et GRATUITEMENT (`p:0`) dès que le reste de la collection de sa licence était réuni. Cyril a demandé un changement de fond : ces figurines doivent rester à débloquer par la complétion de la licence, mais devenir ACHETABLES (avec des étoiles) plutôt qu'offertes — la complétion ouvre le droit d'achat, elle ne donne plus la figurine elle-même. Décision explicite prise avec Cyril sur deux points : (1) rétroactivité — les joueurs ayant déjà reçu une de ces figurines gratuitement se la voient retirer (rachetable normalement ensuite), plutôt que de la conserver en exception ; (2) prix — un prix fixe unique de 500⭐ pour les 34 figurines concernées, plutôt qu'un prix au cas par cas.
+
+**Décision** : 
+- Toutes les figurines `completionLock:true` (34 au total) passent de `p:0` à `p:500` dans `03-figurines-data.js`. Les textes `unlockHint` sont reformulés ("Débloqué en réunissant..." → "Achetable en réunissant...") pour refléter le nouveau sens.
+- `_checkLicenseCompletions()` (10-figurines.js, auto-don) est remplacée par `_isLicenseCompletionUnlocked(fig)`, une fonction de lecture pure (aucun effet de bord) qui répond juste "cette figurine est-elle éligible à l'achat ?" — même logique d'exclusion des autres figurines `completionLock` de la même licence qu'avant (évite le blocage circulaire type Goldorak/Dragon Ball).
+- `buyFigurine()` consulte `_isLicenseCompletionUnlocked()` et refuse l'achat (toast avec l'`unlockHint`, aucune étoile dépensée) tant que la licence de base n'est pas complète ; une fois complète, l'achat se déroule normalement (dépense d'étoiles incluse) — même parcours qu'une figurine ordinaire.
+- Boutique (`_renderFigurinesShop()`) : bouton d'achat (prix affiché) au lieu du message verrouillé, dès que `_isLicenseCompletionUnlocked()` répond vrai.
+- L'appel résiduel à l'ancien mécanisme dans `unlockSeasonalFigurine()` (06c-seasonal.js) est retiré (plus rien à vérifier après un gain saisonnier, puisqu'il n'y a plus d'auto-don).
+- **Migration rétroactive** : nouvelle étape `_MIGRATIONS[9]` (05-profile.js, `SAVE_VERSION` 8→9) — retire de `P.ownedFigurines` toute figurine `completionLock` déjà présente, pour tout profil chargé avec `_v<9`. Appliquée par `migrateProfile()`, déjà invoquée à tous les points d'entrée existants (chargement local ET tous les pulls cloud dans `12-cloud.js`) — aucun nouveau point d'accroche nécessaire. Idempotente (ne fait rien si déjà migré) et sûre pour la fusion cloud : les deux côtés (local et importé) passent par la même migration avant l'union `ownedFigurines`, donc aucun risque qu'un appareil non encore migré réinjecte la figurine retirée.
+
+**Alternatives rejetées** : conserver gratuitement les figurines déjà données et n'appliquer le changement qu'aux futures complétions (rejeté par Cyril — préfère la cohérence globale, quitte à retirer l'existant) ; prix variable par figurine (rejeté par Cyril — simplicité d'un prix fixe unique).
+
+**Impact** : `03-figurines-data.js` (34 figurines `p:0→500`, textes `unlockHint`), `10-figurines.js` (`_checkLicenseCompletions` → `_isLicenseCompletionUnlocked`, `buyFigurine()`, rendu boutique), `06c-seasonal.js` (`unlockSeasonalFigurine()`), `05-profile.js` (`SAVE_VERSION` 9, `_MIGRATIONS[9]`). v12.7.37. Tests : `tests/new-licenses-and-content-update.test.js` (bloc `_checkLicenseCompletions()` entièrement réécrit en `_isLicenseCompletionUnlocked()`/`buyFigurine()`, + nouveau bloc migration V9).
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

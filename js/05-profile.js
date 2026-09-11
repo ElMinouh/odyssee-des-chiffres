@@ -8,7 +8,7 @@
 // ═══════════════════════════════════════════════════════
 // Incrémenter SAVE_VERSION quand le format change. Ajouter une fonction de
 // migration `migrate_v{N-1}_to_v{N}` qui transforme l'ancien format en nouveau.
-const SAVE_VERSION = 8;
+const SAVE_VERSION = 9;
 
 const _MIGRATIONS = {
  // De V5 vers V6 : ajout du champ opFilters et mapBossBeaten.
@@ -38,6 +38,23 @@ const _MIGRATIONS = {
     return `${id}_${goals[idx]}`;
    });
   }
+  return raw;
+ },
+ // De V8 vers V9 (v12.7.37, demande de Cyril) : les figurines completionLock
+ // (Cœur de Balaïna, Goldorak x2, Dragon Ball x2+9, etc.) n'ont plus jamais
+ // vocation à être offertes automatiquement — seulement achetées une fois la
+ // licence complète (voir _isLicenseCompletionUnlocked, 10-figurines.js).
+ // Migration une seule fois (garantie par le versioning) : retire du profil
+ // toute figurine completionLock déjà possédée gratuitement — rachetable
+ // normalement dès que la collection de la licence est complète.
+ 9: (raw) => {
+  try{
+   if(typeof FIGURINES==='undefined' || !Array.isArray(FIGURINES)) return raw;
+   if(!Array.isArray(raw.ownedFigurines) || !raw.ownedFigurines.length) return raw;
+   const lockedIds = new Set(FIGURINES.filter(f=>f.completionLock).map(f=>f.id));
+   if(!lockedIds.size) return raw;
+   raw.ownedFigurines = raw.ownedFigurines.filter(id => !lockedIds.has(id));
+  }catch(e){}
   return raw;
  },
 };

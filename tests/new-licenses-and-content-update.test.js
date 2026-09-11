@@ -45,12 +45,14 @@ describe('Nouvelles licences — Avatar (12) et Tobie Lolness (18)', () => {
     expect(keys).toContain('tl');
   });
 
-  it('Balaïna (tl17) est achetable normalement ; le Cœur de Balaïna (tl18) reste exclusif avec un indice clair', () => {
+  it('Balaïna (tl17) est achetable normalement ; le Cœur de Balaïna (tl18) reste exclusif, payant, avec un indice clair', () => {
     const api = loadGame(FILES);
     const byId = Object.fromEntries(api.FIGURINES.map(f => [f.id, f]));
     expect(byId.tl17.r).not.toBe('exclusif');
     expect(byId.tl17.p).toBeGreaterThan(0);
     expect(byId.tl18.r).toBe('exclusif');
+    // v12.7.37 : plus jamais offerte gratuitement, même une fois débloquée à l'achat.
+    expect(byId.tl18.p).toBeGreaterThan(0);
     expect(byId.tl18.unlockHint).toBeTruthy();
   });
 });
@@ -94,38 +96,56 @@ describe('Correctif — images HD des 30 nouvelles figurines préchargées (bug 
 });
 
 
-describe('_checkLicenseCompletions() — mécanisme générique de déblocage par complétion', () => {
+// v12.7.37 (demande de Cyril) : CHANGEMENT DE COMPORTEMENT — une figurine
+// completionLock n'est plus jamais offerte automatiquement. Elle devient
+// simplement ACHETABLE (au prix normal) une fois la licence complète ; avant
+// cela, son achat reste refusé. Remplace l'ancien mécanisme d'auto-don
+// (_checkLicenseCompletions, testé ici jusqu'à v12.7.36).
+describe('_isLicenseCompletionUnlocked() / buyFigurine() — achat gated par complétion de licence (v12.7.37)', () => {
   const ALL_TL_17 = ['tl01','tl02','tl03','tl04','tl05','tl06','tl07','tl08','tl09','tl10','tl11','tl12','tl13','tl14','tl15','tl16','tl17'];
 
-  it('débloque tl18 (Cœur de Balaïna) quand les 17 autres Tobie Lolness sont possédées', () => {
+  it('_isLicenseCompletionUnlocked(tl18) est vrai quand les 17 autres Tobie Lolness sont possédées', () => {
     const api = loadGame(FILES);
     const p = api.defProfile('Test');
     p.ownedFigurines = [...ALL_TL_17];
     api.setP(p);
-    api._checkLicenseCompletions();
-    expect(api.getP().ownedFigurines).toContain('tl18');
+    const tl18 = api.FIGURINES.find(f => f.id === 'tl18');
+    expect(api._isLicenseCompletionUnlocked(tl18)).toBe(true);
   });
 
-  it('ne débloque rien s\'il manque UNE seule figurine sur les 17', () => {
+  it('_isLicenseCompletionUnlocked(tl18) est faux s\'il manque UNE seule figurine sur les 17', () => {
     const api = loadGame(FILES);
     const p = api.defProfile('Test');
     p.ownedFigurines = ALL_TL_17.slice(0, -1); // il en manque une
     api.setP(p);
-    api._checkLicenseCompletions();
-    expect(api.getP().ownedFigurines).not.toContain('tl18');
+    const tl18 = api.FIGURINES.find(f => f.id === 'tl18');
+    expect(api._isLicenseCompletionUnlocked(tl18)).toBe(false);
   });
 
-  it('ne fait rien si déjà débloqué (pas de doublon)', () => {
+  it('buyFigurine("tl18") est refusé (sans dépenser d\'étoiles) tant que la licence n\'est pas complète', () => {
     const api = loadGame(FILES);
     const p = api.defProfile('Test');
-    p.ownedFigurines = [...ALL_TL_17, 'tl18'];
+    p.ownedFigurines = ALL_TL_17.slice(0, -1); // il manque tl17
+    p.stars = 9999;
     api.setP(p);
-    api._checkLicenseCompletions();
-    const count = api.getP().ownedFigurines.filter(id => id === 'tl18').length;
-    expect(count).toBe(1);
+    api.buyFigurine('tl18');
+    expect(api.getP().ownedFigurines).not.toContain('tl18');
+    expect(api.getP().stars).toBe(9999); // rien dépensé
   });
 
-  it('buyFigurine() déclenche bien le check de complétion (achat de la 17e pièce)', () => {
+  it('buyFigurine("tl18") réussit (et dépense ses étoiles) une fois les 17 autres possédées', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    p.ownedFigurines = [...ALL_TL_17];
+    p.stars = 9999;
+    api.setP(p);
+    const tl18 = api.FIGURINES.find(f => f.id === 'tl18');
+    api.buyFigurine('tl18');
+    expect(api.getP().ownedFigurines).toContain('tl18');
+    expect(api.getP().stars).toBe(9999 - tl18.p);
+  });
+
+  it('acheter la 17e pièce de base (Balaïna, tl17) ne donne PAS tl18 automatiquement', () => {
     const api = loadGame(FILES);
     const p = api.defProfile('Test');
     p.ownedFigurines = ALL_TL_17.slice(0, -1); // il manque tl17 (Balaïna)
@@ -133,32 +153,38 @@ describe('_checkLicenseCompletions() — mécanisme générique de déblocage pa
     api.setP(p);
     api.buyFigurine('tl17');
     expect(api.getP().ownedFigurines).toContain('tl17');
-    expect(api.getP().ownedFigurines).toContain('tl18');
+    expect(api.getP().ownedFigurines).not.toContain('tl18'); // reste à acheter séparément
   });
 
-  it('licence à 2 figurines verrouillées (Goldorak, gd10+gd11) : débloque les 2 en même temps', () => {
+  it('licence à 2 figurines verrouillées (Goldorak, gd10+gd11) : les deux deviennent achetables en même temps', () => {
     const api = loadGame(FILES);
     const p = api.defProfile('Test');
     const others = api.FIGURINES.filter(f => f.uk === 'gd' && !f.completionLock).map(f => f.id);
     p.ownedFigurines = others;
+    p.stars = 9999;
     api.setP(p);
-    api._checkLicenseCompletions();
+    const gd10 = api.FIGURINES.find(f => f.id === 'gd10');
+    const gd11 = api.FIGURINES.find(f => f.id === 'gd11');
+    expect(api._isLicenseCompletionUnlocked(gd10)).toBe(true);
+    expect(api._isLicenseCompletionUnlocked(gd11)).toBe(true);
+    api.buyFigurine('gd10'); api.buyFigurine('gd11');
     expect(api.getP().ownedFigurines).toContain('gd10');
     expect(api.getP().ownedFigurines).toContain('gd11');
   });
 
-  it('licence à 2 figurines verrouillées (Dragon Ball, db12+db36) : ne débloque rien s\'il manque un item normal', () => {
+  it('licence à 2 figurines verrouillées (Dragon Ball, db12+db36) : achat refusé s\'il manque un item normal', () => {
     const api = loadGame(FILES);
     const p = api.defProfile('Test');
     const others = api.FIGURINES.filter(f => f.uk === 'db' && !f.completionLock).map(f => f.id);
     p.ownedFigurines = others.slice(0, -1); // il en manque un
+    p.stars = 9999;
     api.setP(p);
-    api._checkLicenseCompletions();
+    api.buyFigurine('db12'); api.buyFigurine('db36');
     expect(api.getP().ownedFigurines).not.toContain('db12');
     expect(api.getP().ownedFigurines).not.toContain('db36');
   });
 
-  it('les 11 figurines demandées sont bien verrouillées avec un indice clair', () => {
+  it('les 11 figurines historiques sont bien verrouillées, exclusives et PAYANTES (plus de prix 0)', () => {
     const api = loadGame(FILES);
     const ids = ['kp11','kp12','nj09','db12','db36','pk09','pk10','gd10','gd11','co08','al06'];
     const byId = Object.fromEntries(api.FIGURINES.map(f => [f.id, f]));
@@ -167,7 +193,7 @@ describe('_checkLicenseCompletions() — mécanisme générique de déblocage pa
       expect(f, `${id} introuvable`).toBeTruthy();
       expect(f.completionLock, `${id}.completionLock`).toBe(true);
       expect(f.r, `${id}.r`).toBe('exclusif');
-      expect(f.p, `${id}.p`).toBe(0);
+      expect(f.p, `${id}.p`).toBeGreaterThan(0);
       expect(f.unlockHint, `${id}.unlockHint`).toBeTruthy();
     });
   });
@@ -302,13 +328,13 @@ describe('Nouvelles figurines exclusives v12.7.34 (SW/MC/AX/TN/DB)', () => {
     expect(dups).toEqual([]);
   });
 
-  it('toutes sont exclusives, verrouillées par complétion, prix 0, avec un indice clair', () => {
+  it('toutes sont exclusives, verrouillées par complétion, PAYANTES (v12.7.37 : plus de prix 0), avec un indice clair', () => {
     const api = loadGame(FILES);
     const byId = Object.fromEntries(api.FIGURINES.map(f => [f.id, f]));
     ALL_NEW_EXCLUSIFS.forEach(id => {
       const f = byId[id];
       expect(f.r, `${id}.r`).toBe('exclusif');
-      expect(f.p, `${id}.p`).toBe(0);
+      expect(f.p, `${id}.p`).toBeGreaterThan(0);
       expect(f.completionLock, `${id}.completionLock`).toBe(true);
       expect(f.unlockHint, `${id}.unlockHint`).toBeTruthy();
     });
@@ -321,64 +347,105 @@ describe('Nouvelles figurines exclusives v12.7.34 (SW/MC/AX/TN/DB)', () => {
     });
   });
 
-  it('Star Wars (17 de base) : posséder les 17 débloque les 6 nouveaux exclusifs en même temps', () => {
+  // v12.7.37 : posséder la collection de base rend les exclusifs ACHETABLES
+  // (_isLicenseCompletionUnlocked), ne les ajoute plus automatiquement.
+  it('Star Wars (17 de base) : posséder les 17 rend les 6 nouveaux exclusifs achetables', () => {
     const api = loadGame(FILES);
     const p = api.defProfile('Test');
     const base = api.FIGURINES.filter(f => f.uk === 'sw' && !f.completionLock).map(f => f.id);
     p.ownedFigurines = base;
     api.setP(p);
-    api._checkLicenseCompletions();
-    SW_NEW_IDS.forEach(id => expect(api.getP().ownedFigurines).toContain(id));
+    SW_NEW_IDS.forEach(id => {
+      const f = api.FIGURINES.find(x => x.id === id);
+      expect(api._isLicenseCompletionUnlocked(f), id).toBe(true);
+      expect(api.getP().ownedFigurines).not.toContain(id); // toujours pas possédées sans achat
+    });
   });
 
-  it('Star Wars : ne débloque rien s\'il manque un item de base', () => {
+  it('Star Wars : pas achetables s\'il manque un item de base', () => {
     const api = loadGame(FILES);
     const p = api.defProfile('Test');
     const base = api.FIGURINES.filter(f => f.uk === 'sw' && !f.completionLock).map(f => f.id);
     p.ownedFigurines = base.slice(0, -1);
     api.setP(p);
-    api._checkLicenseCompletions();
-    SW_NEW_IDS.forEach(id => expect(api.getP().ownedFigurines).not.toContain(id));
+    SW_NEW_IDS.forEach(id => {
+      const f = api.FIGURINES.find(x => x.id === id);
+      expect(api._isLicenseCompletionUnlocked(f), id).toBe(false);
+    });
   });
 
-  it('Cités d\'Or : posséder toute la collection de base débloque les 4 nouveaux exclusifs', () => {
+  it('Cités d\'Or : posséder toute la collection de base rend les 4 nouveaux exclusifs achetables', () => {
     const api = loadGame(FILES);
     const p = api.defProfile('Test');
     const base = api.FIGURINES.filter(f => f.uk === 'mc' && !f.completionLock).map(f => f.id);
     p.ownedFigurines = base;
     api.setP(p);
-    api._checkLicenseCompletions();
-    MC_NEW_IDS.forEach(id => expect(api.getP().ownedFigurines).toContain(id));
+    MC_NEW_IDS.forEach(id => {
+      const f = api.FIGURINES.find(x => x.id === id);
+      expect(api._isLicenseCompletionUnlocked(f), id).toBe(true);
+    });
   });
 
-  it('Tintin : posséder toute la collection de base débloque les 2 nouveaux exclusifs', () => {
+  it('Tintin : posséder toute la collection de base rend les 2 nouveaux exclusifs achetables', () => {
     const api = loadGame(FILES);
     const p = api.defProfile('Test');
     const base = api.FIGURINES.filter(f => f.uk === 'tn' && !f.completionLock).map(f => f.id);
     p.ownedFigurines = base;
     api.setP(p);
-    api._checkLicenseCompletions();
-    TN_NEW_IDS.forEach(id => expect(api.getP().ownedFigurines).toContain(id));
+    TN_NEW_IDS.forEach(id => {
+      const f = api.FIGURINES.find(x => x.id === id);
+      expect(api._isLicenseCompletionUnlocked(f), id).toBe(true);
+    });
   });
 
-  it('Astérix : posséder toute la collection de base débloque le nouvel exclusif', () => {
+  it('Astérix : posséder toute la collection de base rend le nouvel exclusif achetable', () => {
     const api = loadGame(FILES);
     const p = api.defProfile('Test');
     const base = api.FIGURINES.filter(f => f.uk === 'ax' && !f.completionLock).map(f => f.id);
     p.ownedFigurines = base;
     api.setP(p);
-    api._checkLicenseCompletions();
-    AX_NEW_IDS.forEach(id => expect(api.getP().ownedFigurines).toContain(id));
+    AX_NEW_IDS.forEach(id => {
+      const f = api.FIGURINES.find(x => x.id === id);
+      expect(api._isLicenseCompletionUnlocked(f), id).toBe(true);
+    });
   });
 
-  it('Dragon Ball : posséder toute la collection de base débloque les 9 nouveaux + db12 + db36 (11 exclusifs)', () => {
+  it('Dragon Ball : posséder toute la collection de base rend achetables les 9 nouveaux + db12 + db36 (11 exclusifs)', () => {
     const api = loadGame(FILES);
     const p = api.defProfile('Test');
     const base = api.FIGURINES.filter(f => f.uk === 'db' && !f.completionLock).map(f => f.id);
     p.ownedFigurines = base;
     api.setP(p);
-    api._checkLicenseCompletions();
-    [...DB_NEW_IDS, 'db12', 'db36'].forEach(id => expect(api.getP().ownedFigurines).toContain(id));
+    [...DB_NEW_IDS, 'db12', 'db36'].forEach(id => {
+      const f = api.FIGURINES.find(x => x.id === id);
+      expect(api._isLicenseCompletionUnlocked(f), id).toBe(true);
+    });
+  });
+});
+
+describe('Migration V9 (v12.7.37) — retrait des figurines completionLock déjà offertes gratuitement', () => {
+  it('validateProfile()/migrateProfile() retire une figurine completionLock possédée dans un profil ancien format', () => {
+    const api = loadGame(FILES);
+    const raw = { name: 'Test', _v: 8, ownedFigurines: ['tl17', 'tl18', 'db12'] };
+    const migrated = api.migrateProfile(raw);
+    expect(migrated.ownedFigurines).toContain('tl17'); // figurine normale : conservée
+    expect(migrated.ownedFigurines).not.toContain('tl18'); // completionLock : retirée
+    expect(migrated.ownedFigurines).not.toContain('db12'); // completionLock : retirée
+    expect(migrated._v).toBe(9);
+  });
+
+  it('ne touche pas un profil sans figurine completionLock', () => {
+    const api = loadGame(FILES);
+    const raw = { name: 'Test', _v: 8, ownedFigurines: ['tl17', 'db01'] };
+    const migrated = api.migrateProfile(raw);
+    expect(migrated.ownedFigurines.sort()).toEqual(['db01', 'tl17']);
+  });
+
+  it('est idempotente (rejouer la migration sur un profil déjà en V9 ne change rien)', () => {
+    const api = loadGame(FILES);
+    const raw = { name: 'Test', _v: 9, ownedFigurines: ['tl17'] };
+    const migrated = api.migrateProfile(raw);
+    expect(migrated.ownedFigurines).toEqual(['tl17']);
   });
 });
 
