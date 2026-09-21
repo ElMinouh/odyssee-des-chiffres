@@ -27,6 +27,9 @@ jobs:
         # (_gitignore), donc aucun lockfile n'est disponible à commit.
         run: npm install --no-audit --no-fund
 
+      - name: Vérifier les noms de fichiers de test (ADR-85)
+        run: npm run check:test-filenames
+
       - name: Lancer les tests (Vitest)
         run: npm test
 

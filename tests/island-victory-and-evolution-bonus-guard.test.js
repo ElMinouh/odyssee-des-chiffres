@@ -12,8 +12,14 @@ const CINEMATICS_FILES = [
   '01-core.js', '02-data.js', '03-figurines-data.js', '04-questions.js',
   '16-francais.js', '18-histoire.js', '05-profile.js', '06a-adaptive.js',
   '06b-time-block.js', '06c-seasonal.js', '06d-cinematics.js',
-  '07-story-core.js', '07-map.js', '07-story.js',
+  '07-story-core.js', '07-map.js', '07-story.js', '08-ui.js', '07-game.js',
 ];
+// v2 (audit AUD-01-021) : 08-ui.js manquait à cette liste alors que
+// updateMenuUI() (appelée en cascade par les fonctions testées ici) y
+// référence getTopTitle() — l'appel échouait silencieusement avec un
+// ReferenceError avalé par un catch, visible seulement en fouillant le
+// stderr de la suite. Résultat des tests inchangé, mais plus de fausse
+// erreur masquée en arrière-plan.
 
 describe('playIslandVictory() — bonus "Conquérant" crédité une seule fois par îlot (06d-cinematics.js)', () => {
   it('un premier appel crédite +50⭐, un second appel sur le MÊME îlot ne recrédite rien', () => {
