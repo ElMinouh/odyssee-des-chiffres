@@ -1510,4 +1510,16 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-134 — Lot 1.3 (audit fonctionnel AUD-02, Phase 1) : import de profil migré/validé, avec comparaison avant écrasement
+
+**Contexte** : l'audit fonctionnel AUD-02 (constat AUD-02-020, Élevée) a identifié que `importProfileFile()` (`09-parent.js`) écrivait le contenu brut d'un fichier importé directement en `localStorage`, sans jamais appeler `migrateProfile()`/`validateProfile()` — contrairement à `restoreProfileByCode()`/`forceRestoreFromCloud()` (`12-cloud.js`), qui migrent et valident systématiquement tout profil entrant. Un fichier corrompu, tronqué, ou issu d'une très ancienne version traversait donc la validation sans être neutralisé, avec un risque de plantage d'écran ultérieur sur des champs non bornés (ex. `quests`, cf. AUD-02-021, à traiter séparément). De plus, la confirmation d'import n'affichait que le contenu du FICHIER, jamais l'état du profil déjà présent sur l'appareil qui allait être écrasé — un parent pouvait ainsi perdre irréversiblement une progression récente sans en avoir conscience au moment de confirmer.
+
+**Décision** : chaque profil du fichier importé est désormais passé par `migrateProfile()` puis `validateProfile(profil, nom, {allowStarsMigration:false})` — même discipline et mêmes options que les autres points d'entrée non-primaires déjà en place (`12-cloud.js`, conformément à ADR-119) — avant même d'être inclus dans le résumé de confirmation. La modale de confirmation affiche en plus, pour chaque profil qui existe déjà sur l'appareil, une ligne dédiée (« ⚠️ Remplace le profil actuel sur cet appareil : X⭐, Y figurines, Z parties gagnées ») construite à partir du profil réellement stocké, pour que le parent voie ce qu'il perd avant de confirmer.
+
+**Alternatives rejetées** : bloquer purement et simplement l'import d'un fichier dont un profil échoue la migration/validation, pour l'ensemble du fichier (rejeté — un fichier multi-profils valide dans son ensemble ne doit pas être rejeté en bloc à cause d'un seul profil corrompu ; le profil fautif est simplement ignoré, comme le fait déjà `isValidPlayerData()` pour les cas grossièrement invalides) ; fusionner le profil importé avec l'existant plutôt qu'un écrasement complet (rejeté — hors périmètre de ce constat, qui porte sur la validation et la transparence de l'écrasement, pas sur son remplacement par une fusion ; une vraie fusion partagerait les mêmes risques déjà documentés pour la fusion cloud, AUD-02-023).
+
+**Impact** : `09-parent.js` (`importProfileFile()`). v12.7.48. Tests : `tests/profile-import-migrates-and-compares.test.js` (migration/validation effective, comparaison avant écrasement, fichier corrompu rejeté proprement). `tests/helpers/loadGame.js` reçoit un stub minimal `FileReader` (synchrone, lit `file.__content`), ajout purement additif sans impact sur les 89 autres fichiers de test ; `tests/setup.js` (`ALLOWED_ERRORS`) reçoit une entrée pour le log applicatif intentionnel `[import] erreur :`, exercé volontairement par le test du fichier corrompu. 589/589 tests verts. Constat AUD-02-020 (audit fonctionnel) clos par ce lot.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

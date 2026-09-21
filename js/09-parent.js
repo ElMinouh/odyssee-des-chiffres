@@ -977,12 +977,36 @@ function importProfileFile(event){
     throw new Error('format inconnu');
    }
    // Construire un résumé pour confirmation
+   // AUD-02-020 (audit fonctionnel 2026-09-21) : le profil importé n'était ni
+   // migré ni validé avant d'être écrit en localStorage (contrairement à
+   // restoreProfileByCode()/forceRestoreFromCloud(), 12-cloud.js, qui migrent
+   // et valident systématiquement) — un fichier corrompu, tronqué ou d'une
+   // très ancienne version traversait la validation sans être neutralisé. Et
+   // le parent ne voyait que le contenu du fichier, jamais l'état du profil
+   // existant qui allait être écrasé. On migre/valide donc chaque profil dès
+   // sa lecture, et on affiche une comparaison avant/après pour tout profil
+   // déjà présent sur cet appareil, AVANT toute confirmation d'import.
    Object.entries(players).forEach(([name, d])=>{
     if(!sanitizePlayerKey(name)||!isValidPlayerData(d))return;
-    const stars=d.stars||0;
-    const figs=(d.ownedFigurines||[]).length;
-    const wins=Object.values(d.levelWins||{}).reduce((s,n)=>s+n,0);
-    lines.push(`• ${name} : ${stars}⭐, ${figs} figurines, ${wins} parties gagnées`);
+    let migrated=d;
+    try{
+     if(typeof migrateProfile==='function') migrated=migrateProfile(migrated);
+     if(typeof validateProfile==='function') migrated=validateProfile(migrated, name, {allowStarsMigration:false});
+    }catch(err){ console.error('[import] échec migration/validation pour',name,err); return; }
+    players[name]=migrated; // remplace la copie brute par la version migrée/validée
+    const stars=migrated.stars||0;
+    const figs=(migrated.ownedFigurines||[]).length;
+    const wins=Object.values(migrated.levelWins||{}).reduce((s,n)=>s+n,0);
+    let existingLine='';
+    try{
+     const existingRaw=localStorage.getItem('user_'+name);
+     if(existingRaw){
+      const ex=JSON.parse(existingRaw);
+      const exStars=ex.stars||0, exFigs=(ex.ownedFigurines||[]).length, exWins=Object.values(ex.levelWins||{}).reduce((s,n)=>s+n,0);
+      existingLine=`\n  ⚠️ Remplace le profil actuel sur cet appareil : ${exStars}⭐, ${exFigs} figurines, ${exWins} parties gagnées`;
+     }
+    }catch(e){}
+    lines.push(`• ${name} : ${stars}⭐, ${figs} figurines, ${wins} parties gagnées${existingLine}`);
     totalCnt++;
    });
   }catch(err){

@@ -126,6 +126,20 @@ export function loadGame(files, initialStorage = {}) {
     SpeechSynthesisUtterance: function () {},
     Audio: function () { return { play() { return Promise.resolve(); }, pause() {}, addEventListener() {} }; },
     Image: function () { return {}; },
+    // AUD-02-020 (audit fonctionnel) : stub minimal, synchrone, pour tester
+    // importProfileFile() (09-parent.js) sans navigateur réel. Le fichier
+    // factice attendu par les tests porte son contenu sur `__content` (voir
+    // tests/profile-import-migrates-and-compares.test.js).
+    FileReader: function () {
+      this.onload = null; this.onerror = null;
+      this.readAsText = (file) => {
+        try {
+          if (this.onload) this.onload({ target: { result: (file && file.__content) || '' } });
+        } catch (e) {
+          if (this.onerror) this.onerror(e);
+        }
+      };
+    },
     requestAnimationFrame: () => 0,
     // $ est souvent utilisé dans le jeu : on renvoie un élément factice
     $: () => fakeEl(),

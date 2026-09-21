@@ -18,6 +18,11 @@ const ALLOWED_ERRORS = [
   // ce message est le scénario d'échec réseau volontairement exercé par
   // tests/cloud-sync-pull-before-push.test.js, pas un bug du jeu.
   /AbortController is not defined/,
+  // Log applicatif intentionnel (09-parent.js, importProfileFile()) sur un
+  // fichier d'import volontairement corrompu — comportement attendu exercé
+  // par tests/profile-import-migrates-and-compares.test.js (AUD-02-020), pas
+  // un bug du jeu ni une limite du sandbox.
+  /\[import\] erreur\s*:/,
 ];
 
 let originalConsoleError;
