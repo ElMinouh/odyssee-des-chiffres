@@ -1576,4 +1576,16 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-139 — Lot 2.2 (audit fonctionnel AUD-02, Phase 2) : correction de la séquence causale pluie/nuage/arc-en-ciel (maternelle)
+
+**Contexte** : l'audit fonctionnel AUD-02 (constat AUD-02-018) a relevé que `HIST_MAT_MS_SEQ3` (`18-histoire.js`), banque de séquences « remets dans le bon ordre » pour la maternelle (module repères temporels/causaux, MS 4-5 ans), présentait l'ordre pluie → nuage → arc-en-ciel comme LA bonne réponse (`_histMatMS_seq3()` utilise l'ordre littéral du tableau comme vérité terrain, sans autre source). Cet ordre inverse la causalité réelle : le nuage précède la pluie, et l'arc-en-ciel n'apparaît qu'après, quand le soleil revient. Un enfant qui a l'intuition correcte (nuage avant pluie) était marqué faux par le jeu.
+
+**Décision** : l'entrée est corrigée en `['☁️','🌧️','🌈']` (nuage → pluie → arc-en-ciel). Correction ponctuelle d'une donnée de contenu, aucun changement de logique.
+
+**Alternatives rejetées** : aucune — correction factuelle non ambiguë, sans compromis à arbitrer.
+
+**Impact** : `18-histoire.js` (`HIST_MAT_MS_SEQ3`). v12.7.53. Tests : `tests/histoire-maternelle-sequence-causality.test.js`. 624/624 tests verts. Constat AUD-02-018 (audit fonctionnel) clos par ce lot.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

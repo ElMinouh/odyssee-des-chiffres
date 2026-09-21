@@ -1055,7 +1055,12 @@ function genQ_HIST_PS(boss,_d){
 // Séquences en 3 étapes : touche la rangée dans le bon ordre
 const HIST_MAT_MS_SEQ3 = [
  ['🌅','☀️','🌙'], ['🥚','🐣','🐔'], ['🐛','🦋','🌸'], ['👶','🧒','🧑'],
- ['🌱','🌿','🌳'], ['🌾','🍞','🥖'], ['❄️','💧','🌱'], ['🌧️','☁️','🌈'],
+ ['🌱','🌿','🌳'], ['🌾','🍞','🥖'], ['❄️','💧','🌱'],
+ // AUD-02-018 (audit fonctionnel 2026-09-21) : ordre corrigé (nuage → pluie →
+ // arc-en-ciel). L'ancien ordre (pluie → nuage → arc-en-ciel) inversait la
+ // causalité réelle du phénomène et était validé comme « la bonne réponse »,
+ // enseignant une fausse causalité à des enfants de 4-5 ans.
+ ['☁️','🌧️','🌈'],
  ['🕯️','🏮','💡'], ['✉️','📠','📱'], ['🐎','🚂','🚗'], ['🏺','🏛️','🏢'],
  ['🪨','🔨','🏠'], ['🧵','👕','👗'], ['🌰','🌱','🌳'], ['🥛','🧀','🍽️'],
  ['🧊','💧','☁️'], ['🌙','🌗','☀️'], ['🍂','❄️','🌸'], ['🎂','🕯️','🎉']
