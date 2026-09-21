@@ -1485,6 +1485,17 @@ function _chooseSubjectProceed(key){
 }
 function chooseSubject(key){
  if(key==='math'||key==='fr'||key==='hist'){
+  // AUD-02-027 (audit fonctionnel 2026-09-21) : le blocage de matières
+  // (Vue Parent -> Encadrement -> "Matières autorisées", saveBlockedSubjects())
+  // écrivait P.blockedSubjects/localStorage mais n'était lu nulle part ailleurs
+  // — un enfant pouvait jouer normalement dans une matière que le parent
+  // pensait avoir interdite. On applique désormais réellement le blocage ici,
+  // seul point d'entrée d'une matière depuis l'écran "Choisis ta matière".
+  if(typeof P!=='undefined' && P && Array.isArray(P.blockedSubjects) && P.blockedSubjects.includes(key)){
+   if(typeof toast==='function') toast('🔒 Cette matière est bloquée. Demande à tes parents !');
+   try{ if(typeof beep==='function') beep(220,'sine',.12); }catch(e){}
+   return;
+  }
   if(typeof _maybeShowContentUpdate==='function') _maybeShowContentUpdate(()=>_chooseSubjectProceed(key));
   else _chooseSubjectProceed(key);
  }else{

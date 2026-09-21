@@ -886,10 +886,16 @@ function copyWeeklySummary(){
 
 async function savePin(){
  const pin=$('new-pin')?.value.trim();if(!/^\d{4}$/.test(pin)){$('pin-msg').innerText='❌ 4 chiffres requis.';$('pin-msg').style.color='#e74c3c';return;}
- localStorage.setItem('parentPin', await hashPinSecure(pin));
  const q=$('new-secq')?.value.trim(), a=$('new-seca')?.value.trim();
- if(q && a){ localStorage.setItem('parentSecQ',q); localStorage.setItem('parentSecA', await hashPinSecure(a.toLowerCase())); }
- $('pin-msg').innerText=(q&&a)?'✅ Code et question secrète enregistrés !':'✅ Code mis à jour !';
+ // AUD-02-028 (audit fonctionnel 2026-09-21) : la question secrète est désormais
+ // OBLIGATOIRE dès qu'un code personnalisé est défini. C'est elle qui protège
+ // recoverParentPin() — sans elle, le code par défaut '1234' était révélé en
+ // clair à quiconque cliquait sur "Code oublié ?", sans aucune vérification
+ // d'identité, annulant de fait toute la protection parentale.
+ if(!q || !a){ $('pin-msg').innerText='❌ La question secrète est obligatoire (sert à récupérer le code en cas d\'oubli).'; $('pin-msg').style.color='#e74c3c'; return; }
+ localStorage.setItem('parentPin', await hashPinSecure(pin));
+ localStorage.setItem('parentSecQ',q); localStorage.setItem('parentSecA', await hashPinSecure(a.toLowerCase()));
+ $('pin-msg').innerText='✅ Code et question secrète enregistrés !';
  $('pin-msg').style.color='#2ecc71';$('new-pin').value='';if($('new-seca'))$('new-seca').value='';beep(700,'sine',.3);
 }
 
@@ -1884,19 +1890,46 @@ function _resetAllConfirm(){
  setTimeout(()=>{ try{ location.reload(); }catch(e){} }, 900);
 }
 // Récupération du code parent via question secrète (écran de verrouillage).
+// AUD-02-028/AUD-02-029 (audit fonctionnel 2026-09-21) : cette récupération est
+// désormais soumise au MÊME verrou anti-brute-force que le code PIN principal
+// (getPinAttempts/setPinAttempts/getPinLockUntil/setPinLockUntil, checkPin() plus
+// haut) — avant ce correctif, la question secrète pouvait être tentée un nombre
+// illimité de fois sans jamais être bloquée. Et un code personnalisé (savePin(),
+// question désormais obligatoire) n'est plus jamais révélé en clair : seul le
+// code par défaut '1234', tant qu'il n'a jamais été changé, reste mentionné —
+// un enfant peut de toute façon l'obtenir en le tapant directement à l'écran
+// de verrouillage (checkStoredPin() l'accepte tant qu'aucun code n'est stocké),
+// donc le révéler ici n'ouvre aucune protection supplémentaire.
 async function recoverParentPin(){
+ const now=Date.now();
+ const lockUntil=getPinLockUntil();
+ if(lockUntil>now){const sec=Math.ceil((lockUntil-now)/1000);showAlert(`🔒 Trop de tentatives. Réessaie dans ${sec}s.`);return;}
  const q=localStorage.getItem('parentSecQ');
- if(!q){ showAlert("Aucune question secrète n'a été configurée.\n\nAstuce : si le code n'a jamais été changé, le code par défaut est 1234."); return; }
+ if(!q){
+  if(!localStorage.getItem('parentPin')){
+   showAlert("Aucune question secrète n'a été configurée.\n\nAstuce : si le code n'a jamais été changé, le code par défaut est 1234.");
+  }else{
+   // Code personnalisé existant mais sans question secrète (compte configuré
+   // avant que celle-ci devienne obligatoire) : aucune récupération automatique
+   // possible, et on ne révèle jamais ce code personnalisé en clair.
+   showAlert("Aucune question secrète n'a été configurée pour ce code personnalisé.\n\nAucune récupération automatique n'est possible. Configure une question secrète dès que tu es connecté(e) (onglet Avancé -> Code parent) pour éviter ce problème à l'avenir. En dernier recours, effacer les données de l'application dans le navigateur réinitialise le code — mais aussi tous les profils.");
+  }
+  return;
+ }
  const ans=prompt('Question secrète :\n\n'+q);
  if(ans===null) return;
  const stored=localStorage.getItem('parentSecA');
  if(stored && (await verifySecureValue(String(ans).trim().toLowerCase(), stored))){
+  setPinAttempts(0);
   const np=prompt('✅ Bonne réponse !\n\nChoisis un nouveau code parent (4 chiffres) :');
   if(np!==null){
    if(/^\d{4}$/.test(String(np).trim())){ localStorage.setItem('parentPin', await hashPinSecure(String(np).trim())); showAlert('Code mis à jour. Tu peux maintenant te connecter avec ce nouveau code.'); }
    else showAlert('Code invalide : il faut exactement 4 chiffres. Recommence.');
   }
  } else {
-  showAlert('❌ Réponse incorrecte.');
+  const attempts=getPinAttempts()+1;
+  setPinAttempts(attempts);
+  if(attempts>=5){setPinLockUntil(Date.now()+30000);setPinAttempts(0);showAlert('🔒 5 tentatives échouées. Bloqué 30 secondes !');}
+  else showAlert('❌ Réponse incorrecte.');
  }
 }

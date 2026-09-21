@@ -1061,7 +1061,7 @@
       <input type="password" id="new-pin" aria-label="Nouveau code, 4 chiffres" placeholder="Nouveau code (4 chiffres)" style="width:62%;" maxlength="4">
       <button type="button" onclick="const i=$('new-pin');const on=i.type==='password';i.type=on?'text':'password';this.setAttribute('aria-label',on?'Masquer le code':'Afficher le code');this.textContent=on?'🙈':'👁️';" aria-label="Afficher le code" style="font-size:1em;padding:4px 8px;background:transparent;border:none;cursor:pointer;">👁️</button>
      </span><br>
-     <p style="font-size:.72em;color:#bdc3c7;margin:8px 0 3px;">Question secrète (pour récupérer le code en cas d'oubli) :</p>
+     <p style="font-size:.72em;color:#bdc3c7;margin:8px 0 3px;">Question secrète (obligatoire — sert à récupérer le code en cas d'oubli) :</p>
      <input type="text" id="new-secq" aria-label="Question secrète" placeholder="ex: Ville de naissance ?" style="width:84%;margin-bottom:4px;"><br>
      <input type="text" id="new-seca" aria-label="Réponse à la question secrète" placeholder="Réponse" style="width:62%;"><br>
      <button onclick="savePin()" style="margin-top:6px;">💾 Sauvegarder le code</button>
