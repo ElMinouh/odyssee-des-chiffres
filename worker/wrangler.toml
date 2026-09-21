@@ -1,0 +1,16 @@
+name = "odyssee-chat"
+main = "odyssee-chat.js"
+compatibility_date = "2024-11-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "odyssee-chat-db"
+database_id = "60dc51ed-ecaf-489f-bb32-0de12a78c5c1"
+
+# Partagé avec odyssee-sync (namespace "odyssee-profiles") — vérifié via
+# l'API Cloudflare (GET .../workers/scripts/odyssee-chat/settings) le
+# 2026-09-21, pas une supposition. Ne pas renommer/dupliquer sans vérifier
+# que odyssee-sync ne dépend pas aussi de ce même namespace pour autre chose.
+[[kv_namespaces]]
+binding = "RATELIMIT"
+id = "bbc98b1438fa4259a5783aa9f798d714"

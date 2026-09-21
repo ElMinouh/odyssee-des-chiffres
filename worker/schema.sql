@@ -3,6 +3,8 @@ CREATE TABLE IF NOT EXISTS users (
   id      TEXT PRIMARY KEY,   -- code ami (public, partageable)
   secret  TEXT NOT NULL,      -- secret privé (jamais partagé) : sert à authentifier
   name    TEXT,               -- prénom affiché
+  avatar  TEXT,               -- avatar choisi (audit AUD-01-003 : colonne utilisée par le
+                               -- code depuis l'origine mais absente d'ici, cf. migration-avatar.sql)
   created INTEGER
 );
 CREATE TABLE IF NOT EXISTS contacts (

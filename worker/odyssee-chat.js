@@ -41,9 +41,21 @@ const BLOCKED_WORDS = [
   'con','connard','connasse','encul','merde','putain','salope','pute',
   'batard','bâtard','nique','niquer','pd','pédé','abruti','débile','crétin',
 ];
+// v4 (audit AUD-01-001) : matching par mot ENTIER, pas par sous-chaine. Avant
+// ce correctif, "includes()" bloquait "content" (contient "con"), "pique-
+// nique" (contient "nique"), "constellation", "confiture"... - du
+// vocabulaire scolaire courant a l'age cible. On decoupe sur les espaces
+// seulement (pas sur les tirets/apostrophes, pour ne pas casser les mots
+// composes comme "pique-nique" en sous-mots), puis on ne compare que des
+// tokens complets a la liste. La liste BLOCKED_WORDS est aussi normalisee
+// (accents retires) une seule fois : avant ce correctif, les entrees
+// accentuees ("pede", "debile", "cretin") ne matchaient jamais, le texte
+// entrant etant desaccentue avant comparaison.
+const _norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+const _BLOCKED_NORM = new Set(BLOCKED_WORDS.map(_norm));
 function containsBlockedWord(txt) {
-  const norm = String(txt || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  return BLOCKED_WORDS.some(w => norm.includes(w));
+  const tokens = _norm(txt).split(/\s+/).map(t => t.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, ''));
+  return tokens.some(t => t && _BLOCKED_NORM.has(t));
 }
 
 const json = (obj, status = 200, cors = {}) =>
@@ -75,7 +87,14 @@ async function related(env, a, b) {
 // et repli sûr si KV échoue (jamais de plantage du Worker pour cette raison).
 const SAMPLE_RATE = 50;
 async function rateLimited(env, ip, limit = 2000, windowSec = 60) {
- if (!ip || !env.RATELIMIT) return false; // binding absent : ne bloque pas (fail-open)
+ if (!ip) return false;
+ if (!env.RATELIMIT) {
+  // v2 (audit AUD-01-016) : le fail-open reste voulu (jamais de plantage pour
+  // ça), mais doit laisser une trace — avant, une erreur de binding désactivait
+  // la limitation sans aucune alerte visible dans les Journaux Workers.
+  console.error('[odyssee-chat] binding RATELIMIT absent — limitation de débit désactivée (fail-open)');
+  return false;
+ }
  const key = 'rl:' + ip;
  const now = Date.now();
  let win = null;
@@ -168,6 +187,12 @@ async function friendRequest(env, b, CORS) {
   const fwd = await related(env, me.id, code);
   if (fwd && fwd.status === 'accepted') return json({ ok: true, status: 'accepted' }, 200, CORS);
 
+  // v2 (audit AUD-01-006) : si un blocage existe dans un sens ou l'autre, ne
+  // rien écrire en base — sinon la demande reste 'pending' et resurgit dans
+  // l'incoming du destinataire si le blocage est un jour levé, sans lien
+  // apparent avec le déblocage. Réponse neutre (ne révèle pas le blocage).
+  if (await isBlocked(env, me.id, code)) return json({ ok: true, status: 'pending' }, 200, CORS);
+
   const now = Date.now();
   // Si la cible m'avait déjà demandé → acceptation automatique (validation des 2 côtés)
   const rev = await related(env, code, me.id);
@@ -218,6 +243,11 @@ async function friendBlock(env, b, CORS) {
   if (!other) return json({ error: 'invalid' }, 400, CORS);
   await env.DB.prepare('INSERT INTO blocks (blocker,blocked,ts) VALUES (?,?,?) ON CONFLICT(blocker,blocked) DO NOTHING')
     .bind(me.id, other, Date.now()).run();
+  // v2 (audit AUD-01-006) : purge toute demande 'pending' déjà en base entre
+  // les deux (dans les deux sens), pour qu'elle ne resurgisse pas si le
+  // blocage est levé plus tard.
+  await env.DB.prepare("DELETE FROM contacts WHERE status='pending' AND ((a=? AND b=?) OR (a=? AND b=?))")
+    .bind(me.id, other, other, me.id).run();
   return json({ ok: true }, 200, CORS);
 }
 async function friendUnblock(env, b, CORS) {
@@ -296,11 +326,20 @@ async function msgFetch(env, b, CORS) {
 }
 
 // Dernier id de message par conversation (pour les badges « non lus »).
+// v2 (audit AUD-01-004) : `%`/`_` restent des métacaractères LIKE actifs même
+// liés via .bind() — la paramétrisation protège de l'injection SQL, pas de
+// l'interprétation des wildcards. `register()` ne restreint pas le jeu de
+// caractères d'un id, donc un id contenant `%`/`_` élargirait la portée du
+// LIKE ci-dessous à des conversations d'autres utilisateurs.
+function escapeLike(s) {
+  return String(s).replace(/[%_\\]/g, ch => '\\' + ch);
+}
 async function msgLatest(env, b, CORS) {
   const me = await auth(env, b.id, b.secret); if (!me) return json({ error: 'auth' }, 401, CORS);
+  const idEsc = escapeLike(me.id);
   const rows = (await env.DB.prepare(
-    'SELECT conv, MAX(id) AS last FROM messages WHERE conv LIKE ? OR conv LIKE ? GROUP BY conv'
-  ).bind(me.id + '|%', '%|' + me.id).all()).results || [];
+    "SELECT conv, MAX(id) AS last FROM messages WHERE conv LIKE ? ESCAPE '\\' OR conv LIKE ? ESCAPE '\\' GROUP BY conv"
+  ).bind(idEsc + '|%', '%|' + idEsc).all()).results || [];
   const latest = {};
   for (const r of rows) {
     const parts = String(r.conv).split('|');

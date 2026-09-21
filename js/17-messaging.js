@@ -384,9 +384,22 @@ const _CHAT_BLOCKED_WORDS = [
  'con','connard','connasse','encul','merde','putain','salope','pute',
  'batard','bâtard','nique','niquer','pd','pédé','abruti','débile','crétin',
 ];
+// v2 (audit AUD-01-001) : matching par mot ENTIER, pas par sous-chaine - avant
+// ce correctif, "includes()" bloquait "content" (contient "con"), "pique-
+// nique" (contient "nique"), "constellation", "confiture"... - du
+// vocabulaire scolaire courant a l'age cible. On decoupe sur les espaces
+// seulement (pas sur les tirets/apostrophes, pour ne pas casser les mots
+// composes comme "pique-nique" en sous-mots), puis on ne compare que des
+// tokens complets a la liste. Logique IDENTIQUE au Worker odyssee-chat.js
+// (defense en profondeur des deux cotes) : repercuter tout changement futur.
+// La liste est aussi normalisee (accents retires) une seule fois : avant ce
+// correctif, les entrees accentuees ("pede","debile","cretin") ne
+// matchaient jamais, le texte entrant etant desaccentue avant comparaison.
+const _chatNorm = s => String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+const _CHAT_BLOCKED_NORM = new Set(_CHAT_BLOCKED_WORDS.map(_chatNorm));
 function _chatContainsBlockedWord(txt){
- const norm = String(txt||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
- return _CHAT_BLOCKED_WORDS.some(w => norm.includes(w));
+ const tokens = _chatNorm(txt).split(/\s+/).map(t => t.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g,''));
+ return tokens.some(t => t && _CHAT_BLOCKED_NORM.has(t));
 }
 
 async function _chatSend(body){
