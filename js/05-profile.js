@@ -161,7 +161,25 @@ function validateProfile(raw, defaultName, opts){
   // exactement au solde actuel d'un profil existant, une seule fois.
   _starsLedgerMigrated: _safeBool(raw._starsLedgerMigrated, false),
   badgesEarned: _safeArr(raw.badgesEarned).filter(b => typeof b === 'string'),
-  quests: raw.quests ?? null,
+  // AUD-02-021 (audit fonctionnel 2026-09-21) : ce champ échappait au bornage
+  // systématique appliqué à ~70 autres champs de ce fichier (raw.quests ??
+  // null, aucun typage) — un `quests` corrompu (mauvais type, ex. une chaîne
+  // au lieu d'un tableau) traversait la validation intact ; renderQuests()
+  // (07-game.js) fait `P.quests.map(...)` sans vérification de type et
+  // plantait l'écran de quêtes. On ne garde désormais que les entrées
+  // effectivement bien formées d'un tableau ; toute entrée invalide est
+  // silencieusement écartée plutôt que de faire planter l'écran.
+  quests: Array.isArray(raw.quests)
+   ? raw.quests.filter(q => q && typeof q==='object').slice(0,3).map(q => ({
+      id: _safeStr(q.id, 20, ''),
+      label: _safeStr(q.label, 80, ''),
+      goal: _clampNum(q.goal, 0, 999, 0),
+      key: _safeStr(q.key, 20, ''),
+      reward: _clampNum(q.reward, 0, 999, 0),
+      progress: _clampNum(q.progress, 0, 999, 0),
+      done: _safeBool(q.done, false),
+     }))
+   : null,
   questsDate: _safeStr(raw.questsDate, 12, null),
   opStats: { ...def.opStats, ...(raw.opStats || {}) },
   opStatsFr: { ...def.opStatsFr, ...(raw.opStatsFr || {}) },
@@ -374,7 +392,20 @@ function validateProfile(raw, defaultName, opts){
    appearance: ['dark','light','auto'].includes(raw.prefs?.appearance) ? raw.prefs.appearance : 'dark',
   },
   sessionMinutes: _clampNum(raw.sessionMinutes, 0, 999999, 0),
-  weeklyChallenge: raw.weeklyChallenge ?? null,
+  // AUD-02-021 (audit fonctionnel 2026-09-21) : ce champ échappait au bornage
+  // systématique appliqué à ~70 autres champs de ce fichier (raw.weeklyChallenge
+  // ?? null, aucun typage) — un objet malformé (ex. issu d'un import de fichier
+  // corrompu, AUD-02-020) traversait la validation intact et pouvait produire
+  // des valeurs incohérentes (NaN, mauvais type) consommées sans garde
+  // supplémentaire par updateWC() (07-game.js).
+  weeklyChallenge: (raw.weeklyChallenge && typeof raw.weeklyChallenge==='object' && !Array.isArray(raw.weeklyChallenge)) ? {
+   id: _safeStr(raw.weeklyChallenge.id, 20, ''),
+   label: _safeStr(raw.weeklyChallenge.label, 80, ''),
+   target: _clampNum(raw.weeklyChallenge.target, 0, 9999, 0),
+   reward: _clampNum(raw.weeklyChallenge.reward, 0, 9999, 0),
+   progress: _clampNum(raw.weeklyChallenge.progress, 0, 9999, 0),
+   done: _safeBool(raw.weeklyChallenge.done, false),
+  } : null,
   wcDate: _safeStr(raw.wcDate, 12, null),
   objective: _clampNum(raw.objective, 0, 99, 0),
   objectiveDone: _clampNum(raw.objectiveDone, 0, 99, 0),
@@ -417,7 +448,19 @@ function validateProfile(raw, defaultName, opts){
    gram:  _safeBool(raw.frCatFilters?.gram,  true),
    vocab: _safeBool(raw.frCatFilters?.vocab, true),
   },
-  homework: (raw.homework && typeof raw.homework==='object') ? raw.homework : null,
+  // AUD-02-021 : déjà gardé contre les valeurs non-objet, mais recopiait le
+  // contenu tel quel (raw.homework) sans borner ses champs internes — complète
+  // ici le même traitement que weeklyChallenge/quests ci-dessus, par cohérence.
+  homework: (raw.homework && typeof raw.homework==='object' && !Array.isArray(raw.homework)) ? {
+   type: _safeStr(raw.homework.type, 20, 'any'),
+   level: _safeStr(raw.homework.level, 4, 'CE2'),
+   subject: _safeStr(raw.homework.subject, 10, 'math'),
+   count: _clampNum(raw.homework.count, 1, 999, 10),
+   reward: _clampNum(raw.homework.reward, 0, 9999, 50),
+   progress: _clampNum(raw.homework.progress, 0, 999, 0),
+   done: _safeBool(raw.homework.done, false),
+   createdAt: _clampNum(raw.homework.createdAt, 0, 99999999999999, 0),
+  } : null,
   heroStageId: _safeStr(raw.heroStageId, 20, 'oeuf'),
   // Chantier Cloud Sync : préserver le code joueur et le statut d'activation
   cloudCode: _safeStr(raw.cloudCode, 40, null),
@@ -506,6 +549,37 @@ function validateProfile(raw, defaultName, opts){
   // pour ne jamais le recréditer deux fois (voir migration rétroactive
   // juste après, et le crédit "à chaud" dans _maybeShowStory, 07-story.js).
   _epilogueBonusCredited: _safeArr(raw._epilogueBonusCredited).filter(s => typeof s === 'string'),
+  // AUD-02-022 (audit fonctionnel 2026-09-21) : les 9 champs ci-dessous sont
+  // écrits ailleurs dans le code (affectation directe sur l'objet profil)
+  // mais étaient absents de cette liste blanche — donc silencieusement
+  // effacés à CHAQUE rechargement de
+  // profil (retour à l'accueil, changement de joueur, etc.), exactement le
+  // risque structurel déjà documenté pour onbAccountSeen/onbMapSeen/
+  // lastAdventure/twistLinesUsedByAdv plus haut. Trouvés par un garde-fou
+  // automatisé (tests/profile-fields-whitelist-guard.test.js) qui compare
+  // désormais tout `P.champ=` du code source à cette liste blanche.
+  // Deux d'entre eux annulaient un correctif CRITIQUE/Élevé déjà livré :
+  // blockedSubjects (AUD-02-027, blocage de matières) redevenait
+  // silencieusement sans effet après un simple rechargement ; chatFlags
+  // (AUD-02-046, alerte messagerie du résumé hebdo) perdait son historique en
+  // mémoire à chaque rechargement (le résumé hebdo lit heureusement le
+  // stockage brut directement, mais P.chatFlags en mémoire, lui, était bien
+  // tronqué au prochain saveProfile()).
+  blockedSubjects: _safeArr(raw.blockedSubjects).filter(s => typeof s === 'string'),
+  chatFlags: _safeArr(raw.chatFlags).filter(f => f && typeof f==='object' && typeof f.ts==='number' && typeof f.kind==='string').slice(-200),
+  streak: _clampNum(raw.streak, 0, 99999, 0),
+  streakLastDate: _safeStr(raw.streakLastDate, 12, null),
+  sessionObjective: (raw.sessionObjective && typeof raw.sessionObjective==='object' && !Array.isArray(raw.sessionObjective)) ? {
+   date: _safeStr(raw.sessionObjective.date, 12, null),
+   subj: _safeStr(raw.sessionObjective.subj, 10, null),
+   text: _safeStr(raw.sessionObjective.text, 200, ''),
+  } : null,
+  lastPlayTs: _clampNum(raw.lastPlayTs, 0, Date.now() + 86400000, 0),
+  calmModeExplained: _safeBool(raw.calmModeExplained, false),
+  senseMsgDate: _safeStr(raw.senseMsgDate, 12, null),
+  masteryAnnounced: (raw.masteryAnnounced && typeof raw.masteryAnnounced==='object' && !Array.isArray(raw.masteryAnnounced))
+   ? Object.fromEntries(Object.entries(raw.masteryAnnounced).filter(([k,v]) => typeof k==='string' && typeof v==='boolean').slice(0,200))
+   : {},
  };
  // v8.7.33 : MIGRATION RÉTROACTIVE pour le bug critique de GS.isBoss.
  // Avant ce fix, mapBossBeaten n'était pas mis à jour quand un joueur battait le boss
