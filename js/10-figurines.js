@@ -84,6 +84,15 @@ function _renderFigurinesShop(filter){
    // Tant que la licence n'est pas complète : même message verrouillé qu'avant.
    if(fig.completionLock && !(typeof _isLicenseCompletionUnlocked==='function' && _isLicenseCompletionUnlocked(fig))){
     html+=`<span style="font-size:.65em;color:#bdc3c7;font-style:italic;">${fig.unlockHint ? '' : '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> '}${fig.unlockHint || 'À gagner en boss'}</span>`;
+   } else if(!fig.completionLock && !(fig.p>0)){
+    // AUD-02-035 (audit fonctionnel 2026-09-21) : les figurines saisonnières/
+    // anniversaire (uk:'sx', voir 03-figurines-data.js ligne ~617 "Non-achetables
+    // (p:0) — uniquement obtenues en battant le boss correspondant") n'ont pas
+    // de completionLock, donc tombaient dans le "else" ci-dessous et affichaient
+    // un bouton d'achat cliquable à 0⭐ : n'importe quel enfant pouvait les
+    // obtenir gratuitement en un clic, sans jamais affronter le boss saisonnier
+    // (unlockSeasonalFigurine(), 06c-seasonal.js), des mois avant la date réelle.
+    html+=`<span style="font-size:.65em;color:#bdc3c7;font-style:italic;">🏆 À gagner en battant son boss</span>`;
    } else {
     html+=`<button class="fig-buy-btn" data-figid="${fig.id}" style="margin:3px 0 0;padding:4px 10px;font-size:.65em;background:${fig.color};border-bottom:2px solid rgba(0,0,0,.3);border-radius:8px;">${fig.p} ⭐</button>`;
    }
@@ -239,6 +248,16 @@ function buyFigurine(id){
  // affiché par erreur sur un rendu boutique périmé).
  if(fig.completionLock && typeof _isLicenseCompletionUnlocked==='function' && !_isLicenseCompletionUnlocked(fig)){
   toast('🔒 '+(fig.unlockHint || 'Complète d\'abord la collection de cette licence !'));
+  return;
+ }
+ // AUD-02-035 (audit fonctionnel 2026-09-21) : les figurines à prix 0 hors
+ // mécanisme de complétion de licence (saisonnières/anniversaire, uk:'sx')
+ // ne sont JAMAIS achetables — seulement obtenues en battant leur boss
+ // (unlockSeasonalFigurine(), 06c-seasonal.js). Garde ici en plus du masquage
+ // du bouton dans renderFigurinesShop(), pour protéger aussi contre un rendu
+ // boutique périmé (même logique déjà appliquée à completionLock ci-dessus).
+ if(!fig.completionLock && !(fig.p>0)){
+  toast('🏆 Cette figurine s\'obtient en battant son boss, pas à la boutique !');
   return;
  }
  spend(fig.p,()=>{

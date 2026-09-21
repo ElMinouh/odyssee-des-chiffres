@@ -1469,4 +1469,19 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-131 — Lot 0.3 (audit fonctionnel AUD-02) : les figurines saisonnières/anniversaire ne sont plus achetables en boutique
+
+**Contexte** : l'audit fonctionnel AUD-02 (constat AUD-02-035, CRITIQUE) a identifié que les 21 figurines saisonnières/anniversaire (`uk:'sx'`, `03-figurines-data.js`, commentaire d'origine « Non-achetables (p:0) — uniquement obtenues en battant le boss correspondant ») n'ont pas de flag `completionLock`. `renderFigurinesShop()` (`10-figurines.js`) n'affichait le message « verrouillé » que pour les figurines `completionLock` ; toute autre figurine — y compris celles à `p:0` — retombait dans la branche générique et affichait un bouton d'achat cliquable à « 0 ⭐ ». `buyFigurine()` ne vérifiait de son côté que la règle `completionLock` ; `spend(0, cb)` réussit toujours (`(P.stars||0)<0` est faux). N'importe quel enfant pouvait donc obtenir gratuitement, en un clic depuis le filtre « ✨ Saisonnier », n'importe laquelle de ces figurines — y compris les 5 gâteaux d'anniversaire nominatifs (`sx_anniv_soren/peyo/tomi/papa/maman`) sans porter le prénom concerné — des mois avant la date réelle de l'évènement, sans jamais affronter le boss correspondant.
+
+**Décision** : une figurine est désormais non-achetable en boutique si elle n'a PAS de `completionLock` ET que son prix n'est pas strictement positif (`!fig.completionLock && !(fig.p>0)`), sur le même principe que la garde déjà existante pour `completionLock` (défense en profondeur à deux niveaux, comme le faisait déjà cette dernière) :
+- `renderFigurinesShop()` affiche pour ces figurines le même style de message que pour une figurine verrouillée (« 🏆 À gagner en battant son boss »), sans bouton d'achat.
+- `buyFigurine()` refuse explicitement l'achat (toast dédié) si cette condition est vraie, même si un bouton était resté affiché par erreur sur un rendu boutique périmé — même logique de défense que la garde `completionLock` déjà en place.
+- Seul `unlockSeasonalFigurine()` (`06c-seasonal.js`, appelé après la victoire du boss saisonnier du jour) reste capable d'attribuer ces figurines — comportement inchangé.
+
+**Alternatives rejetées** : ajouter un flag `completionLock:true` factice sur ces figurines pour réutiliser telle quelle la garde existante (rejeté — `completionLock` porte une sémantique précise, « débloquée par complétion du reste de la licence », sans rapport avec le mécanisme saisonnier ; l'utiliser à mauvais escient aurait été trompeur et aurait fait apparaître un texte `unlockHint` de complétion incohérent) ; masquer entièrement ces figurines de la boutique plutôt que de les afficher en « verrouillé » (rejeté — l'enfant doit pouvoir les voir dans son catalogue de collection pour savoir ce qu'il lui reste à obtenir, seul le bouton d'achat doit disparaître).
+
+**Impact** : `10-figurines.js` (`renderFigurinesShop()`, `buyFigurine()`). v12.7.45. Tests : `tests/seasonal-figurines-not-purchasable.test.js` (refus d'achat, non-régression sur les figurines normales et sur le déblocage par complétion de licence ADR-126, rendu boutique sans bouton). 573/573 tests verts. Constat AUD-02-035 (audit fonctionnel) clos par ce lot — referme aussi, en pratique, la contradiction notée par l'audit avec ADR-126 (les figurines de complétion sont payantes par décision produit délibérée ; ce même principe d'exclusivité gagnée ne doit pas pouvoir être contourné par un autre mécanisme à prix nul).
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
