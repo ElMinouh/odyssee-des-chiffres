@@ -1606,4 +1606,16 @@ Les 7 autres (`streak`/`streakLastDate`, `sessionObjective`, `lastPlayTs`, `calm
 
 ---
 
+## ADR-141 — Lot 2.4 (audit fonctionnel AUD-02, Phase 2) : l'export est proposé avant une réinitialisation totale
+
+**Contexte** : l'audit fonctionnel AUD-02 (constat AUD-02-034) a relevé que « Réinitialiser TOUS les profils » (`resetAllProfiles()`/`_resetAllConfirm()`, `09-parent.js`) exécute la remise à zéro immédiatement dès validation (re-saisie exacte de la liste des prénoms, garde-fou déjà solide), sans jamais proposer d'exporter une sauvegarde au préalable — alors que la fonctionnalité d'export (`exportProfileFile()`) existe déjà dans le même onglet, à quelques centimètres du bouton de réinitialisation.
+
+**Décision** : la modale de confirmation affiche désormais un bouton « 💾 Exporter une sauvegarde de tous les profils d'abord », qui appelle `exportProfileFile()` (comportement identique au bouton dédié de l'onglet Cloud, aucune duplication de logique) et confirme le succès par un message dans la modale elle-même. Le bouton reste une proposition, pas une obligation : la re-saisie de la liste des prénoms suffit toujours à débloquer la réinitialisation, avec ou sans export préalable — ce lot ajoute une option de sécurité supplémentaire, il ne restreint pas ce qui existait déjà.
+
+**Alternatives rejetées** : rendre l'export obligatoire avant de pouvoir réinitialiser (rejeté — un parent qui souhaite délibérément tout effacer, y compris ses propres sauvegardes locales, doit rester libre de le faire ; le rôle de ce lot est de PROPOSER un filet de sécurité, pas de l'imposer) ; déclencher l'export automatiquement sans action explicite du parent (rejeté — un téléchargement de fichier déclenché sans clic explicite est une mauvaise pratique UX et peut être bloqué par le navigateur).
+
+**Impact** : `09-parent.js` (`resetAllProfiles()`, `_resetAllExportFirst()`). v12.7.55. Tests : `tests/reset-all-proposes-export-first.test.js`. `tests/helpers/loadGame.js` reçoit un accesseur `setExportProfileFile` (pattern déjà établi — `exportProfileFile()` utilise `Blob`/`URL.createObjectURL`, des API navigateur non stubbées dans ce harnais Node). `scripts/gen-test-api.mjs` relancé. 642/642 tests verts. Constat AUD-02-034 (audit fonctionnel) clos par ce lot.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

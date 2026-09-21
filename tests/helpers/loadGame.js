@@ -187,6 +187,11 @@ globalThis.__api = {
   // variable de module — nécessaire pour appeler _chatSend()/chatSendCurrent()
   // sans passer par chatOpenConv() (DOM + réseau, non stubbés dans ce harnais).
   setMsgConv: (v) => { _msgConv = v; },
+  // AUD-02-034 (audit fonctionnel) : exportProfileFile() (09-parent.js) utilise
+  // Blob/URL.createObjectURL, non stubbés (API navigateur, pas Node) — ce
+  // setter permet de vérifier que _resetAllExportFirst() l'appelle bien, sans
+  // avoir à stubber tout le pipeline de téléchargement de fichier.
+  setExportProfileFile: (fn) => { globalThis.exportProfileFile = fn; },
   getGS: () => (typeof GS!=='undefined') ? GS : undefined,
   setGS: (patch) => { Object.assign(GS, patch); },
   getPowers: () => (typeof powers!=='undefined') ? powers : undefined,
@@ -1443,6 +1448,7 @@ globalThis.__api = {
   _resetAllCheckInput: (typeof _resetAllCheckInput==='function') ? _resetAllCheckInput : undefined,
   _resetAllClose: (typeof _resetAllClose==='function') ? _resetAllClose : undefined,
   _resetAllConfirm: (typeof _resetAllConfirm==='function') ? _resetAllConfirm : undefined,
+  _resetAllExportFirst: (typeof _resetAllExportFirst==='function') ? _resetAllExportFirst : undefined,
   _resetAllTarget: (typeof _resetAllTarget!=='undefined') ? _resetAllTarget : undefined,
   _resetBossAttackEffects: (typeof _resetBossAttackEffects==='function') ? _resetBossAttackEffects : undefined,
   _resolveBookPages: (typeof _resolveBookPages==='function') ? _resolveBookPages : undefined,

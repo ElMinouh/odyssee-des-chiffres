@@ -1294,6 +1294,7 @@
     "_resetAllCheckInput": "writable",
     "_resetAllClose": "writable",
     "_resetAllConfirm": "writable",
+    "_resetAllExportFirst": "writable",
     "_resetAllTarget": "writable",
     "_resetBossAttackEffects": "writable",
     "_resolveBookPages": "writable",

@@ -1953,7 +1953,13 @@ function resetAllProfiles(){
  ov.innerHTML = '<div style="background:#2c1414;border:1px solid rgba(231,76,60,.4);border-radius:18px;padding:24px 20px;text-align:center;max-width:380px;width:100%;box-shadow:var(--shadow-modal);">'
   + '<div style="font-size:2.6em;margin-bottom:6px;">⚠️</div>'
   + '<div style="font-size:1.3em;font-weight:800;color:#e74c3c;margin-bottom:8px;">Réinitialiser TOUS les profils ?</div>'
-  + '<div style="font-size:.9em;color:#dce3f0;line-height:1.5;margin-bottom:16px;">Étoiles, figurines, XP, badges : tout sera remis à zéro pour ces '+roster.length+' profil(s). Action irréversible.<br><br>Pour confirmer, retape la liste exacte des prénoms : <b style="color:#f1c40f;">'+_e(_resetAllTarget)+'</b></div>'
+  + '<div style="font-size:.9em;color:#dce3f0;line-height:1.5;margin-bottom:12px;">Étoiles, figurines, XP, badges : tout sera remis à zéro pour ces '+roster.length+' profil(s). Action irréversible.</div>'
+  // AUD-02-034 (audit fonctionnel 2026-09-21) : l'export existe déjà dans le
+  // même onglet (exportProfileFile()) mais n'était jamais proposé au moment
+  // le plus critique, juste avant une remise à zéro totale et irréversible.
+  + '<button onclick="_resetAllExportFirst()" style="width:100%;margin-bottom:6px;background:#2c3e50;border:1px solid #f1c40f;color:#fff;border-radius:10px;padding:10px;font-weight:700;font-size:.85em;">💾 Exporter une sauvegarde de tous les profils d\'abord</button>'
+  + '<div id="reset-all-export-status" style="font-size:.78em;min-height:1.1em;margin-bottom:10px;"></div>'
+  + '<div style="font-size:.9em;color:#dce3f0;line-height:1.5;margin-bottom:10px;">Pour confirmer, retape la liste exacte des prénoms : <b style="color:#f1c40f;">'+_e(_resetAllTarget)+'</b></div>'
   + '<input type="text" id="reset-all-input" placeholder="Tape « '+_e(_resetAllTarget)+' »" autocomplete="off" style="width:100%;box-sizing:border-box;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;padding:10px;text-align:center;font-size:1em;margin-bottom:6px;" oninput="_resetAllCheckInput()" onkeydown="if(event.key===\'Enter\')_resetAllConfirm()">'
   + '<div id="reset-all-err" style="font-size:.8em;color:#e74c3c;min-height:1.1em;margin-bottom:10px;"></div>'
   + '<div style="display:flex;gap:10px;justify-content:center;">'
@@ -1963,6 +1969,15 @@ function resetAllProfiles(){
  document.body.appendChild(ov);
  setTimeout(()=>{ const inp=document.getElementById('reset-all-input'); if(inp) inp.focus(); }, 50);
  if(typeof trapFocus==='function') ov._releaseTrap=trapFocus(ov);
+}
+// AUD-02-034 : exporte tous les profils (même mécanisme que le bouton dédié
+// de l'onglet Cloud, exportProfileFile()) directement depuis la modale de
+// réinitialisation totale, pour qu'un parent ne parte jamais de zéro sans y
+// avoir été explicitement invité au moment le plus critique.
+function _resetAllExportFirst(){
+ if(typeof exportProfileFile==='function') exportProfileFile();
+ const st=document.getElementById('reset-all-export-status');
+ if(st) st.innerHTML='<span style="color:#2ecc71;">✅ Sauvegarde exportée — tu peux continuer.</span>';
 }
 function _resetAllCheckInput(){
  const inp=document.getElementById('reset-all-input'), btn=document.getElementById('reset-all-btn'), err=document.getElementById('reset-all-err');
