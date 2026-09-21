@@ -1022,6 +1022,13 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);GS.consecFail=0;
   }else safeTimeout(nextTurn,750);}
  }else{
 GS.errInGame++;GS.combo=0;GS.opCombo=0;GS.lastOpKey=null;GS.consecFail=(GS.consecFail||0)+1;$('gc').classList.remove('combo-breaker');
+  // AUD-02-009 (audit fonctionnel 2026-09-21) : GS.eventLeft (durée d'un événement
+  // aléatoire, ex. "Monstre Enragé" -> minuteur réduit) ne se décrémentait que dans
+  // la branche bonne réponse ci-dessus, jamais ici. Un enfant qui enchaînait des
+  // erreurs pendant un tel événement le subissait indéfiniment — l'inverse de
+  // l'intention (le Mode Serein exclut d'ailleurs déjà cet événement, ADR-38).
+  // On décrémente désormais à CHAQUE question jouée, juste ou fausse.
+  if(GS.activeEvent){GS.eventLeft--;if(GS.eventLeft<=0)GS.activeEvent=null;}
   const opK=q.opKey||'+';P.opStats[opK]=P.opStats[opK]||{ok:0,fail:0};P.opStats[opK].fail++;
   if(Array.isArray(GS._opsPlayed) && !GS._opsPlayed.includes(opK)) GS._opsPlayed.push(opK);
   _trackSubjCatStat(GM.subject, q.opKey, false);

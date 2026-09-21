@@ -1484,4 +1484,16 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-132 — Lot 1.1 (audit fonctionnel AUD-02, Phase 1) : la durée d'un événement décompte aussi sur les mauvaises réponses
+
+**Contexte** : l'audit fonctionnel AUD-02 (constat AUD-02-009) a identifié que `GS.eventLeft` (durée restante d'un événement aléatoire, ex. « Monstre Enragé » réduisant le minuteur) ne se décrémentait que dans la branche « bonne réponse » de `validate()` (`07-game.js`). Un enfant qui enchaînait des mauvaises réponses pendant un tel événement le subissait indéfiniment, jusqu'à ce qu'il parvienne enfin à réussir suffisamment de questions — l'inverse de l'intention pédagogique du produit, qui exclut déjà explicitement cet événement du Mode Serein (ADR-38) pour ne pas ajouter de pression aux enfants en difficulté.
+
+**Décision** : la même décrémentation (`if(GS.activeEvent){GS.eventLeft--;if(GS.eventLeft<=0)GS.activeEvent=null;}`) est désormais posée aussi en tête de la branche « mauvaise réponse » de `validate()`. Un événement à durée 2 se termine donc après 2 questions jouées, quel que soit leur résultat — comme son texte d'annonce le laisse d'ailleurs déjà entendre (« pendant 2 questions »).
+
+**Alternatives rejetées** : ne décrémenter que sur les erreurs consécutives à un certain seuil (rejeté — sur-ingénierie pour un correctif dont le besoin réel est juste « chaque question compte », qu'elle soit juste ou fausse) ; suspendre l'effet de l'événement après une erreur plutôt que de le clore (rejeté — changerait le sens même de l'événement, non demandé par l'audit).
+
+**Impact** : `07-game.js` (`validate()`, branche mauvaise réponse). v12.7.46. Tests : `tests/event-duration-counts-wrong-answers.test.js`. 578/578 tests verts. Constat AUD-02-009 (audit fonctionnel) clos par ce lot.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
