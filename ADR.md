@@ -1428,4 +1428,16 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-128 — CSP `unsafe-inline` : réduction reportée, pas engagée maintenant
+
+**Contexte** : l'audit technique AUD-01 (constat AUD-01-005) a relevé que `script-src 'self' 'unsafe-inline'` (CSP, `index.html`) neutralise l'essentiel de la protection anti-XSS visée par la CSP elle-même, à cause de l'usage massif d'attributs `onclick=`/`onkeydown=` inline générés en HTML à travers tout `js/` (des centaines d'occurrences). Retirer `unsafe-inline` exigerait de migrer tous ces gestionnaires vers `addEventListener`, fichier par fichier — un refactor transversal à forte surface de régression (tout élément cliquable du jeu), sans commune mesure avec les autres correctifs ponctuels de ce cycle d'audit.
+
+**Décision** : Cyril choisit de ne pas attaquer ce chantier maintenant. Le risque XSS réel est jugé faible en l'état : pas d'input utilisateur libre injecté en HTML ailleurs que la messagerie enfant-à-enfant, déjà échappée (`esc()`) des deux côtés (client `js/17-messaging.js` et Worker `worker/odyssee-chat.js`, vérifié lors de ce même audit).
+
+**Alternatives rejetées** : correctif partiel (migrer seulement quelques fichiers) — rejeté, `unsafe-inline` reste nécessaire tant qu'UN SEUL gestionnaire inline subsiste ailleurs, donc un partiel n'apporte aucun gain de sécurité réel tout en fragmentant le code.
+
+**Impact** : aucun changement de code. Si ce chantier est repris un jour, prévoir un projet dédié avec son propre plan module par module (pas un lot ponctuel) — voir `Audit_technique_Odyssee_des_Chiffres_2026-09-21.md`, section AUD-01-005, pour le détail technique.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
