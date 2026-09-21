@@ -1414,4 +1414,18 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-127 — Figurines de franchises sous droits tiers : risque IP accepté consciemment pour l'usage privé actuel
+
+**Contexte** : l'audit technique AUD-01 (2026-09-21) a identifié un risque de propriété intellectuelle : 461 figurines à collectionner, dont plus de 300 sont des personnages directement issus de franchises sous droits (Dragon Ball 45, Marvel 33, DC Comics 28, Pokémon 27, Star Wars 23, Harry Potter 17, Mario Bros 11, Astérix, Tintin, Goldorak, etc. — comptage exact par le champ `uni` dans `03-figurines-data.js`). Ce risque avait déjà été signalé dans l'audit précédent (constat n°8, ~420 figurines à l'époque) ; il s'est objectivement aggravé depuis (deux licences entières nouvelles : DC Comics, Goldorak).
+
+**Décision** : Cyril confirme que l'usage de l'app reste strictement privé/familial (pas de diffusion publique, pas de store, pas de monétisation) à la date de cet ADR. Le risque juridique pratique (contrefaçon droit d'auteur/marques) est donc jugé faible dans ces conditions et consciemment accepté tel quel — aucune action de remplacement des figurines n'est engagée maintenant.
+
+**Condition de réouverture explicite** : ce point doit être reconsidéré AVANT toute évolution vers une diffusion plus large (publication sur un store, partage d'un lien public à grande échelle, monétisation). Si une telle évolution est envisagée un jour, le jeu dispose déjà d'un précédent de création de personnages originaux (monstres/boss/héros des Odyssées) — le même travail créatif serait la voie de remplacement à privilégier plutôt qu'un retrait pur et simple des franchises tierces.
+
+**Alternatives rejetées** : aucune action de remplacement immédiate (rejetée à ce stade — coût de recréation de ~300 figurines disproportionné pour un risque jugé faible en usage privé) ; retrait partiel ciblé sur les licences les plus emblématiques (non retenu, incohérent tant que l'usage reste privé pour l'ensemble).
+
+**Impact** : aucun changement de code. Décision de gouvernance/produit à ré-évaluer si le contexte de diffusion change. Constat AUD-01-014 (audit technique) clos par cette décision.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
