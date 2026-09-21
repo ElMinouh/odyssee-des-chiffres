@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════
 // Problème résolu : ADR-85 documente un incident réel — 3 fichiers nommés
 // `*_test.js` au lieu de `*.test.js` ont été poussés sur le dépôt et n'ont
-// JAMAIS été exécutés par Vitest (vitest.config.js ne scanne que
+// JAMAIS été exécutés par Vitest (vitest.config.mjs ne scanne que
 // `tests/**/*.test.js`), sans la moindre erreur ni échec visible. La seule
 // parade en place depuis était procédurale ("vérifier avant de nommer un
 // fichier") — aucun garde-fou automatisé.
@@ -27,7 +27,7 @@ const offenders = entries
   .filter(name => !name.endsWith('.test.js'));
 
 if (offenders.length > 0) {
-  console.error('❌ Fichier(s) de test mal nommé(s) — jamais exécuté(s) par Vitest (vitest.config.js ne scanne que tests/**/*.test.js) :');
+  console.error('❌ Fichier(s) de test mal nommé(s) — jamais exécuté(s) par Vitest (vitest.config.mjs ne scanne que tests/**/*.test.js) :');
   for (const name of offenders) console.error(`   - ${join(TESTS_DIR, name)} → devrait finir par .test.js`);
   console.error('\nVoir ADR-85 dans ADR.md : c\'est exactement l\'incident que ce script existe pour empêcher.');
   process.exit(1);

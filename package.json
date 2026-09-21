@@ -19,9 +19,9 @@
   "private": true,
   "license": "UNLICENSED",
   "devDependencies": {
-    "@vitest/coverage-v8": "^1.6.1",
+    "@vitest/coverage-v8": "^5.0.1",
     "eslint": "^8.57.0",
     "prettier": "^3.2.0",
-    "vitest": "^1.6.0"
+    "vitest": "^5.0.1"
   }
 }
