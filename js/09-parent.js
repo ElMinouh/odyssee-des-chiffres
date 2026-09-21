@@ -1455,11 +1455,23 @@ function renderCloudPanel(){
  }
  const isActive = !!prof.cloudEnabled;
  const code = prof.cloudCode || '(non généré)';
- const lastSync = isActive && isActiveSession && typeof getCloudStatus === 'function'
-  ? getCloudStatus().lastSync : 0;
+ const cloudStatus = (isActive && isActiveSession && typeof getCloudStatus === 'function') ? getCloudStatus() : null;
+ const lastSync = cloudStatus ? cloudStatus.lastSync : 0;
  const lastSyncStr = lastSync
   ? new Date(lastSync).toLocaleString('fr-FR')
   : (isActive ? 'en attente…' : '—');
+ // AUD-02-023 (audit fonctionnel 2026-09-21) : la fusion cloud (_mergeCloudProfiles,
+ // 12-cloud.js) applique en silence des dizaines de règles par champ — un
+ // parent ne pouvait jamais savoir CE QUI avait changé après une synchronisation,
+ // seulement qu'elle avait eu lieu (via un toast fugace de 3s en cas de conflit).
+ // On affiche ici un résumé en clair du dernier changement réellement appliqué
+ // au profil actif, sur les quelques champs qu'un parent reconnaît (étoiles,
+ // figurines, stade de héros, position sur la carte) — pas un journal technique
+ // exhaustif (le diagnostic complet reste disponible plus bas, "Diagnostic").
+ const mergeSummary = cloudStatus && Array.isArray(cloudStatus.lastMergeSummary) ? cloudStatus.lastMergeSummary : [];
+ const mergeSummaryBlock = mergeSummary.length
+  ? '<div style="font-size:.72em;color:#9aa6b2;margin:6px 0;background:rgba(255,255,255,.06);border-radius:6px;padding:6px 8px;"><b>Dernière synchronisation — ce qui a changé :</b><br>'+mergeSummary.map(l=>esc(l)).join('<br>')+'</div>'
+  : '';
  // v9.4.16 : nom échappé pour le HTML (esc) et pour les onclick (apostrophes) —
  // un prénom comme « L'éa » cassait les boutons cloud.
  const _nH = esc(prof.name);
@@ -1472,7 +1484,7 @@ function renderCloudPanel(){
  } else {
   statusBlock = '<p style="font-size:.72em;color:#bdc3c7;margin:8px 0 4px;">Statut : <strong style="color:'+(isActive?'#2ecc71':'#e67e22')+';">'+(isActive?'☁️ Activé':'⏸ Désactivé')+'</strong></p>'
    + (isActive
-      ? '<p style="font-size:.72em;color:#bdc3c7;margin:4px 0;">Dernière sync : '+lastSyncStr+'</p>'
+      ? '<p style="font-size:.72em;color:#bdc3c7;margin:4px 0;">Dernière sync : '+lastSyncStr+'</p>'+mergeSummaryBlock
       : '<p style="font-size:.72em;color:#e67e22;margin:6px 0;background:rgba(230,126,34,.12);border-radius:6px;padding:6px 8px;">⚠️ <b>Sauvegarde non activée</b> : tant que ce bouton n\'est pas activé, la progression de '+_nH+' n\'est <b>pas envoyée au cloud</b> et ne peut pas être récupérée sur un autre appareil. Active-la ci-dessous.</p>');
   actionBlock = '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">'
    + (isActive

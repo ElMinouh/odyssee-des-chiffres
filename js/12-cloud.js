@@ -63,10 +63,57 @@ let _cloudEndgameDebounceTimer = null;
 let _cloudInflight = false;     // évite les syncs simultanées
 let _cloudLastSync = 0;          // timestamp du dernier sync réussi
 let _cloudLastError = null;      // dernière erreur (pour UI)
+// AUD-02-024 (audit fonctionnel 2026-09-21) : avant ce correctif, un échec de
+// synchronisation ne produisait ni toast ni alerte visible — seuls
+// console.warn() et _cloudLastError (jamais affiché nulle part) en gardaient
+// la trace. Un parent pouvait croire la sauvegarde cloud active pendant des
+// semaines alors qu'elle échouait silencieusement à chaque tentative.
+let _cloudFailStreak = 0;        // échecs consécutifs de synchronisation
+let _cloudFailAlerted = false;   // un seul toast par série d'échecs, pas un à chaque tentative
+// AUD-02-023 : résumé en clair du dernier changement réellement appliqué au
+// profil actif par une fusion cloud (_mergeCloudProfiles), pour affichage
+// dans l'espace parent (renderCloudPanel(), 09-parent.js) — la fusion elle-
+// même reste inchangée, on se contente d'observer avant/après.
+let _cloudLastMergeSummary = [];
+let _cloudLastMergeAt = 0;
+// Compare seulement les quelques champs qu'un parent reconnaît (étoiles,
+// figurines, stade de héros, position sur la carte) — pas un diff technique
+// exhaustif des ~30 règles de _mergeCloudProfiles (le diagnostic complet
+// existe déjà séparément, voir getSyncDiag() plus haut).
+function _summarizeCloudMerge(before, after){
+ const lines=[];
+ try{
+  const starsBefore=before.stars||0, starsAfter=after.stars||0;
+  if(starsAfter!==starsBefore) lines.push(`⭐ Étoiles : ${starsBefore} → ${starsAfter}`);
+  const figsBefore=new Set(before.ownedFigurines||[]);
+  const gained=(after.ownedFigurines||[]).filter(id=>!figsBefore.has(id));
+  if(gained.length) lines.push(`🎁 ${gained.length} figurine(s) reçue(s) d'un autre appareil`);
+  if((before.heroStageId||'')!==(after.heroStageId||'') && after.heroStageId){
+   lines.push(`🏆 Stade de héros mis à jour depuis un autre appareil : ${after.heroStageId}`);
+  }
+  if(JSON.stringify(before.mapAvatarZone||null)!==JSON.stringify(after.mapAvatarZone||null)){
+   lines.push(`🗺️ Position sur la carte synchronisée depuis un autre appareil`);
+  }
+ }catch(e){}
+ return lines;
+}
 
 // ══════════════ HELPERS ══════════════
 function _cloudLog(...args){ if(CLOUD_VERBOSE) console.log('[cloud]', ...args); }
 function _cloudWarn(...args){ console.warn('[cloud]', ...args); }
+// AUD-02-024 : centralise la réaction à un échec de push cloud — incrémente
+// le compteur d'échecs consécutifs, rafraîchit l'indicateur (visible même
+// sans nouvelle tentative réussie), et alerte une seule fois par série
+// d'échecs après un seuil (3 échecs consécutifs, ~15 min à l'intervalle
+// normal de 5 min — évite une fausse alerte sur un simple aléa réseau isolé).
+function _cloudSyncFailed(){
+ _cloudFailStreak++;
+ if(typeof refreshCloudIndicator==='function') refreshCloudIndicator();
+ if(_cloudFailStreak>=3 && !_cloudFailAlerted){
+  _cloudFailAlerted=true;
+  if(typeof toast==='function') toast('⚠️ Sauvegarde cloud impossible depuis un moment. Vérifie ta connexion.',5000);
+ }
+}
 
 // Génère un code joueur de la forme NOM-XXXXXX (6 caractères alphanumériques aléatoires)
 function generateCloudCode(name){
@@ -276,6 +323,7 @@ async function pushProfileToCloud(forceFirst=false){
   if(!resp.ok){
    _cloudLastError = `HTTP ${resp.status}`;
    _cloudWarn('upload échec :', resp.status);
+   _cloudSyncFailed();
    return false;
   }
   const result = await resp.json();
@@ -287,12 +335,15 @@ async function pushProfileToCloud(forceFirst=false){
   }
   _cloudLastSync = Date.now();
   _cloudLastError = null;
+  _cloudFailStreak = 0;
+  _cloudFailAlerted = false;
   _cloudLog('sync OK à', new Date(_cloudLastSync).toISOString());
   if(typeof refreshCloudIndicator==='function') refreshCloudIndicator();
   return true;
  } catch(e){
   _cloudLastError = e.message || 'erreur réseau';
   _cloudWarn('upload erreur :', e);
+  _cloudSyncFailed();
   return false;
  } finally {
   _cloudInflight = false;
@@ -604,6 +655,10 @@ async function _importProfileFromServer(serverProfile){
  if(!imported) return false;
  // #2 : fusion non destructive au lieu d'un écrasement complet
  const merged = _mergeCloudProfiles(P, imported);
+ // AUD-02-023 : capture avant l'écrasement de P ci-dessous — seul point où
+ // le résultat d'une fusion est réellement appliqué au profil actif.
+ _cloudLastMergeSummary = _summarizeCloudMerge(P, merged);
+ _cloudLastMergeAt = Date.now();
  // Préserver le code et le statut cloud du profil local
  merged.cloudCode = P.cloudCode;
  merged.cloudEnabled = P.cloudEnabled;
@@ -808,6 +863,9 @@ function getCloudStatus(){
   lastSync: _cloudLastSync,
   lastError: _cloudLastError,
   inflight: _cloudInflight,
+  failStreak: _cloudFailStreak,
+  lastMergeSummary: _cloudLastMergeSummary,
+  lastMergeAt: _cloudLastMergeAt,
  };
 }
 
@@ -867,9 +925,18 @@ function refreshCloudIndicator(){
  on.classList.remove('hidden');
  const lastEl = document.getElementById('cloud-last-sync');
  if(lastEl){
-  lastEl.textContent = _cloudLastSync
-   ? 'Dernière synchro : ' + new Date(_cloudLastSync).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'})
-   : 'Synchronisation en attente…';
+  // AUD-02-024 : après plusieurs échecs consécutifs, l'indicateur permanent
+  // affiche explicitement le problème plutôt qu'une heure de dernière
+  // synchro potentiellement ancienne et silencieusement plus mise à jour.
+  if(_cloudFailStreak>=3){
+   lastEl.textContent = '⚠️ Synchronisation impossible — vérifie ta connexion';
+   lastEl.style.color = '#e74c3c';
+  } else {
+   lastEl.style.color = '';
+   lastEl.textContent = _cloudLastSync
+    ? 'Dernière synchro : ' + new Date(_cloudLastSync).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'})
+    : 'Synchronisation en attente…';
+  }
  }
 }
 
