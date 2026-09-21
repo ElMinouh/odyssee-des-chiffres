@@ -46,7 +46,7 @@ interne : `odyssee-des-chiffres`.
 |---|---|
 | Le jeu (front-end) | `index.html`, `styles.css`, `js/*.js` |
 | Le mode hors-ligne | `sw.js` (Service Worker, stratégie de cache expliquée en tête de fichier) |
-| Les Workers Cloudflare | `odyssee-chat.js` (+ `schema.sql`), `odyssee-sync` (pas dans ce dépôt — code à récupérer sur le dashboard Cloudflare, voir ADR-53 et suivants pour le contexte) |
+| Les Workers Cloudflare | `worker/odyssee-chat.js` (+ `schema.sql`, `wrangler.toml`), `worker/odyssee-sync.js` (+ `wrangler-sync.toml`) — rapatrié dans le dépôt le 2026-09-21 (audit AUD-01-002), voir ADR-53 et suivants pour le contexte historique |
 | Les tests automatiques | `tests/*.test.js` + `tests/helpers/loadGame.js` |
 | L'historique des décisions | `ADR.md` — **toujours commencer par là** pour comprendre "pourquoi c'est fait comme ça" |
 | La checklist de QA manuelle | `CHECKLIST-non-regression.md` |

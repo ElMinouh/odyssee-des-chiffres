@@ -1,0 +1,12 @@
+name = "odyssee-sync"
+main = "odyssee-sync.js"
+compatibility_date = "2024-11-01"
+
+# Binding réel vérifié le 2026-09-21 via l'API Cloudflare
+# (GET /workers/scripts/odyssee-sync/settings) — pas une supposition.
+# Namespace partagé avec odyssee-chat (RATELIMIT y pointe aussi, pour sa
+# propre limitation de débit) : ne pas renommer/dupliquer sans vérifier que
+# les deux Workers n'en dépendent pas différemment.
+[[kv_namespaces]]
+binding = "PROFILES"
+id = "bbc98b1438fa4259a5783aa9f798d714"
