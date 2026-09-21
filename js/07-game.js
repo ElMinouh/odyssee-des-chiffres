@@ -560,6 +560,23 @@ function startRevision(){
 function nextTurn(){
  if(GM.mode2==='combat')return nextCombat();
  if(GS.pv<=0)return endGame(false);
+ // AUD-02-007 / AUD-02-008 (audit fonctionnel 2026-09-21) : nextTurn() est aussi rappelée par
+ // hitPlayer() après une mauvaise réponse, uniquement pour afficher la question suivante — PAS
+ // pour démarrer un nouvel affrontement. Avant ce correctif, tout le bloc de mise en place plus
+ // bas (PV du monstre/boss, enrage/bouclier/furie, compteur de questions, recalcul de isBoss)
+ // se réexécutait à chaque erreur : les PV du monstre en cours de combat étaient entièrement
+ // régénérés (AUD-02-007, tout niveau ≥ CE1 où HP_LVL>1, boss ou non), et en mode classique la
+ // vérification de fin de partie plus bas voyait qCount déjà égal à la cible et déclarait une
+ // victoire avant même de vérifier que le monstre avait 0 PV (AUD-02-008). On distingue
+ // maintenant une VRAIE nouvelle rencontre (_turnSetupDone encore faux pour ce combat) d'une
+ // simple continuation du combat en cours (_turnSetupDone déjà vrai et monstre pas encore
+ // vaincu) : dans ce second cas on se contente de générer la question suivante, exactement
+ // comme le fait déjà le chemin "bonne réponse qui ne tue pas le monstre" (voir validate()).
+ if(GS._turnSetupDone && GS.monsterHP>0){
+  GS.q=generateQ();
+  renderQ();
+  return;
+ }
  // v8.7.8 (O1) : nombre de questions cible (par défaut 6 pour le mode normal classique,
  // surchargé par questionsTarget pour les étapes de zone).
  const _qTarget = (GS.questionsTarget && GS.questionsTarget>0) ? GS.questionsTarget : 6;
@@ -599,6 +616,7 @@ function nextTurn(){
  GS.bossShieldActive=false; GS.bossShieldHits=0; GS.bossRegenCount=0;  // v8.7.54 (O4.2c)
  GS.bossFury=false;  // v8.7.56 (O4.4) : 3e phase des gros boss
  { const _ma=$('monster-area'); if(_ma) _ma.classList.remove('monster-enraged','boss-shielded','monster-fury'); }
+ GS._turnSetupDone=true; // AUD-02-007 : mise en place réelle faite, prochaine erreur ne devra plus tout réinitialiser
  maybeEvent();GS.q=generateQ();
  $('BODY').classList.remove('body-alert','urgency-bg');$('correction').classList.add('hidden');
  clearMonsterSpeech();

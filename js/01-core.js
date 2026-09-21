@@ -11,12 +11,16 @@ const GM={level:'CP',mode:'keyboard',mode2:'normal',mapZone:null,subject:'math'}
 const GS={
  pv:3,score:0,combo:0,maxCombo:0,qCount:0,q:null,answering:false,
  isBoss:false,isGolden:false,errInGame:0,fracOk:0,missingOk:0,combatWon:false,mapBossWon:false,
- sessionStart:0,frozen:false,monsterHP:1,monsterMaxHP:1,activeEvent:null,eventLeft:0,errList:[]
+ sessionStart:0,frozen:false,monsterHP:1,monsterMaxHP:1,activeEvent:null,eventLeft:0,errList:[],
+ // AUD-02-007 : vrai début de rencontre (PV/état du monstre mis en place) vs simple
+ // continuation du même combat après une mauvaise réponse — voir nextTurn(), 07-game.js.
+ _turnSetupDone:false
 };
 function resetGS(){
  Object.assign(GS,{pv:3+(P.skills.shield||0),score:0,combo:0,maxCombo:0,qCount:0,q:null,answering:false,
   isBoss:false,isGolden:false,errInGame:0,fracOk:0,missingOk:0,combatWon:false,mapBossWon:false,
   sessionStart:Date.now(),frozen:false,monsterHP:1,monsterMaxHP:1,activeEvent:null,eventLeft:0,
+  _turnSetupDone:false,
   // Lot 1 (audit engagement, 13e conversation) : compteur d'échecs consécutifs (pt.27)
   // pour proposer une pause après une série de mauvaises réponses, sans pénaliser
   // ni interrompre la partie automatiquement.
