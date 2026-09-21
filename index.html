@@ -870,6 +870,12 @@
      <div id="report-view-errors" class="hidden"><p style="font-size:.9em;font-weight:700;color:#e74c3c;">❌ Opérations ratées (les plus récentes)</p><div id="errors-list-zone"></div></div>
      <button id="btn-export-pdf" onclick="exportPDF()" style="width:100%;margin-top:10px;background:#2c3e50;border:1px solid #f1c40f;">📄 Exporter un bilan PDF</button>
     </div>
+    <!-- AUD-02-026 (audit fonctionnel 2026-09-21) : journal fonctionnel,
+         lisible par un parent (contrairement au diagnostic technique de
+         l'onglet Avancé) — migrations, imports, conflits de synchronisation
+         cloud résolus pour LE profil actuellement sélectionné ci-dessus. -->
+    <button class="accordion" id="acc-profile-log">📖 Journal du profil<span class="acc-sub">Ce qui a changé récemment (mise à jour, import, synchro)</span></button>
+    <div class="panel"><div id="profile-log-zone"></div></div>
    </div>
 
    <div id="ptab-encadrement" class="hidden">

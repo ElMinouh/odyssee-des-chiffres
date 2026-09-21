@@ -659,6 +659,14 @@ async function _importProfileFromServer(serverProfile){
  // le résultat d'une fusion est réellement appliqué au profil actif.
  _cloudLastMergeSummary = _summarizeCloudMerge(P, merged);
  _cloudLastMergeAt = Date.now();
+ // AUD-02-026 : trace aussi dans le journal fonctionnel persistant du profil
+ // (contrairement à _cloudLastMergeSummary ci-dessus, en mémoire seulement et
+ // remplacé à chaque synchronisation) — uniquement si la fusion a réellement
+ // changé quelque chose, pour ne pas noyer le journal d'entrées vides à
+ // chaque synchronisation de routine sans conflit.
+ if(_cloudLastMergeSummary.length && typeof logProfileEvent==='function'){
+  logProfileEvent(merged.name, 'Synchronisation cloud : ' + _cloudLastMergeSummary.join(' · '));
+ }
  // Préserver le code et le statut cloud du profil local
  merged.cloudCode = P.cloudCode;
  merged.cloudEnabled = P.cloudEnabled;

@@ -70,7 +70,37 @@ function migrateProfile(raw){
   }
  }
  cur._v = SAVE_VERSION;
+ // AUD-02-026 (audit fonctionnel 2026-09-21) : journal fonctionnel — jusqu'ici
+ // aucune migration n'était visible pour le parent (silencieuse par design,
+ // cf. commentaires _MIGRATIONS plus bas), qui n'avait donc aucun moyen de
+ // savoir qu'une mise à jour de l'application avait modifié les données de
+ // son enfant en cas d'anomalie constatée après coup.
+ if(typeof logProfileEvent==='function') logProfileEvent(cur.name, `Mise à jour technique du profil (v${fromV} → v${SAVE_VERSION})`);
  return cur;
+}
+// AUD-02-026 : journal fonctionnel persistant par profil (contrairement à
+// getSyncDiag(), 12-cloud.js — technique, en sessionStorage, effacé à la
+// fermeture de l'onglet) : migrations, imports, conflits de synchronisation
+// résolus. Purgé avec le reste des données du profil par _purgeChildData()
+// (09-parent.js) lors d'un reset — pas un audit trail permanent, juste de
+// quoi comprendre une anomalie récente sur le profil ACTUELLEMENT en cours.
+function logProfileEvent(name, text){
+ if(!name) return;
+ try{
+  const key='profileLog_'+name;
+  const log=JSON.parse(localStorage.getItem(key)||'[]');
+  log.push({ts:Date.now(), text:String(text||'').slice(0,200)});
+  if(log.length>50) log.splice(0, log.length-50);
+  localStorage.setItem(key, JSON.stringify(log));
+ }catch(e){}
+}
+function getProfileLog(name){
+ if(!name) return [];
+ try{ return JSON.parse(localStorage.getItem('profileLog_'+name)||'[]'); }catch(e){ return []; }
+}
+function clearProfileLog(name){
+ if(!name) return;
+ try{ localStorage.removeItem('profileLog_'+name); }catch(e){}
 }
 
 // ═══════════════════════════════════════════════════════

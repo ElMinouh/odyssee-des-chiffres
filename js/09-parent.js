@@ -27,7 +27,7 @@ async function checkPin(){
  const pin=$('pin-input').value;
  if(await checkStoredPin(pin)){
   setPinAttempts(0);
-  $('parent-lock').classList.add('hidden');$('parent-content').classList.remove('hidden');renderReport();renderReportView();
+  $('parent-lock').classList.add('hidden');$('parent-content').classList.remove('hidden');renderReport();renderReportView();if(typeof renderProfileLog==='function')renderProfileLog();
   if(typeof obOnParentUnlocked==='function') obOnParentUnlocked();
  }else{
   const attempts=getPinAttempts()+1;
@@ -41,7 +41,7 @@ function ptab(name){
  const ts=['suivi','encadrement','comptes','figurines','avance'];
  ts.forEach(t=>$('ptab-'+t)&&$('ptab-'+t).classList.toggle('hidden',t!==name));
  document.querySelectorAll('#v-parent .tab').forEach((b,i)=>b.classList.toggle('active',ts[i]===name));
- if(name==='suivi'){renderReport();renderReportView();}
+ if(name==='suivi'){renderReport();renderReportView();if(typeof renderProfileLog==='function')renderProfileLog();}
  if(name==='encadrement'){
   if(typeof onHwLevelChange==='function')onHwLevelChange();
   if(typeof loadHomework==='function')loadHomework();
@@ -487,6 +487,28 @@ function renderReport(){
   ${typeof _progPanelHtml==='function'?_progPanelHtml(d):''}
   ${h.slice(-7).map(x=>`<div style="display:flex;justify-content:space-between;font-size:.8em;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span>${x.date} · ${x.level||'?'} · ${x.mode||'?'}</span><span style="color:${x.won?'#2ecc71':'#e74c3c'}">${x.won?'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>':'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'} ${x.score}⭐</span></div>`).join('')}
  </div>`;
+}
+
+// AUD-02-026 (audit fonctionnel 2026-09-21) : journal fonctionnel lisible par
+// un parent, pour LE profil actuellement sélectionné dans l'onglet Suivi —
+// voir logProfileEvent()/getProfileLog() (05-profile.js) pour ce qui y est
+// tracé (migrations, imports, synchronisations cloud avec changement réel).
+function renderProfileLog(){
+ const zone=$('profile-log-zone'); if(!zone) return;
+ const player=$('parent-player')?.value;
+ const log=(player && typeof getProfileLog==='function') ? getProfileLog(player) : [];
+ if(!log.length){
+  zone.innerHTML='<p style="font-size:.8em;color:#bdc3c7;margin:0;">Aucun évènement récent pour ce profil.</p>';
+  return;
+ }
+ const _e=(typeof esc==='function')?esc:(s=>String(s));
+ const rows=[...log].reverse().map(e=>{
+  const d=new Date(e.ts);
+  const dateStr=d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  return `<div style="font-size:.78em;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.06);"><span style="color:#7f8c8d;">${dateStr}</span> — ${_e(e.text)}</div>`;
+ }).join('');
+ zone.innerHTML=rows
+  +'<button onclick="if(typeof clearProfileLog===\'function\'){clearProfileLog(\''+(typeof _jsAttr==='function'?_jsAttr(player):player)+'\');renderProfileLog();}" style="width:100%;margin-top:8px;background:var(--neutral);font-size:.78em;padding:6px;">🗑️ Effacer le journal</button>';
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1030,6 +1052,8 @@ function importProfileFile(event){
    Object.entries(players).forEach(([name,d])=>{
     if(!sanitizePlayerKey(name)||!isValidPlayerData(d)){skip++;return;}
     localStorage.setItem('user_'+name,JSON.stringify(d));cnt++;
+    // AUD-02-026 : trace dans le journal fonctionnel du profil concerné.
+    if(typeof logProfileEvent==='function') logProfileEvent(name, 'Profil importé depuis un fichier de sauvegarde');
    });
    if(msg){msg.innerText=`✅ ${cnt} profil(s) importé(s)${skip?` (${skip} ignoré(s))`:''}.`;msg.style.color='#2ecc71';}
    toast(`📥 ${cnt} profil(s) importé(s) ! Rechargement…`,3000);
@@ -1766,7 +1790,7 @@ function _onParentPlayerSelectChange(name){
  ['parent-player','hw-player','calm-player','block-player','filter-player','bsubj-player'].forEach(id=>{
   const e=$(id); if(e) e.value=name;
  });
- renderReport();renderReportView();
+ renderReport();renderReportView();if(typeof renderProfileLog==='function')renderProfileLog();
  if(typeof onHwLevelChange==='function')onHwLevelChange();
  if(typeof loadHomework==='function')loadHomework();
  if(typeof loadCalmMode==='function')loadCalmMode();
@@ -1933,6 +1957,10 @@ let _resetAllTarget = null;
 function _purgeChildData(name){
  if(!name) return;
  try{ localStorage.removeItem('block_'+name); }catch(e){}
+ // AUD-02-026 : le journal fonctionnel (logProfileEvent(), 05-profile.js)
+ // n'est pas un audit trail permanent — il suit la même règle de purge que
+ // le reste des données rattachées au prénom lors d'un reset.
+ try{ localStorage.removeItem('profileLog_'+name); }catch(e){}
  try{
   const b=(typeof getBirthdays==='function') ? getBirthdays() : JSON.parse(localStorage.getItem('birthdays')||'{}');
   if(b && Object.prototype.hasOwnProperty.call(b,name)){ delete b[name]; localStorage.setItem('birthdays', JSON.stringify(b)); }
