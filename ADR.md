@@ -1496,4 +1496,18 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-133 — Lot 1.2 (audit fonctionnel AUD-02, Phase 1) : sélecteurs d'enfant synchronisés + alerte messagerie persistante dans le résumé hebdo
+
+**Contexte** : deux constats indépendants de l'espace parent (`09-parent.js`), tous deux liés à un défaut de cohérence entre onglets/périodes plutôt qu'à une donnée mal calculée. (1) AUD-02-030 : les 6 sélecteurs d'enfant de l'espace parent (Suivi, Devoir, Mode serein, Horaires, Filtres, Matières autorisées) sont chacun peuplés indépendamment depuis le même roster (`openParent()`, `_refreshAllParentPlayerSelects()`) mais jamais synchronisés entre eux — changer d'enfant dans un onglet n'avait aucune influence sur les autres, qui restaient sur le premier enfant du roster par défaut. Dans un foyer multi-enfants, un parent pressé pouvait ainsi donner un devoir, bloquer une matière ou modifier des horaires pour un AUTRE enfant que celui qu'il venait de consulter, sans aucun signal. (2) AUD-02-046 : la section messagerie du résumé hebdomadaire (`renderWeeklySummary()`) n'était rendue que si la messagerie était activée au moment de la CONSULTATION (`chatIsEnabledByName`), pas si elle l'était pendant la semaine affichée — un parent qui suspend la messagerie après un incident de mots bloqués perd, en consultant le résumé plus tard, la trace même de l'incident qui a motivé sa décision.
+
+**Décision** :
+- Nouvelle fonction `_onParentPlayerSelectChange(name)` (`09-parent.js`), branchée sur l'`onchange` des 6 sélecteurs (`index.html`, remplace leur ancien `onchange` individuel) : propage la valeur choisie aux 6 sélecteurs, puis relance immédiatement le même bloc de rechargement que `ptab('encadrement')` (Devoir, Mode serein, Horaires, Filtres, Matières) plus `renderReport()`/`renderReportView()` pour l'onglet Suivi — le panneau actuellement visible reflète donc tout de suite le bon enfant, pas seulement au prochain changement d'onglet. Aucune vérification de la liste d'options du `<select>` cible n'est nécessaire : les 6 sélecteurs sont toujours peuplés depuis le même roster, une valeur choisie dans l'un est donc garantie présente dans tous les autres.
+- La section messagerie de `renderWeeklySummary()` s'affiche désormais si la messagerie est active MAINTENANT **ou** s'il existe des données de mots bloqués pour LA SEMAINE consultée (`chatFlagsThis.length>0`), indépendamment de l'état d'activation actuel.
+
+**Alternatives rejetées** : pour AUD-02-030, un unique sélecteur d'enfant global en haut de l'espace parent plutôt que 6 sélecteurs synchronisés (rejeté — refonte de navigation plus large que ce que demande le constat, chaque onglet garde son ancre visuelle propre) ; pour AUD-02-046, afficher systématiquement la section messagerie même sans aucune donnée pertinente (rejeté — reproduirait le bruit déjà critiqué ailleurs dans l'audit, la section reste masquée si ni l'état courant ni l'historique de la semaine ne la justifient).
+
+**Impact** : `09-parent.js` (`_onParentPlayerSelectChange()`, `renderWeeklySummary()`), `index.html` (6 attributs `onchange`). v12.7.47. Tests : `tests/parent-player-selectors-synced.test.js`, `tests/weekly-summary-chat-alert-persists.test.js`. 584/584 tests verts (`scripts/gen-test-api.mjs` relancé pour exposer la nouvelle fonction au harnais de test, comme documenté par le script lui-même). Constats AUD-02-030 et AUD-02-046 (audit fonctionnel) clos par ce lot.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

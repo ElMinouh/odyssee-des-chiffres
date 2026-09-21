@@ -1117,6 +1117,7 @@
     "_onOffline": "writable",
     "_onOnline": "writable",
     "_onPageHide": "writable",
+    "_onParentPlayerSelectChange": "writable",
     "_onVisibilityChange": "writable",
     "_openBookTale": "writable",
     "_openBossCard": "writable",

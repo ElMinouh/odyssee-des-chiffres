@@ -857,7 +857,7 @@
     <p class="ptab-intro">Regarde comment ton enfant progresse.</p>
     <div style="text-align:right;margin:4px 0;"><button onclick="dashCollapseAll('ptab-suivi')" style="background:rgba(255,255,255,.1);font-size:.72em;padding:4px 10px;">⬍ Tout replier</button></div>
     <p class="ptab-sel-lbl">👤 Pour quel enfant&nbsp;?</p>
-    <select id="parent-player" onchange="renderReport();renderReportView();" style="width:92%;margin-bottom:10px;"></select>
+    <select id="parent-player" onchange="_onParentPlayerSelectChange(this.value)" style="width:92%;margin-bottom:10px;"></select>
     <button class="accordion" id="acc-progression">📈 Progression<span class="acc-sub">Niveau, zones conquises, étoiles, badges</span></button>
     <div class="panel"><div id="report-content"></div></div>
     <button class="accordion" id="acc-stats-parent">📊 Statistiques<span class="acc-sub">Parties, précision, opérations ratées</span></button>
@@ -878,7 +878,7 @@
 
     <button class="accordion" id="acc-hw">📚 Devoir du jour<span class="acc-i" onclick="event.stopPropagation();pGuide('objectifs')">i</span><span class="acc-sub">Un exercice à réussir pour gagner des étoiles</span></button>
     <div class="panel">
-     <select id="hw-player" style="width:90%;margin-bottom:6px;" onchange="loadHomework()"></select>
+     <select id="hw-player" style="width:90%;margin-bottom:6px;" onchange="_onParentPlayerSelectChange(this.value)"></select>
      <select id="hw-subject" style="width:90%;margin-bottom:6px;" onchange="onHwSubjectChange()">
       <option value="math">🔢 Mathématiques</option>
       <option value="fr">📖 Français</option>
@@ -918,7 +918,7 @@
 
     <button class="accordion" id="acc-calm">🕊️ Mode serein<span class="acc-sub">Pas de perte de vie sur erreur — désactivé par défaut</span></button>
     <div class="panel">
-     <select id="calm-player" style="width:90%;margin-bottom:8px;" onchange="loadCalmMode()"></select>
+     <select id="calm-player" style="width:90%;margin-bottom:8px;" onchange="_onParentPlayerSelectChange(this.value)"></select>
      <label style="display:flex;align-items:center;gap:8px;justify-content:center;font-size:.9em;">
       <input type="checkbox" id="calm-toggle" onchange="toggleCalmMode()" style="width:20px;height:20px;">
       Activer le mode serein (erreur sans perte de vie ni fin de partie)
@@ -931,7 +931,7 @@
 
     <button class="accordion" id="acc-horaires">⏰ Horaires autorisés<span class="acc-i" onclick="event.stopPropagation();pGuide('horaire')">i</span><span class="acc-sub">Les heures où l'enfant peut jouer</span></button>
     <div class="panel">
-     <select id="block-player" style="width:90%;margin-bottom:8px;" onchange="loadBlockSettings()"></select>
+     <select id="block-player" style="width:90%;margin-bottom:8px;" onchange="_onParentPlayerSelectChange(this.value)"></select>
      <div style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:6px;">
       <label for="block-start" style="font-size:.8em;">De</label>
       <input type="time" id="block-start" style="width:110px;padding:6px;" value="17:00">
@@ -947,7 +947,7 @@
 
     <button class="accordion" id="acc-filtres">🔢 Types de questions autorisés<span class="acc-i" onclick="event.stopPropagation();pGuide('filtres')">i</span><span class="acc-sub">Coupe certains types (additions, tables…)</span></button>
     <div class="panel">
-     <select id="filter-player" style="width:90%;margin-bottom:8px;" onchange="loadFilterSettings()"></select>
+     <select id="filter-player" style="width:90%;margin-bottom:8px;" onchange="_onParentPlayerSelectChange(this.value)"></select>
      <select id="filter-subject" style="width:90%;margin-bottom:8px;" onchange="onFilterSubjectChange()">
       <option value="math">🔢 Mathématiques</option>
       <option value="fr">📖 Français</option>
@@ -962,7 +962,7 @@
 
     <button class="accordion" id="acc-matieres">📖 Matières autorisées<span class="acc-i" onclick="event.stopPropagation();pGuide('matieres')">i</span><span class="acc-sub">N'autorise que certaines matières</span></button>
     <div class="panel">
-     <select id="bsubj-player" style="width:90%;margin-bottom:8px;" onchange="loadBlockedSubjects()"></select>
+     <select id="bsubj-player" style="width:90%;margin-bottom:8px;" onchange="_onParentPlayerSelectChange(this.value)"></select>
      <div id="bsubj-list" style="text-align:left;max-width:280px;margin:0 auto;"></div>
      <button onclick="saveBlockedSubjects()" style="width:92%;margin-top:8px;">💾 Enregistrer</button>
      <div id="bsubj-status" style="font-size:.8em;margin-top:6px;color:#f1c40f;"></div>

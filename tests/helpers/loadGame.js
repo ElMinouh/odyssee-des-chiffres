@@ -1247,6 +1247,7 @@ globalThis.__api = {
   _onOffline: (typeof _onOffline==='function') ? _onOffline : undefined,
   _onOnline: (typeof _onOnline==='function') ? _onOnline : undefined,
   _onPageHide: (typeof _onPageHide==='function') ? _onPageHide : undefined,
+  _onParentPlayerSelectChange: (typeof _onParentPlayerSelectChange==='function') ? _onParentPlayerSelectChange : undefined,
   _onVisibilityChange: (typeof _onVisibilityChange==='function') ? _onVisibilityChange : undefined,
   _openBookTale: (typeof _openBookTale==='function') ? _openBookTale : undefined,
   _openBossCard: (typeof _openBossCard==='function') ? _openBossCard : undefined,

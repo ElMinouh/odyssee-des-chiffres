@@ -826,7 +826,14 @@ function renderWeeklySummary(){
     <h4>💡 Conseil pour la semaine prochaine</h4>
     <div style="line-height:1.5;">${advice}</div>
    </div>
-   ${(typeof chatIsEnabledByName==='function' && chatIsEnabledByName(player)) ? `
+   ${/* AUD-02-046 (audit fonctionnel 2026-09-21) : la section messagerie du résumé hebdo
+      était masquée dès que la messagerie était DÉSACTIVÉE au moment de la consultation —
+      y compris pour une semaine passée où elle était encore active et avait généré des
+      alertes de mots bloqués. Un parent qui suspend la messagerie après un incident perdait
+      ainsi la trace même de l'incident qui a motivé cette décision. On affiche désormais la
+      section si la messagerie est active MAINTENANT, OU s'il existe des données pour LA
+      SEMAINE consultée (chatFlagsThis), indépendamment de l'état actuel. */''}
+   ${((typeof chatIsEnabledByName==='function' && chatIsEnabledByName(player)) || chatFlagsThis.length>0) ? `
    <div class="wreport-section no-print" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
     <span style="font-size:.9em;color:#9aa6b2;">✉️ Messagerie de ${_esc_player}</span>
     ${chatFlagsThis.length ? `<span style="font-size:.78em;color:#f39c12;font-weight:700;" title="Messages bloqués par le filtre de langage cette semaine">⚠️ ${chatFlagsThis.length} message${chatFlagsThis.length>1?'s':''} bloqué${chatFlagsThis.length>1?'s':''}</span>` : ''}
@@ -1695,6 +1702,32 @@ function pmAddProfile(){
  // messagerie, matières, horaires, filtres) le ciblent automatiquement.
  if(typeof _obNoteProfileCreated==='function') _obNoteProfileCreated(n);
  if(typeof toast==='function')toast('✅ Profil ajouté : '+n,2000);
+}
+// AUD-02-030 (audit fonctionnel 2026-09-21) : les 6 sélecteurs d'enfant de
+// l'espace parent (parent-player, hw-player, calm-player, block-player,
+// filter-player, bsubj-player — obj-player n'existe plus dans index.html,
+// référence déjà orpheline) n'étaient jamais synchronisés entre eux. Un
+// parent qui changeait d'enfant dans l'onglet Suivi pouvait ensuite, sans le
+// remarquer, donner un devoir ou bloquer une matière pour un AUTRE enfant
+// resté sélectionné par défaut dans l'onglet Encadrement. Ce gestionnaire
+// partagé propage le choix à tous les sélecteurs et recharge immédiatement
+// le contenu de chaque panneau — même bloc que ptab('encadrement') plus haut,
+// pour que le panneau actuellement visible reflète tout de suite le bon
+// enfant, pas seulement au prochain changement d'onglet.
+function _onParentPlayerSelectChange(name){
+ // Les 6 sélecteurs sont toujours peuplés depuis le même roster (openParent(),
+ // _refreshAllParentPlayerSelects()) : une valeur choisie dans l'un est donc
+ // garantie présente dans tous les autres, pas besoin de re-vérifier options.
+ ['parent-player','hw-player','calm-player','block-player','filter-player','bsubj-player'].forEach(id=>{
+  const e=$(id); if(e) e.value=name;
+ });
+ renderReport();renderReportView();
+ if(typeof onHwLevelChange==='function')onHwLevelChange();
+ if(typeof loadHomework==='function')loadHomework();
+ if(typeof loadCalmMode==='function')loadCalmMode();
+ loadBlockSettings();loadFilterSettings();
+ if(typeof onFilterSubjectChange==='function')onFilterSubjectChange();
+ if(typeof loadBlockedSubjects==='function')loadBlockedSubjects();
 }
 // v11.6.5 : rafraîchit TOUS les sélecteurs de profil de la Vue Parent
 // (pas seulement celui de l'écran d'accueil), en préservant la sélection
