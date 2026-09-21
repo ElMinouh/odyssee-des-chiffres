@@ -734,7 +734,15 @@ function _weeklyAdvice(now, prev, opStats, topErrors){
  }
  // Priorité 3 : opération faible
  const opN = {'+':"l'addition", '-':"la soustraction", 'x':"la multiplication", '/':"la division", 'geo':"la géométrie", 'rel':"les nombres relatifs", 'litt':"le calcul littéral", 'prop':"la proportionnalité", 'fonc':"les fonctions", 'stat':"les statistiques", 'arith':"les puissances et l'arithmétique", 'algo':"l'algorithmique", 'num':"les nombres décimaux", 'frac':"les fractions", 'mes':"les grandeurs et mesures"};
- const weak = Object.entries(opStats||{}).filter(([,s])=>{const t=s.ok+s.fail;return t>5 && s.ok/t<.6;}).map(([op])=>op);
+ // AUD-02-031 (audit fonctionnel 2026-09-21) : ce calcul portait sur la MÊME
+ // donnée cumulative (opStats, toutes parties confondues) que le bandeau
+ // "points faibles" de renderReport() ci-dessus, mais avec un seuil différent
+ // (t>5&&ok/t<.6 ici, contre t>2&&ok/t<.7 là-bas) — les deux pouvaient donc
+ // se contredire dans le même écran sur la même matière (ex. le bandeau
+ // affiche "Aucun point faible !" pendant que le conseil de la semaine cible
+ // une opération que le bandeau vient de dire saine). Seuil aligné sur celui
+ // du bandeau : même donnée, même verdict.
+ const weak = Object.entries(opStats||{}).filter(([,s])=>{const t=s.ok+s.fail;return t>2 && s.ok/t<.7;}).map(([op])=>op);
  if(weak.length){
   return `📚 <strong>Renforcer ${opN[weak[0]]||weak[0]} :</strong> moins de 60% de réussite — privilégier les exercices ciblés.`;
  }

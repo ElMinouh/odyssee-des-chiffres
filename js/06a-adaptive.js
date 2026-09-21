@@ -994,10 +994,17 @@ function _progPanelHtml(d){
   {
    const w=_progWeakType(curSubj, sel);
    const _label = curSubj==='math' ? (_PROG_OPLABEL[(w&&w.key)]||(w&&w.key)) : _catLabel(curSubj, (w&&w.key));
+   // AUD-02-031 (audit fonctionnel 2026-09-21) : cet indicateur porte sur UNE
+   // notion précise, au sein du niveau ${sel} sélectionné ci-dessus — une
+   // portée volontairement plus fine que le bandeau "points faibles" global
+   // de l'écran Suivi (toutes matières/tout l'historique confondus). Les deux
+   // peuvent légitimement diverger ; la précision ci-dessous évite de le lire
+   // comme une contradiction.
    weakBox = w
     ? `<div style="margin-top:10px;padding:10px;border:2px solid #e74c3c;border-radius:10px;background:rgba(231,76,60,.13);">
          <div style="font-weight:800;color:#ff6b6b;">⚠️ Point faible n°1 en ${sel}</div>
          <div style="margin-top:3px;">${_label} — ${Math.round(w.rate*100)}% d'erreurs (${w.fail} sur ${w.n})</div>
+         <div style="margin-top:4px;font-size:.72em;opacity:.75;">Sur cette notion précise en ${sel} — indépendant du bilan global ci-dessus.</div>
        </div>`
     : `<div style="margin-top:10px;padding:10px;border:2px dashed rgba(255,255,255,.25);border-radius:10px;font-size:.9em;opacity:.8;">Pas encore assez de réponses en ${sel} pour repérer un point faible.</div>`;
   }

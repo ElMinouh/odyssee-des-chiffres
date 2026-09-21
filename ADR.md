@@ -1630,4 +1630,16 @@ Les 7 autres (`streak`/`streakLastDate`, `sessionObjective`, `lastPlayTs`, `calm
 
 ---
 
+## ADR-143 — Lot 2.6 (audit fonctionnel AUD-02, Phase 2) : seuils de "point faible" harmonisés entre le bandeau et le conseil hebdomadaire
+
+**Contexte** : l'audit fonctionnel AUD-02 (constat AUD-02-031, Moyenne) a relevé que trois calculs différents de « point faible » coexistent dans le même écran Suivi de l'espace parent : le bandeau global (`renderReport()`, `09-parent.js`, seuil `t>2 && ok/t<.7` sur `opStats` cumulatif) ; le conseil de la semaine (`_weeklyAdvice()`, MÊME donnée `opStats` cumulative, mais seuil `t>5 && ok/t<.6`) ; et l'indicateur de progression par notion (`_progPanelHtml()`, `06a-adaptive.js`, donnée `yearProgress` totalement différente, scopée à un niveau précis). Les deux premiers portaient sur la MÊME donnée avec des seuils différents, pouvant donc se contredire sans raison légitime (ex. bandeau « Aucun point faible ! » pendant que le conseil cible une opération que le bandeau vient de dire saine). Le troisième a une portée légitimement différente (une notion précise dans un niveau précis, pas une moyenne globale), mais rien n'expliquait cette différence à l'écran.
+
+**Décision** : le seuil de `_weeklyAdvice()` (priorité 3, « opération faible ») est aligné sur celui du bandeau (`t>2 && ok/t<.7`) — même donnée, même verdict, plus de contradiction possible entre les deux. L'indicateur par notion de `_progPanelHtml()` reste volontairement distinct (portée réellement différente) mais affiche désormais un texte de clarification (« Sur cette notion précise en {niveau} — indépendant du bilan global ci-dessus ») pour qu'un parent comprenne pourquoi les deux peuvent légitimement diverger, plutôt que de le lire comme une incohérence.
+
+**Alternatives rejetées** : fusionner les trois indicateurs en un seul calcul unifié (rejeté — le troisième porte sur une donnée et une granularité fondamentalement différentes ; une fusion forcée aurait soit perdu la précision par notion, soit compliqué inutilement le bandeau global) ; garder les seuils différents mais ajouter une explication (rejeté pour les deux PREMIERS calculs — contrairement au troisième, ils portent sur exactement la même donnée : la seule justification cohérente est l'alignement, pas une explication de leur différence).
+
+**Impact** : `09-parent.js` (`_weeklyAdvice()`), `06a-adaptive.js` (`_progPanelHtml()`). v12.7.57. Tests : `tests/weak-point-thresholds-consistent.test.js` — a immédiatement détecté une régression introduite pendant ce lot (une suppression accidentelle de la déclaration `const opN` lors de l'édition), corrigée avant commit. 657/657 tests verts. Constat AUD-02-031 (audit fonctionnel) clos par ce lot.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
