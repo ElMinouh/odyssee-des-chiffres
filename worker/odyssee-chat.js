@@ -140,6 +140,7 @@ export default {
         case '/friend/list':    return await friendList(env, body, CORS);
         case '/friend/accept':  return await friendAccept(env, body, CORS);
         case '/friend/decline': return await friendDecline(env, body, CORS);
+        case '/friend/cancel':  return await friendCancel(env, body, CORS);
         case '/friend/remove':  return await friendRemove(env, body, CORS);
         case '/friend/block':   return await friendBlock(env, body, CORS);
         case '/friend/unblock': return await friendUnblock(env, body, CORS);
@@ -274,6 +275,21 @@ async function friendDecline(env, b, CORS) {
   const me = await auth(env, b.id, b.secret); if (!me) return json({ error: 'auth' }, 401, CORS);
   const from = String(b.from || '').trim();
   await env.DB.prepare("DELETE FROM contacts WHERE a=? AND b=? AND status='pending'").bind(from, me.id).run();
+  return json({ ok: true }, 200, CORS);
+}
+
+// AUD-02-041 (audit fonctionnel 2026-09-21) : annule une demande d'ami que
+// "moi" ai ENVOYÉE à `to`, tant qu'elle est encore en attente — symétrique de
+// friendDecline() ci-dessus (qui traite le refus côté DESTINATAIRE). Avant ce
+// correctif, aucune route n'existait pour ce cas : une demande envoyée par
+// erreur (code mal tapé mais correspondant à un compte existant) restait
+// engagée indéfiniment côté serveur, sans que l'enfant ne puisse la voir ni la
+// retirer (friendList() renvoyait pourtant déjà `outgoing`, jamais lu côté
+// client).
+async function friendCancel(env, b, CORS) {
+  const me = await auth(env, b.id, b.secret); if (!me) return json({ error: 'auth' }, 401, CORS);
+  const to = String(b.to || '').trim();
+  await env.DB.prepare("DELETE FROM contacts WHERE a=? AND b=? AND status='pending'").bind(me.id, to).run();
   return json({ ok: true }, 200, CORS);
 }
 

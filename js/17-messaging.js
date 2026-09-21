@@ -72,6 +72,10 @@ async function chatFriendRequest(prof, code){ return _chatApi('/friend/request',
 async function chatFriendList(prof){ return _chatApi('/friend/list', _chatAuth(prof)); }
 async function chatFriendAccept(prof, from){ return _chatApi('/friend/accept', Object.assign(_chatAuth(prof), { from })); }
 async function chatFriendDecline(prof, from){ return _chatApi('/friend/decline', Object.assign(_chatAuth(prof), { from })); }
+// AUD-02-041 (audit fonctionnel 2026-09-21) : annule une demande d'ami ENVOYÉE
+// par ce profil, tant qu'elle est encore en attente — symétrique de
+// chatFriendDecline() ci-dessus (côté destinataire).
+async function chatFriendCancel(prof, to){ return _chatApi('/friend/cancel', Object.assign(_chatAuth(prof), { to })); }
 async function chatFriendRemove(prof, other){ return _chatApi('/friend/remove', Object.assign(_chatAuth(prof), { other })); }
 async function chatFriendBlock(prof, other){ return _chatApi('/friend/block', Object.assign(_chatAuth(prof), { other })); }
 async function chatFriendUnblock(prof, other){ return _chatApi('/friend/unblock', Object.assign(_chatAuth(prof), { other })); }
@@ -193,6 +197,22 @@ async function renderContactsScreen(){
   });
  }
 
+ // AUD-02-041 (audit fonctionnel 2026-09-21) : friendList() renvoie déjà
+ // `outgoing` (demandes envoyées, encore en attente) depuis longtemps côté
+ // Worker, mais rien côté client ne l'affichait — une demande envoyée
+ // devenait invisible et impossible à annuler en cas d'erreur (mauvais code).
+ const outg = data.outgoing || [];
+ if(outg.length && !_msgReadOnly){
+  html += '<p style="font-size:.8em;font-weight:700;color:#9aa6b2;margin:6px 0;">📤 Demandes envoyées</p>';
+  outg.forEach(c => {
+   const cn=_e(c.name||c.id), av=_e(c.avatar||'🧙'), cidArg=_jsAttr(c.id);
+   html += '<div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border-radius:10px;padding:8px 10px;margin:4px 0;">'
+    + '<span style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">'+av+'</span>'
+    + '<span style="flex:1;font-size:.9em;color:#bdc3c7;">'+cn+' <span style="font-size:.72em;">(en attente…)</span></span>'
+    + '<button onclick="chatCancelContact(\''+cidArg+'\')" style="background:#7f8c8d;font-size:.72em;padding:5px 10px;">Annuler</button></div>';
+  });
+ }
+
  let latest = {};
  try{ const l = await chatMsgLatest(prof); if(l && l.latest) latest = l.latest; }catch(e){}
  const seen = _chatSeen(prof);
@@ -260,6 +280,12 @@ async function chatAcceptContact(from){
 async function chatDeclineContact(from){
  const res = await chatFriendDecline(_msgProf, from);
  if(res && res.ok) renderContactsScreen();
+}
+// AUD-02-041 : annule une demande d'ami envoyée par ce profil, encore en attente.
+async function chatCancelContact(to){
+ const res = await chatFriendCancel(_msgProf, to);
+ if(res && res.ok){ if(typeof toast==='function') toast('Demande annulée.',1800); renderContactsScreen(); }
+ else if(typeof toast==='function') toast('Échec de l’annulation.',2000);
 }
 async function chatRemoveContact(other, name){
  showConfirm('Retirer '+name+' de tes amis ? Vous ne pourrez plus vous écrire.', async ()=>{
@@ -397,16 +423,28 @@ const _CHAT_BLOCKED_WORDS = [
 // matchaient jamais, le texte entrant etant desaccentue avant comparaison.
 const _chatNorm = s => String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 const _CHAT_BLOCKED_NORM = new Set(_CHAT_BLOCKED_WORDS.map(_chatNorm));
-function _chatContainsBlockedWord(txt){
+// AUD-02-040 (audit fonctionnel 2026-09-21) : renvoie le mot bloqué lui-même
+// (forme normalisée) plutôt qu'un simple booléen, pour pouvoir l'indiquer à
+// l'enfant — avant ce correctif, le toast générique ne précisait jamais quel
+// mot posait problème, sur un message parfois long à retaper de mémoire.
+function _chatFindBlockedWord(txt){
  const tokens = _chatNorm(txt).split(/\s+/).map(t => t.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g,''));
- return tokens.some(t => t && _CHAT_BLOCKED_NORM.has(t));
+ return tokens.find(t => t && _CHAT_BLOCKED_NORM.has(t)) || null;
+}
+function _chatContainsBlockedWord(txt){
+ return !!_chatFindBlockedWord(txt);
 }
 
 async function _chatSend(body){
  if(!_msgConv) return;
  body=String(body==null?'':body).trim(); if(!body) return;
- if(_chatContainsBlockedWord(body)){
-  if(typeof toast==='function') toast('⚠️ Message bloqué : merci de rester poli(e) 🙂', 3000);
+ const blockedWord = _chatFindBlockedWord(body);
+ if(blockedWord){
+  // AUD-02-040 : indique le mot bloqué (au lieu d'un message générique) et
+  // signale à chatSendCurrent() (return true) de NE PAS vider le champ de
+  // saisie — l'enfant n'a plus besoin de retaper tout son message de mémoire,
+  // seulement de corriger le mot en cause.
+  if(typeof toast==='function') toast(`⚠️ Message bloqué (mot : « ${blockedWord} ») : merci de rester poli(e) 🙂`, 4200);
   // v12.2.6 (ADR-56, méta-audit Lot 5, pt.3) : signalement passif pour le
   // parent — pas d'alerte push (aucune infra serveur pour ça), juste un
   // compteur persistant, affiché dans le résumé hebdomadaire (Vue Parent).
@@ -417,7 +455,7 @@ async function _chatSend(body){
     if(typeof saveProfile==='function') saveProfile();
    }
   }catch(e){ /* signalement best-effort : ne doit jamais bloquer l'envoi */ }
-  return;
+  return true;
  }
  const res = await chatMsgSend(_msgProf, _msgConv.id, body);
  if(res && res.ok){
@@ -441,6 +479,9 @@ async function _chatSend(body){
     }
    }catch(e){}
   }
+  // AUD-02-040 : même logique que le blocage client plus haut — ne pas faire
+  // perdre le texte tapé, quelle que soit la raison de l'échec.
+  return true;
  } else {
   _chatEnqueue(_msgProf, _msgConv.id, body); // hors-ligne → file d'attente
   _msgJustSent = true;
@@ -485,8 +526,14 @@ async function _convFetch(reset){
 async function chatSendCurrent(){
  const inp = document.getElementById('msg-input'); if(!inp) return;
  const txt = inp.value.trim(); if(!txt) return;
- inp.value=''; inp.disabled=true;
- await _chatSend(txt);
+ inp.disabled=true;
+ // AUD-02-040 (audit fonctionnel 2026-09-21) : le champ était vidé AVANT
+ // l'envoi, donc aussi en cas de blocage par le filtre — l'enfant devait tout
+ // retaper de mémoire. _chatSend() renvoie désormais true si le message a été
+ // bloqué (client ou serveur) : dans ce cas, le texte reste dans le champ,
+ // modifiable, pour que l'enfant puisse seulement corriger le mot en cause.
+ const blocked = await _chatSend(txt);
+ if(!blocked) inp.value='';
  inp.disabled=false; inp.focus();
 }
 function _startConvPoll(){ _stopConvPoll(); _msgConvTimer = setInterval(()=>{ _convFetch(false); }, 4000); }

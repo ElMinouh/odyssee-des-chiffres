@@ -61,6 +61,7 @@ function fakeEl() {
     },
     appendChild() {}, removeChild() {}, remove() {}, setAttribute() {}, addEventListener() {},
     querySelector() { return fakeEl(); }, querySelectorAll() { return []; },
+    focus() {}, blur() {}, click() {},
   };
 }
 
@@ -182,6 +183,10 @@ globalThis.__api = {
   getGM: () => GM,
   setGMadventure: (v) => { GM.adventure = v; },
   setGM: (patch) => { Object.assign(GM, patch); },
+  // AUD-02-040 (audit fonctionnel) : _msgConv (17-messaging.js) est une
+  // variable de module — nécessaire pour appeler _chatSend()/chatSendCurrent()
+  // sans passer par chatOpenConv() (DOM + réseau, non stubbés dans ce harnais).
+  setMsgConv: (v) => { _msgConv = v; },
   getGS: () => (typeof GS!=='undefined') ? GS : undefined,
   setGS: (patch) => { Object.assign(GS, patch); },
   getPowers: () => (typeof powers!=='undefined') ? powers : undefined,
@@ -686,6 +691,7 @@ globalThis.__api = {
   _chatContactCache: (typeof _chatContactCache!=='undefined') ? _chatContactCache : undefined,
   _chatContainsBlockedWord: (typeof _chatContainsBlockedWord==='function') ? _chatContainsBlockedWord : undefined,
   _chatEnqueue: (typeof _chatEnqueue==='function') ? _chatEnqueue : undefined,
+  _chatFindBlockedWord: (typeof _chatFindBlockedWord==='function') ? _chatFindBlockedWord : undefined,
   _chatFlushQueue: (typeof _chatFlushQueue==='function') ? _chatFlushQueue : undefined,
   _chatFlushing: (typeof _chatFlushing!=='undefined') ? _chatFlushing : undefined,
   _chatGenId: (typeof _chatGenId==='function') ? _chatGenId : undefined,
@@ -1592,6 +1598,7 @@ globalThis.__api = {
   chatAddFriend: (typeof chatAddFriend==='function') ? chatAddFriend : undefined,
   chatAdoptCloudIdentity: (typeof chatAdoptCloudIdentity==='function') ? chatAdoptCloudIdentity : undefined,
   chatBlockContact: (typeof chatBlockContact==='function') ? chatBlockContact : undefined,
+  chatCancelContact: (typeof chatCancelContact==='function') ? chatCancelContact : undefined,
   chatCopyCode: (typeof chatCopyCode==='function') ? chatCopyCode : undefined,
   chatDeclineContact: (typeof chatDeclineContact==='function') ? chatDeclineContact : undefined,
   chatDisableForProfile: (typeof chatDisableForProfile==='function') ? chatDisableForProfile : undefined,
@@ -1601,6 +1608,7 @@ globalThis.__api = {
   chatForceSyncMessaging: (typeof chatForceSyncMessaging==='function') ? chatForceSyncMessaging : undefined,
   chatFriendAccept: (typeof chatFriendAccept==='function') ? chatFriendAccept : undefined,
   chatFriendBlock: (typeof chatFriendBlock==='function') ? chatFriendBlock : undefined,
+  chatFriendCancel: (typeof chatFriendCancel==='function') ? chatFriendCancel : undefined,
   chatFriendDecline: (typeof chatFriendDecline==='function') ? chatFriendDecline : undefined,
   chatFriendList: (typeof chatFriendList==='function') ? chatFriendList : undefined,
   chatFriendRemove: (typeof chatFriendRemove==='function') ? chatFriendRemove : undefined,
