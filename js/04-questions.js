@@ -11,6 +11,17 @@ function _ari(min, max, opKey){
  if(typeof _progScaleRange === 'function'){ const r=_progScaleRange(m, M); m=r[0]; M=r[1]; }
  return ri(m, M);
 }
+// AUD-02-014 (audit fonctionnel 2026-09-21) : jusqu'ici, seule la PLAGE de
+// nombres était resserrée en début d'année (_ari()/_progScaleRange ci-dessus)
+// — jamais la VARIÉTÉ de types de questions, contrairement aux autres modules
+// (maternelle/primaire/collège) qui appliquent déjà le gating par phase décrit
+// dans le README ("Progression adaptative (P9)"). _curPhase() centralise la
+// lecture de _progPhase() (06a-adaptive.js, chargé après ce fichier — d'où le
+// typeof, même garde que _ari() ci-dessus) pour les générateurs CE1-CM2
+// ci-dessous.
+function _curPhase(level){
+ return (typeof _progPhase==='function') ? _progPhase(level) : 3;
+}
 // v11.7.3 — Factorisation du motif commun de fin des 9 générateurs genQ_* (audit
 // point n°14) : si la question est nulle ou déjà vue récemment, on relance via
 // `regen` (qui doit rappeler le même générateur avec _d+1) ; sinon on la
@@ -50,8 +61,10 @@ function genQ_CE1(boss,_depth=0){
   else if(pick==='add_big'){const a=_ari(10,20,'+'),b=_ari(8,15,'+');q={a,b,op:'+',res:a+b,type:'normal',opKey:'+',display:`${a} + ${b}`,img:'',hint:`Additionne d'abord les dizaines, puis les unités.`};}
   else{const a=_ari(5,12,'-'),b=_ari(3,8,'-');q={display:`? - ${b} = ${a}`,res:a+b,type:'missing',opKey:'-',img:'',hint:`? − ${b} = ${a} → fais ${a} + ${b}.`};}
  } else {
+  // AUD-02-014 : nombre manquant (plus abstrait) réservé à partir de la phase 2.
+  const _ph=_curPhase('CE1');
   const pool=[];
-  if(af.miss)pool.push('miss');if(af.sub)pool.push('sub');pool.push('add','add');
+  if(_ph>=2 && af.miss)pool.push('miss');if(af.sub)pool.push('sub');pool.push('add','add');
   const pick=pool[ri(0,pool.length-1)];
   if(pick==='miss'){const a=_ari(5,15,'+'),b=_ari(1,10,'+');q={display:`${a} + ? = ${a+b}`,res:b,type:'missing',opKey:'+',img:'',hint:`${a} + ? = ${a+b} → fais ${a+b} − ${a}.`};}
   else{const op=(pick==='sub'||Math.random()>.5)?'-':'+';const a=_ari(5,15,op),b=_ari(1,10,op);
@@ -74,9 +87,12 @@ function genQ_CE2(boss,_d=0){
   else if(pick==='div_simple'){const b=[2,3,4,5][ri(0,3)],r=_ari(2,9,'/');q={display:`${b*r} ÷ ${b}`,res:r,type:'normal',opKey:'/',img:'',hint:`Combien de fois ${b} tient dans ${b*r} ?`};}
   else{const a=_ari(20,50,'-'),b=_ari(8,20,'-');if(a-b<0)return genQ_CE2(boss,_d+1);q={a,b,op:'-',res:a-b,type:'normal',opKey:'-',display:`${a} - ${b}`,img:'',hint:`Soustrais d'abord les dizaines, puis les unités.`};}
  } else {
-  if(af.miss&&Math.random()<.25){const t=_ari(2,10,'x'),b=_ari(1,10,'x');q={display:`${t} × ? = ${t*b}`,res:b,type:'missing',opKey:'x',img:'',hint:`${t} × ? = ${t*b} → fais ${t*b} ÷ ${t}.`};}
+  // AUD-02-014 : nombre manquant réservé à partir de la phase 2 ; tables les
+  // plus difficiles (3, 10) réservées à la phase 3 (phase 1/2 : 2, 5 seulement).
+  const _ph=_curPhase('CE2');
+  if(_ph>=2 && af.miss&&Math.random()<.25){const t=_ari(2,10,'x'),b=_ari(1,10,'x');q={display:`${t} × ? = ${t*b}`,res:b,type:'missing',opKey:'x',img:'',hint:`${t} × ? = ${t*b} → fais ${t*b} ÷ ${t}.`};}
   else if(!af.mult){return genQ_CE1(boss);}
-  else{const ts=[2,3,5,10],a=ts[ri(0,ts.length-1)],b=_ari(1,10,'x');q={a,b,op:'×',res:a*b,type:'normal',opKey:'x',display:`${a} × ${b}`,img:'',hint:`Pense à la table de ${a}.`};}
+  else{const ts=_ph>=3?[2,3,5,10]:[2,5,10],a=ts[ri(0,ts.length-1)],b=_ari(1,10,'x');q={a,b,op:'×',res:a*b,type:'normal',opKey:'x',display:`${a} × ${b}`,img:'',hint:`Pense à la table de ${a}.`};}
  }
  return _finalizeQ(q, ()=>genQ_CE2(boss,_d+1));
 }
@@ -95,8 +111,11 @@ function genQ_CM1(boss,_d=0){
   else if(pick==='miss_mult'){const a=[4,6,7,8,9][ri(0,4)],b=_ari(3,9,'x');q={display:`${a} × ? = ${a*b}`,res:b,type:'missing',opKey:'x',img:'',hint:`${a} × ? = ${a*b} → fais ${a*b} ÷ ${a}.`};}
   else q=GEO_Q[ri(0,GEO_Q.length-1)]();
  } else {
+  // AUD-02-014 : nombre manquant à partir de la phase 2 ; géométrie (matière
+  // la plus éloignée du calcul mental pur) réservée à la phase 3.
+  const _ph=_curPhase('CM1');
   const pool=['add','add'];
-  if(af.miss)pool.push('miss');if(af.geo)pool.push('geo');
+  if(_ph>=2 && af.miss)pool.push('miss');if(_ph>=3 && af.geo)pool.push('geo');
   const pick=pool[ri(0,pool.length-1)];
   if(pick==='miss'){const a=_ari(10,50,'+'),ans=_ari(5,30,'+');q={display:`${a} + ? = ${a+ans}`,res:ans,type:'missing',opKey:'+',img:'',hint:`${a} + ? = ${a+ans} → fais ${a+ans} − ${a}.`};}
   else if(pick==='geo')q=GEO_Q[ri(0,GEO_Q.length-1)]();
@@ -118,8 +137,11 @@ function genQ_CM2(boss,_d2=0){
   else if(pick==='mult_hard'){const a=[6,7,8,9,11,12][ri(0,5)],b=_ari(4,12,'x');q={display:`${a} × ${b}`,res:a*b,type:'normal',opKey:'x',img:'',hint:`Pense à la table de ${a}.`};}
   else q=GEO_Q[ri(0,GEO_Q.length-1)]();
  } else {
+  // AUD-02-014 : géométrie à partir de la phase 2 ; fractions (notion la plus
+  // abstraite de ce niveau) réservées à la phase 3.
+  const _ph=_curPhase('CM2');
   const pool=['div'];
-  if(af.geo)pool.push('geo','geo');if(af.frac)pool.push('frac','frac');
+  if(_ph>=2 && af.geo)pool.push('geo','geo');if(_ph>=3 && af.frac)pool.push('frac','frac');
   const pick=pool[ri(0,pool.length-1)];
   if(pick==='geo')q=GEO_Q[ri(0,GEO_Q.length-1)]();
   else if(pick==='frac'){const d=[2,4,5,10][ri(0,3)];const w=_ari(2,20,'/')*d,n=ri(1,d-1)||1;const r=Math.round(w*n/d);q={display:`${n}/${d} de ${w}`,res:r,type:'fraction',opKey:'/',img:'',hint:`${n}/${d} de ${w} : fais (${w} ÷ ${d}) × ${n}.`,visualHtml:(typeof _svgFractionBar==='function'?_svgFractionBar(n,d):'')};}
