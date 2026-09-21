@@ -1724,6 +1724,15 @@ function pmAddProfile(){
  if(typeof addToRoster!=='function') return;
  if(!addToRoster(n)){ if(typeof toast==='function')toast('Ce profil existe déjà.',2000); return; }
  if(typeof chatEnableForProfile==='function'){ try{ chatEnableForProfile(n); }catch(e){} } // messagerie activée par défaut (contacts validés par les parents)
+ // AUD-02-001 (audit fonctionnel 2026-09-21) : niveau scolaire réel choisi ici,
+ // consommé une seule fois au tout premier chargement réel de ce profil
+ // (loadProfile(), 05-profile.js) — pas de profil pré-créé prématurément,
+ // pour ne pas perturber la détection "ne s'est jamais connecté" ailleurs
+ // (ex. renderCloudPanel()).
+ const lvlSel=$('pm-new-level');
+ if(lvlSel && lvlSel.value && lvlSel.value!=='CP' && typeof _setPendingStartLevel==='function'){
+  _setPendingStartLevel(n, lvlSel.value);
+ }
  i.value='';
  renderProfileManager();
  if(typeof fillPlayerSelect==='function') fillPlayerSelect();

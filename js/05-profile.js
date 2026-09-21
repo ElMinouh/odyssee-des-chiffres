@@ -609,6 +609,60 @@ function defProfile(name){
   // prioritaire sur l'heuristique orthographique de heroGender() dans 02-data.js.
   gender:null};
 }
+// AUD-02-001 (audit fonctionnel 2026-09-21) : niveau scolaire réel choisi par
+// le parent à la création d'un profil (pmAddProfile(), 09-parent.js) — avant
+// ce correctif, tout nouveau profil démarrait systématiquement en CP quel que
+// soit l'âge réel de l'enfant déclaré, obligeant les familles CE2-CM2 à
+// rejouer tout le primaire pour débloquer leur vrai niveau. Le choix est
+// mémorisé ici puis consommé une seule fois au tout premier chargement réel
+// du profil (loadProfile() ci-dessous, cas "aucune sauvegarde existante").
+function _setPendingStartLevel(name, level){
+ if(!name || !level || level==='CP') return;
+ try{
+  const m=JSON.parse(localStorage.getItem('pendingStartLevel')||'{}');
+  m[name]=level;
+  localStorage.setItem('pendingStartLevel', JSON.stringify(m));
+ }catch(e){}
+}
+function _consumePendingStartLevel(name){
+ try{
+  const m=JSON.parse(localStorage.getItem('pendingStartLevel')||'{}');
+  const level=m[name];
+  if(level){ delete m[name]; localStorage.setItem('pendingStartLevel', JSON.stringify(m)); }
+  return level||null;
+ }catch(e){ return null; }
+}
+// Pré-crédite les victoires des niveaux PRÉCÉDENTS du même cursus (maternelle/
+// primaire/collège) au seuil exact de déblocage (UNLOCK_REQ), pour que le
+// niveau choisi soit débloqué NATURELLEMENT — on ne court-circuite jamais
+// isUnlocked()/prevWins() (02-data.js, 05-profile.js), qui restent la seule
+// autorité sur ce qui est jouable.
+function _applyStartLevel(profile, level){
+ if(!profile || !level || level==='CP') return;
+ const group=_levelGroupArr(level);
+ const idx=group.indexOf(level);
+ if(idx<=0) return;
+ profile.prefs=profile.prefs||{};
+ profile.prefs.level=level;
+ profile.levelWins=profile.levelWins||{};
+ // _subjWins() (plus bas) donne PRIORITÉ à levelWinsBySubj[matière] dès qu'il
+ // existe — y compris vide ({}) — sur le levelWins générique. defProfile()
+ // initialise déjà levelWinsBySubj.{math,fr,hist} à {} : sans les créditer
+ // ici aussi, levelWins seul n'aurait AUCUN effet sur le déblocage réel.
+ profile.levelWinsBySubj=profile.levelWinsBySubj||{math:{},fr:{},hist:{}};
+ // isUnlocked(next) compare levelWins[niveau PRÉCÉDENT] à UNLOCK_REQ[next] —
+ // pas à UNLOCK_REQ[niveau précédent] lui-même. On crédite donc chaque niveau
+ // du seuil exigé par le SUIVANT dans la chaîne, pas le sien.
+ for(let i=0;i<idx;i++){
+  const l=group[i];
+  const nextReq=UNLOCK_REQ[group[i+1]]||0;
+  profile.levelWins[l]=Math.max(profile.levelWins[l]||0, nextReq);
+  ['math','fr','hist'].forEach(subj=>{
+   profile.levelWinsBySubj[subj]=profile.levelWinsBySubj[subj]||{};
+   profile.levelWinsBySubj[subj][l]=Math.max(profile.levelWinsBySubj[subj][l]||0, nextReq);
+  });
+ }
+}
 function fillPlayerSelect(){
  const sel=$('playerSelect'); if(!sel) return;
  const cur=sel.value;
@@ -676,6 +730,11 @@ function loadProfile(){
  }else{
   if(typeof _diagLog==='function')_diagLog('LOAD-PROFILE: aucun profil pour '+name+' → défaut');
   P=defProfile(name);
+  // AUD-02-001 : applique le niveau scolaire choisi à la création (Vue
+  // Parent), UNIQUEMENT pour un profil réellement neuf — jamais sur une
+  // sauvegarde existante corrompue (branche validateProfile échouée ci-dessus).
+  const _pendingLevel=(typeof _consumePendingStartLevel==='function')?_consumePendingStartLevel(name):null;
+  if(_pendingLevel && typeof _applyStartLevel==='function') _applyStartLevel(P,_pendingLevel);
  }
  if(P.questsDate!==todayKey()){P.quests=genQuests();P.questsDate=todayKey();}
  // Lot 4 (audit engagement, 13e conversation, pt.18) : série de jours consécutifs,

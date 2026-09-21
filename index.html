@@ -1018,10 +1018,20 @@
 
     <button class="accordion" id="acc-profils-manage">👥 Ajouter, renommer ou retirer un enfant<span class="acc-i" onclick="event.stopPropagation();pGuide('profils')">i</span><span class="acc-sub">Gère la liste des profils</span></button>
     <div class="panel">
-     <div style="display:flex;gap:6px;margin-bottom:12px;">
-      <input id="pm-new" type="text" aria-label="Nouveau prénom" placeholder="Nouveau prénom…" maxlength="20" style="flex:1;" onkeydown="if(event.key==='Enter')pmAddProfile()">
+     <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap;">
+      <input id="pm-new" type="text" aria-label="Nouveau prénom" placeholder="Nouveau prénom…" maxlength="20" style="flex:1;min-width:120px;" onkeydown="if(event.key==='Enter')pmAddProfile()">
       <button onclick="pmAddProfile()" style="background:#27ae60;font-size:.9em;">Ajouter</button>
      </div>
+     <!-- AUD-02-001 (audit fonctionnel 2026-09-21) : niveau scolaire réel de
+          l'enfant, choisi à la création plutôt que de démarrer systématiquement
+          en CP (defProfile(), 05-profile.js) quel que soit son âge réel. -->
+     <p style="font-size:.72em;color:#bdc3c7;margin:0 0 8px;">Niveau scolaire de départ :
+      <select id="pm-new-level" aria-label="Niveau scolaire de départ" style="font-size:.95em;">
+       <optgroup label="Maternelle"><option value="PS">PS</option><option value="MS">MS</option><option value="GS">GS</option></optgroup>
+       <optgroup label="Primaire"><option value="CP" selected>CP</option><option value="CE1">CE1</option><option value="CE2">CE2</option><option value="CM1">CM1</option><option value="CM2">CM2</option></optgroup>
+       <optgroup label="Collège"><option value="6E">6e</option><option value="5E">5e</option><option value="4E">4e</option><option value="3E">3e</option></optgroup>
+      </select>
+     </p>
      <div id="profile-manager"></div>
      <input type="file" id="pm-photo-input" accept="image/*" style="display:none;" onchange="pmPhotoFileSelected(event)">
      <p style="font-size:.72em;color:#9aa6b2;margin-top:6px;line-height:1.4;">Les profils et tous leurs progrès sont enregistrés sur cet appareil. Retirer un profil n'efface pas sa progression : il réapparaîtra si tu le rajoutes.</p>

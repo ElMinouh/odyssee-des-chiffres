@@ -1562,4 +1562,18 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-138 — Lot 2.1 (audit fonctionnel AUD-02, Phase 2) : niveau scolaire réel choisi à la création d'un profil
+
+**Contexte** : l'audit fonctionnel AUD-02 (constat AUD-02-001, Élevée) a identifié que `defProfile()` (`05-profile.js`) démarre systématiquement tout nouveau profil en CP, quel que soit l'âge réel de l'enfant déclaré ailleurs (anniversaire) — un enfant de CM2 doit enchaîner 12 victoires cumulées (CE1+CE2+CM1) sur du contenu trop facile avant d'atteindre son vrai niveau, faute de tout réglage à la création.
+
+**Décision** : un sélecteur de niveau scolaire (`pm-new-level`, mêmes optgroups Maternelle/Primaire/Collège que le sélecteur `hw-level` existant) accompagne désormais le champ prénom dans « Ajouter un enfant » (`pmAddProfile()`, `09-parent.js`). Le choix n'est PAS appliqué immédiatement — aucun profil n'existe encore tant que l'enfant ne s'est pas connecté une première fois (architecture de création paresseuse déjà en place, dont dépend par ailleurs la détection « ne s'est jamais connecté » de `renderCloudPanel()`). Il est mémorisé (`_setPendingStartLevel()`, `localStorage['pendingStartLevel']`) puis consommé une seule fois, UNIQUEMENT dans la branche « aucune sauvegarde existante » de `loadProfile()` (`05-profile.js`) — jamais sur un profil déjà existant, même corrompu. `_applyStartLevel()` ne court-circuite jamais `isUnlocked()`/`prevWins()` : elle crédite honnêtement `levelWins` (ET `levelWinsBySubj.{math,fr,hist}`, qui a la PRIORITÉ sur `levelWins` dès qu'il existe — même vide — dans `_subjWins()`) de chaque niveau précédent au seuil exigé par le niveau SUIVANT dans la chaîne, pour que le niveau choisi soit débloqué naturellement, exactement comme s'il avait été atteint en jouant.
+
+**Alternatives rejetées** : pré-créer immédiatement le profil complet à `pmAddProfile()` plutôt que de mémoriser un choix en attente (rejeté — casserait la détection « ne s'est jamais connecté » déjà utilisée ailleurs, sans bénéfice réel) ; écrire directement `P.prefs.level` sans créditer `levelWins`/`levelWinsBySubj` (rejeté — laisserait le niveau affiché comme choisi mais visuellement verrouillé 🔒 dans le sélecteur de niveau du jeu, `applyPrefs()`, une confusion pire que le défaut initial).
+
+**Impact** : `index.html` (sélecteur `pm-new-level`), `09-parent.js` (`pmAddProfile()`), `05-profile.js` (`_setPendingStartLevel()`, `_consumePendingStartLevel()`, `_applyStartLevel()`, `loadProfile()`). v12.7.52. Tests : `tests/start-level-at-profile-creation.test.js`. `tests/helpers/loadGame.js` reçoit un stub `getAttribute()` sur l'élément DOM factice (additif — `initAppearance()` en avait besoin, jamais exercé par un test avant celui-ci qui est le premier à appeler `loadProfile()` directement). 622/622 tests verts. Constat AUD-02-001 (audit fonctionnel) clos par ce lot.
+
+**Note technique** : la ligne de commande `npm run sync:test-api` a échoué une fois pendant ce lot (« Ancre "globalThis.__api = {" introuvable ») — cause : le fichier `tests/helpers/loadGame.js` s'était retrouvé en fins de ligne CRLF dans la copie de travail (normalisation Git locale), alors que le script compare des marqueurs terminés par `\n` (LF). Corrigé en ré-normalisant le fichier en LF avant de relancer le script ; aucun changement de contenu réel, juste une reconversion de fin de ligne — sans rapport avec ce lot, mentionné ici pour mémoire si ça se reproduit.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
