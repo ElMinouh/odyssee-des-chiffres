@@ -1912,6 +1912,27 @@ function exportAllProfiles(){
 // confirmer (Audit qualité perçue #2, lot 2b), remplace l'ancienne double
 // confirm() en chaîne. Même grammaire visuelle que pmRemoveProfile().
 let _resetAllTarget = null;
+// AUD-02-025 (audit fonctionnel 2026-09-21) : un reset qualifié d'« irréversible »
+// (resetProfile(), 10-figurines.js ; _resetAllConfirm() plus bas) n'effaçait
+// jusqu'ici que localStorage['user_'+nom] — laissant orphelins sous ce même
+// prénom l'anniversaire (getBirthdays(), 02-data.js), l'historique de
+// messagerie (clé globale 'chatProfiles', 17-messaging.js) et les horaires
+// autorisés (clé 'block_'+nom, 06b-time-block.js), déjà migrés ensemble lors
+// d'un RENOMMAGE (renameProfile() plus haut, mais pas d'une suppression).
+// Un futur profil recréé avec le même prénom héritait silencieusement de ces
+// données, malgré un message promettant une remise à zéro complète.
+function _purgeChildData(name){
+ if(!name) return;
+ try{ localStorage.removeItem('block_'+name); }catch(e){}
+ try{
+  const b=(typeof getBirthdays==='function') ? getBirthdays() : JSON.parse(localStorage.getItem('birthdays')||'{}');
+  if(b && Object.prototype.hasOwnProperty.call(b,name)){ delete b[name]; localStorage.setItem('birthdays', JSON.stringify(b)); }
+ }catch(e){}
+ try{
+  const s=JSON.parse(localStorage.getItem('chatProfiles')||'{}');
+  if(s && Object.prototype.hasOwnProperty.call(s,name)){ delete s[name]; localStorage.setItem('chatProfiles', JSON.stringify(s)); }
+ }catch(e){}
+}
 function resetAllProfiles(){
  const roster=(typeof getRoster==='function')?getRoster():[];
  if(!roster.length){ if(typeof toast==='function') toast('Aucun profil.',2000); return; }
@@ -1953,7 +1974,10 @@ function _resetAllConfirm(){
  const inp=document.getElementById('reset-all-input');
  if(!inp || inp.value !== _resetAllTarget) return;
  const roster=(typeof getRoster==='function')?getRoster():[];
- roster.forEach(n=>{ try{ localStorage.removeItem('user_'+n); }catch(e){} });
+ roster.forEach(n=>{
+  try{ localStorage.removeItem('user_'+n); }catch(e){}
+  _purgeChildData(n); // AUD-02-025
+ });
  _resetAllClose();
  if(typeof toast==='function') toast('Tous les profils ont été réinitialisés.',2500);
  setTimeout(()=>{ try{ location.reload(); }catch(e){} }, 900);

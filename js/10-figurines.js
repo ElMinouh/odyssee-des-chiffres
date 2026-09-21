@@ -1962,6 +1962,10 @@ function resetProfile(playerName){
   const msg=`Réinitialiser le profil de ${playerName} ? Cette action supprime toutes les étoiles, figurines, XP et badges. Elle est irréversible.`;
   showConfirm(msg, ()=>{
     localStorage.removeItem('user_'+playerName);
+    // AUD-02-025 (audit fonctionnel 2026-09-21) : purge aussi l'anniversaire,
+    // l'historique de messagerie et les horaires autorisés associés à ce
+    // prénom — voir _purgeChildData() (09-parent.js) pour le détail.
+    if(typeof _purgeChildData==='function') _purgeChildData(playerName);
     toast(`✅ Profil de ${playerName} réinitialisé !`);
     // Si c'est le joueur actif, recharger
     if(P&&P.name===playerName){

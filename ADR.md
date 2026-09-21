@@ -1536,4 +1536,16 @@ Décisions actées, non remises en cause à ce jour :
 
 ---
 
+## ADR-136 — Lot 1.5 (audit fonctionnel AUD-02, Phase 1) : les resets « irréversibles » purgent aussi les données orphelines
+
+**Contexte** : l'audit fonctionnel AUD-02 (constat AUD-02-025, Élevée) a identifié que `resetProfile()` (`10-figurines.js`) et `_resetAllConfirm()` (`09-parent.js`) — toutes deux qualifiées d'« action irréversible » dans leur texte de confirmation — n'effaçaient en réalité que `localStorage['user_'+nom]`. Trois autres structures restaient orphelines sous le même prénom : l'anniversaire (`birthdays`, `02-data.js`), l'historique de messagerie (`chatProfiles`, `17-messaging.js`) et les horaires autorisés (`block_'+nom`, `06b-time-block.js`) — ce alors que `renameProfile()` (même fichier, plus haut) migre déjà `user_`/`block_` ensemble lors d'un renommage, signe que le besoin de cohérence multi-clés était déjà reconnu ailleurs dans le code, simplement pas répliqué côté suppression. Un parent qui recréait plus tard un profil avec le même prénom (cousin, ami de passage, second enfant) en héritait silencieusement.
+
+**Décision** : nouvelle fonction `_purgeChildData(name)` (`09-parent.js`, à côté de `resetAllProfiles()`) qui supprime `block_'+name`, retire l'entrée `name` de `birthdays` et de `chatProfiles`. Appelée en plus de la suppression de `user_'+name` dans `resetProfile()` et dans la boucle de `_resetAllConfirm()`. `pmRemoveProfile()` (suppression douce depuis « Comptes ») n'est PAS concernée par ce lot : elle documente et assume déjà explicitement la conservation des données (« Sa progression restera stockée sur l'appareil », texte de confirmation), contrairement aux deux fonctions corrigées ici qui promettent une remise à zéro complète.
+
+**Alternatives rejetées** : étendre aussi ce correctif à `renameProfile()` (rejeté pour ce lot — la fonction migre déjà `user_`/`block_`, l'absence de `birthdays`/`chatProfiles` y est un gap similaire mais distinct, hors du périmètre validé pour ce lot, à traiter séparément si confirmé) ; ajouter une option de suppression réellement définitive et irréversible séparée du reset actuel (rejeté — hors périmètre du constat, qui porte sur la cohérence du reset EXISTANT avec son propre message, pas sur l'ajout d'une nouvelle fonctionnalité).
+
+**Impact** : `09-parent.js` (`_purgeChildData()`, `_resetAllConfirm()`), `10-figurines.js` (`resetProfile()`). v12.7.50. Tests : `tests/reset-purges-orphaned-child-data.test.js` (`scripts/gen-test-api.mjs` relancé). 601/601 tests verts. Constat AUD-02-025 (audit fonctionnel) clos par ce lot.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
