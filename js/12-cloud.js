@@ -757,6 +757,20 @@ async function forceRestoreFromCloud(code){
   const check = JSON.parse(localStorage.getItem('user_'+prof.name)||'null');
   _diagLog('FORCE-RESTORE: vérif relecture name='+(check?check.name:'NULL')+' xp='+(check?check.xp:'?')+' cloudCode='+(check?check.cloudCode:'?')+' cloudEnabled='+(check?check.cloudEnabled:'?'));
  }catch(e){ _diagLog('FORCE-RESTORE: vérif relecture ÉCHEC '+e.message); }
+ // v2 (audit AUD-01-013) : les verrous posés en étape 1 (_cloudInflight,
+ // lockProfileSaves) ne sont censés être relâchés QUE par le reload que
+ // l'appelant déclenche juste après (voir 09-parent.js). Si ce reload
+ // échouait pour une raison quelconque (contexte restreignant la
+ // navigation…), plus aucune sauvegarde locale ni sync cloud n'aurait lieu
+ // pour le reste de la session, sans erreur visible. Filet de sécurité : si
+ // ce timeout se déclenche, c'est la PREUVE que le reload n'a pas eu lieu
+ // (un vrai reload détruit ce contexte JS avant l'échéance) — on relâche
+ // alors les verrous nous-mêmes plutôt que de rester bloqué indéfiniment.
+ setTimeout(()=>{
+  _diagLog('FORCE-RESTORE: reload jamais survenu après 5s → déverrouillage de secours');
+  _cloudInflight = false;
+  if(typeof unlockProfileSaves === 'function') unlockProfileSaves();
+ }, 5000);
  return { ok:true, name: prof.name, reload:true };
 }
 

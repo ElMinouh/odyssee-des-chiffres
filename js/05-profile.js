@@ -732,6 +732,13 @@ function lockProfileSaves(){
  clearTimeout(_saveTimer);
  _saveTimer=null;
 }
+// v2 (audit AUD-01-013) : jusqu'ici jamais nécessaire — lockProfileSaves()
+// n'était suivi que d'un reload de page, qui réinitialise _saveLocked à
+// false de toute façon. Ajouté comme filet de sécurité pour le cas (rare)
+// où ce reload attendu par forceRestoreFromCloud() n'aurait pas lieu.
+function unlockProfileSaves(){
+ _saveLocked=false;
+}
 function saveProfile(){
  if(_saveLocked) return;
  clearTimeout(_saveTimer);

@@ -228,40 +228,48 @@ try{
    const ts=$('themeSelect'); if(ts) ts.value=gTheme;
   }
  }catch(e){}
- loadProfile();
- loadVibrate();
- loadVoice();
- if(typeof loadSfx==='function') loadSfx(); // v12.4.30 (audit fonctionnel #F1)
+ // v2 (audit AUD-01-012, prolongement du n°1) : chaque bloc protégé
+ // individuellement, comme déjà fait plus haut pour les 3 listeners — une
+ // exception dans l'un de ces blocs n'empêche plus les suivants de
+ // s'exécuter (numpad, cloud sync, auto-onboarding notamment).
+ try{ loadProfile(); }catch(e){ console.error('[init] loadProfile a échoué', e); }
+ try{ loadVibrate(); }catch(e){ console.error('[init] loadVibrate a échoué', e); }
+ try{ loadVoice(); }catch(e){ console.error('[init] loadVoice a échoué', e); }
+ try{ if(typeof loadSfx==='function') loadSfx(); }catch(e){ console.error('[init] loadSfx a échoué', e); } // v12.4.30 (audit fonctionnel #F1)
  // Chantier B4 : préférence ambiance
- if(typeof loadAmbiancePref==='function') loadAmbiancePref();
+ try{ if(typeof loadAmbiancePref==='function') loadAmbiancePref(); }catch(e){ console.error('[init] loadAmbiancePref a échoué', e); }
  // Chantier B3 : préférence parallaxe (mouvement)
- if(typeof loadParallaxPref==='function') loadParallaxPref();
- setupNumpad();
- // Init voix française dès que la liste des voix est disponible
- if(window.speechSynthesis){
-  _frVoice=_pickFrenchVoice();
-  // Sur certains navigateurs, getVoices() est vide au premier appel
-  window.speechSynthesis.addEventListener?.('voiceschanged',()=>{_frVoice=_pickFrenchVoice();});
- }
+ try{ if(typeof loadParallaxPref==='function') loadParallaxPref(); }catch(e){ console.error('[init] loadParallaxPref a échoué', e); }
+ try{ setupNumpad(); }catch(e){ console.error('[init] setupNumpad a échoué', e); }
+ try{
+  // Init voix française dès que la liste des voix est disponible
+  if(window.speechSynthesis){
+   _frVoice=_pickFrenchVoice();
+   // Sur certains navigateurs, getVoices() est vide au premier appel
+   window.speechSynthesis.addEventListener?.('voiceschanged',()=>{_frVoice=_pickFrenchVoice();});
+  }
+ }catch(e){ console.error('[init] init voix française a échoué', e); }
  // Sauvegarde auto quand on coche/décoche la case 🔊 Voix
- $('voiceToggle')?.addEventListener('change',saveVoice);
+ try{ $('voiceToggle')?.addEventListener('change',saveVoice); }catch(e){ console.error('[init] listener voiceToggle a échoué', e); }
  // OPT-16 : préchargement discret des GIFs de victoire après 4 secondes
- setTimeout(()=>GIFS.forEach(g=>{const img=new Image();img.src=g.url;}),4000);
+ try{ setTimeout(()=>GIFS.forEach(g=>{const img=new Image();img.src=g.url;}),4000); }catch(e){ console.error('[init] préchargement GIFs a échoué', e); }
  // ── Drag events pour le viewer 3D ──
- const persp=$('fig-perspective');
- persp.addEventListener('mousedown',_fvDragStart);
- document.addEventListener('mousemove',_fvDragMove);
- document.addEventListener('mouseup',_fvDragEnd);
- persp.addEventListener('touchstart',e=>{_fvDragStart(e);e.preventDefault();},{passive:false});
- document.addEventListener('touchmove',e=>{_fvDragMove(e);},{passive:true});
- document.addEventListener('touchend',_fvDragEnd);
+ try{
+  const persp=$('fig-perspective');
+  persp.addEventListener('mousedown',_fvDragStart);
+  document.addEventListener('mousemove',_fvDragMove);
+  document.addEventListener('mouseup',_fvDragEnd);
+  persp.addEventListener('touchstart',e=>{_fvDragStart(e);e.preventDefault();},{passive:false});
+  document.addEventListener('touchmove',e=>{_fvDragMove(e);},{passive:true});
+  document.addEventListener('touchend',_fvDragEnd);
+ }catch(e){ console.error('[init] listeners drag figurine 3D ont échoué', e); }
  // ── Chantier Cloud Sync : initialise après chargement du profil ──
- if(typeof initCloudSync==='function') initCloudSync();
+ try{ if(typeof initCloudSync==='function') initCloudSync(); }catch(e){ console.error('[init] initCloudSync a échoué', e); }
  // v11.7.44 (correctif signalé par Cyril) : si aucun profil n'existe encore
  // sur cet appareil, lance automatiquement l'installation de démarrage —
  // à CHAQUE ouverture de l'app tant qu'aucun profil n'a été créé, même si
  // le parent a déjà cliqué "Passer" une fois.
- setTimeout(()=>{ if(typeof obMaybeAutoStartFreshInstall==='function') obMaybeAutoStartFreshInstall(); }, 500);
+ try{ setTimeout(()=>{ if(typeof obMaybeAutoStartFreshInstall==='function') obMaybeAutoStartFreshInstall(); }, 500); }catch(e){ console.error('[init] auto-onboarding a échoué', e); }
 }finally{
  // Audit qualité perçue #5 : signale au splash screen que l'initialisation
  // est terminée — voir handleSplash() plus haut. Dans un finally pour être

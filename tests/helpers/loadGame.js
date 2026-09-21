@@ -136,6 +136,12 @@ export function loadGame(files, initialStorage = {}) {
     // partage pas explicitement le même objet Math ici.
     Math,
   };
+  // Même raisonnement que Math ci-dessus, pour Date (audit AUD-01-011,
+  // tests/time-block-overnight-range.test.js) : un getter (pas une simple
+  // référence figée) pour que `global.Date = FakeDate` DANS UN TEST, même
+  // exécuté APRÈS ce loadGame(), soit bien vu par le code du jeu — une
+  // référence figée au moment de la création du sandbox ne le serait pas.
+  Object.defineProperty(sandbox, 'Date', { get: () => Date, configurable: true });
   sandbox.globalThis = sandbox;
   sandbox.self = sandbox;
 
@@ -456,6 +462,7 @@ globalThis.__api = {
   _BSUBJ_LIST: (typeof _BSUBJ_LIST!=='undefined') ? _BSUBJ_LIST : undefined,
   _CALLBACK_LINES_FLAWLESS: (typeof _CALLBACK_LINES_FLAWLESS!=='undefined') ? _CALLBACK_LINES_FLAWLESS : undefined,
   _CALLBACK_LINES_NORMAL: (typeof _CALLBACK_LINES_NORMAL!=='undefined') ? _CALLBACK_LINES_NORMAL : undefined,
+  _CHAT_BLOCKED_NORM: (typeof _CHAT_BLOCKED_NORM!=='undefined') ? _CHAT_BLOCKED_NORM : undefined,
   _CHAT_BLOCKED_WORDS: (typeof _CHAT_BLOCKED_WORDS!=='undefined') ? _CHAT_BLOCKED_WORDS : undefined,
   _CHAT_IDCHARS: (typeof _CHAT_IDCHARS!=='undefined') ? _CHAT_IDCHARS : undefined,
   _CHINESE_NY: (typeof _CHINESE_NY!=='undefined') ? _CHINESE_NY : undefined,
@@ -675,6 +682,7 @@ globalThis.__api = {
   _chatMarkSeen: (typeof _chatMarkSeen==='function') ? _chatMarkSeen : undefined,
   _chatMaybeNotify: (typeof _chatMaybeNotify==='function') ? _chatMaybeNotify : undefined,
   _chatMergeSeen: (typeof _chatMergeSeen==='function') ? _chatMergeSeen : undefined,
+  _chatNorm: (typeof _chatNorm!=='undefined') ? _chatNorm : undefined,
   _chatParentGate: (typeof _chatParentGate==='function') ? _chatParentGate : undefined,
   _chatPendingFor: (typeof _chatPendingFor==='function') ? _chatPendingFor : undefined,
   _chatPersist: (typeof _chatPersist==='function') ? _chatPersist : undefined,
@@ -2018,6 +2026,7 @@ globalThis.__api = {
   totalTime: (typeof totalTime!=='undefined') ? totalTime : undefined,
   trapFocus: (typeof trapFocus==='function') ? trapFocus : undefined,
   triggerImportFile: (typeof triggerImportFile==='function') ? triggerImportFile : undefined,
+  unlockProfileSaves: (typeof unlockProfileSaves==='function') ? unlockProfileSaves : undefined,
   unlockSeasonalFigurine: (typeof unlockSeasonalFigurine==='function') ? unlockSeasonalFigurine : undefined,
   updateCombatHUD: (typeof updateCombatHUD==='function') ? updateCombatHUD : undefined,
   updateHUD: (typeof updateHUD==='function') ? updateHUD : undefined,

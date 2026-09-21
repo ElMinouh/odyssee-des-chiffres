@@ -1518,7 +1518,11 @@ function _numberToFrenchWords(n){
   return rem === 0 ? thPart : thPart + ' ' + below1000(rem, true);
  }
  const mil = Math.floor(n / 1000000), remM = n % 1000000;
- const milPart = (mil === 1 ? 'un million' : below1000(mil, false) + ' millions');
+ // v2 (audit AUD-01-015) : final=true (pas false) — "million" est un NOM,
+ // pas un invariable comme "mille" : "quatre-vingts millions"/"deux cents
+ // millions" prennent bien le -s du pluriel, contrairement à "quatre-vingt
+ // mille" (mille est invariable, d'où final=false juste au-dessus).
+ const milPart = (mil === 1 ? 'un million' : below1000(mil, true) + ' millions');
  return remM === 0 ? milPart : milPart + ' ' + _numberToFrenchWords(remM);
 }
 

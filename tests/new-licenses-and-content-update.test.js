@@ -221,7 +221,11 @@ describe('_maybeShowContentUpdate() — notification de nouveau contenu', () => 
     // v12.7.34 : les deux notifications existantes doivent être marquées vues
     // pour que ces tests ("plus rien à afficher") restent valides après
     // l'ajout de la notification des figurines exclusives.
-    p.contentUpdatesSeen = ['update_2026_08_av_tl', 'update_2026_09_exclusifs', 'update_2026_09_mario_hp'];
+    // v2 (audit AUD-01-010) : nouvelle notification ajoutée (règle des
+    // exclusifs) — même principe que le commentaire v12.7.34 ci-dessus,
+    // reconduit à chaque ajout de notification pour garder ces tests
+    // "plus rien à afficher" valides.
+    p.contentUpdatesSeen = ['update_2026_08_av_tl', 'update_2026_09_exclusifs', 'update_2026_09_mario_hp', 'update_2026_09_regle_exclusifs'];
     api.setP(p);
     let doneCalled = false;
     api._maybeShowContentUpdate(() => { doneCalled = true; });
@@ -289,7 +293,11 @@ describe('gotoSubjects() — la notification s\'intercale avant l\'écran des ma
     // v12.7.34 : les deux notifications existantes doivent être marquées vues
     // pour que ces tests ("plus rien à afficher") restent valides après
     // l'ajout de la notification des figurines exclusives.
-    p.contentUpdatesSeen = ['update_2026_08_av_tl', 'update_2026_09_exclusifs', 'update_2026_09_mario_hp'];
+    // v2 (audit AUD-01-010) : nouvelle notification ajoutée (règle des
+    // exclusifs) — même principe que le commentaire v12.7.34 ci-dessus,
+    // reconduit à chaque ajout de notification pour garder ces tests
+    // "plus rien à afficher" valides.
+    p.contentUpdatesSeen = ['update_2026_08_av_tl', 'update_2026_09_exclusifs', 'update_2026_09_mario_hp', 'update_2026_09_regle_exclusifs'];
     api.setP(p);
     api.gotoSubjects();
     expect(api._createdElements().length).toBe(0);
@@ -498,7 +506,11 @@ describe('Nouveaux points d\'accroche pour la notif "nouveau contenu" (v12.7.36)
   it('chooseSubject("math") affiche la notif non vue avant de rejoindre le menu 2', () => {
     const api = loadGame(FILES);
     const p = api.defProfile('Test');
-    p.contentUpdatesSeen = ['update_2026_08_av_tl', 'update_2026_09_exclusifs', 'update_2026_09_mario_hp'];
+    // v2 (audit AUD-01-010) : nouvelle notification ajoutée (règle des
+    // exclusifs) — même principe que le commentaire v12.7.34 ci-dessus,
+    // reconduit à chaque ajout de notification pour garder ces tests
+    // "plus rien à afficher" valides.
+    p.contentUpdatesSeen = ['update_2026_08_av_tl', 'update_2026_09_exclusifs', 'update_2026_09_mario_hp', 'update_2026_09_regle_exclusifs'];
     // Ajoute artificiellement une annonce non vue pour isoler le test du
     // contenu réel de _CONTENT_UPDATES (qui grossira avec le temps).
     p.contentUpdatesSeen = ['update_2026_08_av_tl'];
@@ -511,7 +523,11 @@ describe('Nouveaux points d\'accroche pour la notif "nouveau contenu" (v12.7.36)
   it('chooseSubject("math") ne bloque pas si tout est déjà vu (comportement inchangé)', () => {
     const api = loadGame(FILES);
     const p = api.defProfile('Test');
-    p.contentUpdatesSeen = ['update_2026_08_av_tl', 'update_2026_09_exclusifs', 'update_2026_09_mario_hp'];
+    // v2 (audit AUD-01-010) : nouvelle notification ajoutée (règle des
+    // exclusifs) — même principe que le commentaire v12.7.34 ci-dessus,
+    // reconduit à chaque ajout de notification pour garder ces tests
+    // "plus rien à afficher" valides.
+    p.contentUpdatesSeen = ['update_2026_08_av_tl', 'update_2026_09_exclusifs', 'update_2026_09_mario_hp', 'update_2026_09_regle_exclusifs'];
     api.setP(p);
     api.chooseSubject('math');
     expect(api.getGM().subject).toBe('math');
@@ -655,5 +671,31 @@ describe('_maybeShowContentUpdate() — notification v12.7.38 (Mario Bros/Harry 
     api.setP(p);
     api._maybeShowContentUpdate(() => {});
     expect(api.getP().contentUpdatesSeen).toContain('update_2026_09_mario_hp');
+  });
+});
+
+// Non-régression AUD-01-010 : la migration V8→V9 retire silencieusement les
+// figurines exclusives obtenues gratuitement sous l'ancien système, sans
+// notification. Cette notification explique la nouvelle règle (achat, pas
+// don automatique) à tous les joueurs.
+describe('_maybeShowContentUpdate() — notification règle des exclusifs (AUD-01-010)', () => {
+  it('affiche la modale pour un profil ayant déjà vu les 3 annonces précédentes', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    p.contentUpdatesSeen = ['update_2026_08_av_tl', 'update_2026_09_exclusifs', 'update_2026_09_mario_hp'];
+    api.setP(p);
+    api._maybeShowContentUpdate(() => {});
+    const overlay = api._lastCreatedElement();
+    expect(overlay.className).toBe('story-overlay');
+    expect(overlay.innerHTML).toContain('acheter avec des étoiles');
+  });
+
+  it('marque update_2026_09_regle_exclusifs comme vue après affichage', () => {
+    const api = loadGame(FILES);
+    const p = api.defProfile('Test');
+    p.contentUpdatesSeen = ['update_2026_08_av_tl', 'update_2026_09_exclusifs', 'update_2026_09_mario_hp'];
+    api.setP(p);
+    api._maybeShowContentUpdate(() => {});
+    expect(api.getP().contentUpdatesSeen).toContain('update_2026_09_regle_exclusifs');
   });
 });

@@ -17,7 +17,13 @@ function isTimeBlocked(){
  const cur=h*60+m;
  const [sh,sm]=cfg.start.split(':').map(Number);const [eh,em]=cfg.end.split(':').map(Number);
  const s=sh*60+sm,e=eh*60+em;
- return!(cur>=s&&cur<=e);
+ // v2 (audit AUD-01-011) : plage traversant minuit (ex. 20:00-07:00, jeu
+ // autorisé en soirée jusqu'au matin). Avant ce correctif, start>end rendait
+ // la condition toujours fausse : jeu bloqué en PERMANENCE, alors que la
+ // config est parfaitement valide (contrairement au constat n°12, qui
+ // portait sur des données corrompues, pas sur ce cas arithmétique).
+ if(s<=e) return!(cur>=s&&cur<=e);
+ return!(cur>=s||cur<=e);
 }
 function getBlockCfg(name){try{return JSON.parse(localStorage.getItem('block_'+name)||'null');}catch(e){return null;}}
 function showBlockScreen(){

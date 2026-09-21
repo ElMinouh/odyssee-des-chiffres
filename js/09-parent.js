@@ -1777,7 +1777,11 @@ function optSelectProfile(){
  const sel=$('opt-profile'); if(!sel) return;
  const name=sel.value; if(!name){ const b=$('opt-birthday'); if(b)b.innerHTML='<span style="font-size:.8em;color:#bdc3c7;">Aucun profil. Ajoute-en un dans « Général ».</span>'; return; }
  const roster=(typeof getRoster==='function')?getRoster():[];
- const opts=roster.map(n=>`<option>${n}</option>`).join('');
+ // v2 (audit AUD-01-007) : esc() manquant ici alors qu'optFillProfiles(),
+ // juste au-dessus, échappe correctement le même type de donnée (nom de
+ // profil) — même classe de défaut que l'ancien constat n°16, réapparue.
+ const _e=(typeof esc==='function')?esc:(s=>String(s));
+ const opts=roster.map(n=>`<option>${_e(n)}</option>`).join('');
  const cs=$('cloud-sync-player'); if(cs){ cs.innerHTML=opts; cs.value=name; }
  const cp=$('cloud-player'); if(cp){ cp.innerHTML=opts; cp.value=name; }
  if(typeof renderCloudPanel==='function') renderCloudPanel();

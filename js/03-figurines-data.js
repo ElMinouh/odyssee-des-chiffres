@@ -2748,6 +2748,20 @@ const _CONTENT_UPDATES = [
    {emoji:'⚡', text:'5 nouvelles figurines exclusives <b>Harry Potter</b>, achetables une fois la collection complète !'},
   ],
  },
+ // audit AUD-01-010 : la migration V8→V9 (05-profile.js, _MIGRATIONS[9])
+ // retire silencieusement toute figurine exclusive obtenue gratuitement
+ // sous l'ancien système (avant v12.7.37), sans que le joueur en soit
+ // informé. Cette entrée s'affiche à TOUS les joueurs (le système
+ // _CONTENT_UPDATES n'a pas de ciblage par profil), mais reste vraie et
+ // utile pour tous : neutre pour qui n'a jamais eu de figurine exclusive,
+ // explicative pour qui en avait une et la voit disparaître.
+ {
+  id: 'update_2026_09_regle_exclusifs',
+  title: '📢 Petite précision sur les figurines exclusives',
+  items: [
+   {emoji:'⭐', text:'Les figurines exclusives (débloquées en réunissant toute une collection) sont maintenant à <b>acheter avec des étoiles</b>, et non plus offertes automatiquement. Si tu en avais déjà reçu une gratuitement, elle t\'attend dans la boutique — rachète-la !'},
+  ],
+ },
 ];
 
 // Affiche, au plus une notification par appel (la plus ancienne non vue),
