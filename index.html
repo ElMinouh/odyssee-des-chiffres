@@ -510,7 +510,7 @@
    </label>
    <div style="font-size:1em;display:flex;align-items:center;gap:10px;justify-content:space-between;background:rgba(255,255,255,.04);padding:14px 16px;border-radius:10px;">
     <span>&#127769; Apparence claire / sombre</span>
-    <button id="appearance-toggle" onclick="toggleAppearance()" title="Basculer mode clair/sombre" style="background:#444;font-size:.9em;padding:8px 16px;margin:0;">🌙</button>
+    <button id="appearance-toggle" onclick="toggleAppearance()" title="Basculer mode clair/sombre" aria-label="Basculer entre mode clair et sombre" style="background:#444;font-size:.9em;padding:8px 16px;margin:0;">🌙</button>
    </div>
    <div style="font-size:1em;display:flex;flex-direction:column;gap:8px;background:rgba(255,255,255,.04);padding:14px 16px;border-radius:10px;">
     <span>&#128483;&#65039; Voix du conteur</span>
@@ -782,10 +782,10 @@
     <button type="button" class="np-btn" data-k="7">7</button>
     <button type="button" class="np-btn" data-k="8">8</button>
     <button type="button" class="np-btn" data-k="9">9</button>
-    <button type="button" class="np-btn np-minus" data-k="-">−</button>
+    <button type="button" class="np-btn np-minus" data-k="-" aria-label="Signe moins">−</button>
     <button type="button" class="np-btn" data-k="0">0</button>
     <button type="button" class="np-btn np-comma" data-k=",">,</button>
-    <button type="button" class="np-btn np-del" data-k="del">⌫</button>
+    <button type="button" class="np-btn np-del" data-k="del" aria-label="Effacer">⌫</button>
     <button type="button" class="np-btn np-ok" data-k="ok">✓ Valider</button>
    </div>
   </div>
@@ -1165,7 +1165,7 @@ if ('serviceWorker' in navigator) {
     banner.innerHTML = `
       <span style="flex:1;">🆕 Nouvelle version disponible !</span>
       <button id="sw-update-btn" style="background:#2ecc71;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-weight:700;cursor:pointer;">Actualiser</button>
-      <button id="sw-update-dismiss" style="background:transparent;color:#bdc3c7;border:none;padding:6px 8px;cursor:pointer;font-size:1.3em;line-height:1;">×</button>
+      <button id="sw-update-dismiss" aria-label="Fermer cette notification" style="background:transparent;color:#bdc3c7;border:none;padding:6px 8px;cursor:pointer;font-size:1.3em;line-height:1;">×</button>
     `;
     Object.assign(banner.style, {
       position:'fixed', bottom:'20px', left:'50%', transform:'translateX(-50%)',

@@ -4314,6 +4314,11 @@ function _showLoreModal(frag){
  overlay.className = 'story-overlay lore-overlay';
  function _escHandler(e){ if(e.key==='Escape') close(); }
  function close(){
+  // v2 (audit AUD-01-030) : modale ajoutée après le sweep a11y (piège de
+  // focus), jamais rattrapée — un utilisateur clavier pouvait tabuler hors
+  // de la modale pendant qu'elle est affichée. Même pattern que les 24
+  // autres modales du jeu (voir 07-boss.js notamment).
+  if(overlay._releaseTrap){ overlay._releaseTrap(); delete overlay._releaseTrap; }
   overlay.classList.add('story-out');
   document.removeEventListener('keydown', _escHandler);
   setTimeout(()=>{ try{ overlay.remove(); }catch(e){} }, 300);
@@ -4332,6 +4337,7 @@ function _showLoreModal(frag){
  if(btn) btn.addEventListener('click', close);
  overlay.addEventListener('click', (ev)=>{ if(ev.target===overlay) close(); });
  document.addEventListener('keydown', _escHandler);
+ if(typeof trapFocus==='function') overlay._releaseTrap=trapFocus(overlay);
 }
 
 

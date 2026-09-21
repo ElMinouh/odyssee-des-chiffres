@@ -2948,7 +2948,10 @@ function _refreshMiniMap(avatarRegionId, foggedMap, avatarRatioY, avatarEmoji){
   return `<div class="drawer-row${fogged?' locked':''}${active?' active':''}" style="--row-c:${meta.accent||'#888'};" `
     // v12.4.33 (audit UX, Lot 1, #U1) : une région verrouillée réagit désormais
     // au clic (toast + bip), au lieu d'être totalement inerte comme avant.
-    + (fogged?`onclick="_lockedZoneClicked()"`:`onclick="_miniMapGoTo('${r.id}')"`) + ` role="button" title="${r.label}${fogged?' (verrouillé)':''}">`
+    // v2 (audit AUD-01-030) : tabindex+onkeydown ajoutés — role="button" sans
+    // eux était inatteignable au clavier (et trompeur pour un lecteur
+    // d'écran, qui l'annonçait actionnable sans qu'il le soit réellement).
+    + (fogged?`onclick="_lockedZoneClicked()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();_lockedZoneClicked();}"`:`onclick="_miniMapGoTo('${r.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();_miniMapGoTo('${r.id}');}"`) + ` role="button" tabindex="0" title="${r.label}${fogged?' (verrouillé)':''}">`
     // v12.4.35 (audit graphique/DA, Lot 1, #G1) : même icône SVG que la carte
     // principale au lieu de l'emoji 🔒 générique.
     + `<div class="drawer-row-badge">${fogged?'<svg viewBox="0 0 40 40" aria-hidden="true" class="drawer-lock-svg"><use href="#icon-zone-lock"/></svg>':(meta.emoji||'•')}</div>`

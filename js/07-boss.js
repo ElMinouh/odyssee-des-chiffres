@@ -1034,7 +1034,7 @@ function openAdventureLog(){
  const bossMedals = MAP_ZONES.map(z => {
   const won = beaten.includes(z.id);
   if(won){
-   return `<div class="advlog-medal" onclick="closeAdventureLog();setTimeout(()=>_openBossCard('${z.id}'),300);" role="button" title="${z.bossName || 'Boss'} — ${z.label} (voir la carte)">
+   return `<div class="advlog-medal" onclick="closeAdventureLog();setTimeout(()=>_openBossCard('${z.id}'),300);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();closeAdventureLog();setTimeout(()=>_openBossCard('${z.id}'),300);}" role="button" tabindex="0" title="${z.bossName || 'Boss'} — ${z.label} (voir la carte)">
    <div class="advlog-medal-boss">${z.boss || '🏆'}</div>
    <div class="advlog-medal-zone">${z.label}</div>
   </div>`;
