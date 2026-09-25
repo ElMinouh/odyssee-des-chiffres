@@ -217,6 +217,14 @@ try{
     if(cz){ cz.classList.remove('hidden'); }
    }
   }
+  // AUD-02-002 (audit fonctionnel 2026-09-21) : jusqu'ici, custom-zone
+  // n'était démasqué QUE dans la branche "joueur custom restauré" ci-dessus
+  // — au tout premier lancement (aucun lastPlayer), le sélecteur "Autre
+  // joueur…" restait sélectionné par défaut (seule option quand le roster est
+  // vide) SANS aucun champ de saisie visible. Cet appel synchronise
+  // systématiquement la visibilité du champ avec la valeur réelle du
+  // sélecteur, quel que soit le chemin emprunté ci-dessus.
+  if(typeof _syncCustomZoneVisibility==='function') _syncCustomZoneVisibility();
  }catch(e){ console.warn('[init] restauration lastPlayer échouée', e); }
  // v8.7.6 : appliquer le thème sauvegardé AVANT loadProfile, pour éviter
  // un flash du thème classique et garantir la persistance même si le

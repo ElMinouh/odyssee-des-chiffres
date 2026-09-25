@@ -24,7 +24,12 @@ import { loadGame } from './helpers/loadGame.js';
 // Documenter ici plutôt que de les ignorer silencieusement — toute entrée
 // doit être justifiée par un commentaire.
 const KNOWN_TRANSIENT_FIELDS = new Set([
-  // (aucun à ce jour — à documenter explicitement si un cas légitime apparaît)
+  // AUD-02-002 (audit fonctionnel 2026-09-21) : marqueur de session PURE,
+  // recalculé à chaque loadProfile() — jamais censé survivre à une
+  // sauvegarde/rechargement (c'est justement son rôle : empêcher la
+  // persistance d'un profil "fantôme" tant qu'aucun vrai prénom n'a été
+  // saisi, voir saveProfile()/saveProfileNow(), 05-profile.js).
+  '_unnamed',
 ]);
 
 function scanProfileFieldAssignments(jsDir) {

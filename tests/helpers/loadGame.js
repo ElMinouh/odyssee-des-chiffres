@@ -204,6 +204,12 @@ globalThis.__api = {
   getBgAudioVolume: () => (typeof _bgAudio!=='undefined' && _bgAudio) ? _bgAudio.volume : undefined,
   hasBgAudio: () => (typeof _bgAudio!=='undefined') ? (_bgAudio !== null) : undefined,
   setShowConfirm: (fn) => { globalThis.showConfirm = fn; },
+  // AUD-02-006 (audit fonctionnel 2026-09-21) : _obSystem (19-onboarding.js)
+  // exposé en snapshot par le bloc auto-généré ci-dessous (valeur figée au
+  // moment de la construction de l'API) — ce getter lit sa valeur LIVE,
+  // nécessaire pour vérifier qu'obStart(2) a bien été déclenché par un
+  // callback asynchrone (showConfirm) après la construction de l'API.
+  getObSystem: () => (typeof _obSystem!=='undefined') ? _obSystem : undefined,
   setRenderMap: (fn) => { globalThis.renderMap = fn; },
   setPullProfileFromCloud: (fn) => { globalThis.pullProfileFromCloud = fn; },
   setPushOtherProfileToCloud: (fn) => { globalThis._pushOtherProfileToCloud = fn; },
@@ -1270,6 +1276,7 @@ globalThis.__api = {
   _obMarkSeen: (typeof _obMarkSeen==='function') ? _obMarkSeen : undefined,
   _obMergeRect: (typeof _obMergeRect==='function') ? _obMergeRect : undefined,
   _obNoteProfileCreated: (typeof _obNoteProfileCreated==='function') ? _obNoteProfileCreated : undefined,
+  _obOfferSystem2Chain: (typeof _obOfferSystem2Chain==='function') ? _obOfferSystem2Chain : undefined,
   _obOpenAccordionById: (typeof _obOpenAccordionById==='function') ? _obOpenAccordionById : undefined,
   _obPendingProfile: (typeof _obPendingProfile!=='undefined') ? _obPendingProfile : undefined,
   _obPositionBox: (typeof _obPositionBox==='function') ? _obPositionBox : undefined,
@@ -1555,6 +1562,7 @@ globalThis.__api = {
   _svgRectangle: (typeof _svgRectangle==='function') ? _svgRectangle : undefined,
   _svgSquare: (typeof _svgSquare==='function') ? _svgSquare : undefined,
   _svgTriangleAngles: (typeof _svgTriangleAngles==='function') ? _svgTriangleAngles : undefined,
+  _syncCustomZoneVisibility: (typeof _syncCustomZoneVisibility==='function') ? _syncCustomZoneVisibility : undefined,
   _syncQuitBtnLabel: (typeof _syncQuitBtnLabel==='function') ? _syncQuitBtnLabel : undefined,
   _synthCri: (typeof _synthCri==='function') ? _synthCri : undefined,
   _taunt: (typeof _taunt==='function') ? _taunt : undefined,
@@ -2036,6 +2044,7 @@ globalThis.__api = {
   showMonsterIntro: (typeof showMonsterIntro==='function') ? showMonsterIntro : undefined,
   showObjectiveChoice: (typeof showObjectiveChoice==='function') ? showObjectiveChoice : undefined,
   showPlateauHint: (typeof showPlateauHint==='function') ? showPlateauHint : undefined,
+  showPrompt: (typeof showPrompt==='function') ? showPrompt : undefined,
   showSyncDiag: (typeof showSyncDiag==='function') ? showSyncDiag : undefined,
   showView: (typeof showView==='function') ? showView : undefined,
   shuffle: (typeof shuffle==='function') ? shuffle : undefined,

@@ -630,8 +630,24 @@ function _obFinishClick(){
  if(n===3){ ob3MarkCompleted(); }
  if(n===4){ ob4MarkCompleted(); }
  if(typeof _obRefreshButtons==='function') _obRefreshButtons();
+ // AUD-02-006 (audit fonctionnel 2026-09-21) : le Système 2 (22 étapes)
+ // s'enchaînait automatiquement 350ms après la fin du Système 1 (10 étapes),
+ // 32 étapes cumulées sans aucun point de pause explicite — risque de
+ // lassitude pour un parent pressé, avec possibilité de rater des réglages
+ // importants (Système 2 couvre filtres/horaires). Un choix explicite est
+ // désormais proposé entre les deux systèmes plutôt qu'un enchaînement forcé.
  if(_obShouldChainToSystem2(n)){
-  setTimeout(()=>{ obStart(2); }, 350);
+  setTimeout(_obOfferSystem2Chain, 350);
+ }
+}
+// Fonction d'AFFICHAGE (contient l'effet, contrairement aux fonctions de
+// décision pures ci-dessous) — séparée du setTimeout qui l'appelle pour
+// rester directement testable, même principe que le reste de ce fichier.
+function _obOfferSystem2Chain(){
+ if(typeof showConfirm==='function'){
+  showConfirm('Bravo, tu as terminé la première visite !\n\nVeux-tu voir tout de suite la suite (réglages avancés : filtres, horaires…) ?', ()=>obStart(2), {confirmLabel:'Voir maintenant', cancelLabel:'Plus tard'});
+ } else {
+  obStart(2);
  }
 }
 // Alias exposé (utilisé par le bouton "Terminer" généré dynamiquement)

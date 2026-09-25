@@ -475,6 +475,41 @@ function showConfirm(message, onConfirm, opts={}){
  ov._releaseTrap=trapFocus(ov);
 }
 
+// AUD-02-005 (audit fonctionnel 2026-09-21) : jusqu'ici, seule
+// recoverParentPin() (09-parent.js) utilisait des prompt() natifs du
+// navigateur pour une saisie libre — rupture de cohérence visuelle exactement
+// au moment le plus sensible du parcours (récupération d'accès), incohérent
+// en PWA installée en mode standalone. Générique, même gabarit que
+// showAlert/showConfirm — réutilisable pour tout futur besoin de saisie libre.
+function showPrompt(message, onSubmit, opts={}){
+ const _e=(typeof esc==='function')?esc:(s=>String(s));
+ const title=opts.title||'Saisie';
+ const confirmLabel=opts.confirmLabel||'Valider';
+ const cancelLabel=opts.cancelLabel||'Annuler';
+ const inputType=opts.inputType||'text';
+ const ov=document.createElement('div');
+ ov.id='sd-prompt-overlay';
+ ov.style.cssText='position:fixed;inset:0;z-index:620;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:20px;';
+ ov.innerHTML='<div style="background:#182449;border:1px solid rgba(241,196,15,.35);border-radius:18px;padding:24px 20px;text-align:center;max-width:360px;width:100%;box-shadow:var(--shadow-modal);">'
+  +'<div style="font-size:1em;font-weight:800;color:#f1c40f;margin-bottom:10px;">'+_e(title)+'</div>'
+  +'<div style="font-size:.9em;color:#dce3f0;line-height:1.5;margin-bottom:14px;white-space:pre-line;">'+_e(message)+'</div>'
+  +'<input id="sd-prompt-input" type="'+_e(inputType)+'" autocomplete="off" placeholder="'+_e(opts.placeholder||'')+'" style="width:100%;box-sizing:border-box;background:#0f1730;border:2px solid rgba(241,196,15,.35);border-radius:10px;padding:11px 12px;color:#fff;font-size:.95em;margin-bottom:16px;text-align:center;">'
+  +'<div style="display:flex;gap:10px;justify-content:center;">'
+  +'<button id="sd-prompt-cancel" style="background:#555;color:#fff;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:.9em;cursor:pointer;">'+_e(cancelLabel)+'</button>'
+  +'<button id="sd-prompt-ok" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:.9em;cursor:pointer;">'+_e(confirmLabel)+'</button>'
+  +'</div></div>';
+ document.body.appendChild(ov);
+ const closeIt=()=>_closeStyledDialog('sd-prompt-overlay');
+ const input=ov.querySelector('#sd-prompt-input');
+ ov.querySelector('#sd-prompt-cancel').onclick=()=>{ closeIt(); if(typeof opts.onCancel==='function') opts.onCancel(); };
+ const submit=()=>{ const v=input.value; closeIt(); if(typeof onSubmit==='function') onSubmit(v); };
+ ov.querySelector('#sd-prompt-ok').onclick=submit;
+ input.addEventListener('keydown', e=>{ if(e.key==='Enter') submit(); });
+ ov.addEventListener('keydown', e=>{ if(e.key==='Escape') closeIt(); });
+ setTimeout(()=>input.focus(), 50);
+ ov._releaseTrap=trapFocus(ov);
+}
+
 // Lot 3 (audit engagement, 13e conversation, pt.7) : petite boîte de choix pour
 // l'objectif du jour, sur le même gabarit visuel que showAlert/showConfirm.
 function showObjectiveChoice(candidates, subj){

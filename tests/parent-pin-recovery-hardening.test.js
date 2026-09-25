@@ -88,7 +88,10 @@ describe('recoverParentPin() — verrou anti-brute-force partagé + aucun code p
     const path = await import('node:path');
     const src = fs.readFileSync(path.join(process.cwd(), 'js', '09-parent.js'), 'utf8');
     const fnStart = src.indexOf('async function recoverParentPin()');
-    const fnBody = src.slice(fnStart, fnStart + 2200);
+    // AUD-02-005 (audit fonctionnel 2026-09-21) : fenêtre élargie après le
+    // remplacement des prompt() natifs par showPrompt() (callbacks imbriqués,
+    // fonction plus longue) — la fonction entière tient largement dedans.
+    const fnBody = src.slice(fnStart, fnStart + 2600);
     expect(fnBody).toContain('getPinLockUntil()');
     expect(fnBody).toContain('setPinAttempts(0)');
     expect(fnBody).toContain('getPinAttempts()+1');

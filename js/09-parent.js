@@ -1752,7 +1752,11 @@ function renderProfileManager(){
 }
 function pmAddProfile(){
  const i=$('pm-new'); if(!i) return; const n=i.value.trim();
- if(!n) return;
+ // AUD-02-003 (audit fonctionnel 2026-09-21) : jusqu'ici, cliquer « Ajouter »
+ // avec un champ vide ne produisait aucun effet visible — pouvait passer pour
+ // un bouton cassé, alors que le cas « profil déjà existant » ci-dessous
+ // affiche bien un message.
+ if(!n){ if(typeof toast==='function') toast('Merci d’indiquer un prénom.',2200); return; }
  if(typeof addToRoster!=='function') return;
  if(!addToRoster(n)){ if(typeof toast==='function')toast('Ce profil existe déjà.',2000); return; }
  if(typeof chatEnableForProfile==='function'){ try{ chatEnableForProfile(n); }catch(e){} } // messagerie activée par défaut (contacts validés par les parents)
@@ -1877,6 +1881,19 @@ function pmSetBirthday(name, field, val){
  const cur=getBirthday(name)||{m:0,d:0};
  const v=parseInt(val,10)||0;
  if(field==='m') cur.m=v; else cur.d=v;
+ // AUD-02-004 (audit fonctionnel 2026-09-21) : jour et mois étaient jusqu'ici
+ // validés indépendamment (chacun clampé séparément dans setBirthday()) — une
+ // date calendairement impossible ("31 avril", "30 février") était acceptée
+ // sans avertissement, avec pour conséquence un contenu d'anniversaire qui ne
+ // se déclenche jamais, silencieusement, pour ce profil.
+ if(cur.m && cur.d){
+  const DAYS_IN_MONTH=[31,29,31,30,31,30,31,31,30,31,30,31]; // 29 pour février, par prudence (années bissextiles)
+  const max=DAYS_IN_MONTH[cur.m-1];
+  if(cur.d>max){
+   if(typeof toast==='function') toast('📅 Cette date n’existe pas ('+max+' jour'+(max>1?'s':'')+' max ce mois-ci).',3200);
+   return; // ne rien enregistrer tant que la date n'est pas cohérente
+  }
+ }
  setBirthday(name, cur.m, cur.d);
 }
 
@@ -2069,20 +2086,23 @@ async function recoverParentPin(){
   }
   return;
  }
- const ans=prompt('Question secrète :\n\n'+q);
- if(ans===null) return;
- const stored=localStorage.getItem('parentSecA');
- if(stored && (await verifySecureValue(String(ans).trim().toLowerCase(), stored))){
-  setPinAttempts(0);
-  const np=prompt('✅ Bonne réponse !\n\nChoisis un nouveau code parent (4 chiffres) :');
-  if(np!==null){
-   if(/^\d{4}$/.test(String(np).trim())){ localStorage.setItem('parentPin', await hashPinSecure(String(np).trim())); showAlert('Code mis à jour. Tu peux maintenant te connecter avec ce nouveau code.'); }
-   else showAlert('Code invalide : il faut exactement 4 chiffres. Recommence.');
+ // AUD-02-005 (audit fonctionnel 2026-09-21) : prompt() natifs remplacés par
+ // showPrompt() (01-core.js), modale stylée cohérente avec le reste de
+ // l'app — y compris sur ce parcours de récupération, le plus sensible et
+ // donc le moins acceptable pour une rupture de cohérence visuelle.
+ showPrompt('Question secrète :\n\n'+q, async (ans)=>{
+  const stored=localStorage.getItem('parentSecA');
+  if(stored && (await verifySecureValue(String(ans).trim().toLowerCase(), stored))){
+   setPinAttempts(0);
+   showPrompt('✅ Bonne réponse !\n\nChoisis un nouveau code parent (4 chiffres) :', async (np)=>{
+    if(/^\d{4}$/.test(String(np).trim())){ localStorage.setItem('parentPin', await hashPinSecure(String(np).trim())); showAlert('Code mis à jour. Tu peux maintenant te connecter avec ce nouveau code.'); }
+    else showAlert('Code invalide : il faut exactement 4 chiffres. Recommence.');
+   }, {title:'Nouveau code parent', placeholder:'1234', confirmLabel:'Valider'});
+  } else {
+   const attempts=getPinAttempts()+1;
+   setPinAttempts(attempts);
+   if(attempts>=5){setPinLockUntil(Date.now()+30000);setPinAttempts(0);showAlert('🔒 5 tentatives échouées. Bloqué 30 secondes !');}
+   else showAlert('❌ Réponse incorrecte.');
   }
- } else {
-  const attempts=getPinAttempts()+1;
-  setPinAttempts(attempts);
-  if(attempts>=5){setPinLockUntil(Date.now()+30000);setPinAttempts(0);showAlert('🔒 5 tentatives échouées. Bloqué 30 secondes !');}
-  else showAlert('❌ Réponse incorrecte.');
- }
+ }, {title:'Question secrète', placeholder:'Ta réponse', confirmLabel:'Valider'});
 }

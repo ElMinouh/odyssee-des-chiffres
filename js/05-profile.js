@@ -779,7 +779,13 @@ function fillPlayerSelect(){
 }
 function loadProfile(){
  const sel=$('playerSelect').value;
- let name=sel==='Autre'?($('customInput').value.trim()||localStorage.getItem('customPlayerName')||'Joueur'):sel;
+ const _rawCustom=$('customInput').value.trim();
+ // AUD-02-002 (audit fonctionnel 2026-09-21) : repli littéral sur 'Joueur'
+ // quand aucun nom réel n'est disponible (ni saisi, ni précédemment mémorisé)
+ // — repéré ici pour empêcher, plus bas, la persistance de ce profil fantôme
+ // tant qu'un vrai prénom n'a pas été entré (voir P._unnamed, saveProfile()).
+ const _unnamedFallback = sel==='Autre' && !_rawCustom && !localStorage.getItem('customPlayerName');
+ let name=sel==='Autre'?(_rawCustom||localStorage.getItem('customPlayerName')||'Joueur'):sel;
  if(typeof _diagLog==='function')_diagLog('LOAD-PROFILE: playerSelect='+sel+' nom='+name+' lastPlayer='+localStorage.getItem('lastPlayer'));
  let saved=null;
  try{saved=JSON.parse(localStorage.getItem('user_'+name)||'null');}
@@ -840,6 +846,13 @@ function loadProfile(){
   const _pendingLevel=(typeof _consumePendingStartLevel==='function')?_consumePendingStartLevel(name):null;
   if(_pendingLevel && typeof _applyStartLevel==='function') _applyStartLevel(P,_pendingLevel);
  }
+ // AUD-02-002 : ce profil ne doit jamais être écrit sur disque tant que ce
+ // flag reste vrai (voir saveProfile()/saveProfileNow()) — seul un vrai nom
+ // saisi (qui refait passer par ce même loadProfile() avec _unnamedFallback
+ // à false) lève le verrou. `saved` n'existe QUE si un profil "Joueur" bien
+ // réel avait déjà été enregistré auparavant : dans ce cas précis, on ne
+ // bloque pas un prénom légitimement choisi par une famille.
+ P._unnamed = _unnamedFallback && !saved;
  if(P.questsDate!==todayKey()){P.quests=genQuests();P.questsDate=todayKey();}
  // Lot 4 (audit engagement, 13e conversation, pt.18) : série de jours consécutifs,
  // affichée avec bienveillance (cf. affichage dashboard, 08-ui.js). Aucune perte
@@ -904,6 +917,11 @@ function unlockProfileSaves(){
 }
 function saveProfile(){
  if(_saveLocked) return;
+ // AUD-02-002 (audit fonctionnel 2026-09-21) : jamais persister un profil
+ // "fantôme" créé par repli sur 'Joueur' sans qu'un prénom réel ait été
+ // saisi — voir loadProfile(). Ce verrou se lève de lui-même dès qu'un vrai
+ // prénom est entré (loadProfile() recalcule alors P._unnamed=false).
+ if(P && P._unnamed) return;
  clearTimeout(_saveTimer);
  _saveTimer=setTimeout(()=>{
   if(_saveLocked) return;
@@ -913,6 +931,7 @@ function saveProfile(){
 }
 function saveProfileNow(){
  if(_saveLocked) return;
+ if(P && P._unnamed) return; // AUD-02-002 : voir saveProfile() ci-dessus.
  clearTimeout(_saveTimer);
  try{localStorage.setItem('user_'+P.name,JSON.stringify(P));}
  catch(e){if(e.name==='QuotaExceededError'||e.code===22||e.code===1014)toast('⚠️ Stockage plein ! Progression non sauvegardée.',4000);}
@@ -1040,9 +1059,18 @@ function updateXPBar(){
  if(bar)bar.style.width=pct+'%';
  if(lab)lab.innerText=`XP Niv.${lvl} · ${cur}/${need}`;
 }
+// AUD-02-002 (audit fonctionnel 2026-09-21) : extraite pour être appelée
+// aussi juste après la restauration de lastPlayer au tout premier lancement
+// (11-init.js), pas seulement sur l'événement "change" du sélecteur — sans
+// quoi custom-zone pouvait rester masqué alors que "Autre" était déjà
+// sélectionné par défaut (aucune autre option quand le roster est vide).
+function _syncCustomZoneVisibility(){
+ const sel=$('playerSelect'), cz=$('custom-zone');
+ if(sel && cz) cz.classList.toggle('hidden', sel.value!=='Autre');
+}
 function onPlayerChange(){
  const v=$('playerSelect').value;
- $('custom-zone').classList.toggle('hidden',v!=='Autre');
+ _syncCustomZoneVisibility();
  if(v!=='Autre')loadProfile();
 }
 function applyCustom(){const n=$('customInput').value.trim();if(n)localStorage.setItem('customPlayerName',n);loadProfile();}
