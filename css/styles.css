@@ -5418,6 +5418,9 @@ body.mat-mode #v-game{
  background-position: center, top center, center;
  background-repeat: no-repeat, no-repeat, no-repeat;
  padding-top: clamp(150px, 42vw, 340px);
+ /* AUD-04-001 (audit DA, Lot 7, option A) : filet dore reprenant le sceau,
+    fil visuel entre l'illustration peinte et le reste de l'UI vectorielle. */
+ box-shadow: inset 0 0 0 2px #7a5a10, inset 0 0 0 5px rgba(13,17,23,.9), inset 0 0 0 7px #d4a017;
 }
 #game-logo-menu{ display:none !important; } /* la vignette du haut est remplacée par le fond */
 
@@ -5432,6 +5435,9 @@ body.mat-mode #v-game{
  padding:var(--space-3) var(--space-3) var(--space-4);
  margin:0 auto var(--space-2);
  max-width:600px;
+ /* AUD-04-001 (audit DA, Lot 7, option A) : meme filet dore que #v-menu,
+    pour que les bannieres de matiere partagent le cadre de l'accueil. */
+ box-shadow: inset 0 0 0 2px #7a5a10, inset 0 0 0 5px rgba(13,17,23,.9), inset 0 0 0 7px #d4a017;
 }
 
 /* Médaillon Odyssée du Savoir agrandi (tableau de bord + vue parent) */
