@@ -2072,10 +2072,19 @@ function _showStoryModal(chapter, onDone){
     </div>
     <div class="story-nav">
      ${page>0?`<button class="story-btn story-prev" aria-label="Page précédente">‹</button>`:`<span class="story-spacer"></span>`}
-     <div class="story-dots">${chapter.pages.map((_,i)=>`<span class="story-dot${i===page?' on':''}"></span>`).join('')}</div>
+     <div class="story-progress" aria-label="Page ${page+1} sur ${chapter.pages.length}">
+      <div class="story-progress-bar" style="width:${Math.round(((page+1)/chapter.pages.length)*100)}%;"></div>
+      <span class="story-progress-txt">${page+1}/${chapter.pages.length}</span>
+     </div>
      <button class="story-btn story-next">${last?(chapter.closeLabel||'Commencer ! ⚔️'):'Suivant ›'}</button>
     </div>
-    ${!last?`<button class="story-skip">Passer l'histoire</button>`:''}
+    <!-- AUD-03-046 (audit UX 2026-09-25) : "Passer l'histoire" (lien texte
+         translucide, style .story-skip) était peu visible face à un
+         prologue de plusieurs pages denses — restylé en bouton clairement
+         identifiable (voir styles.css), toujours secondaire visuellement
+         face à "Suivant". Barre de progression en remplacement des points
+         millimétriques, plus lisible pour un chapitre à plusieurs pages. -->
+    ${!last?`<button class="story-skip">⏭ Passer l'histoire</button>`:''}
    </div>`;
   const nx = overlay.querySelector('.story-next');
   if(nx) nx.onclick = ()=>{ _bStop(); if(!last){ page++; render(); } else close(); };
