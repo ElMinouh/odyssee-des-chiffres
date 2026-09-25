@@ -699,7 +699,11 @@
   </div>
   <div id="tab-hero">
    <div style="text-align:right;margin:4px 0;"><button onclick="dashCollapseAll('tab-hero')" style="background:rgba(255,255,255,.1);font-size:.72em;padding:4px 10px;">⬍ Tout replier</button></div>
-   <button class="accordion" id="acc-shop-figurines" onclick="renderFigurinesShop('none');_shopSearch='';">🧩 Boutique de figurines<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Échange tes étoiles contre des figurines</span></button>
+   <!-- AUD-03-038 (audit UX 2026-09-25) : la boutique (seule action économique
+        réelle du tableau de bord) avait le même style que les 5 accordéons
+        cosmétiques voisins (Avatar, Son, Skins, Titres, Musiques) — aucun
+        repère visuel pour la repérer d'un coup d'œil après une partie. -->
+   <button class="accordion" id="acc-shop-figurines" style="background:linear-gradient(135deg,rgba(241,196,15,.22),rgba(241,196,15,.06));border:1px solid rgba(241,196,15,.4);" onclick="renderFigurinesShop(P.ownedFigurines&&P.ownedFigurines.length?'mine':'none');_shopSearch='';">⭐ Boutique de figurines<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Échange tes étoiles contre des figurines</span></button>
    <div class="panel"><div id="p-figurines"><div style="color:rgba(255,255,255,.4);font-size:.8em;text-align:center;padding:10px;">Clique pour voir les figurines</div></div></div>
    <button class="accordion" id="acc-avatar">😀 Avatar<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Choisis ton personnage</span></button>
    <div class="panel" id="p-avatars"></div>

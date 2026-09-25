@@ -458,10 +458,15 @@ function showConfirm(message, onConfirm, opts={}){
  const title=opts.title||(opts.danger?'⚠️ Confirmation':'Confirmation');
  const confirmLabel=opts.confirmLabel||'Confirmer';
  const cancelLabel=opts.cancelLabel||'Annuler';
- const accentColor=opts.danger?'#e74c3c':'var(--accent)';
- const cardClass='sd-dialog-card'+(opts.danger?' sd-dialog-danger':'');
- const titleClass='sd-dialog-title'+(opts.danger?' sd-dialog-title-danger':'');
- const inputClass='sd-dialog-input'+(opts.danger?' sd-dialog-input-danger':'');
+ // AUD-03-047 (audit UX 2026-09-25) : jusqu'ici seul opts.danger (rouge, actions
+ // destructives) distinguait une confirmation ; une dépense élevée d'étoiles
+ // n'était pas "destructive" mais méritait un signal plus fort qu'un OK anodin
+ // — opts.warn (ambre) comble cet entre-deux, sans toucher au sens de danger.
+ const tone = opts.danger?'danger':(opts.warn?'warn':'');
+ const accentColor = opts.danger?'#e74c3c':(opts.warn?'#e67e22':'var(--accent)');
+ const cardClass='sd-dialog-card'+(tone?' sd-dialog-'+tone:'');
+ const titleClass='sd-dialog-title'+(tone?' sd-dialog-title-'+tone:'');
+ const inputClass='sd-dialog-input'+(tone?' sd-dialog-input-'+tone:'');
  // v12.7.32 (demande de Cyril, confirmation renforcée) : si opts.retypeValue
  // est fourni, le bouton de confirmation reste désactivé tant que le champ
  // texte n'est pas rempli avec EXACTEMENT cette valeur (comparaison stricte

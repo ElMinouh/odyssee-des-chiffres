@@ -1518,6 +1518,7 @@ globalThis.__api = {
   _sfxEnabled: (typeof _sfxEnabled==='function') ? _sfxEnabled : undefined,
   _sh: (typeof _sh==='function') ? _sh : undefined,
   _shopSearch: (typeof _shopSearch!=='undefined') ? _shopSearch : undefined,
+  _shopSort: (typeof _shopSort!=='undefined') ? _shopSort : undefined,
   _showBiomeBanner: (typeof _showBiomeBanner==='function') ? _showBiomeBanner : undefined,
   _showChoiceModal: (typeof _showChoiceModal==='function') ? _showChoiceModal : undefined,
   _showLoreModal: (typeof _showLoreModal==='function') ? _showLoreModal : undefined,

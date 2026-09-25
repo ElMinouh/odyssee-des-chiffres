@@ -1344,6 +1344,7 @@
     "_sfxEnabled": "writable",
     "_sh": "writable",
     "_shopSearch": "writable",
+    "_shopSort": "writable",
     "_showBiomeBanner": "writable",
     "_showChoiceModal": "writable",
     "_showLoreModal": "writable",

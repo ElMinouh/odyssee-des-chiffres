@@ -2834,3 +2834,9 @@ function _countableFigurines(playerName){
 let _figFilter='none';
 // Shop state
 let _shopSearch='';
+// AUD-03-040 (audit UX 2026-09-25) : tri de la boutique, persistant entre
+// deux rendus (même principe que _shopSearch ci-dessus) — sans cette
+// variable, le <select> de tri regénéré à chaque appel de
+// _renderFigurinesShop() revenait silencieusement à "défaut" après le
+// moindre changement de licence ou de recherche.
+let _shopSort='default';

@@ -340,6 +340,14 @@ html[data-appearance="light"] .tb-dash:hover{background:rgba(0,0,0,.16)!importan
 .fig-card.owned{border-color:gold;background:rgba(255,215,0,.07);cursor:pointer;}
 .fig-card.owned:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(255,215,0,.3);}
 .fig-card:not(.owned):hover{border-color:var(--accent);}
+/* AUD-03-041 : code couleur de fond par etat (achetable/a gagner/verrouille),
+   distinct du simple style de texte, pour un balayage visuel rapide. */
+.fig-card.state-buy{border-color:rgba(46,204,113,.5);background:rgba(46,204,113,.06);}
+.fig-card.state-boss{border-color:rgba(241,196,15,.4);background:rgba(241,196,15,.05);}
+.fig-card.state-locked{border-color:rgba(255,255,255,.08);background:rgba(255,255,255,.02);}
+html[data-appearance="light"] .fig-card.state-buy{background:rgba(46,204,113,.1);border-color:rgba(46,204,113,.5);}
+html[data-appearance="light"] .fig-card.state-boss{background:rgba(241,196,15,.14);border-color:rgba(241,196,15,.5);}
+html[data-appearance="light"] .fig-card.state-locked{background:rgba(0,0,0,.03);border-color:rgba(0,0,0,.08);}
 .fig-em{width:68px;height:75px;display:block;margin:0 auto 2px;overflow:hidden;border-radius:var(--radius-sm);}
 .fig-nm{font-size:.56em;font-weight:700;margin:3px 0 2px;color:#fff;line-height:1.2;}
 .fig-unib{font-size:.5em;padding:2px var(--space-2);border-radius:10px;display:inline-block;margin:2px 0;font-weight:700;}
@@ -1128,6 +1136,14 @@ html[data-appearance="light"] .sd-dialog-title.sd-dialog-title-danger{color:#c03
 html[data-appearance="light"] .sd-dialog-msg{color:#2c3e50;}
 html[data-appearance="light"] .sd-dialog-input{background:#fff;color:#2c3e50;border-color:rgba(0,0,0,.18);}
 html[data-appearance="light"] .sd-dialog-input.sd-dialog-input-danger{background:#fdecea;color:#2c3e50;}
+/* AUD-03-047 : palier "warn" (ambre) — entre confirmation neutre et danger rouge,
+   pour les actions à conséquence notable mais non destructives (achat élevé). */
+.sd-dialog-card.sd-dialog-warn{background:#2c2210;border-color:rgba(230,126,34,.45);}
+.sd-dialog-title.sd-dialog-title-warn{color:#e67e22;}
+.sd-dialog-input.sd-dialog-input-warn{background:#1f1608;border-color:rgba(230,126,34,.5);}
+html[data-appearance="light"] .sd-dialog-card.sd-dialog-warn{background:#fdf2e3;border-color:rgba(230,126,34,.4);}
+html[data-appearance="light"] .sd-dialog-title.sd-dialog-title-warn{color:#b8620f;}
+html[data-appearance="light"] .sd-dialog-input.sd-dialog-input-warn{background:#fdf2e3;color:#2c3e50;}
 
 /* AUD-03-017 : surlignage persistant des lignes joueur en erreur (mode
    Combat local), en complément du toast qui disparaît après 3s. */

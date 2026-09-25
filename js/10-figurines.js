@@ -44,6 +44,13 @@ function _renderFigurinesShop(filter){
  });
  html+=`</select>
   <input id="shop-search-input" class="shop-search" type="text" placeholder="🔍 Rechercher…" value="${_shopSearch}" oninput="_shopSearch=this.value;renderFigurinesShop()" maxlength="30">
+  <select id="shop-sort" onchange="_shopSort=this.value;renderFigurinesShop()" style="flex:0 0 auto;min-width:110px;">
+   <option value="default"${_shopSort==='default'?' selected':''}>Tri : d&#233;faut</option>
+   <option value="price_asc"${_shopSort==='price_asc'?' selected':''}>Prix croissant</option>
+   <option value="price"${_shopSort==='price'?' selected':''}>Prix d&#233;croissant</option>
+   <option value="rarity"${_shopSort==='rarity'?' selected':''}>Raret&#233;</option>
+   <option value="name"${_shopSort==='name'?' selected':''}>Nom</option>
+  </select>
  </div>`;
 
  // Filter list
@@ -69,6 +76,7 @@ function _renderFigurinesShop(filter){
   const q=_shopSearch.trim().toLowerCase();
   list=list.filter(f=>f.name.toLowerCase().includes(q)||f.uni.toLowerCase().includes(q));
  }
+ list=_sortedFigs(list,_shopSort);
 
  if(list.length===0){
   html+='<div style="color:rgba(255,255,255,.4);font-size:.8em;text-align:center;padding:20px;">Aucune figurine trouvée.</div>';
@@ -78,7 +86,17 @@ function _renderFigurinesShop(filter){
  html+='<div class="fig-grid">';
  list.forEach(fig=>{
   const isOwned=owned.includes(fig.id);
-  html+=`<div class="fig-card${isOwned?' owned':''}${fig.r==='exclusif'?' rarity-exclusif':''}"${isOwned?` onclick="openFigViewer('${fig.id}')" title="Voir en 3D 🎬"`:''}>`;
+  // AUD-03-041 (audit UX 2026-09-25) : rien ne distinguait au premier coup
+  // d'oeil une figurine achetable d'une figurine verrouillee ou a gagner au
+  // boss, sans lire le texte de chaque carte. Etat calcule une seule fois,
+  // classe CSS dediee par etat (liseres de couleur, voir styles.css).
+  let cardState='';
+  if(!isOwned){
+   if(fig.completionLock && !(typeof _isLicenseCompletionUnlocked==='function' && _isLicenseCompletionUnlocked(fig))) cardState='state-locked';
+   else if(!fig.completionLock && !(fig.p>0)) cardState='state-boss';
+   else cardState='state-buy';
+  }
+  html+=`<div class="fig-card${isOwned?' owned':''}${cardState?' '+cardState:''}${fig.r==='exclusif'?' rarity-exclusif':''}"${isOwned?` onclick="openFigViewer('${fig.id}')" title="Voir en 3D 🎬"`:''}>`;
   if(isOwned) html+='<div class="fig-mark">✓</div>';
   html+=`<span class="fig-em">${getCharPortrait(fig.id, {size:75, emoji:fig.em, name:fig.name})}</span>`;
   html+=`<div class="fig-rv" style="color:${RARITY_COL[fig.r]}">${RARITY_STARS[fig.r]}</div>`;
@@ -311,7 +329,10 @@ function buyFigurine(id){
  // cohérent avec le reste de la boutique pour les petits montants).
  const FIG_CONFIRM_THRESHOLD=200;
  if(fig.p>=FIG_CONFIRM_THRESHOLD && typeof showConfirm==='function'){
-  showConfirm(`Acheter ${fig.name} pour ${fig.p} ⭐ ?`, _doBuy, {confirmLabel:'Acheter'});
+  // AUD-03-047 (audit UX 2026-09-25) : cette confirmation utilisait le même
+  // style neutre qu'une confirmation anodine — aucun signal renforcé pour une
+  // dépense conséquente d'étoiles (ressource longue à accumuler pour l'enfant).
+  showConfirm(`Acheter ${fig.name} pour ${fig.p} ⭐ ?`, _doBuy, {confirmLabel:'Acheter', warn:true, title:'⭐ Achat important'});
  } else {
   _doBuy();
  }
@@ -321,13 +342,25 @@ function buyFigurine(id){
 // ── State: collection view mode
 let _colView='all'; // 'all','shelf','license'
 
-function _sortedFigs(list){
- const sort=$('col-sort')?.value||'default';
+// AUD-03-040 (audit UX 2026-09-25) : sortVal permet de réutiliser ce tri pour
+// la boutique (_shopSort) — la grille "Toutes les licences" (482 figurines,
+// _renderFigurinesShop()) n'avait aucun moyen de trier/repérer les figurines
+// au prix le plus bas avec un solde d'étoiles limité. Passé en valeur directe
+// (pas un id de <select>) : au moment de cet appel, la grille en cours de
+// construction n'est pas encore dans le DOM, $('shop-sort') y lirait l'ancien
+// rendu.
+// Note technique : la valeur par défaut 'col-sort' ne correspond à aucun
+// élément existant dans index.html (fonction déjà présente avant cet audit,
+// jamais câblée à un contrôle visible côté Collection) — hors périmètre de
+// cet audit UX, signalé séparément.
+function _sortedFigs(list, sortVal){
+ const sort=sortVal!==undefined ? sortVal : ($('col-sort')?.value||'default');
  const rarOrd={commun:0,rare:1,épique:2,légendaire:3,mythique:4,exclusif:5};
  const copy=[...list];
  if(sort==='rarity') copy.sort((a,b)=>(rarOrd[b.r]||0)-(rarOrd[a.r]||0));
  else if(sort==='name') copy.sort((a,b)=>a.name.localeCompare(b.name,'fr'));
  else if(sort==='price') copy.sort((a,b)=>b.p-a.p);
+ else if(sort==='price_asc') copy.sort((a,b)=>a.p-b.p);
  return copy;
 }
 
