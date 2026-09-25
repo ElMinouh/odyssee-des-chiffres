@@ -1772,4 +1772,20 @@ Les 7 autres (`streak`/`streakLastDate`, `sessionObjective`, `lastPlayTs`, `calm
 
 ---
 
+---
+
+---
+
+## ADR-153 — AUD-05-007 (audit accessibilité 2026-09-25) : minuteur du mode Chrono, choix assumé, aucun changement de code
+
+**Contexte** : l'audit accessibilité relève que `startChrono()` (`js/07-game.js:359-362`) impose un minuteur fixe de 60 secondes, non ajustable ni désactivable, alors que le mode Normal bénéficie déjà d'un réglage « Temps par question » (normal/×1,5/illimité, décision antérieure P1). WCAG 2.2.1 (Minutage ajustable) exige qu'un contenu limité dans le temps puisse être ajusté ou désactivé, sauf si le minutage est essentiel à l'activité et que le prolonger l'invaliderait — une exception documentée nulle part jusqu'ici pour ce mode.
+
+**Décision** : **choix assumé, documenté ici, aucun changement de code.** Le mode « Chrono » a pour identité et pour seule mécanique de différenciation un temps limité assumé — c'est l'exception WCAG 2.2.1 qui s'applique explicitement (« le minutage est un élément essentiel de l'activité et le prolonger l'invaliderait »). Le mode Normal, qui possède déjà son propre réglage de temps ajustable/illimité, reste l'option pleinement accessible pour tout enfant ayant besoin de plus de temps ; le Chrono n'a pas vocation à devenir une variante de ce même mode sous un autre nom.
+
+**Alternatives rejetées** : réutiliser `TIMER_SCALES` (normal/relaxed/unlimited) sur le mode Chrono, comme en mode Normal (rejeté — dénaturerait l'identité du mode pour tous les joueurs, et toucherait l'équilibrage du score/difficulté de ce mode spécifiquement calibré sur 60s, pour un effort et un risque disproportionnés par rapport au constat, coté Moyenne) ; masquer ou retirer le mode Chrono du choix proposé aux enfants ayant déclaré un besoin d'accessibilité (rejeté — aucun mécanisme de ce type n'existe ailleurs dans le jeu, et le mode Normal couvre déjà entièrement le besoin sans qu'il soit nécessaire de retirer une option à qui la choisit délibérément).
+
+**Impact** : aucun fichier de code modifié. v12.8.6 (pas de bump de version, décision seule). Constat AUD-05-007 (audit accessibilité) clos par décision documentée — aucun changement de comportement.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
