@@ -36,6 +36,10 @@ async function checkPin(){
   const attempts=getPinAttempts()+1;
   setPinAttempts(attempts);
   if(attempts>=5){setPinLockUntil(Date.now()+30000);setPinAttempts(0);toast('🔒 5 tentatives échouées. Bloqué 30 secondes !',3500);}
+  // AUD-05-006 (audit accessibilité 2026-09-25) : le placeholder "Code incorrect !"
+  // n'est pas annoncé par les lecteurs d'écran et disparaît dès la retape — toast()
+  // (role="status" aria-live="polite") rend l'erreur perceptible sans souris/vue.
+  else toast('❌ Code incorrect, réessaie.',2500);
   $('pin-input').value='';$('pin-input').placeholder='Code incorrect !';
   setTimeout(()=>{if($('pin-input'))$('pin-input').placeholder='****';},1500);beep(200,'sawtooth',.3);
  }
