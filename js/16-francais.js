@@ -520,6 +520,41 @@ function genFR_CM1(boss,_d){
  return q;
 }
 
+// AUD-02-016 (audit fonctionnel 2026-09-21) : CM1 et CM2 partageaient
+// exactement le même générateur (GEN_FR.CM2 = genFR_CM1) — aucune notion
+// propre au programme CM2. Nouveau générateur dédié, construit sur 3 piliers :
+// (1) les bases CM déjà éprouvées (homophones, conjugaison, COD — mêmes
+// banques que CM1, continuité pédagogique) ; (2) discours direct/indirect,
+// notion réellement nouvelle (FR_DISCOURS ci-dessous) ; (3) phrase simple/
+// complexe et fonctions sujet/COD/CC (FR6_PHRASE/FR6_FONC, _fr6_phrase()/
+// _fr6_fonc()) — déjà utilisées par le programme de 6e ET par la 5e en phase 1
+// (même fichier, plus haut) comme première exposition en douceur ; les
+// introduire aussi en CM2 (phases 2-3) suit exactement ce même principe
+// déjà établi ailleurs dans ce module, sans dupliquer aucun contenu.
+const FR_DISCOURS = [
+ {ph:'Le maître dit : « Ouvrez vos cahiers. »', ok:'direct', bad:['indirect'], rule:'guillemets + deux-points → discours direct'},
+ {ph:'Le maître dit d’ouvrir nos cahiers.', ok:'indirect', bad:['direct'], rule:'pas de guillemets, verbe à l’infinitif → discours indirect'},
+ {ph:'Léa a demandé : « Quelle heure est-il ? »', ok:'direct', bad:['indirect'], rule:'guillemets + ponctuation d’origine → discours direct'},
+ {ph:'Léa a demandé quelle heure il était.', ok:'indirect', bad:['direct'], rule:'plus de guillemets, « quelle » introduit la question → discours indirect'},
+ {ph:'Tom s’écrie : « J’ai gagné ! »', ok:'direct', bad:['indirect'], rule:'guillemets → discours direct'},
+ {ph:'Tom s’écrie qu’il a gagné.', ok:'indirect', bad:['direct'], rule:'« que » remplace les guillemets → discours indirect'},
+ {ph:'Elle a répondu : « Je ne sais pas. »', ok:'direct', bad:['indirect'], rule:'guillemets → discours direct'},
+ {ph:'Elle a répondu qu’elle ne savait pas.', ok:'indirect', bad:['direct'], rule:'« que » + verbe transformé → discours indirect'}
+];
+function _frCM2_discours(){ const d=_frRnd(FR_DISCOURS); return _frQ(`« ${d.ph} » Ce discours est… ?`, d.ok, d.bad, 'fr-discours', d.rule); }
+
+function genFR_CM2(boss,_d){
+ _d=_d||0;
+ const phase=(typeof _progPhase==='function')?_progPhase('CM2'):1;
+ let pool;
+ if(phase<=1)       pool=[_frCM_homo3,_frCE2_homo,_frCM_conj3,_frCE2_conj2,_frCM_cod,_frCE1_syn,_frCM_dictee];
+ else if(phase===2) pool=[_frCM_homo3,_frCM_pp,_frCM_conj3,_frCE2_conj2,_frCM2_discours,_fr6_phrase,_frCM_plur,_frCM_sens,_frCM_cod,_frCM_dictee];
+ else                pool=[_frCM_homo3,_frCM_pp,_frCM_plur,_frCM_sens,_frCM2_discours,_fr6_phrase,_fr6_fonc,_frCE2_temps,_frCM_conj3,_frCE2_comp,_frCM_cod,_frCM_dictee];
+ const q=_frUnique(_frRnd(pool)());
+ if(!q){ if(_d>14) return _frCM_homo3(); return genFR_CM2(boss,_d+1); }
+ return q;
+}
+
 // ═══════════════════════════════════════════════════════
 // 6e — fin de cycle 3 : natures & fonctions, temps de l'indicatif,
 //   phrase simple/complexe, figures, étymologie, homophones, compréhension.
@@ -1025,4 +1060,4 @@ function genFR_GS(boss,_d){
 }
 
 // Table des générateurs français — COMPLET : maternelle PS/MS/GS + primaire CP→CM2 + collège 6e→3e.
-const GEN_FR = { PS: genFR_PS, MS: genFR_MS, GS: genFR_GS, CP: genFR_CP, CE1: genFR_CE1, CE2: genFR_CE2, CM1: genFR_CM1, CM2: genFR_CM1, '6E': genFR_6E, '5E': genFR_5E, '4E': genFR_4E, '3E': genFR_3E };
+const GEN_FR = { PS: genFR_PS, MS: genFR_MS, GS: genFR_GS, CP: genFR_CP, CE1: genFR_CE1, CE2: genFR_CE2, CM1: genFR_CM1, CM2: genFR_CM2, '6E': genFR_6E, '5E': genFR_5E, '4E': genFR_4E, '3E': genFR_3E };

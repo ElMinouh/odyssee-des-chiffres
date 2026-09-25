@@ -1662,4 +1662,16 @@ Les 7 autres (`streak`/`streakLastDate`, `sessionObjective`, `lastPlayTs`, `calm
 
 ---
 
+## ADR-145 — Lot 2.8 (audit fonctionnel AUD-02, Phase 2, contenu) : français CM2 différencié de CM1
+
+**Contexte** : l'audit fonctionnel AUD-02 (constat AUD-02-016, Moyenne) a relevé que `GEN_FR.CM2` pointait directement vers `genFR_CM1` — un enfant de CM2 recevait exactement le même contenu de français qu'un enfant de CM1 (mêmes homophones, participes passés, fonctions grammaticales), sans aucune notion nouvelle du programme CM2. Contrairement aux autres lots de cette série, celui-ci exigeait la création de contenu pédagogique réel, pas seulement un correctif de code — le contenu proposé (8 phrases sur le discours direct/indirect, plus la réutilisation de bancs existants) a donc été présenté et validé explicitement avant toute intégration.
+
+**Décision** : nouveau générateur `genFR_CM2()`, phase-gaté comme `genFR_CM1()`, construit sur 3 piliers : (1) les bases CM déjà éprouvées en phase 1 (homophones, conjugaison, COD — mêmes banques que CM1, pas de rupture pédagogique) ; (2) contenu réellement nouveau — `FR_DISCOURS` (8 phrases, discours direct « guillemets + deux-points » vs indirect « que/infinitif », programme officiel CM2) — introduit à partir de la phase 2 ; (3) réutilisation de bancs déjà existants mais jusqu'ici réservés à la 6e — `FR6_PHRASE` (phrase simple/complexe, phase 2) et `FR6_FONC` (sujet/COD/complément circonstanciel, phase 3 seulement) — sur exactement le même principe déjà appliqué ailleurs dans ce fichier (la 5e réutilise déjà `_fr6_phrase()` en phase 1 comme première exposition en douceur) : aucun contenu dupliqué, juste un palier d'introduction avancé d'un niveau, cohérent avec le programme réel.
+
+**Alternatives rejetées** : dupliquer `FR6_PHRASE`/`FR6_FONC` sous des noms CM2 propres plutôt que les réutiliser (rejeté — duplication de contenu sans bénéfice, le pattern de réutilisation entre niveaux proches est déjà la convention établie de ce fichier) ; introduire aussi des notions de niveau 4e/3e (subordonnées relatives/conjonctives par type, `FR4_SUB`) dès le CM2 (rejeté — jugé trop avancé pour le cycle 3, le discours rapporté et la phrase complexe suffisent à combler l'écart réel avec le programme CM2 sans survendre le niveau).
+
+**Impact** : `16-francais.js` (`FR_DISCOURS`, `_frCM2_discours()`, `genFR_CM2()`, `GEN_FR.CM2`). v12.7.59. Tests : `tests/french-cm2-differentiated.test.js` (contenu des 8 phrases, gating par phase, non-régression de CM1 qui ne doit jamais recevoir le contenu CM2). `scripts/gen-test-api.mjs` relancé. 675/675 tests verts. Constat AUD-02-016 (audit fonctionnel) clos par ce lot.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
