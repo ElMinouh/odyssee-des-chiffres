@@ -34,7 +34,7 @@ function renderLevelUnlocks(){
 var _chartSubj='all';
 function setChartSubj(s){_chartSubj=s;renderChart();}
 function renderChart(){
- const bar='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">'+
+ const bar='<div style="font-size:.72em;font-weight:700;color:#8fa3c2;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">📊 Graphique</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">'+
   [['all','🌈 Toutes']].concat((typeof IMPLEMENTED_SUBJECTS!=='undefined')?IMPLEMENTED_SUBJECTS:[['math','🔢 Maths'],['fr','📖 Français'],['hist','🏛️ Histoire']])
   .map(a=>`<button onclick="setChartSubj('${a[0]}')" style="font-size:.8em;padding:9px 14px;border-radius:8px;background:${_chartSubj===a[0]?'#27ae60':'#2c3e50'};">${a[1]}</button>`).join('')+'</div>';
  const filtered=(P.history||[]).filter(x=>_chartSubj==='all'||(x.subject||'math')===_chartSubj);
@@ -46,7 +46,7 @@ function renderChart(){
 }
 function setOpStatSubj(s){_dashSubj=s;if(_histSubj!=='all')_histSubj=s;_dashSyncAll();}
 function renderOpStats(){
- const bar='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">'+((typeof IMPLEMENTED_SUBJECTS!=='undefined')?IMPLEMENTED_SUBJECTS:[['math','🔢 Maths'],['fr','📖 Français'],['hist','🏛️ Histoire']]).map(a=>`<button onclick="setOpStatSubj('${a[0]}')" style="font-size:.8em;padding:9px 14px;border-radius:8px;background:${_dashSubj===a[0]?'#27ae60':'#2c3e50'};">${a[1]}</button>`).join('')+'</div>';
+ const bar='<div style="font-size:.72em;font-weight:700;color:#8fa3c2;text-transform:uppercase;letter-spacing:.04em;margin:10px 0 4px;">📈 Par opération</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">'+((typeof IMPLEMENTED_SUBJECTS!=='undefined')?IMPLEMENTED_SUBJECTS:[['math','🔢 Maths'],['fr','📖 Français'],['hist','🏛️ Histoire']]).map(a=>`<button onclick="setOpStatSubj('${a[0]}')" style="font-size:.8em;padding:9px 14px;border-radius:8px;background:${_dashSubj===a[0]?'#27ae60':'#2c3e50'};">${a[1]}</button>`).join('')+'</div>';
  if(_dashSubj==='fr'){
   const names={conj:'Conjugaison',orth:'Orthographe',gram:'Grammaire',vocab:'Vocabulaire'};
   const cats=['conj','orth','gram','vocab'];
@@ -239,7 +239,7 @@ function renderTitles(){
  const d={stars:P.stars||0,badgesEarned:P.badgesEarned||[],levelWins:P.levelWins||{},history:P.history||[]};
  $('p-titles').innerHTML=HERO_TITLES.map(t=>{
   const ok=t.ok(d),active=P.heroTitle===t.id;
-  return`<div class="skill-item" style="${ok?'':'opacity:.4'}"><span style="color:${t.col};">${ok?'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>':'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>'} ${t.label}</span>${ok?`<button onclick="setTitle('${t.id}')" style="font-size:.8em;padding:5px 10px;background:${active?'#27ae60':'var(--accent)'};">${active?'Actif':'Choisir'}</button>`:''}</div>`;
+  return`<div class="skill-item" style="${ok?'':'opacity:.4'}"><span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${t.col};margin-right:6px;vertical-align:middle;"></span>${ok?'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>':'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>'} ${t.label}</span>${ok?`<button onclick="setTitle('${t.id}')" style="font-size:.8em;padding:5px 10px;background:${active?'#27ae60':'var(--accent)'};">${active?'Actif':'Choisir'}</button>`:''}</div>`;
  }).join('');
 }
 function setTitle(id){P.heroTitle=id;saveProfile();renderTitles();updateMenuUI();toast('Titre : '+HERO_TITLES.find(t=>t.id===id)?.label);}
