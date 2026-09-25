@@ -99,13 +99,23 @@ async function chatEnableForProfile(name){
  let res = await chatRegister(prof);
  if(res && res.error === 'taken'){ prof.chatId = _chatGenId(); _chatPersist(prof); res = await chatRegister(prof); }
  if(res && res.ok){ prof.chatRegistered = true; _chatPersist(prof); }
+ // AUD-02-044 (audit fonctionnel 2026-09-21) : signale la (ré)activation au
+ // serveur (colonne users.disabled), symétrique de chatDisableForProfile()
+ // ci-dessous — sans quoi les amis de ce profil ne verraient jamais la
+ // réactivation et le considéreraient "injoignable" à tort.
+ if(prof.chatId && prof.chatSecret){ try{ await _chatApi('/account/setenabled', Object.assign(_chatAuth(prof), { enabled:true })); }catch(e){} }
  if(typeof scheduleCloudSync==='function'){ try{ scheduleCloudSync(); }catch(e){} } // fait voyager l'identité via le cloud
  return res || { error:'network' };
 }
-function chatDisableForProfile(name){
+async function chatDisableForProfile(name){
  if(!name) return;
  const prof = _chatLoad(name); prof.chatEnabled = false; prof.ts = Date.now(); _chatPersist(prof);
  if(typeof chatRefreshBadges==='function') chatRefreshBadges();
+ // AUD-02-044 : jusqu'ici purement local — jamais communiqué au serveur, un
+ // ami restait "accepted" indéfiniment sans savoir que ses messages ne
+ // seraient jamais lus. Fire-and-forget : l'état local (déjà appliqué
+ // ci-dessus) ne dépend jamais du succès de cet appel réseau.
+ if(prof.chatId && prof.chatSecret){ try{ await _chatApi('/account/setenabled', Object.assign(_chatAuth(prof), { enabled:false })); }catch(e){} }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -213,6 +223,23 @@ async function renderContactsScreen(){
   });
  }
 
+ // AUD-02-042 (audit fonctionnel 2026-09-21) : demandes envoyées puis
+ // refusées — distinctes des demandes "en attente" ci-dessus, pour que
+ // l'enfant comprenne qu'une réponse a bien eu lieu (au lieu d'un silence
+ // indiscernable d'une absence de réponse). Bouton "OK" réutilise
+ // chatCancelContact() (la route serveur accepte désormais aussi ce cas).
+ const declined = data.declined || [];
+ if(declined.length && !_msgReadOnly){
+  html += '<p style="font-size:.8em;font-weight:700;color:#e67e22;margin:6px 0;">📭 Demandes refusées</p>';
+  declined.forEach(c => {
+   const cn=_e(c.name||c.id), av=_e(c.avatar||'🧙'), cidArg=_jsAttr(c.id);
+   html += '<div style="display:flex;align-items:center;gap:8px;background:rgba(230,126,34,.08);border-radius:10px;padding:8px 10px;margin:4px 0;">'
+    + '<span style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">'+av+'</span>'
+    + '<span style="flex:1;font-size:.9em;color:#bdc3c7;">'+cn+' <span style="font-size:.72em;">(a refusé ta demande)</span></span>'
+    + '<button onclick="chatCancelContact(\''+cidArg+'\')" style="background:#7f8c8d;font-size:.72em;padding:5px 10px;">OK</button></div>';
+  });
+ }
+
  let latest = {};
  try{ const l = await chatMsgLatest(prof); if(l && l.latest) latest = l.latest; }catch(e){}
  const seen = _chatSeen(prof);
@@ -228,9 +255,14 @@ async function renderContactsScreen(){
    const cid=_e(c.id), cn=_e(c.name||c.id), av=_e(c.avatar||'\uD83E\uDDD9');
    const nameArg=_jsAttr(c.name||c.id), avArg=_jsAttr(c.avatar||'');
    const unread = (latest[c.id]||0) > (seen[c.id]||0);
+   // AUD-02-044 (audit fonctionnel 2026-09-21) : c.disabled (users.disabled
+   // côté serveur) signale que cet ami a suspendu durablement sa messagerie
+   // — sans ce badge, rien ne distingue "hors-ligne temporairement" de
+   // "injoignable pour de bon", et l'enfant peut continuer d'écrire dans le
+   // vide indéfiniment sans jamais le savoir.
    html += '<div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.06);border-radius:12px;padding:10px 12px;margin:5px 0;cursor:pointer;" onclick="chatOpenConv(\''+cid+'\',\''+nameArg+'\',\''+avArg+'\')">'
     + '<span style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0;">'+av+'</span>'
-    + '<span style="flex:1;font-size:.9em;font-weight:600;">'+cn+'</span>'
+    + '<span style="flex:1;font-size:.9em;font-weight:600;">'+cn+(c.disabled?' <span style="font-size:.7em;font-weight:400;color:#e67e22;">(injoignable)</span>':'')+'</span>'
     + (unread ? '<span style="background:#e74c3c;border-radius:50%;width:11px;height:11px;display:inline-block;"></span>' : '')
     + '<button onclick="event.stopPropagation();chatRemoveContact(\''+cid+'\',\''+nameArg+'\')" style="background:transparent;border:none;color:#7f8c8d;font-size:1em;cursor:pointer;" title="Retirer">\u2715</button>'
     + '<span style="color:#7f8c8d;">\u203A</span></div>';

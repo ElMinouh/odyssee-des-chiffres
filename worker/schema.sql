@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
   name    TEXT,               -- prénom affiché
   avatar  TEXT,               -- avatar choisi (audit AUD-01-003 : colonne utilisée par le
                                -- code depuis l'origine mais absente d'ici, cf. migration-avatar.sql)
+  disabled INTEGER DEFAULT 0, -- messagerie suspendue par ce profil (AUD-02-044, cf. migration-user-disabled.sql)
   created INTEGER
 );
 CREATE TABLE IF NOT EXISTS contacts (

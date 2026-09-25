@@ -207,6 +207,14 @@ globalThis.__api = {
   setRenderMap: (fn) => { globalThis.renderMap = fn; },
   setPullProfileFromCloud: (fn) => { globalThis.pullProfileFromCloud = fn; },
   setPushOtherProfileToCloud: (fn) => { globalThis._pushOtherProfileToCloud = fn; },
+  // AUD-02-042/043/044 (audit fonctionnel 2026-09-21) : chatFriendList() est
+  // en réalité un appel réseau (_chatApi), non stubbable via AbortController
+  // dans ce sandbox (limite déjà documentée pour d'autres fonctions réseau,
+  // voir tests/chat-blocked-message-not-lost.test.js). Ces deux setters
+  // permettent de tester renderContactsScreen() bout-en-bout (badge
+  // "injoignable", section "demandes refusées") sans dépendre du réseau.
+  setChatFriendList: (fn) => { globalThis.chatFriendList = fn; },
+  setMsgProf: (prof, readOnly) => { globalThis._msgProf = prof; globalThis._msgReadOnly = !!readOnly; },
   // ─── BLOC AUTO-GÉNÉRÉ (ne pas éditer à la main — voir scripts/gen-test-api.mjs) ───
   $: (typeof $!=='undefined') ? $ : undefined,
   ADAPT_MASTERY: (typeof ADAPT_MASTERY!=='undefined') ? ADAPT_MASTERY : undefined,

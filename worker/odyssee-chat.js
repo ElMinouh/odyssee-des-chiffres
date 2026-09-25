@@ -142,6 +142,7 @@ export default {
         case '/friend/decline': return await friendDecline(env, body, CORS);
         case '/friend/cancel':  return await friendCancel(env, body, CORS);
         case '/friend/remove':  return await friendRemove(env, body, CORS);
+        case '/account/setenabled': return await setEnabled(env, body, CORS);
         case '/friend/block':   return await friendBlock(env, body, CORS);
         case '/friend/unblock': return await friendUnblock(env, body, CORS);
         case '/msg/send':       return await msgSend(env, body, CORS);
@@ -203,7 +204,13 @@ async function friendRequest(env, b, CORS) {
       .bind(me.id, code, now).run();
     return json({ ok: true, status: 'accepted' }, 200, CORS);
   }
-  await env.DB.prepare("INSERT INTO contacts (a,b,status,created) VALUES (?,?, 'pending', ?) ON CONFLICT(a,b) DO NOTHING")
+  // AUD-02-042 (audit fonctionnel 2026-09-21) : si une précédente demande a
+  // été refusée (status='declined', voir friendDecline() ci-dessous), une
+  // nouvelle demande doit pouvoir relancer normalement — sans ce
+  // ON CONFLICT ... WHERE, le "DO NOTHING" laisserait la ligne bloquée sur
+  // 'declined' pour toujours, empêchant tout nouvel essai. Un pending/accepted
+  // existant n'est jamais touché par cette clause (WHERE ne matche pas).
+  await env.DB.prepare("INSERT INTO contacts (a,b,status,created) VALUES (?,?, 'pending', ?) ON CONFLICT(a,b) DO UPDATE SET status='pending', created=excluded.created WHERE contacts.status='declined'")
     .bind(me.id, code, now).run();
   // v2 (audit n°34) : on ne renvoie plus name/avatar de la cible ici — cette
   // information n'est plus révélée qu'après acceptation effective, via
@@ -217,8 +224,12 @@ async function friendList(env, b, CORS) {
   const blk = (await env.DB.prepare('SELECT blocked FROM blocks WHERE blocker=?').bind(me.id).all()).results || [];
   const blockedSet = new Set(blk.map(r => r.blocked));
   const drop = arr => arr.filter(x => !blockedSet.has(x.id));
+  // AUD-02-044 (audit fonctionnel 2026-09-21) : `disabled` (colonne users,
+  // voir migration-user-disabled.sql) permet au client d'afficher un état
+  // "injoignable" sur un ami dont la messagerie a été désactivée durablement
+  // côté serveur — plutôt que de laisser croire à un simple silence.
   const contacts = drop((await env.DB.prepare(
-    "SELECT c.b AS id, u.name AS name, u.avatar AS avatar FROM contacts c JOIN users u ON u.id=c.b WHERE c.a=? AND c.status='accepted' ORDER BY u.name"
+    "SELECT c.b AS id, u.name AS name, u.avatar AS avatar, u.disabled AS disabled FROM contacts c JOIN users u ON u.id=c.b WHERE c.a=? AND c.status='accepted' ORDER BY u.name"
   ).bind(me.id).all()).results || []);
   const incoming = drop((await env.DB.prepare(
     "SELECT c.a AS id, u.name AS name, u.avatar AS avatar FROM contacts c JOIN users u ON u.id=c.a WHERE c.b=? AND c.status='pending' ORDER BY u.name"
@@ -226,10 +237,16 @@ async function friendList(env, b, CORS) {
   const outgoing = drop((await env.DB.prepare(
     "SELECT c.b AS id, u.name AS name, u.avatar AS avatar FROM contacts c JOIN users u ON u.id=c.b WHERE c.a=? AND c.status='pending' ORDER BY u.name"
   ).bind(me.id).all()).results || []);
+  // AUD-02-042 : demandes que "moi" ai envoyées et qui ont été refusées —
+  // distinct de `outgoing` (toujours en attente), pour que l'expéditeur ne
+  // confonde plus jamais un refus avec un silence.
+  const declined = drop((await env.DB.prepare(
+    "SELECT c.b AS id, u.name AS name, u.avatar AS avatar FROM contacts c JOIN users u ON u.id=c.b WHERE c.a=? AND c.status='declined' ORDER BY u.name"
+  ).bind(me.id).all()).results || []);
   const blocked = (await env.DB.prepare(
     "SELECT bl.blocked AS id, u.name AS name, u.avatar AS avatar FROM blocks bl JOIN users u ON u.id=bl.blocked WHERE bl.blocker=? ORDER BY u.name"
   ).bind(me.id).all()).results || [];
-  return json({ ok: true, contacts, incoming, outgoing, blocked }, 200, CORS);
+  return json({ ok: true, contacts, incoming, outgoing, declined, blocked }, 200, CORS);
 }
 
 // true si a a bloqué b, OU b a bloqué a (blocage dans un sens => silence des 2 côtés).
@@ -271,10 +288,15 @@ async function friendAccept(env, b, CORS) {
   return json({ ok: true }, 200, CORS);
 }
 
+// AUD-02-042 (audit fonctionnel 2026-09-21) : marque la demande 'declined'
+// au lieu de la supprimer — avant, l'expéditeur (côté friendList/outgoing)
+// voyait simplement la demande disparaître, indiscernable d'un silence
+// prolongé. Nettoyée ensuite par friendCancel() (voir plus bas) une fois que
+// l'expéditeur a pris connaissance du refus côté client.
 async function friendDecline(env, b, CORS) {
   const me = await auth(env, b.id, b.secret); if (!me) return json({ error: 'auth' }, 401, CORS);
   const from = String(b.from || '').trim();
-  await env.DB.prepare("DELETE FROM contacts WHERE a=? AND b=? AND status='pending'").bind(from, me.id).run();
+  await env.DB.prepare("UPDATE contacts SET status='declined' WHERE a=? AND b=? AND status='pending'").bind(from, me.id).run();
   return json({ ok: true }, 200, CORS);
 }
 
@@ -286,10 +308,13 @@ async function friendDecline(env, b, CORS) {
 // engagée indéfiniment côté serveur, sans que l'enfant ne puisse la voir ni la
 // retirer (friendList() renvoyait pourtant déjà `outgoing`, jamais lu côté
 // client).
+// AUD-02-042 : sert aussi désormais à effacer une notice "refusée" (status
+// 'declined') une fois que l'expéditeur en a pris connaissance côté client —
+// même bouton "Annuler" réutilisé pour les deux cas, pas de route dédiée.
 async function friendCancel(env, b, CORS) {
   const me = await auth(env, b.id, b.secret); if (!me) return json({ error: 'auth' }, 401, CORS);
   const to = String(b.to || '').trim();
-  await env.DB.prepare("DELETE FROM contacts WHERE a=? AND b=? AND status='pending'").bind(me.id, to).run();
+  await env.DB.prepare("DELETE FROM contacts WHERE a=? AND b=? AND status IN ('pending','declined')").bind(me.id, to).run();
   return json({ ok: true }, 200, CORS);
 }
 
@@ -297,6 +322,28 @@ async function friendRemove(env, b, CORS) {
   const me = await auth(env, b.id, b.secret); if (!me) return json({ error: 'auth' }, 401, CORS);
   const other = String(b.other || '').trim();
   await env.DB.prepare('DELETE FROM contacts WHERE (a=? AND b=?) OR (a=? AND b=?)').bind(me.id, other, other, me.id).run();
+  // AUD-02-043 (audit fonctionnel 2026-09-21) : purge aussi l'historique de
+  // conversation — avant, seule la relation `contacts` était supprimée ; la
+  // clé de conversation étant déterministe (convKey), tout l'historique
+  // ressurgissait intégralement en cas de réconciliation ultérieure, alors
+  // que le message affiché au retrait ("vous ne pourrez plus vous écrire")
+  // laisse croire à une rupture propre et définitive.
+  const conv = convKey(me.id, other);
+  await env.DB.prepare('DELETE FROM messages WHERE conv=?').bind(conv).run();
+  await env.DB.prepare('DELETE FROM reads WHERE conv=?').bind(conv).run();
+  return json({ ok: true }, 200, CORS);
+}
+
+// AUD-02-044 (audit fonctionnel 2026-09-21) : jusqu'ici, la désactivation de
+// la messagerie (chatDisableForProfile, 17-messaging.js) était un état 100%
+// LOCAL, jamais communiqué au serveur — un ami restait un contact `accepted`
+// valide indéfiniment, sans aucun moyen de savoir que ses messages ne
+// seraient jamais lus. Cette route synchronise l'état côté serveur
+// (colonne `users.disabled`, voir migration-user-disabled.sql) pour que
+// friendList() puisse l'exposer aux amis de ce profil.
+async function setEnabled(env, b, CORS) {
+  const me = await auth(env, b.id, b.secret); if (!me) return json({ error: 'auth' }, 401, CORS);
+  await env.DB.prepare('UPDATE users SET disabled=? WHERE id=?').bind(b.enabled ? 0 : 1, me.id).run();
   return json({ ok: true }, 200, CORS);
 }
 
