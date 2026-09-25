@@ -43,3 +43,13 @@ CREATE TABLE IF NOT EXISTS reads (
   ts     INTEGER,
   PRIMARY KEY (conv, reader)
 );
+
+-- Ajoutée AUD-06-004 (audit sécurité 2026-09-25) : jetons de transfert
+-- d'identité à usage unique, valables 10 minutes (voir migration-transfers.sql
+-- pour la base réelle).
+CREATE TABLE IF NOT EXISTS transfers (
+  token   TEXT PRIMARY KEY,
+  id      TEXT NOT NULL,
+  secret  TEXT NOT NULL,
+  expires INTEGER NOT NULL
+);

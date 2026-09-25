@@ -1,0 +1,11 @@
+# AUD-06-010 (audit sécurité 2026-09-25) : Cloudflare Pages sert par défaut
+# tout fichier commité à la racine du dépôt, y compris worker/ (code source
+# des 2 Workers, schema.sql, DEPLOY.md, test-worker.html). Rien n'y est
+# secret (pas de token/clé, cf. audit), mais aucune de ces pages n'a de
+# raison d'être accessible publiquement — test-worker.html en particulier
+# reste utile comme outil de test MANUEL après modification d'odyssee-chat.js
+# (voir GUIDE-DU-DEPOT.md), donc gardé dans le dépôt, juste plus servi.
+# Pas de page 404 dédiée dans ce projet (PWA mono-page) : on renvoie
+# index.html mais avec un vrai code HTTP 404, ce qui suffit à empêcher toute
+# indexation/accès direct pris au sérieux sans créer de page supplémentaire.
+/worker/*  /index.html  404

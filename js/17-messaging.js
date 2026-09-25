@@ -77,6 +77,16 @@ async function chatFriendDecline(prof, from){ return _chatApi('/friend/decline',
 // chatFriendDecline() ci-dessus (côté destinataire).
 async function chatFriendCancel(prof, to){ return _chatApi('/friend/cancel', Object.assign(_chatAuth(prof), { to })); }
 async function chatFriendRemove(prof, other){ return _chatApi('/friend/remove', Object.assign(_chatAuth(prof), { other })); }
+// AUD-06-003 (audit sécurité 2026-09-25) : supprime le compte de messagerie
+// côté serveur (users/messages/contacts/blocks) — appelée par
+// _pmConfirmDelete() (09-parent.js) AVANT la purge locale (_purgeChildData()
+// efface l'entrée 'chatProfiles' correspondante, donc l'identité ne serait
+// plus lisible après). Best-effort : ne bloque jamais la suppression locale.
+async function _chatDeleteAccountForProfile(name){
+ const p = _chatLoad(name);
+ if(!p.chatId || !p.chatSecret) return { ok:true, skipped:true };
+ return _chatApi('/account/delete', _chatAuth(p));
+}
 async function chatFriendBlock(prof, other){ return _chatApi('/friend/block', Object.assign(_chatAuth(prof), { other })); }
 async function chatFriendUnblock(prof, other){ return _chatApi('/friend/unblock', Object.assign(_chatAuth(prof), { other })); }
 async function chatMsgSend(prof, to, txt){ return _chatApi('/msg/send', Object.assign(_chatAuth(prof), { to, body:txt })); }
@@ -999,25 +1009,36 @@ async function chatAdoptCloudIdentity(name){
 }
 
 // ── Transfert MANUEL du code de messagerie (force le même code ami entre appareils) ──
-function chatExportIdentityCode(name){
+// AUD-06-004 (audit securite 2026-09-25) : avant ce correctif, "exporter"
+// encodait id+secret en BASE64 (donc en clair, reversible sans cle) et
+// l'affichait/le copiait tel quel -- un simple mauvais copier-coller ou une
+// capture d'ecran suffisait a voler definitivement l'identite de messagerie
+// de l'enfant. Remplace par un jeton serveur a usage unique, valable 10
+// minutes (routes /transfer/create et /transfer/claim, worker
+// odyssee-chat.js) : le jeton affiche n'est PAS le secret lui-meme, il ne
+// vaut plus rien apres la premiere utilisation ou l'expiration.
+async function chatExportIdentityCode(name){
  const p = _chatLoad(name);
  if(!p.chatId || !p.chatSecret){ if(typeof toast==='function') toast('Active d\u2019abord la messagerie pour ce profil.',3000); return; }
- let code=''; try{ code = btoa(JSON.stringify({ v:1, id:p.chatId, secret:p.chatSecret })); }catch(e){ code=''; }
- if(!code){ if(typeof toast==='function') toast('Erreur d\u2019export.',2500); return; }
- try{ if(navigator && navigator.clipboard) navigator.clipboard.writeText(code); }catch(e){}
- if(typeof prompt==='function') prompt('Code de messagerie de '+name+' (déjà copié).\nColle-le sur l\u2019autre appareil via « Importer un code » :', code);
- return code;
+ const res = await _chatApi('/transfer/create', _chatAuth(p));
+ if(!res || !res.ok || !res.token){ if(typeof toast==='function') toast('Erreur d\u2019export (r\u00e9seau ?).',3000); return; }
+ try{ if(navigator && navigator.clipboard) navigator.clipboard.writeText(res.token); }catch(e){}
+ if(typeof prompt==='function') prompt('Code de transfert de '+name+' (deja copie, valable 10 minutes, usage unique) :\nColle-le sur l\u2019autre appareil via « Importer un code » :', res.token);
+ return res.token;
 }
 async function chatImportIdentityCode(name){
- const code = (typeof prompt==='function') ? prompt('Colle le code de messagerie de '+name+' (exporté depuis l\u2019appareil de référence) :') : null;
- if(!code) return;
- let data=null; try{ data = JSON.parse(atob(String(code).trim())); }catch(e){}
- if(!data || !data.id || !data.secret){ if(typeof toast==='function') toast('Code invalide.',3000); return; }
+ const token = (typeof prompt==='function') ? prompt('Colle le code de transfert de '+name+' (exporte depuis l\u2019appareil de reference, valable 10 minutes) :') : null;
+ if(!token) return;
+ const res2 = await _chatApi('/transfer/claim', { token: String(token).trim() });
+ if(!res2 || !res2.ok || !res2.id || !res2.secret){
+  if(typeof toast==='function') toast(res2 && res2.error==='expired' ? 'Code expire ou deja utilise, redemande-en un nouveau.' : 'Code invalide.', 3500);
+  return;
+ }
  const s=_chatStore();
- s[name] = { id:data.id, secret:data.secret, enabled:true, registered:false, seen:(s[name]&&s[name].seen)||{}, ts:Date.now() };
+ s[name] = { id:res2.id, secret:res2.secret, enabled:true, registered:false, seen:(s[name]&&s[name].seen)||{}, ts:Date.now() };
  _chatSaveStore(s);
  try{ const p=_chatLoad(name); const rr=await chatRegister(p); if(rr&&rr.ok){ p.chatRegistered=true; _chatPersist(p); } }catch(e){}
- if(typeof toast==='function') toast('✅ Code ami importé ('+data.id+'). Amis et historique récupérés.',5000);
+ if(typeof toast==='function') toast('Identite importee ('+res2.id+'). Amis et historique recuperes.',5000);
  if(typeof renderOptMessaging==='function') renderOptMessaging(name);
  if(typeof chatRefreshBadges==='function') chatRefreshBadges();
 }

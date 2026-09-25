@@ -1786,6 +1786,60 @@ Les 7 autres (`streak`/`streakLastDate`, `sessionObjective`, `lastPlayTs`, `calm
 
 **Impact** : aucun fichier de code modifié. v12.8.6 (pas de bump de version, décision seule). Constat AUD-05-007 (audit accessibilité) clos par décision documentée — aucun changement de comportement.
 
+## ADR-154 — Lot 1 (audit sécurité AUD-06, 2026-09-25) : XSS panneau Cloud, suppression de profil, verrou PIN, re-verrouillage Vue Parent
+
+**Contexte** : l'audit de sécurité avancé (`Audit_securite_Odyssee_des_Chiffres_2026-09-25.docx`) a identifié 11 constats ; ce lot traite les 4 premiers (les plus simples côté code client, sans impact sur les Workers Cloudflare) :
+- AUD-06-001 (🔴 CRITIQUE) : `_populateCloudPlayerSelect()` (`js/09-parent.js`) insérait le nom d'un profil dans `innerHTML` sans `esc()` — un nom contenant `"><svg onload=...>` exécutait du script dans la Vue Parent déverrouillée.
+- AUD-06-002 (🟠 ÉLEVÉE) : `_pmConfirmDelete()` (bouton « Supprimer » du gestionnaire de profils) ne faisait que retirer le prénom du roster — `localStorage['user_'+nom]` et les données annexes (anniversaire, blocage horaire, journal, messagerie) restaient intactes indéfiniment, malgré une confirmation explicitement destructive.
+- AUD-06-005 (🟡 MOYENNE) : le verrou anti-brute-force du PIN (5 tentatives / 30s) n'était appliqué que dans `checkPin()` (l'écran) — un appel direct de `checkStoredPin()`/`verifySecureValue()` depuis la console contournait entièrement le compteur.
+- AUD-06-006 (🟡 MOYENNE) : le mode Parent déverrouillé ne se re-verrouillait jamais automatiquement — un retour à `v-parent` via la pile de navigation (`navBack()`) laissait l'écran déverrouillé sans nouvelle saisie du PIN.
+
+**Décision** :
+1. `esc()` appliqué aux deux insertions de `js/09-parent.js:_populateCloudPlayerSelect()` (alignement sur `optSelectProfile()`, déjà corrigée sous AUD-01-007).
+2. `_pmConfirmDelete()` appelle désormais `_purgeChildData(n)` (purge déjà utilisée par `resetProfile()`, AUD-02-025) **et** `localStorage.removeItem('user_'+n)`.
+3. Le verrou (`_pinLocked()`/`_pinRegisterAttempt()`, nouveaux) est déplacé DANS `verifySecureValue()` et le raccourci « aucun code défini » de `checkStoredPin()` (`js/01-core.js`) — point d'entrée le plus bas commun à tous les appelants (PIN principal, question secrète de récupération, blocage horaire, messagerie). `checkPin()`/`recoverParentPin()` (`js/09-parent.js`) simplifiés en consommateurs de cet état, sans plus le gérer eux-mêmes.
+4. `showView(id)` (`js/01-core.js`) force désormais le voile PIN (`parent-lock` visible, `parent-content` masqué) à **chaque** entrée sur `'v-parent'`, quel que soit le chemin (`openParent()`, `navBack()`, `goHome()`) — choix retenu : re-verrouillage systématique, sans fenêtre de grâce (validé explicitement avec l'utilisateur plutôt que la solution alternative « re-verrouiller seulement au retour au menu »).
+
+**Alternatives rejetées** : pour le point 4, une temporisation d'inactivité (re-verrouiller après N minutes sans interaction) — rejetée, plus complexe à implémenter et à tester qu'un re-verrouillage systématique à l'entrée, pour un bénéfice UX marginal dans ce contexte (le parent re-saisit un PIN à 4 chiffres, pas un mot de passe long).
+
+**Impact** : `js/01-core.js`, `js/09-parent.js` modifiés. `tests/parent-pin-recovery-hardening.test.js` mis à jour (le test vérifiait au niveau source que `recoverParentPin()` gérait elle-même le compteur — vérifie désormais que `_pinRegisterAttempt()`/`verifySecureValue()`, dans `01-core.js`, le font). v12.8.6 → **v12.8.7** (`package.json` + `sw.js` `CACHE_VERSION`). Suite complète (743 tests) et lint (0 erreur, 340 warnings) verts après correctif. Constats AUD-06-001/002/005/006 clos.
+
+## ADR-155 — Lot 2 (audit sécurité AUD-06, 2026-09-25) : effacement RGPD côté cloud, transfert de messagerie sécurisé, validation de code resserrée
+
+**Contexte** : suite du Lot 1 (ADR-154), portant cette fois sur les 2 Workers Cloudflare :
+- AUD-06-003 (🟠 ÉLEVÉE) : aucune route ne permettait d'effacer les données côté cloud (KV `odyssee-sync`) ni le compte de messagerie (D1 `odyssee-chat`) — l'endpoint DELETE d'`odyssee-sync` avait été retiré sous AUD-01-002 faute d'appelant légitime, sans qu'une alternative sécurisée soit réintroduite. Une suppression locale de profil (même complète depuis le Lot 1) laissait donc les données enfant orphelines indéfiniment côté serveur.
+- AUD-06-004 (🟡 MOYENNE) : le transfert manuel d'identité de messagerie entre appareils (`chatExportIdentityCode()`/`chatImportIdentityCode()`, `js/17-messaging.js`) encodait id+secret en Base64 — réversible sans clé par quiconque interceptait le « code » (capture d'écran, mauvais copier-coller).
+- AUD-06-008 (🟢 FAIBLE) : `isValidCode()` (`worker/odyssee-sync.js`) acceptait des codes dès 4 caractères, plus permissif que le format réellement généré côté client (6 caractères aléatoires CSPRNG + préfixe).
+
+**Décision** :
+1. `DELETE /profile/:code` réintroduit dans `odyssee-sync.js`, authentifié par le même `code` que GET/POST (pas plus de surface d'attaque que l'existant). `js/12-cloud.js` expose `_cloudDeleteProfile(code)`.
+2. `/account/delete` ajouté à `odyssee-chat.js` (authentifié par `id`+`secret`, comme toutes les autres routes) : purge `messages`, `reads`, `contacts`, `blocks`, `transfers` et la ligne `users` du compte. `js/17-messaging.js` expose `_chatDeleteAccountForProfile(name)`.
+3. `_pmConfirmDelete()` (`js/09-parent.js`, bouton « Supprimer » de la Vue Parent) appelle désormais ces deux fonctions **avant** la purge locale (AUD-06-002, Lot 1) — best-effort : un échec réseau ne bloque jamais la suppression locale.
+4. `/transfer/create` + `/transfer/claim` ajoutés à `odyssee-chat.js`, nouvelle table D1 `transfers` (`worker/schema.sql` pour les bases neuves, `worker/migration-transfers.sql` pour la base réelle) : jeton aléatoire à usage unique, valable 10 minutes, qui donne accès une seule fois à l'identité réelle (`id`+`secret`) — remplace le Base64 dans `chatExportIdentityCode()`/`chatImportIdentityCode()`.
+5. `isValidCode()` (`odyssee-sync.js`) et son miroir client `isValidCloudCode()` (`js/12-cloud.js`) resserrés à 8 caractères minimum.
+
+**Alternatives rejetées** : pour le point 4, une purge/rotation périodique automatique du secret plutôt qu'un jeton de transfert dédié — rejetée, ne résout pas le problème initial (le secret réel reste affiché/copié quelque part au moment du transfert lui-même) ; pour le point 1, une confirmation supplémentaire côté client avant DELETE (au-delà de la confirmation « retaper le prénom » déjà existante pour la suppression locale) — jugée redondante, la suppression cloud étant déclenchée par la même action utilisateur déjà confirmée.
+
+**Impact** : `worker/odyssee-sync.js`, `worker/odyssee-chat.js`, `worker/schema.sql` modifiés ; `worker/migration-transfers.sql` créé. `js/09-parent.js`, `js/12-cloud.js`, `js/17-messaging.js` modifiés côté client. v12.8.7 → **v12.8.8** (`package.json` + `sw.js` `CACHE_VERSION`). Suite complète (743 tests) et lint (0 erreur, 340 warnings) verts. **Déploiement manuel requis** (`worker/DEPLOY.md`) avant que ce lot soit fonctionnel en production : exécuter `migration-transfers.sql` puis redéployer les deux Workers — sans quoi le client appelle des routes qui n'existent pas encore côté serveur (dégradation silencieuse déjà vérifiée : la suppression locale et le message d'erreur du transfert restent corrects, seule la partie serveur est inopérante). Constats AUD-06-003/004/008 clos (sous réserve du déploiement).
+
+## ADR-156 — Lot 3 (audit sécurité AUD-06, 2026-09-25) : journalisation, hygiène de déploiement, décisions documentées
+
+**Contexte** : derniers constats de l'audit sécurité, faible effort chacun :
+- AUD-06-007 (🟢 FAIBLE) : `_diagLog()` (`js/12-cloud.js`) journalisait le `cloudCode` en clair (console + `sessionStorage['_syncDiag']`), inconditionnellement, indépendamment du flag `CLOUD_VERBOSE`.
+- AUD-06-010 (🔵 OBSERVATION) : `debug.html` et `worker/test-worker.html` restent accessibles publiquement (Cloudflare Pages sert par défaut tout le dépôt, aucune exclusion configurée).
+- AUD-06-009 (🔵 OBSERVATION) : pas de cloisonnement entre profils enfants sur un même appareil — déjà un choix assumé, documenté en commentaire dans `js/06b-time-block.js` (« fail-open, confort parental, pas un dispositif de sécurité »), jamais formalisé en ADR.
+- AUD-06-011 (🔵 OBSERVATION) : pas de protection anti-bot sur le jeu — pas d'enjeu compétitif/économique identifié dans ce contexte.
+
+**Décision** :
+1. `_redactCloudCodes()` ajoutée dans `js/12-cloud.js`, appliquée dans `_diagLog()` : masque partiellement (garde 2 premiers + 2 derniers caractères du suffixe) tout token au format `PREFIX-XXXXXX` avant écriture — plutôt qu'une suppression totale du diagnostic (qui sert aussi de support à distance via `getSyncDiag()`, où vérifier visuellement "le bon code a été tapé" reste utile) ou qu'une simple dépendance à `CLOUD_VERBOSE` (qui aurait coupé tout le diagnostic, pas seulement la donnée sensible).
+2. `_redirects` créé à la racine : `/worker/*` renvoie `index.html` avec un code HTTP 404, sans supprimer les fichiers du dépôt (`worker/test-worker.html` reste utile comme outil de test manuel après modification d'`odyssee-chat.js`, documenté dans `Audit_technique_Odyssee_des_Chiffres_2026-09-21.md`). `debug.html` reste servi tel quel (déjà protégé par le PIN parental depuis un correctif antérieur V8, outil de diagnostic à distance utile).
+3. AUD-06-009 : décision actée ici, aucun changement de code — l'absence de cloisonnement entre profils est un choix architectural cohérent avec le positionnement du projet (application 100% locale, sans backend d'autorisation par profil, cf. CLAUDE.md section 2).
+4. AUD-06-011 : aucune action — à réévaluer uniquement si un classement social ou multijoueur en ligne était ajouté à l'avenir.
+
+**Alternatives rejetées** : pour le point 1, suppression complète des lignes contenant `cloudCode` — rejetée, aurait dégradé l'utilité du diagnostic de support sans réduire le risque de façon significative (le masquage partiel suffit à empêcher la réutilisation directe par un tiers qui lirait la console). Pour le point 2, bloquer aussi `debug.html` — rejetée, outil de diagnostic à distance encore utilisé et déjà protégé par PIN, contrairement à `test-worker.html` qui n'a aucun usage en production.
+
+**Impact** : `js/12-cloud.js` modifié, `_redirects` créé à la racine. v12.8.8 → **v12.8.9** (`package.json` + `sw.js` `CACHE_VERSION`). Suite complète (743 tests) et lint (0 erreur, 340 warnings) verts. Vérifié en navigateur réel : `cloudCode=TESTINE-AB3K9X` devient `cloudCode=TESTINE-AB**9X` dans `sessionStorage['_syncDiag']`. Les 11 constats de l'audit sécurité AUD-06 (2026-09-25) sont désormais tous traités (Lots 1, 2, 3).
+
 ---
 
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

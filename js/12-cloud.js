@@ -19,10 +19,24 @@
 // pouvoir les afficher dans une boîte copiable sur le téléphone
 // (pas besoin de console PC / câble USB).
 // ═══════════════════════════════════════════════════════
+// AUD-06-007 (audit sécurité 2026-09-25) : _diagLog() écrivait le cloudCode
+// (identifiant qui sert de facto de mot de passe pour restaurer un profil)
+// en clair, inconditionnellement — indépendamment de CLOUD_VERBOSE (qui ne
+// couvre que _cloudLog()) — dans la console ET dans sessionStorage['_syncDiag'],
+// exposé sur tout poste partagé (école, médiathèque) où quelqu'un garderait
+// la console ouverte. Masquage partiel (garde les 2 premiers et 2 derniers
+// caractères du suffixe de 6) plutôt que suppression totale : ce diagnostic
+// sert aussi de support à distance (getSyncDiag(), copié-collé volontaire
+// par le parent), où pouvoir vérifier visuellement "le bon code a bien été
+// tapé" reste utile sans exposer la valeur complète.
+function _redactCloudCodes(msg){
+ return String(msg).replace(/\b([A-Z0-9]{1,10})-([A-Z0-9]{6})\b/g,
+  (m, prefix, suffix) => prefix + '-' + suffix.slice(0,2) + '**' + suffix.slice(4));
+}
 function _diagLog(msg){
  try{
   const ts = new Date().toLocaleTimeString('fr-FR');
-  const line = `[${ts}] ${msg}`;
+  const line = `[${ts}] ${_redactCloudCodes(msg)}`;
   console.log(line);
   let buf = [];
   try{ buf = JSON.parse(sessionStorage.getItem('_syncDiag') || '[]'); }catch(e){}
@@ -133,8 +147,14 @@ function generateCloudCode(name){
 
 // Validation côté client (cohérent avec le worker)
 function isValidCloudCode(code){
+ // AUD-06-008 (audit sécurité 2026-09-25) : seuil relevé de 4 à 8 — aucun
+ // code réel généré par generateCloudCode() n'est jamais plus court que ça
+ // (nom réduit à 1 caractère minimum + '-' + 6 caractères aléatoires). Un
+ // seuil plus permissif que le format réel n'ouvre aucune fonctionnalité,
+ // seulement une entropie inutilement faible en cas d'appel API hors client
+ // officiel. À garder identique à isValidCode() côté worker/odyssee-sync.js.
  return typeof code === 'string'
-  && code.length >= 4 && code.length <= 40
+  && code.length >= 8 && code.length <= 40
   && /^[A-Z0-9-]+$/i.test(code);
 }
 
@@ -183,6 +203,23 @@ function disableCloudSync(){
  if(typeof saveProfileNow==='function') saveProfileNow();
  cancelCloudSync();
  if(typeof toast==='function') toast('☁️ Sauvegarde cloud désactivée',2500);
+}
+
+// ══════════════ EFFACEMENT (AUD-06-003, audit sécurité 2026-09-25) ══════════════
+// Avant ce correctif, supprimer un profil localement (js/09-parent.js) ne
+// touchait jamais aux données déjà synchronisées côté cloud (KV odyssee-sync)
+// — elles y restaient orphelines indéfiniment, aucun endpoint de suppression
+// n'existant plus depuis le retrait du DELETE public (AUD-01-002). La route
+// DELETE /profile/:code est réintroduite côté worker, authentifiée par le
+// même `code` que la lecture/écriture normale (pas plus de surface d'attaque
+// que ce qui existe déjà). Fonction best-effort : un échec réseau ne doit
+// jamais empêcher la suppression LOCALE d'avancer (voir l'appelant).
+async function _cloudDeleteProfile(cloudCode){
+ if(!cloudCode || !isValidCloudCode(cloudCode)) return false;
+ try{
+  const r = await _cloudFetch(`${CLOUD_API}/profile/${encodeURIComponent(cloudCode)}`, { method:'DELETE' });
+  return !!(r && r.ok);
+ }catch(e){ return false; }
 }
 
 // ══════════════ UPLOAD DU PROFIL VERS LE CLOUD ══════════════

@@ -1,6 +1,6 @@
 {
   "name": "odyssee-des-chiffres",
-  "version": "12.8.6",
+  "version": "12.8.9",
   "description": "Jeu éducatif multi-matières (calcul mental, français, histoire) pour enfants de la Maternelle au Collège — édition modulaire, PWA, validée.",
   "scripts": {
     "start": "npx serve -l 8000 .",

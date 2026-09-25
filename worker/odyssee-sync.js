@@ -20,7 +20,11 @@ function corsHeaders(origin) {
  const allowed = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
  return {
   'Access-Control-Allow-Origin': allowed,
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  // v7 (audit sécurité AUD-06-003) : DELETE ajouté — voir plus bas, route de
+  // suppression réintroduite (retirée sous AUD-01-002 faute d'usage légitime
+  // à l'époque) pour donner un moyen d'effacement RGPD, authentifiée par le
+  // même `code` que GET/POST (pas plus de surface d'attaque que l'existant).
+  'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, X-Player-Code',
   'Access-Control-Max-Age': '86400',
  };
@@ -36,7 +40,14 @@ async function hashCode(code) {
 
 function isValidCode(code) {
  if (typeof code !== 'string') return false;
- if (code.length < 4 || code.length > 40) return false;
+ // AUD-06-008 (audit sécurité 2026-09-25) : seuil relevé de 4 à 8 — aucun code
+ // réel généré côté client (generateCloudCode(), js/12-cloud.js) n'est jamais
+ // plus court que ça (nom réduit à 1 caractère + '-' + 6 caractères
+ // aléatoires CSPRNG). Un seuil plus permissif que le format réel n'ouvre
+ // aucune fonctionnalité légitime, seulement une entropie inutilement faible
+ // en cas d'appel API hors client officiel. Miroir exact de isValidCloudCode()
+ // côté client (js/12-cloud.js) — garder les deux synchronisés.
+ if (code.length < 8 || code.length > 40) return false;
  return /^[A-Z0-9-]+$/i.test(code);
 }
 
@@ -186,12 +197,29 @@ export default {
      headers: { ...cors, 'Content-Type': 'application/json' },
     });
    }
-   // v2 (audit n°30) : l'endpoint DELETE public a été retiré — le client ne
-   // l'a jamais appelé (vérifié dans tout le code de l'app), et il permettait
-   // à quiconque connaissant un code de supprimer définitivement un profil
-   // avec aussi peu de preuve qu'une simple lecture. La "suppression de
-   // profil" côté parent n'a jamais touché aux données cloud ; ce retrait n'a
-   // donc aucun impact fonctionnel.
+   // v7 (audit sécurité AUD-06-003) : DELETE réintroduit — v2 (audit n°30)
+   // l'avait retiré car aucun appelant légitime n'existait alors ET connaître
+   // un code suffisait à supprimer définitivement, "aussi peu de preuve
+   // qu'une simple lecture". Ce risque n'a pas changé (le code EST le seul
+   // facteur d'authentification de tout ce Worker, comme pour GET/POST) —
+   // mais son absence totale laissait les familles sans AUCUN moyen légitime
+   // d'effacer leurs données une fois synchronisées (constat AUD-06-003,
+   // droit à l'effacement RGPD). Appelée par _pmConfirmDelete() côté client
+   // (js/09-parent.js, via cloudDeleteProfile(), js/12-cloud.js) avant la
+   // purge locale d'un profil.
+   if (request.method === 'DELETE' && path.startsWith('/profile/')) {
+    const code = decodeURIComponent(path.slice(9));
+    if (!isValidCode(code)) {
+     return new Response(JSON.stringify({ error: 'invalid_code' }), {
+      status: 400, headers: { ...cors, 'Content-Type': 'application/json' },
+     });
+    }
+    const key = await hashCode(code);
+    await env.PROFILES.delete(key);
+    return new Response(JSON.stringify({ status: 'ok' }), {
+     headers: { ...cors, 'Content-Type': 'application/json' },
+    });
+   }
    return new Response(JSON.stringify({ error: 'not_found' }), {
     status: 404, headers: { ...cors, 'Content-Type': 'application/json' },
    });

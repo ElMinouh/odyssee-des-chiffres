@@ -634,25 +634,6 @@ async function hashPinSecure(value){
  const hashHex = await _pbkdf2Hex(value, saltHex, PIN_PBKDF2_ITER);
  return `pbkdf2:${saltHex}:${hashHex}`;
 }
-// Vérifie une valeur face à un hash stocké, quel que soit son format (nouveau ou ancien).
-async function verifySecureValue(input, stored){
- if(!stored) return false;
- if(stored.startsWith('pbkdf2:')){
-  const parts = stored.split(':');
-  if(parts.length!==3 || !_hasSubtleCrypto()) return false;
-  const hashHex = await _pbkdf2Hex(input, parts[1], PIN_PBKDF2_ITER);
-  return hashHex === parts[2];
- }
- if(/^\d{4}$/.test(stored)) return input===stored; // ancien format en clair
- return hashPin(input)===stored; // ancien format djb2
-}
-const DEFAULT_PIN='1234';
-async function checkStoredPin(input){
- const stored=localStorage.getItem('parentPin');
- // Rien de stocké → code par défaut 1234
- if(!stored)return input===DEFAULT_PIN;
- return verifySecureValue(input, stored);
-}
 // ── Verrou anti-force-brute du PIN (V4, audit sécurité) ──
 // Persisté en localStorage (et non de simples variables JS) pour résister
 // à un rechargement de page, qui remettait auparavant le compteur à zéro.
@@ -660,6 +641,52 @@ function getPinAttempts(){ return parseInt(localStorage.getItem('pinAttempts')||
 function setPinAttempts(n){ try{ localStorage.setItem('pinAttempts', String(n)); }catch(e){} }
 function getPinLockUntil(){ return parseInt(localStorage.getItem('pinLockUntil')||'0',10)||0; }
 function setPinLockUntil(ts){ try{ localStorage.setItem('pinLockUntil', String(ts)); }catch(e){} }
+// AUD-06-005 (audit sécurité 2026-09-25) : jusqu'ici, ce verrou n'était
+// consulté/mis à jour que dans les écrans appelants (checkPin(),
+// recoverParentPin(), 09-parent.js) — verifySecureValue()/checkStoredPin()
+// eux-mêmes ne le connaissaient pas, donc un appel direct de ces fonctions
+// globales depuis la console (ou un script XSS, cf. AUD-06-001) permettait
+// de brute-forcer les 10 000 codes à 4 chiffres sans jamais déclencher le
+// blocage. Le verrou vit désormais DANS le point d'entrée le plus bas
+// (verifySecureValue(), et le raccourci "aucun code défini" de
+// checkStoredPin()) : plus aucun appelant, quel qu'il soit, ne peut le
+// contourner. _pinLocked()/_pinRegisterAttempt() sont le seul et unique
+// endroit qui touche pinAttempts/pinLockUntil.
+function _pinLocked(){ return getPinLockUntil() > Date.now(); }
+function _pinRegisterAttempt(ok){
+ if(ok){ setPinAttempts(0); return; }
+ const attempts = getPinAttempts()+1;
+ setPinAttempts(attempts);
+ if(attempts>=5){ setPinLockUntil(Date.now()+30000); setPinAttempts(0); }
+}
+// Vérifie une valeur face à un hash stocké, quel que soit son format (nouveau ou ancien).
+async function verifySecureValue(input, stored){
+ if(_pinLocked()) return false;
+ if(!stored) return false;
+ let ok=false;
+ if(stored.startsWith('pbkdf2:')){
+  const parts = stored.split(':');
+  if(parts.length===3 && _hasSubtleCrypto()){
+   const hashHex = await _pbkdf2Hex(input, parts[1], PIN_PBKDF2_ITER);
+   ok = (hashHex === parts[2]);
+  }
+ } else if(/^\d{4}$/.test(stored)) ok = (input===stored); // ancien format en clair
+ else ok = (hashPin(input)===stored); // ancien format djb2
+ _pinRegisterAttempt(ok);
+ return ok;
+}
+const DEFAULT_PIN='1234';
+async function checkStoredPin(input){
+ const stored=localStorage.getItem('parentPin');
+ // Rien de stocké → code par défaut 1234
+ if(!stored){
+  if(_pinLocked()) return false;
+  const ok = (input===DEFAULT_PIN);
+  _pinRegisterAttempt(ok);
+  return ok;
+ }
+ return verifySecureValue(input, stored);
+}
 
 let _monsterCenter={x:0,y:0}; // position précalculée du monstre (OPT-5)
 // ═══════════════════════════════════════════════════════
@@ -676,6 +703,22 @@ function showView(id){VIEWS.forEach(v=>$(v).classList.toggle('hidden',v!==id));c
  // le libellé du bouton "Retour" avec sa vraie destination (carte de zone ou
  // accueil), pour que le texte du bouton ne mente jamais sur ce qu'il va faire.
  if(id==='v-game' && typeof _syncQuitBtnLabel==='function') _syncQuitBtnLabel();
+ // AUD-06-006 (audit sécurité 2026-09-25) : openParent() (09-parent.js) est le
+ // seul appelant qui affiche explicitement le voile PIN avant d'arriver ici —
+ // mais navBack()/goHome() peuvent aussi ramener sur 'v-parent' via la pile de
+ // navigation (_navStack), en appelant showView() DIRECTEMENT, sans repasser
+ // par openParent(). Résultat avant ce correctif : un mode Parent déverrouillé
+ // puis quitté (sans recharger la page) restait déverrouillé au retour, sans
+ // nouvelle saisie du PIN — contournement passif sur un appareil partagé.
+ // En le forçant ICI (point d'entrée unique de toute vue), AUCUNE arrivée sur
+ // 'v-parent', par quelque chemin que ce soit, ne peut plus sauter le verrou —
+ // y compris le premier appel fait par openParent() lui-même (idempotent).
+ if(id==='v-parent'){
+  const lock=$('parent-lock'), content=$('parent-content'), pinInput=$('pin-input');
+  if(lock) lock.classList.remove('hidden');
+  if(content) content.classList.add('hidden');
+  if(pinInput) pinInput.value='';
+ }
 }
 // v12.3.2 (audit UX #18) : calcule la vraie destination du bouton "Retour" en jeu
 // et met à jour son libellé visible en conséquence.

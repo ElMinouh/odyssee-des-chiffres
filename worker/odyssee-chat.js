@@ -149,6 +149,13 @@ export default {
         case '/msg/fetch':      return await msgFetch(env, body, CORS);
         case '/msg/latest':     return await msgLatest(env, body, CORS);
         case '/msg/markread':   return await msgMarkRead(env, body, CORS);
+        // AUD-06-003 (audit sécurité 2026-09-25) : effacement de compte RGPD.
+        case '/account/delete': return await accountDelete(env, body, CORS);
+        // AUD-06-004 (audit sécurité 2026-09-25) : transfert d'identité par
+        // jeton serveur à usage unique, au lieu du Base64 côté client (secret
+        // en clair, réversible sans clé, exposé si intercepté).
+        case '/transfer/create': return await transferCreate(env, body, CORS);
+        case '/transfer/claim':  return await transferClaim(env, body, CORS);
         default:                return json({ error: 'not_found' }, 404, CORS);
       }
     } catch (e) {
@@ -425,6 +432,65 @@ async function msgLatest(env, b, CORS) {
     weekCount = (wc && wc.c) || 0;
   }
   return json({ ok: true, latest, weekCount }, 200, CORS);
+}
+
+// AUD-06-003 (audit sécurité 2026-09-25) : supprime définitivement le compte
+// (ligne users), tous les messages où il est impliqué (peu importe l'autre
+// participant), les accusés de lecture, les relations de contact et les
+// blocages — appelée par _pmConfirmDelete() côté client (js/09-parent.js, via
+// _chatDeleteAccountForProfile(), js/17-messaging.js) avant la purge locale.
+// Avant ce correctif, aucune route ne permettait d'effacer un compte : les
+// données restaient orphelines indéfiniment en base D1 (constat AUD-06-003).
+async function accountDelete(env, b, CORS) {
+  const me = await auth(env, b.id, b.secret); if (!me) return json({ error: 'auth' }, 401, CORS);
+  const idEsc = escapeLike(me.id);
+  await env.DB.prepare("DELETE FROM messages WHERE conv LIKE ? ESCAPE '\\' OR conv LIKE ? ESCAPE '\\'")
+    .bind(idEsc + '|%', '%|' + idEsc).run();
+  await env.DB.prepare("DELETE FROM reads WHERE reader=? OR conv LIKE ? ESCAPE '\\' OR conv LIKE ? ESCAPE '\\'")
+    .bind(me.id, idEsc + '|%', '%|' + idEsc).run();
+  await env.DB.prepare('DELETE FROM contacts WHERE a=? OR b=?').bind(me.id, me.id).run();
+  await env.DB.prepare('DELETE FROM blocks WHERE blocker=? OR blocked=?').bind(me.id, me.id).run();
+  try { await env.DB.prepare('DELETE FROM transfers WHERE id=?').bind(me.id).run(); } catch (e) { /* table transfers absente sur une base non migrée : sans conséquence */ }
+  await env.DB.prepare('DELETE FROM users WHERE id=?').bind(me.id).run();
+  return json({ ok: true }, 200, CORS);
+}
+
+// AUD-06-004 (audit sécurité 2026-09-25) : jeton de transfert d'identité à
+// usage unique, valable 10 minutes — remplace l'ancien schéma côté client qui
+// encodait id+secret en Base64 (réversible sans clé) et les affichait tel
+// quel. Le jeton généré ici N'EST PAS le secret : il ne donne accès à
+// l'identité réelle qu'UNE seule fois (transferClaim() le supprime dès
+// lecture, valide ou expiré), ce qui limite fortement la fenêtre d'abus d'une
+// interception (capture d'écran, mauvais copier-coller) par rapport à un
+// secret en clair valable indéfiniment.
+const TRANSFER_TTL_MS = 10 * 60 * 1000;
+async function transferCreate(env, b, CORS) {
+  const me = await auth(env, b.id, b.secret); if (!me) return json({ error: 'auth' }, 401, CORS);
+  const now = Date.now();
+  // Nettoyage opportuniste des jetons expirés non réclamés, pour ne pas
+  // laisser la table `transfers` grossir indéfiniment (usage familial, très
+  // faible volume — un DELETE par appel suffit largement, pas besoin de cron).
+  try { await env.DB.prepare('DELETE FROM transfers WHERE expires < ?').bind(now).run(); } catch (e) { }
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sans 0/O/I/1, cohérent avec le reste de l'app
+  const arr = new Uint8Array(8);
+  crypto.getRandomValues(arr);
+  let token = '';
+  for (const x of arr) token += chars[x % chars.length];
+  const expires = now + TRANSFER_TTL_MS;
+  await env.DB.prepare('INSERT INTO transfers (token,id,secret,expires) VALUES (?,?,?,?)')
+    .bind(token, me.id, me.secret, expires).run();
+  return json({ ok: true, token, expiresInSec: TRANSFER_TTL_MS / 1000 }, 200, CORS);
+}
+async function transferClaim(env, b, CORS) {
+  const token = String(b.token || '').trim().toUpperCase();
+  if (!token) return json({ error: 'invalid' }, 400, CORS);
+  const row = await env.DB.prepare('SELECT id,secret,expires FROM transfers WHERE token=?').bind(token).first();
+  if (!row) return json({ error: 'not_found' }, 404, CORS);
+  // Usage unique dans tous les cas (valide ou expiré) — un jeton ne se
+  // "retente" jamais, cohérent avec sa nature de jeton à usage unique.
+  await env.DB.prepare('DELETE FROM transfers WHERE token=?').bind(token).run();
+  if (row.expires < Date.now()) return json({ error: 'expired' }, 410, CORS);
+  return json({ ok: true, id: row.id, secret: row.secret }, 200, CORS);
 }
 
 // #16 (accusé de lecture) : marque la conversation avec `with` comme lue par

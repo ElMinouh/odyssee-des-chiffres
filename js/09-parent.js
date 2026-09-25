@@ -29,13 +29,14 @@ async function checkPin(){
  if(lockUntil>now){const sec=Math.ceil((lockUntil-now)/1000);toast(`🔒 Trop de tentatives. Réessayer dans ${sec}s.`,2500);return;}
  const pin=$('pin-input').value;
  if(await checkStoredPin(pin)){
-  setPinAttempts(0);
   $('parent-lock').classList.add('hidden');$('parent-content').classList.remove('hidden');renderReport();renderReportView();if(typeof renderProfileLog==='function')renderProfileLog();
   if(typeof obOnParentUnlocked==='function') obOnParentUnlocked();
  }else{
-  const attempts=getPinAttempts()+1;
-  setPinAttempts(attempts);
-  if(attempts>=5){setPinLockUntil(Date.now()+30000);setPinAttempts(0);toast('🔒 5 tentatives échouées. Bloqué 30 secondes !',3500);}
+  // AUD-06-005 (audit sécurité 2026-09-25) : le compteur d'essais et le
+  // verrou 30s sont désormais gérés DANS checkStoredPin() lui-même
+  // (01-core.js, _pinRegisterAttempt()) — on se contente ici de lire l'état
+  // qui vient d'être mis à jour pour choisir le bon message.
+  if(getPinLockUntil()>Date.now()) toast('🔒 5 tentatives échouées. Bloqué 30 secondes !',3500);
   // AUD-05-006 (audit accessibilité 2026-09-25) : le placeholder "Code incorrect !"
   // n'est pas annoncé par les lecteurs d'écran et disparaît dès la retape — toast()
   // (role="status" aria-live="polite") rend l'erreur perceptible sans souris/vue.
@@ -1579,7 +1580,13 @@ function _populateCloudPlayerSelect(){
  if(!sel) return;
  const names = _listAllProfilesNames();
  const current = sel.value || (P && P.name) || names[0] || '';
- sel.innerHTML = names.map(n => `<option value="${n}"${n===current?' selected':''}>${n}</option>`).join('');
+ // AUD-06-001 (audit sécurité 2026-09-25) : esc() manquant ici (même bug que
+ // AUD-01-007, corrigé ailleurs pour optSelectProfile() mais pas répercuté sur
+ // ce second chemin de rendu du même sélecteur #cloud-sync-player) — un nom
+ // de profil contenant un guillemet double rompait l'attribut value="..." et
+ // permettait l'injection de HTML/JS arbitraire dans la Vue Parent déverrouillée.
+ const _e=(typeof esc==='function')?esc:(s=>String(s));
+ sel.innerHTML = names.map(n => `<option value="${_e(n)}"${n===current?' selected':''}>${_e(n)}</option>`).join('');
 }
 
 // Rendu du panneau Cloud pour le joueur sélectionné
@@ -2012,10 +2019,36 @@ function _pmCloseDeleteConfirm(){
  const ov=document.getElementById('pm-delete-overlay'); if(ov){ if(ov._releaseTrap){ov._releaseTrap();delete ov._releaseTrap;} ov.remove(); }
  _pmDeleteTarget=null;
 }
-function _pmConfirmDelete(){
+async function _pmConfirmDelete(){
  const inp=document.getElementById('pm-delete-input');
  const n=_pmDeleteTarget;
  if(!n || !inp || inp.value!==n || typeof removeFromRoster!=='function') return;
+ // AUD-06-003 (audit sécurité 2026-09-25) : AVANT toute purge locale, on tente
+ // aussi l'effacement côté cloud (KV odyssee-sync) et messagerie (D1
+ // odyssee-chat) — sans quoi la suppression locale (AUD-06-002 ci-dessous)
+ // laisse ces données orphelines indéfiniment sur les Workers. Il FAUT lire
+ // cloudCode/chatId/chatSecret ICI, avant _purgeChildData()/removeItem, qui
+ // effacent précisément les clés où ils sont stockés. Best-effort : un échec
+ // réseau ne doit jamais bloquer la suppression locale.
+ try{
+  const raw=localStorage.getItem('user_'+n);
+  const prof=raw?JSON.parse(raw):null;
+  if(prof && prof.cloudCode && typeof _cloudDeleteProfile==='function') await _cloudDeleteProfile(prof.cloudCode);
+ }catch(e){}
+ try{
+  if(typeof _chatDeleteAccountForProfile==='function') await _chatDeleteAccountForProfile(n);
+ }catch(e){}
+ // AUD-06-002 (audit sécurité 2026-09-25) : avant ce correctif, "Supprimer"
+ // ne faisait que retirer le prénom du roster — localStorage['user_'+n] et
+ // les données annexes (anniversaire, blocage horaire, journal, messagerie)
+ // restaient intactes indéfiniment, malgré une confirmation destructive
+ // (retaper le prénom). _purgeChildData() est la même purge déjà utilisée
+ // par resetProfile()/resetAllProfiles() (AUD-02-025) ; on y ajoute ici la
+ // suppression de user_<n> elle-même, que _purgeChildData() ne fait pas
+ // (elle est réservée aux clés ANNEXES, resetProfile() gérant user_<n> par
+ // ailleurs pour son propre besoin de réinitialisation).
+ if(typeof _purgeChildData==='function') _purgeChildData(n);
+ try{ localStorage.removeItem('user_'+n); }catch(e){}
  removeFromRoster(n);
  if(_pmRenameOpen===n) _pmRenameOpen=null;
  _pmCloseDeleteConfirm();
@@ -2248,15 +2281,15 @@ async function recoverParentPin(){
  showPrompt('Question secrète :\n\n'+q, async (ans)=>{
   const stored=localStorage.getItem('parentSecA');
   if(stored && (await verifySecureValue(String(ans).trim().toLowerCase(), stored))){
-   setPinAttempts(0);
    showPrompt('✅ Bonne réponse !\n\nChoisis un nouveau code parent (4 chiffres) :', async (np)=>{
     if(/^\d{4}$/.test(String(np).trim())){ localStorage.setItem('parentPin', await hashPinSecure(String(np).trim())); showAlert('Code mis à jour. Tu peux maintenant te connecter avec ce nouveau code.'); }
     else showAlert('Code invalide : il faut exactement 4 chiffres. Recommence.');
    }, {title:'Nouveau code parent', placeholder:'1234', confirmLabel:'Valider'});
   } else {
-   const attempts=getPinAttempts()+1;
-   setPinAttempts(attempts);
-   if(attempts>=5){setPinLockUntil(Date.now()+30000);setPinAttempts(0);showAlert('🔒 5 tentatives échouées. Bloqué 30 secondes !');}
+   // AUD-06-005 (audit sécurité 2026-09-25) : compteur/verrou désormais géré
+   // DANS verifySecureValue() elle-même (01-core.js, _pinRegisterAttempt()) —
+   // partagé avec checkStoredPin(), comme documenté plus haut ("MÊME verrou").
+   if(getPinLockUntil()>Date.now()) showAlert('🔒 5 tentatives échouées. Bloqué 30 secondes !');
    else showAlert('❌ Réponse incorrecte.');
   }
  }, {title:'Question secrète', placeholder:'Ta réponse', confirmLabel:'Valider'});

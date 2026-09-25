@@ -81,20 +81,29 @@ describe('recoverParentPin() — verrou anti-brute-force partagé + aucun code p
   });
 
   it('le compteur de tentatives est bien remis à zéro après une réponse correcte (source)', async () => {
-    // Vérifie au niveau source que le succès réinitialise le même compteur que
-    // checkPin() (getPinAttempts/setPinAttempts partagés) — voir aussi les
-    // assertions de position ci-dessous.
+    // AUD-06-005 (audit sécurité 2026-09-25) : le compteur/verrou a été déplacé
+    // DANS verifySecureValue() elle-même (01-core.js, via _pinRegisterAttempt())
+    // pour qu'un appel direct de cette fonction globale (console, XSS) reste
+    // soumis au même verrou que l'écran — recoverParentPin() ne fait donc plus
+    // qu'un pré-check de confort (message "bloqué Xs" avant même de demander la
+    // réponse) ; la logique de comptage réelle est vérifiée sur son nouveau site.
     const fs = await import('node:fs');
     const path = await import('node:path');
-    const src = fs.readFileSync(path.join(process.cwd(), 'js', '09-parent.js'), 'utf8');
-    const fnStart = src.indexOf('async function recoverParentPin()');
-    // AUD-02-005 (audit fonctionnel 2026-09-21) : fenêtre élargie après le
-    // remplacement des prompt() natifs par showPrompt() (callbacks imbriqués,
-    // fonction plus longue) — la fonction entière tient largement dedans.
-    const fnBody = src.slice(fnStart, fnStart + 2600);
+    const coreSrc = fs.readFileSync(path.join(process.cwd(), 'js', '01-core.js'), 'utf8');
+    const registerFnStart = coreSrc.indexOf('function _pinRegisterAttempt(');
+    const registerFnBody = coreSrc.slice(registerFnStart, registerFnStart + 300);
+    expect(registerFnBody).toContain('setPinAttempts(0)');
+    expect(registerFnBody).toContain('getPinAttempts()+1');
+    expect(registerFnBody).toContain('setPinLockUntil(Date.now()+30000)');
+
+    const verifyFnStart = coreSrc.indexOf('async function verifySecureValue(');
+    const verifyFnBody = coreSrc.slice(verifyFnStart, verifyFnStart + 700);
+    expect(verifyFnBody).toContain('_pinLocked()');
+    expect(verifyFnBody).toContain('_pinRegisterAttempt(ok)');
+
+    const parentSrc = fs.readFileSync(path.join(process.cwd(), 'js', '09-parent.js'), 'utf8');
+    const fnStart = parentSrc.indexOf('async function recoverParentPin()');
+    const fnBody = parentSrc.slice(fnStart, fnStart + 2600);
     expect(fnBody).toContain('getPinLockUntil()');
-    expect(fnBody).toContain('setPinAttempts(0)');
-    expect(fnBody).toContain('getPinAttempts()+1');
-    expect(fnBody).toContain('setPinLockUntil(Date.now()+30000)');
   });
 });
