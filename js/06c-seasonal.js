@@ -87,7 +87,9 @@ function getActiveSeasonalBoss(playerName){
     col: '#e84393',
     anim:'glow',
     mult: 3,
-    figId: (function(){var _s=String(playerName||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');return (typeof FIGURINES!=='undefined'&&Array.isArray(FIGURINES)&&FIGURINES.find(function(f){return f.id==='sx_anniv_'+_s;}))?'sx_anniv_'+_s:'sx_anniv';})(),
+    // AUD-02-037 : logique extraite dans _playerBirthdayFigId() (03-figurines-data.js),
+    // d\u00e9sormais partag\u00e9e avec le calcul de compl\u00e9tion de la licence Saisonnier.
+    figId: (typeof _playerBirthdayFigId==='function') ? _playerBirthdayFigId(playerName) : 'sx_anniv',
     isBirthday: true,
     playerName
    };

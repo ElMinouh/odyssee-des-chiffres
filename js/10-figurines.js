@@ -18,7 +18,16 @@ function renderFigurinesShop(filter){
 function _renderFigurinesShop(filter){
  if(filter!==undefined)_figFilter=filter;
  const owned=P.ownedFigurines||[];
- const total=FIGURINES.length;
+ // AUD-02-037 (audit fonctionnel 2026-09-21) : les compteurs de progression
+ // (X/Y) portent désormais sur le catalogue "comptable" pour CE joueur
+ // (_countableFigurines(), 03-figurines-data.js) plutôt que FIGURINES.length
+ // brut — sans ça, la licence Saisonnier affichait un total incluant 5
+ // figurines d'anniversaire nominatives dont 4 sont structurellement hors de
+ // portée pour n'importe quel joueur (une seule des 6 variantes "sx_anniv*"
+ // est obtenable). La grille elle-même (variable `list` plus bas) continue
+ // d'afficher le catalogue COMPLET, non filtré — seul le compteur change.
+ const countable=_countableFigurines(P.name);
+ const total=countable.length;
 
  // Build filter bar
  const SHOP_LICENSES=_buildShopLicenses();
@@ -30,7 +39,7 @@ function _renderFigurinesShop(filter){
   </div>
   <select id="shop-license-sel" onchange="renderFigurinesShop(this.value)" style="flex:1;min-width:130px;">`;
  SHOP_LICENSES.forEach(({k,label})=>{
-  const cnt=k==='all'?FIGURINES.length:k==='mine'?owned.length:FIGURINES.filter(f=>f.uk===k).length;
+  const cnt=k==='all'?total:k==='mine'?owned.length:countable.filter(f=>f.uk===k).length;
   html+=`<option value="${k}"${_figFilter===k?' selected':''}>${label} (${cnt})</option>`;
  });
  html+=`</select>
@@ -45,7 +54,7 @@ function _renderFigurinesShop(filter){
    <div style="font-size:2.6em;margin-bottom:8px;">🎴</div>
    <p style="font-size:.9em;margin:6px 0;"><strong>Sélectionne une licence dans le menu</strong></p>
    <p style="font-size:.8em;margin:4px 0;">ou utilise la barre de recherche pour trouver un personnage.</p>
-   <p style="font-size:.72em;margin-top:14px;color:#7f8c8d;">${FIGURINES.length} figurines à découvrir</p>
+   <p style="font-size:.72em;margin-top:14px;color:#7f8c8d;">${total} figurines à découvrir</p>
   </div>`;
   const target=$('p-figurines');
   if(target) target.innerHTML=html;
@@ -260,7 +269,7 @@ function buyFigurine(id){
   toast('🏆 Cette figurine s\'obtient en battant son boss, pas à la boutique !');
   return;
  }
- spend(fig.p,()=>{
+ const _doBuy=()=>spend(fig.p,()=>{
   P.ownedFigurines=[...owned,id];
   // v12.7.19 (ajustement demandé par Cyril) : si cette figurine avait été
   // retirée par un parent, ce rachat doit l'emporter définitivement sur ce
@@ -275,6 +284,19 @@ function buyFigurine(id){
   setTimeout(()=>beep(1100,'sine',.3),180);
   renderFigurinesShop(_figFilter);
  });
+ // AUD-02-039 (audit fonctionnel 2026-09-21) : aucune confirmation n'existait
+ // avant un achat, quel que soit son prix (jusqu'à 500⭐, le tarif le plus
+ // élevé du catalogue) — un double-tap accidentel (fréquent chez un jeune
+ // enfant sur tablette, en faisant défiler la boutique) dépensait
+ // définitivement des étoiles sans aucun filet de rattrapage. Confirmation
+ // requise au-delà d'un seuil ; en-deçà, l'achat reste immédiat (fluide,
+ // cohérent avec le reste de la boutique pour les petits montants).
+ const FIG_CONFIRM_THRESHOLD=200;
+ if(fig.p>=FIG_CONFIRM_THRESHOLD && typeof showConfirm==='function'){
+  showConfirm(`Acheter ${fig.name} pour ${fig.p} ⭐ ?`, _doBuy, {confirmLabel:'Acheter'});
+ } else {
+  _doBuy();
+ }
 }
 
 // ── Collection (onglet dédié) ──────────────────────────
@@ -346,7 +368,8 @@ function renderFigCollection(){
   loadPortraits().then(()=>renderFigCollection());
  }
  const owned=P.ownedFigurines||[];
- const total=FIGURINES.length;
+ // AUD-02-037 : même principe que _renderFigurinesShop() plus haut.
+ const total=_countableFigurines(P.name).length;
  $('fig-count-hdr').textContent=`${owned.length} / ${total} figurines collectées`;
  const el=$('p-col-figurines');
  if(owned.length===0){
@@ -386,7 +409,8 @@ function renderFigCollection(){
   UNIVERS_LIST.forEach(({k,label},idx)=>{
    const uList=_sortedFigs(owned_figs.filter(f=>f.uk===k));
    if(!uList.length)return;
-   const totalInLicense=FIGURINES.filter(f=>f.uk===k).length;
+   // AUD-02-037 : même principe, appliqué au compteur par licence.
+   const totalInLicense=_countableFigurines(P.name).filter(f=>f.uk===k).length;
    const isOpen=uList.length>0; // open by default if has items
    html+=`<div class="shelf-section">
     <div class="shelf-header" onclick="toggleShelfSection('sl-${k}')">

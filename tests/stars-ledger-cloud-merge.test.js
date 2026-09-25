@@ -25,6 +25,7 @@ describe('spend() — alimente _totalStarsSpent (07-game.js, point de dépense u
     profile.stars = 1000;
     const fig = api.FIGURINES.find(f => f.p > 0);
     api.setP(profile);
+    api.setShowConfirm((msg, onConfirm) => onConfirm()); // AUD-02-039 : confirmation d'achat au-delà de 200⭐
     api.buyFigurine(fig.id);
     expect(api.getP()._totalStarsSpent).toBe(fig.p);
     expect(api.getP().stars).toBe(1000 - fig.p);
@@ -36,6 +37,7 @@ describe('spend() — alimente _totalStarsSpent (07-game.js, point de dépense u
     profile.stars = 1000;
     const figs = api.FIGURINES.filter(f => f.p > 0).slice(0, 2);
     api.setP(profile);
+    api.setShowConfirm((msg, onConfirm) => onConfirm());
     api.buyFigurine(figs[0].id);
     api.buyFigurine(figs[1].id);
     expect(api.getP()._totalStarsSpent).toBe(figs[0].p + figs[1].p);

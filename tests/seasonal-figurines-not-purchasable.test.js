@@ -20,6 +20,7 @@ function setupGame() {
   const profile = api.defProfile('Test');
   profile.stars = 9999;
   api.setP(profile);
+  api.setShowConfirm((msg, onConfirm) => onConfirm()); // AUD-02-039 : confirmation d'achat au-delà de 200⭐
   return api;
 }
 

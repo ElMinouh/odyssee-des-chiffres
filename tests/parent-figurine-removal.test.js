@@ -262,6 +262,7 @@ describe('Une figurine retirée peut être rachetée/regagnée normalement ensui
     profile.stars = 9999;
     profile.blockedFigurinesAt = { db01: 1000 };
     api.setP(profile);
+    api.setShowConfirm((msg, onConfirm) => onConfirm()); // AUD-02-039 : confirmation d'achat au-delà de 200⭐
     api.buyFigurine('db01');
     expect(api.getP().ownedFigurines).toContain('db01');
     expect(api.getP().figAcquiredAt.db01).toBeTypeOf('number');
@@ -294,6 +295,7 @@ describe('Une figurine retirée peut être rachetée/regagnée normalement ensui
     profile.blockedFigurinesAt = { [tlLocked.id]: 1000 }; // mais celle-ci a été retirée par un parent
     profile.stars = 9999;
     api.setP(profile);
+    api.setShowConfirm((msg, onConfirm) => onConfirm());
     api.buyFigurine(tlLocked.id);
     expect(api.getP().ownedFigurines).toContain(tlLocked.id);
     expect(api.getP().figAcquiredAt[tlLocked.id]).toBeGreaterThan(1000);

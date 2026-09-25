@@ -2800,6 +2800,35 @@ function _maybeShowContentUpdate(afterCb){
 }
 
 
+// AUD-02-037 (audit fonctionnel 2026-09-21) : identifiant de la figurine
+// d'anniversaire réellement accessible à CE joueur — extrait de la logique
+// jusqu'ici dupliquée uniquement dans getActiveSeasonalBoss() (06c-seasonal.js,
+// ligne ~90), pour être réutilisable aussi par le calcul de complétion de la
+// licence Saisonnier (10-figurines.js, plus bas) : sur les 6 figurines
+// "sx_anniv*" du catalogue, un joueur ne peut structurellement en obtenir
+// qu'UNE SEULE (la sienne si son prénom est câblé en dur, sinon la générique)
+// — jamais les 6, quel que soit le nombre d'années jouées.
+function _playerBirthdayFigId(playerName){
+ const s=String(playerName||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]/g,'');
+ return (typeof FIGURINES!=='undefined'&&Array.isArray(FIGURINES)&&FIGURINES.find(f=>f.id==='sx_anniv_'+s))?'sx_anniv_'+s:'sx_anniv';
+}
+// AUD-02-037 : catalogue "comptable" pour CE joueur — exclut les figurines
+// d'anniversaire nominatives (sx_anniv_soren/peyo/tomi/papa/maman) qui ne
+// sont PAS la sienne, seules figurines du catalogue structurellement
+// impossibles à obtenir pour un joueur donné. N'affecte QUE les compteurs de
+// progression (X/Y) — la grille de la boutique continue d'afficher le
+// catalogue complet, un enfant curieux peut toujours voir "Gâteau de Peyo"
+// même s'il ne pourra jamais le posséder.
+function _countableFigurines(playerName){
+ if(typeof FIGURINES==='undefined'||!Array.isArray(FIGURINES)) return [];
+ const mine=_playerBirthdayFigId(playerName); // 'sx_anniv_<prénom>' si câblé, sinon le générique 'sx_anniv'
+ return FIGURINES.filter(f=>{
+  if(f.id===mine) return true; // la seule variante d'anniversaire réellement accessible à ce joueur
+  if(f.id==='sx_anniv' || /^sx_anniv_/.test(f.id)) return false; // exclut TOUTE autre variante (nominative ou générique)
+  return true;
+ });
+}
+
 // ── Boutique figurines ──────────────────────────────────
 // Lazy-load par défaut : 'none' = aucune licence sélectionnée → pas de grille
 let _figFilter='none';

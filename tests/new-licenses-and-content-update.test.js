@@ -139,6 +139,7 @@ describe('_isLicenseCompletionUnlocked() / buyFigurine() — achat gated par com
     p.ownedFigurines = [...ALL_TL_17];
     p.stars = 9999;
     api.setP(p);
+    api.setShowConfirm((msg, onConfirm) => onConfirm()); // AUD-02-039 : confirmation d'achat au-delà de 200⭐
     const tl18 = api.FIGURINES.find(f => f.id === 'tl18');
     api.buyFigurine('tl18');
     expect(api.getP().ownedFigurines).toContain('tl18');
@@ -151,6 +152,7 @@ describe('_isLicenseCompletionUnlocked() / buyFigurine() — achat gated par com
     p.ownedFigurines = ALL_TL_17.slice(0, -1); // il manque tl17 (Balaïna)
     p.stars = 9999;
     api.setP(p);
+    api.setShowConfirm((msg, onConfirm) => onConfirm());
     api.buyFigurine('tl17');
     expect(api.getP().ownedFigurines).toContain('tl17');
     expect(api.getP().ownedFigurines).not.toContain('tl18'); // reste à acheter séparément
@@ -167,6 +169,7 @@ describe('_isLicenseCompletionUnlocked() / buyFigurine() — achat gated par com
     const gd11 = api.FIGURINES.find(f => f.id === 'gd11');
     expect(api._isLicenseCompletionUnlocked(gd10)).toBe(true);
     expect(api._isLicenseCompletionUnlocked(gd11)).toBe(true);
+    api.setShowConfirm((msg, onConfirm) => onConfirm());
     api.buyFigurine('gd10'); api.buyFigurine('gd11');
     expect(api.getP().ownedFigurines).toContain('gd10');
     expect(api.getP().ownedFigurines).toContain('gd11');
@@ -645,6 +648,7 @@ describe('Nouvelles figurines exclusives v12.7.38 (Mario Bros/Harry Potter)', ()
     p.ownedFigurines = base;
     p.stars = 9999;
     api.setP(p);
+    api.setShowConfirm((msg, onConfirm) => onConfirm());
     api.buyFigurine('hp13');
     expect(api.getP().ownedFigurines).toContain('hp13');
     expect(api.getP().stars).toBe(9999 - 500);
