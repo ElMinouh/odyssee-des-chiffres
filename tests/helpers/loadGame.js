@@ -1438,6 +1438,7 @@ globalThis.__api = {
   _progWeakType: (typeof _progWeakType==='function') ? _progWeakType : undefined,
   _purgeChildData: (typeof _purgeChildData==='function') ? _purgeChildData : undefined,
   _pushOtherProfileToCloud: (typeof _pushOtherProfileToCloud==='function') ? _pushOtherProfileToCloud : undefined,
+  _pvMax: (typeof _pvMax==='function') ? _pvMax : undefined,
   _questEntries: (typeof _questEntries==='function') ? _questEntries : undefined,
   _questUnlockedCache: (typeof _questUnlockedCache!=='undefined') ? _questUnlockedCache : undefined,
   _questVocab: (typeof _questVocab==='function') ? _questVocab : undefined,

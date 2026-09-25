@@ -80,7 +80,9 @@ function buyItem(it,price){spend(price,()=>{P.inventory[it]=(P.inventory[it]||0)
 function useItem(it){
  if(!(P.inventory[it]>0))return;P.inventory[it]--;$('cnt-'+it).innerText=P.inventory[it];saveProfile();
  if(it==='potion'){
-  GS.pv++;updateHUD();beep(600,'sine',.5);
+  // AUD-02-010 : plafond commun (voir _pvMax(), 01-core.js) — avant ce
+  // correctif, une potion pouvait faire dépasser tout plafond implicite.
+  GS.pv=Math.min(GS.pv+1,_pvMax());updateHUD();beep(600,'sine',.5);
   // Chantier A4 : animation potion
   if(typeof playItemAnimation==='function') playItemAnimation('potion');
   vibrate?.(VIBE.good);
@@ -274,8 +276,11 @@ function usePower(name){
   case'shield': pw.shielded=true;toast('🛡️ Bouclier activé !');break;
   case'double': pw.dbl=true;toast('⚡ Double attaque !');break;
   case'heal':
-   if(GM.mode2==='combat'){const p=combatPlayers.find(x=>x.name===name);if(p&&p.pv<6)p.pv++;updateCombatHUD();}
-   else{GS.pv++;updateHUD();}
+   // AUD-02-010 : les deux branches partagent désormais le même plafond
+   // (_pvMax(), 01-core.js) au lieu du 6 codé en dur ci-dessous — cohérent
+   // avec le plafond réel dérivé du nombre d'Armures achetées.
+   if(GM.mode2==='combat'){const p=combatPlayers.find(x=>x.name===name);if(p&&p.pv<_pvMax())p.pv++;updateCombatHUD();}
+   else{GS.pv=Math.min(GS.pv+1,_pvMax());updateHUD();}
    toast('💚 +1 PV !');beep(600,'sine',.4);break;
   case'steal':
    if(GM.mode2==='combat'){
@@ -368,7 +373,10 @@ function maybeEvent(){
  b.innerHTML=`<div style="background:${ev.color};padding:10px;font-size:1em;font-weight:700;">${ev.label} — ${ev.desc}</div>`;
  b.classList.remove('hidden');b.classList.add('banner-anim');
  setTimeout(()=>{b.classList.add('hidden');b.classList.remove('banner-anim');},3500);
- if(ev.effect==='heal_all'){GS.pv=Math.min(GS.pv+1,8);updateHUD();}
+ // AUD-02-010 : 8 était une valeur arbitraire jamais atteignable en pratique
+ // (le plafond réel, dérivé des Armures achetées, ne dépasse pas 6) — voir
+ // _pvMax(), 01-core.js, désormais partagée avec potion et pouvoir de soin.
+ if(ev.effect==='heal_all'){GS.pv=Math.min(GS.pv+1,_pvMax());updateHUD();}
  beep(440,'sine',.8,.15);
 }
 
@@ -501,7 +509,7 @@ function startGame(){
   const avatars = ['🧙','🧝','🥷','🧛','🦸','🧚','🤖','👻'];
   combatPlayers=valid.map((p,i)=>({
    name:p.name.trim(), level:p.level||'CP',
-   pv:3+(P.skills.shield||0), score:0, alive:true,
+   pv:_pvMax(), score:0, alive:true,
    avatar: avatars[i % avatars.length],
    hits: 0,           // touches portées (a fait perdre un PV à un autre)
    bestCombo: 0,       // meilleur combo personnel
@@ -1281,6 +1289,13 @@ function validateCombat(ans){
    _attributeCombatHit(cp);
    if(cp.pv<=0){
     cp.pv=0;cp.alive=false;
+    // AUD-02-013 (audit fonctionnel 2026-09-21) : cette élimination vient
+    // peut-être de faire passer le nombre de joueurs vivants à EXACTEMENT 2
+    // (le vrai début d'un duel de mort subite) — le streak repart alors de
+    // zéro explicitement, quelle que soit sa valeur au moment de la
+    // transition, pour garantir qu'un duel réel de 5 tours a bien lieu entre
+    // les 2 survivants avant tout déclenchement (checkSuddenDeath() ci-dessous).
+    if(combatPlayers.filter(p=>p.alive).length===2) GS._noPVLossStreak=0;
     // Chantier A2 v1 : son distinctif d'élimination + qui a éliminé
     if(typeof beep==='function'){
      [220,196,165,131].forEach((f,i)=>setTimeout(()=>beep(f,'sawtooth',.3,.15),i*80));

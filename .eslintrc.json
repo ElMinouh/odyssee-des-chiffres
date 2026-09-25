@@ -1270,6 +1270,7 @@
     "_progWeakType": "writable",
     "_purgeChildData": "writable",
     "_pushOtherProfileToCloud": "writable",
+    "_pvMax": "writable",
     "_questEntries": "writable",
     "_questUnlockedCache": "writable",
     "_questVocab": "writable",

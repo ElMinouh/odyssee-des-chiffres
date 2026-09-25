@@ -16,8 +16,16 @@ const GS={
  // continuation du même combat après une mauvaise réponse — voir nextTurn(), 07-game.js.
  _turnSetupDone:false
 };
+// AUD-02-010 (audit fonctionnel 2026-09-21) : point de vérité UNIQUE pour le
+// plafond de PV — jusqu'ici, seul l'événement aléatoire de soin plafonnait
+// (à 8, une valeur arbitraire jamais atteignable en pratique), tandis que
+// potion et pouvoir de soin n'avaient AUCUN plafond, incohérent avec la
+// compétence achetable « Armure (+1❤️ max) » qui suggère un plafond clair.
+// Réutilisé par resetGS() ci-dessous, par toutes les sources de soin
+// (07-game.js) et par l'initialisation des joueurs en mode Combat.
+function _pvMax(){ return 3+((typeof P!=='undefined' && P && P.skills && P.skills.shield)||0); }
 function resetGS(){
- Object.assign(GS,{pv:3+(P.skills.shield||0),score:0,combo:0,maxCombo:0,qCount:0,q:null,answering:false,
+ Object.assign(GS,{pv:_pvMax(),score:0,combo:0,maxCombo:0,qCount:0,q:null,answering:false,
   isBoss:false,isGolden:false,errInGame:0,fracOk:0,missingOk:0,combatWon:false,mapBossWon:false,
   sessionStart:Date.now(),frozen:false,monsterHP:1,monsterMaxHP:1,activeEvent:null,eventLeft:0,
   _turnSetupDone:false,
