@@ -2090,6 +2090,18 @@ function _animateAlongSegments(avatarEl, segmentPositions, viewportW, containerS
    _mapAvatarSkipRequested = true;
   };
   if(cont) cont.addEventListener('click', skipHandler, { capture: true });
+  // AUD-03-035 (audit UX 2026-09-25) : le raccourci "cliquer pour passer"
+  // existait déjà mais n'était signalé nulle part à l'écran — un enfant qui
+  // voulait rejouer rapidement la même étape devait deviner ce geste. Bouton
+  // visible ajouté pendant l'animation, retiré au nettoyage.
+  let _skipBtn = null;
+  if(cont){
+   _skipBtn = document.createElement('button');
+   _skipBtn.className = 'map-anim-skip-btn';
+   _skipBtn.textContent = 'Passer ›';
+   _skipBtn.onclick = (ev) => { ev.stopPropagation(); _mapAvatarSkipRequested = true; };
+   cont.appendChild(_skipBtn);
+  }
   // Helper scroll (seulement si l'avatar est dans la fenêtre principale, pas dans une modale)
   const scrollIfOutOfView = () => {
    const isInModal = containerSel.indexOf('zoom') >= 0;
@@ -2104,6 +2116,7 @@ function _animateAlongSegments(avatarEl, segmentPositions, viewportW, containerS
    _mapAvatarAnimRunning = false;
    _mapAvatarSkipRequested = false;
    if(cont) cont.removeEventListener('click', skipHandler, { capture: true });
+   if(_skipBtn && _skipBtn.parentNode) _skipBtn.parentNode.removeChild(_skipBtn);
    segs.forEach(s => { if(s.seg.svg.parentNode) s.seg.svg.parentNode.removeChild(s.seg.svg); });
    // v8.7.35 : restaurer l'emoji original (P.avatar) en fin d'animation,
    // y compris en cas de skip ou d'erreur (toujours appelé via finally).

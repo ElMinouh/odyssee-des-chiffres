@@ -309,8 +309,13 @@ function startTimer(){
   return;
  }
  totalTime=(GS.isBoss?12:20)+(P.skills.clock||0)*5;
- // v8.7.50 (O4) : en phase enragée, le boss met plus de pression (timer -3s, plancher 9s)
- if(GS.isBoss && GS.bossEnraged) totalTime = Math.max(9, totalTime - 3);
+ // AUD-03-034 (audit UX 2026-09-25) : le plancher de 9s en boss enragé,
+ // combiné à une saisie au pavé tactile un chiffre à la fois, faisait
+ // souvent échouer un jeune enfant par lenteur de frappe plutôt que par
+ // erreur de calcul. Plancher relevé pour les niveaux CP/CE1/CE2.
+ const _bossFloor = (typeof GM!=='undefined' && ['CP','CE1','CE2'].includes(GM.level)) ? 13 : 9;
+ // v8.7.50 (O4) : en phase enragée, le boss met plus de pression (timer -3s, plancher 9s, relevé ci-dessus pour les jeunes niveaux)
+ if(GS.isBoss && GS.bossEnraged) totalTime = Math.max(_bossFloor, totalTime - 3);
  if(GS.activeEvent?.effect==='reduce_timer')totalTime=Math.max(8,totalTime-5);
  // Plus de temps pour les questions à lire/observer (problèmes en barres, exercices visuels)
  if(GS.q && (GS.q.visualHtml || (GS.q.display && GS.q.display.length>40))) totalTime += 12;
@@ -328,7 +333,11 @@ function startTimer(){
   if(secsEl){const s=Math.ceil(rem);if(s!==_lastSec){_lastSec=s;secsEl.textContent=s+'s';}}
   if(rem<=3){
    tb.className='td';
-   $('BODY').classList.add('body-alert','urgency-bg');
+   // AUD-03-037 : ne pas cumuler le clignotement d'urgence avec un effet de
+   // brouillage de lecture déjà actif (_atkScramble/_atkWords, 07-boss.js) —
+   // la difficulté (temps, pavé mélangé, mots) reste inchangée, seule la
+   // surcharge visuelle supplémentaire est évitée.
+   if(!GS.readingDisruptionActive) $('BODY').classList.add('body-alert','urgency-bg');
    if(heart)heart.style.display='inline';
    // One-shot timer taunt
    if(!_timerTauntFired){_timerTauntFired=true;monsterSpeak(TIMER_TAUNTS[ri(0,TIMER_TAUNTS.length-1)],2000);}
@@ -726,6 +735,14 @@ function generateQ(){
 function getSkin(){const s=SKINS.find(x=>x.id===(P.equippedSkin||'default'))||SKINS[0];return s.m;}
 function renderQ(){
  GS.answering=false;
+ // AUD-03-031 (audit UX 2026-09-25) : l'encart #correction (indice affiché
+ // après une erreur) n'était pas caché dans toutes les branches de rendu de
+ // question — un enfant en combat contre un monstre à plusieurs PV pouvait
+ // voir l'indice de la question précédente encore affiché à côté d'une
+ // nouvelle question sans rapport. Fait ici, une seule fois, pour couvrir
+ // systématiquement tous les chemins de renderQ() sans exception à maintenir.
+ { const _corrEl=$('correction'); if(_corrEl) _corrEl.classList.add('hidden'); }
+ GS.matWrongCount=0; // AUD-03-036 : compteur d'essais infructueux remis à zéro à chaque nouvelle question
  GS.qShownAt=Date.now(); // Lot 2 audit pédagogique : temps de réponse → détection inattention
  // v8.7.53 (O4.2b) : nettoyer les effets d'attaque de la question précédente
  if(typeof _resetBossAttackEffects==='function') _resetBossAttackEffects();
@@ -902,6 +919,16 @@ function validate(ans){
   if(typeof speak==='function') speak('Essaie encore');
   GS.matFirstTry=false;
   if(typeof _progUpdate==='function') _progUpdate(GM.level, false);
+  // AUD-03-036 (audit UX 2026-09-25) : jusqu'ici, la seule stratégie proposée
+  // à un enfant de maternelle après plusieurs échecs était l'essai-erreur pur
+  // (griser les mauvais choix un à un) — après 2 essais infructueux, un léger
+  // halo guide désormais vers la bonne réponse, sans jamais la désigner de
+  // façon punitive ni bloquer l'enfant.
+  GS.matWrongCount=(GS.matWrongCount||0)+1;
+  if(GS.matWrongCount>=2 && qcm){
+   const correctBtn=qcm.querySelector(`.qcm-btn[data-val="${GS.q.res}"]`);
+   if(correctBtn) correctBtn.classList.add('mat-hint-pulse');
+  }
   GS.answering=false;
   return;
  }

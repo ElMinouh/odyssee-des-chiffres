@@ -161,6 +161,15 @@ input::placeholder,textarea::placeholder{color:rgba(255,255,255,.5);}
 .qcm-btn{background:#3498db;font-size:1.4em;padding:var(--space-4);border-bottom:4px solid #2980b9;border-radius:10px;}
 .qcm-btn.correct{background:#27ae60!important;border-bottom-color:#1e8449!important;}
 .qcm-btn.wrong{background:#c0392b!important;border-bottom-color:#922b21!important;}
+/* AUD-03-033 (audit UX 2026-09-25) : la distinction bonne/mauvaise réponse
+   reposait uniquement sur la couleur (vert/rouge) — invisible ou ambiguë pour
+   un enfant daltonien. Icône ajoutée en plus, via ::after (aucun changement
+   de structure HTML/JS requis). */
+.qcm-btn.correct::after{content:' \2713';font-weight:900;}
+.qcm-btn.wrong::after{content:' \2717';font-weight:900;}
+/* AUD-03-036 : indice doux (halo) apres 2 echecs en maternelle, non punitif. */
+@keyframes matHintPulse{0%,100%{box-shadow:0 0 0 0 rgba(241,196,15,.6);}50%{box-shadow:0 0 0 10px rgba(241,196,15,0);}}
+.qcm-btn.mat-hint-pulse{animation:matHintPulse 1.1s ease-in-out infinite;}
 .qcm-btn:disabled{opacity:1;}
 .settings-icon{position:absolute;top:10px;right:10px;font-size:.78em;font-weight:700;cursor:pointer;z-index:20;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:var(--radius-sm);padding:var(--space-2) var(--space-3);min-height:44px;display:inline-flex;align-items:center;justify-content:center;transition:var(--dur-fast);}
 .settings-icon:hover{background:rgba(255,255,255,.22);}
@@ -1148,6 +1157,10 @@ html[data-appearance="light"] .sd-dialog-input.sd-dialog-input-warn{background:#
 /* AUD-03-017 : surlignage persistant des lignes joueur en erreur (mode
    Combat local), en complément du toast qui disparaît après 3s. */
 .mc-combat-row.mc-row-error{outline:2px solid #e74c3c;outline-offset:1px;}
+
+/* AUD-03-035 : bouton "Passer" visible pendant l'animation de deplacement de l'avatar sur la carte. */
+.map-anim-skip-btn{position:fixed;bottom:16px;right:16px;z-index:200;background:rgba(0,0,0,.6);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:var(--radius-pill);padding:8px 16px;font-size:.85em;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.4);}
+.map-anim-skip-btn:hover{background:rgba(0,0,0,.7);}
 
 /* AUD-03-023 : message d'erreur localisé sous un champ de formulaire (validation au blur). */
 .field-err{color:#e74c3c;font-size:.74em;margin:2px 0 6px;text-align:left;}

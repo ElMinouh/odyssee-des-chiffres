@@ -1415,7 +1415,7 @@ function _resetBossAttackEffects(){
  const gv = document.getElementById('v-game');
  if(gv) gv.classList.remove('boss-quake');
  document.querySelectorAll('.boss-fog-layer,.boss-ink-layer,.boss-eclipse-layer,.boss-frost-layer').forEach(el=>el.remove());
- if(typeof GS !== 'undefined') GS.frozen = false;
+ if(typeof GS !== 'undefined'){ GS.frozen = false; GS.readingDisruptionActive = false; }
 }
 // Restaure l'ordre canonique 1..9 des touches chiffres du pavé
 function _restoreNumpadOrder(){
@@ -1449,7 +1449,12 @@ function _atkFreeze(){
  }, 2000);
 }
 // 🔀 Pavé mélangé : les touches 1..9 changent de place (la valeur reste correcte)
+// AUD-03-032 (audit UX 2026-09-25) : mélanger le pavé sans prévenir, sous
+// minuteur, pénalise la motricité fine plutôt que le calcul chez un jeune
+// enfant qui vise encore les positions mémorisées (loi de Fitts) — exclu
+// pour CP/CE1, comme d'autres effets déjà exclus en maternelle ailleurs.
 function _atkScramble(){
+ if(typeof GM!=='undefined' && ['CP','CE1'].includes(GM.level)) return;
  const numpad = document.getElementById('numpad');
  if(!numpad) return;
  const minusBtn = numpad.querySelector('.np-minus');
@@ -1468,6 +1473,12 @@ function _atkScramble(){
  digits.forEach(b => numpad.insertBefore(b, minusBtn));
  numpad.classList.add('numpad-scrambled');
  if(typeof monsterSpeak === 'function'){ try{ monsterSpeak('Bonne chance pour trouver les chiffres !', 2000); }catch(e){} }
+ // AUD-03-037 (audit UX 2026-09-25) : contrairement aux autres attaques
+ // (_atkFog, _atkFreeze…), celle-ci ne fige pas le timer (GS.frozen) — elle
+ // reste active jusqu'à la fin de la question et peut donc se cumuler avec
+ // le clignotement d'urgence du minuteur (<3s). Signalé pour supprimer ce
+ // seul cumul visuel (le timer et la difficulté restent inchangés).
+ GS.readingDisruptionActive = true;
 }
 // 🔢 Chiffres en lettres : l'énoncé affiche les nombres en toutes lettres
 function _atkWords(){
@@ -1479,6 +1490,9 @@ function _atkWords(){
  qEl.innerText = converted;
  qEl.classList.add('boss-words-q');
  if(typeof monsterSpeak === 'function'){ try{ monsterSpeak('Sais-tu encore lire ?', 1800); }catch(e){} }
+ // AUD-03-037 : voir _atkScramble ci-dessus — même raison (pas de GS.frozen,
+ // effet persistant jusqu'à la fin de la question).
+ GS.readingDisruptionActive = true;
 }
 // Conversion d'un entier (0-9999) en toutes lettres françaises
 // v11.7.3 (audit n°19/n°20) : chaque sous-fonction reçoit désormais un
