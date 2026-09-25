@@ -1267,6 +1267,7 @@ globalThis.__api = {
   _msgSpeakIdx: (typeof _msgSpeakIdx==='function') ? _msgSpeakIdx : undefined,
   _msgThreadScroll: (typeof _msgThreadScroll==='function') ? _msgThreadScroll : undefined,
   _msgToastTimer: (typeof _msgToastTimer!=='undefined') ? _msgToastTimer : undefined,
+  _msgToggleQuickDrawer: (typeof _msgToggleQuickDrawer==='function') ? _msgToggleQuickDrawer : undefined,
   _msgWasPollingConv: (typeof _msgWasPollingConv!=='undefined') ? _msgWasPollingConv : undefined,
   _msgWrapShowView: (typeof _msgWrapShowView==='function') ? _msgWrapShowView : undefined,
   _musPrev: (typeof _musPrev!=='undefined') ? _musPrev : undefined,

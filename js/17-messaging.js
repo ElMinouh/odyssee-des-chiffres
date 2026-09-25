@@ -234,12 +234,17 @@ async function renderContactsScreen(){
  // VOIR. Les sections restent désormais affichées en lecture seule ; seuls
  // les boutons d'action (Accepter/Refuser/Annuler) restent réservés à
  // l'enfant, qui reste seul décisionnaire de ses contacts.
+ // AUD-03-045 (audit UX 2026-09-25) : ces sections s'affichaient AVANT
+ // "Mes amis" — dès qu'une demande était en attente, l'usage le plus
+ // fréquent (ouvrir une conversation avec un ami existant) était repoussé
+ // plus bas. Construites à part, insérées APRÈS la liste d'amis ci-dessous.
+ let htmlRequests = '';
  const inc = data.incoming || [];
  if(inc.length){
-  html += '<p style="font-size:.8em;font-weight:700;color:#f1c40f;margin:6px 0;">📨 Demandes reçues</p>';
+  htmlRequests += '<p style="font-size:.8em;font-weight:700;color:#f1c40f;margin:6px 0;">📨 Demandes reçues</p>';
   inc.forEach(c => {
    const cid=_e(c.id), cn=_e(c.name||c.id), av=_e(c.avatar||'\uD83E\uDDD9');
-   html += '<div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);border-radius:10px;padding:8px 10px;margin:4px 0;">'
+   htmlRequests += '<div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);border-radius:10px;padding:8px 10px;margin:4px 0;">'
     + '<span style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">'+av+'</span>'
     + '<span style="flex:1;font-size:.9em;">'+cn+'</span>'
     + (_msgReadOnly ? '' :
@@ -255,10 +260,10 @@ async function renderContactsScreen(){
  // devenait invisible et impossible à annuler en cas d'erreur (mauvais code).
  const outg = data.outgoing || [];
  if(outg.length){
-  html += '<p style="font-size:.8em;font-weight:700;color:#bdc3c7;margin:6px 0;">📤 Demandes envoyées</p>';
+  htmlRequests += '<p style="font-size:.8em;font-weight:700;color:#bdc3c7;margin:6px 0;">📤 Demandes envoyées</p>';
   outg.forEach(c => {
    const cn=_e(c.name||c.id), av=_e(c.avatar||'🧙'), cidArg=_jsAttr(c.id);
-   html += '<div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border-radius:10px;padding:8px 10px;margin:4px 0;">'
+   htmlRequests += '<div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border-radius:10px;padding:8px 10px;margin:4px 0;">'
     + '<span style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">'+av+'</span>'
     + '<span style="flex:1;font-size:.9em;color:#bdc3c7;">'+cn+' <span style="font-size:.72em;">(en attente…)</span></span>'
     + (_msgReadOnly ? '' : '<button onclick="chatCancelContact(\''+cidArg+'\')" style="background:#7f8c8d;font-size:.72em;padding:5px 10px;">Annuler</button>')
@@ -273,10 +278,10 @@ async function renderContactsScreen(){
  // chatCancelContact() (la route serveur accepte désormais aussi ce cas).
  const declined = data.declined || [];
  if(declined.length){
-  html += '<p style="font-size:.8em;font-weight:700;color:#e67e22;margin:6px 0;">📭 Demandes refusées</p>';
+  htmlRequests += '<p style="font-size:.8em;font-weight:700;color:#e67e22;margin:6px 0;">📭 Demandes refusées</p>';
   declined.forEach(c => {
    const cn=_e(c.name||c.id), av=_e(c.avatar||'🧙'), cidArg=_jsAttr(c.id);
-   html += '<div style="display:flex;align-items:center;gap:8px;background:rgba(230,126,34,.08);border-radius:10px;padding:8px 10px;margin:4px 0;">'
+   htmlRequests += '<div style="display:flex;align-items:center;gap:8px;background:rgba(230,126,34,.08);border-radius:10px;padding:8px 10px;margin:4px 0;">'
     + '<span style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">'+av+'</span>'
     + '<span style="flex:1;font-size:.9em;color:#bdc3c7;">'+cn+' <span style="font-size:.72em;">(a refusé ta demande)</span></span>'
     + (_msgReadOnly ? '' : '<button onclick="chatCancelContact(\''+cidArg+'\')" style="background:#7f8c8d;font-size:.72em;padding:5px 10px;">OK</button>')
@@ -311,6 +316,13 @@ async function renderContactsScreen(){
     + '<button onclick="event.stopPropagation();chatRemoveContact(\''+cid+'\',\''+nameArg+'\')" style="background:transparent;border:none;color:#7f8c8d;font-size:1em;cursor:pointer;" title="Retirer">\u2715</button>'
     + '<span style="color:#7f8c8d;">\u203A</span></div>';
   });
+ }
+
+ // AUD-03-045 : demandes re\u00E7ues/envoy\u00E9es/refus\u00E9es affich\u00E9es ICI, apr\u00E8s la
+ // liste d'amis (et non plus avant), pour que l'action la plus fr\u00E9quente
+ // reste la plus accessible.
+ if(htmlRequests){
+  html += '<div style="margin-top:14px;border-top:1px solid rgba(255,255,255,.1);padding-top:10px;">' + htmlRequests + '</div>';
  }
 
  if(!_msgReadOnly){
@@ -400,17 +412,26 @@ function renderConvShell(name){
   + '<div id="msg-thread" onscroll="_msgThreadScroll()" style="height:46vh;overflow-y:auto;background:rgba(0,0,0,.2);border-radius:10px;padding:10px;"></div>'
   + '<button id="msg-jump" class="hidden" onclick="_msgJumpToBottom()">\u2193 nouveau message</button>'
   + '</div>'
+  // AUD-03-044 (audit UX 2026-09-25) : 12 raccourcis (5 phrases + 7 stickers)
+  // s'empilaient jusque-l\u00E0 AVANT le champ de saisie principal, diluant sa
+  // priorit\u00E9 visuelle. Champ de saisie remont\u00E9 en premier ; raccourcis
+  // regroup\u00E9s dans un tiroir repliable (ferm\u00E9 par d\u00E9faut).
   + (_msgReadOnly
      ? '<p style="font-size:.72em;color:#7f8c8d;text-align:center;margin-top:8px;">\uD83D\uDC41 Lecture seule (espace parent)</p>'
-     : ('<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">'
+     : ('<div style="display:flex;gap:6px;margin-top:8px;">'
+        + '<input type="text" id="msg-input" maxlength="1000" placeholder="Ton message\u2026" style="flex:1;" onkeydown="if(event.key===\'Enter\')chatSendCurrent()">'
+        + '<button onclick="chatSendCurrent()" style="background:#27ae60;">Envoyer</button></div>'
+        + '<button onclick="_msgToggleQuickDrawer()" style="background:none;border:none;color:#bdc3c7;font-size:.78em;padding:6px 2px;margin-top:4px;cursor:pointer;">\u2795 R\u00E9ponses rapides</button>'
+        + '<div id="msg-quick-drawer" class="hidden">'
+        + '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">'
         + CHAT_PHRASES.map(s=>'<button onclick="chatQuickSend(\''+_jsAttr(s)+'\')" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:6px 11px;font-size:.8em;">'+_e(s)+'</button>').join('')
         + '</div>'
         + '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">'
         + CHAT_STICKERS.map(s=>'<button onclick="chatQuickSend(\''+s+'\')" style="background:rgba(255,255,255,.08);border-radius:50%;width:38px;height:38px;font-size:19px;padding:0;line-height:1;">'+s+'</button>').join('')
-        + '</div>'
-        + '<div style="display:flex;gap:6px;margin-top:8px;">'
-        + '<input type="text" id="msg-input" maxlength="1000" placeholder="Ton message\u2026" style="flex:1;" onkeydown="if(event.key===\'Enter\')chatSendCurrent()">'
-        + '<button onclick="chatSendCurrent()" style="background:#27ae60;">Envoyer</button></div>'));
+        + '</div></div>'));
+}
+function _msgToggleQuickDrawer(){
+ const d=document.getElementById('msg-quick-drawer'); if(d) d.classList.toggle('hidden');
 }
 function _fmtTime(ts){ if(!ts) return ''; try{ const d=new Date(ts); const h=d.getHours(), m=d.getMinutes(); return h+':'+(m<10?'0':'')+m; }catch(e){ return ''; } }
 function _msgSpeakIdx(i){ const m=_convCache[i]; if(m && typeof speak==='function'){ try{ speak(m.body); }catch(e){} } }
@@ -432,6 +453,7 @@ function _renderBubbles(messages){
   const t = _fmtTime(m.ts);
   if(isMine){
    const pop = (_msgJustSent && i===lastIdx) ? ' msg-pop' : '';
+   const pendingCls = m.pending ? ' msg-bub-pending' : '';
    // #16 (accusé de lecture) : affiché uniquement sous le TOUT DERNIER message
    // envoyé, quand otherReadUpTo (renvoyé par /msg/fetch) couvre son id.
    const isLastMine = (i===lastIdx);
@@ -439,7 +461,7 @@ function _renderBubbles(messages){
    const seenLine = (isLastMine && readByOther)
     ? '<div style="text-align:right;font-size:.65em;color:#bdc3c7;margin:2px 6px 6px;">Vu'+(_msgConv.otherReadTs?(' à '+_fmtTime(_msgConv.otherReadTs)):'')+' <span style="color:#3498db;">\u2713\u2713</span></div>'
     : '';
-   return '<div class="msg-row msg-out"><div class="msg-bub msg-bub-out'+pop+'">'
+   return '<div class="msg-row msg-out"><div class="msg-bub msg-bub-out'+pop+pendingCls+'">'
     + '<div>'+_e(m.body)+'</div>'
     + '<div class="msg-meta msg-meta-out"><span>'+t+'</span><span class="msg-ck">'+(m.pending?'\u23F3':'\u2713')+'</span></div></div>'
     + seenLine + '</div>';
@@ -538,6 +560,11 @@ async function _chatSend(body){
   _convCache.push({ id:res.id, sender:_msgProf.chatId, body:body, ts:res.ts });
   _msgConv.lastId = res.id || _msgConv.lastId;
   _msgJustSent = true;
+  // AUD-03-042 (audit UX 2026-09-25) : le seul retour d'un envoi réussi était
+  // une coche de 0,62rem dans le coin de la bulle — trop discret pour un
+  // enfant sur une action à enjeu social, contrairement au feedback riche
+  // (toast + double bip) déjà en place sur l'achat de figurine.
+  if(typeof beep==='function'){ try{ beep(900,'sine',.12,.04); }catch(e){} }
   _chatMarkSeen(_msgProf, _msgConv.id, _msgConv.lastId);
   _renderBubbles(_convCache);
  } else if(res && (res.error==='not_contact'||res.error==='blocked'||res.error==='empty'||res.error==='blocked_word')){
@@ -637,9 +664,10 @@ function _msgEnsureFab(){
    +'.msg-bub{max-width:76%;padding:7px 11px;border-radius:14px;font-size:.9em;word-break:break-word;}'
    +'.msg-bub-in{background:#fff;color:#2c2c2a;border:1px solid #eee;border-bottom-left-radius:4px;}'
    +'.msg-bub-out{background:#cdeafc;color:#0c447c;border-bottom-right-radius:4px;}'
-   +'.msg-meta{display:flex;align-items:center;gap:6px;margin-top:3px;font-size:.62rem;color:#bdc3c7;}.msg-meta-out{justify-content:flex-end;color:#5a86a8;}'
-   +'.msg-spk{cursor:pointer;font-size:.85rem;}.msg-ck{font-weight:700;}'
-   +'.msg-pop{animation:msgBubPop .28s ease-out;}@keyframes msgBubPop{0%{transform:scale(.6) translateY(6px);opacity:0;}100%{transform:scale(1) translateY(0);opacity:1;}}'
+   +'.msg-meta{display:flex;align-items:center;gap:6px;margin-top:3px;font-size:.72rem;color:#bdc3c7;}.msg-meta-out{justify-content:flex-end;color:#5a86a8;}'
+   +'.msg-spk{cursor:pointer;font-size:.85rem;}.msg-ck{font-weight:700;font-size:.9rem;}'
+   +'.msg-bub-pending{opacity:.6;}' /* AUD-03-043 : signal redondant (opacité) en plus de l'icône ⏳ pour un message en attente */
+   +'.msg-pop{animation:msgBubPop .32s ease-out;}@keyframes msgBubPop{0%{transform:scale(.5) translateY(8px);opacity:0;}70%{transform:scale(1.04) translateY(0);opacity:1;}100%{transform:scale(1) translateY(0);}}'
    +'#msg-jump{position:absolute;left:50%;transform:translateX(-50%);bottom:14px;background:#1d9e75;color:#fff;border:none;border-radius:14px;padding:6px 14px;font-size:.78rem;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25);z-index:20;}#msg-jump.hidden{display:none;}';
   document.head.appendChild(st);
  }

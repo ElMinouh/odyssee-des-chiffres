@@ -1093,6 +1093,7 @@
     "_msgSpeakIdx": "writable",
     "_msgThreadScroll": "writable",
     "_msgToastTimer": "writable",
+    "_msgToggleQuickDrawer": "writable",
     "_msgWasPollingConv": "writable",
     "_msgWrapShowView": "writable",
     "_musPrev": "writable",
