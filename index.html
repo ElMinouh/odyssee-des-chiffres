@@ -265,7 +265,7 @@
   <!-- Sélecteur joueur (seul champ essentiel avant de jouer) -->
   <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:420px;margin:0 auto;">
    <div style="display:flex;flex-direction:column;gap:5px;">
-    <label style="font-size:.72em;color:#bdc3c7;font-weight:700;text-align:left;padding-left:2px;">👤 Joueur</label>
+    <label for="playerSelect" style="font-size:.72em;color:#bdc3c7;font-weight:700;text-align:left;padding-left:2px;">👤 Joueur</label>
     <select id="playerSelect" onchange="onPlayerChange();refreshMenu1Card();" style="width:100%;margin:0;">
      <option value="Autre">✏️ Autre joueur…</option>
     </select>
@@ -290,7 +290,7 @@
    <button onclick="_toggleQuickSettingsDrawer()" id="quick-settings-toggle" aria-expanded="false" aria-controls="quick-settings-drawer" style="width:100%;background:none;border:1px dashed rgba(255,255,255,.25);color:#8fa3c2;font-size:.8em;padding:8px;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><circle cx="9" cy="7" r="2.3" fill="currentColor" stroke="none"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="16" cy="17" r="2.3" fill="currentColor" stroke="none"/></svg> Réglages rapides <span id="quick-settings-arrow">▾</span></button>
    <div id="quick-settings-drawer" class="hidden" style="margin-top:8px;display:flex;flex-direction:column;gap:10px;">
     <div style="display:flex;flex-direction:column;gap:5px;">
-     <label style="font-size:.72em;color:#bdc3c7;font-weight:700;text-align:left;padding-left:2px;">🎨 Thème</label>
+     <label for="themeSelect" style="font-size:.72em;color:#bdc3c7;font-weight:700;text-align:left;padding-left:2px;">🎨 Thème</label>
      <select id="themeSelect" onchange="saveThemeNow(this.value)" style="width:100%;margin:0;">
       <option value="standard">🌟 Classique</option>
       <option value="espace">🚀 Espace</option>
@@ -574,11 +574,11 @@
   <!-- Bloc Normal/Survie/Chrono : niveau + saisie -->
   <div id="mc-solo" class="hidden" style="max-width:420px;margin:0 auto;display:flex;flex-direction:column;gap:16px;">
    <div style="display:flex;flex-direction:column;gap:6px;text-align:left;">
-    <label style="font-size:.8em;color:#bdc3c7;font-weight:700;padding-left:2px;">📚 Niveau scolaire</label>
+    <label for="mc-level" style="font-size:.8em;color:#bdc3c7;font-weight:700;padding-left:2px;">📚 Niveau scolaire</label>
     <select id="mc-level" style="width:100%;margin:0;"></select>
    </div>
    <div style="display:flex;flex-direction:column;gap:6px;text-align:left;">
-    <label style="font-size:.8em;color:#bdc3c7;font-weight:700;padding-left:2px;">⌨️ Mode de saisie</label>
+    <label for="mc-input" style="font-size:.8em;color:#bdc3c7;font-weight:700;padding-left:2px;">⌨️ Mode de saisie</label>
     <select id="mc-input" style="width:100%;margin:0;">
      <option value="keyboard">⌨️ Clavier (taper la réponse)</option>
      <option value="qcm">📋 QCM (choix multiple)</option>
@@ -592,7 +592,7 @@
    <div id="mc-combat-rows" style="display:flex;flex-direction:column;gap:8px;"></div>
    <button onclick="mcAddCombatPlayer()" id="mc-add-btn" style="background:#34495e;font-size:.8em;padding:7px 14px;margin-top:10px;">&#10133; Ajouter un joueur</button>
    <div style="display:flex;flex-direction:column;gap:6px;text-align:left;margin-top:16px;">
-    <label style="font-size:.8em;color:#bdc3c7;font-weight:700;padding-left:2px;">⌨️ Mode de saisie (commun)</label>
+    <label for="mc-input-combat" style="font-size:.8em;color:#bdc3c7;font-weight:700;padding-left:2px;">⌨️ Mode de saisie (commun)</label>
     <select id="mc-input-combat" style="width:100%;margin:0;">
      <option value="keyboard">⌨️ Clavier (taper la réponse)</option>
      <option value="qcm">📋 QCM (choix multiple)</option>
@@ -1148,14 +1148,14 @@
      <!-- Style harmonisé (2026-09-25, demande de Cyril) sur le modèle de
           l'onglet Suivi (.ptab-sel-lbl + select pleine largeur) — licence et
           stats redescendues sur leur propre ligne pour laisser la place. -->
-     <p class="ptab-sel-lbl">👤 Pour quel enfant&nbsp;?</p>
-     <select id="pfig-player" onchange="pfigOnPlayerChange()" style="width:92%;margin-bottom:8px;"></select>
+     <p class="ptab-sel-lbl" id="pfig-player-lbl">👤 Pour quel enfant&nbsp;?</p>
+     <select id="pfig-player" aria-labelledby="pfig-player-lbl" onchange="pfigOnPlayerChange()" style="width:92%;margin-bottom:8px;"></select>
      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">
-      <select id="pfig-license" onchange="renderParentFigurines()" style="width:auto;padding:4px 8px;font-size:.8em;"><option value="none">— Sélectionne une licence —</option></select>
+      <select id="pfig-license" aria-label="Filtrer par licence" onchange="renderParentFigurines()" style="width:auto;padding:4px 8px;font-size:.8em;"><option value="none">— Sélectionne une licence —</option></select>
       <span id="pfig-stats" style="font-size:.72em;color:rgba(255,255,255,.5);margin-left:4px;"></span>
      </div>
      <div style="margin-bottom:6px;">
-      <input id="pfig-search" type="text" placeholder="🔍 Rechercher un personnage…" oninput="_pfigSearch=this.value;renderParentFigurines()" maxlength="30" style="width:100%;padding:5px 8px;font-size:.8em;border-radius:6px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1);color:#fff;">
+      <input id="pfig-search" type="text" aria-label="Rechercher un personnage" placeholder="🔍 Rechercher un personnage…" oninput="_pfigSearch=this.value;renderParentFigurines()" maxlength="30" style="width:100%;padding:5px 8px;font-size:.8em;border-radius:6px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1);color:#fff;">
      </div>
      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px;align-items:center;">
       <button onclick="pfigFilter('all')" id="pfig-btn-all" class="active" style="font-size:.65em;padding:4px 9px;border-radius:8px;margin:0;border-bottom:2px solid rgba(0,0,0,.3);">🌐 Tout</button>
