@@ -45,7 +45,7 @@ describe('Filtres "Types de questions autorisés" pour le français (v11.5.3)', 
     const api = loadGame(FILES);
     api.setP({ name: 'Zoe' });
     api._ls.setItem('user_Zoe', JSON.stringify({}));
-    api._domEl('filter-player').value = 'Zoe';
+    api._domEl('enc-player').value = 'Zoe'; // AUD-03-002 : filter-player fusionné dans enc-player
     api.loadFilterSettings();
     expect(api._domEl('fr-filters').innerHTML).toMatch(/frf-conj/);
     api._domEl('frf-gram').checked = false;

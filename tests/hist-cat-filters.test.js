@@ -74,7 +74,7 @@ describe('Filtres "Types de questions autorisés" pour l\u2019histoire (v11.5.2)
 
   it('loadFilterSettings() peuple bien le bloc hist-filters avec les 6 catégories', () => {
     const api = loadGame(FILES);
-    api._domEl('filter-player').value = 'Zoe';
+    api._domEl('enc-player').value = 'Zoe'; // AUD-03-002 : filter-player fusionné dans enc-player
     api._ls.setItem('user_Zoe', JSON.stringify({ histCatFilters: { frise: false, personnages: true, evenements: true, civilisation: true, temps: true, repere: true } }));
     api.loadFilterSettings();
     const html = api._domEl('hist-filters').innerHTML;
@@ -88,7 +88,7 @@ describe('Filtres "Types de questions autorisés" pour l\u2019histoire (v11.5.2)
     const api = loadGame(FILES);
     api.setP({ name: 'Zoe' });
     api._ls.setItem('user_Zoe', JSON.stringify({}));
-    api._domEl('filter-player').value = 'Zoe';
+    api._domEl('enc-player').value = 'Zoe'; // AUD-03-002 : filter-player fusionné dans enc-player
     api.loadFilterSettings(); // peuple les cases (tout coché par défaut)
     api._domEl('histf-personnages').checked = false; // simule un décochage manuel
     api.saveFilterSettings();

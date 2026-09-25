@@ -70,12 +70,34 @@ function requestTemporaryUnblock(){
 }
 // Contrôles parent : blocage horaire
 function loadBlockSettings(){
- const name=$('block-player').value;const cfg=getBlockCfg(name)||{enabled:false,start:'17:00',end:'18:00'};
+ const name=$('enc-player').value;const cfg=getBlockCfg(name)||{enabled:false,start:'17:00',end:'18:00'};
  $('block-start').value=cfg.start;$('block-end').value=cfg.end;$('block-enabled').checked=cfg.enabled;
 }
+// AUD-03-024 (audit UX 2026-09-25) : aucune validation n'empêchait une plage
+// horaire nulle ou quasi nulle (ex. heure de début oubliée = heure de fin) —
+// une erreur de saisie triviale pouvait bloquer l'enfant quasiment 24h/24
+// sans que rien ne le signale au parent avant l'enregistrement.
+function _blockWindowMinutes(start,end){
+ if(!_isValidTimeStr(start)||!_isValidTimeStr(end)) return null;
+ const [sh,sm]=start.split(':').map(Number),[eh,em]=end.split(':').map(Number);
+ const s=sh*60+sm,e=eh*60+em;
+ return s<=e ? (e-s) : (1440-s+e);
+}
 function saveBlockSettings(){
- const name=$('block-player').value;
+ const name=$('enc-player').value;
  const cfg={enabled:$('block-enabled').checked,start:$('block-start').value,end:$('block-end').value};
+ const winMin=_blockWindowMinutes(cfg.start,cfg.end);
+ if(cfg.enabled && winMin!==null && winMin<=5){
+  showConfirm(
+   `Avec ces horaires (${cfg.start}–${cfg.end}), l'enfant ne pourra jouer que ${winMin} minute(s) par jour. Enregistrer quand même ?`,
+   ()=>_saveBlockSettingsNow(name,cfg),
+   {title:'⚠️ Plage horaire très courte', danger:true, confirmLabel:'Enregistrer quand même'}
+  );
+  return;
+ }
+ _saveBlockSettingsNow(name,cfg);
+}
+function _saveBlockSettingsNow(name,cfg){
  localStorage.setItem('block_'+name,JSON.stringify(cfg));
  $('block-status').innerText=`✅ Horaire enregistré pour ${name} : ${cfg.start}–${cfg.end}${cfg.enabled?' (actif)':' (inactif)'}`;
  beep(600,'sine',.3);
@@ -85,7 +107,7 @@ function saveBlockSettings(){
 // FILTRES OPÉRATIONS (parent)
 // ═══════════════════════════════════════════════════════
 function loadFilterSettings(){
- const name=$('filter-player').value;
+ const name=$('enc-player').value;
  let d=null;try{d=JSON.parse(localStorage.getItem('user_'+name)||'null');}catch(e){}
  const f=(d&&d.opFilters)||{add:true,sub:true,mult:true,div:true,miss:true,frac:true,geo:true};
  $('op-filters').innerHTML=OP_FILTERS.map(op=>`
@@ -110,7 +132,7 @@ function loadFilterSettings(){
  if(typeof onFilterSubjectChange==='function') onFilterSubjectChange();
 }
 function saveFilterSettings(){
- const name=$('filter-player').value;
+ const name=$('enc-player').value;
  let d=null;try{d=JSON.parse(localStorage.getItem('user_'+name)||'{}');}catch(e){d={};}
  d.opFilters={};OP_FILTERS.forEach(op=>{d.opFilters[op.key]=$('opf-'+op.key)?.checked!==false;});
  // v11.5.2/3 — sauvegarde systématique des 3 blocs (même ceux actuellement

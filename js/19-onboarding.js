@@ -7,7 +7,7 @@
 // contextuelle déjà en place (icônes "i" / pGuide() / PARENT_GUIDES,
 // 09-parent.js) qui n'est ni modifié ni remplacé par ce fichier.
 //
-//  Système 1 — 10 étapes — Premier accès parent (installation initiale).
+//  Système 1 — 11 étapes — Premier accès parent (installation initiale).
 //              Déclenché automatiquement au tout premier déverrouillage
 //              réussi de la Vue Parent. Relançable via le bouton
 //              "🔰 Revoir l'installation de démarrage" (Vue Parent).
@@ -39,14 +39,18 @@
 // associe le sélecteur de profil concerné + la fonction à rappeler pour
 // rafraîchir le panneau une fois ce sélecteur repositionné automatiquement
 // sur le profil qu'on vient de créer à l'étape 2 (voir _obApplyPendingProfile).
+// AUD-03-002 (audit UX 2026-09-25) : les 5 sélecteurs distincts de l'onglet
+// Encadrement (bsubj-player, block-player, filter-player, enc-msg-player…)
+// ont été unifiés en un seul 'enc-player' — les 4 étapes ci-dessous ciblent
+// donc désormais le même select.
 const OB1_PROFILE_TARGETS = {
- 'acc-birthday':   { select:'opt-profile',    after:'optSelectProfile' },
- 'acc-cloud':      { select:'opt-profile',    after:'optSelectProfile' },
- 'acc-fichier':    { select:'opt-profile',    after:'optSelectProfile' },
- 'acc-messagerie': { select:'enc-msg-player', after:'renderOptMessaging', passName:true },
- 'acc-matieres':   { select:'bsubj-player',   after:'loadBlockedSubjects' },
- 'acc-horaires':   { select:'block-player',   after:'loadBlockSettings' },
- 'acc-filtres':    { select:'filter-player',  after:'loadFilterSettings' },
+ 'acc-birthday':   { select:'opt-profile',  after:'optSelectProfile' },
+ 'acc-cloud':      { select:'opt-profile',  after:'optSelectProfile' },
+ 'acc-fichier':    { select:'opt-profile',  after:'optSelectProfile' },
+ 'acc-messagerie': { select:'enc-player',   after:'renderOptMessaging', passName:true },
+ 'acc-matieres':   { select:'enc-player',   after:'loadBlockedSubjects' },
+ 'acc-horaires':   { select:'enc-player',   after:'loadBlockSettings' },
+ 'acc-filtres':    { select:'enc-player',   after:'loadFilterSettings' },
 };
 
 
@@ -54,8 +58,15 @@ const OB1_PROFILE_TARGETS = {
 // SYSTÈME 1 — Premier accès parent (installation initiale)
 // ─────────────────────────────────────────────────────────
 const OB_STEPS_1 = [
- { icon:'🔑', title:'Bienvenue ! Premier réglage : le code parent',
-   body:"Bienvenue dans <b>L'Odyssée du Savoir</b> ! Cette visite guidée va vous accompagner, en 10 étapes, pour mettre en place tout ce qu'il faut avant de laisser votre enfant jouer. Vous pourrez la revoir quand vous voulez grâce à un bouton dédié, en haut de cette page.<br><br>Premier réglage : le <b>code parent</b>. C'est un code à 4 chiffres qui protège l'accès à cette Vue Parent, pour que votre enfant ne puisse pas modifier les réglages tout seul. Par défaut, il vaut <b>1234</b> — un code que tout le monde connaît, donc peu protecteur. Changez-le ici, et notez une <b>question secrète</b> (par exemple « Quelle est votre ville de naissance ? ») qui permettra de le retrouver en cas d'oubli.",
+ // AUD-03-020 (audit UX 2026-09-25) : cette toute première bulle cumulait
+ // présentation de la visite + explication du code parent + question secrète
+ // en ~700 caractères d'un coup — l'information la plus importante (changer
+ // le code par défaut) était noyée. Scindé en une étape 0 courte (présentation
+ // seule) puis une étape 1 concentrée uniquement sur le code parent.
+ { icon:'👋', title:'Bienvenue !',
+   body:"Bienvenue dans <b>L'Odyssée du Savoir</b> ! Cette visite guidée va vous accompagner pour mettre en place tout ce qu'il faut avant de laisser votre enfant jouer. Vous pourrez la revoir quand vous voulez grâce à un bouton dédié, en haut de cette page." },
+ { icon:'🔑', title:'Le code parent',
+   body:"Premier réglage : le <b>code parent</b>. C'est un code à 4 chiffres qui protège l'accès à cette Vue Parent, pour que votre enfant ne puisse pas modifier les réglages tout seul. Par défaut, il vaut <b>1234</b> — un code que tout le monde connaît, donc peu protecteur. Changez-le ici, et notez une <b>question secrète</b> (par exemple « Quelle est votre ville de naissance ? ») qui permettra de le retrouver en cas d'oubli.",
    nav:{ptab:'avance'}, target:'acc-pin', accordion:true },
  { icon:'👥', title:'Créer le profil de votre enfant',
    body:"Un <b>profil</b> est l'espace personnel de votre enfant dans le jeu : son avatar, ses étoiles, ses figurines, sa progression. Chaque enfant de la famille doit avoir son propre profil, pour ne jamais mélanger deux progressions.<br><br>Pour créer un profil, tapez le prénom de votre enfant puis validez « Ajouter ». Vous pourrez ensuite lui ajouter une photo (📷, facultatif — utile pour reconnaître son profil au premier coup d'œil), le renommer ou le retirer depuis ce même endroit, sans jamais perdre sa progression.",
@@ -378,6 +389,11 @@ function _obRenderStep(){
  if(!step){ _obFinishClick(); return; }
 
  // 1) Navigation réelle vers l'écran/onglet concerné
+ // AUD-03-018 (audit UX 2026-09-25) : ce catch restait vide — si une
+ // navigation attendue échouait, la bulle suivante pointait dans le vide
+ // sans aucun signal, dégradant silencieusement une visite déjà longue.
+ // On journalise l'échec en dev et on affiche un bandeau de repli visible.
+ step._navFailed = false;
  try{
   if(step.nav){
    if(step.nav.view && typeof navTo==='function') navTo(step.nav.view);
@@ -385,7 +401,10 @@ function _obRenderStep(){
    if(step.nav.stab && typeof stab==='function') stab(step.nav.stab);
    if(step.nav.fn && typeof window[step.nav.fn]==='function') window[step.nav.fn]();
   }
- }catch(e){}
+ }catch(e){
+  step._navFailed = true;
+  console.warn('[onboarding] navigation d\'étape échouée :', step.title, e);
+ }
 
  // 2) Cible à surligner (+ dépliage d'accordéon si besoin), après un court
  //    délai pour laisser le DOM se stabiliser suite à la navigation.
@@ -460,6 +479,14 @@ function _obShowTooltip(step, targetEl){
   '<span class="ob-dot'+(i<_obIdx?' ob-done':'')+(i===_obIdx?' ob-current':'')+'"></span>'
  ).join('');
  const hasTarget = !!targetEl;
+ // AUD-03-019 : aucune estimation de durée n'était donnée avant de
+ // s'engager dans une visite — seul le compteur d'étapes déjà en cours
+ // était visible. Affiché uniquement sur la toute première étape.
+ const durationHint = (num===1) ? (' · Environ '+Math.max(1,Math.round(total*20/60))+' min') : '';
+ // AUD-03-018 : bandeau de repli si la navigation attendue de cette étape a échoué.
+ const navFailedBanner = step._navFailed
+  ? '<div class="ob-nav-fallback">⚠️ Cette étape n\'a pas pu se positionner automatiquement. Continuez, elle reste valable même sans surbrillance.</div>'
+  : '';
  ov.innerHTML =
   (hasTarget
    ? '<div class="ob-blocker-piece" id="ob-bp-t"></div><div class="ob-blocker-piece" id="ob-bp-b"></div><div class="ob-blocker-piece" id="ob-bp-l"></div><div class="ob-blocker-piece" id="ob-bp-r"></div><div class="ob-spotlight" id="ob-spotlight"></div>'
@@ -467,7 +494,8 @@ function _obShowTooltip(step, targetEl){
   + '<div class="ob-box'+(hasTarget?'':' ob-centered')+'" id="ob-box">'
   +  '<div class="ob-box-scroll">'
   +   '<div class="ob-progress">'+dots+'</div>'
-  +   '<div class="ob-counter">ÉTAPE '+num+' SUR '+total+'</div>'
+  +   '<div class="ob-counter">ÉTAPE '+num+' SUR '+total+durationHint+'</div>'
+  +   navFailedBanner
   +   '<div class="ob-icon">'+(step.icon||'💡')+'</div>'
   +   '<div class="ob-title">'+step.title+'</div>'
   +   '<div class="ob-body">'+step.body+'</div>'

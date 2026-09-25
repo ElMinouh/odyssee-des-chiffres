@@ -255,7 +255,7 @@ async function renderContactsScreen(){
  // devenait invisible et impossible à annuler en cas d'erreur (mauvais code).
  const outg = data.outgoing || [];
  if(outg.length){
-  html += '<p style="font-size:.8em;font-weight:700;color:#9aa6b2;margin:6px 0;">📤 Demandes envoyées</p>';
+  html += '<p style="font-size:.8em;font-weight:700;color:#bdc3c7;margin:6px 0;">📤 Demandes envoyées</p>';
   outg.forEach(c => {
    const cn=_e(c.name||c.id), av=_e(c.avatar||'🧙'), cidArg=_jsAttr(c.id);
    html += '<div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border-radius:10px;padding:8px 10px;margin:4px 0;">'
@@ -293,7 +293,7 @@ async function renderContactsScreen(){
  if(!contacts.length){
   html += '<div style="text-align:center;border:2px dashed rgba(255,255,255,.18);border-radius:14px;padding:16px;margin:6px 0;">'
    + '<div style="font-size:30px;">🤝</div>'
-   + '<p style="font-size:.8em;color:#9aa6b2;margin:6px 0 0;">Pas encore d\u2019amis ?<br>Partage ton code ami pour vous ajouter !</p></div>';
+   + '<p style="font-size:.8em;color:#bdc3c7;margin:6px 0 0;">Pas encore d\u2019amis ?<br>Partage ton code ami pour vous ajouter !</p></div>';
  } else {
   contacts.forEach(c => {
    const cid=_e(c.id), cn=_e(c.name||c.id), av=_e(c.avatar||'\uD83E\uDDD9');
@@ -437,7 +437,7 @@ function _renderBubbles(messages){
    const isLastMine = (i===lastIdx);
    const readByOther = !m.pending && m.id!=null && _msgConv && _msgConv.otherReadUpTo && _msgConv.otherReadUpTo>=m.id;
    const seenLine = (isLastMine && readByOther)
-    ? '<div style="text-align:right;font-size:.65em;color:#9aa6b2;margin:2px 6px 6px;">Vu'+(_msgConv.otherReadTs?(' à '+_fmtTime(_msgConv.otherReadTs)):'')+' <span style="color:#3498db;">\u2713\u2713</span></div>'
+    ? '<div style="text-align:right;font-size:.65em;color:#bdc3c7;margin:2px 6px 6px;">Vu'+(_msgConv.otherReadTs?(' à '+_fmtTime(_msgConv.otherReadTs)):'')+' <span style="color:#3498db;">\u2713\u2713</span></div>'
     : '';
    return '<div class="msg-row msg-out"><div class="msg-bub msg-bub-out'+pop+'">'
     + '<div>'+_e(m.body)+'</div>'
@@ -637,7 +637,7 @@ function _msgEnsureFab(){
    +'.msg-bub{max-width:76%;padding:7px 11px;border-radius:14px;font-size:.9em;word-break:break-word;}'
    +'.msg-bub-in{background:#fff;color:#2c2c2a;border:1px solid #eee;border-bottom-left-radius:4px;}'
    +'.msg-bub-out{background:#cdeafc;color:#0c447c;border-bottom-right-radius:4px;}'
-   +'.msg-meta{display:flex;align-items:center;gap:6px;margin-top:3px;font-size:.62rem;color:#9aa6b2;}.msg-meta-out{justify-content:flex-end;color:#5a86a8;}'
+   +'.msg-meta{display:flex;align-items:center;gap:6px;margin-top:3px;font-size:.62rem;color:#bdc3c7;}.msg-meta-out{justify-content:flex-end;color:#5a86a8;}'
    +'.msg-spk{cursor:pointer;font-size:.85rem;}.msg-ck{font-weight:700;}'
    +'.msg-pop{animation:msgBubPop .28s ease-out;}@keyframes msgBubPop{0%{transform:scale(.6) translateY(6px);opacity:0;}100%{transform:scale(1) translateY(0);opacity:1;}}'
    +'#msg-jump{position:absolute;left:50%;transform:translateX(-50%);bottom:14px;background:#1d9e75;color:#fff;border:none;border-radius:14px;padding:6px 14px;font-size:.78rem;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25);z-index:20;}#msg-jump.hidden{display:none;}';
@@ -859,7 +859,7 @@ function renderOptMessaging(name){
      ? ('<p style="font-size:.72em;color:#bdc3c7;margin:0 0 6px;">Code ami : <span style="font-family:monospace;color:#5dade2;">'+_e(code)+'</span></p>'
         + '<button onclick="openMessaging(\''+nEsc+'\')" style="background:#2980b9;font-size:.8em;">\uD83D\uDC41 Voir les conversations</button>'
         + '<button onclick="chatAdoptCloudIdentity(\''+nEsc+'\')" style="background:#16a085;font-size:.8em;margin-left:4px;">\uD83D\uDD01 Aligner le code ami sur les autres appareils</button>'
-        + '<div style="margin-top:8px;font-size:.72em;color:#9aa6b2;">Forcer le même code ami (transfert manuel d\u2019un appareil à l\u2019autre) :</div>'
+        + '<div style="margin-top:8px;font-size:.72em;color:#bdc3c7;">Forcer le même code ami (transfert manuel d\u2019un appareil à l\u2019autre) :</div>'
         + '<button onclick="chatExportIdentityCode(\''+nEsc+'\')" style="background:#7f8c8d;font-size:.72em;">\uD83D\uDCE4 Exporter le code</button>'
         + '<button onclick="chatImportIdentityCode(\''+nEsc+'\')" style="background:#7f8c8d;font-size:.72em;margin-left:4px;">\uD83D\uDCE5 Importer un code</button>'
         + '<div id="opt-msg-manage"></div>')

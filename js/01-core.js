@@ -357,7 +357,27 @@ function repeatQuestion(){
  _speakUtterance(txt, {rate:0.95, requireToggle:false});
 }
 let toastT=null;
-function toast(msg,dur=2200){const el=$('toast');el.innerText=msg;el.classList.remove('hidden');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.add('hidden'),dur);}
+// AUD-03-014 (audit UX 2026-09-25) : un seul toast() en écrasait un autre
+// affiché juste avant (mise en scène + commentaire du compagnon en jeu,
+// achats/réglages en configuration) — le message le plus ancien disparaissait
+// sans avoir pu être lu. File d'attente simple : chaque message est montré
+// intégralement avant le suivant.
+let _toastQueue=[];
+let _toastShowing=false;
+function toast(msg,dur=2200){
+ _toastQueue.push({msg,dur});
+ if(!_toastShowing) _toastShowNext();
+}
+function _toastShowNext(){
+ const next=_toastQueue.shift();
+ if(!next){ _toastShowing=false; return; }
+ _toastShowing=true;
+ const el=$('toast');
+ el.innerText=next.msg;
+ el.classList.remove('hidden');
+ clearTimeout(toastT);
+ toastT=setTimeout(()=>{ el.classList.add('hidden'); setTimeout(_toastShowNext,150); }, next.dur);
+}
 // ═══════════════════════════════════════════════════════
 // PIÈGE DE FOCUS POUR FENÊTRES MODALES (accessibilité — P4)
 // À l'ouverture d'une modale : releaseFn = trapFocus(container).
@@ -411,12 +431,19 @@ function _closeStyledDialog(id){
 function showAlert(message, opts={}){
  const _e=(typeof esc==='function')?esc:(s=>String(s));
  const title=opts.title||'Information';
+ // AUD-03-013 : fermer tout overlay résiduel du même id avant d'en recréer un —
+ // sinon deux appels rapprochés empilent deux #sd-alert-overlay et "OK" sur le
+ // second ne fait que fermer le premier (invisible), laissant l'écran bloqué.
+ _closeStyledDialog('sd-alert-overlay');
  const ov=document.createElement('div');
  ov.id='sd-alert-overlay';
+ ov.setAttribute('role','dialog'); // AUD-03-021
+ ov.setAttribute('aria-modal','true');
+ ov.setAttribute('aria-labelledby','sd-alert-title');
  ov.style.cssText='position:fixed;inset:0;z-index:620;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:20px;';
- ov.innerHTML='<div style="background:#182449;border:1px solid rgba(241,196,15,.35);border-radius:18px;padding:24px 20px;text-align:center;max-width:340px;width:100%;box-shadow:var(--shadow-modal);">'
-  +'<div style="font-size:1em;font-weight:800;color:#f1c40f;margin-bottom:10px;">'+_e(title)+'</div>'
-  +'<div style="font-size:.9em;color:#dce3f0;line-height:1.5;margin-bottom:18px;white-space:pre-line;">'+_e(message)+'</div>'
+ ov.innerHTML='<div class="sd-dialog-card">'
+  +'<div id="sd-alert-title" class="sd-dialog-title">'+_e(title)+'</div>'
+  +'<div class="sd-dialog-msg">'+_e(message)+'</div>'
   +'<button id="sd-alert-ok" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px 26px;font-weight:700;font-size:.9em;cursor:pointer;">OK</button>'
   +'</div>';
  document.body.appendChild(ov);
@@ -432,24 +459,29 @@ function showConfirm(message, onConfirm, opts={}){
  const confirmLabel=opts.confirmLabel||'Confirmer';
  const cancelLabel=opts.cancelLabel||'Annuler';
  const accentColor=opts.danger?'#e74c3c':'var(--accent)';
- const borderColor=opts.danger?'rgba(231,76,60,.4)':'rgba(241,196,15,.35)';
- const bg=opts.danger?'#2c1414':'#182449';
+ const cardClass='sd-dialog-card'+(opts.danger?' sd-dialog-danger':'');
+ const titleClass='sd-dialog-title'+(opts.danger?' sd-dialog-title-danger':'');
+ const inputClass='sd-dialog-input'+(opts.danger?' sd-dialog-input-danger':'');
  // v12.7.32 (demande de Cyril, confirmation renforcée) : si opts.retypeValue
  // est fourni, le bouton de confirmation reste désactivé tant que le champ
  // texte n'est pas rempli avec EXACTEMENT cette valeur (comparaison stricte
  // après trim, sensible à la casse). Générique — réutilisable pour tout
  // futur reset/action sensible, pas seulement "Reset Aventure".
  const retypeValue = (typeof opts.retypeValue==='string' && opts.retypeValue) ? opts.retypeValue : null;
+ _closeStyledDialog('sd-confirm-overlay');
  const ov=document.createElement('div');
  ov.id='sd-confirm-overlay';
+ ov.setAttribute('role','dialog');
+ ov.setAttribute('aria-modal','true');
+ ov.setAttribute('aria-labelledby','sd-confirm-title');
  ov.style.cssText='position:fixed;inset:0;z-index:620;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:20px;';
- ov.innerHTML='<div style="background:'+bg+';border:1px solid '+borderColor+';border-radius:18px;padding:24px 20px;text-align:center;max-width:360px;width:100%;box-shadow:var(--shadow-modal);">'
+ ov.innerHTML='<div class="'+cardClass+'">'
   +(opts.danger?'<div style="font-size:2.2em;margin-bottom:6px;">⚠️</div>':'')
-  +'<div style="font-size:1em;font-weight:800;color:'+accentColor+';margin-bottom:10px;">'+_e(title)+'</div>'
-  +'<div style="font-size:.9em;color:#dce3f0;line-height:1.5;margin-bottom:'+(retypeValue?'16px':'18px')+';white-space:pre-line;">'+_e(message)+'</div>'
+  +'<div id="sd-confirm-title" class="'+titleClass+'">'+_e(title)+'</div>'
+  +'<div class="sd-dialog-msg" style="margin-bottom:'+(retypeValue?'16px':'18px')+';">'+_e(message)+'</div>'
   +(retypeValue ? (
     '<div style="font-size:.8em;color:#f1c8c8;margin-bottom:8px;text-align:left;">Pour confirmer, tape <b style="color:#fff;">'+_e(retypeValue)+'</b> ci-dessous :</div>'
-    +'<input id="sd-confirm-retype" type="text" autocomplete="off" placeholder="'+_e(retypeValue)+'" style="width:100%;box-sizing:border-box;background:#1a0f0f;border:2px solid rgba(231,76,60,.5);border-radius:10px;padding:11px 12px;color:#fff;font-size:.95em;margin-bottom:16px;text-align:center;font-weight:700;">'
+    +'<input id="sd-confirm-retype" type="text" autocomplete="off" placeholder="'+_e(retypeValue)+'" class="'+inputClass+'">'
    ) : '')
   +'<div style="display:flex;gap:10px;justify-content:center;">'
   +'<button id="sd-confirm-cancel" style="background:#555;color:#fff;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:.9em;cursor:pointer;">'+_e(cancelLabel)+'</button>'
@@ -457,8 +489,9 @@ function showConfirm(message, onConfirm, opts={}){
   +'</div></div>';
  document.body.appendChild(ov);
  const closeIt=()=>_closeStyledDialog('sd-confirm-overlay');
+ const cancel=()=>{ closeIt(); if(typeof opts.onCancel==='function') opts.onCancel(); };
  const okBtn=ov.querySelector('#sd-confirm-ok');
- ov.querySelector('#sd-confirm-cancel').onclick=()=>{ closeIt(); if(typeof opts.onCancel==='function') opts.onCancel(); };
+ ov.querySelector('#sd-confirm-cancel').onclick=cancel;
  okBtn.onclick=()=>{
   if(retypeValue){
    const input=ov.querySelector('#sd-confirm-retype');
@@ -479,7 +512,7 @@ function showConfirm(message, onConfirm, opts={}){
  } else {
   setTimeout(()=>{ const b=document.getElementById('sd-confirm-cancel'); if(b) b.focus(); }, 50);
  }
- ov.addEventListener('keydown', e=>{ if(e.key==='Escape') closeIt(); });
+ ov.addEventListener('keydown', e=>{ if(e.key==='Escape') cancel(); });
  ov._releaseTrap=trapFocus(ov);
 }
 
@@ -495,13 +528,17 @@ function showPrompt(message, onSubmit, opts={}){
  const confirmLabel=opts.confirmLabel||'Valider';
  const cancelLabel=opts.cancelLabel||'Annuler';
  const inputType=opts.inputType||'text';
+ _closeStyledDialog('sd-prompt-overlay');
  const ov=document.createElement('div');
  ov.id='sd-prompt-overlay';
+ ov.setAttribute('role','dialog');
+ ov.setAttribute('aria-modal','true');
+ ov.setAttribute('aria-labelledby','sd-prompt-title');
  ov.style.cssText='position:fixed;inset:0;z-index:620;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:20px;';
- ov.innerHTML='<div style="background:#182449;border:1px solid rgba(241,196,15,.35);border-radius:18px;padding:24px 20px;text-align:center;max-width:360px;width:100%;box-shadow:var(--shadow-modal);">'
-  +'<div style="font-size:1em;font-weight:800;color:#f1c40f;margin-bottom:10px;">'+_e(title)+'</div>'
-  +'<div style="font-size:.9em;color:#dce3f0;line-height:1.5;margin-bottom:14px;white-space:pre-line;">'+_e(message)+'</div>'
-  +'<input id="sd-prompt-input" type="'+_e(inputType)+'" autocomplete="off" placeholder="'+_e(opts.placeholder||'')+'" style="width:100%;box-sizing:border-box;background:#0f1730;border:2px solid rgba(241,196,15,.35);border-radius:10px;padding:11px 12px;color:#fff;font-size:.95em;margin-bottom:16px;text-align:center;">'
+ ov.innerHTML='<div class="sd-dialog-card">'
+  +'<div id="sd-prompt-title" class="sd-dialog-title">'+_e(title)+'</div>'
+  +'<div class="sd-dialog-msg" style="margin-bottom:14px;">'+_e(message)+'</div>'
+  +'<input id="sd-prompt-input" type="'+_e(inputType)+'" autocomplete="off" placeholder="'+_e(opts.placeholder||'')+'" class="sd-dialog-input">'
   +'<div style="display:flex;gap:10px;justify-content:center;">'
   +'<button id="sd-prompt-cancel" style="background:#555;color:#fff;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:.9em;cursor:pointer;">'+_e(cancelLabel)+'</button>'
   +'<button id="sd-prompt-ok" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:.9em;cursor:pointer;">'+_e(confirmLabel)+'</button>'
@@ -509,11 +546,12 @@ function showPrompt(message, onSubmit, opts={}){
  document.body.appendChild(ov);
  const closeIt=()=>_closeStyledDialog('sd-prompt-overlay');
  const input=ov.querySelector('#sd-prompt-input');
- ov.querySelector('#sd-prompt-cancel').onclick=()=>{ closeIt(); if(typeof opts.onCancel==='function') opts.onCancel(); };
+ const cancel=()=>{ closeIt(); if(typeof opts.onCancel==='function') opts.onCancel(); };
+ ov.querySelector('#sd-prompt-cancel').onclick=cancel;
  const submit=()=>{ const v=input.value; closeIt(); if(typeof onSubmit==='function') onSubmit(v); };
  ov.querySelector('#sd-prompt-ok').onclick=submit;
  input.addEventListener('keydown', e=>{ if(e.key==='Enter') submit(); });
- ov.addEventListener('keydown', e=>{ if(e.key==='Escape') closeIt(); });
+ ov.addEventListener('keydown', e=>{ if(e.key==='Escape') cancel(); });
  setTimeout(()=>input.focus(), 50);
  ov._releaseTrap=trapFocus(ov);
 }
@@ -522,12 +560,21 @@ function showPrompt(message, onSubmit, opts={}){
 // l'objectif du jour, sur le même gabarit visuel que showAlert/showConfirm.
 function showObjectiveChoice(candidates, subj){
  const _e=(typeof esc==='function')?esc:(s=>String(s));
+ // AUD-03-012 (audit UX 2026-09-25) : jusqu'ici, seule la touche Échap
+ // fermait cette modale — absente sur tablette/mobile, principal support visé
+ // par un enfant, ce qui créait un dead-end total sans clavier. Ajout d'un
+ // bouton "Plus tard" explicite + fermeture au clic sur le fond assombri.
+ _closeStyledDialog('sd-objective-overlay');
  const ov=document.createElement('div');
  ov.id='sd-objective-overlay';
+ ov.setAttribute('role','dialog');
+ ov.setAttribute('aria-modal','true');
+ ov.setAttribute('aria-labelledby','sd-objective-title');
  ov.style.cssText='position:fixed;inset:0;z-index:620;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:20px;';
- ov.innerHTML='<div style="background:#182449;border:1px solid rgba(241,196,15,.35);border-radius:18px;padding:22px 20px;text-align:center;max-width:360px;width:100%;box-shadow:var(--shadow-modal);">'
-  +'<div style="font-size:1em;font-weight:800;color:#f1c40f;margin-bottom:14px;">Choisis ton objectif du jour</div>'
+ ov.innerHTML='<div class="sd-dialog-card">'
+  +'<div id="sd-objective-title" class="sd-dialog-title" style="margin-bottom:14px;">Choisis ton objectif du jour</div>'
   +candidates.map((c,i)=>`<button data-idx="${i}" style="display:block;width:100%;margin-bottom:10px;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:12px 14px;font-weight:700;font-size:.88em;cursor:pointer;">${_e(c.text)}</button>`).join('')
+  +'<button id="sd-objective-later" style="display:block;width:100%;background:#555;color:#fff;border:none;border-radius:10px;padding:11px 14px;font-weight:700;font-size:.85em;cursor:pointer;">Plus tard</button>'
   +'</div>';
  document.body.appendChild(ov);
  const today=new Date().toISOString().slice(0,10);
@@ -541,6 +588,8 @@ function showObjectiveChoice(candidates, subj){
    if(typeof toast==='function') toast(c.text, 3800);
   };
  });
+ ov.querySelector('#sd-objective-later').onclick=closeIt;
+ ov.addEventListener('click', e=>{ if(e.target===ov) closeIt(); });
  ov.addEventListener('keydown', e=>{ if(e.key==='Escape') closeIt(); });
  setTimeout(()=>{ const b=ov.querySelector('button[data-idx]'); if(b) b.focus(); }, 50);
  ov._releaseTrap=trapFocus(ov);
@@ -1526,7 +1575,11 @@ function _chooseSubjectProceed(key){
   gotoMenu2();
  }
 }
-function chooseSubject(key){
+// AUD-03-006 (audit UX 2026-09-25) : les tuiles "Bientôt" gardaient le même
+// curseur/comportement de clic qu'une tuile active — seul l'œil (opacité
+// réduite) signalait le verrou, ambigu pour un enfant. `btn` (optionnel)
+// permet de secouer la tuile cliquée en plus du toast déjà existant.
+function chooseSubject(key, btn){
  if(key==='math'||key==='fr'||key==='hist'){
   // AUD-02-027 (audit fonctionnel 2026-09-21) : le blocage de matières
   // (Vue Parent -> Encadrement -> "Matières autorisées", saveBlockedSubjects())
@@ -1544,6 +1597,7 @@ function chooseSubject(key){
  }else{
   if(typeof toast==='function') toast('🔒 '+(SUBJECT_LABELS[key]||'Cette matière')+' — bientôt disponible !');
   try{ if(typeof beep==='function') beep(220,'sine',.12); }catch(e){}
+  if(btn){ btn.classList.remove('subj-shake'); void btn.offsetWidth; btn.classList.add('subj-shake'); }
  }
 }
 // Écran 2 → Écran 1 (bouton Retour de l'écran 2)
@@ -1648,13 +1702,13 @@ function mcRenderCombat(){
  const _esc = (typeof esc==='function') ? esc : (s=>String(s).replace(/[<>"']/g,''));
  box.innerHTML = _mcCombat.map((p,i)=>{
   const isCustom = !KN.includes(p.name);
-  return `<div style="display:flex;gap:6px;align-items:center;background:rgba(255,255,255,.04);padding:8px;border-radius:8px;">
+  return `<div class="mc-combat-row" data-idx="${i}" style="display:flex;gap:6px;align-items:center;background:rgba(255,255,255,.04);padding:8px;border-radius:8px;">
    <span style="font-size:1em;">👤</span>
    <select onchange="mcCombatName(${i},this.value)" style="flex:1.2;margin:0;">
     ${KN.map(n=>`<option value="${_esc(n)}"${n===p.name?' selected':''}>${_esc(n)}</option>`).join('')}
     <option value="__c__"${isCustom?' selected':''}>✏️ Autre…</option>
    </select>
-   ${isCustom?`<input type="text" placeholder="Prénom…" value="${_esc(p.name)}" maxlength="16" oninput="_mcCombat[${i}].name=this.value" style="flex:1;margin:0;">`:''}
+   ${isCustom?`<input type="text" placeholder="Prénom…" value="${_esc(p.name)}" maxlength="16" oninput="_mcCombat[${i}].name=this.value;this.closest('.mc-combat-row').classList.remove('mc-row-error')" style="flex:1;margin:0;">`:''}
    <select onchange="_mcCombat[${i}].level=this.value" style="flex:.7;margin:0;">
     ${(()=>{ const _gi=(l)=>(typeof _groupIcon==='function')?_groupIcon(l)+' ':''; const _ll=(l)=>(typeof _levelLabel==='function')?_levelLabel(l):l; const o=(l)=>`<option value="${l}"${l===p.level?' selected':''}>${_gi(l)}${_ll(l)}</option>`; const prim=(typeof PRIMARY_LEVELS!=='undefined')?PRIMARY_LEVELS:['CP','CE1','CE2','CM1','CM2']; const coll=(typeof COLLEGE_LEVELS!=='undefined')?COLLEGE_LEVELS:[]; const gm=(typeof GROUP_META!=='undefined')?GROUP_META:{primaire:{icon:'🎒',name:'Primaire'},college:{icon:'🎓',name:'Collège'}}; return `<optgroup label="${gm.primaire.icon} ${gm.primaire.name}">${prim.map(o).join('')}</optgroup>`+(coll.length?`<optgroup label="${gm.college.icon} ${gm.college.name}">${coll.map(o).join('')}</optgroup>`:''); })()}
    </select>
@@ -1665,6 +1719,17 @@ function mcRenderCombat(){
  if(addBtn) addBtn.style.display = _mcCombat.length>=5 ? 'none' : '';
 }
 function mcCombatName(i,v){ _mcCombat[i].name = (v==='__c__') ? '' : v; mcRenderCombat(); }
+// AUD-03-017 (audit UX 2026-09-25) : l'erreur de validation du mode Combat
+// n'était signalée que par un toast disparaissant après 3s, sans marquer les
+// champs fautifs — l'enfant ne comprenait plus pourquoi "Commencer" restait
+// sans effet une fois le toast disparu. Surlignage persistant en plus du toast.
+function _mcHighlightRows(indices){
+ document.querySelectorAll('.mc-combat-row').forEach(row=>row.classList.remove('mc-row-error'));
+ indices.forEach(i=>{
+  const row=document.querySelector('.mc-combat-row[data-idx="'+i+'"]');
+  if(row) row.classList.add('mc-row-error');
+ });
+}
 function mcAddCombatPlayer(){ if(_mcCombat.length<5){ _mcCombat.push({name:'',level:'CP'}); mcRenderCombat(); } }
 function mcRmCombat(i){ _mcCombat.splice(i,1); mcRenderCombat(); }
 
@@ -1675,6 +1740,7 @@ function mcStart(){
   if(valid.length < 2){
    if(typeof toast==='function') toast('⚠️ Il faut au moins 2 joueurs nommés !', 3000);
    else showAlert('Il faut au moins 2 joueurs nommés !');
+   _mcHighlightRows(_mcCombat.map((p,i)=>i).filter(i=>!(_mcCombat[i].name && _mcCombat[i].name.trim())));
    return;
   }
   // Audit fonctionnel v11.7.6+ (#3) : deux joueurs homonymes faussent l'attribution
@@ -1685,6 +1751,13 @@ function mcStart(){
   if(new Set(_lcNames).size !== _lcNames.length){
    if(typeof toast==='function') toast('⚠️ Deux joueurs ne peuvent pas avoir le même prénom !', 3000);
    else showAlert('Deux joueurs ne peuvent pas avoir le même prénom !');
+   const _seen={}, _dupIdx=[];
+   _mcCombat.forEach((p,i)=>{
+    if(!p.name || !p.name.trim()) return;
+    const key=p.name.trim().toLowerCase();
+    if(_seen[key]!==undefined){ _dupIdx.push(_seen[key], i); } else { _seen[key]=i; }
+   });
+   _mcHighlightRows(_dupIdx);
    return;
   }
   // Alimenter la structure globale combatCfg utilisée par startGame

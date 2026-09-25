@@ -6,12 +6,18 @@
 // défaut — risque de mauvaise manipulation silencieuse dans un foyer
 // multi-enfants. _onParentPlayerSelectChange() (09-parent.js) propage désormais
 // le choix à tous les sélecteurs.
+//
+// AUD-03-002 (audit UX 2026-09-25) — ces 6 sélecteurs redondants (dont un,
+// enc-msg-player, pas même synchronisé) ont été remplacés par un seul
+// sélecteur 'enc-player', sticky en haut de l'onglet Encadrement. Il ne
+// reste donc plus que 2 sélecteurs "enfant" au total : 'parent-player'
+// (onglet Suivi) et 'enc-player' (onglet Encadrement, pilote les 6 panneaux).
 import { describe, it, expect } from 'vitest';
 import { loadGame } from './helpers/loadGame.js';
 
 const FILES = ['01-core.js', '02-data.js', '05-profile.js', '06a-adaptive.js', '06b-time-block.js', '09-parent.js'];
 
-const SELECT_IDS = ['parent-player', 'hw-player', 'calm-player', 'block-player', 'filter-player', 'bsubj-player'];
+const SELECT_IDS = ['parent-player', 'enc-player'];
 
 function setupGame() {
   const api = loadGame(FILES);
@@ -21,7 +27,7 @@ function setupGame() {
   return api;
 }
 
-describe('_onParentPlayerSelectChange() — synchronise les 6 sélecteurs d\'enfant', () => {
+describe('_onParentPlayerSelectChange() — synchronise les sélecteurs d\'enfant (parent-player + enc-player)', () => {
   it('changer un sélecteur propage la valeur à tous les autres', () => {
     const api = setupGame();
     api._onParentPlayerSelectChange('Emma');

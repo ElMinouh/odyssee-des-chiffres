@@ -16,7 +16,10 @@ function openParent(){
  const hint=$('pin-default-hint');
  if(hint) hint.classList.toggle('hidden', !!localStorage.getItem('parentPin'));
  const opts=getRoster().map(n=>`<option>${n}</option>`).join('');
-['parent-player','obj-player','block-player','filter-player','hw-player','bsubj-player','calm-player'].forEach(id=>{const e=$(id);if(e)e.innerHTML=opts;});
+ // AUD-03-002 : 'enc-player' (sélecteur unique, sticky, onglet Encadrement)
+ // remplace les anciens hw-player/calm-player/block-player/filter-player/
+ // bsubj-player — 'obj-player' n'existe plus dans index.html (déjà orphelin).
+['parent-player','enc-player'].forEach(id=>{const e=$(id);if(e)e.innerHTML=opts;});
  $('cloud-player').innerHTML='<option value="ALL">Tous les joueurs</option>'+opts;
  if(typeof navTo==='function') navTo('v-parent'); else showView('v-parent');
 }
@@ -49,7 +52,7 @@ function ptab(name){
   loadBlockSettings();loadFilterSettings();
   if(typeof onFilterSubjectChange==='function')onFilterSubjectChange();
   if(typeof loadBlockedSubjects==='function')loadBlockedSubjects();
-  _encFillMsgPlayer();
+  _encRenderMessaging();
  }
  if(name==='comptes'){setTimeout(()=>{ if(typeof optFillProfiles==='function')optFillProfiles(); if(typeof renderProfileManager==='function')renderProfileManager(); },60);}
  if(name==='figurines'){
@@ -63,13 +66,15 @@ function ptab(name){
   renderParentFigurines();
  }
 }
-// Sélecteur d'enfant pour la messagerie dans l'onglet Encadrement.
-function _encFillMsgPlayer(){
- const sel=$('enc-msg-player'); if(!sel) return;
+// AUD-03-002 (audit UX 2026-09-25) : la messagerie avait son propre
+// sélecteur d'enfant (enc-msg-player), non synchronisé avec les 5 autres
+// (AUD-02-030) — remplacé par le sélecteur unique 'enc-player' de l'onglet
+// Encadrement ; cette fonction se contente désormais de rendre le panneau
+// pour l'enfant actuellement choisi dans ce sélecteur partagé.
+function _encRenderMessaging(){
  const names=getRoster();
- sel.innerHTML=names.map(n=>`<option>${n}</option>`).join('');
- const cur=(P&&P.name&&names.includes(P.name))?P.name:(names[0]||'');
- if(cur){ sel.value=cur; if(typeof renderOptMessaging==='function') renderOptMessaging(cur); }
+ const cur=$('enc-player')?.value || ((P&&P.name&&names.includes(P.name))?P.name:(names[0]||''));
+ if(cur){ if(typeof renderOptMessaging==='function') renderOptMessaging(cur); }
  else if($('opt-messaging')){ $('opt-messaging').innerHTML='<span style="font-size:.8em;color:#bdc3c7;">Ajoute un profil dans « Comptes ».</span>'; }
 }
 // ── Cartes profils unifiées : photo, renommer, retirer (v11.6.6) ──
@@ -866,7 +871,7 @@ function renderWeeklySummary(){
    ${((typeof chatIsEnabledByName==='function' && chatIsEnabledByName(player)) || chatFlagsThis.length>0) ? `
    <div class="wreport-section no-print">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
-     <span style="font-size:.9em;color:#9aa6b2;">✉️ Messagerie de ${_esc_player}</span>
+     <span style="font-size:.9em;color:#bdc3c7;">✉️ Messagerie de ${_esc_player}</span>
      ${chatFlagsThis.length ? `<span style="font-size:.78em;color:#f39c12;font-weight:700;" title="Messages bloqués par le filtre de langage cette semaine">⚠️ ${chatFlagsThis.length} message${chatFlagsThis.length>1?'s':''} bloqué${chatFlagsThis.length>1?'s':''}</span>` : ''}
      <button onclick="openMessaging('${_jsAttrPlayer}')" style="background:#9b59b6;font-size:.8em;padding:6px 12px;">Voir →</button>
     </div>
@@ -875,7 +880,7 @@ function renderWeeklySummary(){
          reste de la vie sociale (amis, échanges). Rempli de façon asynchrone par
          _fillWeeklySocialStats() ci-dessous (chatFriendList()/msg-latest sont des
          appels réseau, non disponibles au moment du rendu synchrone de ce bloc). -->
-    <div id="wreport-social" style="margin-top:6px;font-size:.78em;color:#9aa6b2;"></div>
+    <div id="wreport-social" style="margin-top:6px;font-size:.78em;color:#bdc3c7;"></div>
    </div>` : ''}
    <div class="wreport-actions no-print">
     <button onclick="copyWeeklySummary()" style="background:var(--info);">📋 Copier le résumé</button>
@@ -933,15 +938,37 @@ function copyWeeklySummary(){
  });
 }
 
+// AUD-03-023 (audit UX 2026-09-25) : validation champ par champ au blur, en
+// complément de la validation globale de savePin() au clic — le parent voit
+// désormais lequel des 3 champs corriger, sans attendre le clic Sauvegarder.
+function _pinCheckField(id){
+ const el=$(id); const err=$(id+'-err'); if(!el||!err) return true;
+ let msg='';
+ if(id==='new-pin'){ const v=el.value.trim(); if(v && !/^\d{4}$/.test(v)) msg='4 chiffres requis.'; }
+ else if(id==='new-secq'){ const v=el.value.trim(); const a=$('new-seca')?.value.trim(); if(!v && a) msg='Question requise si une réponse est saisie.'; }
+ else if(id==='new-seca'){ const v=el.value.trim(); const q=$('new-secq')?.value.trim(); if(!v && q) msg='Réponse requise si une question est saisie.'; }
+ err.innerText=msg; err.classList.toggle('hidden', !msg);
+ el.classList.toggle('field-invalid', !!msg);
+ return !msg;
+}
 async function savePin(){
- const pin=$('new-pin')?.value.trim();if(!/^\d{4}$/.test(pin)){$('pin-msg').innerText='❌ 4 chiffres requis.';$('pin-msg').style.color='#e74c3c';return;}
- const q=$('new-secq')?.value.trim(), a=$('new-seca')?.value.trim();
+ const pinEl=$('new-pin'), qEl=$('new-secq'), aEl=$('new-seca');
+ const pin=pinEl?.value.trim();
+ const q=qEl?.value.trim(), a=aEl?.value.trim();
+ const pinOk = /^\d{4}$/.test(pin||'');
+ if(!pinOk){ if(pinEl){$(pinEl.id+'-err').innerText='4 chiffres requis.';$(pinEl.id+'-err').classList.remove('hidden');pinEl.classList.add('field-invalid');pinEl.focus();} $('pin-msg').innerText='❌ 4 chiffres requis.';$('pin-msg').style.color='#e74c3c';return;}
  // AUD-02-028 (audit fonctionnel 2026-09-21) : la question secrète est désormais
  // OBLIGATOIRE dès qu'un code personnalisé est défini. C'est elle qui protège
  // recoverParentPin() — sans elle, le code par défaut '1234' était révélé en
  // clair à quiconque cliquait sur "Code oublié ?", sans aucune vérification
  // d'identité, annulant de fait toute la protection parentale.
- if(!q || !a){ $('pin-msg').innerText='❌ La question secrète est obligatoire (sert à récupérer le code en cas d\'oubli).'; $('pin-msg').style.color='#e74c3c'; return; }
+ if(!q || !a){
+  if(!q && qEl){ $('new-secq-err').innerText='Question secrète obligatoire.'; $('new-secq-err').classList.remove('hidden'); qEl.classList.add('field-invalid'); qEl.focus(); }
+  else if(!a && aEl){ $('new-seca-err').innerText='Réponse obligatoire.'; $('new-seca-err').classList.remove('hidden'); aEl.classList.add('field-invalid'); aEl.focus(); }
+  $('pin-msg').innerText='❌ La question secrète est obligatoire (sert à récupérer le code en cas d\'oubli).'; $('pin-msg').style.color='#e74c3c'; return;
+ }
+ [pinEl,qEl,aEl].forEach(el=>el&&el.classList.remove('field-invalid'));
+ ['new-pin-err','new-secq-err','new-seca-err'].forEach(id=>{const e=$(id); if(e){e.innerText='';e.classList.add('hidden');}});
  localStorage.setItem('parentPin', await hashPinSecure(pin));
  localStorage.setItem('parentSecQ',q); localStorage.setItem('parentSecA', await hashPinSecure(a.toLowerCase()));
  $('pin-msg').innerText='✅ Code et question secrète enregistrés !';
@@ -1228,19 +1255,35 @@ function _hwTypeOptions(subj, level){
  }
  return null;
 }
+// AUD-03-022 (audit UX 2026-09-25) : quand la liste de types change suite à
+// un changement de niveau et que le type choisi par le parent n'existe plus
+// dans la nouvelle liste, un toast prévient désormais — sinon le retour au
+// premier type par défaut passait totalement inaperçu.
 function onHwLevelChange(){
  const lvlSel = $('hw-level'), typeSel = $('hw-type');
  if(!lvlSel || !typeSel) return;
  const subj = $('hw-subject')?.value || 'math';
  const prev = typeSel.value;
+ // Pas de dépendance à typeSel.options/selectedIndex (non fournis par le
+ // stub DOM des tests, tests/helpers/loadGame.js) : le libellé précédent est
+ // extrait du innerHTML actuel, une simple chaîne, via une regex.
+ const _prevLabelMatch = prev && typeSel.innerHTML.match(new RegExp('value="'+prev+'"[^>]*>([^<]*)<'));
+ const prevLabel = (_prevLabelMatch && _prevLabelMatch[1]) || prev;
+ const _warnIfReset = (stillPresent)=>{
+  if(prev && !stillPresent && typeof toast==='function'){
+   toast('ℹ️ Type de devoir réinitialisé ("'+prevLabel+'" indisponible pour ce niveau)', 3200);
+  }
+ };
  const custom = _hwTypeOptions(subj, lvlSel.value);
  if(custom){
   typeSel.innerHTML = custom.map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
-  if(custom.some(o=>o[0]===prev)) typeSel.value = prev;
+  const stillPresent = custom.some(o=>o[0]===prev);
+  if(stillPresent) typeSel.value = prev;
+  _warnIfReset(stillPresent);
   return;
  }
  const cycle = _hwCycle(lvlSel.value);
- let opts;
+ let opts, groups;
  if(cycle === 'mat'){
   opts = [['any','Toutes les activités']];
  } else if(cycle === 'col'){
@@ -1249,9 +1292,30 @@ function onHwLevelChange(){
   opts = [['any','Toutes opérations'],['add','Additions'],['sub','Soustractions'],['mult','Multiplications'],['div','Divisions'],
    ['table_2','Table de 2'],['table_3','Table de 3'],['table_4','Table de 4'],['table_5','Table de 5'],['table_6','Table de 6'],
    ['table_7','Table de 7'],['table_8','Table de 8'],['table_9','Table de 9'],['table_10','Table de 10']];
+  // AUD-03-030 : 14 options à plat → regroupées, comme le HTML statique par défaut.
+  groups = { 'any':null, 'add':'Opérations','sub':'Opérations','mult':'Opérations','div':'Opérations',
+   'table_2':'Tables','table_3':'Tables','table_4':'Tables','table_5':'Tables','table_6':'Tables',
+   'table_7':'Tables','table_8':'Tables','table_9':'Tables','table_10':'Tables' };
  }
- typeSel.innerHTML = opts.map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
- if(opts.some(o=>o[0]===prev)) typeSel.value = prev;
+ if(groups){
+  let html = '', openGroup = null;
+  opts.forEach(([v,l])=>{
+   const g = groups[v];
+   if(g !== openGroup){
+    if(openGroup) html += '</optgroup>';
+    if(g) html += '<optgroup label="'+g+'">';
+    openGroup = g;
+   }
+   html += `<option value="${v}">${l}</option>`;
+  });
+  if(openGroup) html += '</optgroup>';
+  typeSel.innerHTML = html;
+ } else {
+  typeSel.innerHTML = opts.map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
+ }
+ const stillPresent = opts.some(o=>o[0]===prev);
+ if(stillPresent) typeSel.value = prev;
+ _warnIfReset(stillPresent);
 }
 // Matière du devoir : adapte la liste des types (français = « tout le français »).
 function onHwSubjectChange(){
@@ -1274,15 +1338,29 @@ function onFilterSubjectChange(){
 // ── Blocage de matières entières (par joueur) ──
 const _BSUBJ_LIST = [['math','🔢 Mathématiques'],['fr','📖 Français'],['hist','🏛️ Histoire'],['geo','🌍 Géographie'],['en','🇬🇧 Anglais'],['svt','🧬 SVT'],['pc','⚗️ Physique-Chimie']];
 function loadBlockedSubjects(){
- const sel=$('bsubj-player')?.value; const list=$('bsubj-list'); if(!sel||!list) return;
+ const sel=$('enc-player')?.value; const list=$('bsubj-list'); if(!sel||!list) return;
  let blocked=[];
  try{ const raw=localStorage.getItem('user_'+sel); if(raw){ const d=JSON.parse(raw); blocked=Array.isArray(d.blockedSubjects)?d.blockedSubjects:[]; } }catch(e){}
  list.innerHTML=_BSUBJ_LIST.map(([k,l])=>`<label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:.9em;"><input type="checkbox" class="bsubj-cb" value="${k}" ${blocked.indexOf(k)>=0?'checked':''}> ${l}</label>`).join('');
  const st=$('bsubj-status'); if(st) st.innerText='';
 }
+// AUD-03-025 (audit UX 2026-09-25) : cocher les 7 matières puis Enregistrer
+// bloquait tout le jeu en un clic, sans aucun avertissement — contrairement
+// au blocage horaire ou au reset, protégés par une confirmation renforcée.
 function saveBlockedSubjects(){
- const sel=$('bsubj-player')?.value; if(!sel){if(typeof toast==='function')toast('⚠️ Sélectionnez un joueur');return;}
+ const sel=$('enc-player')?.value; if(!sel){if(typeof toast==='function')toast('⚠️ Sélectionnez un joueur');return;}
  const blocked=[].slice.call(document.querySelectorAll('.bsubj-cb:checked')).map(c=>c.value);
+ if(blocked.length===_BSUBJ_LIST.length){
+  showConfirm(
+   `Toutes les matières seront bloquées : ${sel} ne pourra plus jouer du tout. Enregistrer quand même ?`,
+   ()=>_saveBlockedSubjectsNow(sel,blocked),
+   {title:'⚠️ Toutes les matières bloquées', danger:true, confirmLabel:'Enregistrer quand même'}
+  );
+  return;
+ }
+ _saveBlockedSubjectsNow(sel,blocked);
+}
+function _saveBlockedSubjectsNow(sel,blocked){
  try{
   const raw=localStorage.getItem('user_'+sel); if(!raw){if(typeof toast==='function')toast('⚠️ Profil introuvable.',3000);return;}
   const d=JSON.parse(raw); d.blockedSubjects=blocked; localStorage.setItem('user_'+sel,JSON.stringify(d));
@@ -1296,7 +1374,7 @@ function saveBlockedSubjects(){
  * Charge dans la vue parent le devoir actuel du joueur sélectionné.
  */
 function loadHomework(){
- const sel = $('hw-player')?.value;
+ const sel = $('enc-player')?.value;
  if(!sel) return;
  const status = $('hw-status');
  try{
@@ -1332,7 +1410,7 @@ function loadHomework(){
  * retrouver la pression/conséquence classique. Réutilise le pattern de loadHomework.
  */
 function loadCalmMode(){
- const sel = $('calm-player')?.value;
+ const sel = $('enc-player')?.value;
  const cb = $('calm-toggle');
  if(!sel || !cb) return;
  try{
@@ -1345,7 +1423,7 @@ function loadCalmMode(){
  }
 }
 function toggleCalmMode(){
- const sel = $('calm-player')?.value;
+ const sel = $('enc-player')?.value;
  const cb = $('calm-toggle');
  if(!sel || !cb) return;
  try{
@@ -1367,7 +1445,7 @@ function toggleCalmMode(){
  * Sauvegarde un devoir pour le joueur sélectionné.
  */
 function saveHomework(){
- const sel = $('hw-player')?.value;
+ const sel = $('enc-player')?.value;
  if(!sel){toast('⚠️ Sélectionnez un joueur'); return;}
  const type = $('hw-type').value;
  const level = $('hw-level').value;
@@ -1399,7 +1477,7 @@ function saveHomework(){
  * Annule le devoir actif d'un joueur.
  */
 function clearHomework(){
- const sel = $('hw-player')?.value;
+ const sel = $('enc-player')?.value;
  if(!sel) return;
  showConfirm(`Annuler le devoir de ${sel} ?`, ()=>{
   try{
@@ -1514,7 +1592,7 @@ function renderCloudPanel(){
  // exhaustif (le diagnostic complet reste disponible plus bas, "Diagnostic").
  const mergeSummary = cloudStatus && Array.isArray(cloudStatus.lastMergeSummary) ? cloudStatus.lastMergeSummary : [];
  const mergeSummaryBlock = mergeSummary.length
-  ? '<div style="font-size:.72em;color:#9aa6b2;margin:6px 0;background:rgba(255,255,255,.06);border-radius:6px;padding:6px 8px;"><b>Dernière synchronisation — ce qui a changé :</b><br>'+mergeSummary.map(l=>esc(l)).join('<br>')+'</div>'
+  ? '<div style="font-size:.72em;color:#bdc3c7;margin:6px 0;background:rgba(255,255,255,.06);border-radius:6px;padding:6px 8px;"><b>Dernière synchronisation — ce qui a changé :</b><br>'+mergeSummary.map(l=>esc(l)).join('<br>')+'</div>'
   : '';
  // v9.4.16 : nom échappé pour le HTML (esc) et pour les onclick (apostrophes) —
  // un prénom comme « L'éa » cassait les boutons cloud.
@@ -1762,6 +1840,22 @@ function renderProfileManager(){
    </div>`;
  }).join('');
 }
+// AUD-03-029 (audit UX 2026-09-25) : le doublon de prénom n'était détecté
+// qu'au clic sur "Ajouter" (toast après coup) — vérification en direct à la
+// frappe, avec message localisé + bouton désactivé, comme le reste du formulaire.
+function _pmCheckNewName(){
+ const i=$('pm-new'), err=$('pm-new-err'), btn=$('pm-add-btn');
+ if(!i||!err||!btn) return;
+ const n=i.value.trim();
+ const roster=(typeof getRoster==='function')?getRoster():[];
+ const dup = n && roster.includes(n);
+ err.innerText = dup ? 'Ce profil existe déjà.' : '';
+ err.classList.toggle('hidden', !dup);
+ i.classList.toggle('field-invalid', !!dup);
+ btn.disabled = !!dup;
+ btn.style.opacity = dup ? '.5' : '1';
+ btn.style.cursor = dup ? 'not-allowed' : 'pointer';
+}
 function pmAddProfile(){
  const i=$('pm-new'); if(!i) return; const n=i.value.trim();
  // AUD-02-003 (audit fonctionnel 2026-09-21) : jusqu'ici, cliquer « Ajouter »
@@ -1782,6 +1876,7 @@ function pmAddProfile(){
   _setPendingStartLevel(n, lvlSel.value);
  }
  i.value='';
+ _pmCheckNewName();
  renderProfileManager();
  if(typeof fillPlayerSelect==='function') fillPlayerSelect();
  // v11.6.5 : fillPlayerSelect() ne rafraîchit que le sélecteur de l'écran
@@ -1807,11 +1902,12 @@ function pmAddProfile(){
 // le contenu de chaque panneau — même bloc que ptab('encadrement') plus haut,
 // pour que le panneau actuellement visible reflète tout de suite le bon
 // enfant, pas seulement au prochain changement d'onglet.
+// AUD-03-002 (audit UX 2026-09-25) : 'enc-player' est désormais le SEUL
+// sélecteur de l'onglet Encadrement (remplace hw-player/calm-player/
+// block-player/filter-player/bsubj-player/enc-msg-player) — ne reste à
+// synchroniser qu'avec 'parent-player' (onglet Suivi, contexte différent).
 function _onParentPlayerSelectChange(name){
- // Les 6 sélecteurs sont toujours peuplés depuis le même roster (openParent(),
- // _refreshAllParentPlayerSelects()) : une valeur choisie dans l'un est donc
- // garantie présente dans tous les autres, pas besoin de re-vérifier options.
- ['parent-player','hw-player','calm-player','block-player','filter-player','bsubj-player'].forEach(id=>{
+ ['parent-player','enc-player'].forEach(id=>{
   const e=$(id); if(e) e.value=name;
  });
  renderReport();renderReportView();if(typeof renderProfileLog==='function')renderProfileLog();
@@ -1821,20 +1917,21 @@ function _onParentPlayerSelectChange(name){
  loadBlockSettings();loadFilterSettings();
  if(typeof onFilterSubjectChange==='function')onFilterSubjectChange();
  if(typeof loadBlockedSubjects==='function')loadBlockedSubjects();
+ _encRenderMessaging();
 }
 // v11.6.5 : rafraîchit TOUS les sélecteurs de profil de la Vue Parent
 // (pas seulement celui de l'écran d'accueil), en préservant la sélection
 // en cours quand elle reste valide.
 function _refreshAllParentPlayerSelects(){
  const opts=(typeof getRoster==='function'?getRoster():[]).map(n=>`<option>${n}</option>`).join('');
- ['parent-player','obj-player','block-player','filter-player','hw-player','bsubj-player','calm-player'].forEach(id=>{
+ ['parent-player','enc-player'].forEach(id=>{
   const e=$(id); if(!e) return;
   const cur=e.value;
   e.innerHTML=opts;
   if(cur && Array.prototype.some.call(e.options, o=>o.value===cur)) e.value=cur;
  });
  if(typeof optFillProfiles==='function') optFillProfiles();
- if(typeof _encFillMsgPlayer==='function') _encFillMsgPlayer();
+ _encRenderMessaging();
 }
 // v11.6.8 : sécurisation de la suppression par re-saisie exacte du prénom
 // (remplace l'ancien confirm() natif, jugé insuffisamment engageant).
@@ -1907,6 +2004,11 @@ function pmSetBirthday(name, field, val){
   }
  }
  setBirthday(name, cur.m, cur.d);
+ // AUD-03-027 (audit UX 2026-09-25) : cette sauvegarde automatique (au
+ // onchange) ne donnait aucun retour visuel positif, contrairement aux
+ // autres réglages de l'onglet Encadrement (bouton + statut explicite) — le
+ // parent ne pouvait pas savoir si le changement avait bien été pris en compte.
+ if(cur.m && cur.d && typeof toast==='function') toast('✅ Date d’anniversaire enregistrée', 2000);
 }
 
 // ── Onglet Options réorganisé : pilotage par profil ──────────────────

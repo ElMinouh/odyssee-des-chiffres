@@ -322,12 +322,18 @@
    </div>
   </div>
 
-  <!-- Grand bouton Continuer -->
-  <button onclick="gotoSubjects()" style="margin-top:14px;width:90%;max-width:420px;font-size:1.3em;padding:16px;" class="pulse">&#9654;&#65039; CONTINUER</button>
+  <!-- AUD-03-001 (audit UX 2026-09-25) : "CONTINUER" ici (choix de matière)
+       et "Continuer l'aventure" (menu1-continue-btn, reprise d'Odyssée)
+       coexistaient avec le même verbe — l'enfant cliquait le plus visible
+       (celui-ci, pleine largeur + pulse) en pensant reprendre sa progression.
+       Renommé pour lever l'ambiguïté, le mot "Continuer" reste réservé à la reprise. -->
+  <button onclick="gotoSubjects()" style="margin-top:14px;width:90%;max-width:420px;font-size:1.3em;padding:16px;" class="pulse">&#9654;&#65039; JOUER</button>
 
   <!-- Bas : Vue Parent centré -->
+  <!-- AUD-03-003 : Vue Parent (accès protégé par PIN) avait le même style gris
+       que le bouton Paramètres — aucun signal visuel de "zone protégée" avant clic. -->
   <div style="display:flex;justify-content:center;align-items:center;width:100%;max-width:420px;margin:12px auto 0;">
-   <button onclick="openParent()" title="Statistiques et contrôle parental" style="background:#555;font-size:.8em;padding:6px 12px;">&#128106; Vue Parent</button>
+   <button onclick="openParent()" title="Statistiques et contrôle parental" style="background:#2c3e77;border:1px solid rgba(127,157,230,.4);font-size:.8em;padding:6px 12px;">&#128274;&#128106; Vue Parent</button>
   </div>
 
   <!-- Selects critiques conservés cachés (alimentés en étape B par les sous-écrans).
@@ -351,7 +357,7 @@
 
  <!-- ═══ ÉCRAN « CHOISIS TA MATIÈRE » (multi-matières) ═══ -->
  <div id="v-subjects" class="hidden">
-  <div class="back-top-bar" style="display:flex;justify-content:space-between;align-items:center;"><button class="back-top-btn is-back" onclick="navBack()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Retour</button><button class="back-top-btn" onclick="toggleSettings()" style="background:#34495e;">&#128202; Tableau de bord</button></div>
+  <div class="back-top-bar" style="display:flex;justify-content:space-between;align-items:center;"><button class="back-top-btn is-back" onclick="navBack()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Retour</button><button class="back-top-btn tb-dash" onclick="toggleSettings()">&#128202; Tableau de bord</button></div>
   <div style="text-align:center;margin:4px 0 2px;">
    <div style="font-size:.72em;letter-spacing:.19em;color:#8aa0c8;text-transform:uppercase;">Joueur : <span id="subj-player">Joueur</span></div>
    <div style="font-size:1.6em;font-weight:800;color:#f1c40f;margin-top:4px;">Choisis ta matière</div>
@@ -379,28 +385,28 @@
     <div class="subj-badge subj-badge-go">&#9654; JOUER</div>
     <div class="subj-deco"><svg width="118" height="34" viewBox="0 0 118 34" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2" y="10" width="12" height="20" fill="none"/><rect x="0" y="6" width="16" height="4" fill="currentColor" stroke="none"/><rect x="26" y="10" width="12" height="20" fill="none"/><rect x="24" y="6" width="16" height="4" fill="currentColor" stroke="none"/><rect x="50" y="10" width="12" height="20" fill="none"/><rect x="48" y="6" width="16" height="4" fill="currentColor" stroke="none"/><rect x="74" y="10" width="12" height="20" fill="none"/><rect x="72" y="6" width="16" height="4" fill="currentColor" stroke="none"/><rect x="98" y="10" width="12" height="20" fill="none"/><rect x="96" y="6" width="16" height="4" fill="currentColor" stroke="none"/></svg></div>
    </button>
-   <button class="subj-tile subj-blocked" style="--g1:#16a085;--g2:#0c6e5b;" onclick="chooseSubject('geo')">
+   <button class="subj-tile subj-blocked" style="--g1:#16a085;--g2:#0c6e5b;" onclick="chooseSubject('geo',this)">
     <div class="subj-em">&#127757;</div>
     <div class="subj-nm">Géographie</div>
     <div class="subj-sub">Cartes, pays, reliefs</div>
     <div class="subj-badge">&#128274; Bientôt</div>
     <div class="subj-deco">&#129517;</div>
    </button>
-   <button class="subj-tile subj-blocked" style="--g1:#2e64c9;--g2:#16357a;" onclick="chooseSubject('en')">
+   <button class="subj-tile subj-blocked" style="--g1:#2e64c9;--g2:#16357a;" onclick="chooseSubject('en',this)">
     <div class="subj-em">&#127468;&#127463;</div>
     <div class="subj-nm">Anglais</div>
     <div class="subj-sub">Hello, words, fun!</div>
     <div class="subj-badge">&#128274; Bientôt</div>
     <div class="subj-deco" style="font-weight:900;">A</div>
    </button>
-   <button class="subj-tile subj-blocked" style="--g1:#5aa730;--g2:#356016;" onclick="chooseSubject('svt')">
+   <button class="subj-tile subj-blocked" style="--g1:#5aa730;--g2:#356016;" onclick="chooseSubject('svt',this)">
     <div class="subj-em">&#129516;</div>
     <div class="subj-nm">SVT</div>
     <div class="subj-sub">Vivant, corps, Terre</div>
     <div class="subj-badge">&#128274; Bientôt</div>
     <div class="subj-deco">&#127807;</div>
    </button>
-   <button class="subj-tile subj-wide subj-blocked" style="--g1:#7d4ec2;--g2:#4a2a86;" onclick="chooseSubject('pc')">
+   <button class="subj-tile subj-wide subj-blocked" style="--g1:#7d4ec2;--g2:#4a2a86;" onclick="chooseSubject('pc',this)">
     <div class="subj-wide-row">
      <div class="subj-em">&#9879;&#65039;</div>
      <div>
@@ -412,7 +418,7 @@
     <div class="subj-deco">&#9883;&#65039;</div>
    </button>
   </div>
-  <div style="text-align:center;margin-top:14px;font-size:.72em;color:#7e8db0;">Les autres matières arriveront progressivement.</div>
+  <div style="text-align:center;margin-top:14px;font-size:.72em;color:#bdc3c7;">Les autres matières arriveront progressivement.</div>
  </div>
 
  <!-- ═══ ÉCRAN 2 : CHOISIS TON AVENTURE ═══ -->
@@ -428,7 +434,7 @@
     <div style="font-size:.8em;color:#bdc3c7;margin-top:3px;"><span id="m2-lvl">Niv.1</span> · <span id="m2-title" style="font-style:italic;"></span></div>
    </div>
    <div style="text-align:right;flex:1;min-width:150px;">
-    <button onclick="toggleSettings()" style="background:#34495e;font-size:.8em;padding:7px 12px;">&#128202; Tableau de bord</button>
+    <button class="tb-dash" onclick="toggleSettings()" style="font-size:.8em;padding:7px 12px;">&#128202; Tableau de bord</button>
     <div style="font-size:1.6em;font-weight:800;color:#f1c40f;margin-top:8px;">&#11088; <span id="m2-stars">0</span></div>
    </div>
   </div>
@@ -448,7 +454,7 @@
 
   <!-- Séparation claire : la carte ci-dessus est LE mode principal, les 4
        tuiles ci-dessous sont des entraînements rapides secondaires. -->
-  <div style="text-align:center;font-size:.74em;color:#7f9a8f;font-weight:700;margin:16px 0 2px;width:92%;max-width:540px;margin-left:auto;margin-right:auto;">— ou entraîne-toi librement —</div>
+  <div style="text-align:center;font-size:.74em;color:#bdc3c7;font-weight:700;margin:16px 0 2px;width:92%;max-width:540px;margin-left:auto;margin-right:auto;">— ou entraîne-toi librement —</div>
 
   <!-- 4 modes en grille 2×2 -->
   <div id="modes-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:92%;max-width:540px;margin:10px auto 0;">
@@ -839,9 +845,9 @@
    <p id="pin-input-label" style="font-size:.9em;margin:4px 0;">Code parent :</p>
    <span style="display:inline-flex;align-items:center;gap:6px;">
     <input type="password" id="pin-input" aria-labelledby="pin-input-label" placeholder="****" style="width:50%;text-align:center;letter-spacing:6px;font-size:1.3em;" maxlength="4">
-    <button type="button" onclick="const i=$('pin-input');const on=i.type==='password';i.type=on?'text':'password';this.setAttribute('aria-label',on?'Masquer le code':'Afficher le code');this.textContent=on?'🙈':'👁️';" aria-label="Afficher le code" style="font-size:1em;padding:4px 8px;background:transparent;border:none;cursor:pointer;">👁️</button>
+    <button type="button" onclick="const i=$('pin-input');const on=i.type==='password';i.type=on?'text':'password';this.setAttribute('aria-label',on?'Masquer le code':'Afficher le code');this.textContent=on?'🙈':'👁️';" aria-label="Afficher le code" style="font-size:1em;min-width:40px;min-height:40px;background:transparent;border:none;cursor:pointer;">👁️</button>
    </span><br>
-   <p style="margin-top:8px;"><a onclick="recoverParentPin()" style="font-size:.8em;color:#9aa6b2;cursor:pointer;text-decoration:underline;">Code parent oubli&#233; ?</a></p>
+   <p style="margin-top:8px;"><a onclick="recoverParentPin()" style="font-size:.8em;color:#bdc3c7;cursor:pointer;text-decoration:underline;">Code parent oubli&#233; ?</a></p>
    <button onclick="checkPin()">&#128275; Accéder</button>
    <p id="pin-default-hint" class="hidden" style="font-size:.72em;color:#f1c40f;margin-top:6px;">⚠️ Code par défaut actif : pense à le changer dans l'onglet « 🔧 Avancé ».</p>
   </div>
@@ -883,38 +889,57 @@
     <p class="ptab-intro">Fixe des objectifs et des limites pour chaque enfant.</p>
     <div style="text-align:right;margin:4px 0;"><button onclick="dashCollapseAll('ptab-encadrement')" style="background:rgba(255,255,255,.1);font-size:.72em;padding:4px 10px;">⬍ Tout replier</button></div>
 
+    <!-- AUD-03-002 (audit UX 2026-09-25) : un seul sélecteur "enfant", fixe en
+         haut de l'onglet, remplace les 6 sélecteurs identiques auparavant
+         répétés dans chaque panneau ci-dessous (dont enc-msg-player, qui
+         n'était même pas synchronisé avec les autres — AUD-02-030). -->
+    <div style="position:sticky;top:0;z-index:5;background:rgba(52,152,219,.14);border:1px solid rgba(52,152,219,.4);border-radius:10px;padding:8px 10px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+     <span style="font-size:1em;">👤</span>
+     <span style="font-size:.78em;color:#8fc9f0;white-space:nowrap;">Enfant :</span>
+     <select id="enc-player" onchange="_onParentPlayerSelectChange(this.value)" style="flex:1;margin:0;"></select>
+    </div>
+
     <button class="accordion" id="acc-hw">📚 Devoir du jour<span class="acc-i" onclick="event.stopPropagation();pGuide('objectifs')">i</span><span class="acc-sub">Un exercice à réussir pour gagner des étoiles</span></button>
     <div class="panel">
-     <select id="hw-player" style="width:90%;margin-bottom:6px;" onchange="_onParentPlayerSelectChange(this.value)"></select>
      <select id="hw-subject" style="width:90%;margin-bottom:6px;" onchange="onHwSubjectChange()">
       <option value="math">🔢 Mathématiques</option>
       <option value="fr">📖 Français</option>
       <option value="hist">🏛️ Histoire</option>
      </select>
-     <select id="hw-type" style="width:90%;margin-bottom:6px;">
-      <option value="any">Toutes opérations</option>
-      <option value="add">Additions</option>
-      <option value="sub">Soustractions</option>
-      <option value="mult">Multiplications</option>
-      <option value="div">Divisions</option>
-      <option value="table_2">Table de 2</option>
-      <option value="table_3">Table de 3</option>
-      <option value="table_4">Table de 4</option>
-      <option value="table_5">Table de 5</option>
-      <option value="table_6">Table de 6</option>
-      <option value="table_7">Table de 7</option>
-      <option value="table_8">Table de 8</option>
-      <option value="table_9">Table de 9</option>
-      <option value="table_10">Table de 10</option>
-     </select>
-     <select id="hw-level" onchange="onHwLevelChange()" style="width:58%;display:inline-block;margin-right:4px;">
+     <!-- AUD-03-022 (audit UX 2026-09-25) : le Niveau doit précéder le Type,
+          car la liste des types affichée dépend du niveau (onHwLevelChange())
+          — l'ordre inverse laissait le parent choisir un type qui pouvait
+          être silencieusement remplacé en réglant ensuite le niveau. -->
+     <select id="hw-level" onchange="onHwLevelChange()" style="width:58%;display:inline-block;margin-right:4px;margin-bottom:6px;">
       <optgroup label="Maternelle"><option value="PS">PS</option><option value="MS">MS</option><option value="GS">GS</option></optgroup>
       <optgroup label="Primaire"><option value="CP">CP</option><option value="CE1">CE1</option><option value="CE2" selected>CE2</option><option value="CM1">CM1</option><option value="CM2">CM2</option></optgroup>
       <optgroup label="Collège"><option value="6E">6e</option><option value="5E">5e</option><option value="4E">4e</option><option value="3E">3e</option></optgroup>
      </select>
-     <select id="hw-count" style="width:28%;display:inline-block;">
+     <select id="hw-count" style="width:28%;display:inline-block;margin-bottom:6px;">
       <option value="5">5</option><option value="10" selected>10</option><option value="15">15</option><option value="20">20</option>
      </select><br>
+     <!-- AUD-03-030 : 14 options à plat augmentaient le temps de balayage
+          (loi de Hick) — regroupées en optgroup, comme le sélecteur de niveau. -->
+     <select id="hw-type" style="width:90%;margin-bottom:6px;">
+      <option value="any">Toutes opérations</option>
+      <optgroup label="Opérations">
+       <option value="add">Additions</option>
+       <option value="sub">Soustractions</option>
+       <option value="mult">Multiplications</option>
+       <option value="div">Divisions</option>
+      </optgroup>
+      <optgroup label="Tables">
+       <option value="table_2">Table de 2</option>
+       <option value="table_3">Table de 3</option>
+       <option value="table_4">Table de 4</option>
+       <option value="table_5">Table de 5</option>
+       <option value="table_6">Table de 6</option>
+       <option value="table_7">Table de 7</option>
+       <option value="table_8">Table de 8</option>
+       <option value="table_9">Table de 9</option>
+       <option value="table_10">Table de 10</option>
+      </optgroup>
+     </select>
      <select id="hw-reward" style="width:90%;margin-top:6px;">
       <option value="30">+30 ⭐</option><option value="50" selected>+50 ⭐</option><option value="100">+100 ⭐</option>
      </select><br>
@@ -925,7 +950,6 @@
 
     <button class="accordion" id="acc-calm">🕊️ Mode serein<span class="acc-sub">Pas de perte de vie sur erreur — désactivé par défaut</span></button>
     <div class="panel">
-     <select id="calm-player" style="width:90%;margin-bottom:8px;" onchange="_onParentPlayerSelectChange(this.value)"></select>
      <label style="display:flex;align-items:center;gap:8px;justify-content:center;font-size:.9em;">
       <input type="checkbox" id="calm-toggle" onchange="toggleCalmMode()" style="width:20px;height:20px;">
       Activer le mode serein (erreur sans perte de vie ni fin de partie)
@@ -934,11 +958,10 @@
     </div>
 
     <hr style="border-color:rgba(255,255,255,.18);margin:16px 0 12px;">
-    <p style="font-size:.8em;font-weight:700;color:#9aa6b2;letter-spacing:.04em;margin:0 0 10px;">LIMITES & CONTRÔLE</p>
+    <p style="font-size:.8em;font-weight:700;color:#bdc3c7;letter-spacing:.04em;margin:0 0 10px;">LIMITES & CONTRÔLE</p>
 
     <button class="accordion" id="acc-horaires">⏰ Horaires autorisés<span class="acc-i" onclick="event.stopPropagation();pGuide('horaire')">i</span><span class="acc-sub">Les heures où l'enfant peut jouer</span></button>
     <div class="panel">
-     <select id="block-player" style="width:90%;margin-bottom:8px;" onchange="_onParentPlayerSelectChange(this.value)"></select>
      <div style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:6px;">
       <label for="block-start" style="font-size:.8em;">De</label>
       <input type="time" id="block-start" style="width:110px;padding:6px;" value="17:00">
@@ -954,7 +977,6 @@
 
     <button class="accordion" id="acc-filtres">🔢 Types de questions autorisés<span class="acc-i" onclick="event.stopPropagation();pGuide('filtres')">i</span><span class="acc-sub">Coupe certains types (additions, tables…)</span></button>
     <div class="panel">
-     <select id="filter-player" style="width:90%;margin-bottom:8px;" onchange="_onParentPlayerSelectChange(this.value)"></select>
      <select id="filter-subject" style="width:90%;margin-bottom:8px;" onchange="onFilterSubjectChange()">
       <option value="math">🔢 Mathématiques</option>
       <option value="fr">📖 Français</option>
@@ -969,7 +991,6 @@
 
     <button class="accordion" id="acc-matieres">📖 Matières autorisées<span class="acc-i" onclick="event.stopPropagation();pGuide('matieres')">i</span><span class="acc-sub">N'autorise que certaines matières</span></button>
     <div class="panel">
-     <select id="bsubj-player" style="width:90%;margin-bottom:8px;" onchange="_onParentPlayerSelectChange(this.value)"></select>
      <div id="bsubj-list" style="text-align:left;max-width:280px;margin:0 auto;"></div>
      <button onclick="saveBlockedSubjects()" style="width:92%;margin-top:8px;">💾 Enregistrer</button>
      <div id="bsubj-status" style="font-size:.8em;margin-top:6px;color:#f1c40f;"></div>
@@ -977,7 +998,6 @@
 
     <button class="accordion" id="acc-messagerie">✉️ Messagerie de l'enfant<span class="acc-i" onclick="event.stopPropagation();pGuide('messagerie')">i</span><span class="acc-sub">Suspends, surveille ou bloque des contacts</span></button>
     <div class="panel">
-     <select id="enc-msg-player" style="width:90%;margin-bottom:8px;" onchange="renderOptMessaging(this.value)"></select>
      <div id="opt-messaging"></div>
     </div>
    </div>
@@ -1021,14 +1041,15 @@
     <div class="panel"><div id="opt-reset-one"></div></div>
 
     <hr style="border-color:rgba(255,255,255,.18);margin:16px 0 12px;">
-    <p style="font-size:.8em;font-weight:700;color:#9aa6b2;letter-spacing:.04em;margin:0 0 10px;">TOUS LES ENFANTS</p>
+    <p style="font-size:.8em;font-weight:700;color:#bdc3c7;letter-spacing:.04em;margin:0 0 10px;">TOUS LES ENFANTS</p>
 
     <button class="accordion" id="acc-profils-manage">👥 Ajouter, renommer ou retirer un enfant<span class="acc-i" onclick="event.stopPropagation();pGuide('profils')">i</span><span class="acc-sub">Gère la liste des profils</span></button>
     <div class="panel">
-     <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap;">
-      <input id="pm-new" type="text" aria-label="Nouveau prénom" placeholder="Nouveau prénom…" maxlength="20" style="flex:1;min-width:120px;" onkeydown="if(event.key==='Enter')pmAddProfile()">
-      <button onclick="pmAddProfile()" style="background:#27ae60;font-size:.9em;">Ajouter</button>
-     </div>
+     <!-- AUD-03-028 (audit UX 2026-09-25) : le niveau scolaire apparaissait
+          après le champ prénom + bouton Ajouter — un parent qui tape le
+          prénom et presse Entrée (câblé ci-dessous) valide l'ajout avant
+          même d'avoir vu ce réglage, l'enfant démarre alors en CP par défaut
+          sans que ce soit voulu. Déplacé avant le champ prénom. -->
      <!-- AUD-02-001 (audit fonctionnel 2026-09-21) : niveau scolaire réel de
           l'enfant, choisi à la création plutôt que de démarrer systématiquement
           en CP (defProfile(), 05-profile.js) quel que soit son âge réel. -->
@@ -1039,9 +1060,16 @@
        <optgroup label="Collège"><option value="6E">6e</option><option value="5E">5e</option><option value="4E">4e</option><option value="3E">3e</option></optgroup>
       </select>
      </p>
+     <!-- AUD-03-029 : vérification d'unicité du prénom en direct (oninput),
+          au lieu d'un toast après coup seulement au clic sur Ajouter. -->
+     <div style="display:flex;gap:6px;margin-bottom:2px;flex-wrap:wrap;">
+      <input id="pm-new" type="text" aria-label="Nouveau prénom" placeholder="Nouveau prénom…" maxlength="20" style="flex:1;min-width:120px;" oninput="_pmCheckNewName()" onkeydown="if(event.key==='Enter')pmAddProfile()">
+      <button id="pm-add-btn" onclick="pmAddProfile()" style="background:#27ae60;font-size:.9em;">Ajouter</button>
+     </div>
+     <p id="pm-new-err" class="field-err hidden"></p>
      <div id="profile-manager"></div>
      <input type="file" id="pm-photo-input" accept="image/*" style="display:none;" onchange="pmPhotoFileSelected(event)">
-     <p style="font-size:.72em;color:#9aa6b2;margin-top:6px;line-height:1.4;">Les profils et tous leurs progrès sont enregistrés sur cet appareil. Retirer un profil n'efface pas sa progression : il réapparaîtra si tu le rajoutes.</p>
+     <p style="font-size:.72em;color:#bdc3c7;margin-top:6px;line-height:1.4;">Les profils et tous leurs progrès sont enregistrés sur cet appareil. Retirer un profil n'efface pas sa progression : il réapparaîtra si tu le rajoutes.</p>
     </div>
 
     <button class="accordion" id="acc-export-all">📦 Tout sauvegarder (fichier global)<span class="acc-sub">Un seul fichier avec tous les profils</span></button>
@@ -1070,17 +1098,24 @@
     </div>
 
     <hr style="border-color:rgba(255,255,255,.18);margin:16px 0 12px;">
-    <p style="font-size:.8em;font-weight:700;color:#9aa6b2;letter-spacing:.04em;margin:0 0 10px;">SÉCURITÉ</p>
+    <p style="font-size:.8em;font-weight:700;color:#bdc3c7;letter-spacing:.04em;margin:0 0 10px;">SÉCURITÉ</p>
 
     <button class="accordion" id="acc-pin">🔑 Code parent<span class="acc-sub">Change le code et la question secrète</span></button>
+    <!-- AUD-03-023 (audit UX 2026-09-25) : validation auparavant uniquement au
+         clic sur "Sauvegarder", message d'erreur mutualisé sur les 3 champs —
+         le parent ne savait pas lequel corriger. Validation au blur, en plus,
+         par champ. -->
     <div class="panel">
      <span style="display:inline-flex;align-items:center;gap:6px;">
-      <input type="password" id="new-pin" aria-label="Nouveau code, 4 chiffres" placeholder="Nouveau code (4 chiffres)" style="width:62%;" maxlength="4">
-      <button type="button" onclick="const i=$('new-pin');const on=i.type==='password';i.type=on?'text':'password';this.setAttribute('aria-label',on?'Masquer le code':'Afficher le code');this.textContent=on?'🙈':'👁️';" aria-label="Afficher le code" style="font-size:1em;padding:4px 8px;background:transparent;border:none;cursor:pointer;">👁️</button>
-     </span><br>
+      <input type="password" id="new-pin" aria-label="Nouveau code, 4 chiffres" placeholder="Nouveau code (4 chiffres)" style="width:62%;" maxlength="4" onblur="_pinCheckField('new-pin')">
+      <button type="button" onclick="const i=$('new-pin');const on=i.type==='password';i.type=on?'text':'password';this.setAttribute('aria-label',on?'Masquer le code':'Afficher le code');this.textContent=on?'🙈':'👁️';" aria-label="Afficher le code" style="font-size:1em;min-width:40px;min-height:40px;background:transparent;border:none;cursor:pointer;">👁️</button>
+     </span>
+     <p id="new-pin-err" class="field-err hidden"></p>
      <p style="font-size:.72em;color:#bdc3c7;margin:8px 0 3px;">Question secrète (obligatoire — sert à récupérer le code en cas d'oubli) :</p>
-     <input type="text" id="new-secq" aria-label="Question secrète" placeholder="ex: Ville de naissance ?" style="width:84%;margin-bottom:4px;"><br>
-     <input type="text" id="new-seca" aria-label="Réponse à la question secrète" placeholder="Réponse" style="width:62%;"><br>
+     <input type="text" id="new-secq" aria-label="Question secrète" placeholder="ex: Ville de naissance ?" style="width:84%;margin-bottom:4px;" onblur="_pinCheckField('new-secq')"><br>
+     <p id="new-secq-err" class="field-err hidden"></p>
+     <input type="text" id="new-seca" aria-label="Réponse à la question secrète" placeholder="Réponse" style="width:62%;" onblur="_pinCheckField('new-seca')"><br>
+     <p id="new-seca-err" class="field-err hidden"></p>
      <button onclick="savePin()" style="margin-top:6px;">💾 Sauvegarder le code</button>
      <p id="pin-msg" style="font-size:.8em;color:#2ecc71;margin-top:6px;"></p>
     </div>
