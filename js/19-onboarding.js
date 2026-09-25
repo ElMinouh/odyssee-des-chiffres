@@ -183,13 +183,17 @@ const OB_STEPS_3 = [
    nav:{view:'v-menu'}, target:'menu1-playercard' },
  { icon:'🎨', title:'Le thème visuel',
    body:"Ce menu change le décor et les couleurs de toute l'application (espace, forêt, volcan, océan…). Choisis celui que tu préfères : tu peux en changer à tout moment.",
-   nav:{view:'v-menu'}, target:'themeSelect' },
+   // AUD-03-011 (audit UX 2026-09-25) : themeSelect/menu1-toggles-row/
+   // cloud-optin-banner sont désormais repliés par défaut dans le tiroir
+   // "Réglages rapides" de l'écran d'accueil — nav.fn l'ouvre avant de
+   // surligner la cible (sinon offsetParent===null, aucune cible trouvée).
+   nav:{view:'v-menu', fn:'_obOpenQuickSettingsDrawer'}, target:'themeSelect' },
  { icon:'🔊', title:'La voix et la musique',
    body:"Ces deux cases activent ou coupent la voix qui lit les questions à voix haute, et la musique de fond du jeu.",
-   nav:{view:'v-menu'}, target:'menu1-toggles-row' },
+   nav:{view:'v-menu', fn:'_obOpenQuickSettingsDrawer'}, target:'menu1-toggles-row' },
  { icon:'☁️', title:'La sauvegarde en ligne',
    body:"Ce bloc t'indique si ta progression est sauvegardée en ligne. S'il affiche « Activer », elle n'est encore enregistrée que sur cet appareil : tape dessus pour la retrouver aussi sur une tablette ou un autre téléphone. S'il affiche une coche verte, c'est déjà fait !",
-   nav:{view:'v-menu'}, target:'cloud-optin-banner' },
+   nav:{view:'v-menu', fn:'_obOpenQuickSettingsDrawer'}, target:'cloud-optin-banner' },
  { icon:'✉️', title:'La messagerie',
    body:"Si ce bouton est visible, tu peux échanger de courts messages avec des amis, grâce à un code ami (jamais de recherche libre). Un parent peut à tout moment consulter tes conversations.",
    nav:{view:'v-menu'}, target:'menu-msg-btn' },

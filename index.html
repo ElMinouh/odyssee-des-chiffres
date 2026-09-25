@@ -262,7 +262,7 @@
    <button id="menu1-continue-btn" class="hidden" onclick="continueAdventure()" style="margin-top:12px;width:100%;background:#16a085;font-weight:800;padding:12px 10px;border-radius:12px;">&#9654;&#65039; Continuer l'aventure</button>
   </div>
 
-  <!-- Sélecteurs principaux -->
+  <!-- Sélecteur joueur (seul champ essentiel avant de jouer) -->
   <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:420px;margin:0 auto;">
    <div style="display:flex;flex-direction:column;gap:5px;">
     <label style="font-size:.72em;color:#bdc3c7;font-weight:700;text-align:left;padding-left:2px;">👤 Joueur</label>
@@ -273,51 +273,61 @@
      <input type="text" id="customInput" aria-label="Ton prénom" placeholder="Entre ton prénom…" style="width:100%;text-align:center;margin:0;" oninput="applyCustom();refreshMenu1Card();" maxlength="20">
     </div>
    </div>
-   <div style="display:flex;flex-direction:column;gap:5px;">
-    <label style="font-size:.72em;color:#bdc3c7;font-weight:700;text-align:left;padding-left:2px;">🎨 Thème</label>
-    <select id="themeSelect" onchange="saveThemeNow(this.value)" style="width:100%;margin:0;">
-     <option value="standard">🌟 Classique</option>
-     <option value="espace">🚀 Espace</option>
-     <option value="foret">🌿 Forêt</option>
-     <option value="volcan">🌋 Volcan</option>
-     <option value="ocean">🌊 Océan</option>
-     <option value="banquise">❄️ Banquise</option>
-     <option value="chateau">🏰 Château</option>
-     <option value="sakura">🌸 Sakura</option>
-     <option value="nuit">🌙 Nuit étoilée</option>
-    </select>
-   </div>
   </div>
 
-  <!-- Toggles principaux : Voix + Musique + bouton Paramètres -->
-  <div id="menu1-toggles-row" style="display:flex;justify-content:center;align-items:center;gap:18px;margin:16px 0 6px;flex-wrap:wrap;">
-   <label style="font-size:.9em;display:inline-flex;align-items:center;gap:6px;"><input type="checkbox" id="voiceToggle" checked onchange="if(typeof saveVoice==='function')saveVoice();"> &#128266; Voix</label>
-   <label style="font-size:.9em;display:inline-flex;align-items:center;gap:6px;"><input type="checkbox" id="musicToggle" onchange="toggleMusic()"> &#127925; Musique</label>
-   <!-- v12.4.30 (audit fonctionnel, Phase 1, #F1) : réglage "Effets sonores" séparé
-        de "Musique" — coupe les bips/jingles (beep()) sans toucher à la musique de fond. -->
-   <label style="font-size:.9em;display:inline-flex;align-items:center;gap:6px;"><input type="checkbox" id="sfxToggle" checked onchange="if(typeof saveSfx==='function')saveSfx();"> &#128276; Effets sonores</label>
-   <button onclick="gotoParams()" title="Réglages avancés" style="background:#444;font-size:.8em;padding:6px 14px;">&#9881;&#65039; Paramètres</button>
-  </div>
-
-  <div style="max-width:420px;margin:6px auto 0;">
+  <div style="max-width:420px;margin:12px auto 0;">
    <button id="menu-msg-btn" onclick="openMessaging()" style="width:100%;background:linear-gradient(135deg,#9b59b6,#8e44ad);font-size:.9em;padding:10px;position:relative;">&#9993;&#65039; Messagerie<span id="menu-msg-badge" class="hidden" style="position:absolute;top:6px;right:14px;background:#e74c3c;color:#fff;border-radius:10px;font-size:.72em;padding:1px 6px;font-weight:700;"></span></button>
   </div>
 
-  <!-- Indicateur permanent de sauvegarde en ligne (v11.6.3 : remplace l'ancien bandeau conditionnel) -->
-  <div id="cloud-optin-banner" style="display:flex;align-items:center;gap:10px;border-radius:10px;padding:10px 14px;margin:10px auto 6px;max-width:440px;">
-   <div id="cloud-status-off" class="hidden" style="display:flex;align-items:center;gap:10px;width:100%;background:linear-gradient(135deg,rgba(52,152,219,.15),rgba(52,152,219,.04));border:1px solid rgba(52,152,219,.4);border-radius:10px;padding:10px 14px;">
-    <span style="font-size:1.3em;">&#9729;&#65039;</span>
-    <div style="flex:1;font-size:.9em;line-height:1.3;">
-     <b style="display:block;color:#fff;">Sauvegarde en ligne non activée</b>
-     <span style="color:#bdc3c7;font-size:.9em;">Active-la pour la retrouver sur un autre appareil</span>
+  <!-- AUD-03-011 (audit UX 2026-09-25) : cet écran cumulait 9 zones
+       interactives (sélecteur joueur, thème 9 options, 3 toggles son,
+       Paramètres, Messagerie, bandeau cloud, JOUER, Vue Parent) avant même
+       d'avoir joué — loi de Hick, charge de décision élevée en première
+       utilisation. Thème/sons/Paramètres/cloud repliés dans un tiroir par
+       défaut fermé ; rien n'est supprimé, seulement masqué tant qu'on ne
+       l'ouvre pas. -->
+  <div style="max-width:420px;margin:10px auto 0;">
+   <button onclick="_toggleQuickSettingsDrawer()" id="quick-settings-toggle" aria-expanded="false" aria-controls="quick-settings-drawer" style="width:100%;background:none;border:1px dashed rgba(255,255,255,.25);color:#8fa3c2;font-size:.8em;padding:8px;">&#9881;&#65039; Réglages rapides <span id="quick-settings-arrow">▾</span></button>
+   <div id="quick-settings-drawer" class="hidden" style="margin-top:8px;display:flex;flex-direction:column;gap:10px;">
+    <div style="display:flex;flex-direction:column;gap:5px;">
+     <label style="font-size:.72em;color:#bdc3c7;font-weight:700;text-align:left;padding-left:2px;">🎨 Thème</label>
+     <select id="themeSelect" onchange="saveThemeNow(this.value)" style="width:100%;margin:0;">
+      <option value="standard">🌟 Classique</option>
+      <option value="espace">🚀 Espace</option>
+      <option value="foret">🌿 Forêt</option>
+      <option value="volcan">🌋 Volcan</option>
+      <option value="ocean">🌊 Océan</option>
+      <option value="banquise">❄️ Banquise</option>
+      <option value="chateau">🏰 Château</option>
+      <option value="sakura">🌸 Sakura</option>
+      <option value="nuit">🌙 Nuit étoilée</option>
+     </select>
     </div>
-    <button onclick="cloudOptInActivate()" style="background:#3498db;color:#fff;border:none;font-size:.8em;padding:7px 14px;border-radius:6px;font-weight:700;white-space:nowrap;">Activer</button>
-   </div>
-   <div id="cloud-status-on" class="hidden" style="display:flex;align-items:center;gap:10px;width:100%;background:linear-gradient(135deg,rgba(46,204,113,.13),rgba(46,204,113,.04));border:1px solid rgba(46,204,113,.35);border-radius:10px;padding:10px 14px;">
-    <span style="font-size:1.3em;">&#9989;</span>
-    <div style="flex:1;font-size:.9em;line-height:1.3;">
-     <b style="display:block;color:#fff;">Sauvegarde en ligne activée</b>
-     <span id="cloud-last-sync" style="color:#bdc3c7;font-size:.9em;">Synchronisation en attente…</span>
+    <div id="menu1-toggles-row" style="display:flex;justify-content:center;align-items:center;gap:18px;flex-wrap:wrap;">
+     <label style="font-size:.9em;display:inline-flex;align-items:center;gap:6px;"><input type="checkbox" id="voiceToggle" checked onchange="if(typeof saveVoice==='function')saveVoice();"> &#128266; Voix</label>
+     <label style="font-size:.9em;display:inline-flex;align-items:center;gap:6px;"><input type="checkbox" id="musicToggle" onchange="toggleMusic()"> &#127925; Musique</label>
+     <!-- v12.4.30 (audit fonctionnel, Phase 1, #F1) : réglage "Effets sonores" séparé
+          de "Musique" — coupe les bips/jingles (beep()) sans toucher à la musique de fond. -->
+     <label style="font-size:.9em;display:inline-flex;align-items:center;gap:6px;"><input type="checkbox" id="sfxToggle" checked onchange="if(typeof saveSfx==='function')saveSfx();"> &#128276; Effets sonores</label>
+     <button onclick="gotoParams()" title="Réglages avancés" style="background:#444;font-size:.8em;padding:6px 14px;">&#9881;&#65039; Paramètres</button>
+    </div>
+    <!-- Indicateur permanent de sauvegarde en ligne (v11.6.3 : remplace l'ancien bandeau conditionnel) -->
+    <div id="cloud-optin-banner" style="display:flex;align-items:center;gap:10px;border-radius:10px;padding:10px 14px;max-width:440px;">
+     <div id="cloud-status-off" class="hidden" style="display:flex;align-items:center;gap:10px;width:100%;background:linear-gradient(135deg,rgba(52,152,219,.15),rgba(52,152,219,.04));border:1px solid rgba(52,152,219,.4);border-radius:10px;padding:10px 14px;">
+      <span style="font-size:1.3em;">&#9729;&#65039;</span>
+      <div style="flex:1;font-size:.9em;line-height:1.3;">
+       <b style="display:block;color:#fff;">Sauvegarde en ligne non activée</b>
+       <span style="color:#bdc3c7;font-size:.9em;">Active-la pour la retrouver sur un autre appareil</span>
+      </div>
+      <button onclick="cloudOptInActivate()" style="background:#3498db;color:#fff;border:none;font-size:.8em;padding:7px 14px;border-radius:6px;font-weight:700;white-space:nowrap;">Activer</button>
+     </div>
+     <div id="cloud-status-on" class="hidden" style="display:flex;align-items:center;gap:10px;width:100%;background:linear-gradient(135deg,rgba(46,204,113,.13),rgba(46,204,113,.04));border:1px solid rgba(46,204,113,.35);border-radius:10px;padding:10px 14px;">
+      <span style="font-size:1.3em;">&#9989;</span>
+      <div style="flex:1;font-size:.9em;line-height:1.3;">
+       <b style="display:block;color:#fff;">Sauvegarde en ligne activée</b>
+       <span id="cloud-last-sync" style="color:#bdc3c7;font-size:.9em;">Synchronisation en attente…</span>
+      </div>
+     </div>
     </div>
    </div>
   </div>

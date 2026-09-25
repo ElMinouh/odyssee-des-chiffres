@@ -710,6 +710,25 @@ function goHome(){
  showView('v-menu');
 }
 
+// AUD-03-011 (audit UX 2026-09-25) : tiroir replié par défaut regroupant
+// thème/sons/Paramètres/sauvegarde cloud sur l'écran d'accueil — voir
+// index.html pour le détail du contenu déplacé.
+function _toggleQuickSettingsDrawer(){
+ const d=$('quick-settings-drawer'); if(!d) return;
+ const willOpen=d.classList.contains('hidden');
+ d.classList.toggle('hidden');
+ const btn=$('quick-settings-toggle'); if(btn) btn.setAttribute('aria-expanded', willOpen?'true':'false');
+ const arrow=$('quick-settings-arrow'); if(arrow) arrow.textContent=willOpen?'▴':'▾';
+}
+// Utilisée par la visite guidée (19-onboarding.js) pour les étapes qui
+// ciblent un élément désormais replié dans ce tiroir (thème, sons, cloud) —
+// sans ça, ces étapes ne trouveraient aucune cible visible à surligner.
+function _obOpenQuickSettingsDrawer(){
+ const d=$('quick-settings-drawer'); if(!d) return;
+ d.classList.remove('hidden');
+ const btn=$('quick-settings-toggle'); if(btn) btn.setAttribute('aria-expanded','true');
+ const arrow=$('quick-settings-arrow'); if(arrow) arrow.textContent='▴';
+}
 function toggleSettings(){
  const open=!$('v-settings').classList.contains('hidden');
  if(open){navBack();}
