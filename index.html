@@ -20,6 +20,11 @@
 <link rel="stylesheet" href="css/styles.css?v=1083">
 </head>
 <body id="BODY">
+<!-- AUD-05-009 (audit accessibilité 2026-09-25) : aucun <h1> n'existait
+     nulle part dans l'application (uniquement des h2/h3), cassant la
+     navigation par titres (touche H) des lecteurs d'écran. Masqué
+     visuellement (.sr-only), son contenu est tenu à jour par showView(). -->
+<h1 id="app-h1" class="sr-only">L'Odyssée du Savoir</h1>
 <svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true">
 <defs>
 
@@ -970,6 +975,18 @@
       Activer le mode serein (erreur sans perte de vie ni fin de partie)
      </label>
      <p style="font-size:.72em;color:#bdc3c7;margin-top:8px;">Par défaut, une erreur coûte une vie comme d'habitude. Coche pour retirer cette pression : l'erreur reste corrigée normalement, mais sans perte de vie ni fin de partie possible.</p>
+    </div>
+
+    <!-- AUD-05-010 (audit accessibilité 2026-09-25) : option de police adaptée
+         à la dyslexie, même patron que le mode serein ci-dessus (accordéon +
+         case à cocher, réglage par enfant, appliquée sur <html>). -->
+    <button class="accordion" id="acc-dyslexia">🔤 Police adaptée dyslexie<span class="acc-sub">Lettres mieux différenciées (b/d/p/q) — désactivé par défaut</span></button>
+    <div class="panel">
+     <label style="display:flex;align-items:center;gap:8px;justify-content:center;font-size:.9em;">
+      <input type="checkbox" id="dyslexia-toggle" onchange="toggleDyslexiaFont()" style="width:20px;height:20px;">
+      Activer la police adaptée dyslexie pour cet enfant
+     </label>
+     <p style="font-size:.72em;color:#bdc3c7;margin-top:8px;">Change la police de tout le jeu pour une police aux lettres mieux différenciées, en complément du réglage de taille du texte (Paramètres).</p>
     </div>
 
     <hr style="border-color:rgba(255,255,255,.18);margin:16px 0 12px;">

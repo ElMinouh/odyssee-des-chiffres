@@ -976,6 +976,8 @@ function applyPrefs(){
  if(typeof initFontScale === 'function') initFontScale();
  // Audit accessibilité : appliquer le temps par question sauvegardé
  if(typeof initTimerScale === 'function') initTimerScale();
+ // AUD-05-010 : appliquer la police dyslexie sauvegardée
+ if(typeof initDyslexiaFont === 'function') initDyslexiaFont();
 }
 // Table de correspondance niveau→index (évite indexOf à chaque appel)
 const VALID_LEVELS=['PS','MS','GS','CP','CE1','CE2','CM1','CM2','6E','5E','4E','3E'];

@@ -37,6 +37,18 @@
    tokens de surface neutres pour les panneaux secondaires (tiroir mini-carte),
    distincts de --primary/--accent. */
 --surface-1:#1c2530;--surface-2:#26323f;--surface-3:#34424f;}
+/* AUD-05-009 (audit accessibilité 2026-09-25) : masque visuellement un
+   contenu tout en le laissant exposé aux lecteurs d'écran (patron WCAG
+   standard, pas display:none/visibility:hidden qui le retireraient aussi
+   de l'arbre d'accessibilité). */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+/* AUD-05-010 (audit accessibilité 2026-09-25) : police à formes de lettres
+   différenciées (b/d/p/q, I/l/1), lisibilité accrue pour les enfants
+   dyslexiques — réglage parental, cf. #dyslexia-toggle (09-parent.js). */
+html.dyslexia-font body, html.dyslexia-font body *{
+ font-family:"Comic Sans MS","Comic Sans",Verdana,sans-serif!important;
+ letter-spacing:.03em;
+}
 /* v11.7.29 (Lot 7 renforcé) : différenciation de cycle nettement plus marquée */
 html[data-cycle="maternelle"]{--radius-sm:16px;--radius-md:22px;--radius-lg:30px;}
 html[data-cycle="college"]{--radius-sm:4px;--radius-md:6px;--radius-lg:9px;}

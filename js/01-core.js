@@ -664,7 +664,14 @@ function setPinLockUntil(ts){ try{ localStorage.setItem('pinLockUntil', String(t
 let _monsterCenter={x:0,y:0}; // position précalculée du monstre (OPT-5)
 // ═══════════════════════════════════════════════════════
 const VIEWS=['v-menu','v-subjects','v-menu2','v-params','v-mode-config','v-settings','v-game','v-end','v-mult','v-parent','v-odyssey-select','v-map'];
+// AUD-05-009 (audit accessibilité 2026-09-25) : libellés lus par un lecteur
+// d'écran via le <h1 id="app-h1"> masqué visuellement, synchronisé à chaque
+// changement de vue — donne un repère de navigation par titres (touche H).
+const VIEW_TITLES={'v-menu':'Accueil','v-subjects':'Choix de la matière','v-menu2':'Configuration de la partie',
+ 'v-params':'Paramètres','v-mode-config':'Configuration du mode','v-settings':'Réglages','v-game':'Partie en cours',
+ 'v-end':'Fin de partie','v-mult':'Configuration multijoueur','v-parent':'Vue Parent','v-odyssey-select':'Choix de l\'Odyssée','v-map':'Carte'};
 function showView(id){VIEWS.forEach(v=>$(v).classList.toggle('hidden',v!==id));const si=document.querySelector('.settings-icon');if(si)si.classList.toggle('si-hidden',id!=='v-menu');
+ const h1=$('app-h1');if(h1)h1.textContent='L\'Odyssée du Savoir — '+(VIEW_TITLES[id]||id);
  // v12.3.2 (audit UX #18) : à chaque entrée sur l'écran de jeu, on resynchronise
  // le libellé du bouton "Retour" avec sa vraie destination (carte de zone ou
  // accueil), pour que le texte du bouton ne mente jamais sur ce qu'il va faire.
@@ -1347,6 +1354,16 @@ function setFontScale(scale){
 function initFontScale(){
  const scale = (P?.prefs?.fontScale) || 'normal';
  applyFontScale(scale);
+}
+
+// AUD-05-010 (audit accessibilité 2026-09-25) : police adaptée dyslexie,
+// réglable par enfant depuis Vue Parent → Encadrement (09-parent.js).
+// applyDyslexiaFont(on) pose/retire html.dyslexia-font (CSS dans styles.css).
+function applyDyslexiaFont(on){
+ document.documentElement.classList.toggle('dyslexia-font', !!on);
+}
+function initDyslexiaFont(){
+ applyDyslexiaFont(P?.prefs?.dyslexiaFont === true);
 }
 
 // ═══════════════════════════════════════════════════════

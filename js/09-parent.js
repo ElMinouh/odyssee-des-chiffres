@@ -53,6 +53,7 @@ function ptab(name){
   if(typeof onHwLevelChange==='function')onHwLevelChange();
   if(typeof loadHomework==='function')loadHomework();
   if(typeof loadCalmMode==='function')loadCalmMode();
+  if(typeof loadDyslexiaFont==='function')loadDyslexiaFont();
   loadBlockSettings();loadFilterSettings();
   if(typeof onFilterSubjectChange==='function')onFilterSubjectChange();
   if(typeof loadBlockedSubjects==='function')loadBlockedSubjects();
@@ -1444,6 +1445,41 @@ function toggleCalmMode(){
   toast('❌ Erreur lors de la sauvegarde', 3000);
  }
 }
+// AUD-05-010 (audit accessibilité 2026-09-25) : option de police adaptée
+// dyslexie — même pattern que loadCalmMode/toggleCalmMode ci-dessus (réglage
+// par enfant, stocké dans son profil). applyDyslexiaFont() (01-core.js)
+// pose/retire la classe html.dyslexia-font qui porte le CSS (styles.css).
+function loadDyslexiaFont(){
+ const sel = $('enc-player')?.value;
+ const cb = $('dyslexia-toggle');
+ if(!sel || !cb) return;
+ try{
+  const raw = localStorage.getItem('user_'+sel);
+  if(!raw){ cb.checked = false; return; }
+  const data = JSON.parse(raw);
+  cb.checked = !!(data.prefs && data.prefs.dyslexiaFont === true);
+ }catch(e){
+  console.warn('[dyslexiaFont] load error:', e);
+ }
+}
+function toggleDyslexiaFont(){
+ const sel = $('enc-player')?.value;
+ const cb = $('dyslexia-toggle');
+ if(!sel || !cb) return;
+ try{
+  const raw = localStorage.getItem('user_'+sel);
+  if(!raw){ toast('⚠️ Profil introuvable.', 3000); return; }
+  const data = JSON.parse(raw);
+  data.prefs = data.prefs || {};
+  data.prefs.dyslexiaFont = cb.checked;
+  localStorage.setItem('user_'+sel, JSON.stringify(data));
+  toast(cb.checked ? `🔤 Police dyslexie activée pour ${sel}` : `🔤 Police dyslexie désactivée pour ${sel}`, 2200);
+  if(P && P.name === sel){ P.prefs = P.prefs || {}; P.prefs.dyslexiaFont = cb.checked; if(typeof applyDyslexiaFont==='function') applyDyslexiaFont(cb.checked); }
+ }catch(e){
+  console.error('[dyslexiaFont] save error:', e);
+  toast('❌ Erreur lors de la sauvegarde', 3000);
+ }
+}
 
 /**
  * Sauvegarde un devoir pour le joueur sélectionné.
@@ -1918,6 +1954,7 @@ function _onParentPlayerSelectChange(name){
  if(typeof onHwLevelChange==='function')onHwLevelChange();
  if(typeof loadHomework==='function')loadHomework();
  if(typeof loadCalmMode==='function')loadCalmMode();
+ if(typeof loadDyslexiaFont==='function')loadDyslexiaFont();
  loadBlockSettings();loadFilterSettings();
  if(typeof onFilterSubjectChange==='function')onFilterSubjectChange();
  if(typeof loadBlockedSubjects==='function')loadBlockedSubjects();
