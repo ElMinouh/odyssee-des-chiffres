@@ -7,10 +7,14 @@
 
 ## C'est quoi ?
 
-Un jeu éducatif (calcul mental, français, histoire) pour enfants de la Maternelle
-au Collège, sous forme de PWA (application web installable, fonctionne hors-ligne).
-Nom affiché aux joueurs : **« L'Odyssée du Savoir »**. Nom du dépôt/du projet en
-interne : `odyssee-des-chiffres`.
+Un jeu éducatif **multi-matières** (calcul mental, français, histoire — et une
+architecture déjà préparée pour géographie/anglais/SVT/physique-chimie, voir
+ADR-151) pour enfants de la Maternelle au Collège, sous forme de PWA
+(application web installable, fonctionne hors-ligne). Nom affiché aux joueurs :
+**« L'Odyssée du Savoir »**. Nom du dépôt/du projet en interne :
+`odyssee-des-chiffres` — nom historique, hérité de l'époque où le calcul
+mental était la seule matière ; le jeu a depuis pivoté vers un positionnement
+multi-matières assumé (constat AUD-02-019, audit fonctionnel 2026-09-21).
 
 ## Comment ça tourne (architecture en une image)
 

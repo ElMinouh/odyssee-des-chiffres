@@ -1,7 +1,7 @@
 {
   "name": "odyssee-des-chiffres",
-  "version": "12.7.64",
-  "description": "Jeu de calcul mental pour enfants du CP au CM2 — édition modulaire, PWA, validée.",
+  "version": "12.7.65",
+  "description": "Jeu éducatif multi-matières (calcul mental, français, histoire) pour enfants de la Maternelle au Collège — édition modulaire, PWA, validée.",
   "scripts": {
     "start": "npx serve -l 8000 .",
     "start:python": "python3 -m http.server 8000",

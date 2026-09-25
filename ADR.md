@@ -1744,4 +1744,18 @@ Les 7 autres (`streak`/`streakLastDate`, `sessionObjective`, `lastPlayTs`, `calm
 
 ---
 
+---
+
+## ADR-151 — AUD-02-019 (audit fonctionnel AUD-02, Phase 3) : décision de positionnement produit — jeu multi-matières assumé
+
+**Contexte** : ce constat, unique de sa catégorie (« Vision produit », gravité Observation), n'est pas un bug mais une question de cadrage produit laissée implicite. Le positionnement affiché (`package.json`, `GUIDE-DU-DEPOT.md`) présentait historiquement le projet comme un « jeu de calcul mental », alors que le contenu réel comporte déjà deux moteurs de quiz disciplinaires complets et matures (`16-francais.js`, 1029 lignes ; `18-histoire.js`, 1213 lignes), et que `06a-adaptive.js` (`_PROG_SUBJ_LABEL`) prévoit déjà des libellés pour géographie, anglais, SVT et physique-chimie — sans qu'aucun générateur correspondant n'existe encore. L'audit demandait de trancher consciemment plutôt que de laisser cette dérive de scope se poursuivre sans décision assumée.
+
+**Décision** : le produit est formellement acté comme un **jeu de révisions multi-matières pour la Maternelle au Collège**, dont le calcul mental reste le socle historique et le plus développé, mais qui intègre pleinement le français et l'histoire au même niveau d'exigence pédagogique (progression par phase, adaptativité, boss, figurines de récompense partagées). Le nom interne du dépôt (`odyssee-des-chiffres`) reste inchangé pour ne pas casser l'historique Git/déploiement/URLs, mais est désormais explicitement documenté comme un nom hérité, distinct du positionnement réel actuel. `package.json` (`description`) et `GUIDE-DU-DEPOT.md` (section « C'est quoi ? ») sont mis à jour en conséquence, avec un renvoi explicite vers ce ADR.
+
+**Alternatives rejetées** : recentrer strictement le produit sur le calcul mental, en retirant ou isolant français/histoire de son périmètre « officiel » (rejeté — ces deux matières sont déjà pleinement développées, testées et utilisées ; un tel recentrage serait un changement de produit bien plus lourd que ce que ce constat, coté Observation/Faible, justifie) ; renommer le dépôt/projet interne pour refléter le nouveau positionnement (rejeté — coût opérationnel disproportionné, aucun bénéfice fonctionnel pour les familles, le nom interne n'étant de toute façon jamais affiché aux joueurs, qui voient « L'Odyssée du Savoir »).
+
+**Impact** : `package.json` (`description`), `GUIDE-DU-DEPOT.md` (section « C'est quoi ? »). v12.7.65. Aucun changement fonctionnel — décision et documentation uniquement, conformément à l'effort « Faible (décision + documentation) » de l'audit. Constat AUD-02-019 (audit fonctionnel) clos par ce lot.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
