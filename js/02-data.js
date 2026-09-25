@@ -45,7 +45,7 @@ const EMOJIS=['🍎','🎂','⭐','🎈','🐟','🌸','🍬','🚗','🐱','�
 // Si tu ajoutes un avatar, ajoute-le ICI **et** dans le stade correspondant de HERO_STAGES.unlockedAvatars.
 const AVATAR_LIST=[
  // Œuf (15) — visages enfantins, animaux mignons, formes basiques
- '🧒','🧑','👦','👧','🐣','🐥','🐶','🐕','🐭','🐸','🟢','🟠','🔵','⭐','🍬',
+ '🧒','🧑','👦','👧','🐣','🐥','🐶','🐕','🐭','🐸','🐹','🐰','🐨','⭐','🍬',
  // Apprenti (27) — mages débutants, animaux, nature, couleurs, jeux
  '🧙','🧝','🦊','🐺','🐻','🦌','🐯','🐍','🐿️','🦆','🦎','🌿','🌸','🎋','🍄','💐','💚','💙','💜','💛','💗','📚','🎲','♟️','🌀','🎀','🧦',
  // Aventurier (30) — héros, créatures, équipement, sciences, éléments
@@ -1465,7 +1465,7 @@ const HERO_STAGES = [
   color:'#bdc3c7',
   desc:'Tu fais tes premiers pas dans l\'aventure.',
   ok: d => true, // toujours dispo (stade de départ)
-  unlockedAvatars: ['🧒','🧑','👦','👧','🐣','🐥','🐶','🐕','🐭','🐸','🟢','🟠','🔵','⭐','🍬'],
+  unlockedAvatars: ['🧒','🧑','👦','👧','🐣','🐥','🐶','🐕','🐭','🐸','🐹','🐰','🐨','⭐','🍬'],
  },
  {
   id:'apprenti',

@@ -913,7 +913,7 @@ function returnToWorldMap(){
 // ═══════════════════════════════════════════════════════
 const MONSTER_ROSTER={
  CP:[
-  {emoji:'🌿',name:'Gobelin Vert',title:'Pilleur des Additions',intro:'Tu crois savoir additionner ? Prouve-le !',anim:'bounce',col:'#27ae60'},
+  {emoji:'👹',name:'Gobelin Vert',title:'Pilleur des Additions',intro:'Tu crois savoir additionner ? Prouve-le !',anim:'bounce',col:'#27ae60'},
   {emoji:'🍄',name:'Champignan',title:'Roi des Petits Nombres',intro:'Même les champignons te battent !',anim:'pulse',col:'#e74c3c'},
   {emoji:'🐛',name:'Larve Soustrante',title:'Ennemi des Chiffres',intro:'Tes soustractions me font rire…',anim:'slither',col:'#8e44ad'},
   {emoji:'🐝',name:'Abeille Calculette',title:'Gardienne du Total',intro:'Bzzz… te trompe pas !',anim:'float',col:'#f1c40f'},
