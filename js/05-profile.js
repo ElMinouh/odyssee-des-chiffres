@@ -445,7 +445,7 @@ function validateProfile(raw, defaultName, opts){
   avatar: _safeStr(raw.avatar, 8, '🧙'),
   heroTitle: _safeStr(raw.heroTitle, 30, 'novice'),
   ownedSkins: _safeArr(raw.ownedSkins).filter(s => typeof s === 'string'),
-  ownedMusics: (function(){var a=_safeArr(raw.ownedMusics).filter(s=>typeof s==='string');return a.includes('theme')?a:['theme'].concat(a);})(),
+  ownedMusics: (function(){let a=_safeArr(raw.ownedMusics).filter(s=>typeof s==='string');return a.includes('theme')?a:['theme'].concat(a);})(),
   music: (typeof raw.music==='string'?raw.music:'theme'),
   ownedSounds: _safeArr(raw.ownedSounds).filter(s => typeof s === 'string'),
   errorsFr: _safeArr(raw.errorsFr).filter(e => e && typeof e === 'object'),
@@ -803,7 +803,7 @@ function loadProfile(){
   if(saved && Array.isArray(saved.errorLog)){
    saved.errorLog = saved.errorLog.filter(e=> e && (
      (e.payload && Array.isArray(e.payload.choices) && e.payload.choices.length) ||
-     /^[\d().,+\-x×\/÷\s]+=\d+$/.test(String(e.q||''))
+     /^[\d().,+\-x×/÷\s]+=\d+$/.test(String(e.q||''))
    ));
   }
   // 2. Validation : on garantit que toutes les valeurs sont bien typées et bornées.

@@ -10,7 +10,7 @@
 // Niveaux/Stats/Erreurs du tableau de bord — choisir une matière dans l'un
 // met à jour les trois autres. L'Historique garde en plus son option "Toutes"
 // (non applicable aux autres panneaux), gérée par sa propre variable _histSubj.
-var _dashSubj='math';
+let _dashSubj='math';
 function _dashSyncAll(){renderLevelUnlocks();renderOpStats();renderErrors();renderHistory();}
 function setLvlSubj(s){_dashSubj=s;if(_histSubj!=='all')_histSubj=s;_dashSyncAll();}
 function renderLevelUnlocks(){
@@ -31,7 +31,7 @@ function renderLevelUnlocks(){
 // P.history toutes matières confondues (le libellé HTML annonçait à tort "maths
 // uniquement"). On ajoute un vrai filtre par matière pour rendre la comparaison
 // lisible (les échelles de score diffèrent d'une matière à l'autre).
-var _chartSubj='all';
+let _chartSubj='all';
 function setChartSubj(s){_chartSubj=s;renderChart();}
 function renderChart(){
  const bar='<div style="font-size:.72em;font-weight:700;color:#8fa3c2;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">📊 Graphique</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">'+
@@ -86,7 +86,7 @@ function renderErrors(){
  }
  const u=[...new Set(P.errors||[])].slice(-10);
  if(!u.length){el.innerHTML=bar+'<span style="color:#2ecc71;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg> Aucune erreur en maths !</span>';if(btn)btn.classList.add('hidden');return;}
- el.innerHTML=bar+u.map(e=>{const m=e.match(/^(.+?)([+\-x×\/÷])(.+?)=(\d+)$/);return m?`<div class="revision-q"><span>${m[1]} ${m[2]} ${m[3]} = ?</span><strong style="color:#f1c40f;">${m[4]}</strong></div>`:`<div class="revision-q">${e}</div>`;}).join('');
+ el.innerHTML=bar+u.map(e=>{const m=e.match(/^(.+?)([+\-x×/÷])(.+?)=(\d+)$/);return m?`<div class="revision-q"><span>${m[1]} ${m[2]} ${m[3]} = ?</span><strong style="color:#f1c40f;">${m[4]}</strong></div>`:`<div class="revision-q">${e}</div>`;}).join('');
  if(btn)btn.classList.remove('hidden');
 }
 function renderRecords(){
@@ -102,7 +102,7 @@ function renderRecords(){
 // toi-même" à côté du classement familial — protège l'estime de soi de l'enfant
 // structurellement le plus faible du classement, sans retirer le classement
 // existant (apprécié par ailleurs).
-var _lbView='family';
+let _lbView='family';
 function setLbView(v){_lbView=v;renderLB();}
 function renderLB(){
  const bar='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">'
@@ -214,7 +214,7 @@ function renderMusics(){
 }
 function buyMusic(id,p){spend(p,()=>{P.ownedMusics=[...(P.ownedMusics||['theme']),id];renderMusics();toast('Musique achetée !');});}
 function selectMusic(id){P.music=id;saveProfileNow();renderMusics();toast('Musique choisie !');try{ if(typeof musicOn!=='undefined'&&musicOn){stopMusic();startMusic();} }catch(e){}}
-var _musPrev=null;
+let _musPrev=null;
 function _stopTestMusic(){ try{ if(_musPrev){_musPrev.pause();_musPrev=null;} }catch(e){} if(typeof _musicDuck==='function') _musicDuck(false); }
 function testMusic(id){
  _stopTestMusic();
@@ -247,7 +247,7 @@ function setTitle(id){P.heroTitle=id;saveProfile();renderTitles();updateMenuUI()
 // ═══════════════════════════════════════════════════════
 // HISTORIQUE
 // ═══════════════════════════════════════════════════════
-var _histSubj='all';
+let _histSubj='all';
 function setHistSubj(s){_histSubj=s;if(s!=='all'){_dashSubj=s;renderLevelUnlocks();renderOpStats();renderErrors();}renderHistory();}
 function renderHistory(){
  const SUBJ_BAR=(typeof IMPLEMENTED_SUBJECTS!=='undefined')?IMPLEMENTED_SUBJECTS:[['math','🔢 Maths'],['fr','📖 Français'],['hist','🏛️ Histoire']];

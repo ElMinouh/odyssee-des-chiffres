@@ -176,11 +176,17 @@ function chatUnreadCount(prof, latestMap){
 // ═══════════════════════════════════════════════════════
 // ÉTAT UI + OUVERTURE
 // ═══════════════════════════════════════════════════════
+// AUD-06 ménage lint : _msgProf/_msgReadOnly restent en `var` volontairement —
+// tests/helpers/loadGame.js (setMsgProf()) les réassigne depuis l'extérieur du
+// bac à sable vm via `globalThis._msgProf = ...` ; ça ne fonctionne qu'avec
+// `var` (qui crée une propriété sur l'objet global du contexte vm), pas avec
+// `let`/`const` (liaison lexicale séparée, invisible à cette écriture externe
+// — testé, ça casse silencieusement 6 tests avec `let`).
 var _msgProf = null;       // objet messagerie (identité + état) du profil consulté
 var _msgReadOnly = false;  // mode lecture seule (visualisation parentale)
-var _msgConv = null;       // {id, name, lastId}
-var _msgConvTimer = null;
-var _msgBadgePoll = null;
+let _msgConv = null;       // {id, name, lastId}
+let _msgConvTimer = null;
+let _msgBadgePoll = null;
 
 function _e(s){ return (typeof esc==='function') ? esc(s) : String(s==null?'':s); }
 // _jsAttr est désormais mutualisée dans 01-core.js (v11.1.10) — plus de définition locale ici.
@@ -485,14 +491,14 @@ function _renderBubbles(messages){
  else { thread.scrollTop = prevTop; _msgShowJump(); }
 }
 // ── Phrases toutes prêtes + autocollants (non-lecteurs) + file d'attente hors-ligne ──
-var CHAT_PHRASES = ['Coucou !','Bravo !','Tu joues ?','Merci !','À bientôt !'];
-var CHAT_STICKERS = ['\uD83D\uDC4D','\u2B50','\uD83C\uDF89','\u2764\uFE0F','\uD83D\uDE00','\uD83D\uDC36','\uD83E\uDD84'];
+const CHAT_PHRASES = ['Coucou !','Bravo !','Tu joues ?','Merci !','À bientôt !'];
+const CHAT_STICKERS = ['\uD83D\uDC4D','\u2B50','\uD83C\uDF89','\u2764\uFE0F','\uD83D\uDE00','\uD83D\uDC36','\uD83E\uDD84'];
 function _chatQueueLoad(){ try{ return JSON.parse(localStorage.getItem('chatQueue')||'[]'); }catch(e){ return []; } }
 function _chatQueueSave(q){ try{ localStorage.setItem('chatQueue', JSON.stringify(q)); }catch(e){} }
 function _chatEnqueue(prof,to,body){ const q=_chatQueueLoad(); const it={ sender:prof.chatId, to:to, body:body, ts:Date.now(), tmpId:'q'+Math.random().toString(36).slice(2,9) }; q.push(it); _chatQueueSave(q); return it; }
 function _chatQueueRemove(tmpId){ _chatQueueSave(_chatQueueLoad().filter(x=>x.tmpId!==tmpId)); }
 function _chatPendingFor(to){ if(!to||!_msgProf||!_msgProf.chatId) return []; return _chatQueueLoad().filter(x=>x.sender===_msgProf.chatId && x.to===to); }
-var _chatFlushing=false;
+let _chatFlushing=false;
 async function _chatFlushQueue(prof){
  if(_chatFlushing || !prof || !prof.chatId) return 0;
  const mine=_chatQueueLoad().filter(x=>x.sender===prof.chatId);
@@ -604,8 +610,8 @@ async function _chatSend(body){
 }
 function chatQuickSend(text){ _chatSend(text); }
 
-var _convCache = [];
-var _msgJustSent = false;
+let _convCache = [];
+let _msgJustSent = false;
 async function _convFetch(reset){
  if(!reset && !_msgReadOnly){ try{ await _chatFlushQueue(_msgProf); }catch(e){} }
  if(!_msgConv) return;
@@ -710,10 +716,10 @@ function _msgWrapShowView(){
 }
 
 // Détection d'un nouveau message entrant → enveloppe qui tressaute + son + bandeau.
-var _chatLastLatest = {};
-var _chatLatestInit = false;
-var _chatContactCache = {}; // id -> {name, avatar}
-var _msgToastTimer = null;
+let _chatLastLatest = {};
+let _chatLatestInit = false;
+const _chatContactCache = {}; // id -> {name, avatar}
+let _msgToastTimer = null;
 async function _chatMaybeNotify(prof, latest){
  const seen = _chatSeen(prof);
  if(!_chatLatestInit){ _chatLatestInit = true; _chatLastLatest = Object.assign({}, latest); return; } // 1re passe : pas de notif
@@ -792,7 +798,7 @@ async function chatSyncIdentityFromCloud(name){
   if(res && res.ok && res.profile && res.profile._chat){ chatMergeFromCloud(name, res.profile._chat); }
  }catch(e){}
 }
-var _chatPushedOnce = false;
+let _chatPushedOnce = false;
 async function chatSyncTick(){
  const name = _curName();
  if(name){
@@ -976,7 +982,7 @@ async function chatForceSyncMessaging(){
  return { ok:okN, skip, fail };
 }
 // Côté récepteur : tire l'identité de TOUS les profils synchronisés (une fois par session).
-var _chatAllPulled = false;
+let _chatAllPulled = false;
 async function chatPullAllIdentities(){
  if(typeof getRoster!=='function') return;
  for(const n of getRoster()){
@@ -1064,7 +1070,7 @@ try{ if(typeof window!=='undefined'){ setTimeout(()=>{
 // si une conversation était activement suivie au moment de la coupure, pour
 // ne reprendre que ce qui tournait réellement avant (ne force pas l'ouverture
 // d'une conversation qui n'était pas affichée).
-var _msgWasPollingConv = false;
+let _msgWasPollingConv = false;
 function _msgOnOffline(){
  _msgWasPollingConv = !!(_msgConv && _msgConvTimer);
  _stopConvPoll();

@@ -3,11 +3,11 @@
 
 // Vue parentale : statistiques, rapport hebdo, sauvegarde cloud, export PDF.
 // Variables globales du module
-var _pfigFilter = 'none';
-var _pfigSearch = '';
+let _pfigFilter = 'none';
+let _pfigSearch = '';
 // v12.7.18 (demande de Cyril) : mode "Gérer / Supprimer" de l'onglet Figurines
-var _pfigManageMode = false;
-var _pfigSelected = new Set();
+let _pfigManageMode = false;
+const _pfigSelected = new Set();
 
 // VUE PARENT
 // ═══════════════════════════════════════════════════════
@@ -221,7 +221,7 @@ function pmClearPlayerCode(name){
  }catch(e){}
 }
 // ── Guides « pas à pas » (icône ⓘ) ──
-var PARENT_GUIDES = {
+const PARENT_GUIDES = {
  objectifs:{t:'📚 Devoir du jour',s:['Choisis l\u2019enfant concerné.','Choisis la matière, le type de questions et le niveau.','Choisis le nombre de questions et la récompense en étoiles.','Touche « Donner » : l\u2019enfant verra le devoir sur son écran d\u2019accueil et devra toucher « Commencer le devoir » pour le lancer.']},
  horaire:{t:'⏰ Horaires autorisés',s:['Choisis l\u2019enfant.','Règle l\u2019heure de début et de fin autorisées.','Coche « Activer le blocage horaire ».','Touche « Enregistrer » : en dehors de ces heures, le jeu sera bloqué.']},
  filtres:{t:'🔢 Types de questions',s:['Choisis l\u2019enfant, puis la matière.','Décoche les types de questions à retirer (ex. divisions).','Touche « Enregistrer » : ces questions ne seront plus posées.']},
@@ -1201,7 +1201,7 @@ function exportPDF(){
  // un fichier HTML autonome, ouvrable et imprimable en PDF si besoin.
  try{
   const stamp = new Date().toISOString().slice(0,10);
-  const safe = String(player).replace(/[^\w\-]+/g,'_');
+  const safe = String(player).replace(/[^\w-]+/g,'_');
   const blob = new Blob([html], {type:'text/html;charset=utf-8'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

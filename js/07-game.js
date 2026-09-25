@@ -6,12 +6,12 @@
 // validation, fin de partie, devoirs, arbitre.
 // (Carte : 07-map.js. Boss/collection/décor : 07-boss.js. Histoire/livres : 07-story.js.)
 
-var _bgAudio=null;
+let _bgAudio=null;
 // v12.4.50 (Lot 4, audit immersion narrative N1) : mémorise la dernière zone
 // pour laquelle la mise en scène a déjà été montrée cette session — variable
 // volontairement NON persistée (P), remise à zéro à chaque rechargement de
 // page, pour ne jamais interrompre la logique par une valeur périmée.
-var _lastStagingZoneId = null;
+let _lastStagingZoneId = null;
 function _musicDuck(on){ if(_bgAudio){ try{ _bgAudio.volume = on ? 0.03 : 0.25; }catch(e){} } } // baisse la musique pendant la voix (v11.6.7 : volume de base 0.4→0.25, trop fort par défaut)
 function startMusic(){
  stopMusic();
@@ -693,7 +693,7 @@ function generateQ(){
  if(isRevision&&revQueue.length>0){
   const e=revQueue.shift();
   if(e && typeof e==='object'){ const out=Object.assign({},e); out.isRevision=true; return out; }
-  const m=String(e).match(/^(\d+)([+\-x×\/÷])(\d+)=(\d+)$/);
+  const m=String(e).match(/^(\d+)([+\-x×/÷])(\d+)=(\d+)$/);
   if(m)return{a:+m[1],b:+m[3],op:m[2],res:+m[4],type:'normal',opKey:m[2],display:`${m[1]} ${m[2]} ${m[3]}`,img:''};
  }
  // Chantier 1.2 : révision espacée en mode normal (pas en boss ni en combat/révision)

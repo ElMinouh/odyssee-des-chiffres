@@ -148,7 +148,7 @@ function logError(qDisplay, res, q, elapsedMs){
  // soit un calcul purement numérique. Les questions-texte (ex. « Combien de dizaines… »)
  // sont exclues : leur tiret « a-t-il » était pris pour un « moins » et reconstruisait
  // une question incompréhensible rejouée en boucle.
- const _replayable = (q && Array.isArray(q.choices) && q.choices.length) || /^[\d().,+\-x×\/÷\s]+=\d+$/.test(key);
+ const _replayable = (q && Array.isArray(q.choices) && q.choices.length) || /^[\d().,+\-x×/÷\s]+=\d+$/.test(key);
  if(!_replayable) return;
  const _inattention = (typeof elapsedMs==='number') && elapsedMs>=0 && elapsedMs<INATTENTION_MS_THRESHOLD;
  // Si l'erreur existe déjà, on met à jour le timestamp et tries
@@ -307,7 +307,7 @@ function getRevisionErrorToAsk(opts){
     out.isRevision = true;
     return out;
    }
-   const m = e.q.match(/^(\d+)\s*([+\-x×\/÷])\s*(\d+)\s*=\s*(\d+)$/);
+   const m = e.q.match(/^(\d+)\s*([+\-x×/÷])\s*(\d+)\s*=\s*(\d+)$/);
    if(!m)continue;
    _lastRevisedKey = e.q;
    return {
@@ -1112,7 +1112,7 @@ function _mathVisualAid(q){
  if(op==='-' && typeof q.a==='number' && typeof q.b==='number') return _svgNumberLine(q.a, q.b, false);
  if(op==='x' && typeof q.a==='number' && typeof q.b==='number') return _svgGroupingDots(q.a, q.b);
  if(op==='/'){
-  const m=String(q.display||'').match(/^(\d+)\s*[÷\/]\s*(\d+)$/);
+  const m=String(q.display||'').match(/^(\d+)\s*[÷/]\s*(\d+)$/);
   if(m){ const total=+m[1], divisor=+m[2]; if(divisor>0 && total%divisor===0) return _svgGroupingDots(divisor, total/divisor); }
   return null;
  }

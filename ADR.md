@@ -1840,6 +1840,21 @@ Les 7 autres (`streak`/`streakLastDate`, `sessionObjective`, `lastPlayTs`, `calm
 
 **Impact** : `js/12-cloud.js` modifié, `_redirects` créé à la racine. v12.8.8 → **v12.8.9** (`package.json` + `sw.js` `CACHE_VERSION`). Suite complète (743 tests) et lint (0 erreur, 340 warnings) verts. Vérifié en navigateur réel : `cloudCode=TESTINE-AB3K9X` devient `cloudCode=TESTINE-AB**9X` dans `sessionStorage['_syncDiag']`. Les 11 constats de l'audit sécurité AUD-06 (2026-09-25) sont désormais tous traités (Lots 1, 2, 3).
 
+## ADR-157 — Ménage lint post-audit (2026-09-25) : `no-useless-escape` et `no-var`, un piège vm découvert
+
+**Contexte** : demande explicite de nettoyer les warnings ESLint restants (hors périmètre de l'audit AUD-06) : 7 `no-useless-escape` (échappement `\/`/`\-` inutile dans des classes de caractères de regex) et 29 `no-var`.
+
+**Décision** :
+1. Les 7 `no-useless-escape` corrigés sans risque (`js/05-profile.js`, `js/06a-adaptive.js` ×3, `js/07-game.js`, `js/08-ui.js`, `js/09-parent.js`) — retrait d'un backslash devant `/` ou `-` à l'intérieur d'une classe `[...]`, où il ne change strictement rien au comportement de la regex (confirmé par ESLint lui-même : cette règle ne signale que des échappements prouvés inutiles).
+2. 27 des 29 `no-var` convertis en `let`/`const` selon qu'ils sont réassignés ou non (`js/07-game.js`, `js/08-ui.js`, `js/09-parent.js`, `js/17-messaging.js`) — vérifié au préalable qu'aucun code ne les référence via `window.<nom>` (recherche exhaustive, aucune occurrence).
+3. **2 exceptions gardées en `var`, découvertes par régression** : `_msgProf`/`_msgReadOnly` (`js/17-messaging.js`). `tests/helpers/loadGame.js` (`setMsgProf()`) les réassigne depuis l'extérieur du bac à sable `vm` via `globalThis._msgProf = ...` — ce mécanisme ne fonctionne qu'avec `var` (qui crée une propriété sur l'objet global du contexte `vm`, contextifié à partir de l'objet `sandbox`) ; `let`/`const` créent une liaison lexicale séparée, invisible à cette écriture externe. Conséquence concrète observée : 6 tests plantaient avec `TypeError: Cannot read properties of null (reading 'chatId')`, `_msgProf` interne restant `null` malgré l'assignation externe réussie sur la propriété `globalThis._msgProf` (deux emplacements de stockage différents, silencieusement divergents).
+
+**Alternatives rejetées** : convertir `_msgProf`/`_msgReadOnly` en `let` et adapter `setMsgProf()` pour écrire ailleurs (ex. un objet d'état exposé) — rejeté ici, hors périmètre d'un ménage lint cosmétique ; à reconsidérer si `17-messaging.js` est un jour restructuré plus en profondeur.
+
+**Portée générale de la découverte** : tout futur `var`→`let`/`const` sur une variable de module doit désormais être vérifié aussi contre `tests/helpers/loadGame.js` (recherche `globalThis.<nom>\s*=`), en plus de la recherche `window.<nom>` déjà réflexe — pas seulement contre le code applicatif.
+
+**Impact** : `js/05-profile.js`, `js/06a-adaptive.js`, `js/07-game.js`, `js/08-ui.js`, `js/09-parent.js`, `js/17-messaging.js` modifiés. v12.8.9 → **v12.8.10** (`package.json` + `sw.js` `CACHE_VERSION`). Lint : 340 → 303 warnings (0 erreur, seuil `--max-warnings` inchangé à 344). Suite complète (743 tests) verte après correction de la régression découverte.
+
 ---
 
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

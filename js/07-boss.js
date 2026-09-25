@@ -41,7 +41,7 @@ const _COLLECTION_REVEAL = {
  primfr: {
   flag:'badgeRevealShown', title:'Le Badge complet', emoji:'🎖️',
   text:'Le dernier insigne se pose sur ta poitrine dans un éclat de lumière. Tu portes désormais la marque complète de ton parcours.',
-  check: function(){ var order = (typeof _ADV_MAT_ORDER!=='undefined') ? _ADV_MAT_ORDER : ['cp','ce1','ce2','cm1','cm2','final']; return typeof _regionConquered==='function' && order.every(function(rid){ return _regionConquered(rid); }); },
+  check: function(){ let order = (typeof _ADV_MAT_ORDER!=='undefined') ? _ADV_MAT_ORDER : ['cp','ce1','ce2','cm1','cm2','final']; return typeof _regionConquered==='function' && order.every(function(rid){ return _regionConquered(rid); }); },
  },
  col: {
   flag:'armorRevealShown', title:'L\'Armure complète', emoji:'🛡️',
@@ -529,7 +529,7 @@ function _openBookTale(){
  try{
   if(typeof closeAdventureLog==='function') closeAdventureLog();
   setTimeout(()=>{ try{
-    var tale = (typeof _STORY!=='undefined' && _STORY && _STORY.bookTale) ? _STORY.bookTale
+    let tale = (typeof _STORY!=='undefined' && _STORY && _STORY.bookTale) ? _STORY.bookTale
              : (typeof _MAT_STORY_FR!=='undefined' && _MAT_STORY_FR.bookTale ? _MAT_STORY_FR.bookTale : null);
     if(tale && typeof _showStoryModal==='function') _showStoryModal(tale, null);
   }catch(e){} }, 320);
