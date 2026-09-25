@@ -92,7 +92,7 @@ function _renderFigurinesShop(filter){
    // deviennent qu'ACHETABLES (voir _isLicenseCompletionUnlocked, 10-figurines.js).
    // Tant que la licence n'est pas complète : même message verrouillé qu'avant.
    if(fig.completionLock && !(typeof _isLicenseCompletionUnlocked==='function' && _isLicenseCompletionUnlocked(fig))){
-    html+=`<span style="font-size:.65em;color:#bdc3c7;font-style:italic;">${fig.unlockHint ? '' : '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> '}${fig.unlockHint || 'À gagner en boss'}</span>`;
+    html+=`<span style="font-size:.65em;color:#bdc3c7;font-style:italic;">${_licenseUnlockHint(fig)}</span>`;
    } else if(!fig.completionLock && !(fig.p>0)){
     // AUD-02-035 (audit fonctionnel 2026-09-21) : les figurines saisonnières/
     // anniversaire (uk:'sx', voir 03-figurines-data.js ligne ~617 "Non-achetables
@@ -132,6 +132,24 @@ function _renderFigurinesShop(filter){
 // future figurine "à débloquer par complétion" n'a besoin que du flag
 // completionLock:true + unlockHint sur sa fiche (03-figurines-data.js),
 // aucun code supplémentaire.
+// AUD-02-038 (audit fonctionnel 2026-09-21) : le texte affiché quand une
+// figurine completionLock est encore verrouillée ("... les N autres
+// figurines <Licence>") était une chaîne fig.unlockHint figée en dur dans
+// les données (03-figurines-data.js) — cohérente aujourd'hui avec
+// _isLicenseCompletionUnlocked() ci-dessous (qui, lui, recalcule
+// dynamiquement), mais rien ne garantirait qu'elle le reste après un futur
+// ajout de figurine à une licence existante. Calculé désormais à partir des
+// mêmes données que _isLicenseCompletionUnlocked(), pour ne jamais diverger.
+function _licenseUnlockHint(fig, fallback){
+ fallback = fallback || 'À gagner en boss';
+ try{
+  if(!fig) return fallback;
+  if(typeof FIGURINES==='undefined' || !Array.isArray(FIGURINES)) return fallback;
+  const others = FIGURINES.filter(f => f.uk===fig.uk && f.id!==fig.id && !f.completionLock);
+  if(!others.length) return fallback;
+  return `🏆 Achetable en réunissant les ${others.length} autres figurines ${fig.uni||''}`.trim();
+ }catch(e){ return fallback; }
+}
 function _isLicenseCompletionUnlocked(fig){
  try{
   if(!fig || !fig.completionLock) return true; // pas concernée par la règle
@@ -256,7 +274,7 @@ function buyFigurine(id){
  // rester bloqué de la même façon (protège aussi contre un bouton resté
  // affiché par erreur sur un rendu boutique périmé).
  if(fig.completionLock && typeof _isLicenseCompletionUnlocked==='function' && !_isLicenseCompletionUnlocked(fig)){
-  toast('🔒 '+(fig.unlockHint || 'Complète d\'abord la collection de cette licence !'));
+  toast('🔒 '+_licenseUnlockHint(fig, 'Complète d\'abord la collection de cette licence !'));
   return;
  }
  // AUD-02-035 (audit fonctionnel 2026-09-21) : les figurines à prix 0 hors

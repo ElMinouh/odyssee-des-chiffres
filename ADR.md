@@ -1716,4 +1716,18 @@ Les 7 autres (`streak`/`streakLastDate`, `sessionObjective`, `lastPlayTs`, `calm
 
 ---
 
+---
+
+## ADR-149 — Lot 3.3 (audit fonctionnel AUD-02, Phase 3) : contenu résiduel — ordinaux maternelle, unlockHint dynamique
+
+**Contexte** : deux constats d'effort Faible/Observation, portant sur un contenu ou un texte techniquement présent mais silencieusement incorrect ou inutilisé. AUD-02-017 : `_matRang` (13-maternelle.js, « Touche le premier/deuxième/… objet », programme « Explorer le monde » cycle 1) était codé, avec un commentaire dédié, mais absent de `_MAT_POOL` (PS/MS/GS) et du dictionnaire de phases — aucun enfant ne le voyait jamais jouer. AUD-02-038 : le texte `unlockHint` affiché sur une figurine `completionLock` encore verrouillée (« Achetable en réunissant les N autres figurines <Licence> ») était une chaîne figée en dur par figurine dans `03-figurines-data.js`, alors que `_isLicenseCompletionUnlocked()` (10-figurines.js) recalcule, lui, dynamiquement la même condition — cohérent aujourd'hui, mais rien ne garantissait que les deux resteraient synchronisés après un futur ajout de figurine à une licence existante.
+
+**Décision** : (1) **AUD-02-017** : `_matRang` ajouté à `_MAT_POOL.MS` (niveau où la notion d'ordinalité est introduite dans le programme officiel) avec `_matRang:2` dans le dictionnaire de phases (`PH`, IIFE de fin de fichier) — comportement identique aux autres exercices relationnels déjà en phase 2 (`_matAssocie`, `_matRanger`). PS et GS non touchés (hors périmètre du constat). (2) **AUD-02-038** : nouvelle fonction `_licenseUnlockHint(fig, fallback)` (10-figurines.js), qui recalcule le texte à partir des MÊMES données que `_isLicenseCompletionUnlocked()` (`FIGURINES.filter(f => f.uk===fig.uk && f.id!==fig.id && !f.completionLock)`), remplace la lecture de `fig.unlockHint` aux deux points d'affichage (boutique, `_renderFigurinesShop()`) et de refus d'achat (`buyFigurine()`) — les deux ne peuvent structurellement plus diverger, puisqu'ils partagent désormais le même calcul. Le champ `unlockHint` reste présent dans les données (pas de migration nécessaire) mais n'est plus lu par le code.
+
+**Alternatives rejetées** : ajouter `_matRang` à PS et GS également, pas seulement MS (rejeté — hors périmètre du constat, qui demandait juste « au moins un niveau » ; MS est le niveau pédagogiquement le plus approprié pour introduire cette notion) ; supprimer purement et simplement le champ `unlockHint` des données (rejeté — suppression de données non nécessaire pour corriger le bug, et `unlockHint` reste un champ documentaire utile même non lu par le code actuel).
+
+**Impact** : `js/13-maternelle.js` (`_MAT_POOL.MS`, dictionnaire `PH`), `js/10-figurines.js` (`_licenseUnlockHint`, `_renderFigurinesShop`, `buyFigurine`). v12.7.63. Tests : `tests/residual-content-lot33.test.js` (9 tests, dont un test « cœur du correctif » simulant l'ajout d'une figurine à une licence existante et vérifiant que le texte affiché s'actualise automatiquement). Note harnais : la vérification directe de `.ph` sur une fonction n'est pas possible dans le sandbox de test (l'IIFE source utilise `window[name]`, et `window` y est un stub séparé du contexte global, pas un alias comme dans un vrai navigateur — limite pré-existante, déjà documentée pour `_progSelfCheck()`, ADR-144) ; vérifié au niveau source à la place. 720/720 tests verts. Constats AUD-02-017 et AUD-02-038 (audit fonctionnel) clos par ce lot.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

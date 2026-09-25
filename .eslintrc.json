@@ -964,6 +964,7 @@
     "_lerp": "writable",
     "_levelGroupArr": "writable",
     "_levelLabel": "writable",
+    "_licenseUnlockHint": "writable",
     "_lineRound": "writable",
     "_listAllProfilesNames": "writable",
     "_loadVoices": "writable",

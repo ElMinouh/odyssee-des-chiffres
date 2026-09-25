@@ -169,7 +169,12 @@ function _matDie(level){
 // ── Pools par niveau & dispatchers ──────────────────────────────────
 const _MAT_POOL = {
  PS: [_matCombien, _matDie, _matDoigts, _matPareil, _matPlusGrand, _matPlusPetit, _matDonne, _matForme, _matGrandeur, _matIntrus, _matSuite],
- MS: [_matCombien, _matDie, _matDoigts, _matTenFrame, _matDomino, _matFlash, _matDecompose, _matAssocie, _matPlusGrand, _matPlusPetit, _matDonne, _matForme, _matGrandeur, _matIntrus, _matSuite, _matNombreManque, _matRanger, _matChiffre, _matChiffreColl],
+ // AUD-02-017 (audit fonctionnel 2026-09-21) : _matRang (ordinalité, "touche
+ // le premier/deuxième/… objet" — programme "Explorer le monde" cycle 1)
+ // était codé avec un commentaire dédié mais jamais branché dans aucun pool
+ // jouable — aucun enfant ne le voyait jamais. Ajouté en MS (niveau où la
+ // notion d'ordinalité est introduite), phase 2 (voir dictionnaire ci-dessous).
+ MS: [_matCombien, _matDie, _matDoigts, _matTenFrame, _matDomino, _matFlash, _matDecompose, _matAssocie, _matPlusGrand, _matPlusPetit, _matDonne, _matForme, _matGrandeur, _matIntrus, _matSuite, _matNombreManque, _matRanger, _matChiffre, _matChiffreColl, _matRang],
  GS: [_matCombien, _matDie, _matTenFrame, _matDomino, _matComplement, _matAddition, _matRetrait, _matApres, _matAssocie, _matSuite, _matIntrus, _matProbleme, _matForme, _matGrandeur, _matNombreManque, _matRanger, _matChiffre, _matChiffreColl, _matPartage],
 };
 // Override de phase par niveau : un exercice peut être "fin d'année" à un niveau
@@ -501,7 +506,8 @@ function _matSpeakAnim(text){
   _matForme:1,_matGrandeur:1,_matChiffre:1,
   _matSuite:2,_matIntrus:2,_matDonne:2,_matTenFrame:2,_matDomino:2,_matFlash:2,
   _matAssocie:2,_matRanger:2,_matChiffreColl:2,_matApres:2,_matAddition:2,_matNombreManque:2,
-  _matDecompose:3,_matComplement:3,_matRetrait:3,_matProbleme:3,_matPartage:3
+  _matDecompose:3,_matComplement:3,_matRetrait:3,_matProbleme:3,_matPartage:3,
+  _matRang:2
  };
  for(const name in PH){ try{ const f=window[name]; if(typeof f==='function') f.ph=PH[name]; }catch(e){} }
 })();

@@ -1132,6 +1132,7 @@ globalThis.__api = {
   _lerp: (typeof _lerp==='function') ? _lerp : undefined,
   _levelGroupArr: (typeof _levelGroupArr==='function') ? _levelGroupArr : undefined,
   _levelLabel: (typeof _levelLabel==='function') ? _levelLabel : undefined,
+  _licenseUnlockHint: (typeof _licenseUnlockHint==='function') ? _licenseUnlockHint : undefined,
   _lineRound: (typeof _lineRound==='function') ? _lineRound : undefined,
   _listAllProfilesNames: (typeof _listAllProfilesNames==='function') ? _listAllProfilesNames : undefined,
   _loadVoices: (typeof _loadVoices==='function') ? _loadVoices : undefined,
