@@ -174,8 +174,11 @@ input::placeholder,textarea::placeholder{color:rgba(255,255,255,.5);}
 .pow-charge{font-size:.65em;display:block;color:#f1c40f;}
 @keyframes pglow{0%{box-shadow:0 0 4px #9b59b6;}100%{box-shadow:0 0 14px #9b59b6;}}
 #qcm-options{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);margin-top:var(--space-3);}
-.qcm-btn{background:#3498db;font-size:1.4em;padding:var(--space-4);border-bottom:4px solid #2980b9;border-radius:var(--radius-sm);}
-.qcm-btn.correct{background:#27ae60!important;border-bottom-color:#1e8449!important;}
+/* AUD-05-004 (audit accessibilité 2026-09-25) : #3498db/#27ae60 avec texte
+   blanc ne passaient pas le seuil AA 1.4.3 (ratios mesurés ~3.15:1 et
+   ~2.73:1) — fonds assombris pour atteindre ~4.5:1 sans changer la teinte. */
+.qcm-btn{background:#1f6391;font-size:1.4em;padding:var(--space-4);border-bottom:4px solid #174d70;border-radius:var(--radius-sm);}
+.qcm-btn.correct{background:#1e8449!important;border-bottom-color:#145c32!important;}
 .qcm-btn.wrong{background:#c0392b!important;border-bottom-color:#922b21!important;}
 /* AUD-03-033 (audit UX 2026-09-25) : la distinction bonne/mauvaise réponse
    reposait uniquement sur la couleur (vert/rouge) — invisible ou ambiguë pour
@@ -5628,4 +5631,20 @@ body.theme-sakura #gc [style*="color:rgba(255,255,255,.55)"],
 body.theme-sakura #gc [style*="color:rgba(255,255,255,.5)"],
 body.theme-sakura #gc [style*="color:rgba(255,255,255,.4)"] {
   color: #e0e0e0 !important;
+}
+/* AUD-05-008 (audit accessibilité 2026-09-25) : filet de repli global —
+   175 @keyframes pour seulement 41 règles prefers-reduced-motion ciblées
+   jusqu'ici (ajoutées au fil des audits successifs, ex. lignes 166, 240,
+   888). Cette règle ne remplace pas les overrides ciblés (certains coupent
+   franchement l'animation via animation:none, ce qui reste préférable
+   quand c'est fait) : elle garantit que toute animation non encore
+   couverte individuellement soit aussi neutralisée pour un utilisateur
+   ayant demandé la réduction des animations au niveau système. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
