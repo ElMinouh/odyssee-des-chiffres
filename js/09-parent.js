@@ -16,9 +16,9 @@ function openParent(){
  const hint=$('pin-default-hint');
  if(hint) hint.classList.toggle('hidden', !!localStorage.getItem('parentPin'));
  const opts=getRoster().map(n=>`<option>${n}</option>`).join('');
- // AUD-03-002 : 'enc-player' (sélecteur unique, sticky, onglet Encadrement)
- // remplace les anciens hw-player/calm-player/block-player/filter-player/
- // bsubj-player — 'obj-player' n'existe plus dans index.html (déjà orphelin).
+ // AUD-03-002 : 'enc-player' (sélecteur unique, onglet Encadrement) remplace
+ // les anciens hw-player/calm-player/block-player/filter-player/bsubj-player
+ // — 'obj-player' n'existe plus dans index.html (déjà orphelin).
 ['parent-player','enc-player'].forEach(id=>{const e=$(id);if(e)e.innerHTML=opts;});
  $('cloud-player').innerHTML='<option value="ALL">Tous les joueurs</option>'+opts;
  if(typeof navTo==='function') navTo('v-parent'); else showView('v-parent');
