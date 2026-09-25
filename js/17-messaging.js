@@ -309,7 +309,7 @@ async function renderContactsScreen(){
    // — sans ce badge, rien ne distingue "hors-ligne temporairement" de
    // "injoignable pour de bon", et l'enfant peut continuer d'écrire dans le
    // vide indéfiniment sans jamais le savoir.
-   html += '<div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.06);border-radius:12px;padding:10px 12px;margin:5px 0;cursor:pointer;" onclick="chatOpenConv(\''+cid+'\',\''+nameArg+'\',\''+avArg+'\')">'
+   html += '<div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.06);border-radius:12px;padding:10px 12px;margin:5px 0;cursor:pointer;" role="button" tabindex="0" onclick="chatOpenConv(\''+cid+'\',\''+nameArg+'\',\''+avArg+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();chatOpenConv(\''+cid+'\',\''+nameArg+'\',\''+avArg+'\');}">'
     + '<span style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0;">'+av+'</span>'
     + '<span style="flex:1;font-size:.9em;font-weight:600;">'+cn+(c.disabled?' <span style="font-size:.7em;font-weight:400;color:#e67e22;">(injoignable)</span>':'')+'</span>'
     + (unread ? '<span style="background:#e74c3c;border-radius:50%;width:11px;height:11px;display:inline-block;"></span>' : '')

@@ -96,7 +96,7 @@ function _renderFigurinesShop(filter){
    else if(!fig.completionLock && !(fig.p>0)) cardState='state-boss';
    else cardState='state-buy';
   }
-  html+=`<div class="fig-card${isOwned?' owned':''}${cardState?' '+cardState:''}${fig.r==='exclusif'?' rarity-exclusif':''}"${isOwned?` onclick="openFigViewer('${fig.id}')" title="Voir en 3D 🎬"`:''}>`;
+  html+=`<div class="fig-card${isOwned?' owned':''}${cardState?' '+cardState:''}${fig.r==='exclusif'?' rarity-exclusif':''}"${isOwned?` role="button" tabindex="0" onclick="openFigViewer('${fig.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openFigViewer('${fig.id}');}" title="Voir en 3D 🎬"`:''}>`;
   if(isOwned) html+='<div class="fig-mark">✓</div>';
   html+=`<span class="fig-em">${getCharPortrait(fig.id, {size:75, emoji:fig.em, name:fig.name})}</span>`;
   html+=`<div class="fig-rv" style="color:${RARITY_COL[fig.r]}">${RARITY_STARS[fig.r]}</div>`;
@@ -367,7 +367,7 @@ function _sortedFigs(list, sortVal){
 function _figShelfCard(fig, anim=false){
  const col=RARITY_COL[fig.r]||'#888';
  const portrait=getCharPortrait(fig.id, {size:58, emoji:fig.em, name:fig.name});
- return `<div class="shelf-fig" data-r="${fig.r}" onclick="openFigViewer('${fig.id}')" title="${fig.name}">
+ return `<div class="shelf-fig" data-r="${fig.r}" role="button" tabindex="0" onclick="openFigViewer('${fig.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openFigViewer('${fig.id}');}" title="${fig.name}">
   <div class="shelf-fig-img" style="border-color:${col}22;border-width:1.5px;border-style:solid;">${portrait}</div>
   <div class="shelf-fig-glow" style="background:${col};"></div>
   <div class="shelf-fig-base"></div>
@@ -464,7 +464,7 @@ function renderFigCollection(){
    const totalInLicense=_countableFigurines(P.name).filter(f=>f.uk===k).length;
    const isOpen=uList.length>0; // open by default if has items
    html+=`<div class="shelf-section">
-    <div class="shelf-header" onclick="toggleShelfSection('sl-${k}')">
+    <div class="shelf-header" role="button" tabindex="0" onclick="toggleShelfSection('sl-${k}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleShelfSection('sl-${k}');}">
      <span class="shelf-header-icon">${UNI_ICON[k]||'🎴'}</span>
      <span class="shelf-header-label">${label}</span>
      <span class="shelf-header-count">${uList.length}/${totalInLicense}</span>

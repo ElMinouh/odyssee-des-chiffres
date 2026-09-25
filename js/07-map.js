@@ -2468,7 +2468,7 @@ function renderMap(){
    const xPct = ((p.x + offX) / W) * 100;
    const y = p.y + offY;
    const label = found ? esc(f.title) : 'Un secret à découvrir';
-   return `<div class="lore-point${found?' found':''}" data-lore-id="${f.id}" style="left:${xPct.toFixed(1)}%;top:${y.toFixed(0)}px;" title="${label}" onclick="_openLoreFragment('${f.id}')">${f.emoji}</div>`;
+   return `<div class="lore-point${found?' found':''}" data-lore-id="${f.id}" style="left:${xPct.toFixed(1)}%;top:${y.toFixed(0)}px;" title="${label}" role="button" tabindex="0" onclick="_openLoreFragment('${f.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();_openLoreFragment('${f.id}');}">${f.emoji}</div>`;
   }).join('');
  }).join('');
  // Assemblage final
@@ -2718,7 +2718,7 @@ function openArchipelZoom(zoneId){
    ly = Math.max(yMargin, Math.min(containerH - yMargin, ly));
    const found = (typeof _isLoreFound==='function') && _isLoreFound(loreFrag.id);
    const label = found ? esc(loreFrag.title) : 'Un secret à découvrir';
-   loreZoneHtml = `<div class="lore-point zoom-lore-point${found?' found':''}" data-lore-id="${loreFrag.id}" style="left:${lxPct.toFixed(1)}%;top:${ly.toFixed(0)}px;" title="${label}" onclick="_openLoreFragment('${loreFrag.id}')">${loreFrag.emoji}</div>`;
+   loreZoneHtml = `<div class="lore-point zoom-lore-point${found?' found':''}" data-lore-id="${loreFrag.id}" style="left:${lxPct.toFixed(1)}%;top:${ly.toFixed(0)}px;" title="${label}" role="button" tabindex="0" onclick="_openLoreFragment('${loreFrag.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();_openLoreFragment('${loreFrag.id}');}">${loreFrag.emoji}</div>`;
   }
  }
  // HTML des étapes

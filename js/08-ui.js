@@ -259,7 +259,7 @@ function renderHistory(){
  h=h.slice(-20).reverse();
  if(!h.length){el.innerHTML=bar+'<span style="color:#bdc3c7;">Aucune partie pour cette matière.</span>';return;}
  el.innerHTML=bar+h.map((g,i)=>`
-  <div class="hist-row ${g.won?'won':'lost'}" onclick="toggleHD(${i})">
+  <div class="hist-row ${g.won?'won':'lost'}" role="button" tabindex="0" onclick="toggleHD(${i})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHD(${i});}">
    ${g.won?'🏆':'💀'} ${SL[g.subject]||'🔢 Maths'} · ${g.date} · ${g.level} · ${g.mode} · ${g.score}pts · Combo×${g.maxCombo||0}
   </div>
   <div class="hist-detail" id="hd-${i}"><div style="margin-top:4px;color:${g.won?'#2ecc71':'#e74c3c'};">${g.errorsCount||0} erreur(s) · ${g.won?'Victoire':'Défaite'}</div></div>`).join('');
