@@ -4312,7 +4312,11 @@ button.recap-btn-secondary{
 /* v9.0.2 : colonnes de boutons fixes (sous Retour / Accueil) + drawers verticaux larges */
 .map-side-col{
  position:absolute;
- top:42px;
+ /* v12.8.1 : recale a 52px (etait 42px, calibre avant l'ajout du sous-titre
+    de matiere v12.4.25 et de min-height:44px sur .back-top-btn — la ligne
+    Retour/Accueil finissait deja a ~48px, provoquant un chevauchement avec
+    Carnet/Mini-carte). Aligne desormais sur la barre de zoom, comme prevu. */
+ top:52px;
  z-index:52;
  display:flex; flex-direction:column;
  width:112px;
