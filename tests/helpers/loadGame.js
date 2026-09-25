@@ -204,6 +204,7 @@ globalThis.__api = {
   getBgAudioVolume: () => (typeof _bgAudio!=='undefined' && _bgAudio) ? _bgAudio.volume : undefined,
   hasBgAudio: () => (typeof _bgAudio!=='undefined') ? (_bgAudio !== null) : undefined,
   setShowConfirm: (fn) => { globalThis.showConfirm = fn; },
+  setShowPrompt: (fn) => { globalThis.showPrompt = fn; },
   // AUD-02-006 (audit fonctionnel 2026-09-21) : _obSystem (19-onboarding.js)
   // exposé en snapshot par le bloc auto-généré ci-dessous (valeur figée au
   // moment de la construction de l'API) — ce getter lit sa valeur LIVE,
@@ -220,6 +221,11 @@ globalThis.__api = {
   // permettent de tester renderContactsScreen() bout-en-bout (badge
   // "injoignable", section "demandes refusées") sans dépendre du réseau.
   setChatFriendList: (fn) => { globalThis.chatFriendList = fn; },
+  // AUD-02-047 (audit fonctionnel 2026-09-21) : _weeklySocialStats()
+  // (17-messaging.js) appelle _chatApi('/msg/latest', ...) directement (pas
+  // via un wrapper dédié) — ce setter permet de contrôler cet appel réseau
+  // en test, même limite de fond que setChatFriendList ci-dessus.
+  setChatApi: (fn) => { globalThis._chatApi = fn; },
   setMsgProf: (prof, readOnly) => { globalThis._msgProf = prof; globalThis._msgReadOnly = !!readOnly; },
   // ─── BLOC AUTO-GÉNÉRÉ (ne pas éditer à la main — voir scripts/gen-test-api.mjs) ───
   $: (typeof $!=='undefined') ? $ : undefined,
@@ -447,6 +453,7 @@ globalThis.__api = {
   SUBJECT_LABELS: (typeof SUBJECT_LABELS!=='undefined') ? SUBJECT_LABELS : undefined,
   TIMER_SCALES: (typeof TIMER_SCALES!=='undefined') ? TIMER_SCALES : undefined,
   TIMER_TAUNTS: (typeof TIMER_TAUNTS!=='undefined') ? TIMER_TAUNTS : undefined,
+  TIME_BLOCK_OVERRIDE_MS: (typeof TIME_BLOCK_OVERRIDE_MS!=='undefined') ? TIME_BLOCK_OVERRIDE_MS : undefined,
   UNIVERS_LIST: (typeof UNIVERS_LIST!=='undefined') ? UNIVERS_LIST : undefined,
   UNI_ICON: (typeof UNI_ICON!=='undefined') ? UNI_ICON : undefined,
   UNLOCK_REQ: (typeof UNLOCK_REQ!=='undefined') ? UNLOCK_REQ : undefined,
@@ -688,6 +695,8 @@ globalThis.__api = {
   _autoFocusActiveRegion: (typeof _autoFocusActiveRegion==='function') ? _autoFocusActiveRegion : undefined,
   _avAdvKey: (typeof _avAdvKey==='function') ? _avAdvKey : undefined,
   _bgAudio: (typeof _bgAudio!=='undefined') ? _bgAudio : undefined,
+  _blockOverrideActive: (typeof _blockOverrideActive==='function') ? _blockOverrideActive : undefined,
+  _blockOverrideKey: (typeof _blockOverrideKey==='function') ? _blockOverrideKey : undefined,
   _bootSanityCheck: (typeof _bootSanityCheck==='function') ? _bootSanityCheck : undefined,
   _bossBio: (typeof _bossBio==='function') ? _bossBio : undefined,
   _bossReaction: (typeof _bossReaction==='function') ? _bossReaction : undefined,
@@ -897,6 +906,7 @@ globalThis.__api = {
   _figShelfCard: (typeof _figShelfCard==='function') ? _figShelfCard : undefined,
   _figSpeakFrom: (typeof _figSpeakFrom==='function') ? _figSpeakFrom : undefined,
   _figUtter: (typeof _figUtter!=='undefined') ? _figUtter : undefined,
+  _fillWeeklySocialStats: (typeof _fillWeeklySocialStats==='function') ? _fillWeeklySocialStats : undefined,
   _finalizeQ: (typeof _finalizeQ==='function') ? _finalizeQ : undefined,
   _findChapter: (typeof _findChapter==='function') ? _findChapter : undefined,
   _firstZoneId: (typeof _firstZoneId==='function') ? _firstZoneId : undefined,
@@ -1590,6 +1600,7 @@ globalThis.__api = {
   _weekBounds: (typeof _weekBounds==='function') ? _weekBounds : undefined,
   _weeklyAdvice: (typeof _weeklyAdvice==='function') ? _weeklyAdvice : undefined,
   _weeklyMedals: (typeof _weeklyMedals==='function') ? _weeklyMedals : undefined,
+  _weeklySocialStats: (typeof _weeklySocialStats==='function') ? _weeklySocialStats : undefined,
   _wrapTitle: (typeof _wrapTitle==='function') ? _wrapTitle : undefined,
   _writeProfile: (typeof _writeProfile==='function') ? _writeProfile : undefined,
   _xterm: (typeof _xterm==='function') ? _xterm : undefined,
@@ -1990,6 +2001,7 @@ globalThis.__api = {
   renderWeeklySummary: (typeof renderWeeklySummary==='function') ? renderWeeklySummary : undefined,
   repeatQuestion: (typeof repeatQuestion==='function') ? repeatQuestion : undefined,
   requestStepStart: (typeof requestStepStart==='function') ? requestStepStart : undefined,
+  requestTemporaryUnblock: (typeof requestTemporaryUnblock==='function') ? requestTemporaryUnblock : undefined,
   requestZoneOpen: (typeof requestZoneOpen==='function') ? requestZoneOpen : undefined,
   resetAdventure: (typeof resetAdventure==='function') ? resetAdventure : undefined,
   resetAllProfiles: (typeof resetAllProfiles==='function') ? resetAllProfiles : undefined,

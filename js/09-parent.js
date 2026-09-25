@@ -864,10 +864,18 @@ function renderWeeklySummary(){
       section si la messagerie est active MAINTENANT, OU s'il existe des données pour LA
       SEMAINE consultée (chatFlagsThis), indépendamment de l'état actuel. */''}
    ${((typeof chatIsEnabledByName==='function' && chatIsEnabledByName(player)) || chatFlagsThis.length>0) ? `
-   <div class="wreport-section no-print" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:.9em;color:#9aa6b2;">✉️ Messagerie de ${_esc_player}</span>
-    ${chatFlagsThis.length ? `<span style="font-size:.78em;color:#f39c12;font-weight:700;" title="Messages bloqués par le filtre de langage cette semaine">⚠️ ${chatFlagsThis.length} message${chatFlagsThis.length>1?'s':''} bloqué${chatFlagsThis.length>1?'s':''}</span>` : ''}
-    <button onclick="openMessaging('${_jsAttrPlayer}')" style="background:#9b59b6;font-size:.8em;padding:6px 12px;">Voir →</button>
+   <div class="wreport-section no-print">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+     <span style="font-size:.9em;color:#9aa6b2;">✉️ Messagerie de ${_esc_player}</span>
+     ${chatFlagsThis.length ? `<span style="font-size:.78em;color:#f39c12;font-weight:700;" title="Messages bloqués par le filtre de langage cette semaine">⚠️ ${chatFlagsThis.length} message${chatFlagsThis.length>1?'s':''} bloqué${chatFlagsThis.length>1?'s':''}</span>` : ''}
+     <button onclick="openMessaging('${_jsAttrPlayer}')" style="background:#9b59b6;font-size:.8em;padding:6px 12px;">Voir →</button>
+    </div>
+    <!-- AUD-02-047 (audit fonctionnel 2026-09-21) : jusqu'ici, le parent n'avait de
+         visibilité PROACTIVE que sur les incidents de langage bloqués — rien sur le
+         reste de la vie sociale (amis, échanges). Rempli de façon asynchrone par
+         _fillWeeklySocialStats() ci-dessous (chatFriendList()/msg-latest sont des
+         appels réseau, non disponibles au moment du rendu synchrone de ce bloc). -->
+    <div id="wreport-social" style="margin-top:6px;font-size:.78em;color:#9aa6b2;"></div>
    </div>` : ''}
    <div class="wreport-actions no-print">
     <button onclick="copyWeeklySummary()" style="background:var(--info);">📋 Copier le résumé</button>
@@ -875,6 +883,10 @@ function renderWeeklySummary(){
    </div>
   </div>`;
  el.innerHTML = html;
+ // AUD-02-047 : remplissage asynchrone du bloc d'activité sociale (appel
+ // réseau), une fois le rendu synchrone déjà affiché — même principe que
+ // _renderOptMsgManage() (17-messaging.js).
+ if(typeof _fillWeeklySocialStats==='function') _fillWeeklySocialStats(player, wThis.start.getTime());
  // Texte plat pour la copie (formaté SMS/email, max ~200 mots)
  const txtParts = [
   `📊 Odyssée des Chiffres — Semaine du ${fmtD(wThis.start)} au ${fmtD(wThis.end)}`,

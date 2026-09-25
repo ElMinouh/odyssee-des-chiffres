@@ -12,6 +12,14 @@ export function makeFakeD1() {
   const reads = []; // {conv,reader,upto,ts}
   let nextMsgId = 1;
 
+  // AUD-02-047 : les requêtes msgLatest()/weekCount utilisent LIKE avec des
+  // motifs de la forme "id|%" / "%|id" — équivalent, pour nos clés de
+  // conversation toujours "a|b", à vérifier que l'un des deux membres est id.
+  function _convIncludesUser(conv, id) {
+    const parts = String(conv).split('|');
+    return parts[0] === id || parts[1] === id;
+  }
+
   function findContact(a, b) {
     return contacts.find(c => c.a === a && c.b === b);
   }
@@ -31,12 +39,21 @@ export function makeFakeD1() {
               const c = findContact(a, b);
               return c ? { status: c.status } : null;
             }
+            // AUD-02-047 : compteur de messages échangés depuis `since` (résumé hebdo).
+            if (s.startsWith("SELECT COUNT(*) AS c FROM messages WHERE (conv LIKE")) {
+              const id = String(args[0]).replace(/\|%$/, '');
+              const since = args[2];
+              const c = messages.filter(m => _convIncludesUser(m.conv, id) && m.ts >= since).length;
+              return { c };
+            }
             return null;
           },
           async all() {
             if (s.includes("FROM contacts c JOIN users u ON u.id=c.b WHERE c.a=? AND c.status='accepted'")) {
               const [a] = args;
-              return { results: contacts.filter(c => c.a === a && c.status === 'accepted').map(c => ({ id: c.b, ...userView(c.b) })) };
+              // AUD-02-047 : c.created (date d'acceptation) exposé pour le calcul des
+              // "nouveaux amis de la semaine" côté client.
+              return { results: contacts.filter(c => c.a === a && c.status === 'accepted').map(c => ({ id: c.b, ...userView(c.b), created: c.created })) };
             }
             if (s.includes("FROM contacts c JOIN users u ON u.id=c.a WHERE c.b=? AND c.status='pending'")) {
               const [b] = args;
@@ -59,6 +76,16 @@ export function makeFakeD1() {
             if (s.startsWith('SELECT id,sender,body,ts FROM messages WHERE conv=? AND id>?')) {
               const [conv, afterId] = args;
               return { results: messages.filter(m => m.conv === conv && m.id > afterId).map(m => ({ ...m })) };
+            }
+            // AUD-02-047 : msgLatest() (worker) — MAX(id) par conversation impliquant id.
+            if (s.startsWith('SELECT conv, MAX(id) AS last FROM messages WHERE conv LIKE')) {
+              const id = String(args[0]).replace(/\|%$/, '');
+              const byConv = new Map();
+              for (const m of messages) {
+                if (!_convIncludesUser(m.conv, id)) continue;
+                if (!byConv.has(m.conv) || m.id > byConv.get(m.conv)) byConv.set(m.conv, m.id);
+              }
+              return { results: [...byConv.entries()].map(([conv, last]) => ({ conv, last })) };
             }
             return { results: [] };
           },

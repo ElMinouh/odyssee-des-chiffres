@@ -229,7 +229,9 @@ async function friendList(env, b, CORS) {
   // "injoignable" sur un ami dont la messagerie a été désactivée durablement
   // côté serveur — plutôt que de laisser croire à un simple silence.
   const contacts = drop((await env.DB.prepare(
-    "SELECT c.b AS id, u.name AS name, u.avatar AS avatar, u.disabled AS disabled FROM contacts c JOIN users u ON u.id=c.b WHERE c.a=? AND c.status='accepted' ORDER BY u.name"
+    // AUD-02-047 : c.created (date d'acceptation de l'amitié) permet au
+    // résumé hebdo parent de compter les "nouveaux amis" de la semaine.
+    "SELECT c.b AS id, u.name AS name, u.avatar AS avatar, u.disabled AS disabled, c.created AS created FROM contacts c JOIN users u ON u.id=c.b WHERE c.a=? AND c.status='accepted' ORDER BY u.name"
   ).bind(me.id).all()).results || []);
   const incoming = drop((await env.DB.prepare(
     "SELECT c.a AS id, u.name AS name, u.avatar AS avatar FROM contacts c JOIN users u ON u.id=c.a WHERE c.b=? AND c.status='pending' ORDER BY u.name"
@@ -409,7 +411,20 @@ async function msgLatest(env, b, CORS) {
     const other = parts[0] === me.id ? parts[1] : parts[0];
     latest[other] = r.last;
   }
-  return json({ ok: true, latest }, 200, CORS);
+  // AUD-02-047 (audit fonctionnel 2026-09-21) : compteur d'activité sociale
+  // pour le résumé hebdomadaire parent — jusqu'ici, seule chatFlagsThis
+  // (mots bloqués) y était visible, rien sur le volume d'échanges réel.
+  // Optionnel (b.since absent ou 0) pour ne rien changer aux appels existants
+  // de /msg/latest (badges non-lus, sondage de conversation).
+  let weekCount = 0;
+  const since = parseInt(b.since, 10) || 0;
+  if (since > 0) {
+    const wc = await env.DB.prepare(
+      "SELECT COUNT(*) AS c FROM messages WHERE (conv LIKE ? ESCAPE '\\' OR conv LIKE ? ESCAPE '\\') AND ts >= ?"
+    ).bind(idEsc + '|%', '%|' + idEsc, since).first();
+    weekCount = (wc && wc.c) || 0;
+  }
+  return json({ ok: true, latest, weekCount }, 200, CORS);
 }
 
 // #16 (accusé de lecture) : marque la conversation avec `with` comme lue par

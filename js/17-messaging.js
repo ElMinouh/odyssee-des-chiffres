@@ -107,6 +107,39 @@ async function chatEnableForProfile(name){
  if(typeof scheduleCloudSync==='function'){ try{ scheduleCloudSync(); }catch(e){} } // fait voyager l'identité via le cloud
  return res || { error:'network' };
 }
+// AUD-02-047 (audit fonctionnel 2026-09-21) : compteur d'activité sociale
+// pour le résumé hebdomadaire parent (09-parent.js, renderWeeklySummary()) —
+// nombre d'amis, nouveaux amis cette semaine, demandes en attente, volume de
+// messages échangés cette semaine. Renvoie null si la messagerie n'est pas
+// active pour ce profil (rien à afficher) ou en cas d'échec réseau.
+async function _weeklySocialStats(name, weekStartMs){
+ const prof=_chatLoad(name);
+ if(!prof.chatEnabled || !prof.chatId) return null;
+ let fl=null, ml=null;
+ try{ fl=await chatFriendList(prof); }catch(e){}
+ if(!fl || !fl.ok) return null;
+ try{ ml=await _chatApi('/msg/latest', Object.assign(_chatAuth(prof), { since: weekStartMs })); }catch(e){}
+ const contacts=fl.contacts||[];
+ return {
+  friendsTotal: contacts.length,
+  newFriends: contacts.filter(c => c.created && c.created>=weekStartMs).length,
+  incoming: (fl.incoming||[]).length,
+  msgCount: (ml && ml.ok && typeof ml.weekCount==='number') ? ml.weekCount : null,
+ };
+}
+// AUD-02-047 : remplit #wreport-social (09-parent.js, renderWeeklySummary())
+// une fois les statistiques réseau disponibles — séparée de
+// _weeklySocialStats() pour rester testable indépendamment du DOM.
+async function _fillWeeklySocialStats(name, weekStartMs){
+ const box=document.getElementById('wreport-social'); if(!box) return;
+ const stats=await _weeklySocialStats(name, weekStartMs);
+ if(!stats){ box.innerHTML=''; return; }
+ const parts=[`👥 ${stats.friendsTotal} ami${stats.friendsTotal>1?'s':''}`];
+ if(stats.newFriends>0) parts.push(`✨ ${stats.newFriends} nouvel${stats.newFriends>1?'s':''} ami${stats.newFriends>1?'s':''} cette semaine`);
+ if(stats.incoming>0) parts.push(`📨 ${stats.incoming} demande${stats.incoming>1?'s':''} en attente`);
+ if(typeof stats.msgCount==='number') parts.push(`💬 ${stats.msgCount} message${stats.msgCount>1?'s':''} échangé${stats.msgCount>1?'s':''} cette semaine`);
+ box.innerHTML=parts.join(' · ');
+}
 async function chatDisableForProfile(name){
  if(!name) return;
  const prof = _chatLoad(name); prof.chatEnabled = false; prof.ts = Date.now(); _chatPersist(prof);
@@ -194,16 +227,25 @@ async function renderContactsScreen(){
   + '<div style="display:flex;align-items:center;gap:8px;"><span style="font-family:monospace;font-size:1em;font-weight:700;letter-spacing:1px;color:#5dade2;">'+_e(myCode)+'</span>'
   + '<button onclick="chatCopyCode()" style="font-size:.72em;padding:4px 8px;">📋 Copier</button></div></div>';
 
+ // AUD-02-047 (audit fonctionnel 2026-09-21) : jusqu'ici, les demandes
+ // reçues/envoyées/refusées restaient invisibles en mode lecture seule
+ // (visualisation parentale, "Voir →" du résumé hebdo) — un parent devait
+ // savoir se rendre dans un panneau Options distinct pour seulement les
+ // VOIR. Les sections restent désormais affichées en lecture seule ; seuls
+ // les boutons d'action (Accepter/Refuser/Annuler) restent réservés à
+ // l'enfant, qui reste seul décisionnaire de ses contacts.
  const inc = data.incoming || [];
- if(inc.length && !_msgReadOnly){
+ if(inc.length){
   html += '<p style="font-size:.8em;font-weight:700;color:#f1c40f;margin:6px 0;">📨 Demandes reçues</p>';
   inc.forEach(c => {
    const cid=_e(c.id), cn=_e(c.name||c.id), av=_e(c.avatar||'\uD83E\uDDD9');
    html += '<div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);border-radius:10px;padding:8px 10px;margin:4px 0;">'
     + '<span style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">'+av+'</span>'
     + '<span style="flex:1;font-size:.9em;">'+cn+'</span>'
-    + '<button onclick="chatAcceptContact(\''+cid+'\')" style="background:#27ae60;font-size:.72em;padding:5px 10px;">✅ Accepter</button>'
-    + '<button onclick="chatDeclineContact(\''+cid+'\')" style="background:#7f8c8d;font-size:.72em;padding:5px 10px;">✕</button></div>';
+    + (_msgReadOnly ? '' :
+       '<button onclick="chatAcceptContact(\''+cid+'\')" style="background:#27ae60;font-size:.72em;padding:5px 10px;">✅ Accepter</button>'
+       + '<button onclick="chatDeclineContact(\''+cid+'\')" style="background:#7f8c8d;font-size:.72em;padding:5px 10px;">✕</button>')
+    + '</div>';
   });
  }
 
@@ -212,14 +254,15 @@ async function renderContactsScreen(){
  // Worker, mais rien côté client ne l'affichait — une demande envoyée
  // devenait invisible et impossible à annuler en cas d'erreur (mauvais code).
  const outg = data.outgoing || [];
- if(outg.length && !_msgReadOnly){
+ if(outg.length){
   html += '<p style="font-size:.8em;font-weight:700;color:#9aa6b2;margin:6px 0;">📤 Demandes envoyées</p>';
   outg.forEach(c => {
    const cn=_e(c.name||c.id), av=_e(c.avatar||'🧙'), cidArg=_jsAttr(c.id);
    html += '<div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border-radius:10px;padding:8px 10px;margin:4px 0;">'
     + '<span style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">'+av+'</span>'
     + '<span style="flex:1;font-size:.9em;color:#bdc3c7;">'+cn+' <span style="font-size:.72em;">(en attente…)</span></span>'
-    + '<button onclick="chatCancelContact(\''+cidArg+'\')" style="background:#7f8c8d;font-size:.72em;padding:5px 10px;">Annuler</button></div>';
+    + (_msgReadOnly ? '' : '<button onclick="chatCancelContact(\''+cidArg+'\')" style="background:#7f8c8d;font-size:.72em;padding:5px 10px;">Annuler</button>')
+    + '</div>';
   });
  }
 
@@ -229,14 +272,15 @@ async function renderContactsScreen(){
  // indiscernable d'une absence de réponse). Bouton "OK" réutilise
  // chatCancelContact() (la route serveur accepte désormais aussi ce cas).
  const declined = data.declined || [];
- if(declined.length && !_msgReadOnly){
+ if(declined.length){
   html += '<p style="font-size:.8em;font-weight:700;color:#e67e22;margin:6px 0;">📭 Demandes refusées</p>';
   declined.forEach(c => {
    const cn=_e(c.name||c.id), av=_e(c.avatar||'🧙'), cidArg=_jsAttr(c.id);
    html += '<div style="display:flex;align-items:center;gap:8px;background:rgba(230,126,34,.08);border-radius:10px;padding:8px 10px;margin:4px 0;">'
     + '<span style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">'+av+'</span>'
     + '<span style="flex:1;font-size:.9em;color:#bdc3c7;">'+cn+' <span style="font-size:.72em;">(a refusé ta demande)</span></span>'
-    + '<button onclick="chatCancelContact(\''+cidArg+'\')" style="background:#7f8c8d;font-size:.72em;padding:5px 10px;">OK</button></div>';
+    + (_msgReadOnly ? '' : '<button onclick="chatCancelContact(\''+cidArg+'\')" style="background:#7f8c8d;font-size:.72em;padding:5px 10px;">OK</button>')
+    + '</div>';
   });
  }
 

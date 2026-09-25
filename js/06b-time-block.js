@@ -10,8 +10,23 @@
 // formée ne doit jamais verrouiller l'enfant en permanence (fail-open, pas
 // fail-closed : c'est un confort parental, pas un dispositif de sécurité).
 function _isValidTimeStr(s){ return typeof s==='string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(s); }
+// AUD-02-033 (audit fonctionnel 2026-09-21) : aucun moyen, depuis l'écran de
+// blocage, de débloquer temporairement l'accès sans que le parent aille
+// modifier manuellement les horaires (avec le risque réel d'oublier de les
+// remettre ensuite). Dérogation ponctuelle, via re-saisie du code parent —
+// reste un « confort parental, pas un dispositif de sécurité » (cf. commentaire
+// ci-dessus sur le fail-open), même esprit que le reste de ce module.
+const TIME_BLOCK_OVERRIDE_MS = 60*60*1000; // 1h : assez pour une session, pas un contournement permanent
+function _blockOverrideKey(name){ return 'blockOverrideUntil_'+name; }
+function _blockOverrideActive(name){
+ try{
+  const until=parseInt(localStorage.getItem(_blockOverrideKey(name))||'0',10)||0;
+  return until>Date.now();
+ }catch(e){ return false; }
+}
 function isTimeBlocked(){
  const cfg=getBlockCfg(P.name);if(!cfg||!cfg.enabled)return false;
+ if(_blockOverrideActive(P.name)) return false; // dérogation ponctuelle en cours
  if(!_isValidTimeStr(cfg.start)||!_isValidTimeStr(cfg.end)) return false;
  const now=new Date(),h=now.getHours(),m=now.getMinutes();
  const cur=h*60+m;
@@ -35,6 +50,23 @@ function showBlockScreen(){
   const n=new Date();
   $('block-clock').innerText=n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0')+':'+n.getSeconds().toString().padStart(2,'0');
  },1000);
+}
+// AUD-02-033 : déclenchée par le bouton « Dérogation ponctuelle » de l'écran
+// de blocage — réutilise showPrompt() (01-core.js, Lot 3.1) et checkStoredPin()
+// (déjà utilisée pour d'autres re-saisies de code parent hors Vue Parent,
+// ex. chatSendCurrent() en 17-messaging.js).
+function requestTemporaryUnblock(){
+ if(typeof showPrompt!=='function' || typeof checkStoredPin!=='function') return;
+ showPrompt('Code parent pour débloquer l’accès pendant 1 heure :', async (pin)=>{
+  if(await checkStoredPin(String(pin||'').trim())){
+   try{ localStorage.setItem(_blockOverrideKey(P.name), String(Date.now()+TIME_BLOCK_OVERRIDE_MS)); }catch(e){}
+   clearInterval(blockClockInterval);
+   $('time-block-screen').classList.add('hidden');
+   if(typeof toast==='function') toast('🔓 Débloqué pour 1 heure !', 2500);
+  } else {
+   if(typeof toast==='function') toast('❌ Code parent incorrect.', 2200);
+  }
+ }, {title:'Dérogation ponctuelle', inputType:'password', placeholder:'Code parent', confirmLabel:'Débloquer'});
 }
 // Contrôles parent : blocage horaire
 function loadBlockSettings(){
