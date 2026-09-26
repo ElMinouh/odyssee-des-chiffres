@@ -126,13 +126,86 @@ describe('genQ_CM2() — géométrie en phase 2, fractions réservées à la pha
   });
 });
 
-describe('Non-régression : le combat de boss reste inchangé par ce lot (pool toujours varié dès le début)', () => {
-  it('genQ_CE1(boss=true) en phase 1 propose toujours le nombre manquant (comportement boss non touché)', () => {
+// AUD-10-003 (audit pédagogique 2026-09-26) — contrairement à ce que le test
+// ci-dessus affirmait jusqu'ici comme "non-régression", le pool de BOSS de
+// chaque niveau ignorait totalement le gating par phase appliqué au pool
+// normal : un combat de boss de tout début d'année pouvait exposer des types
+// que le mode normal juge encore prématurés. Désormais, le boss suit la même
+// règle de phase que le pool normal (voir _nextBossType() filtré par
+// _curPhase() dans chaque genQ_*).
+describe('Le combat de boss respecte désormais le même gating par phase que le pool normal (AUD-10-003)', () => {
+  it('genQ_CE1(boss=true) en phase 1 : jamais de nombre manquant', () => {
     const api = loadGame(FILES);
     api.setP(api.defProfile('Test'));
     api.setGM({ level: 'CE1' });
     setPhase(api, 'CE1', 1);
     const types = sampleTypes(() => api.genQ_CE1(true));
+    expect([...types].some(t => t.startsWith('missing'))).toBe(false);
+  });
+
+  it('genQ_CE1(boss=true) en phase 2 : le nombre manquant redevient possible (comportement inchangé)', () => {
+    const api = loadGame(FILES);
+    api.setP(api.defProfile('Test'));
+    api.setGM({ level: 'CE1' });
+    setPhase(api, 'CE1', 2);
+    const types = sampleTypes(() => api.genQ_CE1(true));
     expect([...types].some(t => t.startsWith('missing'))).toBe(true);
+  });
+
+  it('genQ_CE2(boss=true) en phase 1 : jamais de nombre manquant (miss_mult)', () => {
+    const api = loadGame(FILES);
+    api.setP(api.defProfile('Test'));
+    api.setGM({ level: 'CE2' });
+    setPhase(api, 'CE2', 1);
+    const types = sampleTypes(() => api.genQ_CE2(true));
+    expect([...types].some(t => t.startsWith('missing'))).toBe(false);
+  });
+
+  it('genQ_CM1(boss=true) en phase 1 : ni nombre manquant ni géométrie', () => {
+    const api = loadGame(FILES);
+    api.setP(api.defProfile('Test'));
+    api.setGM({ level: 'CM1' });
+    setPhase(api, 'CM1', 1);
+    const types = sampleTypes(() => api.genQ_CM1(true));
+    expect([...types].some(t => t.startsWith('missing'))).toBe(false);
+    expect([...types].some(t => t.endsWith('|geo'))).toBe(false);
+  });
+
+  it('genQ_CM1(boss=true) en phase 2 : nombre manquant possible, pas encore la géométrie', () => {
+    const api = loadGame(FILES);
+    api.setP(api.defProfile('Test'));
+    api.setGM({ level: 'CM1' });
+    setPhase(api, 'CM1', 2);
+    const types = sampleTypes(() => api.genQ_CM1(true));
+    expect([...types].some(t => t.startsWith('missing'))).toBe(true);
+    expect([...types].some(t => t.endsWith('|geo'))).toBe(false);
+  });
+
+  it('genQ_CM1(boss=true) en phase 3 : géométrie accessible (comportement inchangé)', () => {
+    const api = loadGame(FILES);
+    api.setP(api.defProfile('Test'));
+    api.setGM({ level: 'CM1' });
+    setPhase(api, 'CM1', 3);
+    const types = sampleTypes(() => api.genQ_CM1(true));
+    expect([...types].some(t => t.endsWith('|geo'))).toBe(true);
+  });
+
+  it('genQ_CM2(boss=true) en phase 1 : ni géométrie ni fractions', () => {
+    const api = loadGame(FILES);
+    api.setP(api.defProfile('Test'));
+    api.setGM({ level: 'CM2' });
+    setPhase(api, 'CM2', 1);
+    const types = sampleTypes(() => api.genQ_CM2(true));
+    expect([...types].some(t => t.endsWith('|geo'))).toBe(false);
+    expect([...types].some(t => t.startsWith('fraction'))).toBe(false);
+  });
+
+  it('genQ_CM2(boss=true) en phase 3 : fractions accessibles (comportement inchangé)', () => {
+    const api = loadGame(FILES);
+    api.setP(api.defProfile('Test'));
+    api.setGM({ level: 'CM2' });
+    setPhase(api, 'CM2', 3);
+    const types = sampleTypes(() => api.genQ_CM2(true));
+    expect([...types].some(t => t.startsWith('fraction'))).toBe(true);
   });
 });

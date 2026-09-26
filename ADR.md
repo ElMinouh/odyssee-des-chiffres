@@ -2125,4 +2125,26 @@ Ceci clôt l'intégralité de l'audit performances AUD-07 (23 constats : traité
 
 ---
 
+## ADR-174 — Lot 4 (audit pédagogique AUD-10, 2026-09-26) : gating par phase du combat de boss, AUD-10-005 invalidé à la vérification
+
+**Contexte** (AUD-10-003) : dans `genQ_CE1`/`CE2`/`CM1`/`CM2` (`04-questions.js`), le pool de combat de BOSS (`_nextBossType(bTypes,...)`) ignorait totalement le gating par phase (`_curPhase()`) appliqué au pool normal (AUD-02-014) : un boss de tout début d'année pouvait exposer nombre manquant (CE1/CE2/CM1) ou géométrie/fractions (CM1/CM2) alors que le mode normal les juge encore prématurés à cette phase. Un test existant (`question-generators-phase-gating.test.js`) encodait même explicitement ce comportement comme "non-régression" à préserver — corrigé dans ce lot.
+
+**Décision** : `bTypes` filtré par `_curPhase(level)` avant `_nextBossType()`, même règle que le pool normal, dans les 4 générateurs. Découverte en cours de route : dans `genQ_CE1`, le type implicite `'chain'` (`? − b = a`, dernier cas du switch) est du même niveau d'abstraction que `'miss'` — les deux réservés à la phase 2+ (un simple retrait de `'miss'` seul ne suffisait pas, le test l'a détecté). `genQ_CP` non concerné : son pool normal n'a lui-même aucune notion de phase, donc pas de parité à restaurer avec son boss.
+
+**Contexte** (AUD-10-004) : deux systèmes de calcul de "phase pédagogique" coexistent — `yearProgress` (mode libre, statistique) et la position dans la carte Odyssée (mode carte, narratif) — avec des sources de données différentes.
+
+**Décision** : choix assumé, documenté ici plutôt que codé (option "alternative" de l'audit retenue) : le mode Carte privilégie la progression narrative, le mode libre la progression statistique. Unifier les deux risquerait de régresser la logique de la carte pour un bénéfice incertain. Un futur audit ne doit pas re-signaler cette différence comme un défaut non traité.
+
+**Contexte** (AUD-10-005, **invalidé à la vérification**) : l'audit affirmait une couverture "très partielle" du gating par phase au collège (`_COL_PH_BY_LEVEL` ne semblant couvrir que quelques générateurs de 5e). Vérification (`15-college.js`) : **tous les 56 générateurs utilisés dans les pools 6e/5e/4e/3e ont déjà une phase explicite** via la table commune `_COL_PH` (lignes 613-637) — `_COL_PH_BY_LEVEL` n'est qu'un mécanisme de SURCHARGE ponctuelle pour les rares cas où une même fonction réutilisée entre niveaux mériterait une phase différente selon le niveau, pas la source de vérité principale. Aucune lacune réelle trouvée.
+
+**Décision** : AUD-10-005 classé invalidé, aucune ligne de code à ajouter. Voir aussi le précédent de ce type dans ce projet (ADR-167, AUD-09-004).
+
+**Contexte** (AUD-10-006, reporté) : le pool collège tire ses questions par "sac sans remise" sans regroupement thématique, mélangeant des notions très hétérogènes phase par phase.
+
+**Décision** : reporté à un lot dédié — toucher à `_collEnrich`/`_colBags` sans risquer de régresser l'interleaving déjà en place (ADR-31) demande plus de prudence qu'un correctif ponctuel.
+
+**Impact** : `js/04-questions.js` (4 générateurs). v12.8.23. Tests : `tests/question-generators-phase-gating.test.js` (bloc "non-régression" remplacé par des tests positifs du nouveau comportement, 8 tests). 768/768 tests verts, lint 0 erreur (306 warnings). Constat AUD-10-003 clos ; AUD-10-004 documenté comme choix assumé ; AUD-10-005 invalidé ; AUD-10-006 reporté.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

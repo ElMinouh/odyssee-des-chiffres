@@ -54,7 +54,14 @@ function genQ_CE1(boss,_depth=0){
  let q;
  if(boss){
   // Boss CE1: pool enrichi — nombres manquants, soustractions, additions plus grandes
-  const bTypes=['miss','sub','add_big','chain'];
+  // AUD-10-003 (audit pédagogique 2026-09-26) : 'miss' (nombre manquant, plus
+  // abstrait) est réservé à partir de la phase 2, même règle que le pool normal
+  // ci-dessous (AUD-02-014) — un boss de tout début d'année ne doit pas exposer
+  // une notion que le mode normal juge encore prématurée.
+  // 'chain' (dernier cas ci-dessous, "? - b = a") est du même niveau d'abstraction
+  // que 'miss' (trouver un opérande manquant) — les deux réservés à la phase 2+.
+  const _phBoss=_curPhase('CE1');
+  const bTypes=_phBoss>=2?['miss','sub','add_big','chain']:['sub','add_big'];
   const pick=_nextBossType(bTypes,'CE1');
   if(pick==='miss'){const a=_ari(8,18,'+'),b=_ari(3,12,'+');q={display:`${a} + ? = ${a+b}`,res:b,type:'missing',opKey:'+',img:'',hint:`${a} + ? = ${a+b} → fais ${a+b} − ${a}.`};}
   else if(pick==='sub'){const a=_ari(10,20,'-'),b=_ari(3,10,'-');q={a,b,op:'-',res:a-b,type:'normal',opKey:'-',display:`${a} - ${b}`,img:'',hint:`Pars de ${a} et recule de ${b}.`};}
@@ -80,7 +87,10 @@ function genQ_CE2(boss,_d=0){
  let q;
  if(boss){
   // Boss CE2: toutes tables, nombres manquants multiplication, divisions simples
-  const bTypes=['mult_full','miss_mult','div_simple','sub_big'];
+  // AUD-10-003 : 'miss_mult' réservé à partir de la phase 2, même règle que le
+  // pool normal ci-dessous.
+  const _phBoss=_curPhase('CE2');
+  const bTypes=_phBoss>=2?['mult_full','miss_mult','div_simple','sub_big']:['mult_full','div_simple','sub_big'];
   const pick=_nextBossType(bTypes,'CE2');
   if(pick==='mult_full'){const a=[2,3,4,5,6,7,8,9,10][ri(0,8)],b=_ari(2,10,'x');q={a,b,op:'×',res:a*b,type:'normal',opKey:'x',display:`${a} × ${b}`,img:'',hint:`Pense à la table de ${a}.`};}
   else if(pick==='miss_mult'){const a=[3,4,5,6,7,8,9][ri(0,6)],b=_ari(2,10,'x');q={display:`${a} × ? = ${a*b}`,res:b,type:'missing',opKey:'x',img:'',hint:`${a} × ? = ${a*b} → fais ${a*b} ÷ ${a}.`};}
@@ -102,7 +112,12 @@ function genQ_CM1(boss,_d=0){
  let q;
  if(boss){
   // Boss CM1: pool très varié — additions/soustractions grands, multiplication, géométrie, nombre manquant
-  const bTypes=af.geo?['add_big','sub_big','mult_mid','miss_sub','miss_mult','geo']:['add_big','sub_big','mult_mid','miss_sub','miss_mult'];
+  // AUD-10-003 : 'miss_sub'/'miss_mult' réservés à partir de la phase 2, 'geo' à
+  // partir de la phase 3 — même règle que le pool normal ci-dessous (AUD-02-014).
+  const _phBoss=_curPhase('CM1');
+  let bTypes=['add_big','sub_big','mult_mid'];
+  if(_phBoss>=2) bTypes=bTypes.concat(['miss_sub','miss_mult']);
+  if(_phBoss>=3 && af.geo) bTypes.push('geo');
   const pick=_nextBossType(bTypes,'CM1');
   if(pick==='add_big'){const a=_ari(30,80,'+'),b=_ari(20,60,'+');q={a,b,op:'+',res:a+b,type:'normal',opKey:'+',display:`${a} + ${b}`,img:'',hint:`Additionne d'abord les dizaines, puis les unités.`};}
   else if(pick==='sub_big'){const a=_ari(40,99,'-'),b=_ari(10,40,'-');q={a,b,op:'-',res:a-b,type:'normal',opKey:'-',display:`${a} - ${b}`,img:'',hint:`Soustrais d'abord les dizaines, puis les unités.`};}
@@ -128,7 +143,12 @@ function genQ_CM2(boss,_d2=0){
  const af=getOpFilters();
  let q;
  if(boss){
-  const bTypes=['div','frac','geo','miss_div','mult_hard'];
+  // AUD-10-003 : 'geo' réservé à partir de la phase 2, 'frac' à partir de la
+  // phase 3 — même règle que le pool normal ci-dessous (AUD-02-014).
+  const _phBoss=_curPhase('CM2');
+  const bTypes=['div','miss_div','mult_hard'];
+  if(_phBoss>=2) bTypes.push('geo');
+  if(_phBoss>=3) bTypes.push('frac');
   const validTypes=bTypes.filter(t=>(t==='geo'?af.geo:true)&&(t==='frac'?af.frac:true));
   const pick=_nextBossType(validTypes.length?validTypes:['div'],'CM2');
   if(pick==='div'){const b=_ari(2,9,'/'),res=_ari(2,12,'/');q={display:`${b*res} ÷ ${b}`,res,type:'normal',opKey:'/',img:'',hint:`Combien de fois ${b} tient dans ${b*res} ?`};}
