@@ -821,7 +821,7 @@ function stab(name){
   renderAvatars();renderVSounds();renderSkins();renderTitles();renderMusics();  // « Héros et style »
  }
  if(name==='figurines')renderFigCollection();                          // « Ma collection »
- if(name==='milestones'){ renderErrors();renderLevelUnlocks();renderMilestones();renderBadges(); } // « Révisions et paliers »
+ if(name==='milestones'){ if(typeof renderMyProgress==='function')renderMyProgress();renderErrors();renderLevelUnlocks();renderMilestones();renderBadges(); } // « Révisions et paliers »
  if(name==='stats'){ renderQuests();renderLB();renderRecords();renderChart();renderOpStats();if(typeof renderHistory==='function')renderHistory(); } // « Classement et stats »
 }
 // Replie tous les panneaux d'accordéon d'un onglet.

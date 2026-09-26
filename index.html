@@ -740,6 +740,14 @@
   </div>
   <div id="tab-milestones" class="hidden">
    <div style="text-align:right;margin:4px 0;"><button onclick="dashCollapseAll('tab-milestones')" style="background:rgba(255,255,255,.1);font-size:.72em;padding:4px 10px;">⬍ Tout replier</button></div>
+   <!-- AUD-10-018 (audit pédagogique 2026-09-26) : l'enfant n'avait accès à sa
+        propre progression que via le récap de LA session en cours (v-end), jamais
+        une vue consolidée — contrairement au parent (renderReport(), 09-parent.js).
+        Résumé positif uniquement (jamais un classement ni une liste de faiblesses
+        brute), réutilisant analyzeOpProfile()/analyzeCatProfile() déjà calculés
+        pour l'objectif du jour. -->
+   <button class="accordion" id="acc-myprogress">🌟 Ma progression<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Ce que tu peux voir de ton évolution</span></button>
+   <div class="panel"><div id="p-myprogress"></div></div>
    <button class="accordion" id="acc-revisions">📖 Révisions<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Erreurs récentes à revoir (maths + français)</span></button>
    <div class="panel"><div id="p-errors"></div><button onclick="startRevision()" id="btn-revision" class="hidden" style="margin-top:8px;width:100%;background:#c0392b;">🔁 Rejouer mes erreurs</button></div>
    <button class="accordion" id="acc-multtable">✖️ Tables de multiplication<span style="display:block;font-weight:400;font-size:.72em;color:rgba(255,255,255,.55);margin-top:2px;">Entraîne-toi aux tables de 1 à 10</span></button>

@@ -10,6 +10,38 @@
 // Niveaux/Stats/Erreurs du tableau de bord — choisir une matière dans l'un
 // met à jour les trois autres. L'Historique garde en plus son option "Toutes"
 // (non applicable aux autres panneaux), gérée par sa propre variable _histSubj.
+// AUD-10-018 (audit pédagogique 2026-09-26) : résumé de progression personnelle
+// pour l'enfant lui-même — texte positif uniquement (jamais un classement ni une
+// liste de faiblesses brute, contrairement au tableau de bord parent), réutilise
+// analyzeOpProfile()/analyzeCatProfile() déjà calculés pour l'objectif du jour
+// (06a-adaptive.js). Même seuil d'écart (SESSION_OBJECTIVE_GAP) que le choix
+// d'objectif, pour rester cohérent sur ce qui compte comme "net" dans tout le jeu.
+function renderMyProgress(){
+ const el=$('p-myprogress'); if(!el) return;
+ const gap=(typeof SESSION_OBJECTIVE_GAP==='number')?SESSION_OBJECTIVE_GAP:0.15;
+ const parts=[];
+ if(typeof analyzeOpProfile==='function'){
+  const profile=analyzeOpProfile();
+  if(profile.weakest){
+   const labelOf=k=>(typeof _OP_NAMES!=='undefined'&&_OP_NAMES[k])||k;
+   parts.push('🔢 '+((profile.strongest && profile.strongest!==profile.weakest && (profile.strongRatio-profile.weakRatio)>=gap)
+    ? `En calcul : tu es à l'aise en ${labelOf(profile.strongest)}, continue sur ${labelOf(profile.weakest)} 💪`
+    : `En calcul : tu progresses bien, continue comme ça !`));
+  }
+ }
+ [['fr','📖','français'],['hist','🏛️','histoire']].forEach(([subj,icon,name])=>{
+  if(typeof analyzeCatProfile!=='function') return;
+  const profile=analyzeCatProfile(subj);
+  if(!profile.weakest) return;
+  const labelOf=k=>(typeof _catLabel==='function')?_catLabel(subj,k):k;
+  parts.push(`${icon} `+((profile.strongest && profile.strongest!==profile.weakest && (profile.strongRatio-profile.weakRatio)>=gap)
+   ? `En ${name} : tu es à l'aise en ${labelOf(profile.strongest)}, continue sur ${labelOf(profile.weakest)} 💪`
+   : `En ${name} : tu progresses bien, continue comme ça !`));
+ });
+ el.innerHTML = parts.length
+  ? parts.map(p=>`<div style="padding:6px 0;font-size:.88em;">${esc(p)}</div>`).join('')
+  : '<span style="color:#bdc3c7;font-size:.85em;">Joue encore un peu pour voir ta progression apparaître ici !</span>';
+}
 let _dashSubj='math';
 function _dashSyncAll(){renderLevelUnlocks();renderOpStats();renderErrors();renderHistory();}
 function setLvlSubj(s){_dashSubj=s;if(_histSubj!=='all')_histSubj=s;_dashSyncAll();}

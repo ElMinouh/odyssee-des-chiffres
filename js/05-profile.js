@@ -610,6 +610,12 @@ function validateProfile(raw, defaultName, opts){
   masteryAnnounced: (raw.masteryAnnounced && typeof raw.masteryAnnounced==='object' && !Array.isArray(raw.masteryAnnounced))
    ? Object.fromEntries(Object.entries(raw.masteryAnnounced).filter(([k,v]) => typeof k==='string' && typeof v==='boolean').slice(0,200))
    : {},
+  // AUD-10-017 (audit pédagogique 2026-09-26) : compteur léger du check-in
+  // métacognitif de fin de partie (_metaCheckinAnswer(), 07-game.js) — jamais
+  // lu par aucune logique de jeu à ce stade, purement informatif.
+  metaCheckin: (raw.metaCheckin && typeof raw.metaCheckin==='object' && !Array.isArray(raw.metaCheckin))
+   ? Object.fromEntries(Object.entries(raw.metaCheckin).filter(([k,v]) => typeof k==='string' && Number.isFinite(v) && v>=0).slice(0,20))
+   : {},
  };
  // v8.7.33 : MIGRATION RÉTROACTIVE pour le bug critique de GS.isBoss.
  // Avant ce fix, mapBossBeaten n'était pas mis à jour quand un joueur battait le boss

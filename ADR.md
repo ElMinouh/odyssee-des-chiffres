@@ -2181,4 +2181,22 @@ Ceci clôt l'intégralité de l'audit performances AUD-07 (23 constats : traité
 
 ---
 
+## ADR-177 — Lot 7 (audit pédagogique AUD-10, 2026-09-26) : autonomie de choix élargie, check-in métacognitif, vue de progression pour l'enfant
+
+**Contexte** (AUD-10-019, pt.12 de l'audit pédagogique initial, resté non traité depuis ADR-38) : le choix "renforcer/défier" (autonomie, théorie de l'autodétermination), pourtant déjà implémenté avec une vraie modale fonctionnelle (`showObjectiveChoice`), ne s'affichait que si l'écart de réussite entre 2 catégories atteignait 25 points — la quasi-totalité des sessions retombaient donc sur un message imposé sans réel choix.
+
+**Décision** : seuil abaissé à 15 points (`SESSION_OBJECTIVE_GAP`, `06a-adaptive.js`). Quand ≥2 catégories ont des données mais sans écart suffisant pour cette formulation, un choix **neutre** (aucune catégorie présentée comme un point faible, juste une préférence) est proposé entre les 2 mêmes catégories plutôt que d'imposer un message unique — `getSessionObjectiveCandidates()` ne retourne donc plus jamais `null` dès que ≥2 catégories ont assez de données.
+
+**Contexte** (AUD-10-017) : aucune invitation, nulle part, à réfléchir à la CAUSE d'une erreur (métacognition) — uniquement des messages rassurants à sens unique dans le récap de fin de partie.
+
+**Décision** : `_renderEndRecap()` (`07-game.js`) ajoute un check-in ponctuel (3 boutons : 😵 Trop vite / 🤔 Pas compris / 😴 Fatigué), affiché seulement à partir de 3 erreurs dans la partie (jamais pour un simple oubli isolé). `_metaCheckinAnswer()` personnalise juste le message affiché ensuite et incrémente un compteur léger (`P.metaCheckin`, ajouté à la liste blanche de `validateProfile()` — garde-fou `profile-fields-whitelist-guard.test.js` vérifié) — aucune conséquence sur le score, les PV ou l'adaptativité.
+
+**Contexte** (AUD-10-018) : l'enfant n'avait accès à sa propre progression que via le récap de LA session en cours, jamais une vue consolidée — contrairement au parent (`renderReport()`, `09-parent.js`).
+
+**Décision** : nouvel accordéon **"🌟 Ma progression"** dans l'onglet "Révisions et paliers" du tableau de bord déjà existant et déjà accessible à l'enfant sans PIN (`v-settings`, distinct de la Vue Parent protégée par PIN) — pas de nouvelle vue nécessaire, l'infrastructure de navigation existait déjà. `renderMyProgress()` (`08-ui.js`) réutilise `analyzeOpProfile()`/`analyzeCatProfile()` déjà calculés pour l'objectif du jour, avec un texte exclusivement positif (jamais un pourcentage brut, un classement, ni une liste de faiblesses — à dessein différent des accordéons stats existants, orientés comparaison chiffrée).
+
+**Impact** : `js/06a-adaptive.js` (`SESSION_OBJECTIVE_GAP`, `getSessionObjectiveCandidates`), `js/07-game.js` (`_renderEndRecap`, `_metaCheckinAnswer`), `js/05-profile.js` (`metaCheckin` dans `validateProfile()`), `js/08-ui.js` (`renderMyProgress`), `js/01-core.js` (`stab()`), `index.html` (accordéon `acc-myprogress`). v12.8.25. Tests : `tests/session-objective-autonomy-neutral-choice.test.js`, `tests/metacognition-checkin.test.js`, `tests/my-progress-child-facing.test.js`. `npm run sync:test-api` relancé. Vérifié en navigateur (aperçu local) : accordéon fonctionnel, bouton indice présent. 833/833 tests verts, lint 0 erreur (308 warnings, sous le seuil de 342). Constats AUD-10-017, AUD-10-018 et AUD-10-019 clos par ce lot.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

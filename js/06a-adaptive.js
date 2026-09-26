@@ -540,14 +540,31 @@ function getSessionObjectiveText(subj){
 // qu'un seul imposé — l'enfant choisit (autonomie, SDT). S'il n'y a pas de
 // vrai choix pertinent (pas de force distincte identifiable), retourne null :
 // getSessionObjectiveText() garde alors son comportement à message unique.
+//
+// AUD-10-019 (audit pédagogique 2026-09-26, pt.12 de l'audit pédagogique initial,
+// resté non traité depuis ADR-38) : ce choix ne s'affichait que si l'écart de
+// réussite atteignait 25 points — la quasi-totalité des sessions retombaient
+// donc sur le message imposé, sans réelle autonomie. Seuil abaissé à 15 points
+// pour que le choix "renforcer/défier" s'affiche plus souvent. Quand ≥2
+// catégories ont des données mais sans écart suffisant pour cette formulation,
+// un choix NEUTRE (autonomie pure, sans jugement de performance) est proposé
+// entre les 2 mêmes catégories plutôt que d'imposer un message unique.
+const SESSION_OBJECTIVE_GAP = 0.15;
 function getSessionObjectiveCandidates(subj){
  if(!P) return null;
  const isCatSubj = (subj==='fr' || subj==='hist');
  const profile = isCatSubj ? analyzeCatProfile(subj) : analyzeOpProfile();
  if(!profile.weakest || profile.confidence<0.2) return null;
- const hasDistinctStrength = profile.strongest && profile.strongest!==profile.weakest && (profile.strongRatio-profile.weakRatio)>=0.25;
- if(!hasDistinctStrength) return null;
  const labelOf = k => isCatSubj ? _catLabel(subj,k) : (_OP_NAMES[k]||'ces questions');
+ const hasDistinctPair = profile.strongest && profile.strongest!==profile.weakest;
+ if(!hasDistinctPair) return null;
+ if((profile.strongRatio-profile.weakRatio)<SESSION_OBJECTIVE_GAP){
+  // Pas d'écart net : choix neutre, aucune catégorie présentée comme un "point faible".
+  return [
+   {id:'choiceA', text:`🎲 Aujourd'hui, tu préfères t'entraîner sur ${labelOf(profile.weakest)} ?`},
+   {id:'choiceB', text:`🎲 …ou plutôt sur ${labelOf(profile.strongest)} ?`},
+  ];
+ }
  return [
   {id:'reinforce', text:`🎯 Aujourd'hui : entraîne-toi sur ${labelOf(profile.weakest)} 💪`},
   {id:'challenge', text:`🌟 Aujourd'hui : lance-toi un défi sur ${labelOf(profile.strongest)} !`},

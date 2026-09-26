@@ -1867,6 +1867,20 @@ function _renderEndRecap(won){
  const remaining=list.length-lines;
  if(remaining>0) html+=`<div style="color:#bdc3c7;margin-top:4px;font-size:.9em;">… et ${remaining} autre${remaining>1?'s':''}.</div>`;
  html+=`<div style="color:#9fd3a0;margin-top:9px;font-style:italic;font-size:.9em;">${_RECAP_ENCOURAGE[ri(0,_RECAP_ENCOURAGE.length-1)]}</div>`;
+ // AUD-10-017 (audit pédagogique 2026-09-26) : jamais, nulle part, une invitation
+ // à réfléchir à la CAUSE d'une erreur (métacognition) — uniquement des messages
+ // rassurants à sens unique. Check-in ponctuel (pas systématique : seulement si
+ // ≥3 erreurs dans la partie, pas pour un simple oubli isolé), 3 choix simples
+ // adaptés à l'âge plutôt qu'un texte libre. Ne fait que personnaliser le message
+ // affiché ensuite — pas de pipeline de données lourd, proportionné à l'usage.
+ if(list.length>=3){
+  html+=`<div id="meta-checkin" style="margin-top:10px;padding:8px;background:rgba(255,255,255,.06);border-radius:8px;">`
+   +`<div style="font-size:.85em;color:#f1c40f;margin-bottom:6px;">Ces erreurs, c'était plutôt…</div>`
+   +`<button onclick="_metaCheckinAnswer('vite')" style="margin:2px;padding:6px 10px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:.8em;cursor:pointer;">😵 Trop vite</button>`
+   +`<button onclick="_metaCheckinAnswer('compris')" style="margin:2px;padding:6px 10px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:.8em;cursor:pointer;">🤔 Pas compris</button>`
+   +`<button onclick="_metaCheckinAnswer('fatigue')" style="margin:2px;padding:6px 10px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:.8em;cursor:pointer;">😴 Fatigué</button>`
+   +`</div>`;
+ }
  el.innerHTML=html;
  // Bouton « Rejouer mes erreurs » : seulement si des erreurs arithmétiques sont rejouables
  if(btn){
@@ -1876,6 +1890,23 @@ function _renderEndRecap(won){
    : (P.errorLog||[]).some(e=>(e.subj||'math')===_subj && e.payload && Array.isArray(e.payload.choices));
   btn.classList.toggle('hidden', !replayable);
  }
+}
+// AUD-10-017 : réponse au check-in métacognitif de _renderEndRecap(). Se contente
+// de personnaliser le message affiché et d'incrémenter un compteur léger
+// (P.metaCheckin) — aucune conséquence sur le score, les PV ou l'adaptativité.
+const _META_CHECKIN_REPLIES={
+ vite:'Prends ton temps la prochaine fois, tu as largement de quoi bien répondre 🙂',
+ compris:"Pas de souci — tu peux demander l'indice 💡 la prochaine fois si tu hésites !",
+ fatigue:'Une petite pause te fera du bien avant de recommencer 😴',
+};
+function _metaCheckinAnswer(reason){
+ if(P){
+  P.metaCheckin=P.metaCheckin||{};
+  P.metaCheckin[reason]=(P.metaCheckin[reason]||0)+1;
+  if(typeof saveProfileNow==='function') saveProfileNow();
+ }
+ const el=$('meta-checkin');
+ if(el) el.innerHTML=`<div style="font-size:.85em;color:#9fd3a0;">${esc(_META_CHECKIN_REPLIES[reason]||'Merci !')}</div>`;
 }
 function playCongrats(){
  playVS();const h=GIFS[ri(0,GIFS.length-1)];
