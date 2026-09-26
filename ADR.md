@@ -2093,4 +2093,22 @@ Ceci clôt l'intégralité de l'audit performances AUD-07 (23 constats : traité
 
 ---
 
+## ADR-172 — Lot 2 (audit pédagogique AUD-10, 2026-09-26) : timeout tracké comme erreur, seuils de maîtrise nommés, précision affichée en Combat
+
+**Contexte** (AUD-10-008, révisé après vérification du code — le constat initial de l'audit affirmait l'inverse) : un timeout de chronomètre appelait `hitPlayer()` directement, sans jamais mettre à jour `P.opStats`/`_progUpdate`/`_classStatUpdate` ni journaliser l'échec via `logError()` — contrairement à une réponse explicitement fausse (`validate()`). Une vraie lacune signalée uniquement par des timeouts répétés restait donc invisible à l'adaptativité et à la révision espacée.
+
+**Décision** : nouvelle fonction `_trackTimeoutAsError(q)` (`07-game.js`), appelée à l'expiration du chronomètre juste avant `hitPlayer()`, reprenant le même sous-ensemble de mises à jour que la branche d'échec de `validate()` (opStats, `_trackSubjCatStat`, `_progUpdate`, `_classStatUpdate`, `logError`) — sans les effets de jeu (taunts, `showCorr`, `markQCM`) qui supposent une réponse explicitement soumise. Le coût en vie (`hitPlayer`) reste inchangé.
+
+**Contexte** (AUD-10-011, recalibré après vérification — 2 des 4 seuils initialement cités étaient déjà unifiés par AUD-02-031) : `analyzeOpProfile()`/`analyzeCatProfile()` (seuil de confiance, 5 tentatives) et `_checkMasteryAnnouncements()` (annonce de maîtrise à l'enfant, 15 tentatives/85%) restaient en littéraux non nommés.
+
+**Décision** : nommage en constantes documentées (`SESSION_PROFILE_MIN_ATTEMPTS=5`, `MASTERY_ANNOUNCE_MIN_ATTEMPTS=15`, `MASTERY_ANNOUNCE_RATIO=0.85`, `06a-adaptive.js`) — aucun changement de valeur ni de comportement. Décision explicite de NE PAS fusionner ces seuils avec `ADAPT_MIN_ATTEMPTS`/`ADAPT_STRUGGLE`/`ADAPT_MASTERY` ni avec le seuil parent (déjà unifié) : ils servent des usages différents à dessein (l'alerte parent doit rester plus sensible que la félicitation à l'enfant).
+
+**Contexte** (AUD-10-013) : `cp.score` en mode Combat mélange bonus de jeu (doré ×3, combo, objets) sans lien direct avec la précision réelle, biaisant la comparaison entre enfants au classement de fin de combat.
+
+**Décision** : nouveau champ `cp.wrongAnswers` (en complément de `cp.correctAnswers` déjà suivi), affiché au classement de fin de combat sous forme d'un indicateur de précision (`X/Y 🎯`) distinct du score gamifié — le score et l'ordre du classement restent inchangés. **AUD-10-012 (détection de réponse devinée en QCM) explicitement écarté** sur décision de Cyril : le hasard s'équilibre statistiquement à la longue, un filtre anti-hasard n'était pas justifié.
+
+**Impact** : `js/06a-adaptive.js` (constantes, `_trackTimeoutAsError` appelé depuis), `js/07-game.js` (`_trackTimeoutAsError`, `startTimer()`, `_checkMasteryAnnouncements()`, `validateCombat()`, classement de fin de combat). v12.8.21. Tests : `tests/timeout-tracked-as-error.test.js`, `tests/mastery-thresholds-named-constants.test.js`, `tests/combat-precision-indicator.test.js`. `npm run sync:test-api` relancé. 757/757 tests verts, lint 0 erreur (306 warnings, sous le seuil de 342). Constats AUD-10-008, AUD-10-011 et AUD-10-013 clos par ce lot ; AUD-10-012 classé décision assumée (non traité, sur arbitrage explicite de Cyril).
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

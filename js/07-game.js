@@ -350,7 +350,7 @@ function startTimer(){
    $('BODY').classList.remove('urgency-bg');
    if(heart)heart.style.display='none';
   }
-  if(rem<=0){timerRaf=null;$('BODY').classList.remove('urgency-bg');if(heart)heart.style.display='none';hitPlayer('⌛ Trop lent, il esquive !');}
+  if(rem<=0){timerRaf=null;$('BODY').classList.remove('urgency-bg');if(heart)heart.style.display='none';if(typeof _trackTimeoutAsError==='function')_trackTimeoutAsError(GS.q);hitPlayer('⌛ Trop lent, il esquive !');}
   else timerRaf=requestAnimationFrame(tick);
  }
  timerRaf=requestAnimationFrame(tick);
@@ -1148,6 +1148,25 @@ function showCorr(q){
  el.innerHTML = '💡 '+esc(txt) + (aidHtml ? `<div style="margin-top:6px;">${aidHtml}</div>` : '');
  el.classList.remove('hidden');
 }
+// AUD-10-008 (audit pédagogique 2026-09-26) : un timeout de chronomètre appelait
+// hitPlayer() directement (coût en vie) sans jamais journaliser l'échec pour le
+// suivi pédagogique — contrairement à une réponse explicitement fausse (validate()),
+// qui met à jour P.opStats/_progUpdate/_classStatUpdate et journalise l'erreur pour
+// la révision espacée (logError()). Une vraie lacune signalée uniquement par des
+// timeouts répétés restait donc invisible à l'adaptativité, à la révision espacée
+// et au tableau de bord parent. Reprend le même sous-ensemble de mises à jour que
+// la branche d'échec de validate() (sans les effets de jeu — taunts, showCorr,
+// markQCM — qui supposent une réponse explicitement soumise).
+function _trackTimeoutAsError(q){
+ if(!q) return;
+ const opK=q.opKey||'+';
+ P.opStats[opK]=P.opStats[opK]||{ok:0,fail:0};P.opStats[opK].fail++;
+ if(Array.isArray(GS._opsPlayed) && !GS._opsPlayed.includes(opK)) GS._opsPlayed.push(opK);
+ if(typeof _trackSubjCatStat==='function') _trackSubjCatStat(GM.subject, q.opKey, false);
+ if(typeof _progUpdate==='function') _progUpdate(GM.level, false);
+ if(typeof _classStatUpdate==='function') _classStatUpdate(GM.subject||'math', GM.level, q.opKey, false);
+ if(typeof logError==='function' && q.display && q.res!==undefined) logError(q.display, q.res, q);
+}
 function hitPlayer(msg){
  const pw=powers[P.name];
  if(pw?.shielded){pw.shielded=false;$('feedback').style.color='#3498db';$('feedback').innerText='🛡️ Bouclier ! Erreur annulée !';setTimeout(nextTurn,1200);return;}
@@ -1303,6 +1322,13 @@ function validateCombat(ans){
   beep(523,'square',.2);$('feedback').style.color='#2ecc71';$('feedback').innerText=`✅ ${cp.name} touche !`;
   spawnP(_monsterCenter.x||0,_monsterCenter.y||0,10); // OPT-5
  }else{
+  // AUD-10-013 (audit pédagogique 2026-09-26) : cp.score mélange bonus de jeu
+  // (doré ×3, combo, objets) sans lien avec la précision réelle — insuffisant
+  // pour comparer équitablement des enfants en mode Combat (cf. classement de
+  // fin de combat ci-dessous). cp.wrongAnswers, en complément de
+  // cp.correctAnswers déjà suivi, permet d'afficher un indicateur de précision
+  // distinct du score gamifié, sans changer le score ni le classement lui-même.
+  cp.wrongAnswers = (cp.wrongAnswers||0) + 1;
   // Chantier A2 v1 : reset combo personnel
   cp.currentCombo = 0;
   // Chantier A2 v2 : reset du streak "pas de PV perdus"
@@ -1427,7 +1453,7 @@ function _checkMasteryAnnouncements(){
    if(P.masteryAnnounced[annKey]) return;
    const s=statsObj[k]; if(!s) return;
    const t=(s.ok||0)+(s.fail||0);
-   if(t>=15 && (s.ok/t)>=0.85){ P.masteryAnnounced[annKey]=true; out.push(names[k]||k); }
+   if(t>=MASTERY_ANNOUNCE_MIN_ATTEMPTS && (s.ok/t)>=MASTERY_ANNOUNCE_RATIO){ P.masteryAnnounced[annKey]=true; out.push(names[k]||k); }
   });
   return out;
  }catch(e){ return []; }
@@ -1688,7 +1714,11 @@ if(typeof checkMilestones==='function') checkMilestones();
   $('end-score').innerHTML='<strong>🏁 Classement :</strong><br>'+sorted.map((p,i)=>{
    const status = p.alive?'❤️':'💀';
    const elim = p.eliminated?` <span style="font-size:.9em;color:#bdc3c7;">(par ${esc(p.eliminated)})</span>`:'';
-   return `${medals[i]} ${p.avatar||''} ${esc(p.name)} — ${p.score} pts ${status}${elim}`;
+   // AUD-10-013 : indicateur de précision (bonnes réponses/total), distinct du
+   // score gamifié affiché juste avant — le classement lui-même reste inchangé.
+   const _tot = (p.correctAnswers||0)+(p.wrongAnswers||0);
+   const _precision = _tot>0 ? ` <span style="font-size:.85em;color:#95a5a6;">(${p.correctAnswers||0}/${_tot} 🎯)</span>` : '';
+   return `${medals[i]} ${p.avatar||''} ${esc(p.name)} — ${p.score} pts${_precision} ${status}${elim}`;
   }).join('<br>');
   // Calcul des prix spéciaux
   const trophies = [];

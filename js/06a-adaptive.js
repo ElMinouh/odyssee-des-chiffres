@@ -21,6 +21,21 @@ const ADAPT_STRUGGLE     = 0.50;// ≤50% = difficulté → questions un peu plu
 // reste inchangée ; seul le crédit de progression scolaire est concerné.
 const LEVEL_WIN_MASTERY_RATIO = 0.6;
 
+// AUD-10-011 (audit pédagogique 2026-09-26) : plusieurs seuils de "maîtrise/difficulté"
+// coexistaient dans le code en constantes littérales non nommées, à des valeurs
+// différentes selon l'usage — ce qui est un choix assumé (l'alerte parent doit être
+// plus sensible que la félicitation à l'enfant, par ex.) mais rendait chaque seuil
+// difficile à retrouver et à faire évoluer sciemment. Nommage sans changement de
+// valeur ni de comportement : ADAPT_MIN_ATTEMPTS/MASTERY/STRUGGLE ci-dessus pilotent
+// déjà l'allègement/durcissement fin des questions ; les deux constantes suivantes
+// couvrent les deux autres usages restés en littéral (confiance de l'objectif de
+// session, annonce de maîtrise à l'enfant). Le seuil "point faible" côté parent
+// (renderReport()/09-parent.js) avait déjà été unifié en un seul endroit par
+// AUD-02-031 — pas de nouvelle constante nécessaire pour celui-ci.
+const SESSION_PROFILE_MIN_ATTEMPTS = 5; // analyzeOpProfile()/analyzeCatProfile() : confiance minimale pour proposer un objectif de session
+const MASTERY_ANNOUNCE_MIN_ATTEMPTS = 15; // _checkMasteryAnnouncements() (07-game.js) : nombre de tentatives avant d'annoncer une maîtrise à l'enfant
+const MASTERY_ANNOUNCE_RATIO = 0.85;      // _checkMasteryAnnouncements() (07-game.js) : taux de réussite requis pour cette même annonce
+
 // Probabilité de base d'injecter une erreur passée dans le flux normal
 const SPACED_BASE_PROBA  = 0.22;// ~1 question sur 5 est une révision
 const SPACED_MAX_LOG     = 30;  // taille max du log d'erreurs
@@ -426,7 +441,7 @@ function analyzeOpProfile(){
   const s = P.opStats[op];
   if(!s) return;
   const t = (s.ok||0)+(s.fail||0);
-  if(t < 5) return; // pas assez de données pour cette op
+  if(t < SESSION_PROFILE_MIN_ATTEMPTS) return; // pas assez de données pour cette op
   ratios[op] = {ratio: s.ok/t, total: t};
   totalAttempts += t;
  });
@@ -459,7 +474,7 @@ function analyzeCatProfile(subj){
  let totalAttempts = 0;
  for(const cat in stats){
   const s = stats[cat]; const t=(s.ok||0)+(s.fail||0);
-  if(t<5) continue;
+  if(t<SESSION_PROFILE_MIN_ATTEMPTS) continue;
   ratios[cat] = {ratio:s.ok/t, total:t};
   totalAttempts += t;
  }
