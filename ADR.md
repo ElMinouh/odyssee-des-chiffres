@@ -2111,4 +2111,18 @@ Ceci clôt l'intégralité de l'audit performances AUD-07 (23 constats : traité
 
 ---
 
+## ADR-173 — Lot 3 (audit pédagogique AUD-10, 2026-09-26) : chrono exempté sur les exercices de lecture, un signal d'urgence en moins pour les jeunes niveaux
+
+**Contexte** (AUD-10-007) : le chronomètre (12-20s) s'appliquait par défaut à tous les niveaux hors maternelle, y compris 3 générateurs de lecture fine du français phase 3 (`_frD_genre`, `_frD_spell`, `_frB_flash`, `16-francais.js`) où la compétence visée est la compréhension, pas la vitesse.
+
+**Décision** : nouveau flag `q.noTimePressure`, posé sur ces 3 générateurs. `startTimer()` (`07-game.js`) le détecte au même point que le réglage parent "temps illimité" (`_tScale===Infinity`) et réutilise exactement le même chemin — pas de nouveau mécanisme.
+
+**Contexte** (AUD-10-009, recalibré après vérification du code — le constat initial de l'audit surestimait le cumul avec l'enrage du boss, qui est un effet ponctuel à la transition, pas répété à chaque question) : à ≤3s restantes sur le chronomètre, 3 signaux d'urgence se déclenchent simultanément à chaque question, tous niveaux confondus : fond visuel plein écran, cœur clignotant, réplique parlée moqueuse du monstre.
+
+**Décision** : la réplique moqueuse (signal sonore/textuel, le plus dispensable) est retirée spécifiquement pour CP/CE1/CE2 — cohérent avec le traitement déjà différencié de ces niveaux pour la pression temporelle (`_bossFloor`, ADR/commentaire AUD-03-034). Les 2 signaux visuels (fond, cœur) restent inchangés pour tous les niveaux.
+
+**Impact** : `js/07-game.js` (`startTimer()`), `js/16-francais.js` (3 générateurs). v12.8.22. Tests : `tests/timer-cognitive-load.test.js` (vérification au niveau source — `startTimer()` pilote `requestAnimationFrame` et de nombreux éléments DOM, comme `endGame()`/`startGame()` déjà documentés). `npm run sync:test-api` relancé. 761/761 tests verts, lint 0 erreur (306 warnings). Constats AUD-10-007 et AUD-10-009 clos par ce lot.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

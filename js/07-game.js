@@ -300,7 +300,12 @@ function startTimer(){
  stopTimer();if(GS.frozen)return;
  // Audit accessibilité (P1) : réglage "Temps par question"
  const _tScale=(typeof TIMER_SCALES!=='undefined' && P?.prefs?.timerScale && TIMER_SCALES[P.prefs.timerScale]) || 1;
- if(_tScale===Infinity){
+ // AUD-10-007 (audit pédagogique 2026-09-26) : certains générateurs (lecture fine
+ // en français phase 3 — _frD_genre, _frD_spell, _frB_flash) portent sur la
+ // compréhension, pas la vitesse ; un chrono actif y ajoute une charge cognitive
+ // non pertinente pour l'objectif d'apprentissage visé. Réutilise le même chemin
+ // "illimité" que le réglage parent timerScale, sans nouveau mécanisme.
+ if(_tScale===Infinity || (GS.q && GS.q.noTimePressure)){
   // Illimité : pas de minuteur, barre pleine et statique, jamais de "temps écoulé"
   const _tb0=_timerBarEl||$('timer-bar'); if(_tb0){_tb0.style.width='100%';_tb0.className='';}
   const _heart0=$('timer-heart'); if(_heart0)_heart0.style.display='none';
@@ -339,8 +344,13 @@ function startTimer(){
    // surcharge visuelle supplémentaire est évitée.
    if(!GS.readingDisruptionActive) $('BODY').classList.add('body-alert','urgency-bg');
    if(heart)heart.style.display='inline';
-   // One-shot timer taunt
-   if(!_timerTauntFired){_timerTauntFired=true;monsterSpeak(TIMER_TAUNTS[ri(0,TIMER_TAUNTS.length-1)],2000);}
+   // One-shot timer taunt — AUD-10-009 (audit pédagogique 2026-09-26) : à ≤3s,
+   // 3 signaux d'urgence se cumulaient déjà (fond visuel, cœur clignotant, cette
+   // réplique) sur tous les niveaux. Pour CP/CE1/CE2 (déjà traités différemment
+   // ailleurs pour la pression temporelle, cf. _bossFloor plus haut), on retire
+   // le signal le plus dispensable (sonore/textuel) ; les 2 signaux visuels restent.
+   const _youngLevel = (typeof GM!=='undefined' && ['CP','CE1','CE2'].includes(GM.level));
+   if(!_youngLevel && !_timerTauntFired){_timerTauntFired=true;monsterSpeak(TIMER_TAUNTS[ri(0,TIMER_TAUNTS.length-1)],2000);}
   }else if(rem<=8){
    tb.className='tw';
    $('BODY').classList.remove('urgency-bg');

@@ -203,7 +203,10 @@ function _frD_genre(){
  const w=_frRnd(FR_WORDS.filter(x=>x.cat!=='personne'));
  const okHtml = (w.g==='m'?'un':'une');
  const badHtml = (w.g==='m'?'une':'un');
- return _frQ(`${w.e} ${w.w} : on dit… ?`, okHtml, [badHtml], 'fr-genre', `On dit « ${okHtml} ${w.w} ».`);
+ const q=_frQ(`${w.e} ${w.w} : on dit… ?`, okHtml, [badHtml], 'fr-genre', `On dit « ${okHtml} ${w.w} ».`);
+ // AUD-10-007 : exercice de compréhension/lecture, pas de vitesse — pas de chrono.
+ q.noTimePressure=true;
+ return q;
 }
 // D2 : quel mot est bien écrit ? (phase 3 — lecture)
 const _FR_MISSPELL = {
@@ -216,7 +219,10 @@ function _frD_spell(){
  const k=_frRnd(keys);
  const w=FR_WORDS.find(x=>x.w===k);
  const wrong=_FR_MISSPELL[k];
- return _frQ(`${w.e} Quel mot est bien écrit ?`, `<b>${k}</b>`, wrong.map(x=>x), 'fr-orth', `« ${k} » est la bonne orthographe.`);
+ const q=_frQ(`${w.e} Quel mot est bien écrit ?`, `<b>${k}</b>`, wrong.map(x=>x), 'fr-orth', `« ${k} » est la bonne orthographe.`);
+ // AUD-10-007 : exercice de compréhension/lecture, pas de vitesse — pas de chrono.
+ q.noTimePressure=true;
+ return q;
 }
 // B : reconnaissance image → mot (phase 3 — lecture). Grande image dans #problem-image.
 function _frB_flash(){
@@ -224,6 +230,8 @@ function _frB_flash(){
  const near=_frSample(FR_WORDS,2,[w.v]);
  const q=_frQ('Quel mot correspond à l\u2019image ?', `<b>${w.w}</b>`, near.map(x=>`${x.w}`), 'fr-flash', `C\u2019est « ${w.w} »`);
  q.visualHtml=`<span style="font-size:3.6em;line-height:1">${w.e}</span>`;
+ // AUD-10-007 : exercice de compréhension/lecture, pas de vitesse — pas de chrono.
+ q.noTimePressure=true;
  return q;
 }
 
