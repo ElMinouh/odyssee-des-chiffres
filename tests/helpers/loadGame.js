@@ -412,6 +412,7 @@ globalThis.__api = {
   LEITNER_BOX_TARGET_MIN: (typeof LEITNER_BOX_TARGET_MIN!=='undefined') ? LEITNER_BOX_TARGET_MIN : undefined,
   LEITNER_MAX_BOX: (typeof LEITNER_MAX_BOX!=='undefined') ? LEITNER_MAX_BOX : undefined,
   LEVEL_LABEL: (typeof LEVEL_LABEL!=='undefined') ? LEVEL_LABEL : undefined,
+  LEVEL_WIN_MASTERY_RATIO: (typeof LEVEL_WIN_MASTERY_RATIO!=='undefined') ? LEVEL_WIN_MASTERY_RATIO : undefined,
   MAP_ZONES: (typeof MAP_ZONES!=='undefined') ? MAP_ZONES : undefined,
   MATERNELLE_LEVELS: (typeof MATERNELLE_LEVELS!=='undefined') ? MATERNELLE_LEVELS : undefined,
   MAT_ZONES: (typeof MAT_ZONES!=='undefined') ? MAT_ZONES : undefined,

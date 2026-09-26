@@ -238,6 +238,7 @@
     "LEITNER_BOX_TARGET_MIN": "writable",
     "LEITNER_MAX_BOX": "writable",
     "LEVEL_LABEL": "writable",
+    "LEVEL_WIN_MASTERY_RATIO": "writable",
     "MAP_ZONES": "writable",
     "MATERNELLE_LEVELS": "writable",
     "MAT_ZONES": "writable",

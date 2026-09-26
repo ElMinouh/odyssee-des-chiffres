@@ -11,6 +11,16 @@ const ADAPT_MIN_ATTEMPTS = 8;   // en dessous, pas assez de données pour adapte
 const ADAPT_MASTERY      = 0.80;// ≥80% = maîtrise → questions un peu plus dures
 const ADAPT_STRUGGLE     = 0.50;// ≤50% = difficulté → questions un peu plus faciles
 
+// AUD-10-001 (audit pédagogique 2026-09-26) : une partie en mode normal était créditée
+// comme "victoire" (levelWins/levelWinsBySubj, base du déblocage du niveau suivant via
+// isUnlocked()/prevWins()) dès que l'enfant survivait à ses PV jusqu'à la dernière
+// question, quel que soit son taux de réussite réel — un enfant pouvait se tromper sur
+// la majorité des questions et voir son niveau progresser quand même. Ce seuil exige un
+// taux de bonnes réponses minimal, EN PLUS de la survie aux PV, pour que la partie
+// compte vers le déblocage du niveau suivant. La mécanique de jeu (PV, combat, score)
+// reste inchangée ; seul le crédit de progression scolaire est concerné.
+const LEVEL_WIN_MASTERY_RATIO = 0.6;
+
 // Probabilité de base d'injecter une erreur passée dans le flux normal
 const SPACED_BASE_PROBA  = 0.22;// ~1 question sur 5 est une révision
 const SPACED_MAX_LOG     = 30;  // taille max du log d'erreurs

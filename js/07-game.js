@@ -423,7 +423,12 @@ function startGame(){
  savePrefs();
  const rawLevel=$('levelSelect').value;
  GM.mode=$('modeSelect').value;GM.mode2=$('gameModeSelect').value;
- GM.level=VALID_LEVELS.includes(rawLevel)?rawLevel:'CP';GM.mapZone=null;
+ // AUD-10-002 : le verrouillage de niveau (UNLOCK_REQ) n'était garanti que par
+ // l'attribut HTML `disabled` posé sur les <option> du sélecteur (applyPrefs(),
+ // 05-profile.js) — jamais revérifié ici. On revalide via isUnlocked() pour ne
+ // pas dépendre d'une seule couche d'UI.
+ GM.level=(VALID_LEVELS.includes(rawLevel) && typeof isUnlocked==='function' && isUnlocked(rawLevel, GM.subject)) ? rawLevel : 'CP';
+ GM.mapZone=null;
  // M-A : la maternelle est un mode solo guidé, 100% visuel, sans combat ni chrono
  if(typeof _isMaternelle==='function' && _isMaternelle(GM.level)){
   GM.mode='qcm'; GM.mode2='normal';
@@ -1614,7 +1619,16 @@ if(typeof checkMilestones==='function') checkMilestones();
    },800);
   }
  }
- if(won&&(GM.mode2==='normal'||GM.mode2==='combat'||GM.mapZone)){
+ // AUD-10-001 : en mode normal (hors Combat, dont la mécanique de survie entre
+ // joueurs est un contexte différent, cf. ADR-34), la victoire ne crédite la
+ // progression de niveau que si le taux de bonnes réponses de la partie atteint
+ // LEVEL_WIN_MASTERY_RATIO — survivre à ses PV ne suffit plus à lui seul.
+ const _winMasteryOk = (GM.mode2==='combat') ? true : (
+  GS.qCount>0 && typeof LEVEL_WIN_MASTERY_RATIO==='number'
+   ? ((GS.qCount-(GS.errInGame||0))/GS.qCount) >= LEVEL_WIN_MASTERY_RATIO
+   : true
+ );
+ if(won&&_winMasteryOk&&(GM.mode2==='normal'||GM.mode2==='combat'||GM.mapZone)){
   P.levelWins[GM.level]=(P.levelWins[GM.level]||0)+1;
   const _sj=(GM.subject)||'math';
   if(!P.levelWinsBySubj||typeof P.levelWinsBySubj!=='object')P.levelWinsBySubj={};

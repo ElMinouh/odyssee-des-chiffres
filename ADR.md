@@ -2077,4 +2077,20 @@ Ceci clôt l'intégralité de l'audit performances AUD-07 (23 constats : traité
 
 ---
 
+## ADR-171 — Lot 1 (audit pédagogique AUD-10, 2026-09-26) : la victoire d'un niveau exige un taux de réussite minimal, verrou de niveau revalidé au démarrage
+
+**Contexte** (AUD-10-001, ÉLEVÉE) : `endGame(true)` (mode normal) se déclenchait dès `GS.qCount>=_qTarget`, quel que soit le nombre de bonnes réponses — seule la survie aux PV comptait. `P.levelWins`/`P.levelWinsBySubj`, base exclusive de `isUnlocked()`/`prevWins()` (déblocage du niveau scolaire suivant), suivaient cette même "victoire" sans aucun seuil de réussite : un enfant pouvait se tromper sur la majorité des questions d'un niveau (ex. 4 erreurs sur 6 en CM2, qui dispose de 5 PV) et voir sa progression créditée comme s'il l'avait maîtrisé.
+
+**Décision** : nouvelle constante `LEVEL_WIN_MASTERY_RATIO = 0.6` (`06a-adaptive.js`). Le crédit de `levelWins`/`levelWinsBySubj` dans `endGame()` (`07-game.js`) exige désormais `won` ET un taux de réussite de la partie (`(qCount-errInGame)/qCount`) ≥ 60%, en plus de la survie aux PV. La mécanique de jeu elle-même (PV, combat, score, étoiles, historique) reste strictement inchangée — seul le crédit de progression scolaire est concerné. Le mode Combat multijoueur est explicitement exempté (`won` y signifie déjà "a survécu aux autres joueurs", un contexte de compétition entre pairs différent, cf. ADR-34) : le seuil ne s'applique qu'au mode normal/Odyssée.
+
+**Contexte** (AUD-10-002, MOYENNE) : le verrouillage de niveau (`UNLOCK_REQ`) n'était garanti que par l'attribut HTML `disabled` posé sur les `<option>` du sélecteur (`applyPrefs()`, `05-profile.js`) — `startGame()` lisait `$('levelSelect').value` brut, sans jamais rappeler `isUnlocked()`. Une seule couche de défense (l'UI) protégeait tout le système de paliers scolaires.
+
+**Décision** : `startGame()` revalide désormais `isUnlocked(rawLevel, GM.subject)` avant d'affecter `GM.level` ; en cas d'échec (valeur incohérente avec le verrou), retombe sur `'CP'`, comme le faisait déjà le garde-fou existant pour une valeur hors `VALID_LEVELS`.
+
+**Portée** : le mode Révision (`GM.mode2='revision'`, ligne distincte de `startGame()`) n'a pas été touché — il ne crédite jamais `levelWins` (rejeu d'erreurs déjà journalisées, filtré par matière uniquement, pas par niveau) et ne constitue donc pas un contournement du déblocage.
+
+**Impact** : `js/06a-adaptive.js` (constante `LEVEL_WIN_MASTERY_RATIO`), `js/07-game.js` (`endGame()`, `startGame()`). v12.8.20. Tests : `tests/level-win-mastery-gate.test.js`, `tests/level-select-unlock-revalidation.test.js` (vérification au niveau source, comme `stars-only-on-win.test.js`, faute de pouvoir instrumenter `endGame()`/`startGame()` sans effets de bord DOM dans ce harnais). `npm run sync:test-api` relancé (nouvelle constante globale). 747/747 tests verts, lint 0 erreur (304 warnings, sous le seuil de 342). Constats AUD-10-001 et AUD-10-002 (audit pédagogique) clos par ce lot.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
