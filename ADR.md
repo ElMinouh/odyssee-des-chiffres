@@ -2006,4 +2006,20 @@ Ceci clôt l'intégralité de l'audit performances AUD-07 (23 constats : traité
 
 ---
 
+---
+
+## ADR-167 — Lot 4 (audit cohérence globale AUD-09, 2026-09-26) : AUD-09-004 invalidé à la vérification
+
+**Contexte** : AUD-09-004 affirmait deux angles morts qualité simultanés en CI — (1) le lint ne pourrait jamais faire échouer le pipeline (reprenant AUD-01-019), (2) la couverture de test à 0% ne serait accompagnée d'aucun signal de substitution documenté (reprenant AUD-01-020).
+
+**Vérification effectuée avant tout codage** :
+1. Test direct : `npx eslint js/ --max-warnings 1` sur le code actuel → `exit code: 1`. `.github/workflows/ci.yml` lance `npm run lint` (`eslint js/ --max-warnings 344`) sans `continue-on-error`. **Le lint échoue bien la CI** si le seuil de warnings est dépassé, ou si une erreur apparaît. AUD-01-019 et la première moitié d'AUD-09-004 sont invalidés.
+2. `vitest.config.mjs:9-22` documente déjà en détail la cause de la couverture à 0% (concaténation de tout `js/*.js` dans un seul `vm.Script` synthétique via `tests/helpers/loadGame.js`, empêchant V8 de relier l'exécution aux fichiers sources) et acte explicitement le report du correctif à un lot dédié futur. **Ce n'est pas un angle mort silencieux** — c'est une limite connue, expliquée et assumée. La seconde moitié d'AUD-09-004 est invalidée ; AUD-01-020 reste valide en tant que tel (limite réelle) mais n'est pas un « angle mort sans signal », contrairement à ce qu'affirmait AUD-09-004.
+
+**Décision** : classer AUD-09-004 comme invalidé (prémisses fausses ou déjà couvertes). Aucune modification de code. Correction cosmétique de passage : `.github/workflows/ci.yml`, commentaire d'en-tête mis à jour (« 182 tests » → « 743 tests », obsolète depuis la croissance de la suite).
+
+**Conséquence** : `.github/workflows/ci.yml` modifié (commentaire uniquement, aucun changement de comportement). Pas de bump de version. AUD-01-020 (couverture 0%) reste une dette connue et documentée, à traiter dans un lot dédié si un jour priorisé — hors scope de ce constat.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

@@ -1,6 +1,6 @@
 name: CI
 
-# Filet de sécurité automatique : lance les 182 tests Vitest et le lint ESLint
+# Filet de sécurité automatique : lance les 743 tests Vitest et le lint ESLint
 # à chaque push / pull request. Ne remplace pas le déploiement manuel existant
 # (toujours fait par Cyril), c'est un contrôle en plus, pas un changement de process.
 # Voir ADR-52 (ADR.md) pour le contexte de cette décision.
