@@ -758,6 +758,7 @@ function renderQ(){
  // systématiquement tous les chemins de renderQ() sans exception à maintenir.
  { const _corrEl=$('correction'); if(_corrEl) _corrEl.classList.add('hidden'); }
  GS.matWrongCount=0; // AUD-03-036 : compteur d'essais infructueux remis à zéro à chaque nouvelle question
+ GS._hintUsed=false; // AUD-10-026 : indice à la demande, neutralise le bonus combo pour CETTE question seulement
  GS.qShownAt=Date.now(); // Lot 2 audit pédagogique : temps de réponse → détection inattention
  // v8.7.53 (O4.2b) : nettoyer les effets d'attaque de la question précédente
  if(typeof _resetBossAttackEffects==='function') _resetBossAttackEffects();
@@ -967,10 +968,18 @@ GS.combo++;GS.maxCombo=Math.max(GS.maxCombo,GS.combo);GS.consecFail=0;
   if(GS.isGolden)pts*=3;
   // v12.7.16 (demande de Cyril) : évènement "Tempête de Maths" retiré — la
   // vérification de son effet ici est devenue morte, retirée.
-  if(GS.combo>=10){pts*=2;$('gc').classList.add('combo-breaker');}
+  if(GS.combo>=10 && !GS._hintUsed){pts*=2;$('gc').classList.add('combo-breaker');}
   const pw=powers[P.name];if(pw?.dbl){pts*=2;pw.dbl=false;toast('⚡ Double !');}
   GS.score+=pts;
   const opK=q.opKey||'+';P.opStats[opK]=P.opStats[opK]||{ok:0,fail:0};P.opStats[opK].ok++;
+  // AUD-10-025 (audit pédagogique 2026-09-26) : jusqu'ici, seule une erreur
+  // recevait une explication (q.hint) — une bonne réponse, même par intuition ou
+  // hasard, ne recevait jamais de renforcement du raisonnement. Affiché
+  // brièvement (toast, non bloquant) uniquement lors des 3 premières réussites
+  // sur cet opérateur, pour consolider une notion encore fragile sans ralentir
+  // le rythme de jeu une fois la notion installée.
+  const _earlyMastery = P.opStats[opK].ok<=3;
+  if(_earlyMastery && !GS._hintUsed && q.hint && typeof toast==='function') toast('💡 '+q.hint, 2200);
   if(Array.isArray(GS._opsPlayed) && !GS._opsPlayed.includes(opK)) GS._opsPlayed.push(opK);
   _trackSubjCatStat(GM.subject, q.opKey, true);
   if(typeof _progUpdate==="function") _progUpdate(GM.level, true);

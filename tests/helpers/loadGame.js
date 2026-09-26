@@ -2105,6 +2105,7 @@ globalThis.__api = {
   showConfirm: (typeof showConfirm==='function') ? showConfirm : undefined,
   showCorr: (typeof showCorr==='function') ? showCorr : undefined,
   showHeroEvolution: (typeof showHeroEvolution==='function') ? showHeroEvolution : undefined,
+  showHintOnDemand: (typeof showHintOnDemand==='function') ? showHintOnDemand : undefined,
   showLevelUpAnim: (typeof showLevelUpAnim==='function') ? showLevelUpAnim : undefined,
   showMonsterIntro: (typeof showMonsterIntro==='function') ? showMonsterIntro : undefined,
   showObjectiveChoice: (typeof showObjectiveChoice==='function') ? showObjectiveChoice : undefined,

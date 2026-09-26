@@ -508,6 +508,7 @@ function renderReport(){
    <div class="lb-row"><span>🗺️ Boss battus</span><span>${(d.mapBossBeaten||[]).length}/${MAP_ZONES.length}</span></div>
   </div>
   ${weak.length?`<div style="margin-top:8px;padding:7px;background:rgba(231,76,60,.2);border-radius:8px;">⚠️ Points faibles : ${weak.join(', ')}</div>`:'<div style="margin-top:8px;padding:7px;background:rgba(46,204,113,.2);border-radius:8px;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg> Aucun point faible !</div>'}
+  ${(Array.isArray(d.errorLog) && typeof SPACED_MAX_LOG!=='undefined' && d.errorLog.length>=SPACED_MAX_LOG) ? `<div style="margin-top:8px;padding:7px;background:rgba(241,196,15,.15);border-radius:8px;font-size:.85em;">📚 Suivi de révision plein (${d.errorLog.length}/${SPACED_MAX_LOG}) — plusieurs notions en difficulté simultanément, les plus anciennes/consolidées cessent d'être suivies.</div>` : ''}
   ${typeof _matBilanHtml==='function'?_matBilanHtml(d):''}
   ${typeof _progPanelHtml==='function'?_progPanelHtml(d):''}
   ${h.slice(-7).map(x=>`<div style="display:flex;justify-content:space-between;font-size:.8em;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span>${x.date} · ${x.level||'?'} · ${x.mode||'?'}</span><span style="color:${x.won?'#2ecc71':'#e74c3c'}">${x.won?'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>':'<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'} ${x.score}⭐</span></div>`).join('')}
@@ -1425,9 +1426,11 @@ function loadHomework(){
 }
 
 /**
- * Lot 6 (audit pédagogique, pt.2) — "Mode serein" : actif par défaut (pas de perte
- * de vie sur erreur en mode normal solo). Un parent peut le désactiver ici pour
- * retrouver la pression/conséquence classique. Réutilise le pattern de loadHomework.
+ * Lot 6 (audit pédagogique, pt.2) — "Mode serein" (pas de perte de vie sur erreur
+ * en mode normal solo). AUD-10-010 (audit pédagogique 2026-09-26) : ce commentaire
+ * affirmait à tort "actif par défaut" — le défaut réel, décidé par Cyril en cours de
+ * conversation (ADR-34), est DÉSACTIVÉ. Un parent peut l'activer ici. Réutilise le
+ * pattern de loadHomework.
  */
 function loadCalmMode(){
  const sel = $('enc-player')?.value;

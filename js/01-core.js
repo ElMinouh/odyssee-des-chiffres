@@ -356,6 +356,21 @@ function repeatQuestion(){
  // Forcer la lecture même si voix non activée : user a explicitement demandé
  _speakUtterance(txt, {rate:0.95, requireToggle:false});
 }
+// AUD-10-026 (audit pédagogique 2026-09-26) : jusqu'ici, l'aide (hint / visuel)
+// n'apparaissait qu'APRÈS une réponse fausse — un enfant qui sent qu'il ne sait
+// pas devait d'abord se tromper (perdre une vie) pour recevoir la moindre aide.
+// Indice disponible à la demande, avant de répondre : aucune pénalité de vie ni
+// de score, mais neutralise le bonus de combo de CETTE question (GS._hintUsed,
+// lu par validate()) pour ne pas en faire un contournement sans coût. Déjà
+// exclu en maternelle, qui a son propre mécanisme progressif (mat-hint-pulse).
+function showHintOnDemand(){
+ if(typeof GS==='undefined'||!GS.q||GS.answering)return;
+ if(typeof _isMaternelle==='function' && typeof GM!=='undefined' && _isMaternelle(GM.level))return;
+ if(!GS.q.hint)return;
+ GS._hintUsed=true;
+ const el=document.getElementById('correction');
+ if(el){ el.innerHTML='💡 '+esc(GS.q.hint); el.classList.remove('hidden'); }
+}
 let toastT=null;
 // AUD-03-014 (audit UX 2026-09-25) : un seul toast() en écrasait un autre
 // affiché juste avant (mise en scène + commentaire du compagnon en jeu,

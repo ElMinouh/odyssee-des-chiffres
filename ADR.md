@@ -2159,4 +2159,26 @@ Ceci clôt l'intégralité de l'audit performances AUD-07 (23 constats : traité
 
 ---
 
+## ADR-176 — Lot 6 (audit pédagogique AUD-10, 2026-09-26) : indice à la demande, renforcement sur bonne réponse, alerte parent journal de révision plein
+
+**Contexte** (AUD-10-010) : un commentaire de code (`09-parent.js`) affirmait à tort que le Mode serein était "actif par défaut", contredisant le comportement réel et ADR-34.
+
+**Décision** : commentaire corrigé.
+
+**Contexte** (AUD-10-025) : seule une erreur recevait une explication (`q.hint`, ADR-29) — une bonne réponse, même par intuition ou hasard, ne recevait jamais de renforcement du raisonnement.
+
+**Décision** : `validate()` (`07-game.js`) affiche désormais brièvement (`toast`) le hint lors des 3 premières réussites sur un opérateur donné (`P.opStats[opK].ok<=3`) — pas systématiquement, pour ne pas ralentir le jeu une fois la notion installée.
+
+**Contexte** (AUD-10-026) : l'aide (hint, puis visuel après 2 échecs) n'intervenait qu'APRÈS une réponse fausse — un enfant qui sent qu'il ne sait pas devait d'abord se tromper (perdre une vie) avant de recevoir la moindre aide, contraire au principe de prévention de la frustration.
+
+**Décision** : nouveau bouton `#hintBtn` (💡, à côté du bouton "réécouter" existant) → `showHintOnDemand()` (`01-core.js`) affiche le hint dans `#correction` avant la réponse, sans pénalité de vie ni de score, mais neutralise le bonus de combo ×2 de cette question précise (`GS._hintUsed`, remis à zéro à chaque nouvelle question dans `renderQ()`) — pour ne pas en faire un contournement totalement gratuit. Exclu en maternelle (mécanisme d'aide progressive déjà propre à ce cycle, `mat-hint-pulse`).
+
+**Contexte** (AUD-10-027) : le journal de révision espacée (`P.errorLog`) est plafonné à `SPACED_MAX_LOG=30` ; au-delà, les entrées les plus consolidées/anciennes cessent silencieusement d'être suivies — sans aucun signal au parent, précisément pour l'enfant en difficulté généralisée qui en aurait le plus besoin.
+
+**Décision** : `renderReport()` (`09-parent.js`) affiche un encart discret quand `errorLog.length >= SPACED_MAX_LOG`, à côté du bandeau "points faibles" existant.
+
+**Impact** : `js/01-core.js` (`showHintOnDemand`), `js/07-game.js` (`renderQ()`, `validate()`), `js/09-parent.js` (commentaire, `renderReport()`), `index.html` (`#hintBtn`). v12.8.24. Tests : `tests/hint-on-demand-and-early-reinforcement.test.js`, `tests/revision-log-full-indicator.test.js`. `npm run sync:test-api` relancé (nouvelle fonction globale). 814/814 tests verts, lint 0 erreur (307 warnings, sous le seuil de 342). Constats AUD-10-010, AUD-10-025, AUD-10-026 et AUD-10-027 clos par ce lot.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

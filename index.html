@@ -796,6 +796,9 @@
   <div id="question-wrap" style="display:flex;align-items:center;justify-content:center;gap:10px;margin:6px 0;flex-wrap:wrap;max-width:100%;padding:0 8px;">
    <div id="question" style="font-size:clamp(1.15em,4.4vw,2.6em);font-weight:900;line-height:1.22;text-align:center;overflow-wrap:break-word;word-break:break-word;max-width:100%;"></div>
    <button id="repeatQuestionBtn" onclick="repeatQuestion()" title="Réécouter la question" aria-label="Réécouter la question" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:44px;height:44px;border-radius:50%;font-size:1.3em;cursor:pointer;flex-shrink:0;box-shadow:0 2px 0 rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;padding:0;line-height:1;">🔊</button>
+   <!-- AUD-10-026 (audit pédagogique 2026-09-26) : indice disponible AVANT de répondre,
+        pas seulement en correction après une erreur — sans pénalité de vie ni de score. -->
+   <button id="hintBtn" onclick="showHintOnDemand()" title="Demander un indice" aria-label="Demander un indice" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:44px;height:44px;border-radius:50%;font-size:1.3em;cursor:pointer;flex-shrink:0;box-shadow:0 2px 0 rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;padding:0;line-height:1;">💡</button>
   </div>
   <div id="problem-image"></div>
   <div id="input-zone">

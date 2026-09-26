@@ -1931,6 +1931,7 @@
     "showConfirm": "writable",
     "showCorr": "writable",
     "showHeroEvolution": "writable",
+    "showHintOnDemand": "writable",
     "showLevelUpAnim": "writable",
     "showMonsterIntro": "writable",
     "showObjectiveChoice": "writable",
