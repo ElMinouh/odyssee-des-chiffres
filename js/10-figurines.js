@@ -2078,6 +2078,9 @@ function _initFigArms(id){
 function resetProfile(playerName){
   if(!playerName)return;
   const msg=`Réinitialiser le profil de ${playerName} ? Cette action supprime toutes les étoiles, figurines, XP et badges. Elle est irréversible.`;
+  // AUD-03-026 : re-saisie du prénom exigée, comme resetAdventure() juste après —
+  // le Reset Total est objectivement plus grave (perte définitive de la collection
+  // ET des étoiles) mais demandait jusqu'ici moins de confirmation, pas plus.
   showConfirm(msg, ()=>{
     localStorage.removeItem('user_'+playerName);
     // AUD-02-025 (audit fonctionnel 2026-09-21) : purge aussi l'anniversaire,
@@ -2093,7 +2096,7 @@ function resetProfile(playerName){
     // code mort) supprimée — remplacée par la VRAIE fonction d'affichage,
     // qui ne se rafraîchissait donc jamais après un reset jusqu'ici.
     if(typeof renderOptResetOne==='function') renderOptResetOne(playerName);
-  }, {danger:true, confirmLabel:'Réinitialiser'});
+  }, {danger:true, confirmLabel:'Réinitialiser', retypeValue:playerName});
 }
 // v8.7.31 : reset spécifique à L'Odyssée. Ne touche PAS aux étoiles, figurines,
 // XP, badges, skills, inventaire.

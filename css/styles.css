@@ -11,7 +11,16 @@
    au choix du joueur : c'est une variété assumée, pas une dérive).
    Sémantiques (indépendantes du thème actif) : --ok (#27ae60 vert
    succès), --danger (#c0392b rouge alerte/destructif), --info
-   (#3498db bleu information), --neutral (#7f8c8d gris neutre).
+   (#3498db bleu information), --neutral (#7f8c8d gris neutre),
+   --text-muted (#bdc3c7 texte secondaire/légende — AUD-03-007).
+   --text-muted n'a PAS été substitué aux ~20 occurrences déjà
+   présentes de #bdc3c7 dans ce fichier ni dans les styles inline
+   générés en JS/HTML : un mécanisme de surcharge thème clair/sakura
+   (règles [style*="color:#bdc3c7"] plus bas dans ce fichier) cible
+   la valeur littérale dans les styles inline — la remplacer par
+   var(--text-muted) casserait ce sélecteur d'attribut sans migration
+   dédiée. Le token existe pour tout NOUVEAU style ; la consolidation
+   de l'existant reste un chantier à part (effort moyen, hors de ce lot).
    Rayons/ombres/durées : --radius-sm/md/lg (aussi redéfinis par
    cycle scolaire), --shadow-card/popup/modal, --dur-fast/base/slow.
 
@@ -28,7 +37,7 @@
 --shadow-popup:0 8px 24px rgba(0,0,0,.5);
 --shadow-modal:0 18px 50px rgba(0,0,0,.65);
 /* v11.7.21 (Audit DA #6/#13) : couleurs sémantiques uniques, indépendantes des 8 thèmes */
---ok:#27ae60;--danger:#c0392b;--info:#3498db;--neutral:#7f8c8d;
+--ok:#27ae60;--danger:#c0392b;--info:#3498db;--neutral:#7f8c8d;--text-muted:#bdc3c7;
 /* v11.7.23 (Audit DA #15) : échelle d'espacement, base pour les prochains lots */
 --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;
 /* v11.7.32 (Audit DA #26, Lot 10) : tokens de durée, appliqués aux composants déjà touchés dans ce chantier */

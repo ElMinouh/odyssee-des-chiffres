@@ -106,20 +106,26 @@ fichiers `07-*.js`/`13/14/15/16/18-*.js`, pas des fichiers par niveau.
 ## 5. État d'avancement
 
 - 743 tests Vitest verts, 92 fichiers de test.
-- **État réel des 9 audits** (voir ADR-164 pour le séquencement retenu et sa justification) :
-  - Intégralement traités et vérifiés : **AUD-02 fonctionnel** (47 constats, ADR-129→152),
-    **AUD-06 sécurité** (11 constats, ADR-154→156), **AUD-07 performances/scalabilité**
-    (23 constats, ADR-158→163), **AUD-08 qualité perçue** (6 constats, commits
-    4629655/876dd4c/75865c8).
-  - **Jamais engagés** (aucun lot de correction à ce jour) : **AUD-01 technique**
-    (34 constats, dont 2 P0), **AUD-03 ergonomique** (47 constats, dont le P0
-    AUD-03-012 : fenêtre de choix d'objectif du jour sans issue tactile), **AUD-04
-    graphique** (15 constats, dont le P1 AUD-04-001 : trois langages visuels
-    concurrents).
-  - **AUD-05 accessibilité** : 1 point acté sans changement de code (AUD-05-007,
-    ADR-153), le reste (9 constats, dont 3 P1) non traité.
-  - **AUD-09 cohérence globale** (2026-09-26) : 8 constats de gouvernance/cohérence,
-    lot 1 en cours (ADR-164).
+- **État réel des 9 audits** (voir ADR-168/ADR-169 : la plupart des corrections
+  AUD-01/03/04/05 avaient déjà été codées AVANT même l'audit AUD-09, sans ADR
+  dédiée — les repérer a demandé une vérification systématique du code, pas
+  seulement de ADR.md) :
+  - Intégralement traités et vérifiés : **AUD-02 fonctionnel** (47 constats,
+    ADR-129→152), **AUD-05 accessibilité** (10 constats), **AUD-06 sécurité**
+    (11 constats, ADR-154→156), **AUD-07 performances/scalabilité** (23 constats,
+    ADR-158→163), **AUD-08 qualité perçue** (6 constats), **AUD-09 cohérence
+    globale** (8 constats, ADR-164→167).
+  - **Quasi intégralement traités**, résidu documenté ci-dessous : **AUD-01
+    technique** (34 constats — 3 corrigés lot 5/ADR-168, 15 déjà en code sans
+    ADR, 8 dette assumée, 8 observations/décisions produit sans action code),
+    **AUD-03 ergonomique** (47 constats — 3 corrigés lot 8/ADR-169, 44 déjà en
+    code, dont le P0 AUD-03-012).
+  - **Reliquat réel restant** : **AUD-04 graphique**, 11 des 15 constats (le P1
+    AUD-04-001 est traité — voir css/styles.css, motif du fil doré ; restent
+    surtout des chantiers d'illustration : emoji→icônes, monstres, avatar) ;
+    **AUD-01** : CSP `unsafe-inline` (005, effort élevé), CVE dev-only Vitest
+    (009), décision produit IP figurines (014), dette architecturale assumée
+    (025/026/027).
 - Reste en attente côté déploiement (action manuelle, pas automatisable par Claude) :
   - `worker/migration-user-disabled.sql` à exécuter sur le dashboard Cloudflare
     (base `odyssee-chat-db`) avant de redéployer `worker/odyssee-chat.js`.

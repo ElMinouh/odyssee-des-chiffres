@@ -2831,7 +2831,10 @@ function _countableFigurines(playerName){
 
 // ── Boutique figurines ──────────────────────────────────
 // Lazy-load par défaut : 'none' = aucune licence sélectionnée → pas de grille
-let _figFilter='none';
+// AUD-03-039 : 'all' par défaut plutôt que 'none' — évite un écran vide au
+// premier clic sur la boutique (pagination déjà en place, ADR-160, donc le
+// catalogue complet par défaut reste peu coûteux).
+let _figFilter='all';
 // Shop state
 let _shopSearch='';
 // AUD-03-040 (audit UX 2026-09-25) : tri de la boutique, persistant entre

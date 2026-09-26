@@ -2039,4 +2039,23 @@ Ceci clôt l'intégralité de l'audit performances AUD-07 (23 constats : traité
 
 ---
 
+---
+
+## ADR-169 — Lot 8 (traitement du solde AUD-03, 2026-09-26) : reset total re-saisi, boutique non vide par défaut, token texte secondaire
+
+**Contexte** : après ADR-168 (AUD-01), vérification systématique du même type sur AUD-03 (ergonomique, 47 constats) : 42 étaient déjà corrigés en code sans ADR (dont le P0 AUD-03-012, dead-end tactile — bouton « Plus tard » + clic-fond déjà présents dans `showObjectiveChoice()`). AUD-03-008 et AUD-03-015 also déjà fixés (zone cliquable 40×40px sur le bouton œil ; Échap appelle déjà `onCancel` dans `showConfirm`/`showPrompt`). Seuls AUD-03-007, 026, 039 restaient réellement ouverts.
+
+**Décision** :
+1. `js/10-figurines.js` (`resetProfile()`) : `retypeValue:playerName` ajouté à l'appel `showConfirm`, au même niveau d'exigence que `resetAdventure()` — corrige l'inversion de friction (l'action la plus grave était jusqu'ici la plus facile à valider).
+2. `js/03-figurines-data.js` : `_figFilter` par défaut passe de `'none'` à `'all'` — la boutique affiche désormais le catalogue complet (déjà paginé, ADR-160) dès l'ouverture plutôt qu'un écran vide invitant à choisir une licence.
+3. `css/styles.css` : token `--text-muted:#bdc3c7` ajouté à `:root` et documenté dans le commentaire de palette. **Pas de migration en masse** des ~20 occurrences déjà présentes de `#bdc3c7` : un mécanisme de surcharge thème clair/sakura (`[style*="color:#bdc3c7"]`) cible cette valeur littérale dans des styles inline générés en JS — la remplacer par `var(--text-muted)` casserait ce sélecteur sans un chantier dédié. Le token existe pour tout nouveau style ; c'est une consolidation partielle, assumée comme telle.
+
+**Vérifié en navigateur** (`preview_start`) : boutique affiche 60 cartes au premier rendu (`_figFilter==='all'`), aucune erreur console liée à ce changement.
+
+**Conséquence** : `js/10-figurines.js`, `js/03-figurines-data.js`, `css/styles.css` modifiés. Pas de bump de version (comportement amélioré mais mineur, pas de changement fonctionnel majeur — à la discrétion de l'utilisateur s'il préfère bump). 743 tests verts, lint inchangé (0 erreur, 303 warnings), `check:css-tokens` inchangé (84/135).
+
+**Reste ouvert** : AUD-04 (11/15 constats, essentiellement de l'illustration — emoji→icônes, monstres, avatar — hors scope d'un lot de code pur), AUD-01 (005/009/014/025/026/027, dette assumée ou décision produit).
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
