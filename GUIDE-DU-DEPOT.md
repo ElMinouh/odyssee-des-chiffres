@@ -66,7 +66,7 @@ Puis ouvrir `http://localhost:8000`.
 ## Lancer les tests
 
 ```powershell
-npm test        # 182+ tests Vitest, doivent tous passer
+npm test        # suite complète Vitest, doit toujours passer à 100 %
 npm run lint     # ESLint — 0 erreur attendu (les warnings existants ne sont pas bloquants)
 ```
 
@@ -104,7 +104,7 @@ réelle des correctifs qui en ont découlé.
 
 - `ADR.md` est la source de vérité n°1 — il explique le "pourquoi", pas
   seulement le "quoi".
-- Les 182+ tests Vitest sont le filet de sécurité pour toute modification —
+- Les tests Vitest sont le filet de sécurité pour toute modification —
   toujours les lancer avant et après un changement.
 - Le projet suit une discipline de vérification systématique du code réel
   avant toute affirmation ou correction (ne jamais supposer, toujours vérifier)

@@ -2022,4 +2022,21 @@ Ceci clôt l'intégralité de l'audit performances AUD-07 (23 constats : traité
 
 ---
 
+---
+
+## ADR-168 — Lot 5 (traitement du solde AUD-01, 2026-09-26) : échappement renderErrors(), doc obsolète, table Nouvel An chinois étendue
+
+**Contexte** : AUD-09 avait classé AUD-01 (audit technique) comme « jamais engagé », faute d'entrée ADR dédiée. Vérification directe du code (recherche des commentaires `AUD-01-0xx` dans les fichiers sources) montre que c'était trompeur : 15 des 34 constats sont déjà corrigés en code (dont AUD-01-021, 022, 030, 031, sans ADR associée), 8 sont déjà acceptés/documentés comme dette assumée, 1 est une décision produit pure (AUD-01-014, hors scope code). Seuls AUD-01-017, 023, 028 restaient réellement ouverts et actionnables à faible effort.
+
+**Décision** :
+1. `js/08-ui.js` (`renderErrors()`) : le fallback affichant une entrée d'historique d'erreur non reconnue par la regex passe désormais par `esc()`, par cohérence avec le reste du fichier (source interne à ce jour, pas un correctif de faille active).
+2. `GUIDE-DU-DEPOT.md` : mentions obsolètes « 182+ tests » remplacées par une formulation non chiffrée (743 aujourd'hui, ce nombre continuera de changer).
+3. `js/06c-seasonal.js` (`_CHINESE_NY`) : table étendue de 2035 à 2045 (dates vérifiées via recherche web, chinesefortunecalendar.com — pas inventées). Reste une table figée à réétendre avant 2045, pas un calcul algorithmique (hors scope, effort disproportionné pour ce lot).
+
+**Conséquence** : `js/08-ui.js`, `js/06c-seasonal.js`, `GUIDE-DU-DEPOT.md` modifiés. Aucun changement de comportement observable pour l'utilisateur (correctifs défensifs/doc) → pas de bump de version. 743 tests verts, lint inchangé (0 erreur, 303 warnings).
+
+**Reste ouvert dans AUD-01** : AUD-01-005 (CSP unsafe-inline, effort élevé), AUD-01-009 (CVE dev-only Vitest), AUD-01-014 (décision IP figurines, produit), AUD-01-025/026/027 (dette architecturale, refonte disproportionnée à ce stade), AUD-01-032/033/034 (observations, pas d'action code requise).
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

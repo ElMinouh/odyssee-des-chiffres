@@ -86,7 +86,9 @@ function renderErrors(){
  }
  const u=[...new Set(P.errors||[])].slice(-10);
  if(!u.length){el.innerHTML=bar+'<span style="color:#2ecc71;"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg> Aucune erreur en maths !</span>';if(btn)btn.classList.add('hidden');return;}
- el.innerHTML=bar+u.map(e=>{const m=e.match(/^(.+?)([+\-x×/÷])(.+?)=(\d+)$/);return m?`<div class="revision-q"><span>${m[1]} ${m[2]} ${m[3]} = ?</span><strong style="color:#f1c40f;">${m[4]}</strong></div>`:`<div class="revision-q">${e}</div>`;}).join('');
+ // AUD-01-017 : source interne (P.errors) à ce jour, mais échappée par cohérence
+ // avec le reste du fichier plutôt que de compter sur cette garantie dans le temps.
+ el.innerHTML=bar+u.map(e=>{const m=e.match(/^(.+?)([+\-x×/÷])(.+?)=(\d+)$/);return m?`<div class="revision-q"><span>${m[1]} ${m[2]} ${m[3]} = ?</span><strong style="color:#f1c40f;">${m[4]}</strong></div>`:`<div class="revision-q">${esc(e)}</div>`;}).join('');
  if(btn)btn.classList.remove('hidden');
 }
 function renderRecords(){

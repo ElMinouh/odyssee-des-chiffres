@@ -21,9 +21,14 @@ function _easter(year){
 function _mardiGras(year){
  const e=_easter(year); const d=new Date(e); d.setDate(d.getDate()-47); return d;
 }
+// AUD-01-028 : table étendue à 2045 (2036-2045 ajoutés, source chinesefortunecalendar.com)
+// pour repousser l'échéance ; toujours une table figée, pas un calcul algorithmique
+// (hors scope de ce correctif) — à réétendre avant 2045.
 const _CHINESE_NY = {
  2025:[1,29], 2026:[2,17], 2027:[2,6],  2028:[1,26], 2029:[2,13],
- 2030:[2,3],  2031:[1,23], 2032:[2,11], 2033:[1,31], 2034:[2,19], 2035:[2,8]
+ 2030:[2,3],  2031:[1,23], 2032:[2,11], 2033:[1,31], 2034:[2,19], 2035:[2,8],
+ 2036:[1,28], 2037:[2,15], 2038:[2,4],  2039:[1,24], 2040:[2,12],
+ 2041:[2,1],  2042:[1,22], 2043:[2,10], 2044:[1,30], 2045:[2,17]
 };
 function _chineseNY(year){
  const d=_CHINESE_NY[year]; return d?new Date(year, d[0]-1, d[1]):null;
