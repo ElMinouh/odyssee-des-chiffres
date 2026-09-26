@@ -65,6 +65,14 @@ adjustGameLogoSize();
    if(window._appReady || waited >= 8000){
     clearInterval(check);
     if(loading) loading.classList.add('hidden');
+    // v2 (audit performances AUD-07-016) : ce filet réveille l'app même si
+    // _appReady n'est jamais passé à true (ex. coupure réseau pendant le
+    // chargement d'un <script defer>, qui empêche window.onload — et donc
+    // _bootSanityCheck() lui-même — de jamais se déclencher). Sans ceci,
+    // l'app était révélée telle quelle, potentiellement cassée, sans le
+    // moindre message. _bootSanityCheck est une fonction hoistée du même
+    // fichier, déjà sûre à appeler ici (voir plus bas).
+    if(!window._appReady){ try{ if(typeof _bootSanityCheck==='function') _bootSanityCheck(); }catch(e){} }
     action();
    }
   }, 150);

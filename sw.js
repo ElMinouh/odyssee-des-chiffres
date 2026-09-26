@@ -9,15 +9,15 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v12.8.13';
+const CACHE_VERSION = 'v12.8.14';
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources critiques précachées au premier chargement.
 // Poids total mesuré (méta-audit, Lot 3, ADR-54) : ~2,55 Mo — à remettre à
 // jour à chaque livraison qui ajoute/modifie un fichier de cette liste, pour
 // suivre l'évolution dans le temps sans outillage automatisé.
-// Dernière mesure : v12.4.59 (ajout de 07-story-core.js, extraction ADR-54)
-// — ~2,66 Mo, tous les JS + CSS + HTML + manifest ci-dessous.
+// Dernière mesure : v12.8.13 (audit performances AUD-07-023, 2026-09-26)
+// — ~3,02 Mo, tous les JS + CSS + HTML + manifest ci-dessous.
 const CRITICAL_URLS = [
   './',
   './index.html',
@@ -217,30 +217,22 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Pour les ressources (CSS, JS, images) :
-  // - CSS et JS : NETWORK FIRST (toujours essayer la fraîcheur, fallback cache si offline)
-  // - Images et autres : stale-while-revalidate (perf optimale, MAJ en arrière-plan)
-  const pathname = url.pathname;
-  const isCodeAsset = /\.(css|js|webmanifest|json)$/i.test(pathname);
-
-  if (isCodeAsset) {
-    // NETWORK FIRST : indispensable pour que les nouvelles versions soient
-    // détectées immédiatement (résout les bugs de cache CSS/JS persistant).
-    event.respondWith(
-      fetch(request).then((response) => {
-        if (response && response.status === 200 && response.type === 'basic') {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(c => c.put(request, clone)).catch(()=>{});
-        }
-        return response;
-      }).catch(() =>
-        caches.open(CACHE_NAME).then(c => c.match(request))
-      )
-    );
-    return;
-  }
-
-  // STALE-WHILE-REVALIDATE pour images, fonts, etc.
+  // Pour toutes les ressources non-navigation (CSS, JS, images, fonts...) :
+  // STALE-WHILE-REVALIDATE — sert le cache immédiatement (zéro requête
+  // réseau bloquante), revalide en arrière-plan, met à jour le cache pour la
+  // prochaine visite.
+  //
+  // v2 (audit performances AUD-07-002) : le CSS/JS était auparavant en NETWORK
+  // FIRST (une requête réseau systématique à chaque chargement, même sans
+  // changement), pour résoudre un bug de cache persistant constaté par le
+  // passé. Cette même stratégie stale-while-revalidate, déjà utilisée pour
+  // les images/fonts ci-dessous, résout la fraîcheur SANS ce coût réseau
+  // récurrent : le `CACHE_NAME` inclut `CACHE_VERSION` (bumpée à chaque
+  // livraison fonctionnelle, discipline déjà en place — voir CLAUDE.md), donc
+  // toute nouvelle version invalide automatiquement l'ancien cache au prochain
+  // `activate` ; entre deux versions, la revalidation en arrière-plan +
+  // notification `SW_UPDATED` déjà câblée côté client (bandeau de mise à
+  // jour) couvrent le cas où un fichier changerait sans bump de version.
   event.respondWith(
     caches.open(CACHE_NAME).then((cache) =>
       cache.match(request).then((cached) => {

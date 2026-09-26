@@ -1907,4 +1907,19 @@ AUD-07-003 (filtre/tri/comptage recalculés à chaque frappe) et AUD-07-004 (rec
 
 ---
 
+## ADR-161 — Lot D (audit performances AUD-07, 2026-09-26) : Service Worker stale-while-revalidate pour le code, filet de chargement complété
+
+**Contexte** : suite du lot C. AUD-07-002 (network-first systématique sur JS/CSS), AUD-07-016 (filet de 8s de `js/11-init.js` qui révèle l'app sans vérifier son intégrité si `window.onload` n'a jamais eu l'occasion de se déclencher) et AUD-07-023 (commentaire `sw.js` obsolète) traités. AUD-07-001 (scission de `07-story.js`, chargement différé du contenu narratif) explicitement reporté après le lot E — chantier lourd, mieux vérifiable une fois un outil de mesure de performance en place (AUD-07-018).
+
+**Décision** :
+1. `sw.js` : le cas spécial "network-first" pour CSS/JS/webmanifest/JSON est retiré — ces fichiers passent désormais par la même stratégie stale-while-revalidate déjà utilisée pour les images/fonts (cache servi immédiatement, revalidation réseau en arrière-plan). La fraîcheur reste garantie par le `CACHE_NAME` versionné (`CACHE_VERSION`, déjà bumpée à chaque livraison fonctionnelle, CLAUDE.md) et par la notification `SW_UPDATED` déjà câblée côté client (bandeau "Nouvelle version disponible").
+2. `js/11-init.js` : le filet indépendant de 8s (`waitReadyThen`, déjà présent — pas un nouveau mécanisme) appelle désormais `_bootSanityCheck()` avant de révéler l'app si `window._appReady` n'est jamais devenu vrai, pour afficher le bandeau d'erreur explicite plutôt qu'un écran potentiellement cassé sans message.
+3. `sw.js` : commentaire de poids du précache mis à jour (3,02 Mo, v12.8.13).
+
+**Vérifié en navigateur** (`preview_start`) : nouveau cache `odyssee-v12.8.14` créé au chargement, bandeau "Nouvelle version disponible" affiché et fonctionnel (clic → ancien cache purgé, app sur la nouvelle version), aucune erreur console.
+
+**Conséquence** : `sw.js`, `js/11-init.js` modifiés. v12.8.13 → **v12.8.14**. Suite complète (743 tests) verte, lint inchangé (0 erreur, 303 warnings).
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
