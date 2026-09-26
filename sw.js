@@ -9,15 +9,16 @@
  */
 'use strict';
 
-const CACHE_VERSION = 'v12.8.15';
+const CACHE_VERSION = 'v12.8.16';
 const CACHE_NAME = `odyssee-${CACHE_VERSION}`;
 
 // Ressources critiques précachées au premier chargement.
 // Poids total mesuré (méta-audit, Lot 3, ADR-54) : ~2,55 Mo — à remettre à
 // jour à chaque livraison qui ajoute/modifie un fichier de cette liste, pour
 // suivre l'évolution dans le temps sans outillage automatisé.
-// Dernière mesure : v12.8.13 (audit performances AUD-07-023, 2026-09-26)
-// — ~3,02 Mo, tous les JS + CSS + HTML + manifest ci-dessous.
+// Dernière mesure : v12.8.16 (audit performances AUD-07-001, 2026-09-26,
+// retrait de 07-story.js du chemin critique) — ~2,42 Mo, tous les JS + CSS +
+// HTML + manifest ci-dessous.
 const CRITICAL_URLS = [
   './',
   './index.html',
@@ -38,7 +39,6 @@ const CRITICAL_URLS = [
   './js/06d-cinematics.js',
   './js/07-story-core.js',
   './js/07-map.js',
-  './js/07-story.js',
   './js/07-boss.js',
   './js/07-game.js',
   './js/08-ui.js',
@@ -53,6 +53,13 @@ const CRITICAL_URLS = [
 
 // Ressources optionnelles (un 404 ne casse pas l'installation).
 const OPTIONAL_URLS = [
+  // v2 (audit performances AUD-07-001) : contenu narratif (~630 Ko), utile
+  // seulement une fois une Odyssée commencée — chargé dynamiquement à
+  // l'exécution (js/07-story-core.js, _ensureStoryLoaded()) plutôt qu'en
+  // <script defer> bloquant le premier écran. Reste précaché ici à
+  // l'installation pour le fonctionnement hors-ligne, juste plus sur le
+  // chemin critique du premier affichage.
+  './js/07-story.js',
   // Icônes PWA et logos visuels (chantier v8.5.0)
   './assets/icon-192.png',
   './assets/icon-512.png',

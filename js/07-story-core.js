@@ -25,6 +25,38 @@ function _regionOfZone(zone){
  if(zone.id === 'sanctuaire') return _ARCH_REGIONS.find(r => r.id === 'final') || null;
  return _ARCH_REGIONS.find(r => r.levels.includes(zone.level) && r.id !== 'final') || null;
 }
+// v2 (audit performances AUD-07-001) : étape 2 du plan de scission déjà
+// annoncé ci-dessus — 07-story.js (~630 Ko, uniquement du contenu narratif +
+// les données de zones/régions des variantes FR/Histoire) est désormais
+// chargé dynamiquement, jamais en <script defer> bloquant. Démarré tout de
+// suite ci-dessous (au chargement de CE fichier, très tôt) pour maximiser le
+// recouvrement avec le reste du chargement de la page — la plupart des
+// joueurs l'auront déjà en mémoire bien avant de choisir une Odyssée.
+// _ensureStoryLoaded() sert de garde-fou pour le cas contraire (réseau lent,
+// clic très rapide) : startAdventure() (07-map.js) l'attend avant de
+// continuer, seul point d'entrée réel vers le contenu de ce fichier.
+let _storyLoadPromise = null;
+function _ensureStoryLoaded(){
+ if(typeof _STORY !== 'undefined') return Promise.resolve(); // déjà chargé
+ if(_storyLoadPromise) return _storyLoadPromise;
+ _storyLoadPromise = new Promise((resolve, reject) => {
+  const s = document.createElement('script');
+  s.src = 'js/07-story.js';
+  s.onload = () => resolve();
+  s.onerror = () => reject(new Error('échec du chargement de js/07-story.js'));
+  document.head.appendChild(s);
+ });
+ return _storyLoadPromise;
+}
+// Le démarrage du préchargement (appel de _ensureStoryLoaded()) se fait
+// depuis window.onload (js/11-init.js), pas ici : à ce stade du chargement de
+// la page, 07-story.js n'a pas encore eu l'occasion d'être chargé (normal),
+// et un appel ICI trop tôt casserait le harnais de test (tests/helpers/
+// loadGame.js concatène tous les fichiers listés en un seul script — si
+// 07-story.js est demandé par le test, sa déclaration `let _STORY` existe
+// plus loin dans ce même script, encore en zone morte temporelle à ce point
+// de l'exécution : y référencer _STORY lève une exception au lieu de
+// renvoyer simplement "undefined").
 function _zonesOfRegion(regionId){
  const reg = _ARCH_REGIONS.find(r => r.id === regionId);
  if(!reg) return [];

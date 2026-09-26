@@ -1939,4 +1939,27 @@ Ceci clôt les lots codables de l'audit AUD-07 (Phases 0-2 de son plan de reméd
 
 ---
 
+## ADR-163 — Lot F (audit performances AUD-07, 2026-09-26) : chargement différé de 07-story.js (AUD-07-001)
+
+**Contexte** : dernier point de l'audit AUD-07, explicitement reporté après les lots A-E (voir ADR-158 à ADR-162) faute d'outil de mesure. Mesure réelle non concluante en pratique (LCP non mesurable proprement depuis l'environnement de dev disponible pour cette session, cache navigateur de l'outil de test non représentatif — voir discussion en session), décision prise sur la seule base du poids déjà connu (632 Ko, en croissance continue, ADR-54) plutôt que d'attendre indéfiniment une mesure.
+
+**Découverte en creusant** : l'étape 1 du plan ADR-54 (extraction des helpers structurels `_regionOfZone`/`_zonesOfRegion` vers `07-story-core.js`) avait déjà été faite lors d'une conversation antérieure. `07-story.js` ne contient pas QUE du texte narratif : aussi les données de zones/régions des variantes Français/Histoire (`MAT_ZONES_FR`, `COL_ZONES_FR`, etc.) — `startAdventure()` (`07-map.js`) est le SEUL point d'entrée réel vers ce fichier (3 sites d'appel).
+
+**Décision** :
+1. `sw.js` : `07-story.js` retiré de `CRITICAL_URLS` (bloquant le premier écran), ajouté à `OPTIONAL_URLS` (précaché à l'installation pour le hors-ligne, sans bloquer).
+2. `index.html` : `<script defer src="js/07-story.js">` retiré.
+3. `js/07-story-core.js` : nouvelle fonction `_ensureStoryLoaded()` — injecte dynamiquement `<script src="js/07-story.js">`, résout immédiatement si déjà chargé (détecté via `typeof _STORY`).
+4. `js/11-init.js` (`window.onload`) : déclenche `_ensureStoryLoaded()` en arrière-plan (fire-and-forget), tôt mais pas au tout premier tick — et retire `'07-story': ['_storyText']` de `_bootSanityCheck()` (son absence à ce stade est désormais normale).
+5. `js/07-map.js` : `startAdventure()`/`continueAdventure()` restent **synchrones** (important) — si `_STORY` n'est pas encore défini, la fonction se relance elle-même une fois `_ensureStoryLoaded()` résolu, au lieu de devenir `async`.
+
+**Alternative essayée puis rejetée** : rendre `startAdventure()`/`continueAdventure()` `async` avec `await _ensureStoryLoaded()`. Cassait 304 tests — le harnais de test (`tests/helpers/loadGame.js`) concatène tous les fichiers d'un test en UN SEUL script `vm` ; `typeof _STORY` au chargement d'un module qui n'a pas encore atteint la déclaration `let _STORY` (plus loin dans ce même script concaténé) lève `ReferenceError` (zone morte temporelle), contrairement à un vrai navigateur où chaque `<script>` non chargé laisse l'identifiant simplement non déclaré. La version synchrone avec relance interne évite complètement ce piège (identique au comportement existant dans le cas courant où le fichier est déjà chargé, y compris dans TOUS les tests) et ne nécessite de gérer l'attente que dans le cas réel rare (réseau lent).
+
+**Vérifié en navigateur** (`preview_start`, contournement du cache tenace de l'outil de test via injection de contenu fraîchement récupéré) : `_ensureStoryLoaded()` charge bien `07-story.js` dynamiquement, `_STORY` passe de `undefined` à un objet peuplé, `startAdventure('mat', true)` fonctionne normalement une fois chargé (30 zones, story correcte, `GM.adventure` posé).
+
+**Conséquence** : `sw.js`, `index.html`, `js/07-story-core.js`, `js/07-map.js`, `js/11-init.js` modifiés. Poids du précache critique : 3,02 → **2,42 Mo** (retrait des 630 Ko de contenu narratif du chemin bloquant). `npm run sync:test-api` exécuté (nouvelle globale `_ensureStoryLoaded`). v12.8.15 → **v12.8.16**. Suite complète (743 tests) verte, lint inchangé (0 erreur, 303 warnings).
+
+Ceci clôt l'intégralité de l'audit performances AUD-07 (23 constats : traités, invalidés à la relecture avec justification, ou documentés comme observations sans action de code possible).
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

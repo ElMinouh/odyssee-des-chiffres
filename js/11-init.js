@@ -117,7 +117,10 @@ function _bootSanityCheck(){
   '07-game': ['generateQ','renderQ','validate'],
   '07-map': ['openMap','renderMap','startAdventure'],
   '07-boss': ['openAdventureLog'],
-  '07-story': ['_storyText'],
+  // v2 (audit performances AUD-07-001) : '07-story' retiré de cette liste —
+  // ce module est désormais chargé dynamiquement à la demande
+  // (_ensureStoryLoaded(), js/07-story-core.js), jamais en <script defer> ;
+  // son absence à ce stade du chargement est normale, plus une anomalie.
   '08-ui': ['renderHistory','renderMilestones'],
   '09-parent': ['openParent','renderReport'],
   '10-figurines': ['renderFigCollection'],
@@ -157,6 +160,11 @@ function _bootSanityCheck(){
 window.onload=()=>{
 try{
  try{ _bootSanityCheck(); }catch(e){}
+ // v2 (audit performances AUD-07-001) : démarre le préchargement en arrière-
+ // plan de 07-story.js (contenu narratif différé, js/07-story-core.js) ici,
+ // et pas plus tôt — laisse le temps au reste du chargement critique de
+ // démarrer d'abord, sans bloquer quoi que ce soit (fire-and-forget).
+ try{ if(typeof _ensureStoryLoaded==='function') _ensureStoryLoaded().catch(e=>console.error('[Odyssée] préchargement du contenu narratif a échoué', e)); }catch(e){}
  // OPT-1+2 : init des références DOM cachées et du canvas particules
  try{ _initCachedDOM(); }catch(e){ console.error('[init] _initCachedDOM a échoué', e); }
  // Force l'affichage correct : seul v-menu visible au démarrage

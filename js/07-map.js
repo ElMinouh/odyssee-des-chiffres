@@ -118,7 +118,22 @@ function closeMap(){
 // (zones, régions, histoire, antagoniste, royaume) puis ouverture
 // de la carte. Le primaire est l'aventure par défaut.
 // ═══════════════════════════════════════════════════════
+// v2 (audit performances AUD-07-001) : reste synchrone (important pour ne
+// rien changer au comportement existant) — si 07-story.js n'est pas encore
+// chargé (cas rare : chargement en arrière-plan pas encore fini, réseau
+// lent), on relance l'appel une fois prêt via _ensureStoryLoaded() plutôt que
+// de rendre toute la fonction async (ce qui casserait tous les appelants
+// existants, y compris dans les tests, qui ne l'attendent pas). Cette
+// fonction est le SEUL point d'entrée réel vers le contenu de 07-story.js
+// (zones/régions FR/Histoire + textes narratifs).
 function startAdventure(advId, skipMapOpen){
+ if(typeof _STORY === 'undefined' && typeof _ensureStoryLoaded === 'function'){
+  _ensureStoryLoaded().then(
+   () => startAdventure(advId, skipMapOpen),
+   () => { if(typeof toast==='function') toast('⚠️ Chargement du contenu de l’Odyssée impossible, vérifie ta connexion et réessaie.'); }
+  );
+  return;
+ }
  // v11.6.9 — filet de sécurité : au cas où cette fonction serait appelée
  // directement (pas via la tuile verrouillée de openOdysseeSelect), on
  // bloque quand même les combinaisons sans Odyssée écrite plutôt que de
@@ -198,9 +213,21 @@ function startAdventure(advId, skipMapOpen){
 // Odyssée jouée, depuis l'écran d'accueil — sans repasser par la sélection
 // d'Odyssée puis toute la carte. Repli propre sur la carte si la zone
 // mémorisée est introuvable, déjà terminée, ou en tout début de partie.
+// v2 (audit performances AUD-07-001) : même garde que startAdventure()
+// ci-dessus — le code qui suit dépend de MAP_ZONES/_STORY déjà posés par cet
+// appel ; si 07-story.js n'est pas encore chargé, on relance l'appel complet
+// une fois prêt plutôt que de laisser ce code s'exécuter contre un état non
+// initialisé.
 function continueAdventure(){
  if(typeof P==='undefined' || !P || !P.lastAdventure){
   if(typeof toast==='function') toast('Choisis d\u2019abord une Odyssée pour commencer ton aventure !');
+  return;
+ }
+ if(typeof _STORY === 'undefined' && typeof _ensureStoryLoaded === 'function'){
+  _ensureStoryLoaded().then(
+   () => continueAdventure(),
+   () => { if(typeof toast==='function') toast('⚠️ Chargement du contenu de l’Odyssée impossible, vérifie ta connexion et réessaie.'); }
+  );
   return;
  }
  startAdventure(P.lastAdventure, true); // restaure MAP_ZONES/_STORY/GM.subject sans ouvrir la carte
