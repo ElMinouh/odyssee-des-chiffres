@@ -2058,4 +2058,23 @@ Ceci clôt l'intégralité de l'audit performances AUD-07 (23 constats : traité
 
 ---
 
+---
+
+## ADR-170 — Clôture de la vérification AUD-04 (2026-09-26) : tout le codable sans nouvel asset était déjà fait
+
+**Contexte** : après ADR-168/169 (AUD-01/AUD-03), même vérification systématique sur AUD-04 (graphique, 15 constats). Résultat : AUD-04-001 (fil visuel doré, "Lot 6/7/8"), AUD-04-003 (radius, sous garde-fou ADR-166), AUD-04-010 (état actif `.shop-quick-btn`, commenté), AUD-04-012 (contraste badge version, `rgba(255,255,255,.85)` + `text-shadow`), AUD-04-015 (icône 💬 remplaçant "GB") et **AUD-04-007** (checkbox custom `css/styles.css:96-99`, `appearance:none` + coche + `--accent` + `focus-visible` — exactement la solution recommandée) sont déjà en code, sans ADR ni commentaire de traçabilité pour la plupart.
+
+**Décision** : aucune ligne de code à ajouter pour ce lot. Classer AUD-04-001/003/007/010/012/015 comme traités et vérifiés.
+
+**Reste réellement ouvert dans AUD-04** :
+- **AUD-04-002/005/006/009** (icônes emoji, monstres de combat, sélecteur d'avatar, écran des titres) : travail d'illustration/assets, pas de code pur — nécessite des arbitrages visuels humains (style, budget d'assets), hors périmètre d'un lot de correction automatisé. À planifier comme un chantier de design à part.
+- **AUD-04-004** (ombres portées hors tokens) : sous garde-fou anti-régression (ADR-166, `check:css-tokens`) mais pas corrigé au fond — même situation que AUD-04-003 avant elle.
+- **AUD-04-008/009/011/013/014** : gravité FAIBLE/MOYENNE/OBSERVATION, P2/P3. Les écrans exacts décrits (rangées de filtres, badge Guérison, cartes de mode, boutons lecteur média) n'ont pas pu être localisés avec certitude par recherche dans le code (possible évolution de structure depuis le 25/09) — nécessitent une inspection visuelle en navigateur plutôt qu'une déduction par grep, reportée à une session dédiée.
+
+**Conséquence** : aucun fichier modifié par ce lot. Pas de bump de version.
+
+**Bilan de la vérification AUD-01/03/04/05 (2026-09-26, ADR-164 à ADR-170)** : sur 106 constats cumulés (34+47+15+10), 15+42+6+10 = 73 étaient déjà corrigés en code sans trace ADR, 9 traités dans cette session (lots 5/8), 8 sont de la dette technique assumée ou des décisions produit hors code, et il reste un solde honnête de ~16 constats réellement ouverts (surtout AUD-04, illustration).
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

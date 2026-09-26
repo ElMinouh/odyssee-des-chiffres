@@ -119,10 +119,12 @@ fichiers `07-*.js`/`13/14/15/16/18-*.js`, pas des fichiers par niveau.
     technique** (34 constats — 3 corrigés lot 5/ADR-168, 15 déjà en code sans
     ADR, 8 dette assumée, 8 observations/décisions produit sans action code),
     **AUD-03 ergonomique** (47 constats — 3 corrigés lot 8/ADR-169, 44 déjà en
-    code, dont le P0 AUD-03-012).
-  - **Reliquat réel restant** : **AUD-04 graphique**, 11 des 15 constats (le P1
-    AUD-04-001 est traité — voir css/styles.css, motif du fil doré ; restent
-    surtout des chantiers d'illustration : emoji→icônes, monstres, avatar) ;
+    code, dont le P0 AUD-03-012), **AUD-04 graphique** (15 constats — 6 déjà en
+    code sans ADR dont le P1 AUD-04-001, voir ADR-170).
+  - **Reliquat réel restant (~16 constats, voir ADR-170)** : **AUD-04**, 4
+    constats d'illustration/assets (002/005/006/009 — emoji→icônes, monstres,
+    avatar, titres — arbitrage visuel humain requis, pas du code pur), 5
+    constats FAIBLE/OBSERVATION à inspecter visuellement (004/008/011/013/014) ;
     **AUD-01** : CSP `unsafe-inline` (005, effort élevé), CVE dev-only Vitest
     (009), décision produit IP figurines (014), dette architecturale assumée
     (025/026/027).
