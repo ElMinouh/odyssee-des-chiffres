@@ -1877,3 +1877,60 @@ function mcStart(){
   if(typeof startGame==='function') startGame();
  }
 }
+
+// ═══════════════════════════════════════════════════════
+// Mesure de performance réelle (audit performances AUD-07-018) : jusqu'ici,
+// aucun outil ne mesurait la performance réellement vécue par les joueurs —
+// toute analyse (y compris cet audit) reposait uniquement sur une lecture
+// statique du code. Core Web Vitals natifs (PerformanceObserver, zéro
+// dépendance, cohérent avec le choix zéro dépendance de production du
+// projet) : LCP, CLS, et une approximation d'INP via l'Event Timing API.
+// Stocké en localStorage (20 dernières sessions), consultable via
+// _perfReport() depuis la console — aucune télémétrie envoyée nulle part,
+// aucune infrastructure de collecte n'existe pour ce projet : c'est un outil
+// de diagnostic local, pas un système de suivi en production.
+// ═══════════════════════════════════════════════════════
+const _PERF_METRICS = { lcp: null, cls: 0, inp: null };
+function _perfSave(){
+ try{
+  const hist = JSON.parse(localStorage.getItem('perfHistory') || '[]');
+  hist.push({ ts: Date.now(), ..._PERF_METRICS });
+  localStorage.setItem('perfHistory', JSON.stringify(hist.slice(-20)));
+ }catch(e){}
+}
+function _perfReport(){
+ console.log('[Perf] Dernière mesure :', _PERF_METRICS);
+ try{ console.log('[Perf] Historique (20 dernières sessions) :', JSON.parse(localStorage.getItem('perfHistory') || '[]')); }catch(e){}
+ return _PERF_METRICS;
+}
+if(typeof PerformanceObserver === 'function'){
+ try{
+  new PerformanceObserver((list) => {
+   const entries = list.getEntries();
+   const last = entries[entries.length - 1];
+   if(last) _PERF_METRICS.lcp = Math.round(last.startTime);
+  }).observe({ type: 'largest-contentful-paint', buffered: true });
+ }catch(e){ /* type non supporté par ce navigateur : LCP simplement indisponible */ }
+ try{
+  new PerformanceObserver((list) => {
+   for(const entry of list.getEntries()){
+    if(!entry.hadRecentInput) _PERF_METRICS.cls = Math.round((_PERF_METRICS.cls + entry.value) * 1000) / 1000;
+   }
+  }).observe({ type: 'layout-shift', buffered: true });
+ }catch(e){ /* idem CLS */ }
+ try{
+  // INP (Interaction to Next Paint) approximé par le maximum des durées
+  // d'interaction observées (Event Timing API) — pas le calcul exact du
+  // Web Vital officiel (percentile 98), mais un signal suffisant pour
+  // détecter une régression grossière sans dépendance externe.
+  new PerformanceObserver((list) => {
+   for(const entry of list.getEntries()){
+    const dur = Math.round(entry.duration);
+    if(_PERF_METRICS.inp === null || dur > _PERF_METRICS.inp) _PERF_METRICS.inp = dur;
+   }
+  }).observe({ type: 'event', buffered: true, durationThreshold: 40 });
+ }catch(e){ /* idem INP */ }
+ // Sauvegarde au masquage/fermeture de la page (dernier moment fiable pour
+ // capter la valeur finale de CLS/INP d'une session).
+ document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') _perfSave(); });
+}

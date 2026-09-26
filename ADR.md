@@ -1922,4 +1922,21 @@ AUD-07-003 (filtre/tri/comptage recalculés à chaque frappe) et AUD-07-004 (rec
 
 ---
 
+## ADR-162 — Lot E (audit performances AUD-07, 2026-09-26) : mesure de performance réelle, backoff du polling messagerie, nettoyage innerHTML
+
+**Contexte** : dernier lot codable de l'audit AUD-07. AUD-07-019/020/021 (croissance du catalogue, poids de profil, boucles RAF en combat) restent des observations documentées sans action de code possible sans mesure empirique sur appareil réel — non traités, volontairement.
+
+**Décision** :
+1. `js/01-core.js` : instrumentation Core Web Vitals natifs (`PerformanceObserver`, zéro dépendance) — LCP, CLS, INP (approximé via l'Event Timing API). Stocké en `localStorage` (20 dernières sessions), consultable via `_perfReport()` depuis la console. Aucune télémétrie envoyée : c'est un outil de diagnostic local, pas un système de collecte en production (aucune infrastructure pour ça).
+2. `js/17-messaging.js` : les deux boucles de polling (conversation 4s, badges 25s) passent d'un `setInterval` fixe à un `setTimeout` auto-replanifié avec backoff exponentiel (doublement de l'intervalle par échec consécutif, plafonné à 60s/120s), retour immédiat à la cadence normale au premier succès. `_convFetch()` et `chatRefreshBadges()`/`chatSyncTick()` renvoient désormais explicitement un booléen de succès pour piloter ce backoff.
+3. `js/07-game.js` : les 2 `innerHTML +=` de fin de partie remplacés par `insertAdjacentHTML('beforeend', ...)`, qui ajoute sans relire/réécrire le contenu déjà présent.
+
+**Vérifié en navigateur** (`preview_start`, onglet neuf) : `_perfReport()` renvoie des métriques réelles mesurées (LCP/CLS capturés dès le chargement), fonctions de polling (`_startConvPoll`, `chatStartBadgePoll`) présentes et saines, aucune erreur console.
+
+**Conséquence** : `js/01-core.js`, `js/17-messaging.js`, `js/07-game.js` modifiés. Nouvelles globales ajoutées → `npm run sync:test-api` exécuté (1940 entrées régénérées dans `.eslintrc.json`/`tests/helpers/loadGame.js`). v12.8.14 → **v12.8.15**. Suite complète (743 tests) verte, lint inchangé (0 erreur, 303 warnings).
+
+Ceci clôt les lots codables de l'audit AUD-07 (Phases 0-2 de son plan de remédiation). Reste en suspens, à reconsidérer maintenant qu'un outil de mesure existe : AUD-07-001 (scission de `07-story.js`, Phase 3 de l'audit).
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

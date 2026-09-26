@@ -1703,7 +1703,11 @@ if(typeof checkMilestones==='function') checkMilestones();
    trophies.push(`☠️ <strong>Chasseur</strong> : ${killerP.avatar||''} ${esc(killerP.name)} (${killerP.killCount} élim.)`);
   }
   if(trophies.length){
-   $('end-score').innerHTML += '<br><br><strong>🏆 Prix spéciaux :</strong><br><div style="font-size:.9em;color:#f1c40f;text-align:left;display:inline-block;">'+trophies.join('<br>')+'</div>';
+   // v2 (audit performances AUD-07-022) : innerHTML += relit puis réécrit
+   // TOUT le contenu existant (reflow complet) juste pour ajouter un bloc à
+   // la fin ; insertAdjacentHTML('beforeend', ...) ajoute sans toucher au
+   // contenu déjà présent.
+   $('end-score').insertAdjacentHTML('beforeend', '<br><br><strong>🏆 Prix spéciaux :</strong><br><div style="font-size:.9em;color:#f1c40f;text-align:left;display:inline-block;">'+trophies.join('<br>')+'</div>');
   }
   $('end-stars').innerText='';$('end-enc').innerText='🏆 Bravo à tous !';
   $('end-xp').innerText=`+${xpGained} XP`;
@@ -1738,7 +1742,8 @@ if(typeof checkMilestones==='function') checkMilestones();
  // indépendante du résultat won/lost de cette partie précise.
  const _masteryNew = (GM.mode2!=='combat' && typeof _checkMasteryAnnouncements==='function') ? _checkMasteryAnnouncements() : [];
  if(_masteryNew.length){
-  $('end-badges').innerHTML += '<p style="color:#2ecc71;margin:3px 0;">🎓 Notion maîtrisée : '+_masteryNew.join(', ')+' !</p>';
+  // v2 (audit performances AUD-07-022) : même correctif que end-score plus haut.
+  $('end-badges').insertAdjacentHTML('beforeend', '<p style="color:#2ecc71;margin:3px 0;">🎓 Notion maîtrisée : '+_masteryNew.join(', ')+' !</p>');
  }
  _renderEndRecap(won);
  if(won)startConfetti();

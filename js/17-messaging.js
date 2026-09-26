@@ -637,8 +637,12 @@ function _chatCacheSave(prof, withId, messages){ try{ localStorage.setItem(_chat
 let _convCache = [];
 let _msgJustSent = false;
 async function _convFetch(reset){
+ // v2 (audit performances AUD-07-005) : valeur de retour (succès/échec)
+ // ajoutée pour permettre un backoff du polling en cas d'erreurs répétées
+ // (voir _startConvPoll) — comportement de rendu inchangé, uniquement des
+ // `return` explicites ajoutés en fin de chaque branche.
  if(!reset && !_msgReadOnly){ try{ await _chatFlushQueue(_msgProf); }catch(e){} }
- if(!_msgConv) return;
+ if(!_msgConv) return true;
  if(reset) _convCache = [];
  const since = reset ? 0 : _msgConv.lastId;
  const res = await chatMsgFetch(_msgProf, _msgConv.id, since);
@@ -667,6 +671,7 @@ async function _convFetch(reset){
   } else if(readChanged){
    _renderBubbles(_convCache); // re-rendu pour afficher l'accusé de lecture mis à jour
   }
+  return true;
  } else if(reset){
   // v2 (AUD-07-014) : le Worker/D1 est indisponible — au lieu d'une coupure
   // totale même pour les messages déjà reçus, on retombe sur le dernier cache
@@ -682,7 +687,9 @@ async function _convFetch(reset){
    const thread = document.getElementById('msg-thread');
    if(thread) thread.innerHTML = '<p style="color:#e74c3c;font-size:.8em;text-align:center;">Connexion impossible.</p>';
   }
+  return false;
  }
+ return false;
 }
 async function chatSendCurrent(){
  const inp = document.getElementById('msg-input'); if(!inp) return;
@@ -697,8 +704,24 @@ async function chatSendCurrent(){
  if(!blocked) inp.value='';
  inp.disabled=false; inp.focus();
 }
-function _startConvPoll(){ _stopConvPoll(); _msgConvTimer = setInterval(()=>{ _convFetch(false); }, 4000); }
-function _stopConvPoll(){ if(_msgConvTimer){ clearInterval(_msgConvTimer); _msgConvTimer=null; } }
+// v2 (audit performances AUD-07-005) : intervalle fixe remplacé par un
+// setTimeout auto-replanifié avec backoff exponentiel — en cas d'erreurs
+// serveur répétées (429, 500, réseau), l'intervalle double à chaque échec
+// consécutif (plafonné à 60s) au lieu de continuer à cogner toutes les 4s,
+// puis revient immédiatement à la cadence normale dès le premier succès.
+const CONV_POLL_BASE_MS = 4000, CONV_POLL_MAX_MS = 60000;
+let _convPollFailStreak = 0;
+function _startConvPoll(){
+ _stopConvPoll();
+ const tick = async () => {
+  const ok = await _convFetch(false);
+  _convPollFailStreak = ok ? 0 : _convPollFailStreak + 1;
+  const delay = Math.min(CONV_POLL_BASE_MS * Math.pow(2, _convPollFailStreak), CONV_POLL_MAX_MS);
+  _msgConvTimer = setTimeout(tick, delay);
+ };
+ _msgConvTimer = setTimeout(tick, CONV_POLL_BASE_MS);
+}
+function _stopConvPoll(){ if(_msgConvTimer){ clearTimeout(_msgConvTimer); _msgConvTimer=null; } }
 
 // ═══════════════════════════════════════════════════════
 // ENVELOPPE FLOTTANTE UNIQUE (partout) + PASTILLE + BANDEAU
@@ -816,12 +839,15 @@ async function chatRefreshBadges(){
  const menuBtn = document.getElementById('menu-msg-btn'); if(menuBtn) menuBtn.classList.add('hidden');
  const hud = document.getElementById('hud-msg'); if(hud) hud.classList.add('hidden');
  _msgFabUpdate();
- if(!enabled || !prof || !prof.chatId){ _setBadge('msg-fab-badge',0); _setBadge('menu-msg-badge',0); _setBadge('hud-msg-badge',0); _chatLastLatest={}; _chatLatestInit=false; return; }
+ if(!enabled || !prof || !prof.chatId){ _setBadge('msg-fab-badge',0); _setBadge('menu-msg-badge',0); _setBadge('hud-msg-badge',0); _chatLastLatest={}; _chatLatestInit=false; return true; }
  const l = await chatMsgLatest(prof);
  const latest = (l && l.latest) ? l.latest : {};
  const n = chatUnreadCount(prof, latest);
  _setBadge('msg-fab-badge', n); _setBadge('menu-msg-badge', n); _setBadge('hud-msg-badge', n);
  try{ await _chatMaybeNotify(prof, latest); }catch(e){}
+ // v2 (audit performances AUD-07-005) : succès/échec remonté pour le backoff
+ // du polling de badges (voir chatStartBadgePoll).
+ return !!(l && l.ok);
 }
 function _setBadge(id, n){
  const el = document.getElementById(id); if(!el) return;
@@ -853,13 +879,22 @@ async function chatSyncTick(){
   }
  }
  if(!_chatAllPulled){ _chatAllPulled = true; try{ await chatPullAllIdentities(); }catch(e){} } // adopte TOUS les profils synchronisés
- chatRefreshBadges();
+ return await chatRefreshBadges();
 }
+// v2 (audit performances AUD-07-005) : même principe de backoff que
+// _startConvPoll ci-dessus pour le sondage des badges non-lus.
+const BADGE_POLL_BASE_MS = 25000, BADGE_POLL_MAX_MS = 120000;
+let _badgePollFailStreak = 0;
 function chatStartBadgePoll(){
  _msgEnsureFab(); _msgWrapShowView();
- if(_msgBadgePoll) clearInterval(_msgBadgePoll);
- chatSyncTick();
- _msgBadgePoll = setInterval(chatSyncTick, 25000);
+ if(_msgBadgePoll) clearTimeout(_msgBadgePoll);
+ const tick = async () => {
+  const ok = await chatSyncTick();
+  _badgePollFailStreak = ok ? 0 : _badgePollFailStreak + 1;
+  const delay = Math.min(BADGE_POLL_BASE_MS * Math.pow(2, _badgePollFailStreak), BADGE_POLL_MAX_MS);
+  _msgBadgePoll = setTimeout(tick, delay);
+ };
+ tick();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1116,7 +1151,7 @@ let _msgWasPollingConv = false;
 function _msgOnOffline(){
  _msgWasPollingConv = !!(_msgConv && _msgConvTimer);
  _stopConvPoll();
- if(_msgBadgePoll){ clearInterval(_msgBadgePoll); _msgBadgePoll=null; }
+ if(_msgBadgePoll){ clearTimeout(_msgBadgePoll); _msgBadgePoll=null; }
 }
 function _msgOnOnline(){
  if(typeof chatIsEnabledByName==='function' && typeof _curName==='function' && chatIsEnabledByName(_curName()) && typeof chatStartBadgePoll==='function'){
