@@ -712,6 +712,7 @@ globalThis.__api = {
   _bossReaction: (typeof _bossReaction==='function') ? _bossReaction : undefined,
   _bossShieldBlock: (typeof _bossShieldBlock==='function') ? _bossShieldBlock : undefined,
   _bossShieldBreak: (typeof _bossShieldBreak==='function') ? _bossShieldBreak : undefined,
+  _btnLoading: (typeof _btnLoading==='function') ? _btnLoading : undefined,
   _buildArchipelPath: (typeof _buildArchipelPath==='function') ? _buildArchipelPath : undefined,
   _buildNpcsOverlay: (typeof _buildNpcsOverlay==='function') ? _buildNpcsOverlay : undefined,
   _buildReportHTML: (typeof _buildReportHTML==='function') ? _buildReportHTML : undefined,

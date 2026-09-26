@@ -268,7 +268,7 @@ async function renderContactsScreen(){
     + '<span style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">'+av+'</span>'
     + '<span style="flex:1;font-size:.9em;">'+cn+'</span>'
     + (_msgReadOnly ? '' :
-       '<button onclick="chatAcceptContact(\''+cid+'\')" style="background:#27ae60;font-size:.72em;padding:5px 10px;">✅ Accepter</button>'
+       '<button id="msg-accept-'+cid+'" onclick="chatAcceptContact(\''+cid+'\')" style="background:#27ae60;font-size:.72em;padding:5px 10px;">✅ Accepter</button>'
        + '<button onclick="chatDeclineContact(\''+cid+'\')" style="background:#7f8c8d;font-size:.72em;padding:5px 10px;">✕</button>')
     + '</div>';
   });
@@ -349,7 +349,7 @@ async function renderContactsScreen(){
   html += '<div style="margin-top:14px;border-top:1px solid rgba(255,255,255,.1);padding-top:12px;">'
    + '<p style="font-size:.8em;font-weight:700;color:#2ecc71;margin:0 0 6px;">➕ Ajouter un ami</p>'
    + '<input type="text" id="msg-addcode" placeholder="Code ami (ex: 7K2P-9QXM)" style="width:70%;text-transform:uppercase;font-family:monospace;letter-spacing:1px;">'
-   + '<button onclick="chatAddFriend()" style="background:#27ae60;font-size:.8em;margin-left:4px;">Envoyer</button>'
+   + '<button id="msg-add-btn" onclick="chatAddFriend()" style="background:#27ae60;font-size:.8em;margin-left:4px;">Envoyer</button>'
    + '<p id="msg-add-msg" style="font-size:.72em;margin-top:6px;"></p></div>';
  } else {
   html += '<p style="font-size:.72em;color:#7f8c8d;text-align:center;margin-top:14px;">👁 Visualisation parentale (lecture seule)</p>';
@@ -367,7 +367,9 @@ async function chatAddFriend(){
  if(!inp) return; const code = inp.value.trim().toUpperCase();
  if(!code){ if(msg){msg.innerText='Entre un code ami.';msg.style.color='#e74c3c';} return; }
  if(msg){ msg.innerText='Envoi\u2026'; msg.style.color='#bdc3c7'; }
+ const _btn = document.getElementById('msg-add-btn'); _btnLoading(_btn, true);
  const res = await chatFriendRequest(_msgProf, code);
+ _btnLoading(_btn, false);
  if(res && res.ok){
   if(res.status==='accepted'){ if(msg){msg.innerText='✅ Vous êtes déjà amis !';msg.style.color='#2ecc71';} }
   else { if(msg){msg.innerText='✅ Demande envoyée ! Ton ami devra l\u2019accepter de son côté.';msg.style.color='#2ecc71';} }
@@ -381,7 +383,9 @@ async function chatAddFriend(){
 }
 async function chatAcceptContact(from){
  _chatParentGate(async ()=>{
+  const _btn = document.getElementById('msg-accept-'+from); _btnLoading(_btn, true);
   const res = await chatFriendAccept(_msgProf, from);
+  _btnLoading(_btn, false);
   if(res && res.ok){ if(typeof toast==='function') toast('✅ Ami ajouté !',2000); renderContactsScreen(); }
  else if(typeof toast==='function') toast('Échec de l\u2019ajout.',2000);
  });
@@ -981,8 +985,8 @@ function renderOptMessaging(name){
         + '<button onclick="openMessaging(\''+nEsc+'\')" style="background:#2980b9;font-size:.8em;">\uD83D\uDC41 Voir les conversations</button>'
         + '<button onclick="chatAdoptCloudIdentity(\''+nEsc+'\')" style="background:#16a085;font-size:.8em;margin-left:4px;">\uD83D\uDD01 Aligner le code ami sur les autres appareils</button>'
         + '<div style="margin-top:8px;font-size:.72em;color:#bdc3c7;">Forcer le même code ami (transfert manuel d\u2019un appareil à l\u2019autre) :</div>'
-        + '<button onclick="chatExportIdentityCode(\''+nEsc+'\')" style="background:#7f8c8d;font-size:.72em;">\uD83D\uDCE4 Exporter le code</button>'
-        + '<button onclick="chatImportIdentityCode(\''+nEsc+'\')" style="background:#7f8c8d;font-size:.72em;margin-left:4px;">\uD83D\uDCE5 Importer un code</button>'
+        + '<button id="msg-export-'+nEsc+'" onclick="chatExportIdentityCode(\''+nEsc+'\')" style="background:#7f8c8d;font-size:.72em;">\uD83D\uDCE4 Exporter le code</button>'
+        + '<button id="msg-import-'+nEsc+'" onclick="chatImportIdentityCode(\''+nEsc+'\')" style="background:#7f8c8d;font-size:.72em;margin-left:4px;">\uD83D\uDCE5 Importer un code</button>'
         + '<div id="opt-msg-manage"></div>')
      : '<p style="font-size:.72em;color:#7f8c8d;margin:0;">Suspendue : le code ami, les amis et l\u2019historique sont <b>conservés</b>. Réactive quand tu veux pour reprendre avec le même code.</p>');
  if(on){ try{ _renderOptMsgManage(name); }catch(e){} }
@@ -1038,6 +1042,7 @@ function chatMergeFromCloud(name, cloudChat){
 // (réutilise la version cloud la plus à jour pour ne pas régresser le profil de jeu).
 async function chatForceSyncMessaging(){
  if(typeof getRoster!=='function' || typeof CLOUD_API==='undefined'){ if(typeof toast==='function') toast('Synchro cloud indisponible.',2500); return; }
+ const _btn = document.getElementById('msg-forcesync-btn'); _btnLoading(_btn, true);
  const roster = getRoster(); let okN=0, skip=0, fail=0;
  for(const name of roster){
   const local = _chatLoad(name);
@@ -1055,6 +1060,7 @@ async function chatForceSyncMessaging(){
    if(r.ok){ okN++; } else { fail++; }
   }catch(e){ fail++; }
  }
+ _btnLoading(_btn, false);
  if(typeof toast==='function') toast('🔄 Messagerie envoyée pour '+okN+' profil(s). Recharge maintenant les autres appareils.', 4500);
  return { ok:okN, skip, fail };
 }
@@ -1103,7 +1109,9 @@ async function chatAdoptCloudIdentity(name){
 async function chatExportIdentityCode(name){
  const p = _chatLoad(name);
  if(!p.chatId || !p.chatSecret){ if(typeof toast==='function') toast('Active d\u2019abord la messagerie pour ce profil.',3000); return; }
+ const _btn = document.getElementById('msg-export-'+name); _btnLoading(_btn, true);
  const res = await _chatApi('/transfer/create', _chatAuth(p));
+ _btnLoading(_btn, false);
  if(!res || !res.ok || !res.token){ if(typeof toast==='function') toast('Erreur d\u2019export (r\u00e9seau ?).',3000); return; }
  try{ if(navigator && navigator.clipboard) navigator.clipboard.writeText(res.token); }catch(e){}
  showAlert('Code de transfert de '+name+' : '+res.token+' (déjà copié, valable 10 minutes, usage unique). Colle-le sur l\u2019autre appareil via « Importer un code ».');
@@ -1112,7 +1120,9 @@ async function chatExportIdentityCode(name){
 function chatImportIdentityCode(name){
  showPrompt('Colle le code de transfert de '+name+' (exporté depuis l\u2019appareil de référence, valable 10 minutes) :', async (token)=>{
   if(!token) return;
+  const _btn = document.getElementById('msg-import-'+name); _btnLoading(_btn, true);
   const res2 = await _chatApi('/transfer/claim', { token: String(token).trim() });
+  _btnLoading(_btn, false);
   if(!res2 || !res2.ok || !res2.id || !res2.secret){
    if(typeof toast==='function') toast(res2 && res2.error==='expired' ? 'Code expiré ou déjà utilisé, redemande-en un nouveau.' : 'Code invalide.', 3500);
    return;

@@ -1118,7 +1118,7 @@
     <button class="accordion" id="acc-synchro">🔄 Réparer la synchronisation entre appareils<span class="acc-i" onclick="event.stopPropagation();pGuide('synchro')">i</span><span class="acc-sub">Renvoie les données vers les autres appareils</span></button>
     <div class="panel">
      <p style="font-size:.72em;color:#bdc3c7;margin:0 0 6px;">Envoie l'identité de messagerie et les profils de cet appareil vers le cloud. À faire depuis l'appareil de référence (PC), puis recharger les autres.</p>
-     <button onclick="chatForceSyncMessaging()" style="background:#8e44ad;font-size:.9em;">🔄 Envoyer vers les autres appareils</button>
+     <button id="msg-forcesync-btn" onclick="chatForceSyncMessaging()" style="background:#8e44ad;font-size:.9em;">🔄 Envoyer vers les autres appareils</button>
     </div>
 
     <button class="accordion" id="acc-diagnostic">🩺 Diagnostic de synchronisation<span class="acc-i" onclick="event.stopPropagation();pGuide('diagnostic')">i</span><span class="acc-sub">Rapport technique à copier en cas de souci</span></button>

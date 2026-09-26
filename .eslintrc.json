@@ -538,6 +538,7 @@
     "_bossReaction": "writable",
     "_bossShieldBlock": "writable",
     "_bossShieldBreak": "writable",
+    "_btnLoading": "writable",
     "_buildArchipelPath": "writable",
     "_buildNpcsOverlay": "writable",
     "_buildReportHTML": "writable",

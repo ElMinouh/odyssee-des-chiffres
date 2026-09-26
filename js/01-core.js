@@ -424,6 +424,15 @@ function trapFocus(container){
 //   n'est appelé que si l'utilisateur valide. opts: {title, danger,
 //   confirmLabel, cancelLabel}.
 // ═══════════════════════════════════════════════════════
+// AUD-08-003 (audit qualite percue 2026-09-26) : bascule generique de l'etat
+// visuel "action en cours" sur un bouton (classe .btn-loading, css/styles.css)
+// pendant un appel reseau declenche par ce bouton -- a envelopper dans un
+// try/finally autour de l'await concerne pour garantir la reactivation.
+function _btnLoading(el, on){
+ if(!el) return;
+ if(on){ el.classList.add('btn-loading'); el.disabled=true; }
+ else { el.classList.remove('btn-loading'); el.disabled=false; }
+}
 function _closeStyledDialog(id){
  const ov=document.getElementById(id);
  if(ov){ if(ov._releaseTrap){ov._releaseTrap();delete ov._releaseTrap;} ov.remove(); }
