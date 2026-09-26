@@ -380,10 +380,11 @@ async function chatAddFriend(){
  }
 }
 async function chatAcceptContact(from){
- if(!(await _chatParentGate())) return;
- const res = await chatFriendAccept(_msgProf, from);
- if(res && res.ok){ if(typeof toast==='function') toast('✅ Ami ajouté !',2000); renderContactsScreen(); }
+ _chatParentGate(async ()=>{
+  const res = await chatFriendAccept(_msgProf, from);
+  if(res && res.ok){ if(typeof toast==='function') toast('✅ Ami ajouté !',2000); renderContactsScreen(); }
  else if(typeof toast==='function') toast('Échec de l\u2019ajout.',2000);
+ });
 }
 async function chatDeclineContact(from){
  const res = await chatFriendDecline(_msgProf, from);
@@ -401,13 +402,12 @@ async function chatRemoveContact(other, name){
   if(res && res.ok){ if(typeof toast==='function') toast('Contact retiré.',1800); renderContactsScreen(); }
  });
 }
-async function _chatParentGate(){
- if(_msgReadOnly) return true;
- const pin = prompt('Validation parentale\n\nEntre le code parent pour accepter ce contact :');
- if(pin===null) return false;
- if(typeof checkStoredPin==='function' && (await checkStoredPin(String(pin).trim()))) return true;
- if(typeof toast==='function') toast('❌ Code parent incorrect.',2000);
- return false;
+function _chatParentGate(onGranted){
+ if(_msgReadOnly){ onGranted(); return; }
+ showPrompt('Entre le code parent pour accepter ce contact :', async (pin)=>{
+  if(typeof checkStoredPin==='function' && (await checkStoredPin(String(pin).trim()))){ onGranted(); return; }
+  if(typeof toast==='function') toast('❌ Code parent incorrect.',2000);
+ }, {title:'Validation parentale'});
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1106,24 +1106,25 @@ async function chatExportIdentityCode(name){
  const res = await _chatApi('/transfer/create', _chatAuth(p));
  if(!res || !res.ok || !res.token){ if(typeof toast==='function') toast('Erreur d\u2019export (r\u00e9seau ?).',3000); return; }
  try{ if(navigator && navigator.clipboard) navigator.clipboard.writeText(res.token); }catch(e){}
- if(typeof prompt==='function') prompt('Code de transfert de '+name+' (deja copie, valable 10 minutes, usage unique) :\nColle-le sur l\u2019autre appareil via « Importer un code » :', res.token);
+ showAlert('Code de transfert de '+name+' : '+res.token+' (déjà copié, valable 10 minutes, usage unique). Colle-le sur l\u2019autre appareil via « Importer un code ».');
  return res.token;
 }
-async function chatImportIdentityCode(name){
- const token = (typeof prompt==='function') ? prompt('Colle le code de transfert de '+name+' (exporte depuis l\u2019appareil de reference, valable 10 minutes) :') : null;
- if(!token) return;
- const res2 = await _chatApi('/transfer/claim', { token: String(token).trim() });
- if(!res2 || !res2.ok || !res2.id || !res2.secret){
-  if(typeof toast==='function') toast(res2 && res2.error==='expired' ? 'Code expire ou deja utilise, redemande-en un nouveau.' : 'Code invalide.', 3500);
-  return;
- }
- const s=_chatStore();
- s[name] = { id:res2.id, secret:res2.secret, enabled:true, registered:false, seen:(s[name]&&s[name].seen)||{}, ts:Date.now() };
- _chatSaveStore(s);
- try{ const p=_chatLoad(name); const rr=await chatRegister(p); if(rr&&rr.ok){ p.chatRegistered=true; _chatPersist(p); } }catch(e){}
- if(typeof toast==='function') toast('Identite importee ('+res2.id+'). Amis et historique recuperes.',5000);
- if(typeof renderOptMessaging==='function') renderOptMessaging(name);
- if(typeof chatRefreshBadges==='function') chatRefreshBadges();
+function chatImportIdentityCode(name){
+ showPrompt('Colle le code de transfert de '+name+' (exporté depuis l\u2019appareil de référence, valable 10 minutes) :', async (token)=>{
+  if(!token) return;
+  const res2 = await _chatApi('/transfer/claim', { token: String(token).trim() });
+  if(!res2 || !res2.ok || !res2.id || !res2.secret){
+   if(typeof toast==='function') toast(res2 && res2.error==='expired' ? 'Code expiré ou déjà utilisé, redemande-en un nouveau.' : 'Code invalide.', 3500);
+   return;
+  }
+  const s=_chatStore();
+  s[name] = { id:res2.id, secret:res2.secret, enabled:true, registered:false, seen:(s[name]&&s[name].seen)||{}, ts:Date.now() };
+  _chatSaveStore(s);
+  try{ const p=_chatLoad(name); const rr=await chatRegister(p); if(rr&&rr.ok){ p.chatRegistered=true; _chatPersist(p); } }catch(e){}
+  if(typeof toast==='function') toast('Identité importée ('+res2.id+'). Amis et historique récupérés.',5000);
+  if(typeof renderOptMessaging==='function') renderOptMessaging(name);
+  if(typeof chatRefreshBadges==='function') chatRefreshBadges();
+ });
 }
 
 // Démarrage : suivi des pastilles + affichage du bouton menu (fixe)
