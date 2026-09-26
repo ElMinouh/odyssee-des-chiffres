@@ -1978,4 +1978,20 @@ Ceci clôt l'intégralité de l'audit performances AUD-07 (23 constats : traité
 
 ---
 
+---
+
+## ADR-165 — Lot 2 (audit cohérence globale AUD-09, 2026-09-26) : AUD-09-005/AUD-09-007 invalidés à la vérification
+
+**Contexte** : AUD-09-005 affirmait qu'un commentaire de code citant AUD-05-006 (erreur de code parent non annoncée aux lecteurs d'écran) n'était suivi d'aucun correctif réel. AUD-09-007 affirmait que ce même parcours restait fragile côté contraste (AUD-05-004, texte blanc sur boutons QCM bleu/vert).
+
+**Vérification effectuée avant tout codage** (superpowers:systematic-debugging) :
+1. `js/09-parent.js:40-43` (`checkPin()`) : un appel `toast('❌ Code incorrect, réessaie.', 2500)` est bien présent en plus du changement de placeholder, avec commentaire citant explicitement AUD-05-006. `#toast` (`index.html:173`) porte `role="status" aria-live="polite"`. **AUD-05-006 et AUD-09-005 sont donc déjà corrigés** — le constat AUD-09-005 se trompait en lisant le commentaire sans voir l'appel `toast()` juste au-dessus.
+2. `css/styles.css:78` (`button`, texte `#fff`) sur `.qcm-btn` (`background:#1f6391`) et `.qcm-btn.correct` (`background:#1e8449`, `css/styles.css:201-202`) : calcul de contraste WCAG 2.1 direct → **6,46:1** (blanc/bleu) et **4,72:1** (blanc/vert), les deux au-dessus du seuil AA texte normal (4,5:1). **AUD-05-004 et AUD-09-007 sont donc invalidés** sur les couleurs actuelles — pas de bug de contraste actif sur ce composant.
+
+**Décision** : classer AUD-05-004, AUD-05-006, AUD-09-005 et AUD-09-007 comme invalidés (non reproductibles avec le code actuel), plutôt que de coder un correctif inutile sur un problème déjà résolu ou jamais avéré. Aucune modification de code.
+
+**Conséquence** : aucun fichier `js/*.js` ou `css/*.css` modifié. Pas de bump de version. Reste ouvert dans AUD-05 : AUD-05-001/002/003/005/008/009/010 (non concernés par cette vérification).
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
