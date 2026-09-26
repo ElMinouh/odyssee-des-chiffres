@@ -2147,4 +2147,16 @@ Ceci clôt l'intégralité de l'audit performances AUD-07 (23 constats : traité
 
 ---
 
+## ADR-175 — Lot 5 (audit pédagogique AUD-10, 2026-09-26) : couverture de test des mécanismes pédagogiques critiques (AUD-10-024)
+
+**Contexte** : `applyInterleaveGuard()`, `getRevisionErrorToAsk()`/`logError()`/`clearErrorFromLog()`/`checkInterSessionRevision()` (Leitner), `getVisualAid()`, `getSessionObjectiveText()` et `narrativeWrapMath()` — parmi les mécanismes pédagogiques les plus sophistiqués du jeu (ADR-30 à ADR-37) — étaient exposés à l'API de test (`tests/helpers/loadGame.js`) mais n'étaient exercés par AUCUN des 768 tests existants. Un refactor futur pouvait donc casser silencieusement l'un de ces mécanismes sans faire échouer un seul test.
+
+**Décision** : 3 nouveaux fichiers de tests comportementaux, aucun changement de code source (aucun bug trouvé pendant l'écriture) : `tests/spaced-repetition-leitner.test.js` (progression des cases 0→3, distinction inattention/vraie erreur, délais cibles via mock de `Date.now()`, anti-répétition, rappel inter-session scopé par matière), `tests/interleave-and-visual-aid.test.js` (détection de paire faible, alternance de cible, garde-fous d'illisibilité des visuels — écart >20, points >48), `tests/session-objective-and-narrative-wrap.test.js` (calcul unique par jour, ciblage de la faiblesse nette, invariance stricte a/b/res/opKey de `narrativeWrapMath()`, proportion ~20% mesurée sur 2000 tirages, restriction aux types/opérateurs éligibles).
+
+**Conséquence** : ces mécanismes bénéficient désormais d'un filet de sécurité au même titre que le reste du projet — un futur refactor de `06a-adaptive.js` qui casserait la révision espacée ou l'interleaving fera désormais échouer des tests, pas seulement un futur audit pédagogique.
+
+**Impact** : 3 nouveaux fichiers de test uniquement, aucun fichier `js/*.js` modifié. 803/803 tests verts (35 nouveaux), lint 0 erreur. Pas de bump de version (aucun changement fonctionnel côté application, cf. précédent ADR-170). Constat AUD-10-024 clos par ce lot.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
