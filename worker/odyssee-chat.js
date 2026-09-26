@@ -86,8 +86,14 @@ async function related(env, a, b) {
 // quota gratuit de 1000 écritures/jour vu le sondage client toutes les 4s)
 // et repli sûr si KV échoue (jamais de plantage du Worker pour cette raison).
 const SAMPLE_RATE = 50;
-async function rateLimited(env, ip, limit = 2000, windowSec = 60) {
- if (!ip) return false;
+// v5 (audit performances AUD-07-008) : généralisée à une clé quelconque (plus
+// seulement une IP) pour pouvoir limiter AUSSI par compte authentifié, en
+// complément de la limite par IP — une IP partagée (établissement scolaire,
+// proxy commun) peut légitimement dépasser le seuil pensé pour ~15 foyers
+// derrière la même IP ; la limite par compte protège alors contre un abus
+// individuel sans pénaliser tout un établissement pour l'usage d'un seul.
+async function rateLimited(env, key, limit = 2000, windowSec = 60) {
+ if (!key) return false;
  if (!env.RATELIMIT) {
   // v2 (audit AUD-01-016) : le fail-open reste voulu (jamais de plantage pour
   // ça), mais doit laisser une trace — avant, une erreur de binding désactivait
@@ -95,7 +101,6 @@ async function rateLimited(env, ip, limit = 2000, windowSec = 60) {
   console.error('[odyssee-chat] binding RATELIMIT absent — limitation de débit désactivée (fail-open)');
   return false;
  }
- const key = 'rl:' + ip;
  const now = Date.now();
  let win = null;
  try {
@@ -117,6 +122,22 @@ async function rateLimited(env, ip, limit = 2000, windowSec = 60) {
  return false;
 }
 
+// AUD-07-011 (audit performances 2026-09-26) : la table `messages` ne
+// disposait d'aucune politique de rétention — croissance illimitée, qui
+// aggrave le coût de toute requête sur cette table (dont msgLatest avant sa
+// réécriture, AUD-07-010). Purge simple : messages de plus de 2 ans. Déclenché
+// par un Cron Trigger Cloudflare (voir wrangler.toml + DEPLOY.md pour la
+// configuration manuelle si le Worker est déployé depuis le dashboard plutôt
+// que via `wrangler deploy`) — pas de tâche cron improvisée côté client.
+const MESSAGE_RETENTION_MS = 2 * 365 * 24 * 60 * 60 * 1000;
+async function purgeOldMessages(env) {
+  const threshold = Date.now() - MESSAGE_RETENTION_MS;
+  const r = await env.DB.prepare('DELETE FROM messages WHERE ts < ?').bind(threshold).run();
+  const deleted = (r && r.meta && r.meta.changes) || 0;
+  console.log('[odyssee-chat] purge messages > 2 ans :', deleted, 'ligne(s) supprimée(s)');
+  return deleted;
+}
+
 export default {
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
@@ -126,7 +147,7 @@ export default {
 
     const ip = request.headers.get('CF-Connecting-IP') || '';
     let limited = false;
-    try { limited = await rateLimited(env, ip); } catch (e) { limited = false; }
+    try { limited = await rateLimited(env, 'rl:' + ip); } catch (e) { limited = false; }
     if (limited) return json({ error: 'rate_limited' }, 429, CORS);
 
     let body = {};
@@ -165,6 +186,14 @@ export default {
       console.error('[odyssee-chat] erreur serveur', e);
       return json({ error: 'server' }, 500, CORS);
     }
+  },
+  // AUD-07-011 : appelé par Cloudflare selon le(s) cron(s) défini(s) dans
+  // wrangler.toml ([triggers] crons). Sans Cron Trigger configuré côté
+  // dashboard/wrangler, cette méthode n'est simplement jamais invoquée (pas
+  // d'effet de bord si l'étape manuelle de configuration n'a pas encore été
+  // faite) — voir DEPLOY.md pour la procédure.
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(purgeOldMessages(env).catch(e => console.error('[odyssee-chat] échec purge planifiée', e)));
   },
 };
 
@@ -226,35 +255,46 @@ async function friendRequest(env, b, CORS) {
 }
 
 // Liste des contacts acceptés + demandes reçues (incoming) + envoyées (outgoing).
+// v2 (audit performances AUD-07-012) : les 5 requêtes ci-dessous sont
+// indépendantes (aucune ne dépend du résultat d'une autre) — elles étaient
+// auparavant enchaînées en séquence (`await` un par un), payant la SOMME des
+// 5 latences D1 au lieu du MAXIMUM. `Promise.all` les lance en parallèle.
 async function friendList(env, b, CORS) {
   const me = await auth(env, b.id, b.secret); if (!me) return json({ error: 'auth' }, 401, CORS);
-  const blk = (await env.DB.prepare('SELECT blocked FROM blocks WHERE blocker=?').bind(me.id).all()).results || [];
-  const blockedSet = new Set(blk.map(r => r.blocked));
+  const [blkRes, contactsRes, incomingRes, outgoingRes, declinedRes, blockedRes] = await Promise.all([
+    env.DB.prepare('SELECT blocked FROM blocks WHERE blocker=?').bind(me.id).all(),
+    // AUD-02-044 (audit fonctionnel 2026-09-21) : `disabled` (colonne users,
+    // voir migration-user-disabled.sql) permet au client d'afficher un état
+    // "injoignable" sur un ami dont la messagerie a été désactivée durablement
+    // côté serveur — plutôt que de laisser croire à un simple silence.
+    env.DB.prepare(
+      // AUD-02-047 : c.created (date d'acceptation de l'amitié) permet au
+      // résumé hebdo parent de compter les "nouveaux amis" de la semaine.
+      "SELECT c.b AS id, u.name AS name, u.avatar AS avatar, u.disabled AS disabled, c.created AS created FROM contacts c JOIN users u ON u.id=c.b WHERE c.a=? AND c.status='accepted' ORDER BY u.name"
+    ).bind(me.id).all(),
+    env.DB.prepare(
+      "SELECT c.a AS id, u.name AS name, u.avatar AS avatar FROM contacts c JOIN users u ON u.id=c.a WHERE c.b=? AND c.status='pending' ORDER BY u.name"
+    ).bind(me.id).all(),
+    env.DB.prepare(
+      "SELECT c.b AS id, u.name AS name, u.avatar AS avatar FROM contacts c JOIN users u ON u.id=c.b WHERE c.a=? AND c.status='pending' ORDER BY u.name"
+    ).bind(me.id).all(),
+    // AUD-02-042 : demandes que "moi" ai envoyées et qui ont été refusées —
+    // distinct de `outgoing` (toujours en attente), pour que l'expéditeur ne
+    // confonde plus jamais un refus avec un silence.
+    env.DB.prepare(
+      "SELECT c.b AS id, u.name AS name, u.avatar AS avatar FROM contacts c JOIN users u ON u.id=c.b WHERE c.a=? AND c.status='declined' ORDER BY u.name"
+    ).bind(me.id).all(),
+    env.DB.prepare(
+      "SELECT bl.blocked AS id, u.name AS name, u.avatar AS avatar FROM blocks bl JOIN users u ON u.id=bl.blocked WHERE bl.blocker=? ORDER BY u.name"
+    ).bind(me.id).all(),
+  ]);
+  const blockedSet = new Set((blkRes.results || []).map(r => r.blocked));
   const drop = arr => arr.filter(x => !blockedSet.has(x.id));
-  // AUD-02-044 (audit fonctionnel 2026-09-21) : `disabled` (colonne users,
-  // voir migration-user-disabled.sql) permet au client d'afficher un état
-  // "injoignable" sur un ami dont la messagerie a été désactivée durablement
-  // côté serveur — plutôt que de laisser croire à un simple silence.
-  const contacts = drop((await env.DB.prepare(
-    // AUD-02-047 : c.created (date d'acceptation de l'amitié) permet au
-    // résumé hebdo parent de compter les "nouveaux amis" de la semaine.
-    "SELECT c.b AS id, u.name AS name, u.avatar AS avatar, u.disabled AS disabled, c.created AS created FROM contacts c JOIN users u ON u.id=c.b WHERE c.a=? AND c.status='accepted' ORDER BY u.name"
-  ).bind(me.id).all()).results || []);
-  const incoming = drop((await env.DB.prepare(
-    "SELECT c.a AS id, u.name AS name, u.avatar AS avatar FROM contacts c JOIN users u ON u.id=c.a WHERE c.b=? AND c.status='pending' ORDER BY u.name"
-  ).bind(me.id).all()).results || []);
-  const outgoing = drop((await env.DB.prepare(
-    "SELECT c.b AS id, u.name AS name, u.avatar AS avatar FROM contacts c JOIN users u ON u.id=c.b WHERE c.a=? AND c.status='pending' ORDER BY u.name"
-  ).bind(me.id).all()).results || []);
-  // AUD-02-042 : demandes que "moi" ai envoyées et qui ont été refusées —
-  // distinct de `outgoing` (toujours en attente), pour que l'expéditeur ne
-  // confonde plus jamais un refus avec un silence.
-  const declined = drop((await env.DB.prepare(
-    "SELECT c.b AS id, u.name AS name, u.avatar AS avatar FROM contacts c JOIN users u ON u.id=c.b WHERE c.a=? AND c.status='declined' ORDER BY u.name"
-  ).bind(me.id).all()).results || []);
-  const blocked = (await env.DB.prepare(
-    "SELECT bl.blocked AS id, u.name AS name, u.avatar AS avatar FROM blocks bl JOIN users u ON u.id=bl.blocked WHERE bl.blocker=? ORDER BY u.name"
-  ).bind(me.id).all()).results || [];
+  const contacts = drop(contactsRes.results || []);
+  const incoming = drop(incomingRes.results || []);
+  const outgoing = drop(outgoingRes.results || []);
+  const declined = drop(declinedRes.results || []);
+  const blocked = blockedRes.results || [];
   return json({ ok: true, contacts, incoming, outgoing, declined, blocked }, 200, CORS);
 }
 
@@ -340,6 +380,10 @@ async function friendRemove(env, b, CORS) {
   const conv = convKey(me.id, other);
   await env.DB.prepare('DELETE FROM messages WHERE conv=?').bind(conv).run();
   await env.DB.prepare('DELETE FROM reads WHERE conv=?').bind(conv).run();
+  // v2 (audit performances AUD-07-010) : purge aussi la table de résumé
+  // conv_summary, ajoutée pour accélérer msgLatest() — sinon une conversation
+  // supprimée continuerait d'apparaître dans les résultats de msgLatest.
+  await env.DB.prepare('DELETE FROM conv_summary WHERE conv=?').bind(conv).run();
   return json({ ok: true }, 200, CORS);
 }
 
@@ -357,25 +401,54 @@ async function setEnabled(env, b, CORS) {
 }
 
 // Envoi d'un message (uniquement vers un contact accepté).
+// v2 (audit performances AUD-07-006) : accepte un `tmpId` optionnel généré
+// côté client (js/17-messaging.js, _chatEnqueue) et vérifie AVANT d'insérer
+// qu'aucun message avec ce même (sender, tmpId) n'existe déjà. Sans ceci, un
+// message dont la réponse HTTP est perdue après un INSERT déjà réussi (timeout
+// client, réseau lent/chargé) était renvoyé automatiquement par la file
+// d'attente hors-ligne du client — dupliqué silencieusement, sans erreur
+// visible. Un `tmpId` absent (anciens clients non mis à jour) désactive
+// simplement la protection, sans casser l'envoi (rétrocompatible).
 async function msgSend(env, b, CORS) {
   const me = await auth(env, b.id, b.secret); if (!me) return json({ error: 'auth' }, 401, CORS);
+  // v2 (audit performances AUD-07-008) : limite complémentaire par compte, en
+  // plus de celle par IP appliquée plus haut — une IP partagée (établissement
+  // scolaire) ne doit pas pouvoir faire échouer tout un groupe d'utilisateurs
+  // légitimes à cause du seul volume cumulé de comptes derrière cette IP.
+  if (await rateLimited(env, 'rla:' + me.id, 300, 60)) return json({ error: 'rate_limited' }, 429, CORS);
   const to = String(b.to || '').trim();
   const text = String(b.body || '').replace(/\s+$/, '').slice(0, MAXLEN);
+  const tmpId = b.tmpId ? String(b.tmpId).slice(0, 40) : null;
   if (!text) return json({ error: 'empty' }, 400, CORS);
   if (containsBlockedWord(text)) return json({ error: 'blocked_word' }, 400, CORS);
   const rel = await related(env, me.id, to);
   if (!rel || rel.status !== 'accepted') return json({ error: 'not_contact' }, 403, CORS);
   if (await isBlocked(env, me.id, to)) return json({ error: 'blocked' }, 403, CORS);
+  if (tmpId) {
+    const existing = await env.DB.prepare('SELECT id, ts FROM messages WHERE sender=? AND tmp_id=?').bind(me.id, tmpId).first();
+    if (existing) return json({ ok: true, id: existing.id, ts: existing.ts }, 200, CORS); // déjà envoyé : renvoie le même résultat, n'insère pas de doublon
+  }
+  const conv = convKey(me.id, to);
   const ts = Date.now();
-  const r = await env.DB.prepare('INSERT INTO messages (conv,sender,body,ts) VALUES (?,?,?,?)')
-    .bind(convKey(me.id, to), me.id, text, ts).run();
+  const r = await env.DB.prepare('INSERT INTO messages (conv,sender,body,ts,tmp_id) VALUES (?,?,?,?,?)')
+    .bind(conv, me.id, text, ts, tmpId).run();
   const mid = (r && r.meta && r.meta.last_row_id != null) ? r.meta.last_row_id : (r && r.lastRowId) || null;
+  // v2 (audit performances AUD-07-010) : maintient conv_summary à jour à
+  // chaque envoi — c'est ce résumé que msgLatest() interroge désormais au
+  // lieu de scanner l'intégralité de la table messages.
+  try {
+    await env.DB.prepare(
+      'INSERT INTO conv_summary (conv,participant_a,participant_b,last_id,last_ts) VALUES (?,?,?,?,?) ' +
+      'ON CONFLICT(conv) DO UPDATE SET last_id=excluded.last_id, last_ts=excluded.last_ts'
+    ).bind(conv, me.id, to, mid, ts).run();
+  } catch (e) { console.error('[odyssee-chat] échec mise à jour conv_summary', e); }
   return json({ ok: true, id: mid, ts }, 200, CORS);
 }
 
 // Récupère les messages d'une conversation depuis l'id `since` (sondage).
 async function msgFetch(env, b, CORS) {
   const me = await auth(env, b.id, b.secret); if (!me) return json({ error: 'auth' }, 401, CORS);
+  if (await rateLimited(env, 'rla:' + me.id, 300, 60)) return json({ error: 'rate_limited' }, 429, CORS);
   const withId = String(b.with || '').trim();
   const since = parseInt(b.since, 10) || 0;
   const rel = await related(env, me.id, withId);
@@ -406,16 +479,21 @@ async function msgFetch(env, b, CORS) {
 function escapeLike(s) {
   return String(s).replace(/[%_\\]/g, ch => '\\' + ch);
 }
+// v2 (audit performances AUD-07-010) : réécrite pour interroger conv_summary
+// (indexée par participant) au lieu de messages (LIKE avec wildcard en tête
+// pour la moitié des conversations, donc scan complet de TOUTE la table —
+// coût croissant avec le volume total de messages de TOUS les utilisateurs,
+// répété toutes les 25s par utilisateur actif via ce même endpoint). Migration
+// requise avant déploiement : migration-conv-summary.sql (voir DEPLOY.md).
 async function msgLatest(env, b, CORS) {
   const me = await auth(env, b.id, b.secret); if (!me) return json({ error: 'auth' }, 401, CORS);
-  const idEsc = escapeLike(me.id);
+  if (await rateLimited(env, 'rla:' + me.id, 300, 60)) return json({ error: 'rate_limited' }, 429, CORS);
   const rows = (await env.DB.prepare(
-    "SELECT conv, MAX(id) AS last FROM messages WHERE conv LIKE ? ESCAPE '\\' OR conv LIKE ? ESCAPE '\\' GROUP BY conv"
-  ).bind(idEsc + '|%', '%|' + idEsc).all()).results || [];
+    'SELECT conv, participant_a, participant_b, last_id AS last FROM conv_summary WHERE participant_a=? OR participant_b=?'
+  ).bind(me.id, me.id).all()).results || [];
   const latest = {};
   for (const r of rows) {
-    const parts = String(r.conv).split('|');
-    const other = parts[0] === me.id ? parts[1] : parts[0];
+    const other = r.participant_a === me.id ? r.participant_b : r.participant_a;
     latest[other] = r.last;
   }
   // AUD-02-047 (audit fonctionnel 2026-09-21) : compteur d'activité sociale
@@ -423,12 +501,18 @@ async function msgLatest(env, b, CORS) {
   // (mots bloqués) y était visible, rien sur le volume d'échanges réel.
   // Optionnel (b.since absent ou 0) pour ne rien changer aux appels existants
   // de /msg/latest (badges non-lus, sondage de conversation).
+  // v2 (AUD-07-010) : la liste des `conv` de l'utilisateur vient maintenant de
+  // conv_summary (déjà récupérée ci-dessus) ; le filtre sur `messages` se fait
+  // alors par égalité exacte sur `conv` (indexable via idx_msg_conv), plus par
+  // LIKE — même gain de fond que pour `latest` ci-dessus.
   let weekCount = 0;
   const since = parseInt(b.since, 10) || 0;
-  if (since > 0) {
+  if (since > 0 && rows.length) {
+    const convs = rows.map(r => r.conv);
+    const placeholders = convs.map(() => '?').join(',');
     const wc = await env.DB.prepare(
-      "SELECT COUNT(*) AS c FROM messages WHERE (conv LIKE ? ESCAPE '\\' OR conv LIKE ? ESCAPE '\\') AND ts >= ?"
-    ).bind(idEsc + '|%', '%|' + idEsc, since).first();
+      `SELECT COUNT(*) AS c FROM messages WHERE conv IN (${placeholders}) AND ts >= ?`
+    ).bind(...convs, since).first();
     weekCount = (wc && wc.c) || 0;
   }
   return json({ ok: true, latest, weekCount }, 200, CORS);
@@ -450,6 +534,9 @@ async function accountDelete(env, b, CORS) {
     .bind(me.id, idEsc + '|%', '%|' + idEsc).run();
   await env.DB.prepare('DELETE FROM contacts WHERE a=? OR b=?').bind(me.id, me.id).run();
   await env.DB.prepare('DELETE FROM blocks WHERE blocker=? OR blocked=?').bind(me.id, me.id).run();
+  // v2 (audit performances AUD-07-010) : purge aussi conv_summary (table de
+  // résumé ajoutée pour msgLatest()) — même raison que friendRemove() ci-dessus.
+  await env.DB.prepare('DELETE FROM conv_summary WHERE participant_a=? OR participant_b=?').bind(me.id, me.id).run();
   try { await env.DB.prepare('DELETE FROM transfers WHERE id=?').bind(me.id).run(); } catch (e) { /* table transfers absente sur une base non migrée : sans conséquence */ }
   await env.DB.prepare('DELETE FROM users WHERE id=?').bind(me.id).run();
   return json({ ok: true }, 200, CORS);
@@ -470,7 +557,11 @@ async function transferCreate(env, b, CORS) {
   // Nettoyage opportuniste des jetons expirés non réclamés, pour ne pas
   // laisser la table `transfers` grossir indéfiniment (usage familial, très
   // faible volume — un DELETE par appel suffit largement, pas besoin de cron).
-  try { await env.DB.prepare('DELETE FROM transfers WHERE expires < ?').bind(now).run(); } catch (e) { }
+  // v2 (audit performances AUD-07-015) : ne bloque jamais transferCreate() en
+  // cas d'échec de cette purge opportuniste, mais doit laisser une trace —
+  // avant, un échec D1 ici (indisponibilité temporaire) était totalement
+  // invisible dans les Journaux Workers.
+  try { await env.DB.prepare('DELETE FROM transfers WHERE expires < ?').bind(now).run(); } catch (e) { console.error('[odyssee-chat] échec purge des jetons de transfert expirés', e); }
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sans 0/O/I/1, cohérent avec le reste de l'app
   const arr = new Uint8Array(8);
   crypto.getRandomValues(arr);

@@ -73,9 +73,12 @@ function isValidProfile(p) {
 //     d'autres raisons, panne temporaire...), on n'écrit/relit simplement pas
 //     cette fois — on ne bloque JAMAIS le Worker à cause d'une erreur KV.
 const SAMPLE_RATE = 50;
-async function rateLimited(env, ip, limit = 1000, windowSec = 60) {
- if (!ip) return false; // pas d'IP connue : on ne bloque pas (fail-open)
- const key = 'rl:' + ip;
+// v6 (audit performances AUD-07-008) : généralisée à une clé quelconque, comme
+// pour odyssee-chat.js — permet d'ajouter une limite par CODE en plus de
+// celle par IP (une IP partagée, ex. établissement scolaire, ne doit pas faire
+// échouer la synchro de tout un groupe d'utilisateurs légitimes).
+async function rateLimited(env, key, limit = 1000, windowSec = 60) {
+ if (!key) return false; // pas de clé connue : on ne bloque pas (fail-open)
  const now = Date.now();
  let win = null;
  try {
@@ -117,7 +120,7 @@ export default {
   try {
    const ip = request.headers.get('CF-Connecting-IP') || '';
    let limited = false;
-   try { limited = await rateLimited(env, ip); } catch (e) { limited = false; }
+   try { limited = await rateLimited(env, 'rl:' + ip); } catch (e) { limited = false; }
    if (limited) {
     return new Response(JSON.stringify({ error: 'rate_limited' }), {
      status: 429, headers: { ...cors, 'Content-Type': 'application/json' },
@@ -138,6 +141,14 @@ export default {
      });
     }
     const key = await hashCode(code);
+    // v6 (audit performances AUD-07-008) : limite complémentaire par code, en
+    // plus de celle par IP — une IP scolaire partagée ne doit pas bloquer la
+    // synchro de tous les profils qui la partagent légitimement.
+    if (await rateLimited(env, 'rlacct:' + key, 120, 60)) {
+     return new Response(JSON.stringify({ error: 'rate_limited' }), {
+      status: 429, headers: { ...cors, 'Content-Type': 'application/json' },
+     });
+    }
     const data = await env.PROFILES.get(key);
     if (!data) {
      return new Response(JSON.stringify({ error: 'not_found' }), {
@@ -168,6 +179,11 @@ export default {
      });
     }
     const key = await hashCode(code);
+    if (await rateLimited(env, 'rlacct:' + key, 120, 60)) {
+     return new Response(JSON.stringify({ error: 'rate_limited' }), {
+      status: 429, headers: { ...cors, 'Content-Type': 'application/json' },
+     });
+    }
     const existing = await env.PROFILES.get(key);
     if (existing) {
      try {
@@ -189,7 +205,14 @@ export default {
         status: 200, headers: { ...cors, 'Content-Type': 'application/json' },
        });
       }
-     } catch (e) { }
+     } catch (e) {
+      // v2 (audit performances AUD-07-015) : un profil KV corrompu (JSON
+      // invalide) tombait silencieusement dans l'écrasement inconditionnel
+      // ci-dessous, sans aucune trace de la corruption détectée — invisible
+      // dans les Journaux Workers, aucun moyen de savoir qu'un incident a eu
+      // lieu. Le comportement (écraser quand même) reste inchangé.
+      console.error('[odyssee-sync] profil KV corrompu (JSON.parse a échoué), écrasement quand même', key, e);
+     }
     }
     payload._syncedAt = Date.now();
     await env.PROFILES.put(key, JSON.stringify(payload));

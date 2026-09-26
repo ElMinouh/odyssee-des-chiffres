@@ -15,6 +15,24 @@ function renderFigurinesShop(filter){
  });
  _renderFigurinesShop(filter);
 }
+// v2 (audit performances AUD-07-003) : debounce sur la recherche — avant,
+// chaque frappe relançait immédiatement tout le pipeline filtre/tri/rendu
+// sur un catalogue de ~482 figurines. 200ms suffit à absorber une frappe
+// normale (plusieurs caractères par seconde) sans recalcul intermédiaire.
+let _shopSearchTimer=null;
+function _shopOnSearchInput(value){
+ _shopSearch=value;
+ clearTimeout(_shopSearchTimer);
+ _shopSearchTimer=setTimeout(()=>renderFigurinesShop(), 200);
+}
+// v2 (AUD-07-003/004) : pagination simple de la grille (au lieu de tout
+// reconstruire d'un coup pour un filtre "Tout" qui peut afficher ~482 cartes)
+// + mémoïsation du résultat filtré/trié, réutilisé tel quel si rien
+// n'a changé depuis le dernier rendu (ex. seul un clic "Afficher plus").
+const SHOP_PAGE_SIZE_DEFAULT=60, SHOP_PAGE_STEP=60;
+let _shopPageSize=SHOP_PAGE_SIZE_DEFAULT;
+let _shopFilteredCache=null; // { key, list }
+let _colPageSize=SHOP_PAGE_SIZE_DEFAULT; // même pagination pour la vue collection (grille "Tout")
 function _renderFigurinesShop(filter){
  if(filter!==undefined)_figFilter=filter;
  const owned=P.ownedFigurines||[];
@@ -43,7 +61,7 @@ function _renderFigurinesShop(filter){
   html+=`<option value="${k}"${_figFilter===k?' selected':''}>${label} (${cnt})</option>`;
  });
  html+=`</select>
-  <input id="shop-search-input" class="shop-search" type="text" placeholder="🔍 Rechercher…" value="${_shopSearch}" oninput="_shopSearch=this.value;renderFigurinesShop()" maxlength="30">
+  <input id="shop-search-input" class="shop-search" type="text" placeholder="🔍 Rechercher…" value="${_shopSearch}" oninput="_shopOnSearchInput(this.value)" maxlength="30">
   <select id="shop-sort" onchange="_shopSort=this.value;renderFigurinesShop()" style="flex:0 0 auto;min-width:110px;">
    <option value="default"${_shopSort==='default'?' selected':''}>Tri : d&#233;faut</option>
    <option value="price_asc"${_shopSort==='price_asc'?' selected':''}>Prix croissant</option>
@@ -67,24 +85,37 @@ function _renderFigurinesShop(filter){
   if(target) target.innerHTML=html;
   return;
  }
- if(_figFilter==='all'||_figFilter==='none') list=FIGURINES;
- else if(_figFilter==='mine') list=FIGURINES.filter(f=>owned.includes(f.id));
- else list=FIGURINES.filter(f=>f.uk===_figFilter);
+ // v2 (AUD-07-003) : mémoïsation — si rien de pertinent n'a changé depuis le
+ // dernier rendu (ex. seul un clic "Afficher plus"), on réutilise le résultat
+ // filtré/trié déjà calculé au lieu de rescanner les ~482 figurines.
+ const _renderKey=_figFilter+'|'+_shopSearch+'|'+_shopSort+'|'+owned.length;
+ if(_shopFilteredCache && _shopFilteredCache.key===_renderKey){
+  list=_shopFilteredCache.list;
+ } else {
+  if(_figFilter==='all'||_figFilter==='none') list=FIGURINES;
+  else if(_figFilter==='mine') list=FIGURINES.filter(f=>owned.includes(f.id));
+  else list=FIGURINES.filter(f=>f.uk===_figFilter);
 
- // Apply search
- if(_shopSearch.trim()){
-  const q=_shopSearch.trim().toLowerCase();
-  list=list.filter(f=>f.name.toLowerCase().includes(q)||f.uni.toLowerCase().includes(q));
+  // Apply search
+  if(_shopSearch.trim()){
+   const q=_shopSearch.trim().toLowerCase();
+   list=list.filter(f=>f.name.toLowerCase().includes(q)||f.uni.toLowerCase().includes(q));
+  }
+  list=_sortedFigs(list,_shopSort);
+  _shopFilteredCache={key:_renderKey, list};
+  _shopPageSize=SHOP_PAGE_SIZE_DEFAULT; // nouveau résultat → repart de la 1re page
  }
- list=_sortedFigs(list,_shopSort);
 
  if(list.length===0){
   html+='<div style="color:rgba(255,255,255,.4);font-size:.8em;text-align:center;padding:20px;">Aucune figurine trouvée.</div>';
   $('p-figurines').innerHTML=html;
   return;
  }
+ // v2 (AUD-07-004) : pagination — ne construit le HTML que des figurines de
+ // la page courante, pas des ~482 potentielles d'un coup.
+ const pagedList=list.slice(0,_shopPageSize);
  html+='<div class="fig-grid">';
- list.forEach(fig=>{
+ pagedList.forEach(fig=>{
   const isOwned=owned.includes(fig.id);
   // AUD-03-041 (audit UX 2026-09-25) : rien ne distinguait au premier coup
   // d'oeil une figurine achetable d'une figurine verrouillee ou a gagner au
@@ -127,10 +158,16 @@ function _renderFigurinesShop(filter){
   html+='</div>';
  });
  html+='</div>';
+ // v2 (AUD-07-004) : bouton "Afficher plus" si la page courante ne couvre
+ // pas tout le résultat — évite de construire les cartes restantes tant
+ // qu'elles ne sont pas demandées.
+ if(list.length>pagedList.length){
+  html+=`<div style="text-align:center;margin-top:10px;"><button class="shop-loadmore-btn" onclick="_shopPageSize+=${SHOP_PAGE_STEP};_renderFigurinesShop()" style="font-size:.75em;padding:6px 14px;">Afficher plus (${list.length-pagedList.length} restantes)</button></div>`;
+ }
  const ownedCount=owned.length;
- html+=`<div style="font-size:.72em;color:rgba(255,255,255,.4);text-align:center;margin-top:8px;">${ownedCount}/${total} figurines collectées · ${list.length} affichées</div>`;
+ html+=`<div style="font-size:.72em;color:rgba(255,255,255,.4);text-align:center;margin-top:8px;">${ownedCount}/${total} figurines collectées · ${pagedList.length}/${list.length} affichées</div>`;
  $('p-figurines').innerHTML=html;
- // Event delegation for buy buttons — assigned once per render, no accumulation
+ // Event delegation for buy buttons — assigned once par rendu, no accumulation
  $('p-figurines').onclick=function(e){
   const btn=e.target.closest('.fig-buy-btn');
   if(btn){e.stopPropagation();buyFigurine(btn.dataset.figid);}
@@ -431,10 +468,16 @@ function renderFigCollection(){
  const sorted=_sortedFigs(owned_figs);
 
  if(_colView==='all'){
-  // Grid compacte toutes figurines
+  // v2 (audit performances AUD-07-004) : pagination — un collectionneur
+  // avancé peut posséder plusieurs centaines de figurines ; ne construit que
+  // la page courante plutôt que tout le HTML d'un coup à chaque rendu.
+  const pageSlice=sorted.slice(0,_colPageSize);
   let html='<div style="display:flex;flex-wrap:wrap;gap:7px;padding:4px 0;">';
-  sorted.forEach(fig=>{ html+=_figShelfCard(fig); });
+  pageSlice.forEach(fig=>{ html+=_figShelfCard(fig); });
   html+='</div>';
+  if(sorted.length>pageSlice.length){
+   html+=`<div style="text-align:center;margin-top:10px;"><button style="font-size:.75em;padding:6px 14px;" onclick="_colPageSize+=${SHOP_PAGE_STEP};renderFigCollection()">Afficher plus (${sorted.length-pageSlice.length} restantes)</button></div>`;
+  }
   el.innerHTML=html;
  }
  else if(_colView==='shelf'){

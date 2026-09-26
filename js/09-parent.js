@@ -112,13 +112,18 @@ function renameProfile(oldN,newN){
   // clés par-nom : user_ (profil complet) + block_ (horaires)
   ['user_','block_'].forEach(pre=>{ const v=localStorage.getItem(pre+oldN); if(v!=null){ localStorage.setItem(pre+newN,v); localStorage.removeItem(pre+oldN); } });
   // nom interne au profil
-  try{ const raw=localStorage.getItem('user_'+newN); if(raw){ const d=JSON.parse(raw); d.name=newN; localStorage.setItem('user_'+newN,JSON.stringify(d)); } }catch(e){}
+  // v2 (audit performances AUD-07-015) : ces 3 migrations étaient totalement
+  // silencieuses en cas d'échec — un renommage partiellement réussi (ex.
+  // messagerie migrée mais anniversaire perdu) ne laissait aucune trace
+  // exploitable pour diagnostiquer un signalement utilisateur. Le
+  // comportement (best-effort, ne jamais bloquer le renommage) reste inchangé.
+  try{ const raw=localStorage.getItem('user_'+newN); if(raw){ const d=JSON.parse(raw); d.name=newN; localStorage.setItem('user_'+newN,JSON.stringify(d)); } }catch(e){ console.warn('[renameProfile] migration nom interne échouée', e); }
   // roster (même position)
   roster[idx]=newN; setRoster(roster);
   // anniversaire
-  try{ const bd=getBirthdays(); if(bd[oldN]){ setBirthday(newN,bd[oldN].m,bd[oldN].d); setBirthday(oldN,0,0); } }catch(e){}
+  try{ const bd=getBirthdays(); if(bd[oldN]){ setBirthday(newN,bd[oldN].m,bd[oldN].d); setBirthday(oldN,0,0); } }catch(e){ console.warn('[renameProfile] migration anniversaire échouée', e); }
   // identité messagerie
-  try{ const cp=JSON.parse(localStorage.getItem('chatProfiles')||'{}'); if(cp[oldN]){ cp[newN]=cp[oldN]; delete cp[oldN]; localStorage.setItem('chatProfiles',JSON.stringify(cp)); } }catch(e){}
+  try{ const cp=JSON.parse(localStorage.getItem('chatProfiles')||'{}'); if(cp[oldN]){ cp[newN]=cp[oldN]; delete cp[oldN]; localStorage.setItem('chatProfiles',JSON.stringify(cp)); } }catch(e){ console.warn('[renameProfile] migration identité messagerie échouée', e); }
   // profil courant + nom personnalisé
   if(typeof P!=='undefined' && P && P.name===oldN){ P.name=newN; if(typeof saveProfileNow==='function') saveProfileNow(); }
   if(localStorage.getItem('customPlayerName')===oldN) localStorage.setItem('customPlayerName',newN);
@@ -253,6 +258,15 @@ function pfigOnPlayerChange(){
  renderParentFigurines();
 }
 
+// v2 (audit performances AUD-07-003) : même debounce que côté boutique
+// (10-figurines.js) — chaque frappe relançait immédiatement le filtrage sur
+// ~25 univers × ~482 figurines.
+let _pfigSearchTimer=null;
+function _pfigOnSearchInput(value){
+ _pfigSearch=value;
+ clearTimeout(_pfigSearchTimer);
+ _pfigSearchTimer=setTimeout(renderParentFigurines, 200);
+}
 function renderParentFigurines(){
  // Précharge les portraits si pas déjà fait. Re-rend une fois prêt.
  if(typeof loadPortraits==='function'&&!_portraitsLoaded){

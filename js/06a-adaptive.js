@@ -1024,9 +1024,15 @@ function _progSelfCheck(opts){
  const scan=(pool,label)=>{ if(!pool) return; const seen=new Set();
   for(const lvl in pool){ for(const f of pool[lvl]){ if(seen.has(f))continue; seen.add(f); rep.total++;
    if(f && f.ph) rep.tagged++; else rep.missing.push(label+':'+((f&&f.name)||'?')); } } };
- try{ scan(typeof _PRIM_POOL!=='undefined'?_PRIM_POOL:null,'primaire'); }catch(e){}
- try{ scan(typeof _MAT_POOL!=='undefined'?_MAT_POOL:null,'maternelle'); }catch(e){}
- try{ scan(typeof _COL_POOL!=='undefined'?_COL_POOL:null,'college'); }catch(e){}
+ // v2 (audit performances AUD-07-015) : cet auto-diagnostic est justement
+ // censé détecter des anomalies de contenu (générateurs sans phase) — un
+ // échec silencieux de scan() lui-même (l'outil de détection en panne, pas le
+ // contenu qu'il vérifie) était auparavant invisible, y compris en appel
+ // manuel depuis la console (le catch empêchait même la trace d'erreur
+ // habituelle du navigateur pour un appel non géré).
+ try{ scan(typeof _PRIM_POOL!=='undefined'?_PRIM_POOL:null,'primaire'); }catch(e){ console.error('[progSelfCheck] scan primaire échoué', e); }
+ try{ scan(typeof _MAT_POOL!=='undefined'?_MAT_POOL:null,'maternelle'); }catch(e){ console.error('[progSelfCheck] scan maternelle échoué', e); }
+ try{ scan(typeof _COL_POOL!=='undefined'?_COL_POOL:null,'college'); }catch(e){ console.error('[progSelfCheck] scan collège échoué', e); }
  if(verbose && typeof console!=='undefined'){
   if(rep.missing.length) console.warn('⚠️ [Progression] générateurs SANS phase .ph :', rep.missing);
   else console.log('✅ [Progression] '+rep.tagged+' générateurs, tous avec une phase.');

@@ -365,10 +365,30 @@ async function pushProfileToCloud(forceFirst=false){
   }
   const result = await resp.json();
   if(result.status === 'conflict_kept_server' && result.profile){
-   // Le serveur a une version plus avancée : on l'importe
+   // Le serveur a une version plus avancée : on l'importe (fusion non
+   // destructive avec P courant, voir _importProfileFromServer/_mergeCloudProfiles).
    _cloudLog('conflit détecté, import du profil serveur');
    await _importProfileFromServer(result.profile);
    if(typeof toast==='function') toast('☁️ Profil cloud plus avancé, restauré',3000);
+   // v2 (audit performances AUD-07-007) : P est maintenant fusionné
+   // correctement en local, mais le serveur ne le sait pas encore — sans ce
+   // re-push immédiat, il faudrait attendre le prochain cycle programmé
+   // (CLOUD_SYNC_INTERVAL_MS, 5 min) pour que la fusion soit aussi reflétée
+   // côté serveur. Un seul essai, jamais récursif (pas de nouvelle gestion de
+   // conflit ici) : le xp fusionné est toujours >= celui du serveur (fusion
+   // par max), donc ce re-push ne devrait pas reprovoquer de conflit ; s'il
+   // échoue quand même (autre appareil ayant écrit entre-temps), le prochain
+   // cycle de sync régulier prendra normalement le relais.
+   try{
+    const repushPayload = { ...P };
+    delete repushPayload._syncedAt;
+    if(typeof chatExportFor==='function'){ const _c = chatExportFor(P.name); if(_c) repushPayload._chat = _c; }
+    await _cloudFetch(`${CLOUD_API}/profile/${code}`, {
+     method: 'POST',
+     headers: { 'Content-Type': 'application/json' },
+     body: JSON.stringify(repushPayload),
+    });
+   }catch(e){ _cloudLog('re-push après fusion de conflit échoué (best-effort, le prochain cycle régulier réessaiera) :', e); }
   }
   _cloudLastSync = Date.now();
   _cloudLastError = null;
@@ -839,16 +859,21 @@ async function forceRestoreFromCloud(code){
  }
 
  // 6. Définir ce profil comme profil actif (lastPlayer)
+ // v2 (audit performances AUD-07-015) : même cause possible que l'échec
+ // 'storage_full' traité juste au-dessus (quota localStorage dépassé), mais
+ // ici totalement silencieux — le profil restauré serait alors sauvegardé
+ // avec succès (étape 5) tout en restant introuvable au démarrage suivant
+ // (lastPlayer resté sur l'ancien nom), sans aucune trace de la cause.
  try{
   localStorage.setItem('lastPlayer', prof.name);
- }catch(e){}
+ }catch(e){ _diagLog('FORCE-RESTORE: échec écriture lastPlayer (quota localStorage ?): '+e.message); }
 
  // 7. Ajouter le nom à la liste des joueurs si custom
  try{
   if(prof.name && prof.name !== 'Autre' && typeof addToRoster === 'function'){
    addToRoster(prof.name); // profil synchronisé/restauré → visible dans le sélecteur
   }
- }catch(e){}
+ }catch(e){ _diagLog('FORCE-RESTORE: échec addToRoster: '+e.message); }
 
  // 8. Succès → on signale qu'un reload est nécessaire pour un état 100% propre
  _diagLog('FORCE-RESTORE: ✅ écrit dans user_'+prof.name+', lastPlayer='+prof.name);

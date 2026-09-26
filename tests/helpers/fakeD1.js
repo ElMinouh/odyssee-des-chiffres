@@ -8,17 +8,13 @@
 export function makeFakeD1() {
   const users = new Map(); // id -> {id,secret,name,avatar,disabled,created}
   const contacts = []; // {a,b,status,created}
-  const messages = []; // {id,conv,sender,body,ts}
+  const messages = []; // {id,conv,sender,body,ts,tmp_id}
   const reads = []; // {conv,reader,upto,ts}
+  // AUD-07-010 (audit performances 2026-09-26) : résumé "dernier message par
+  // conversation" par participant — tenu par msgSend(), lu par msgLatest()
+  // (remplace le scan LIKE sur `messages` que ce mock imitait auparavant).
+  const convSummary = new Map(); // conv -> {conv,participant_a,participant_b,last_id,last_ts}
   let nextMsgId = 1;
-
-  // AUD-02-047 : les requêtes msgLatest()/weekCount utilisent LIKE avec des
-  // motifs de la forme "id|%" / "%|id" — équivalent, pour nos clés de
-  // conversation toujours "a|b", à vérifier que l'un des deux membres est id.
-  function _convIncludesUser(conv, id) {
-    const parts = String(conv).split('|');
-    return parts[0] === id || parts[1] === id;
-  }
 
   function findContact(a, b) {
     return contacts.find(c => c.a === a && c.b === b);
@@ -39,12 +35,22 @@ export function makeFakeD1() {
               const c = findContact(a, b);
               return c ? { status: c.status } : null;
             }
-            // AUD-02-047 : compteur de messages échangés depuis `since` (résumé hebdo).
-            if (s.startsWith("SELECT COUNT(*) AS c FROM messages WHERE (conv LIKE")) {
-              const id = String(args[0]).replace(/\|%$/, '');
-              const since = args[2];
-              const c = messages.filter(m => _convIncludesUser(m.conv, id) && m.ts >= since).length;
+            // AUD-07-010 : weekCount interroge désormais `conv IN (?,?,...)`
+            // (liste des conv de l'appelant, connue via conv_summary) au lieu
+            // du LIKE — nombre de `?` variable, d'où la regex plutôt qu'un
+            // startsWith figé.
+            if (/^SELECT COUNT\(\*\) AS c FROM messages WHERE conv IN \(/.test(s)) {
+              const since = args[args.length - 1];
+              const convs = new Set(args.slice(0, -1));
+              const c = messages.filter(m => convs.has(m.conv) && m.ts >= since).length;
               return { c };
+            }
+            // AUD-07-006 : détection d'un renvoi (idempotence) — un message
+            // déjà inséré avec ce (sender, tmp_id) ne doit pas être dupliqué.
+            if (s.startsWith('SELECT id, ts FROM messages WHERE sender=? AND tmp_id=?')) {
+              const [sender, tmpId] = args;
+              const m = messages.find(x => x.sender === sender && x.tmp_id === tmpId);
+              return m ? { id: m.id, ts: m.ts } : null;
             }
             return null;
           },
@@ -77,15 +83,11 @@ export function makeFakeD1() {
               const [conv, afterId] = args;
               return { results: messages.filter(m => m.conv === conv && m.id > afterId).map(m => ({ ...m })) };
             }
-            // AUD-02-047 : msgLatest() (worker) — MAX(id) par conversation impliquant id.
-            if (s.startsWith('SELECT conv, MAX(id) AS last FROM messages WHERE conv LIKE')) {
-              const id = String(args[0]).replace(/\|%$/, '');
-              const byConv = new Map();
-              for (const m of messages) {
-                if (!_convIncludesUser(m.conv, id)) continue;
-                if (!byConv.has(m.conv) || m.id > byConv.get(m.conv)) byConv.set(m.conv, m.id);
-              }
-              return { results: [...byConv.entries()].map(([conv, last]) => ({ conv, last })) };
+            // AUD-07-010 : msgLatest() (worker) lit désormais conv_summary
+            // (tenue à jour par msgSend()) au lieu de scanner `messages`.
+            if (s.startsWith('SELECT conv, participant_a, participant_b, last_id AS last FROM conv_summary WHERE participant_a=? OR participant_b=?')) {
+              const [id] = args;
+              return { results: [...convSummary.values()].filter(r => r.participant_a === id || r.participant_b === id).map(r => ({ ...r, last: r.last_id })) };
             }
             return { results: [] };
           },
@@ -175,11 +177,30 @@ export function makeFakeD1() {
               for (let i = reads.length - 1; i >= 0; i--) if (reads[i].conv === conv) reads.splice(i, 1);
               return { success: true };
             }
-            if (s.startsWith('INSERT INTO messages (conv,sender,body,ts) VALUES (?,?,?,?)')) {
-              const [conv, sender, body, ts] = args;
+            // AUD-07-010 : nettoyage de conv_summary en miroir de messages/reads
+            // (friendRemove) et users/contacts/blocks (accountDelete).
+            if (s.startsWith('DELETE FROM conv_summary WHERE conv=?')) {
+              const [conv] = args;
+              convSummary.delete(conv);
+              return { success: true };
+            }
+            if (s.startsWith('DELETE FROM conv_summary WHERE participant_a=? OR participant_b=?')) {
+              const [id] = args;
+              for (const [conv, r] of convSummary) if (r.participant_a === id || r.participant_b === id) convSummary.delete(conv);
+              return { success: true };
+            }
+            if (s.startsWith('INSERT INTO messages (conv,sender,body,ts,tmp_id) VALUES (?,?,?,?,?)')) {
+              const [conv, sender, body, ts, tmpId] = args;
               const id = nextMsgId++;
-              messages.push({ id, conv, sender, body, ts });
+              messages.push({ id, conv, sender, body, ts, tmp_id: tmpId ?? null });
               return { success: true, meta: { last_row_id: id } };
+            }
+            // AUD-07-010 : upsert du résumé par conversation, tenu à jour à
+            // chaque envoi (msgSend) — lu ensuite par msgLatest().
+            if (s.startsWith('INSERT INTO conv_summary (conv,participant_a,participant_b,last_id,last_ts) VALUES (?,?,?,?,?)')) {
+              const [conv, participant_a, participant_b, last_id, last_ts] = args;
+              convSummary.set(conv, { conv, participant_a, participant_b, last_id, last_ts });
+              return { success: true };
             }
             return { success: true };
           },

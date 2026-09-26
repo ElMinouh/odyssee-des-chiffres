@@ -89,7 +89,11 @@ async function _chatDeleteAccountForProfile(name){
 }
 async function chatFriendBlock(prof, other){ return _chatApi('/friend/block', Object.assign(_chatAuth(prof), { other })); }
 async function chatFriendUnblock(prof, other){ return _chatApi('/friend/unblock', Object.assign(_chatAuth(prof), { other })); }
-async function chatMsgSend(prof, to, txt){ return _chatApi('/msg/send', Object.assign(_chatAuth(prof), { to, body:txt })); }
+// v2 (audit performances AUD-07-006) : `tmpId` optionnel, transmis au Worker
+// pour qu'il puisse détecter un renvoi automatique d'un message déjà inséré
+// avec succès (réponse perdue après un timeout client) — sans clé, le Worker
+// ne peut pas distinguer un vrai nouveau message d'un doublon de retry.
+async function chatMsgSend(prof, to, txt, tmpId){ return _chatApi('/msg/send', Object.assign(_chatAuth(prof), { to, body:txt, tmpId })); }
 async function chatMsgFetch(prof, withId, since){ return _chatApi('/msg/fetch', Object.assign(_chatAuth(prof), { with:withId, since:since||0 })); }
 async function chatMsgLatest(prof){ return _chatApi('/msg/latest', _chatAuth(prof)); }
 // #16 (accusé de lecture) : signale au Worker que j'ai lu la conversation
@@ -495,7 +499,11 @@ const CHAT_PHRASES = ['Coucou !','Bravo !','Tu joues ?','Merci !','À bientôt !
 const CHAT_STICKERS = ['\uD83D\uDC4D','\u2B50','\uD83C\uDF89','\u2764\uFE0F','\uD83D\uDE00','\uD83D\uDC36','\uD83E\uDD84'];
 function _chatQueueLoad(){ try{ return JSON.parse(localStorage.getItem('chatQueue')||'[]'); }catch(e){ return []; } }
 function _chatQueueSave(q){ try{ localStorage.setItem('chatQueue', JSON.stringify(q)); }catch(e){} }
-function _chatEnqueue(prof,to,body){ const q=_chatQueueLoad(); const it={ sender:prof.chatId, to:to, body:body, ts:Date.now(), tmpId:'q'+Math.random().toString(36).slice(2,9) }; q.push(it); _chatQueueSave(q); return it; }
+// v2 (audit performances AUD-07-006) : `tmpId` optionnel — si le message a
+// déjà été tenté une première fois (échec réseau/timeout géré par _chatSend),
+// on RÉUTILISE le même tmpId pour la mise en attente plutôt que d'en générer
+// un nouveau, pour que le Worker puisse reconnaître un simple retry.
+function _chatEnqueue(prof,to,body,tmpId){ const q=_chatQueueLoad(); const it={ sender:prof.chatId, to:to, body:body, ts:Date.now(), tmpId: tmpId || ('q'+Math.random().toString(36).slice(2,9)) }; q.push(it); _chatQueueSave(q); return it; }
 function _chatQueueRemove(tmpId){ _chatQueueSave(_chatQueueLoad().filter(x=>x.tmpId!==tmpId)); }
 function _chatPendingFor(to){ if(!to||!_msgProf||!_msgProf.chatId) return []; return _chatQueueLoad().filter(x=>x.sender===_msgProf.chatId && x.to===to); }
 let _chatFlushing=false;
@@ -507,7 +515,7 @@ async function _chatFlushQueue(prof){
  try{
   for(const it of mine){
    try{
-    const r=await chatMsgSend(prof, it.to, it.body);
+    const r=await chatMsgSend(prof, it.to, it.body, it.tmpId);
     if(r && r.ok){ _chatQueueRemove(it.tmpId); sent++; }
     else if(r && (r.error==='not_contact'||r.error==='blocked'||r.error==='empty')){ _chatQueueRemove(it.tmpId); } // jamais envoyable → on retire
     else { break; } // réseau/serveur KO → on garde et on réessaiera
@@ -571,7 +579,12 @@ async function _chatSend(body){
   }catch(e){ /* signalement best-effort : ne doit jamais bloquer l'envoi */ }
   return true;
  }
- const res = await chatMsgSend(_msgProf, _msgConv.id, body);
+ // v2 (audit performances AUD-07-006) : généré UNE fois avant le premier essai
+ // réseau, et réutilisé tel quel si ce message doit être mis en file d'attente
+ // hors-ligne (voir plus bas) — permet au Worker de reconnaître un renvoi
+ // automatique d'un message déjà inséré (réponse perdue après un timeout).
+ const tmpId = 'q'+Math.random().toString(36).slice(2,9)+Date.now().toString(36);
+ const res = await chatMsgSend(_msgProf, _msgConv.id, body, tmpId);
  if(res && res.ok){
   _convCache.push({ id:res.id, sender:_msgProf.chatId, body:body, ts:res.ts });
   _msgConv.lastId = res.id || _msgConv.lastId;
@@ -602,13 +615,24 @@ async function _chatSend(body){
   // perdre le texte tapé, quelle que soit la raison de l'échec.
   return true;
  } else {
-  _chatEnqueue(_msgProf, _msgConv.id, body); // hors-ligne → file d'attente
+  _chatEnqueue(_msgProf, _msgConv.id, body, tmpId); // hors-ligne → file d'attente
   _msgJustSent = true;
   _renderBubbles(_convCache);
   if(typeof toast==='function') toast('Hors-ligne : message en attente d\u2019envoi.', 2400);
  }
 }
 function chatQuickSend(text){ _chatSend(text); }
+
+// v2 (audit performances AUD-07-014) : petit cache local (localStorage) des
+// derniers messages connus par conversation, pour permettre une consultation
+// hors-ligne/en cas de panne serveur au lieu d'une coupure totale — la
+// messagerie était jusqu'ici la SEULE fonctionnalité sociale du produit sans
+// aucun repli quand le Worker/D1 est indisponible (tout le reste du jeu reste
+// jouable hors-ligne via le Service Worker). Bornée à 50 messages/conversation,
+// mise à jour à chaque sondage réussi.
+function _chatCacheKey(prof, withId){ return 'chatCache_'+(prof&&prof.chatId)+'_'+withId; }
+function _chatCacheLoad(prof, withId){ try{ return JSON.parse(localStorage.getItem(_chatCacheKey(prof, withId))||'[]'); }catch(e){ return []; } }
+function _chatCacheSave(prof, withId, messages){ try{ localStorage.setItem(_chatCacheKey(prof, withId), JSON.stringify((messages||[]).slice(-50))); }catch(e){} }
 
 let _convCache = [];
 let _msgJustSent = false;
@@ -630,16 +654,34 @@ async function _convFetch(reset){
    _convCache = _convCache.concat(res.messages);
    _msgConv.lastId = _convCache[_convCache.length-1].id;
    _renderBubbles(_convCache);
+   _chatCacheSave(_msgProf, _msgConv.id, _convCache);
    _chatMarkSeen(_msgProf, _msgConv.id, _msgConv.lastId);
    if(!_msgReadOnly && typeof chatMsgMarkRead==='function') chatMsgMarkRead(_msgProf, _msgConv.id, _msgConv.lastId).catch(()=>{});
   } else if(reset){
-   _renderBubbles([]);
+   // v2 (AUD-07-014) : à l'ouverture, sans nouveau message côté serveur, on
+   // affiche quand même le cache local s'il existe (dernière conversation
+   // consultée hors-ligne il y a peu), plutôt qu'un thread vide.
+   const cached = _chatCacheLoad(_msgProf, _msgConv.id);
+   if(cached.length){ _convCache = cached; _msgConv.lastId = cached[cached.length-1].id; }
+   _renderBubbles(_convCache);
   } else if(readChanged){
    _renderBubbles(_convCache); // re-rendu pour afficher l'accusé de lecture mis à jour
   }
  } else if(reset){
-  const thread = document.getElementById('msg-thread');
-  if(thread) thread.innerHTML = '<p style="color:#e74c3c;font-size:.8em;text-align:center;">Connexion impossible.</p>';
+  // v2 (AUD-07-014) : le Worker/D1 est indisponible — au lieu d'une coupure
+  // totale même pour les messages déjà reçus, on retombe sur le dernier cache
+  // local connu de cette conversation (persisté à chaque sondage réussi
+  // ci-dessus), avec un état explicite plutôt qu'un silence ou un blocage.
+  const cached = _chatCacheLoad(_msgProf, _msgConv.id);
+  if(cached.length){
+   _convCache = cached;
+   _msgConv.lastId = cached[cached.length-1].id;
+   _renderBubbles(_convCache);
+   if(typeof toast==='function') toast('⚠️ Messagerie indisponible — derniers messages connus affichés', 3200);
+  } else {
+   const thread = document.getElementById('msg-thread');
+   if(thread) thread.innerHTML = '<p style="color:#e74c3c;font-size:.8em;text-align:center;">Connexion impossible.</p>';
+  }
  }
 }
 async function chatSendCurrent(){

@@ -76,6 +76,29 @@ Si tu vois `{"ok":true,...}`, le serveur fonctionne. 🎉
 
 ---
 
+## Mise à jour (v12.8.11, audit performances) — migrations + Cron Trigger
+
+Cette version ajoute une table (`conv_summary`) et une colonne (`tmp_id`) à la
+base existante, plus une purge automatique hebdomadaire des vieux messages.
+**À faire AVANT de redéployer `odyssee-chat.js`** :
+
+1. **Sauvegarder la base** (recommandé, jamais fait automatiquement) :
+   ```bash
+   wrangler d1 export odyssee-chat-db --output backup-avant-migration.sql
+   ```
+2. **Rejouer les 2 migrations** sur `odyssee-chat-db` (Console D1 du dashboard,
+   coller-exécuter chaque fichier ; ou `wrangler d1 execute odyssee-chat-db --file=./migration-XXX.sql --remote`) :
+   - `migration-conv-summary.sql`
+   - `migration-msg-tmpid.sql`
+3. **Redéployer** `odyssee-chat.js` (Étape 3 ci-dessus, ou `wrangler deploy`).
+4. **Configurer le Cron Trigger** (purge hebdomadaire des messages de plus de
+   2 ans) — nécessaire seulement si le Worker a été déployé via le dashboard
+   (copier-coller) plutôt qu'avec `wrangler deploy`, qui applique automatiquement
+   le `[triggers]` de `wrangler.toml` :
+   - Dans le Worker `odyssee-chat` → onglet **Triggers** → **Cron Triggers** → **Add Cron Trigger**.
+   - Expression : `0 3 * * 0` (dimanche 3h UTC).
+   - Sans cette étape, le code de purge existe mais n'est jamais déclenché — sans danger, juste sans effet.
+
 ## Alternative : en ligne de commande (wrangler)
 
 Si tu préfères le CLI :
@@ -118,3 +141,40 @@ database_id = "REMPLACE-PAR-L-ID-AFFICHE"
   code ami ne donne pas accès aux messages.
 - **Indépendant de la sauvegarde** : ce Worker est séparé de `odyssee-sync`
   (les profils). Aucun risque pour tes sauvegardes existantes.
+
+## Limites du plan Cloudflare Free et point de rupture estimé (audit performances AUD-07-009)
+
+Plan utilisé pour ce projet : **Cloudflare Free**. Limites publiques au
+moment de la rédaction (2026-09-26) — à revérifier sur le dashboard/la page
+tarifaire Cloudflare avant toute décision d'échelle, ces chiffres peuvent
+évoluer :
+- **Workers (requêtes)** : 100 000 requêtes/jour, partagées entre TOUS les
+  Workers du compte (`odyssee-chat` + `odyssee-sync` cumulés) — c'est la
+  limite la PLUS BASSE des trois ci-dessous, donc le vrai facteur limitant.
+- **D1 (lectures/écritures)** : 5 000 000 lignes lues/jour, 100 000 lignes
+  écrites/jour, 5 Go de stockage — largement au-dessus du besoin réel avant
+  que la limite Workers ci-dessus ne soit atteinte la première.
+- **KV** : 1 000 écritures/jour (déjà anticipée dans le code par
+  échantillonnage, voir `SAMPLE_RATE` dans les deux Workers).
+
+**Estimation du point de rupture** (calcul, pas une mesure — à valider par un
+test de charge réel si l'usage se rapproche de ce seuil) : le client sonde
+toutes les 4s par conversation ouverte + toutes les 25s pour les badges
+(`js/17-messaging.js`). Pour un enfant avec ~1h de messagerie active par jour :
+≈ 900 requêtes (sondage conversation) + ≈ 144 requêtes (badges) ≈ **1 050
+requêtes/jour/enfant actif**. Rapporté à la limite Workers (100 000/jour,
+partagée avec le reste de l'app et `odyssee-sync`) :
+
+```
+100 000 requêtes/jour ÷ 1 050 requêtes/jour/enfant ≈ 95 enfants actifs simultanés/jour
+```
+
+Au-delà de cet ordre de grandeur (environ une centaine d'enfants utilisant
+activement la messagerie le même jour), le plan Free serait probablement
+insuffisant : Cloudflare bloque ou dégrade les requêtes au-delà du quota
+journalier plutôt que de facturer automatiquement. Une classe entière (25-30
+élèves) reste largement dans la marge ; un établissement scolaire complet
+(plusieurs centaines d'élèves) dépasserait cet ordre de grandeur.
+**Si l'usage réel approche ce seuil** : passer au plan Cloudflare Workers Paid
+(quota bien plus élevé, facturation à l'usage) avant qu'une saturation ne
+survienne en pleine period d'usage.

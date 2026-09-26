@@ -1857,4 +1857,54 @@ Les 7 autres (`streak`/`streakLastDate`, `sessionObjective`, `lastPlayTs`, `calm
 
 ---
 
+## ADR-158 — Lot A (audit performances AUD-07, 2026-09-26) : scalabilité messagerie D1 — résumé indexé, idempotence, rate-limit par compte
+
+**Contexte** : l'audit performances/scalabilité/résilience (2026-09-26) a identifié une chaîne de risques concentrée sur `worker/odyssee-chat.js` : `msgLatest()` scannait l'intégralité de la table `messages` pour la moitié des conversations (LIKE avec wildcard en tête, non indexable — AUD-07-010) ; cette même table ne disposait d'aucune purge (AUD-07-011) ; l'envoi de message n'avait aucune protection contre une duplication après un timeout client (AUD-07-006) ; le rate-limiting (`odyssee-chat.js` et `odyssee-sync.js`) est calibré par IP pour un usage familial (~15 utilisateurs/IP), incompatible avec une IP partagée d'établissement scolaire (AUD-07-008) ; `friendList()` enchaînait 5 requêtes D1 séquentielles sans raison (AUD-07-012).
+
+**Décision** :
+1. Nouvelle table `conv_summary(conv, participant_a, participant_b, last_id, last_ts)`, indexée sur chaque participant, tenue à jour à chaque `msgSend()`. `msgLatest()` l'interroge désormais au lieu de scanner `messages` ; le calcul de `weekCount` filtre par égalité exacte sur `conv IN (...)` (indexable) plutôt que par LIKE. Migration : `worker/migration-conv-summary.sql` (avec backfill des conversations déjà existantes).
+2. Purge des messages de plus de 2 ans, via un handler `scheduled()` du Worker déclenché par un Cron Trigger Cloudflare (`wrangler.toml`, `[triggers] crons`) — configuration manuelle du Cron Trigger requise côté dashboard si le Worker est déployé sans `wrangler deploy` (voir `DEPLOY.md`).
+3. Colonne `tmp_id` sur `messages` (index unique partiel `(sender, tmp_id) WHERE tmp_id IS NOT NULL`) : le client (`js/17-messaging.js`) génère un identifiant à la création d'un message et le réutilise pour tout renvoi automatique (file d'attente hors-ligne) ; `msgSend()` détecte un `tmp_id` déjà inséré et renvoie le même résultat au lieu de dupliquer. Migration : `worker/migration-msg-tmpid.sql`.
+4. Rate-limiting généralisé à une clé quelconque (plus seulement une IP) dans les deux Workers ; ajout d'une limite par COMPTE authentifié (`msgSend`/`msgFetch`/`msgLatest` côté chat, GET/POST `/profile/` côté sync), en complément — jamais en remplacement — de la limite par IP existante.
+5. `friendList()` : les 5 requêtes D1 indépendantes sont lancées via `Promise.all` plutôt qu'en séquence.
+
+**Alternative rejetée pour la purge** : conditionner la suppression à l'inactivité de la conversation (pas seulement à l'âge du message) — jugée disproportionnée pour ce lot ; la purge inconditionnelle par âge (2 ans) est plus simple à vérifier et suffisante pour l'objectif (borner la croissance de la table).
+
+**Conséquence** : `worker/odyssee-chat.js`, `worker/odyssee-sync.js`, `worker/schema.sql`, `js/17-messaging.js`, `tests/helpers/fakeD1.js` modifiés ; 2 nouveaux fichiers de migration à rejouer manuellement sur la base D1 réelle AVANT redéploiement du Worker (voir `DEPLOY.md`), ainsi qu'un Cron Trigger à configurer une fois. v12.8.10 → **v12.8.11**. Suite complète (743 tests) verte, lint inchangé (0 erreur, 303 warnings).
+
+---
+
+## ADR-159 — Lot B (audit performances AUD-07, 2026-09-26) : reconciliation cloud immédiate, limites Free documentées, dégradation gracieuse messagerie, observabilité des échecs silencieux
+
+**Contexte** : suite du lot A. AUD-07-007 (conflit de synchro cloud) a été réévalué à la baisse en cours de lot : `js/12-cloud.js` dispose déjà d'un système de fusion non destructif (`_mergeCloudProfiles`, ~30 règles, ADR-97/98/99/111/112/113) appliqué même après un rejet serveur (`_importProfileFromServer` refusionne systématiquement avec `P` courant) — aucune perte de données réelle, contrairement à ce que l'audit initial (lecture isolée du seul code serveur) avait supposé. Le seul résidu identifié : le profil fusionné correct restait local jusqu'au prochain cycle de sync (5 min) avant que le serveur ne le reflète aussi. AUD-07-009 (limites D1/Workers non documentées), AUD-07-014 (aucune dégradation gracieuse de la messagerie si le Worker/D1 est indisponible) et AUD-07-015 (`catch(e){}` vides sur des échecs pertinents) traités tels quels.
+
+**Décision** :
+1. `pushProfileToCloud()` : après un conflit résolu et fusionné en local, re-push immédiat (une seule fois, non récursif) au lieu d'attendre le cycle programmé — ferme le résidu identifié ci-dessus.
+2. `worker/DEPLOY.md` : nouvelle section documentant les limites du plan Cloudflare Free (Workers 100 000 req/j, D1 5M lectures/100k écritures/j, KV 1000 écritures/j) et une estimation chiffrée du point de rupture (~95 enfants actifs/jour avec 1h de messagerie chacun, limité par le quota Workers — pas D1).
+3. `js/17-messaging.js` : cache local (`localStorage`, 50 messages/conversation) des derniers messages connus par conversation, affiché avec un état explicite si le Worker/D1 est indisponible à l'ouverture, au lieu d'un blocage total — la messagerie était la seule fonctionnalité sociale du produit sans aucun repli hors-ligne.
+4. 6 `catch(e){}` vides désormais loggés (`console.error`/`console.warn`, comportement fonctionnel inchangé) : purge des jetons de transfert expirés et parsing d'un profil KV corrompu (Workers), écriture `lastPlayer`/`addToRoster` après restauration cloud et 3 migrations de `renameProfile()` (client), auto-diagnostic `_progSelfCheck()` des pools de questions.
+
+**Écarté** : 2 `catch(e){}` sur `_MP.io.disconnect()` (`js/07-map.js:3119,3218`) initialement signalés par l'exploration comme un "canal multijoueur réseau" — vérification faite, `_MP` est le parallax de la carte principale et `.io` un `IntersectionObserver` local, aucun réseau impliqué. Risque quasi nul (`.disconnect()` d'un `IntersectionObserver` ne lève pratiquement jamais), hors du périmètre résilience réseau/backend visé par ce constat — laissés tels quels plutôt que de coder un correctif sans valeur réelle.
+
+**Conséquence** : `js/12-cloud.js`, `js/17-messaging.js`, `js/09-parent.js`, `js/06a-adaptive.js`, `worker/odyssee-chat.js`, `worker/odyssee-sync.js`, `worker/DEPLOY.md` modifiés. v12.8.11 → **v12.8.12**. Suite complète (743 tests) verte, lint inchangé (0 erreur, 303 warnings).
+
+---
+
+## ADR-160 — Lot C (audit performances AUD-07, 2026-09-26) : debounce + pagination sur le rendu figurines, AUD-07-017 invalidé
+
+**Contexte** : suite du lot B. AUD-07-017 (écritures localStorage hors `validateProfile()`) a été réévalué à la baisse en cours de lot, comme AUD-07-007 avant lui : vérification des 7 emplacements cités — 2 des 3 dans `js/10-figurines.js` appellent déjà `validateProfile()` ; les 5 restants (`resetAdventure`, `toggleCalmMode`, `toggleDyslexiaFont`, `saveHomework`, `clearHomework`) ne touchent jamais les tableaux non bornés (`history`/`errors`/`chatFlags`) visés par le constat — aucun risque réel de croissance. Non traité : router ces écritures par `validateProfile()` (liste blanche de champs) aurait risqué de supprimer silencieusement `photo`/`playerCode`, absents de cette liste — un vrai risque de régression pour un problème qui n'existe pas.
+
+AUD-07-003 (filtre/tri/comptage recalculés à chaque frappe) et AUD-07-004 (reconstruction DOM complète, jusqu'à ~482 cartes) traités tels quels.
+
+**Décision** :
+1. Debounce (200ms) sur les 2 barres de recherche du catalogue de figurines (`js/10-figurines.js` boutique, `js/09-parent.js` gestion parent) — `_shopOnSearchInput`/`_pfigOnSearchInput`.
+2. `js/10-figurines.js` (boutique, `_renderFigurinesShop`) : mémoïsation du résultat filtré/trié (clé = filtre+recherche+tri+nombre de figurines possédées), pagination par lots de 60 avec bouton "Afficher plus" au lieu de construire les ~482 cartes d'un coup.
+3. `js/10-figurines.js` (collection, `renderFigCollection`, vue "Tout") : même pagination, pour les collectionneurs avancés possédant beaucoup de figurines.
+
+**Vérifié en navigateur** (`preview_start` + `javascript_tool`, profil réel, 477 figurines catalogue) : chargement initial de la boutique = 60 cartes + bouton "Afficher plus (422 restantes)" ; clic sur le bouton → 120 cartes ; frappe dans la recherche → grille inchangée immédiatement, filtrée après le délai de debounce (2 résultats sur "goku"). Aucune erreur console.
+
+**Conséquence** : `js/10-figurines.js`, `js/09-parent.js`, `index.html` modifiés. v12.8.12 → **v12.8.13**. Suite complète (743 tests) verte, lint inchangé (0 erreur, 303 warnings).
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*

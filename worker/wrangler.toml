@@ -14,3 +14,9 @@ database_id = "60dc51ed-ecaf-489f-bb32-0de12a78c5c1"
 [[kv_namespaces]]
 binding = "RATELIMIT"
 id = "bbc98b1438fa4259a5783aa9f798d714"
+
+# AUD-07-011 (audit performances 2026-09-26) : purge hebdomadaire des messages
+# de plus de 2 ans (voir purgeOldMessages()/scheduled() dans odyssee-chat.js).
+# Dimanche 3h UTC — heure creuse, hors fuseau horaire scolaire français.
+[triggers]
+crons = ["0 3 * * 0"]
