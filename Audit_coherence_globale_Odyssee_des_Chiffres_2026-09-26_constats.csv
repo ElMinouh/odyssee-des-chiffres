@@ -1,0 +1,9 @@
+id,gravite,priorite,titre
+AUD-09-001,CRITIQUE,P0,Priorisation de remediation radicalement inegale entre audits (securite/fonctionnel/performances clos, ergonomie/graphisme/technique jamais engages dont un P0 et un P1 critiques)
+AUD-09-002,ELEVEE,P1,Identite de marque interne (nom de package odyssee-des-chiffres) en contradiction avec le repositionnement multi-matieres acte (ADR-151)
+AUD-09-003,ELEVEE,P2,Absence de garde-fou automatise pour l'usage des tokens du design system malgre la regle documentee, drift mesurable persistant
+AUD-09-004,ELEVEE,P1,Deux angles morts qualite simultanes en CI : lint qui ne peut jamais faire echouer le pipeline et couverture de test a 0% sans signal de substitution
+AUD-09-005,MOYENNE,P2,Correctif d'accessibilite documente par un commentaire citant l'ID d'audit AUD-05-006 mais jamais applique dans le code
+AUD-09-006,MOYENNE,P2,Gradient de qualite percue incoherent : micro-interactions soignees (AUD-08 clos) contre identite visuelle de base encore fracturee (AUD-04 jamais engage)
+AUD-09-007,MOYENNE,P2,Parcours code parent traite a deux standards differents : durci cote securite (PIN anti-brute-force) mais toujours fragile cote accessibilite/UX
+AUD-09-008,FAIBLE,P3,Regle de non-reformatage en masse (CLAUDE.md) sans garde-fou outille face a un Prettier configure mais peu suivi

@@ -1962,4 +1962,20 @@ Ceci clôt l'intégralité de l'audit performances AUD-07 (23 constats : traité
 
 ---
 
+---
+
+## ADR-164 — Lot 1 (audit cohérence globale AUD-09, 2026-09-26) : séquencement des audits documenté, nom de package conservé, `format` non destructif par défaut
+
+**Contexte** : AUD-09 (audit de cohérence globale) constate que 4 des 8 audits sectoriels (fonctionnel AUD-02, sécurité AUD-06, performances AUD-07, qualité perçue AUD-08) ont été intégralement traités et vérifiés, alors que 3 autres (technique AUD-01, ergonomique AUD-03, graphique AUD-04) n'ont fait l'objet d'aucun lot de correction — dont un P0 (AUD-03-012 : fenêtre de choix d'objectif du jour sans issue tactile) et un P1 (AUD-04-001 : trois langages visuels concurrents) toujours ouverts. Rien ne documentait ce séquencement (AUD-09-001), ni le décalage entre le nom de package `odyssee-des-chiffres` et le repositionnement multi-matières déjà acté en ADR-151 (AUD-09-002), ni le risque de `npm run format` destructif par défaut sur un code dont l'indentation réelle ne suit pas la convention Prettier (AUD-09-008).
+
+**Décision** :
+1. Séquencement audits : assumé rétroactivement — sécurité, fonctionnel et performances traités en priorité car directement actionnables par du code/tests vérifiables, ergonomie/graphisme/technique reportés car nécessitant des arbitrages de design assumés côté humain. **AUD-01 (technique), AUD-03 (ergonomique) et AUD-04 (graphique) sont replanifiés en priorité immédiate après ce lot 1**, en commençant par leurs points P0/P1 (AUD-03-012, AUD-04-001).
+2. `package.json` : nom `odyssee-des-chiffres` **conservé** (renommage écarté — lien historique avec le nom du dépôt Git et risque de casse d'URLs/outillage jugé disproportionné pour un gain cosmétique). Décision documentée ici plutôt qu'un renommage silencieux.
+3. `package.json` : `format` devient `prettier --check` (non destructif, nouveau défaut) ; l'ancien comportement destructif est déplacé vers `format:write`, à lancer uniquement de façon volontaire et validée.
+4. `CLAUDE.md` §5 mis à jour pour refléter l'état réel des 9 audits (pas seulement le fonctionnel).
+
+**Conséquence** : `package.json`, `CLAUDE.md` modifiés. Aucun changement fonctionnel (doc/tooling) → pas de bump de version ni de `CACHE_VERSION` (règle CLAUDE.md §7 limitée aux changements fonctionnels livrés). Suite de tests non affectée (aucun fichier `js/*.js` touché).
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
