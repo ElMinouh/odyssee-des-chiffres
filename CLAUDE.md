@@ -145,6 +145,8 @@ npm run format:write       # Prettier --write (peu utilisé, voir section 4 — 
 npm run sync:test-api      # RÉGÉNÈRE tests/helpers/loadGame.js + .eslintrc.json
                             # après tout ajout de fonction/const globale — OBLIGATOIRE
 npm run check:test-filenames  # vérifie que tests/*.js finit bien par .test.js
+npm run check:css-tokens      # échoue si de nouvelles valeurs de border-radius/box-shadow
+                               # brutes s'ajoutent hors des tokens du design system (ADR-166)
 ```
 
 Déploiement du site : `git push` seulement (voir `GUIDE-DU-DEPOT.md` pour le détail

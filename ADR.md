@@ -1994,4 +1994,16 @@ Ceci clôt l'intégralité de l'audit performances AUD-07 (23 constats : traité
 
 ---
 
+---
+
+## ADR-166 — Lot 3 (audit cohérence globale AUD-09, 2026-09-26) : garde-fou automatisé sur le drift des tokens CSS (AUD-09-003)
+
+**Contexte** : CLAUDE.md §4 documente la règle « vérifier les tokens existants avant d'écrire une nouvelle valeur de rayon/ombre en CSS », sans aucun contrôle automatisé. AUD-04-003/004 (audit graphique, jamais traité — voir ADR-164) mesuraient déjà une dérive significative ; AUD-09-003 confirme et chiffre le problème pour `border-radius` (84 valeurs brutes) puis, mesure plus précise via regex plutôt que grep manuel, pour `box-shadow` (135 valeurs brutes, bien plus que les 102 estimés à l'oral dans AUD-09).
+
+**Décision** : nouveau script `scripts/check-css-tokens.mjs` (même esprit que `check-test-filenames.mjs`, ADR-85) — compte les déclarations `border-radius`/`box-shadow` en valeur brute dans `css/styles.css` et échoue si ce compte **augmente** par rapport à la référence figée ici (84 / 135). N'importe pas de nouvelle dépendance (pas de stylelint, cohérent avec CLAUDE.md §2 « devDependencies uniquement »). Ne bloque pas la dette déjà présente (chantier de fond réservé à AUD-04-003/004, hors scope de ce lot) — bloque seulement son aggravation. Commande manuelle `npm run check:css-tokens`, non branchée en `pretest` (cohérent avec `check:test-filenames`, lui aussi manuel à ce jour).
+
+**Conséquence** : `scripts/check-css-tokens.mjs` créé, `package.json` et `CLAUDE.md` §6 mis à jour. Aucun fichier `js/*.js` ou `css/*.css` modifié — pas de bump de version. La baseline (84/135) ne doit baisser qu'en traitant réellement AUD-04-003/004, jamais en assouplissant ce script.
+
+---
+
 *Document vivant — toute nouvelle décision d'architecture significative doit y être ajoutée, avec son numéro d'ADR, son contexte, sa décision et sa conséquence pour le futur.*
