@@ -1266,11 +1266,16 @@ if ('serviceWorker' in navigator) {
       animation:'slideUp .4s ease-out',
     });
     document.body.appendChild(banner);
+    // AUD-08-005 (audit qualite percue 2026-09-26) : sur une fenêtre basse,
+    // le bandeau fixe peut chevaucher du contenu/des boutons en bas d'écran
+    // -- réserve un peu d'espace tant qu'il est affiché.
+    document.body.classList.add('has-update-banner');
+    const _removeBanner = ()=>{ banner.remove(); document.body.classList.remove('has-update-banner'); };
     document.getElementById('sw-update-btn').onclick = ()=>{
-      banner.remove();
+      _removeBanner();
       _swActivateAndReload();
     };
-    document.getElementById('sw-update-dismiss').onclick = ()=>banner.remove();
+    document.getElementById('sw-update-dismiss').onclick = _removeBanner;
   }
 
   // Active le SW en attente puis recharge la page après bascule du controller.

@@ -1073,7 +1073,7 @@ mc01:{fn:'jump',    col:'#f1c40f',v:'Le soleil va briller !',    p:1.12,r:1.2, g
  mc04:{fn:'slash',   col:'#7f8c8d',v:'À l\'or, toujours à l\'or !', p:0.92,r:1.0, g:'m',sk:'#d4956a'},
  mc05:{fn:'bounce',  col:'#e74c3c',v:'Ahi ahi ahi !',             p:1.1, r:1.15,g:'m',sk:'#e8c88a'},
  mc06:{fn:'bounce',  col:'#2980b9',v:'Pedro, attends-moi !',      p:1.08,r:1.1, g:'m',sk:'#e8c88a'},
- mc07:{fn:'wand',    col:'#8e44ad',v:'Le secret des anciens...',  p:0.88,r:0.75,g:'m',sk:'#fde3bb'},
+ mc07:{fn:'wand',    col:'#8e44ad',v:'Le secret des anciens…',  p:0.88,r:0.75,g:'m',sk:'#fde3bb'},
  mc08:{fn:'vanish',  col:'#9b59b6',v:'Vous ne m\'arrêterez pas.', p:0.82,r:0.8, g:'m',sk:'#d4a070'},
  gd01:{fn:'thunder', col:'#f1c40f',v:'Goldorak, alerte !',        p:1.0, r:1.1, g:'m',sk:'#fde3bb'},
  gd02:{fn:'repulsor',col:'#27ae60',v:'Je suis avec toi, Actarus !',p:1.05,r:1.05,g:'m',sk:'#fde3bb'},
